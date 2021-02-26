@@ -1,2 +1,2 @@
 # lcc
-life function compiler
+life compiler collection
