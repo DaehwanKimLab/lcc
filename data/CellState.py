@@ -1,13 +1,15 @@
+#!/usr/bin/env python3
 from __future__ import absolute_import, division, print_function
 
+from argparse import ArgumentParser, FileType
 import os, sys
 import numpy as np
 import csv
-import tensorflow as tf
+#import tensorflow as tf
 
 # DL - Desired code to be written by the compiler
 
-print("TensorFlow Version: %s" % tf.__version__)
+#print("TensorFlow Version: %s" % tf.__version__)
 
 
 # The structure of data files requires the following format:
@@ -28,8 +30,8 @@ class CellState:
         self.data_types_list = []
         self.n_data_types = 0
         self.n_items = 0
-        self.cellStateMatx = tf.zeros(0)
-        self.cellStateLabel = tf.zeros(0)
+        #self.cellStateMatx = tf.zeros(0)
+        #self.cellStateLabel = tf.zeros(0)
 
     def InitializeCellStateMatrix(self, data_files):
         self.data_files = data_files
@@ -48,12 +50,12 @@ class CellState:
                     row_tag = data_table[row, 0]
                 else:
                     entry_tag = str(data_table[0]) + " of " + str(_mol_names[i])
-                    self.cellStateLabel = tf.concat([self.cellStateLabel, [entry_tag[i]]], 0)
-                    self.cellStateMatx = tf.concat([self.cellStateMatx, [data_table[i]]], 0)
+                    #self.cellStateLabel = tf.concat([self.cellStateLabel, [entry_tag[i]]], 0)
+                    #self.cellStateMatx = tf.concat([self.cellStateMatx, [data_table[i]]], 0)
 
 
-Ecoli = CellState()
-Ecoli.InitializeCellStateMatrix(data_files)
+#Ecoli = CellState()
+#Ecoli.InitializeCellStateMatrix(data_files)
 
 
 #                 # np.append(self.cellStateMatx, _value_matx)
@@ -72,3 +74,48 @@ Ecoli.InitializeCellStateMatrix(data_files)
 #
 # Ecoli = CellState()
 # Ecoli.InitializeCellStateMatrix(data_files)
+#
+#
+
+dataset = dict()
+
+def parse_tsv(fpath, fname):
+    fullpath = fpath + '/' + fname
+    #print(fname)
+
+    with open(fullpath) as fp:
+        csv_reader = csv.reader(fp, delimiter = '\t')
+        list_of_rows = list(csv_reader)
+
+        dataset[fname]=list_of_rows[1:]
+
+def dump_dataset():
+    for key, value in dataset.items():
+        print(key, len(value))
+
+def main(data_dir):
+    for fname in os.listdir(data_dir):
+        if fname.endswith('.tsv'):
+            parse_tsv(data_dir, fname)
+
+
+    dump_dataset()
+    return
+
+if __name__ == '__main__':
+    parser = ArgumentParser(
+        description='Data loading')
+
+    parser.add_argument('-d', '--data',
+                        dest='data_dir',
+                        type=str,
+                        help='Data directory')
+
+    args = parser.parse_args()
+    if not args.data_dir:
+        parser.print_help()
+        exit(1)
+
+
+    main(args.data_dir)
+
