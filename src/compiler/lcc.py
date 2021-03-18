@@ -13,6 +13,7 @@
 
 import os, sys
 import numpy as np
+import csv
 # import tensorflow as tf
 # import matplotlib.pyplot as plt
 import datetime
@@ -31,13 +32,42 @@ def WriteImport(code_file):
     print("from argparse import ArgumentParser, FileType", file=code_file)
 
 
-def WriteBody(code_file):
+def LoadData(data_dir):
+    dataset = dict()
+    def parse_tsv(fpath, fname):
+        fullpath = fpath + '/' + fname
+        #print(fname)
+
+        with open(fullpath) as fp:
+            csv_reader = csv.reader(fp, delimiter = '\t')
+            list_of_rows = list(csv_reader)
+
+            dataset[fname]=list_of_rows[1:]
+
+    def dump_dataset():
+        for key, value in dataset.items():
+            print(key, len(value))
+
+    for fname in os.listdir(data_dir):
+        if fname.endswith('.tsv'):
+            parse_tsv(data_dir, fname)
+
+    dump_dataset()
+    return dataset
+
+    
+
+def WriteBody(code_file, dataset):
     lines = [
         "def main(verbose):",
-        "\tprint(\"Hello World\")",
     ]
     for line in lines:
         print(line, file=code_file)
+
+    for key, value in dataset.items():
+        name = key.split(".")[0]
+        print("\t%s = " % name, value, file=code_file)
+        print("\tprint(%s)" % name, file=code_file)
 
     
 def WriteMain(code_file):
@@ -58,17 +88,18 @@ def NewLine(code_file):
 
 
 def Compile(code_fname,
+            data_dir,
             verbose):
-    print("TEST")
+
+    dataset = LoadData(data_dir)
     
     code_file = open(code_fname, 'w')
     
     WriteLicense(code_file)
     WriteImport(code_file); NewLine(code_file)
-    WriteBody(code_file); NewLine(code_file)
+    WriteBody(code_file, dataset); NewLine(code_file)
     WriteMain(code_file)
     
-
     code_file.close()
     
 
@@ -77,19 +108,20 @@ def Compile(code_fname,
 if __name__ == '__main__':
     parser = ArgumentParser(
         description='')
-    parser.add_argument('data_dir',
-                        nargs='?',
+    parser.add_argument('-d', '--data',
+                        dest='data_dir',
                         type=str,
-                        default="",
-                        help='directory name for training dataset')
+                        help='Data directory')
     parser.add_argument('-v', '--verbose',
                         dest='verbose',
                         action='store_true',
                         help='also print some statistics to stderr')
 
     args = parser.parse_args()
-    Compile("code.py", 
+    if not args.data_dir:
+        parser.print_help()
+        exit(1)
+
+    Compile("code.py",
+            args.data_dir,
             args.verbose)
-
-
-
