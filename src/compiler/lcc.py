@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Copyright 2021,
-# Donghoon Lee <>,
+# Donghoon Lee <dhldjl@gmail.com>,
 # Chanhee Park <parkchanhee@gmail.com>, and
 # Daehwan Kim <infphilo@gmail.com>,
 #
@@ -55,7 +55,6 @@ def LoadData(data_dir):
     dump_dataset()
     return dataset
 
-    
 
 def WriteBody(code_file, dataset):
     lines = [
