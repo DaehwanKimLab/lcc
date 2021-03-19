@@ -225,7 +225,7 @@ def WriteBody(CodeFile, CompilerData):
     print("\tNTCounts = np.zeros(4)", file=CodeFile)
     for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
         NTIndex = CompilerData.MetaboliteName2Index[NTName]
-        print("\tNTCounts[%d] = MetaboliteConcs[%d]" % (i, NTIndex), file=CodeFile)
+        print("\tNTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName), file=CodeFile)
 
     print("\tprint(\"NTCounts =\", NTCounts)", file=CodeFile)
 
