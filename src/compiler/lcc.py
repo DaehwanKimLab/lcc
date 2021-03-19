@@ -56,50 +56,132 @@ def LoadData(data_dir):
     return dataset
 
 
-def SetUpMatrix():
+def SetUpMatrix(dataset):
+
+    def RearrangeLstToDict(lst, pos_key):
+        dict_out = {}
+        for row in lst:
+            row_without_key = []
+            for column, i in zip(row, range(len(row))):
+                if i == pos_key:
+                    continue
+                row_without_key.append(column)
+            dict_item = {row[pos_key]: row_without_key}
+        dict_{}
+        return dict_out
 
     def TranscriptionalElongation():
-        # base_types = ["A", "C", "G", "T"]
-        atgc_table = list()
 
-        gene_len = dataset("genes.tsv")[0]  # len
-        genes_seq = dataset("genes.tsv")[2] # seq
+        def GetMatrixRnaNtFreq():
+            acgu_freq_table = list()
+            rnas = dataset['rnas.tsv']
+            # num_rnas = len(dataset['rnas.tsv'])
+            for rna in rnas:
+                seq = rna[2]
+                length_rna = len(seq)
+                acgu_count = np.array([seq.count("A"), seq.count("U"), seq.count("G"), seq.count("U")])
+                acgu_freq = acgu_count / length_rna
+                acgu_freq_table.append(acgu_freq)
+            # print(acgu_freq_table)
+            return acgu_freq_table
 
-        for seq, length in enumerate(genes_seq, gene_len):
-            atgc_count = [seq.count("A")], [seq.count("T")], seq.count("G"), seq.count("C")
-            atgc_ratio = atgc_count / length
-            atgc_table.append(atgc_ratio)
+        def GetMatrixGenLocRNAP():
 
-        RNApol_avail =
+        def GetMatrixActiveRNAP():
+            MatrixGetMatrixGenLocRNAP()
+            return rnap_active
 
-        base_index_mw_A = dataset(metabolites.tsv)[0].index('"ADENOSINE"')
-        base_index_mw_C = dataset(metabolites.tsv)[0].index('"CYTOSINE"')
-        base_index_mw_G = dataset(metabolites.tsv)[0].index('"GUANINE"')
-        base_index_mw_T = dataset(metabolites.tsv)[0].index('"THYMINE"')
+        def GetMatrixNtFlux():
+            metabolites = dataset("metabolites.tsv")
+            RearrangeLstToDict(metabolites, 1)
 
-        base_index_conc_A = dataset(metaboliteConcentrations.tsv)[0].index('"ADENOSINE"')
-        base_index_conc_C = dataset(metaboliteConcentrations.tsv)[0].index('"CYTOSINE"')
-        base_index_conc_G = dataset(metaboliteConcentrations.tsv)[0].index('"GUANINE"')
-        base_index_conc_T = dataset(metaboliteConcentrations.tsv)[0].index('"THYMINE"')
+            return acgu_flux
 
-        n_base_avail_A = dataset(metaboliteConcentrations.tsv)[base_index_mw_A, 1]\
-                         * dataset(metabolite.tsv)[base_index_conc_A, 1]
-        n_base_avail_C = dataset(metaboliteConcentrations.tsv)[base_index_mw_C, 1] \
-                         * dataset(metabolite.tsv)[base_index_conc_C, 1]
-        n_base_avail_G = dataset(metaboliteConcentrations.tsv)[base_index_mw_G, 1] \
-                         * dataset(metabolite.tsv)[base_index_conc_G, 1]
-        n_base_avail_T = dataset(metaboliteConcentrations.tsv)[base_index_mw_T, 1] \
-                         * dataset(metabolite.tsv)[base_index_conc_T, 1]
-
-        dataset(metabolites.tsv[1]) # "ADENOSINE"	267.245
-        dataset(metabolites.tsv[1]) # "GUANINE"	151.129
-        dataset(metabolites.tsv[1]) # "CYTOSINE"    111.104
-        dataset(metabolites.tsv[1]) # "THYMINE"	126.115
-
-        dataset(metaboliteConcentrations.tsv[1])    # "ADENOSINE"	1.30e-7
-        dataset(metaboliteConcentrations.tsv[1])    # "GUANINE"	1.90e-4
+        mtrx_RNA_NT_freq = GetMatrixRnaNtFreq()
+        # mtrx_active_RNAP = GetMatrixActiveRNAP()
+        #
+        # mtrx_Nt_flux = GetMatrixNTFlux()
 
     TranscriptionalElongation()
+
+"""
+        # RNApol_avail =
+
+        base_index_mw_A = dataset["metabolites.tsv"][0].index('ADENOSINE')
+        base_index_mw_C = dataset["metabolites.tsv"][0].index('"CYTOSINE"')
+        base_index_mw_G = dataset["metabolites.tsv"][0].index('"GUANINE"')
+        base_index_mw_T = dataset["metabolites.tsv"][0].index('"THYMINE"')
+
+        base_index_conc_A = dataset["metaboliteConcentrations.tsv"][0].index('"ADENOSINE"')
+        base_index_conc_C = dataset["metaboliteConcentrations.tsv"][0].index('"CYTOSINE"')
+        base_index_conc_G = dataset["metaboliteConcentrations.tsv"][0].index('"GUANINE"')
+        base_index_conc_T = dataset["metaboliteConcentrations.tsv"][0].index('"THYMINE"')
+
+        n_base_avail_A = dataset["metaboliteConcentrations.tsv"][base_index_mw_A, 1]\
+                         * dataset["metabolite.tsv"][base_index_conc_A, 1]
+        n_base_avail_C = dataset["metaboliteConcentrations.tsv"][base_index_mw_C, 1] \
+                         * dataset["metabolite.tsv"][base_index_conc_C, 1]
+        n_base_avail_G = dataset["metaboliteConcentrations.tsv"][base_index_mw_G, 1] \
+                         * dataset["metabolite.tsv"][base_index_conc_G, 1]
+        n_base_avail_T = dataset["metaboliteConcentrations.tsv"][base_index_mw_T, 1] \
+                         * dataset["metabolite.tsv"][base_index_conc_T, 1]
+
+        # turn dataset into dictionary or
+        metabolites = dataset['metabolites.tsv']
+
+
+
+        for metabolite in metabolites:
+            for molecule in molecules_of_interest:
+                if metabolite[0] == "ADENOSINE":
+                    mol_weight_adenosine = metabolite[1]
+            if metabolite[0] == "GUANINE":
+                mol_weight_guanine = metabolite[1]
+            if metabolite[0] == "CYTOSINE":
+                mol_weight_cytosine = metabolite[1]
+            if metabolite[0] == "URACIL":
+                mol_weight_uracil = metabolite[1]
+
+        # OR
+
+        for metabolite in metabolites:
+            if metabolite[0] == "ADENOSINE":
+                mol_weight_adenosine = metabolite[1]
+            if metabolite[0] == "GUANINE":
+                mol_weight_guanine = metabolite[1]
+            if metabolite[0] == "CYTOSINE":
+                mol_weight_cytosine = metabolite[1]
+            if metabolite[0] == "URACIL":
+                mol_weight_uracil = metabolite[1]
+
+        metaboliteConcentrations = dataset["metabololiteConcentrations.tsv"]
+
+        for concentration in metaboliteConcentrations:
+            if metaboliteConcentration[0] == "ADENOSINE":
+                mol_weight_adenosine = metabolite[1]
+            if metabolite[0] == "GUANINE":
+                mol_weight_guanine = metabolite[1]
+            if metabolite[0] == "CYTOSINE":
+                mol_weight_cytosine = metabolite[1]
+            if metabolite[0] == "URACIL":
+                mol_weight_uracil = metabolite[1]
+
+        dataset["metabolites.tsv"][1] # "ADENOSINE"	267.245
+        dataset["metabolites.tsv"][1] # "GUANINE"	151.129
+        dataset["metabolites.tsv"][1] # "CYTOSINE"    111.104
+        dataset["metabolites.tsv"][1] # "THYMINE"	126.115
+
+        dataset["metaboliteConcentrations.tsv"][1]    # "ADENOSINE"	1.30e-7
+        dataset["metaboliteConcentrations.tsv"][1]    # "GUANINE"	1.90e-4
+
+        # self.activeRnaPolys = self.uniqueMoleculesView('activeRnaPoly')
+        # self.bulkRnas = self.bulkMoleculesView(self.rnaIds)
+        # self.ntps = self.bulkMoleculesView(["ATP[c]", "CTP[c]", "GTP[c]", "UTP[c]"])
+        # self.ppi = self.bulkMoleculeView('PPI[c]')
+        # self.inactiveRnaPolys = self.bulkMoleculeView("APORNAP-CPLX[c]")
+        # self.flat_elongation = not sim._variable_elongation_transcription
+
+"""
 
 
 def WriteBody(code_file, dataset):
@@ -114,7 +196,7 @@ def WriteBody(code_file, dataset):
         print("\t%s = " % name, value, file=code_file)
         print("\tprint(%s)" % name, file=code_file)
 
-    
+
 def WriteMain(code_file):
     lines = [
         "if __name__ == '__main__':",
@@ -128,7 +210,7 @@ def WriteMain(code_file):
     for line in lines:
         print(line, file=code_file)
 
-        
+
 def NewLine(code_file):
     print("\t", file=code_file)
 
@@ -138,21 +220,19 @@ def Compile(code_fname,
             verbose):
 
     dataset = LoadData(data_dir)
-    
+    SetUpMatrix(dataset)
     code_file = open(code_fname, 'w')
-    
+
     WriteLicense(code_file)
     WriteImport(code_file); NewLine(code_file)
     WriteBody(code_file, dataset); NewLine(code_file)
     WriteMain(code_file)
-    
+
     code_file.close()
-    
-Compile("code.py",
-        "data",
-        "-v")
+
 """
 """
+# PyCharm: set parameters configuration to "-d ../../data"
 if __name__ == '__main__':
     parser = ArgumentParser(
         description='')
