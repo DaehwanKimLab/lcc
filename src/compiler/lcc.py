@@ -20,6 +20,15 @@ import datetime
 from argparse import ArgumentParser, FileType
 
 
+class FCompilerData:
+    def __init__(self):
+        self.MetaboliteNames = []
+        self.MetaboliteName2Index = {}
+        self.MetaboliteConcs = None
+
+        self.TranscriptNTFreqs = None
+
+
 def WriteLicense(code_file):
     for line in open("LICENSE.input"):
         line = line.strip()
@@ -56,8 +65,8 @@ def LoadData(data_dir):
     return dataset
 
 
-def SetUpMatrix(Dataset):
-
+def SetUpMatrix(Dataset, CompilerData):
+    
     def RearrangeLstToDict(lst, pos_key):
         dict_out = {}
         for row in lst:
@@ -67,8 +76,16 @@ def SetUpMatrix(Dataset):
                     continue
                 row_without_key.append(column)
             dict_item = {row[pos_key]: row_without_key}
-        # dict_{}
         return dict_out
+
+    Metabolites = Dataset['metaboliteConcentrations.tsv']
+    CompilerData.MetaboliteConcs = np.zeros(len(Metabolites))
+    for i, Value in enumerate(Metabolites):
+        Name, Conc = Value
+        assert Name not in CompilerData.MetaboliteName2Index
+        CompilerData.MetaboliteName2Index[Name] = len(CompilerData.MetaboliteNames)
+        CompilerData.MetaboliteNames.append(Name) 
+        CompilerData.MetaboliteConcs[i] = Conc
 
     def TranscriptionalElongation():
 
@@ -98,12 +115,15 @@ def SetUpMatrix(Dataset):
         #
         #     return acgu_flux
         #
-        mtrx_RNA_NT_freq = GetMatrixRNANTFreq()
+
+        TranscriptNTFreqs = GetMatrixRNANTFreq()
+        return TranscriptNTFreqs
+
         # mtrx_active_RNAP = GetMatrixActiveRNAP()
         #
         # mtrx_Nt_flux = GetMatrixNTFlux()
 
-    TranscriptionalElongation()
+    CompilerData.TranscriptNTFreqs = TranscriptionalElongation()
 
 """
         # RNApol_avail =
@@ -185,17 +205,43 @@ def SetUpMatrix(Dataset):
 """
 
 
-def WriteBody(code_file, dataset):
-    lines = [
+def WriteBody(CodeFile, CompilerData):
+    Lines = [
         "def main(verbose):",
     ]
-    for line in lines:
-        print(line, file=code_file)
+    for Line in Lines:
+        print(Line, file=CodeFile)
 
-    for key, value in dataset.items():
-        name = key.split(".")[0]
-        print("\t%s = " % name, value, file=code_file)
-        print("\tprint(%s)" % name, file=code_file)
+    print("\tAvogadroNum = 6.022141527E23", file=CodeFile)
+
+    np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
+    print("\tMetaboliteConcs = np.load(\"MetaboliteConcs.npy\")", file=CodeFile)
+    print("\tprint(MetaboliteConcs)", file=CodeFile)
+
+    np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
+    print("\tTranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\")", file=CodeFile)
+    print("\tprint(TranscriptNTFreqs)", file=CodeFile)
+
+    print("\tNTCounts = np.zeros(4)", file=CodeFile)
+    for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
+        NTIndex = CompilerData.MetaboliteName2Index[NTName]
+        print("\tNTCounts[%d] = MetaboliteConcs[%d]" % (i, NTIndex), file=CodeFile)
+
+    print("\tprint(\"NTCounts =\", NTCounts)", file=CodeFile)
+
+    print("\tElongationRate = 10", file=CodeFile)
+
+    print("\tDeltaNTCounts = TranscriptNTFreqs * ElongationRate", file=CodeFile)
+    print("\tDeltaNTCounts = np.sum(DeltaNTCounts, axis=0)", file=CodeFile)
+    print("\tprint(\"DeltaNTCounts:\", DeltaNTCounts)", file=CodeFile)
+    
+    print("\tDeltaNTCounts /= AvogadroNum", file=CodeFile)
+    print("\tprint(\"DeltaNTCounts (mol):\", DeltaNTCounts)", file=CodeFile)
+
+    print("\tNTCounts -= DeltaNTCounts", file=CodeFile)
+    print("\tprint(\"After one simulation unit,\")", file=CodeFile)
+    print("\tprint(\"\tNTCounts =\", NTCounts)", file=CodeFile)
+
 
 
 def WriteMain(code_file):
@@ -216,20 +262,21 @@ def NewLine(code_file):
     print("\t", file=code_file)
 
 
-def Compile(code_fname,
-            data_dir,
-            verbose):
+def Compile(CodeFileName,
+            DataDir,
+            Verbose):
 
-    dataset = LoadData(data_dir)
-    SetUpMatrix(dataset)
-    code_file = open(code_fname, 'w')
+    CompilerData = FCompilerData()
+    Dataset = LoadData(DataDir)
+    SetUpMatrix(Dataset, CompilerData)
+    CodeFile = open(CodeFileName, 'w')
 
-    WriteLicense(code_file)
-    WriteImport(code_file); NewLine(code_file)
-    WriteBody(code_file, dataset); NewLine(code_file)
-    WriteMain(code_file)
+    WriteLicense(CodeFile)
+    WriteImport(CodeFile); NewLine(CodeFile)
+    WriteBody(CodeFile, CompilerData); NewLine(CodeFile)
+    WriteMain(CodeFile)
 
-    code_file.close()
+    CodeFile.close()
 
 """
 """
