@@ -1,0 +1,9 @@
+name: lcc
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - numpy
+  - pip:
+    - tensorflow
