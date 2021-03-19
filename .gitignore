@@ -1,0 +1,41 @@
+# Compiled source #
+###################
+*.pyc
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+
+# VIM temp files #
+##################
+*.swp
+
+# IPython notebook files #
+##########################
+.ipynb_checkpoints
+
+
+# C extensions #
+################
+*.so
+*.o
+
+# kernprof.py output #
+######################
+*.lprof
+
+# pyenv python version #
+########################
+.python-version
+
+# PyCharm files #
+#################
+# User-specific stuff:
+.idea/*
+
+
+# CMake
+cmake-build-release/*
+cmake-build-debug/*
