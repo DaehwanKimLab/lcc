@@ -288,6 +288,11 @@ if __name__ == '__main__':
                         dest='data_dir',
                         type=str,
                         help='Data directory')
+    parser.add_argument('-o', '--out-file',
+                        dest='code_file',
+                        type=str,
+                        default='cell.py',
+                        help='Output code file')
     parser.add_argument('-v', '--verbose',
                         dest='verbose',
                         action='store_true',
@@ -298,6 +303,6 @@ if __name__ == '__main__':
         parser.print_help()
         exit(1)
 
-    Compile("code.py",
+    Compile(args.code_file,
             args.data_dir,
             args.verbose)
