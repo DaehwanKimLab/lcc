@@ -56,7 +56,7 @@ def LoadData(data_dir):
     return dataset
 
 
-def SetUpMatrix(dataset):
+def SetUpMatrix(Dataset):
 
     def RearrangeLstToDict(lst, pos_key):
         dict_out = {}
@@ -67,37 +67,38 @@ def SetUpMatrix(dataset):
                     continue
                 row_without_key.append(column)
             dict_item = {row[pos_key]: row_without_key}
-        dict_{}
+        # dict_{}
         return dict_out
 
     def TranscriptionalElongation():
 
-        def GetMatrixRnaNtFreq():
-            acgu_freq_table = list()
-            rnas = dataset['rnas.tsv']
+        def GetMatrixRNANTFreq():
+            NTFreqTable = list()
+            RNAs = Dataset['rnas.tsv']
             # num_rnas = len(dataset['rnas.tsv'])
-            for rna in rnas:
-                seq = rna[2]
-                length_rna = len(seq)
-                acgu_count = np.array([seq.count("A"), seq.count("U"), seq.count("G"), seq.count("U")])
-                acgu_freq = acgu_count / length_rna
-                acgu_freq_table.append(acgu_freq)
-            # print(acgu_freq_table)
-            return acgu_freq_table
+            for RNA in RNAs:
+                Seq = RNA[2]
+                NTTotalCount = len(Seq)
+                NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
+                if np.sum(NTCounts) != NTTotalCount:
+                    print("WARNING: RNA seq may contain non-ACGT text", file=sys.stderr)
+                NTFreq = NTCounts / NTTotalCount
+                NTFreqTable.append(NTFreq)
+            return NTFreqTable
 
-        def GetMatrixGenLocRNAP():
-
-        def GetMatrixActiveRNAP():
-            MatrixGetMatrixGenLocRNAP()
-            return rnap_active
-
-        def GetMatrixNtFlux():
-            metabolites = dataset("metabolites.tsv")
-            RearrangeLstToDict(metabolites, 1)
-
-            return acgu_flux
-
-        mtrx_RNA_NT_freq = GetMatrixRnaNtFreq()
+        # def GetMatrixGenLocRNAP():
+        #
+        # def GetMatrixActiveRNAP():
+        #     MatrixGetMatrixGenLocRNAP()
+        #     return rnap_active
+        #
+        # def GetMatrixNtFlux():
+        #     metabolites = dataset("metabolites.tsv")
+        #     RearrangeLstToDict(metabolites, 1)
+        #
+        #     return acgu_flux
+        #
+        mtrx_RNA_NT_freq = GetMatrixRNANTFreq()
         # mtrx_active_RNAP = GetMatrixActiveRNAP()
         #
         # mtrx_Nt_flux = GetMatrixNTFlux()
