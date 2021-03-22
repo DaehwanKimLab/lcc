@@ -338,8 +338,6 @@ def CompileToGenome(GenomeFileName,
     GeneFileName = DataDir + '/' + 'genes.tsv'
     assert os.path.exists(GeneFileName)
 
-    print("DK:", GenomeFileName)
-
     GenomeFile = open(GenomeFileName, 'w')
     print(">E. coli", file=GenomeFile)
 
