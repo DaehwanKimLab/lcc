@@ -38,6 +38,7 @@ def WriteLicense(code_file):
 def WriteImport(code_file):
     print("import os, sys", file=code_file)
     print("import numpy as np", file=code_file)
+    print("import tensorflow as tf", file=code_file)
     print("from argparse import ArgumentParser, FileType", file=code_file)
 
 
@@ -226,19 +227,26 @@ def WriteBody(CodeFile, CompilerData):
     print("\tCellVol = 7e-16 # Average E coli cell volume: 0.7 um3, which is 7e-16 liters.", file=CodeFile)
 
     np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
-    print("\tMetaboliteConcs = np.load(\"MetaboliteConcs.npy\")", file=CodeFile)
+    print("\tMetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')", file=CodeFile)
+    print("\tMetaboliteConcsTF = tf.convert_to_tensor(MetaboliteConcs)", file=CodeFile)
     print("\tprint(MetaboliteConcs)", file=CodeFile)
+    print("\tprint(MetaboliteConcsTF)", file=CodeFile)
 
     np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
-    print("\tTranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\")", file=CodeFile)
+    print("\tTranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')", file=CodeFile)
+    print("\tTranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)", file=CodeFile)
     print("\tprint(TranscriptNTFreqs)", file=CodeFile)
+    print("\tprint(TranscriptNTFreqsTF)", file=CodeFile)
 
+    NTIndexList = list()
     print("\tNTCounts = np.zeros(4)", file=CodeFile)
     for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
         NTIndex = CompilerData.MetaboliteName2Index[NTName]
+        NTIndexList.append(int(NTIndex))
         print("\tNTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName), file=CodeFile)
 
-
+    print("\tNTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])", file=CodeFile)
+    print("\tprint('NTConcsIndexTF = ', NTConcsIndexTF)", file=CodeFile)
     print("\tprint(\"NTCounts =\", NTCounts)", file=CodeFile)
 
     print("\tElongationRate = 10", file=CodeFile)
@@ -247,6 +255,7 @@ def WriteBody(CodeFile, CompilerData):
     print("\tNumberOfUniqueTranscripts = len(TranscriptNTFreqs)", file=CodeFile)
     print("\tRNAPPerTranscript = np.zeros(NumberOfUniqueTranscripts)", file=CodeFile)
     print("\tfor i in range(CellCycles):", file=CodeFile)
+
     print("\t\tfor position in range(ActiveRNAPCount):", file=CodeFile)
     print("\t\t\tposition = np.random.randint(1, NumberOfUniqueTranscripts)", file=CodeFile)
     print("\t\t\tRNAPPerTranscript[position] += 1", file=CodeFile)
@@ -256,14 +265,22 @@ def WriteBody(CodeFile, CompilerData):
     print("\t\tprint(RNAPPerTranscript)", file=CodeFile)
 
     print("\t\tDeltaNTCounts = np.matmul(np.transpose(TranscriptNTFreqs), RNAPPerTranscript) * ElongationRate", file=CodeFile)
-    print("\t\tDeltaNTCounts = np.sum(DeltaNTCounts, axis=0)", file=CodeFile)
+    print("\t\t# DeltaNTCounts = np.sum(DeltaNTCounts, axis=0)", file=CodeFile)
     print("\t\tprint(\"DeltaNTCounts:\", DeltaNTCounts)", file=CodeFile)
 
     print("\t\tDeltaNTCounts /= AvogadroNum", file=CodeFile)
     print("\t\tDeltaNTCounts /= CellVol", file=CodeFile)
+
+    print("\t\tprint('Available ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))", file=CodeFile)
     print("\t\tprint(\"DeltaNTCounts (mol):\", DeltaNTCounts)", file=CodeFile)
 
+    print("\t\tMetaboliteConcsTF = tf.tensor_scatter_nd_sub(MetaboliteConcsTF, NTConcsIndexTF, DeltaNTCounts)", file=CodeFile)
+    print("\t\tprint('After ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))", file=CodeFile)
+
     print("\t\tNTCounts -= DeltaNTCounts", file=CodeFile)
+
+
+
     print("\t\tprint(\"After one simulation unit,\")", file=CodeFile)
     print("\t\tprint(\"\tNTCounts =\", NTCounts)", file=CodeFile)
     print("\ti += 1", file=CodeFile)
