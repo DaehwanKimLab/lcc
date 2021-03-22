@@ -105,15 +105,15 @@ def SetUpMatrix(Dataset, CompilerData):
                 NTFreqTable.append(NTFreq)
             return NTFreqTable
 
-        def GetMatrixRNAPPerTranscript():
-            ActiveRNAPCount = 829
-            RNAPPerRNA = np.zeros(len(RNAs))
-            for position in range(ActiveRNAPCount):
-                position = np.random.randint(1, len(RNAs))
-                RNAPPerRNA[position] += 1
-            if np.count_nonzero(RNAPPerRNA) == 0:
-                print("WARNING: There is no RNAP on RNA.", file=sys.stderr)
-            return RNAPPerRNA
+        # def GetMatrixRNAPPerTranscript():
+        #     ActiveRNAPCount = 829
+        #     RNAPPerRNA = np.zeros(len(RNAs))
+        #     for position in range(ActiveRNAPCount):
+        #         position = np.random.randint(1, len(RNAs))
+        #         RNAPPerRNA[position] += 1
+        #     if np.count_nonzero(RNAPPerRNA) == 0:
+        #         print("WARNING: There is no RNAP on RNA.", file=sys.stderr)
+        #     return RNAPPerRNA
 
         #     MatrixGetMatrixGenLocRNAP()
         #     return rnap_active
@@ -246,7 +246,7 @@ def WriteBody(CodeFile, CompilerData):
     print("\tActiveRNAPCount = 829", file=CodeFile)
     print("\tNumberOfUniqueTranscripts = len(TranscriptNTFreqs)", file=CodeFile)
     print("\tRNAPPerTranscript = np.zeros(NumberOfUniqueTranscripts)", file=CodeFile)
-    print("\tfor i in range(CellCycles):")
+    print("\tfor i in range(CellCycles):", file=CodeFile)
     print("\t\tfor position in range(ActiveRNAPCount):", file=CodeFile)
     print("\t\t\tposition = np.random.randint(1, NumberOfUniqueTranscripts)", file=CodeFile)
     print("\t\t\tRNAPPerTranscript[position] += 1", file=CodeFile)
