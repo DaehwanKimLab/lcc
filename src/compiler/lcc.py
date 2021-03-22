@@ -216,7 +216,7 @@ def SetUpMatrix(Dataset, CompilerData):
 
 def WriteBody(CodeFile, CompilerData):
     Lines = [
-        "def main(verbose):",
+        "def main(GenomeFileName, verbose):",
     ]
     for Line in Lines:
         print(Line, file=CodeFile)
@@ -268,6 +268,14 @@ def WriteBody(CodeFile, CompilerData):
     print("\t\tprint(\"\tNTCounts =\", NTCounts)", file=CodeFile)
     print("\ti += 1", file=CodeFile)
 
+    print("\tif GenomeFileName != \"\":", file=CodeFile)
+    print("\t\tGenomeFile = open(GenomeFileName, 'w')", file=CodeFile)
+    print("\t\tInputGenomeFile = open('cell.fa')", file=CodeFile)
+    print("\t\tfor Line in InputGenomeFile:", file=CodeFile)
+    print("\t\t\tLine = Line.strip()", file=CodeFile)
+    print("\t\t\tprint(Line, file=GenomeFile)", file=CodeFile)
+    print("\t\tGenomeFile.close()", file=CodeFile)
+
 
 
 def WriteMain(code_file):
@@ -275,9 +283,10 @@ def WriteMain(code_file):
         "if __name__ == '__main__':",
         "\tparser = ArgumentParser(description='')",
         "\tparser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='also print some statistics to stderr')",
+        "\tparser.add_argument('-g', '--genome', dest='GenomeFileName', type=str, default='', help='')",
         "",
         "\targs = parser.parse_args()",
-        "\tmain(args.verbose)"
+        "\tmain(args.GenomeFileName, args.verbose)"
         "",
     ]
     for line in lines:
@@ -288,22 +297,74 @@ def NewLine(code_file):
     print("\t", file=code_file)
 
 
+def Parse(CodeFileName):
+    Result = {}
+
+    CodeFile = open(CodeFileName)
+    for line in CodeFile:
+        line = line.strip()
+        if line.startswith('#'):
+            continue
+
+        if line.startswith('TemplateOrganism'):
+            Organism = line.split(':')[1]
+            Result['Organism'] = Organism
+        elif line.startswith('RNATranscription'):
+            if 'Process' not in Result:
+                Result['Process'] = [line]
+            else:
+                Result['Process'].append(line)
+
+
+def CompileToGenome(GenomeFileName,
+                    DataDir):
+    GeneFileName = DataDir + '/' + 'genes.tsv'
+    assert os.path.exists(GeneFileName)
+
+    print("DK:", GenomeFileName)
+
+    GenomeFile = open(GenomeFileName, 'w')
+    print(">E. coli", file=GenomeFile)
+
+    Seq = ""
+    for Line in open(GeneFileName):
+        Line = Line.strip()
+        Fields = Line.split('\t')
+        if len(Fields) == 3:
+            continue
+
+        TmpSeq = Fields[2][1:-1]
+        Seq += TmpSeq
+
+    print(Seq, file=GenomeFile)
+    GenomeFile.close()
+
+
 def Compile(CodeFileName,
+            OutputFileName,
             DataDir,
             Verbose):
 
+    PrefixName = 'cell'
+
     CompilerData = FCompilerData()
+    CodeInfo = Parse(CodeFileName)
+
+    CompileToGenome(PrefixName + '.fa', DataDir)
+
     Dataset = LoadData(DataDir)
     SetUpMatrix(Dataset, CompilerData)
-    CodeFile = open(CodeFileName, 'w')
+    OutputFile = open(OutputFileName, 'w')
 
-    WriteLicense(CodeFile)
-    WriteImport(CodeFile); NewLine(CodeFile)
-    WriteBody(CodeFile, CompilerData); NewLine(CodeFile)
-    WriteMain(CodeFile)
 
-    CodeFile.close()
+    WriteLicense(OutputFile)
+    WriteImport(OutputFile); NewLine(OutputFile)
+    WriteBody(OutputFile, CompilerData); NewLine(OutputFile)
+    WriteMain(OutputFile)
 
+    OutputFile.close()
+
+    
 """
 """
 # PyCharm: set parameters configuration to "-d ../../data"
@@ -314,8 +375,12 @@ if __name__ == '__main__':
                         dest='data_dir',
                         type=str,
                         help='Data directory')
+    parser.add_argument('-c', '--code',
+                        dest='CodeFileName',
+                        type=str,
+                        help='life source code filename')
     parser.add_argument('-o', '--out-file',
-                        dest='code_file',
+                        dest='OutputFileName',
                         type=str,
                         default='cell.py',
                         help='Output code file')
@@ -329,6 +394,11 @@ if __name__ == '__main__':
         parser.print_help()
         exit(1)
 
-    Compile(args.code_file,
+    if not os.path.exists(args.CodeFileName):
+        print("Error: %s doesn't exist" % args.CodeFileName)
+        exit(1)
+
+    Compile(args.CodeFileName,
+            args.OutputFileName,
             args.data_dir,
             args.verbose)
