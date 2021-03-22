@@ -83,29 +83,38 @@ def SetUpMatrix(Dataset, CompilerData):
     for i, Value in enumerate(Metabolites):
         Name, Conc = Value
         assert Name not in CompilerData.MetaboliteName2Index
-        CompilerData.MetaboliteName2Index[Name] = len(CompilerData.MetaboliteNames)
+        CompilerData.MetaboliteName2Index[Name] = len(CompilerData.MetaboliteNames) # = i
         CompilerData.MetaboliteNames.append(Name) 
         CompilerData.MetaboliteConcs[i] = Conc
+
+
 
     def TranscriptionalElongation():
 
         def GetMatrixRNANTFreq():
             NTFreqTable = list()
-            RNAs = Dataset['rnas.tsv']
             # num_rnas = len(dataset['rnas.tsv'])
+            RNAs = Dataset['rnas.tsv']
             for RNA in RNAs:
                 Seq = RNA[2]
                 NTTotalCount = len(Seq)
                 NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
                 if np.sum(NTCounts) != NTTotalCount:
-                    print("WARNING: RNA seq may contain non-ACGT text", file=sys.stderr)
+                    print("WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
                 NTFreq = NTCounts / NTTotalCount
                 NTFreqTable.append(NTFreq)
             return NTFreqTable
 
-        # def GetMatrixGenLocRNAP():
-        #
-        # def GetMatrixActiveRNAP():
+        def GetMatrixRNAPPerTranscript():
+            ActiveRNAPCount = 829
+            RNAPPerRNA = np.zeros(len(RNAs))
+            for position in range(ActiveRNAPCount):
+                position = np.random.randint(1, len(RNAs))
+                RNAPPerRNA[position] += 1
+            if np.count_nonzero(RNAPPerRNA) == 0:
+                print("WARNING: There is no RNAP on RNA.", file=sys.stderr)
+            return RNAPPerRNA
+
         #     MatrixGetMatrixGenLocRNAP()
         #     return rnap_active
         #
@@ -212,7 +221,9 @@ def WriteBody(CodeFile, CompilerData):
     for Line in Lines:
         print(Line, file=CodeFile)
 
+    print("\tCellCycles = 100", file=CodeFile)
     print("\tAvogadroNum = 6.022141527E23", file=CodeFile)
+    print("\tCellVol = 7e-16 # Average E coli cell volume: 0.7 um3, which is 7e-16 liters.", file=CodeFile)
 
     np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
     print("\tMetaboliteConcs = np.load(\"MetaboliteConcs.npy\")", file=CodeFile)
@@ -227,20 +238,35 @@ def WriteBody(CodeFile, CompilerData):
         NTIndex = CompilerData.MetaboliteName2Index[NTName]
         print("\tNTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName), file=CodeFile)
 
+
     print("\tprint(\"NTCounts =\", NTCounts)", file=CodeFile)
 
     print("\tElongationRate = 10", file=CodeFile)
 
-    print("\tDeltaNTCounts = TranscriptNTFreqs * ElongationRate", file=CodeFile)
-    print("\tDeltaNTCounts = np.sum(DeltaNTCounts, axis=0)", file=CodeFile)
-    print("\tprint(\"DeltaNTCounts:\", DeltaNTCounts)", file=CodeFile)
-    
-    print("\tDeltaNTCounts /= AvogadroNum", file=CodeFile)
-    print("\tprint(\"DeltaNTCounts (mol):\", DeltaNTCounts)", file=CodeFile)
+    print("\tActiveRNAPCount = 829", file=CodeFile)
+    print("\tNumberOfUniqueTranscripts = len(TranscriptNTFreqs)", file=CodeFile)
+    print("\tRNAPPerTranscript = np.zeros(NumberOfUniqueTranscripts)", file=CodeFile)
+    print("\tfor i in range(CellCycles):")
+    print("\t\tfor position in range(ActiveRNAPCount):", file=CodeFile)
+    print("\t\t\tposition = np.random.randint(1, NumberOfUniqueTranscripts)", file=CodeFile)
+    print("\t\t\tRNAPPerTranscript[position] += 1", file=CodeFile)
+    print("\t\tif np.count_nonzero(RNAPPerTranscript) == 0:", file=CodeFile)
+    print("\t\t\tprint('WARNING: There is no RNAP on RNA.', file=sys.stderr)", file=CodeFile)
 
-    print("\tNTCounts -= DeltaNTCounts", file=CodeFile)
-    print("\tprint(\"After one simulation unit,\")", file=CodeFile)
-    print("\tprint(\"\tNTCounts =\", NTCounts)", file=CodeFile)
+    print("\t\tprint(RNAPPerTranscript)", file=CodeFile)
+
+    print("\t\tDeltaNTCounts = np.matmul(np.transpose(TranscriptNTFreqs), RNAPPerTranscript) * ElongationRate", file=CodeFile)
+    print("\t\tDeltaNTCounts = np.sum(DeltaNTCounts, axis=0)", file=CodeFile)
+    print("\t\tprint(\"DeltaNTCounts:\", DeltaNTCounts)", file=CodeFile)
+
+    print("\t\tDeltaNTCounts /= AvogadroNum", file=CodeFile)
+    print("\t\tDeltaNTCounts /= CellVol", file=CodeFile)
+    print("\t\tprint(\"DeltaNTCounts (mol):\", DeltaNTCounts)", file=CodeFile)
+
+    print("\t\tNTCounts -= DeltaNTCounts", file=CodeFile)
+    print("\t\tprint(\"After one simulation unit,\")", file=CodeFile)
+    print("\t\tprint(\"\tNTCounts =\", NTCounts)", file=CodeFile)
+    print("\ti += 1", file=CodeFile)
 
 
 
