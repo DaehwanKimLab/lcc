@@ -1,0 +1,12 @@
+name: lcc-gpu
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - numpy
+  - cudatoolkit=11.0
+  - cudnn
+  - pip:
+    - tensorflow

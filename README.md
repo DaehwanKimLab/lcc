@@ -22,6 +22,16 @@ that is compatible with Windows, macOS, and Linux.
     conda deactivate
 
 
+#### GPU Support
+
+	conda env create -f environment-gpu.yml
+
+	conda activate lcc-gpu
+	conda deactivate
+
+
+GPU environment requires NVIDIA GPU Driver 450.x or higher
+
 ## Input
 
 ## Output
