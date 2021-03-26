@@ -29,6 +29,41 @@ class FCompilerData:
         self.TranscriptNTFreqs = None
 
 
+class CodeWriter:
+    def __init__(self, CodeFile, IndentLevel=1):
+        self.IndentLevel = IndentLevel
+        self.fp = CodeFile
+        self.BuildIndentationPrefix()
+
+    def BuildIndentationPrefix(self):
+        self.IndentationPrefix = '\t' * self.IndentLevel
+
+    def IncreaseIndent(self):
+        self.IndentLevel += 1
+        self.BuildIndentationPrefix()
+
+    def DecreaseIndent(self):
+        self.IndentLevel -= 1
+        if self.IndentLevel < 0:
+            self.IndentLevel = 0
+
+        self.BuildIndentationPrefix()
+
+    def GetIndentLevel(self):
+        return self.IndentLevel
+
+    def SetIndentLevel(self, IndentLevel):
+        self.IndentLevel = IndentLevel
+        self.BuildIndentationPrefix()
+
+    def WriteStatement(self, Line):
+        print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
+
+    def WriteVariable(self, VariableName, Value):
+        Line = '%s = %s' % (VariableName, Value)
+        self.WriteStatement(Line)
+
+
 def WriteLicense(code_file):
     for line in open("LICENSE.input"):
         line = line.strip()
@@ -216,82 +251,99 @@ def SetUpMatrix(Dataset, CompilerData):
 
 
 def WriteBody(CodeFile, CompilerData):
+    Writer = CodeWriter(CodeFile, 0)
     Lines = [
         "def main(GenomeFileName, verbose):",
     ]
     for Line in Lines:
-        print(Line, file=CodeFile)
+        Writer.WriteStatement(Line)
 
-    print("\tCellCycles = 100", file=CodeFile)
-    print("\tAvogadroNum = 6.022141527E23", file=CodeFile)
-    print("\tCellVol = 7e-16 # Average E coli cell volume: 0.7 um3, which is 7e-16 liters.", file=CodeFile)
+    Writer.IncreaseIndent()
+
+    Writer.WriteVariable("CellCycles", 100)
+
+    Writer.WriteVariable("AvogadroNum", 6.022141527E23)
+    Writer.WriteStatement("CellVol = 7e-16 # Average E coli cell volume: 0.7 um3, which is 7e-16 liters.")
 
     np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
-    print("\tMetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')", file=CodeFile)
-    print("\tMetaboliteConcsTF = tf.convert_to_tensor(MetaboliteConcs)", file=CodeFile)
-    print("\tprint(MetaboliteConcs)", file=CodeFile)
-    print("\tprint(MetaboliteConcsTF)", file=CodeFile)
+    Writer.WriteStatement("MetaboliteConcs = np.load('MetaboliteConcs.npy').astype('float32')")
+
+    Writer.WriteStatement("MetaboliteConcsTF = tf.convert_to_tensor(MetaboliteConcs)")
+
+    Writer.WriteStatement("print(MetaboliteConcs)")
+    Writer.WriteStatement("print(MetaboliteConcsTF)")
 
     np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
-    print("\tTranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')", file=CodeFile)
-    print("\tTranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)", file=CodeFile)
-    print("\tprint(TranscriptNTFreqs)", file=CodeFile)
-    print("\tprint(TranscriptNTFreqsTF)", file=CodeFile)
+    Writer.WriteStatement("TranscriptNTFreqs = np.load('TranscriptNTFreqs.npy').astype('float32')")
+    Writer.WriteStatement("TranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)")
+    Writer.WriteStatement("print(TranscriptNTFreqs)")
+    Writer.WriteStatement("print(TranscriptNTFreqsTF)")
 
     NTIndexList = list()
-    print("\tNTCounts = np.zeros(4)", file=CodeFile)
+    Writer.WriteStatement("NTCounts = np.zeros(4)")
     for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
         NTIndex = CompilerData.MetaboliteName2Index[NTName]
         NTIndexList.append(int(NTIndex))
-        print("\tNTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName), file=CodeFile)
+        Writer.WriteStatement("NTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
 
-    print("\tNTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])", file=CodeFile)
-    print("\tprint('NTConcsIndexTF = ', NTConcsIndexTF)", file=CodeFile)
-    print("\tprint(\"NTCounts =\", NTCounts)", file=CodeFile)
+    Writer.WriteStatement("NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
+    Writer.WriteStatement("print('NTConcsIndexTF = ', NTConcsIndexTF)")
+    Writer.WriteStatement("print('NTCounts =', NTCounts)")
 
-    print("\tElongationRate = 10", file=CodeFile)
+    Writer.WriteVariable('ElongationRate', 10)
+    Writer.WriteVariable("ActiveRNAPCount", 829)
 
-    print("\tActiveRNAPCount = 829", file=CodeFile)
-    print("\tNumberOfUniqueTranscripts = len(TranscriptNTFreqs)", file=CodeFile)
-    print("\tRNAPPerTranscript = np.zeros(NumberOfUniqueTranscripts)", file=CodeFile)
-    print("\tfor i in range(CellCycles):", file=CodeFile)
+    Writer.WriteStatement("NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
+    Writer.WriteStatement("RNAPPerTranscript = np.zeros(NumberOfUniqueTranscripts)")
 
-    print("\t\tfor position in range(ActiveRNAPCount):", file=CodeFile)
-    print("\t\t\tposition = np.random.randint(1, NumberOfUniqueTranscripts)", file=CodeFile)
-    print("\t\t\tRNAPPerTranscript[position] += 1", file=CodeFile)
-    print("\t\tif np.count_nonzero(RNAPPerTranscript) == 0:", file=CodeFile)
-    print("\t\t\tprint('WARNING: There is no RNAP on RNA.', file=sys.stderr)", file=CodeFile)
+    Writer.WriteStatement("for i in range(CellCycles):")
 
-    print("\t\tprint(RNAPPerTranscript)", file=CodeFile)
+    Writer.IncreaseIndent()
+    Writer.WriteStatement(  "for position in range(ActiveRNAPCount):")
+    Writer.IncreaseIndent()
+    Writer.WriteStatement(    "position = np.random.randint(1, NumberOfUniqueTranscripts)")
+    Writer.WriteStatement(    "RNAPPerTranscript[position] += 1")
+    Writer.DecreaseIndent()
+    Writer.WriteStatement(  "if np.count_nonzero(RNAPPerTranscript) == 0:")
+    Writer.IncreaseIndent()
+    Writer.WriteStatement(    "print('WARNING: There is no RNAP on RNA.', file=sys.stderr)")
+    Writer.DecreaseIndent()
 
-    print("\t\tDeltaNTCounts = np.matmul(np.transpose(TranscriptNTFreqs), RNAPPerTranscript) * ElongationRate", file=CodeFile)
-    print("\t\t# DeltaNTCounts = np.sum(DeltaNTCounts, axis=0)", file=CodeFile)
-    print("\t\tprint(\"DeltaNTCounts:\", DeltaNTCounts)", file=CodeFile)
+    Writer.WriteStatement(  "print(RNAPPerTranscript)")
 
-    print("\t\tDeltaNTCounts /= AvogadroNum", file=CodeFile)
-    print("\t\tDeltaNTCounts /= CellVol", file=CodeFile)
+    Writer.WriteStatement(  "DeltaNTCounts = np.matmul(np.transpose(TranscriptNTFreqs), RNAPPerTranscript) * ElongationRate")
+    Writer.WriteStatement(  "# DeltaNTCounts = np.sum(DeltaNTCounts, axis=0)")
+    Writer.WriteStatement(  "print(\"DeltaNTCounts:\", DeltaNTCounts)")
 
-    print("\t\tprint('Available ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))", file=CodeFile)
-    print("\t\tprint(\"DeltaNTCounts (mol):\", DeltaNTCounts)", file=CodeFile)
+    Writer.WriteStatement(  "DeltaNTCounts /= AvogadroNum")
+    Writer.WriteStatement(  "DeltaNTCounts /= CellVol")
 
-    print("\t\tMetaboliteConcsTF = tf.tensor_scatter_nd_sub(MetaboliteConcsTF, NTConcsIndexTF, DeltaNTCounts)", file=CodeFile)
-    print("\t\tprint('After ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))", file=CodeFile)
+    Writer.WriteStatement(  "print('Available ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
+    Writer.WriteStatement(  "print(\"DeltaNTCounts (mol):\", DeltaNTCounts)")
 
-    print("\t\tNTCounts -= DeltaNTCounts", file=CodeFile)
+    Writer.WriteStatement(  "MetaboliteConcsTF = tf.tensor_scatter_nd_sub(MetaboliteConcsTF, NTConcsIndexTF, DeltaNTCounts)")
+    Writer.WriteStatement(  "print('After ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
+
+    Writer.WriteStatement(  "NTCounts -= DeltaNTCounts")
 
 
 
-    print("\t\tprint(\"After one simulation unit,\")", file=CodeFile)
-    print("\t\tprint(\"\tNTCounts =\", NTCounts)", file=CodeFile)
-    print("\ti += 1", file=CodeFile)
+    Writer.WriteStatement(  "print(\"After one simulation unit,\")")
+    Writer.WriteStatement(  "print(\"\tNTCounts =\", NTCounts)")
+    Writer.DecreaseIndent()
 
-    print("\tif GenomeFileName != \"\":", file=CodeFile)
-    print("\t\tGenomeFile = open(GenomeFileName, 'w')", file=CodeFile)
-    print("\t\tInputGenomeFile = open('cell.fa')", file=CodeFile)
-    print("\t\tfor Line in InputGenomeFile:", file=CodeFile)
-    print("\t\t\tLine = Line.strip()", file=CodeFile)
-    print("\t\t\tprint(Line, file=GenomeFile)", file=CodeFile)
-    print("\t\tGenomeFile.close()", file=CodeFile)
+    Writer.WriteStatement("i += 1")
+
+    Writer.WriteStatement("if GenomeFileName != \"\":")
+    Writer.IncreaseIndent()
+    Writer.WriteStatement(  "GenomeFile = open(GenomeFileName, 'w')")
+    Writer.WriteStatement(  "InputGenomeFile = open('cell.fa')")
+    Writer.WriteStatement(  "for Line in InputGenomeFile:")
+    Writer.IncreaseIndent()
+    Writer.WriteStatement(    "Line = Line.strip()")
+    Writer.WriteStatement(    "print(Line, file=GenomeFile)")
+    Writer.DecreaseIndent()
+    Writer.WriteStatement(  "GenomeFile.close()")
 
 
 
