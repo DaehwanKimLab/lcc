@@ -241,7 +241,7 @@ def WriteBody(CodeFile, CompilerData):
     print("\tprint(TranscriptNTFreqsTF)", file=CodeFile)
 
     NTIndexList = list()
-    print("\tNTCounts = np.zeros(4)", file=CodeFile)
+    print("\tNTCounts = np.zeros(4).astype('float32')", file=CodeFile)
     for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
         NTIndex = CompilerData.MetaboliteName2Index[NTName]
         NTIndexList.append(int(NTIndex))
@@ -256,12 +256,15 @@ def WriteBody(CodeFile, CompilerData):
 
     print("\tActiveRNAPCount = 829", file=CodeFile)
     print("\tNumberOfUniqueTranscripts = len(TranscriptNTFreqs)", file=CodeFile)
-    print("\tRNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)", file=CodeFile)
-    print("\tfor i in range(SimulationSteps):", file=CodeFile)
+    print("\tOne = tf.ones(1)", file=CodeFile)
+    print("\tfor SimulationStep in range(SimulationSteps):", file=CodeFile)
+
+    print("\t\tprint('SimulationStep: ', SimulationStep + 1)", file=CodeFile)
+    print("\t\tRNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)", file=CodeFile)
 
     print("\t\tfor position in range(ActiveRNAPCount):", file=CodeFile)
-    print("\t\t\tposition = tf.random.uniform(shape=[], minval=1, maxval=NumberOfUniqueTranscripts, dtype='int32')", file=CodeFile)
-    print("\t\t\tRNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, position, 1)", file=CodeFile) # DL: This line does not work
+    print("\t\t\tposition = tf.random.uniform(shape=[1,1], minval=1, maxval=NumberOfUniqueTranscripts, dtype='int32')", file=CodeFile)
+    print("\t\t\tRNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, position, One)", file=CodeFile) # DL: This line does not work
     print("\t\tif tf.math.count_nonzero(RNAPPerTranscriptTF) == 0:", file=CodeFile)
     print("\t\t\tprint('WARNING: There is no RNAP on RNA.', file=sys.stderr)", file=CodeFile)
     print("\t\tRNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])", file=CodeFile)
