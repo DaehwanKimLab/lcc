@@ -51,3 +51,7 @@ class CodeWriter:
     def WriteVariable(self, VariableName, Value):
         Line = '%s = %s' % (VariableName, Value)
         self.WriteStatement(Line)
+
+    def WriteBlankLine(self):
+        print("", file=self.fp)
+        return self

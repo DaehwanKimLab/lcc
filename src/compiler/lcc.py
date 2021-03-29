@@ -20,6 +20,7 @@ import datetime
 from argparse import ArgumentParser, FileType
 import codegen
 
+
 class FCompilerData:
     def __init__(self):
         self.MetaboliteNames = []
@@ -28,6 +29,16 @@ class FCompilerData:
 
         self.TranscriptNTFreqs = None
 
+        self.RXNIDs = []
+        self.RXNID2Index = {}
+        self.RXNStoichiometry = {}
+        self.RXNReversibility = []
+        self.RXNEnzyme = []
+
+        self.TCSRXNs = []
+        self.TCSMolNames = []
+
+"reaction id"	"stoichiometry"	"is reversible"	"catalyzed by"
 
 def WriteLicense(code_file):
     for line in open("LICENSE.input"):
@@ -68,27 +79,29 @@ def LoadData(data_dir):
 
 def SetUpMatrix(Dataset, CompilerData):
 
-    def RearrangeLstToDict(lst, pos_key):
-        dict_out = {}
-        for row in lst:
-            row_without_key = []
-            for column, i in zip(row, range(len(row))):
-                if i == pos_key:
-                    continue
-                row_without_key.append(column)
-            dict_item = {row[pos_key]: row_without_key}
-        return dict_out
+    def SetUpDataIndexes():
+        Metabolites = Dataset['metaboliteConcentrations.tsv']
+        CompilerData.MetaboliteConcs = np.zeros(len(Metabolites))
+        for i, Value in enumerate(Metabolites):
+            Name, Conc = Value
+            assert Name not in CompilerData.MetaboliteName2Index
+            CompilerData.MetaboliteName2Index[Name] = len(CompilerData.MetaboliteNames) # = i
+            CompilerData.MetaboliteNames.append(Name)
+            CompilerData.MetaboliteConcs[i] = Conc
 
-    Metabolites = Dataset['metaboliteConcentrations.tsv']
-    CompilerData.MetaboliteConcs = np.zeros(len(Metabolites))
-    for i, Value in enumerate(Metabolites):
-        Name, Conc = Value
-        assert Name not in CompilerData.MetaboliteName2Index
-        CompilerData.MetaboliteName2Index[Name] = len(CompilerData.MetaboliteNames) # = i
-        CompilerData.MetaboliteNames.append(Name) 
-        CompilerData.MetaboliteConcs[i] = Conc
+        RXNs = Dataset['reactions.tsv']
+        for i, Value in enumerate(RXNs):
+            RXNID, RXNStoichiometry, RXNReversibility, RXNEnzyme = Value
+            assert RXNID not in CompilerData.RXNID2Index
+            CompilerData.RXNID2Index[RXNID] = len(CompilerData.RXNIDs) # = i
+            CompilerData.RXNIDs.append(RXNID)
+            CompilerData.RXNStoichiometry[i] = RXNStoichiometry
+            CompilerData.RXNReversibility.append(RXNReversibility)
+            CompilerData.RXNEnzyme.append(RXNEnzyme)
 
-
+        TwoComponentSystems = Dataset['twoComponentSystems.tsv']
+        # for i, Value in enumerate(TwoComponentSystems):
+        #     TCSRXN = Value
 
     def TranscriptionalElongation():
 
@@ -106,19 +119,7 @@ def SetUpMatrix(Dataset, CompilerData):
                 NTFreqTable.append(NTFreq)
             return NTFreqTable
 
-        # def GetMatrixRNAPPerTranscript():
-        #     ActiveRNAPCount = 829
-        #     RNAPPerRNA = np.zeros(len(RNAs))
-        #     for position in range(ActiveRNAPCount):
-        #         position = np.random.randint(1, len(RNAs))
-        #         RNAPPerRNA[position] += 1
-        #     if np.count_nonzero(RNAPPerRNA) == 0:
-        #         print("WARNING: There is no RNAP on RNA.", file=sys.stderr)
-        #     return RNAPPerRNA
 
-        #     MatrixGetMatrixGenLocRNAP()
-        #     return rnap_active
-        #
         # def GetMatrixNtFlux():
         #     metabolites = dataset("metabolites.tsv")
         #     RearrangeLstToDict(metabolites, 1)
@@ -129,93 +130,34 @@ def SetUpMatrix(Dataset, CompilerData):
         TranscriptNTFreqs = GetMatrixRNANTFreq()
         return TranscriptNTFreqs
 
+    def TwoComponentSystems():
+        TCSMolNames = [ \
+            'PHOSPHO-ARCB-CPLX[i]' 'ADP[c]' 'PROTON[c]' 'ARCB-CPLX[i]' 'ATP[c]',
+            'PHOSPHO-ARCA[c]' 'ARCA-MONOMER[c]' 'PI[c]' 'WATER[c]',
+            'PHOSPHO-BAES-INDOLE-CPLX[i]' 'BAES-INDOLE-CPLX[i]' 'PHOSPHO-BAER[c]',
+            'BAER-MONOMER[c]' 'PHOSPHO-BAES[i]' 'BAES-MONOMER[i]',
+            'PHOSPHO-BASS-FE+3-CPLX[i]' 'BASS-FE+3-CPLX[i]' 'PHOSPHO-BASR[c]',
+            'BASR-MONOMER[c]' 'PHOSPHO-BASS[i]' 'BASS-MONOMER[i]',
+            'PHOSPHO-DCUS-SUC-CPLX[i]' 'DCUS-SUC-CPLX[i]' 'PHOSPHO-DCUR[c]',
+            'DCUR-MONOMER[c]' 'PHOSPHO-DCUS[i]' 'DCUS-MONOMER[i]',
+            'PHOSPHO-NARX-NITRATE-CPLX[i]' 'NARX-NITRATE-CPLX[i]' 'PHOSPHO-NARL[c]',
+            'NARL-MONOMER[c]' 'PHOSPHO-NARX[i]' 'NARX-CPLX[i]' 'PHOSPHO-PHOQ[i]',
+            'CPLX0-8168[i]' 'PHOSPHO-PHOP[c]' 'PHOP-MONOMER[c]' 'PHOSPHO-PHOR[i]',
+            'PHOR-CPLX[i]' 'PHOSPHO-PHOB[c]' 'PHOB-MONOMER[c]' \
+            ]  # NEED TO BE REPLACED with an actual code
+        # assert TCSMolNames in
+        return TCSMolNames
         # mtrx_active_RNAP = GetMatrixActiveRNAP()
         #
         # mtrx_Nt_flux = GetMatrixNTFlux()
 
+    SetUpDataIndexes()
     CompilerData.TranscriptNTFreqs = TranscriptionalElongation()
-
-"""
-        # RNApol_avail =
-
-        base_index_mw_A = dataset["metabolites.tsv"][0].index('ADENOSINE')
-        base_index_mw_C = dataset["metabolites.tsv"][0].index('"CYTOSINE"')
-        base_index_mw_G = dataset["metabolites.tsv"][0].index('"GUANINE"')
-        base_index_mw_T = dataset["metabolites.tsv"][0].index('"THYMINE"')
-
-        base_index_conc_A = dataset["metaboliteConcentrations.tsv"][0].index('"ADENOSINE"')
-        base_index_conc_C = dataset["metaboliteConcentrations.tsv"][0].index('"CYTOSINE"')
-        base_index_conc_G = dataset["metaboliteConcentrations.tsv"][0].index('"GUANINE"')
-        base_index_conc_T = dataset["metaboliteConcentrations.tsv"][0].index('"THYMINE"')
-
-        n_base_avail_A = dataset["metaboliteConcentrations.tsv"][base_index_mw_A, 1]\
-                         * dataset["metabolite.tsv"][base_index_conc_A, 1]
-        n_base_avail_C = dataset["metaboliteConcentrations.tsv"][base_index_mw_C, 1] \
-                         * dataset["metabolite.tsv"][base_index_conc_C, 1]
-        n_base_avail_G = dataset["metaboliteConcentrations.tsv"][base_index_mw_G, 1] \
-                         * dataset["metabolite.tsv"][base_index_conc_G, 1]
-        n_base_avail_T = dataset["metaboliteConcentrations.tsv"][base_index_mw_T, 1] \
-                         * dataset["metabolite.tsv"][base_index_conc_T, 1]
-
-        # turn dataset into dictionary or
-        metabolites = dataset['metabolites.tsv']
-
-
-
-        for metabolite in metabolites:
-            for molecule in molecules_of_interest:
-                if metabolite[0] == "ADENOSINE":
-                    mol_weight_adenosine = metabolite[1]
-            if metabolite[0] == "GUANINE":
-                mol_weight_guanine = metabolite[1]
-            if metabolite[0] == "CYTOSINE":
-                mol_weight_cytosine = metabolite[1]
-            if metabolite[0] == "URACIL":
-                mol_weight_uracil = metabolite[1]
-
-        # OR
-
-        for metabolite in metabolites:
-            if metabolite[0] == "ADENOSINE":
-                mol_weight_adenosine = metabolite[1]
-            if metabolite[0] == "GUANINE":
-                mol_weight_guanine = metabolite[1]
-            if metabolite[0] == "CYTOSINE":
-                mol_weight_cytosine = metabolite[1]
-            if metabolite[0] == "URACIL":
-                mol_weight_uracil = metabolite[1]
-
-        metaboliteConcentrations = dataset["metabololiteConcentrations.tsv"]
-
-        for concentration in metaboliteConcentrations:
-            if metaboliteConcentration[0] == "ADENOSINE":
-                mol_weight_adenosine = metabolite[1]
-            if metabolite[0] == "GUANINE":
-                mol_weight_guanine = metabolite[1]
-            if metabolite[0] == "CYTOSINE":
-                mol_weight_cytosine = metabolite[1]
-            if metabolite[0] == "URACIL":
-                mol_weight_uracil = metabolite[1]
-
-        dataset["metabolites.tsv"][1] # "ADENOSINE"	267.245
-        dataset["metabolites.tsv"][1] # "GUANINE"	151.129
-        dataset["metabolites.tsv"][1] # "CYTOSINE"    111.104
-        dataset["metabolites.tsv"][1] # "THYMINE"	126.115
-
-        dataset["metaboliteConcentrations.tsv"][1]    # "ADENOSINE"	1.30e-7
-        dataset["metaboliteConcentrations.tsv"][1]    # "GUANINE"	1.90e-4
-
-        # self.activeRnaPolys = self.uniqueMoleculesView('activeRnaPoly')
-        # self.bulkRnas = self.bulkMoleculesView(self.rnaIds)
-        # self.ntps = self.bulkMoleculesView(["ATP[c]", "CTP[c]", "GTP[c]", "UTP[c]"])
-        # self.ppi = self.bulkMoleculeView('PPI[c]')
-        # self.inactiveRnaPolys = self.bulkMoleculeView("APORNAP-CPLX[c]")
-        # self.flat_elongation = not sim._variable_elongation_transcription
-
-"""
+    CompilerData.TCSMolNames = TwoComponentSystems()
 
 
 def WriteBody(CodeFile, CompilerData):
+    ShowData = False
     writer = codegen.CodeWriter(CodeFile, 0)
     Lines = [
         "def main(GenomeFileName, verbose):",
@@ -227,20 +169,26 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteVariable("CellCycles", 1)
         writer.WriteVariable("SimulationSteps", 100)
         writer.WriteVariable("AvogadroNum", 6.022141527E23)
-        writer.WriteStatement("CellVol = 7e-16 # Average E coli cell volume: 0.7 um3, which is 7e-16 liters.")
+        writer.WriteVariable("CellVol", 7e-16)
+        writer.WriteStatement("# Average E coli cell volume: 0.7 um3, which is 7e-16 liters.")
+        writer.WriteBlankLine()
 
         np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
         writer.WriteStatement("MetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')")
         writer.WriteStatement("MetaboliteConcsTF = tf.convert_to_tensor(MetaboliteConcs)")
-        writer.WriteStatement("print(MetaboliteConcs)")
-        writer.WriteStatement("print(MetaboliteConcsTF)")
+        if ShowData:
+            writer.WriteStatement("print(MetaboliteConcs)")
+            writer.WriteStatement("print(MetaboliteConcsTF)")
+        writer.WriteBlankLine()
 
         np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
         writer.WriteStatement("TranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')")
         writer.WriteStatement("TranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)")
         writer.WriteStatement("TranscriptNTFreqsTF = tf.transpose(TranscriptNTFreqs)")
-        writer.WriteStatement("print(TranscriptNTFreqs)")
-        writer.WriteStatement("print(TranscriptNTFreqsTF)")
+        if ShowData:
+            writer.WriteStatement("print(TranscriptNTFreqs)")
+            writer.WriteStatement("print(TranscriptNTFreqsTF)")
+        writer.WriteBlankLine()
 
         NTIndexList = list()
         writer.WriteStatement("NTCounts = np.zeros(4).astype('float32')")
@@ -249,46 +197,51 @@ def WriteBody(CodeFile, CompilerData):
             NTIndexList.append(int(NTIndex))
             writer.WriteStatement("NTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
         writer.WriteStatement("NTCounts = tf.convert_to_tensor(NTCounts)")
+        writer.WriteBlankLine()
 
         writer.WriteStatement("NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
-        writer.WriteStatement("print('NTConcsIndexTF = ', NTConcsIndexTF)")
-        writer.WriteStatement("print(\"NTCounts =\", NTCounts)")
+        if ShowData:
+            writer.WriteStatement("print('NTConcsIndexTF = ', NTConcsIndexTF)")
+            writer.WriteStatement("print(\"NTCounts =\", NTCounts)")
+        writer.WriteBlankLine()
 
-        writer.WriteVariable("ElongationRate", 10)
-
-        writer.WriteVariable("ActiveRNAPCount", 829)
+        writer.WriteVariable("ElongationRate", 10) # NEED TO BE REPLACED
+        writer.WriteVariable("ActiveRNAPCount", 829) # NEED TO BE REPLACED
         writer.WriteStatement("NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
         writer.WriteStatement("One = tf.ones(1)")
         with writer.WriteStatement("for SimulationStep in range(SimulationSteps):"):
             writer.WriteStatement("print('SimulationStep: ', SimulationStep + 1)")
             writer.WriteStatement("RNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)")
+            writer.WriteBlankLine()
 
             with writer.WriteStatement("for position in range(ActiveRNAPCount):"):
                 writer.WriteStatement("position = tf.random.uniform(shape=[1,1], minval=1, maxval=NumberOfUniqueTranscripts, dtype='int32')")
-                writer.WriteStatement("RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, position, One)") # DL: This line does not work
+                writer.WriteStatement("RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, position, One)")
+                writer.WriteBlankLine()
 
             with writer.WriteStatement("if tf.math.count_nonzero(RNAPPerTranscriptTF) == 0:"):
                 writer.WriteStatement("print('WARNING: There is no RNAP on RNA.', file=sys.stderr)")
             writer.WriteStatement("RNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])")
-            writer.WriteStatement("print(RNAPPerTranscriptTF)")
+            if ShowData:
+                writer.WriteStatement("print(RNAPPerTranscriptTF)")
+            writer.WriteBlankLine()
 
             writer.WriteStatement("DeltaNTCounts = tf.linalg.matmul(TranscriptNTFreqsTF, RNAPPerTranscriptTF) * ElongationRate")
             writer.WriteStatement("DeltaNTCounts = tf.reshape(DeltaNTCounts, -1)")
-            writer.WriteStatement("print(\"DeltaNTCounts:\", DeltaNTCounts)")
-
+            if ShowData:
+                writer.WriteStatement("print(\"DeltaNTCounts:\", DeltaNTCounts)")
             writer.WriteStatement("DeltaNTCounts /= AvogadroNum")
             writer.WriteStatement("DeltaNTCounts /= CellVol")
-
             writer.WriteStatement("print('Available ACGU (mol)', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
             writer.WriteStatement("print(\"DeltaNTCounts (mol):\", DeltaNTCounts)")
 
             writer.WriteStatement("MetaboliteConcsTF = tf.tensor_scatter_nd_sub(MetaboliteConcsTF, NTConcsIndexTF, DeltaNTCounts)")
-            writer.WriteStatement("print('After ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
-
+            if ShowData:
+                writer.WriteStatement("print('After ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
             writer.WriteStatement("NTCounts -= DeltaNTCounts")
-
             writer.WriteStatement("print(\"After one simulation unit,\")")
             writer.WriteStatement("print(\"\tNTCounts =\", NTCounts)")
+        writer.WriteBlankLine()
 
         writer.WriteStatement("")
         with writer.WriteStatement("if GenomeFileName != \"\":"):
@@ -298,7 +251,6 @@ def WriteBody(CodeFile, CompilerData):
                 writer.WriteStatement("Line = Line.strip()")
                 writer.WriteStatement("print(Line, file=GenomeFile)")
             writer.WriteStatement("GenomeFile.close()")
-
 
 
 def WriteMain(code_file):
