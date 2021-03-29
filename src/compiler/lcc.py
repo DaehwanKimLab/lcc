@@ -31,14 +31,14 @@ class FCompilerData:
 
         self.RXNIDs = []
         self.RXNID2Index = {}
-        self.RXNStoichiometry = {}
+        self.RXNStoichiometry = []
         self.RXNReversibility = []
         self.RXNEnzyme = []
 
-        self.TCSRXNs = []
+        # self.TCSRXNs = []
         self.TCSMolNames = []
-
-"reaction id"	"stoichiometry"	"is reversible"	"catalyzed by"
+        self.TCSMolName2Index = {}
+        self.TCSMolConcs = None
 
 def WriteLicense(code_file):
     for line in open("LICENSE.input"):
@@ -95,13 +95,19 @@ def SetUpMatrix(Dataset, CompilerData):
             assert RXNID not in CompilerData.RXNID2Index
             CompilerData.RXNID2Index[RXNID] = len(CompilerData.RXNIDs) # = i
             CompilerData.RXNIDs.append(RXNID)
-            CompilerData.RXNStoichiometry[i] = RXNStoichiometry
+            CompilerData.RXNStoichiometry.append(RXNStoichiometry)
             CompilerData.RXNReversibility.append(RXNReversibility)
             CompilerData.RXNEnzyme.append(RXNEnzyme)
 
-        TwoComponentSystems = Dataset['twoComponentSystems.tsv']
-        # for i, Value in enumerate(TwoComponentSystems):
-        #     TCSRXN = Value
+        # TwoComponentSystems = Dataset['twoComponentSystems.tsv']
+        TwoComponentSystemsTEMP = Dataset['TwoComponentSystemsTemporary_DL.tsv'] # temporary datatable
+        CompilerData.TCSMolCounts = np.zeros(len(TwoComponentSystemsTEMP))
+        for i, Value in enumerate(TwoComponentSystemsTEMP):
+            TCSMolName, TCSMolCount = Value
+            CompilerData.TCSMolName2Index[TCSMolName] = len(CompilerData.TCSMolNames) # = i
+            CompilerData.TCSMolNames.append(TCSMolName)
+            CompilerData.TCSMolCounts[i] = TCSMolCount
+
 
     def TranscriptionalElongation():
 
@@ -120,6 +126,8 @@ def SetUpMatrix(Dataset, CompilerData):
             return NTFreqTable
 
 
+
+
         # def GetMatrixNtFlux():
         #     metabolites = dataset("metabolites.tsv")
         #     RearrangeLstToDict(metabolites, 1)
@@ -130,30 +138,19 @@ def SetUpMatrix(Dataset, CompilerData):
         TranscriptNTFreqs = GetMatrixRNANTFreq()
         return TranscriptNTFreqs
 
-    def TwoComponentSystems():
-        TCSMolNames = [ \
-            'PHOSPHO-ARCB-CPLX[i]' 'ADP[c]' 'PROTON[c]' 'ARCB-CPLX[i]' 'ATP[c]',
-            'PHOSPHO-ARCA[c]' 'ARCA-MONOMER[c]' 'PI[c]' 'WATER[c]',
-            'PHOSPHO-BAES-INDOLE-CPLX[i]' 'BAES-INDOLE-CPLX[i]' 'PHOSPHO-BAER[c]',
-            'BAER-MONOMER[c]' 'PHOSPHO-BAES[i]' 'BAES-MONOMER[i]',
-            'PHOSPHO-BASS-FE+3-CPLX[i]' 'BASS-FE+3-CPLX[i]' 'PHOSPHO-BASR[c]',
-            'BASR-MONOMER[c]' 'PHOSPHO-BASS[i]' 'BASS-MONOMER[i]',
-            'PHOSPHO-DCUS-SUC-CPLX[i]' 'DCUS-SUC-CPLX[i]' 'PHOSPHO-DCUR[c]',
-            'DCUR-MONOMER[c]' 'PHOSPHO-DCUS[i]' 'DCUS-MONOMER[i]',
-            'PHOSPHO-NARX-NITRATE-CPLX[i]' 'NARX-NITRATE-CPLX[i]' 'PHOSPHO-NARL[c]',
-            'NARL-MONOMER[c]' 'PHOSPHO-NARX[i]' 'NARX-CPLX[i]' 'PHOSPHO-PHOQ[i]',
-            'CPLX0-8168[i]' 'PHOSPHO-PHOP[c]' 'PHOP-MONOMER[c]' 'PHOSPHO-PHOR[i]',
-            'PHOR-CPLX[i]' 'PHOSPHO-PHOB[c]' 'PHOB-MONOMER[c]' \
-            ]  # NEED TO BE REPLACED with an actual code
-        # assert TCSMolNames in
-        return TCSMolNames
+    # def TwoComponentSystems():
+    #
+    #
+    #
+    #     # assert TCSMolNames in
+    #     return TCSMolNames
         # mtrx_active_RNAP = GetMatrixActiveRNAP()
         #
         # mtrx_Nt_flux = GetMatrixNTFlux()
 
     SetUpDataIndexes()
     CompilerData.TranscriptNTFreqs = TranscriptionalElongation()
-    CompilerData.TCSMolNames = TwoComponentSystems()
+    # CompilerData.TCSMolNames = TwoComponentSystems()
 
 
 def WriteBody(CodeFile, CompilerData):
