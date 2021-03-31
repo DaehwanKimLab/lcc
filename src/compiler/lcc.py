@@ -109,7 +109,7 @@ def SetUpMatrix(Dataset, CompilerData):
             CompilerData.TCSMolCounts[i] = TCSMolCount
 
 
-    def TranscriptionalElongation():
+    def TranscriptElongation():
 
         def GetMatrixRNANTFreq():
             NTFreqTable = list()
@@ -149,12 +149,15 @@ def SetUpMatrix(Dataset, CompilerData):
         # mtrx_Nt_flux = GetMatrixNTFlux()
 
     SetUpDataIndexes()
-    CompilerData.TranscriptNTFreqs = TranscriptionalElongation()
+    CompilerData.TranscriptNTFreqs = TranscriptElongation()
     # CompilerData.TCSMolNames = TwoComponentSystems()
 
 
 def WriteBody(CodeFile, CompilerData):
+
+    # ON/OFF switch to print data being processed
     ShowData = False
+
     writer = codegen.CodeWriter(CodeFile, 0)
     Lines = [
         "def main(GenomeFileName, verbose):",
@@ -163,14 +166,25 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteStatement(Line)
 
     with writer:
+        # Define simulation parameters and global constants
+        writer.WriteStatement("# Define simulation parameters")
         writer.WriteVariable("CellCycles", 1)
         writer.WriteVariable("SimulationSteps", 100)
-        writer.WriteVariable("AvogadroNum", 6.022141527E23)
-        writer.WriteVariable("CellVol", 7e-16)
-        writer.WriteStatement("# Average E coli cell volume: 0.7 um3, which is 7e-16 liters.")
         writer.WriteBlankLine()
 
+        # Define key constants
+        writer.WriteStatement("# Define key constants")
+        writer.WriteVariable("AvogadroNum", 6.022141527E23)
+        # Average E coli cell volume: 0.7 um3, which is 7e-16 liters
+        writer.WriteVariable("CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
+
+        # Define accessory variables - TF version only
+        writer.WriteStatement("OneTF = tf.ones(1)")
+        writer.WriteBlankLine()
+
+        # Set up static tables for transcript elongation
         np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
+        writer.WriteStatement("# Load metabolite concentration table")
         writer.WriteStatement("MetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')")
         writer.WriteStatement("MetaboliteConcsTF = tf.convert_to_tensor(MetaboliteConcs)")
         if ShowData:
@@ -179,43 +193,56 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteBlankLine()
 
         np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
+        writer.WriteStatement("# Load NT frequency table for transcripts")
         writer.WriteStatement("TranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')")
         writer.WriteStatement("TranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)")
         writer.WriteStatement("TranscriptNTFreqsTF = tf.transpose(TranscriptNTFreqs)")
         if ShowData:
             writer.WriteStatement("print(TranscriptNTFreqs)")
             writer.WriteStatement("print(TranscriptNTFreqsTF)")
+        writer.WriteStatement("NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
         writer.WriteBlankLine()
 
         NTIndexList = list()
+        writer.WriteStatement("# Fetch NT counts")
         writer.WriteStatement("NTCounts = np.zeros(4).astype('float32')")
         for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
             NTIndex = CompilerData.MetaboliteName2Index[NTName]
             NTIndexList.append(int(NTIndex))
             writer.WriteStatement("NTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
         writer.WriteStatement("NTCounts = tf.convert_to_tensor(NTCounts)")
-        writer.WriteBlankLine()
-
         writer.WriteStatement("NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
         if ShowData:
             writer.WriteStatement("print('NTConcsIndexTF = ', NTConcsIndexTF)")
             writer.WriteStatement("print(\"NTCounts =\", NTCounts)")
         writer.WriteBlankLine()
 
-        writer.WriteVariable("ElongationRate", 10) # NEED TO BE REPLACED
-        writer.WriteVariable("ActiveRNAPCount", 829) # NEED TO BE REPLACED
-        writer.WriteStatement("NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
-        writer.WriteStatement("One = tf.ones(1)")
+        writer.WriteStatement("# Determine elongation rate")
+        writer.WriteVariable("ElongationRate", 10) # TO BE REPLACED AND MOVED INTO SIMULATION
+        writer.WriteBlankLine()
+
+        writer.WriteStatement("# Determine active RNAP count")
+        writer.WriteVariable("ActiveRNAPCount", 829) # TO BE REPLACED AND MOVED INTO SIMULATION
+        writer.WriteBlankLine()
+        writer.WriteBlankLine()
+
+
+        # Run simulation
+        writer.WriteStatement("# Run simulation")
         with writer.WriteStatement("for SimulationStep in range(SimulationSteps):"):
             writer.WriteStatement("print('SimulationStep: ', SimulationStep + 1)")
+
+            # Transcript elongation code
+            writer.WriteStatement("# Transcript elongation code")
             writer.WriteStatement("RNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)")
             writer.WriteBlankLine()
 
+            # Allocate RNAP to transcript
+            writer.WriteStatement("# Allocate RNAP to transcript")
             with writer.WriteStatement("for position in range(ActiveRNAPCount):"):
                 writer.WriteStatement("position = tf.random.uniform(shape=[1,1], minval=1, maxval=NumberOfUniqueTranscripts, dtype='int32')")
-                writer.WriteStatement("RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, position, One)")
+                writer.WriteStatement("RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, position, OneTF)")
                 writer.WriteBlankLine()
-
             with writer.WriteStatement("if tf.math.count_nonzero(RNAPPerTranscriptTF) == 0:"):
                 writer.WriteStatement("print('WARNING: There is no RNAP on RNA.', file=sys.stderr)")
             writer.WriteStatement("RNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])")
@@ -223,6 +250,8 @@ def WriteBody(CodeFile, CompilerData):
                 writer.WriteStatement("print(RNAPPerTranscriptTF)")
             writer.WriteBlankLine()
 
+            # Determine NT consumption
+            writer.WriteStatement("# Determine NT consumption")
             writer.WriteStatement("DeltaNTCounts = tf.linalg.matmul(TranscriptNTFreqsTF, RNAPPerTranscriptTF) * ElongationRate")
             writer.WriteStatement("DeltaNTCounts = tf.reshape(DeltaNTCounts, -1)")
             if ShowData:
@@ -231,16 +260,24 @@ def WriteBody(CodeFile, CompilerData):
             writer.WriteStatement("DeltaNTCounts /= CellVol")
             writer.WriteStatement("print('Available ACGU (mol)', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
             writer.WriteStatement("print(\"DeltaNTCounts (mol):\", DeltaNTCounts)")
+            writer.WriteBlankLine()
 
+            # Update NT counts
+            writer.WriteStatement("# Update NT counts")
             writer.WriteStatement("MetaboliteConcsTF = tf.tensor_scatter_nd_sub(MetaboliteConcsTF, NTConcsIndexTF, DeltaNTCounts)")
             if ShowData:
                 writer.WriteStatement("print('After ACGU', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
             writer.WriteStatement("NTCounts -= DeltaNTCounts")
             writer.WriteStatement("print(\"After one simulation unit,\")")
             writer.WriteStatement("print(\"\tNTCounts =\", NTCounts)")
-        writer.WriteBlankLine()
+            writer.WriteBlankLine()
 
-        writer.WriteStatement("")
+            # Update Transcript counts - TO BE IMPLEMENTED
+
+        writer.WriteBlankLine()
+        # End of simulation
+
+        # Print input genome
         with writer.WriteStatement("if GenomeFileName != \"\":"):
             writer.WriteStatement("GenomeFile = open(GenomeFileName, 'w')")
             writer.WriteStatement("InputGenomeFile = open('cell.fa')")
