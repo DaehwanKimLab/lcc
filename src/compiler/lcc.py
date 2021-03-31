@@ -36,9 +36,10 @@ class FCompilerData:
         self.RXNEnzyme = []
 
         # self.TCSRXNs = []
-        self.TCSMolNames = []
-        self.TCSMolName2Index = {}
-        self.TCSMolConcs = None
+        self.MolNames = []
+        self.MolName2Index = {}
+        self.MolCounts = None
+        self.MolConcs = None
 
 def WriteLicense(code_file):
     for line in open("LICENSE.input"):
@@ -100,14 +101,16 @@ def SetUpMatrix(Dataset, CompilerData):
             CompilerData.RXNEnzyme.append(RXNEnzyme)
 
         # TwoComponentSystems = Dataset['twoComponentSystems.tsv']
-        TwoComponentSystemsTEMP = Dataset['TwoComponentSystemsTemporary_DL.tsv'] # temporary datatable
-        CompilerData.TCSMolCounts = np.zeros(len(TwoComponentSystemsTEMP))
-        for i, Value in enumerate(TwoComponentSystemsTEMP):
-            TCSMolName, TCSMolCount = Value
-            CompilerData.TCSMolName2Index[TCSMolName] = len(CompilerData.TCSMolNames) # = i
-            CompilerData.TCSMolNames.append(TCSMolName)
-            CompilerData.TCSMolCounts[i] = TCSMolCount
+        MolCounts = Dataset['TwoComponentSystemsTemporary_DL.tsv'] # temporary data table
+        CompilerData.MolCounts = np.zeros(len(MolCounts))
+        for i, Value in enumerate(MolCounts):
+            MolName, MolCount = Value
+            CompilerData.MolName2Index[MolName] = len(CompilerData.MolNames) # = i
+            CompilerData.MolNames.append(MolName)
+            CompilerData.MolCounts[i] = MolCount
 
+        # Temporary command to save a list of participating molecules in TCS
+        np.save('TCSMolNames.npy', CompilerData.MolNames)
 
     def TranscriptElongation():
 
@@ -166,10 +169,11 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteStatement(Line)
 
     with writer:
-        # Define simulation parameters and global constants
+        # Define simulation parameters
         writer.WriteStatement("# Define simulation parameters")
         writer.WriteVariable("CellCycles", 1)
         writer.WriteVariable("SimulationSteps", 100)
+        writer.WriteVariable("TCSODETimeStep", 1)
         writer.WriteBlankLine()
 
         # Define key constants
@@ -182,7 +186,7 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteStatement("OneTF = tf.ones(1)")
         writer.WriteBlankLine()
 
-        # Set up static tables for transcript elongation
+        # Save and load all Cell State matrices
         np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
         writer.WriteStatement("# Load metabolite concentration table")
         writer.WriteStatement("MetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')")
@@ -192,8 +196,11 @@ def WriteBody(CodeFile, CompilerData):
             writer.WriteStatement("print(MetaboliteConcsTF)")
         writer.WriteBlankLine()
 
+        # Matrices for Transcript Elongation
         np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
-        writer.WriteStatement("# Load NT frequency table for transcripts")
+        writer.WriteStatement("# Matrices for Transcript Elongation")
+        # NT frequency table for transcripts
+        writer.WriteStatement("# Fetch NT frequency table for transcripts")
         writer.WriteStatement("TranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')")
         writer.WriteStatement("TranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)")
         writer.WriteStatement("TranscriptNTFreqsTF = tf.transpose(TranscriptNTFreqs)")
@@ -203,10 +210,12 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteStatement("NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
         writer.WriteBlankLine()
 
+        # NT counts per transcript
         NTIndexList = list()
         writer.WriteStatement("# Fetch NT counts")
         writer.WriteStatement("NTCounts = np.zeros(4).astype('float32')")
-        for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
+        ACGU = ["ATP", "CTP", "GTP", "UTP"]
+        for i, NTName in enumerate(ACGU):
             NTIndex = CompilerData.MetaboliteName2Index[NTName]
             NTIndexList.append(int(NTIndex))
             writer.WriteStatement("NTCounts[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
@@ -226,6 +235,39 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteBlankLine()
         writer.WriteBlankLine()
 
+        # Set up matrices for Two Component Systems
+        ShowData = True
+        writer.WriteStatement("# Two Component Systems")
+        writer.WriteStatement("TCSModel = tf.keras.models.load_model('../../data/two_component.h5')")
+        writer.WriteStatement("TCSODETimeStepTF = tf.constant([TCSODETimeStep])")
+
+        np.save("MolCounts", CompilerData.TCSMolCounts)
+        writer.WriteStatement("# Load molecule count table") # TO BE REPLACED
+        writer.WriteStatement("MolCounts = np.load(\"MolCounts.npy\").astype('float32')") # TO BE REPLACED
+        writer.WriteStatement("MolCountsTF = tf.convert_to_tensor(TCSMolCounts)") # TO BE REPLACED
+        if ShowData:
+            writer.WriteStatement("print(MolCounts)")
+            writer.WriteStatement("print(MolCountsTF)")
+        writer.WriteBlankLine()
+        ShowData = not ShowData
+
+        # Matrices for Two Component Systems
+        TCSMolIndexList = list()
+        writer.WriteStatement("# Fetch molecule counts for Two Component Systems")
+        writer.WriteStatement("NTCounts = np.zeros(4).astype('float32')")
+
+        for i, TCSMolName in enumerate(CompilerData.TCSMolNames):
+            TCSMolIndex = CompilerData.MetaboliteName2Index[TCSMolName]
+            TCSMolIndexList.append(int(TCSMolIndex))
+            # writer.WriteStatement("TCSMolCounts[%d] = AllMoleculeCounts[%d] # %s" % (i, TCSMolIndex, TCSMolName))
+        writer.WriteStatement("TCSMolCountsTF = tf.convert_to_tensor(TCSMolCounts)") # TO BE REPLACED
+
+        writer.WriteStatement("NTCounts = tf.convert_to_tensor(NTCounts)")
+        writer.WriteStatement("NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
+        if ShowData:
+            writer.WriteStatement("print('NTConcsIndexTF = ', NTConcsIndexTF)")
+            writer.WriteStatement("print(\"NTCounts =\", NTCounts)")
+        writer.WriteBlankLine()
 
         # Run simulation
         writer.WriteStatement("# Run simulation")
@@ -256,8 +298,7 @@ def WriteBody(CodeFile, CompilerData):
             writer.WriteStatement("DeltaNTCounts = tf.reshape(DeltaNTCounts, -1)")
             if ShowData:
                 writer.WriteStatement("print(\"DeltaNTCounts:\", DeltaNTCounts)")
-            writer.WriteStatement("DeltaNTCounts /= AvogadroNum")
-            writer.WriteStatement("DeltaNTCounts /= CellVol")
+            writer.WriteStatement("DeltaNTCounts = DeltaNTCounts / (AvogadroNum * CellVol)")
             writer.WriteStatement("print('Available ACGU (mol)', tf.gather(MetaboliteConcsTF, NTConcsIndexTF))")
             writer.WriteStatement("print(\"DeltaNTCounts (mol):\", DeltaNTCounts)")
             writer.WriteBlankLine()
@@ -273,6 +314,30 @@ def WriteBody(CodeFile, CompilerData):
             writer.WriteBlankLine()
 
             # Update Transcript counts - TO BE IMPLEMENTED
+
+            # Two component systems code
+            writer.WriteStatement("# Two component systems code")
+            writer.WriteStatement("TCSMolConcsTF = TCSMolCountsTF / (cellVolume * nAvogadro)") # TCSMolConcsTF == y_init
+            writer.WriteStatement("TCSModelInput = tf.concat((TCSMolConcsTF, TCSODETimeStepTF), axis=0)")
+            writer.WriteStatement("TCSMolConcsNewTF = self.model.predict(np.reshape(model_input, (1, -1)))")
+            with writer.WriteStatement("for i, Value in enumerate(TCSMolConcsNewTF):"):
+                with writer.WriteStatement("if Value < 0:"):
+                    writer.WriteStatement("TCSMolConcsNewTF[i] = 0")
+            writer.WriteStatement("tf.assert_less(TCSMolConcsNewTF, 0, message='TCS Molecule Conc contains a negative value')")
+            writer.WriteStatement("TCSMolCountsNewTF = TCSMolConcsNewTF * (cellVolume * nAvogadro)")
+
+            # Update TCS molecule counts
+            writer.WriteStatement("# Update two component systems molecule counts")
+            writer.WriteStatement("TCSMolCountsTF = tf.tensor_scatter_nd_sub(TCSMolCountsTF, TCSMolIndexTF, DeltaNTCounts)")
+            # above line needs to be replaced with the large dataset
+            if ShowData:
+                writer.WriteStatement("print('After Simulation', tf.gather(TCSMolCountsTF, TCSMolIndexTF))")
+            writer.WriteStatement("NTCounts -= DeltaNTCounts")
+            writer.WriteStatement("print(\"After one simulation unit,\")")
+            writer.WriteStatement("print(\"\tNTCounts =\", NTCounts)")
+            writer.WriteBlankLine()
+
+
 
         writer.WriteBlankLine()
         # End of simulation
