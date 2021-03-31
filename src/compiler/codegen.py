@@ -10,6 +10,17 @@
 # LDP is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+from enum import Enum
+
+
+class Target(Enum):
+    """
+    Target Codes
+    """
+    All = 0
+    TensorFlow = 1
+    Numpy = 2
+
 
 class CodeWriter():
     def __init__(self, CodeFile, IndentLevel=0):
@@ -43,7 +54,12 @@ class CodeWriter():
         self.IndentLevel = IndentLevel
         self.BuildIndentationPrefix()
 
-    def WriteStatement(self, Line):
+    def WriteStatement(self, Line, **kwargs):
+        """
+            keyword args
+                TargetCode=Target.All, Target.Numpy, Target.TensorFlow
+        """
+
         print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
@@ -83,11 +99,15 @@ class CodeWriter():
         self.WriteStatement(Line)
 
 
-
-"""
-Tensorflow code generator
-"""
 class TFCodeWriter(CodeWriter):
+    """
+    Tensorflow code generator
+    """
+
+    def __init__(self, CodeFile, IndentLevel=0):
+        self.Target = Target.TensorFlow
+        super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
+
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
@@ -105,16 +125,37 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
         self.WriteStatement(Line)
 
-"""
-Numpy type as string
-"""
+    def WriteStatement(self, Line, **kwargs):
+
+        if 'TargetCode' in kwargs:
+            TargetCode = kwargs['TargetCode']
+        else:
+            TargetCode = Target.TensorFlow
+
+        if TargetCode not in [Target.All, Target.TensorFlow]:
+            return
+
+        super().WriteStatement(Line)
+        # print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
+        return self
+
+
 class NumpyType:
+    """
+    Numpy type as string
+    """
     TypeToString = dict({'float32': '"float32"', 'int32': '"int32"'})
 
-"""
-Numpy code generator
-"""
+
 class NumpyCodeWriter(CodeWriter):
+    """
+    Numpy code generator
+    """
+
+    def __init__(self, CodeFile, IndentLevel=0):
+        self.Target = Target.Numpy
+        super(NumpyCodeWriter, self).__init__(CodeFile, IndentLevel)
+
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = np.ones({Shape}).astype({Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=NumpyType.TypeToString[Type])
@@ -131,3 +172,15 @@ class NumpyCodeWriter(CodeWriter):
     def Reshape(self, DestVar, SrcVar, Shape):
         Line = '%s = np.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
         self.WriteStatement(Line)
+
+    def WriteStatement(self, Line, **kwargs):
+        if 'TargetCode' in kwargs:
+            TargetCode = kwargs['TargetCode']
+        else:
+            TargetCode = Target.Numpy
+
+        if TargetCode not in [Target.All, Target.Numpy]:
+            return
+
+        super().WriteStatement(Line)
+        return self

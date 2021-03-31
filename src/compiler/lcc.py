@@ -19,6 +19,7 @@ import csv
 import datetime
 from argparse import ArgumentParser, FileType
 import codegen
+from codegen import Target
 
 
 class FCompilerData:
@@ -179,6 +180,9 @@ def WriteBody(writer, CompilerData):
         writer.WriteVariable("CellCycles", 1)
         writer.WriteVariable("SimulationSteps", 100)
         writer.WriteBlankLine()
+
+        writer.WriteStatement("# This is a numpy code", TargetCode=Target.Numpy)
+        writer.WriteStatement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
 
         # Define key constants
         writer.WriteStatement("# Define key constants")
