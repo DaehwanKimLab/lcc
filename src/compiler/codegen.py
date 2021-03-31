@@ -11,8 +11,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-class CodeWriter:
-    def __init__(self, CodeFile, IndentLevel=1):
+class CodeWriter():
+    def __init__(self, CodeFile, IndentLevel=0):
         self.IndentLevel = IndentLevel
         self.fp = CodeFile
         self.BuildIndentationPrefix()
@@ -31,9 +31,8 @@ class CodeWriter:
         self.BuildIndentationPrefix()
 
     def DecreaseIndent(self):
-        self.IndentLevel -= 1
-        if self.IndentLevel < 0:
-            self.IndentLevel = 0
+        if self.IndentLevel > 0:
+            self.IndentLevel -= 1
 
         self.BuildIndentationPrefix()
 
@@ -53,5 +52,69 @@ class CodeWriter:
         self.WriteStatement(Line)
 
     def WriteBlankLine(self):
-        print("", file=self.fp)
-        return self
+        self.WriteStatement("")
+
+
+    """
+    Array creation functions
+    """
+
+    def InitArrayWithOne(self, VariableName, Shape):
+        # var = tf.ones([4,3])
+        Line = "# Not implemented"
+        self.WriteStatement(Line)
+
+    def InitArrayWithZero(self, VariableName, Shape):
+        # var = tf.zeros([4,3])
+        Line = "# Not implemented"
+        self.WriteStatement(Line)
+
+    def InitArrayWithValue(self, VariableName, Value):
+        # var = tf.constant([3, 4, 5, 6, 7])
+        Line = "# Not implemented"
+        self.WriteStatement(Line)
+
+    """
+    Array manipulation functions
+    """
+    def Reshape(self, DestVar, SrcVar, Shape):
+        # var = tf.reshape(var, [4, -1])
+        Line = "# Not implemented"
+        self.WriteStatement(Line)
+
+
+
+"""
+Tensorflow code generator
+"""
+class TFCodeWriter(CodeWriter):
+    def InitArrayWithOne(self, VariableName, Shape):
+        Line = "{VariableName} = tf.ones({Shape})"\
+            .format(VariableName=VariableName, Shape=str(Shape))
+        self.WriteStatement(Line)
+
+    def InitArrayWithValue(self, VariableName, Value):
+        Line = '%s = tf.constant(%s)' % (VariableName, str(Value))
+        self.WriteStatement(Line)
+
+    def Reshape(self, DestVar, SrcVar, Shape):
+        Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
+        self.WriteStatement(Line)
+
+
+"""
+Numpy code generator
+"""
+class NumpyCodeWriter(CodeWriter):
+    def InitArrayWithOne(self, VariableName, Shape):
+        Line = "{VariableName} = np.ones({Shape})"\
+            .format(VariableName=VariableName, Shape=str(Shape))
+        self.WriteStatement(Line)
+
+    def InitArrayWithValue(self, VariableName, Value):
+        Line = "%s = np.array(%s)" % (VariableName, str(Value))
+        self.WriteStatement(Line)
+
+    def Reshape(self, DestVar, SrcVar, Shape):
+        Line = '%s = np.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
+        self.WriteStatement(Line)
