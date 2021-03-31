@@ -40,17 +40,26 @@ class FCompilerData:
         self.TCSMolName2Index = {}
         self.TCSMolConcs = None
 
-def WriteLicense(code_file):
+
+def WriteLicense(Writer):
+    tmpLevel = Writer.GetIndentLevel()
+    Writer.SetIndentLevel(0)
     for line in open("LICENSE.input"):
         line = line.strip()
-        print(line, file=code_file)
+        Writer.WriteStatement(line)
+    Writer.SetIndentLevel(tmpLevel)
 
 
-def WriteImport(code_file):
-    print("import os, sys", file=code_file)
-    print("import numpy as np", file=code_file)
-    print("import tensorflow as tf", file=code_file)
-    print("from argparse import ArgumentParser, FileType", file=code_file)
+def WriteImport(Writer):
+    tmpLevel = Writer.GetIndentLevel()
+    Writer.SetIndentLevel(0)
+
+    Writer.WriteStatement("import os, sys")
+    Writer.WriteStatement("import numpy as np")
+    Writer.WriteStatement("import tensorflow as tf")
+    Writer.WriteStatement("from argparse import ArgumentParser, FileType")
+
+    Writer.SetIndentLevel(tmpLevel)
 
 
 def LoadData(data_dir):
@@ -153,12 +162,11 @@ def SetUpMatrix(Dataset, CompilerData):
     # CompilerData.TCSMolNames = TwoComponentSystems()
 
 
-def WriteBody(CodeFile, CompilerData):
+def WriteBody(writer, CompilerData):
 
     # ON/OFF switch to print data being processed
     ShowData = False
 
-    writer = codegen.CodeWriter(CodeFile, 0)
     Lines = [
         "def main(GenomeFileName, verbose):",
     ]
@@ -179,7 +187,7 @@ def WriteBody(CodeFile, CompilerData):
         writer.WriteVariable("CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
 
         # Define accessory variables - TF version only
-        writer.WriteStatement("OneTF = tf.ones(1)")
+        writer.InitArrayWithOne('OneTF', [1])
         writer.WriteBlankLine()
 
         # Set up static tables for transcript elongation
@@ -205,6 +213,7 @@ def WriteBody(CodeFile, CompilerData):
 
         NTIndexList = list()
         writer.WriteStatement("# Fetch NT counts")
+        # writer.InitArrayWithZero('NTCounts', [4], 'float32')
         writer.WriteStatement("NTCounts = np.zeros(4).astype('float32')")
         for i, NTName in enumerate(["ATP", "CTP", "GTP", "UTP"]):
             NTIndex = CompilerData.MetaboliteName2Index[NTName]
@@ -234,7 +243,9 @@ def WriteBody(CodeFile, CompilerData):
 
             # Transcript elongation code
             writer.WriteStatement("# Transcript elongation code")
-            writer.WriteStatement("RNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)")
+            # writer.WriteStatement("RNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)")
+            writer.InitArrayWithZero("RNAPPerTranscriptTF", "[NumberOfUniqueTranscripts]")
+
             writer.WriteBlankLine()
 
             # Allocate RNAP to transcript
@@ -245,7 +256,8 @@ def WriteBody(CodeFile, CompilerData):
                 writer.WriteBlankLine()
             with writer.WriteStatement("if tf.math.count_nonzero(RNAPPerTranscriptTF) == 0:"):
                 writer.WriteStatement("print('WARNING: There is no RNAP on RNA.', file=sys.stderr)")
-            writer.WriteStatement("RNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])")
+            # writer.WriteStatement("RNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])")
+            writer.Reshape("RNAPPerTranscriptTF", "RNAPPerTranscriptTF", [-1, 1])
             if ShowData:
                 writer.WriteStatement("print(RNAPPerTranscriptTF)")
             writer.WriteBlankLine()
@@ -253,7 +265,8 @@ def WriteBody(CodeFile, CompilerData):
             # Determine NT consumption
             writer.WriteStatement("# Determine NT consumption")
             writer.WriteStatement("DeltaNTCounts = tf.linalg.matmul(TranscriptNTFreqsTF, RNAPPerTranscriptTF) * ElongationRate")
-            writer.WriteStatement("DeltaNTCounts = tf.reshape(DeltaNTCounts, -1)")
+            # writer.WriteStatement("DeltaNTCounts = tf.reshape(DeltaNTCounts, -1)")
+            writer.Reshape("DeltaNTCounts", "DeltaNTCounts", -1)
             if ShowData:
                 writer.WriteStatement("print(\"DeltaNTCounts:\", DeltaNTCounts)")
             writer.WriteStatement("DeltaNTCounts /= AvogadroNum")
@@ -287,19 +300,20 @@ def WriteBody(CodeFile, CompilerData):
             writer.WriteStatement("GenomeFile.close()")
 
 
-def WriteMain(code_file):
-    lines = [
-        "if __name__ == '__main__':",
-        "\tparser = ArgumentParser(description='')",
-        "\tparser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='also print some statistics to stderr')",
-        "\tparser.add_argument('-g', '--genome', dest='GenomeFileName', type=str, default='', help='')",
-        "",
-        "\targs = parser.parse_args()",
-        "\tmain(args.GenomeFileName, args.verbose)"
-        "",
-    ]
-    for line in lines:
-        print(line, file=code_file)
+def WriteMain(Writer):
+    tmpLevel = Writer.GetIndentLevel()
+    Writer.SetIndentLevel(0)
+
+    Writer.WriteBlankLine()
+    with Writer.WriteStatement("if __name__ == '__main__':"):
+        Writer.WriteStatement("parser = ArgumentParser(description='')")
+        Writer.WriteStatement("parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='also print some statistics to stderr')")
+        Writer.WriteStatement("parser.add_argument('-g', '--genome', dest='GenomeFileName', type=str, default='', help='')")
+        Writer.WriteBlankLine()
+        Writer.WriteStatement("args = parser.parse_args()")
+        Writer.WriteStatement("main(args.GenomeFileName, args.verbose)")
+
+    Writer.SetIndentLevel(tmpLevel)
 
 
 def NewLine(code_file):
@@ -334,7 +348,11 @@ def CompileToGenome(GenomeFileName,
     print(">E. coli", file=GenomeFile)
 
     Seq = ""
-    for Line in open(GeneFileName):
+    fp = open(GeneFileName)
+
+    # skip first line
+    fp.readline()
+    for Line in fp:
         Line = Line.strip()
         Fields = Line.split('\t')
         if len(Fields) == 3:
@@ -343,6 +361,7 @@ def CompileToGenome(GenomeFileName,
         TmpSeq = Fields[2][1:-1]
         Seq += TmpSeq
 
+    fp.close()
     print(Seq, file=GenomeFile)
     GenomeFile.close()
 
@@ -363,11 +382,13 @@ def Compile(CodeFileName,
     SetUpMatrix(Dataset, CompilerData)
     OutputFile = open(OutputFileName, 'w')
 
+    Writer = codegen.TFCodeWriter(OutputFile, 0)
+    # Writer = codegen.NumpyCodeWriter(OutputFile, 0)
 
-    WriteLicense(OutputFile)
-    WriteImport(OutputFile); NewLine(OutputFile)
-    WriteBody(OutputFile, CompilerData); NewLine(OutputFile)
-    WriteMain(OutputFile)
+    WriteLicense(Writer)
+    WriteImport(Writer); Writer.WriteBlankLine()
+    WriteBody(Writer, CompilerData); Writer.WriteBlankLine()
+    WriteMain(Writer)
 
     OutputFile.close()
 

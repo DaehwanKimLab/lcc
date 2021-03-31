@@ -59,17 +59,17 @@ class CodeWriter():
     Array creation functions
     """
 
-    def InitArrayWithOne(self, VariableName, Shape):
+    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         # var = tf.ones([4,3])
         Line = "# Not implemented"
         self.WriteStatement(Line)
 
-    def InitArrayWithZero(self, VariableName, Shape):
+    def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
         # var = tf.zeros([4,3])
         Line = "# Not implemented"
         self.WriteStatement(Line)
 
-    def InitArrayWithValue(self, VariableName, Value):
+    def InitArrayWithValue(self, VariableName, Value, Type='float32'):
         # var = tf.constant([3, 4, 5, 6, 7])
         Line = "# Not implemented"
         self.WriteStatement(Line)
@@ -88,31 +88,44 @@ class CodeWriter():
 Tensorflow code generator
 """
 class TFCodeWriter(CodeWriter):
-    def InitArrayWithOne(self, VariableName, Shape):
-        Line = "{VariableName} = tf.ones({Shape})"\
-            .format(VariableName=VariableName, Shape=str(Shape))
+    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
+        Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
+            .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
         self.WriteStatement(Line)
 
-    def InitArrayWithValue(self, VariableName, Value):
-        Line = '%s = tf.constant(%s)' % (VariableName, str(Value))
+    def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
+        Line = '%s = tf.zeros(%s, dtype=tf.%s)' % (VariableName, str(Shape), Type)
+        self.WriteStatement(Line)
+
+    def InitArrayWithValue(self, VariableName, Value, Type='float32'):
+        Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
         self.WriteStatement(Line)
 
     def Reshape(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
         self.WriteStatement(Line)
 
+"""
+Numpy type as string
+"""
+class NumpyType:
+    TypeToString = dict({'float32': '"float32"', 'int32': '"int32"'})
 
 """
 Numpy code generator
 """
 class NumpyCodeWriter(CodeWriter):
-    def InitArrayWithOne(self, VariableName, Shape):
-        Line = "{VariableName} = np.ones({Shape})"\
-            .format(VariableName=VariableName, Shape=str(Shape))
+    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
+        Line = "{VariableName} = np.ones({Shape}).astype({Type})"\
+            .format(VariableName=VariableName, Shape=str(Shape), Type=NumpyType.TypeToString[Type])
         self.WriteStatement(Line)
 
-    def InitArrayWithValue(self, VariableName, Value):
-        Line = "%s = np.array(%s)" % (VariableName, str(Value))
+    def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
+        Line = "%s = np.zeros(%s).astype(%s)" % (VariableName, str(Shape), NumpyType.TypeToString[Type])
+        self.WriteStatement(Line)
+
+    def InitArrayWithValue(self, VariableName, Value, Type='float32'):
+        Line = "%s = np.array(%s).astype(%s)" % (VariableName, str(Value), Type)
         self.WriteStatement(Line)
 
     def Reshape(self, DestVar, SrcVar, Shape):
