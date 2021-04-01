@@ -16,6 +16,8 @@ class CodeWriter:
         self.IndentLevel = IndentLevel
         self.fp = CodeFile
         self.BuildIndentationPrefix()
+        self.DebugPrintSwitch = False
+        self.DebugAssertSwitch = False
 
     def __enter__(self):
         self.IncreaseIndent()
@@ -52,6 +54,61 @@ class CodeWriter:
         Line = '%s = %s' % (VariableName, Value)
         self.WriteStatement(Line)
 
+    # def WriteComment(self, Comment):
+    #     Line = '# %s' % Comment
+    #     self.WriteStatement(Line)
+    #     return self
+
     def WriteBlankLine(self):
-        print("", file=self.fp)
+        self.WriteStatement("")
         return self
+
+    def WritePrintStr(self, Str):
+        Line = 'print("%s")' % Str
+        self.WriteStatement(Line)
+        return self
+
+    def WritePrintVar(self, VariableName):
+        Line = 'print("%s = ", %s)' % (VariableName, VariableName)
+        self.WriteStatement(Line)
+        return self
+
+    def WritePrintStrVar(self, Str, VariableName):
+        Line = 'print("%s: ", %s)' % (Str, VariableName)
+        self.WriteStatement(Line)
+        return self
+
+    def WriteDebugStatement(self, Line):
+        if self.DebugPrintSwitch or self.DebugAssertSwitch:
+            self.WriteStatement(Line)
+            return self
+
+    def WriteDebugVariable(self, VariableName, Value):
+        if self.DebugPrintSwitch or self.DebugAssertSwitch:
+            Line = '%s = %s' % (VariableName, Value)
+            self.WriteStatement(Line)
+            return self
+
+    def WriteDebugPrintStr(self, Str):
+        if self.DebugPrintSwitch:
+            Line = 'print("%s")' % Str
+            self.WriteStatement(Line)
+            return self
+
+    def WriteDebugPrintVar(self, VariableName):
+        if self.DebugPrintSwitch:
+            Line = 'print("%s = ", %s)' % (VariableName, VariableName)
+            self.WriteStatement(Line)
+            return self
+
+    def WriteDebugPrintStrVar(self, Str, VariableName):
+        if self.DebugPrintSwitch:
+            Line = 'print("%s: ", %s)' % (Str, VariableName)
+            self.WriteStatement(Line)
+            return self
+
+    def WriteDebugAssert(self, Condition, ErrMsg):
+         if self.DebugAssertSwitch:
+             Line = "assert %s, '%s'" % (Condition, ErrMsg)
+             self.WriteStatement(Line)
+             return self
