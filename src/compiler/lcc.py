@@ -20,7 +20,13 @@ import datetime
 from argparse import ArgumentParser, FileType
 import codegen
 from codegen import Target
+import inspect
 
+LCC_VERSION = "0.1"
+
+def lcc_dummy():
+    pass
+LCC_PATH = os.path.dirname(os.path.realpath(inspect.getsourcefile(lcc_dummy)))
 
 class FCompilerData:
     def __init__(self):
@@ -42,11 +48,20 @@ class FCompilerData:
         self.MolCounts = None
         self.MolConcs = None
 
+        # Data Path
+        self.DataPath = LCC_PATH
+
+
+    def SetDataPath(self, InDataPath):
+        self.DataPath = InDataPath
+
+    def GetDataPath(self):
+        return self.DataPath
 
 def WriteLicense(Writer):
     tmpLevel = Writer.GetIndentLevel()
     Writer.SetIndentLevel(0)
-    for line in open("LICENSE.input"):
+    for line in open(LCC_PATH + "/LICENSE.input"):
         line = line.strip()
         Writer.WriteStatement(line)
     Writer.SetIndentLevel(tmpLevel)
@@ -171,6 +186,8 @@ def WriteBody(writer, CompilerData):
     writer.DebugPrintSwitch = False # ON/OFF switch to print data being processed
     writer.DebugAssertSwitch = True
 
+
+    writer.WriteVariable('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Lines = [
         "def main(GenomeFileName, verbose):",
     ]
@@ -248,7 +265,7 @@ def WriteBody(writer, CompilerData):
 
         # Set up matrices for Two Component Systems
         writer.WriteStatement("# Two Component Systems model")
-        writer.WriteStatement("TCSModel = tf.keras.models.load_model('../../data/two_component.h5')")
+        writer.WriteStatement("TCSModel = tf.keras.models.load_model(LCCDataPath + '/two_component.h5')")
         writer.WriteStatement("TCSODETimeStepTF = tf.reshape(tf.constant([TCSODETimeStep], dtype='float32'), (1, 1))")
         writer.WriteDebugPrintVar("TCSODDETimeStepTF")
         writer.WriteBlankLine()
@@ -391,24 +408,26 @@ def NewLine(code_file):
     print("\t", file=code_file)
 
 
-def Parse(CodeFileName):
+def Parse(CodeFileNames):
     Result = {}
 
-    CodeFile = open(CodeFileName)
-    for line in CodeFile:
-        line = line.strip()
-        if line.startswith('#'):
-            continue
+    for CodeFileName in CodeFileNames:
+        CodeFile = open(CodeFileName)
+        for line in CodeFile:
+            line = line.strip()
+            if line.startswith('#'):
+                continue
 
-        if line.startswith('TemplateOrganism'):
-            Organism = line.split(':')[1]
-            Result['Organism'] = Organism
-        elif line.startswith('RNATranscription'):
-            if 'Process' not in Result:
-                Result['Process'] = [line]
-            else:
-                Result['Process'].append(line)
+            if line.startswith('TemplateOrganism'):
+                Organism = line.split(':')[1].strip()
+                Result['Organism'] = Organism
+            elif line.startswith('RNATranscription'):
+                if 'Process' not in Result:
+                    Result['Process'] = [line]
+                else:
+                    Result['Process'].append(line)
 
+    return Result
 
 def CompileToGenome(GenomeFileName,
                     DataDir):
@@ -437,21 +456,27 @@ def CompileToGenome(GenomeFileName,
     GenomeFile.close()
 
 
-def Compile(CodeFileName,
-            OutputFileName,
+def Compile(CodeFileNames,
+            PrefixName,
             DataDir,
             Verbose):
 
-    PrefixName = 'cell'
+    OutputCodeName = PrefixName + ".py"
 
     CompilerData = FCompilerData()
-    CodeInfo = Parse(CodeFileName)
+    CompilerData.SetDataPath(os.path.realpath(DataDir))
+    CodeInfo = Parse(CodeFileNames)
 
-    CompileToGenome(PrefixName + '.fa', DataDir)
+    GenomeFileName = PrefixName + ".ecoli.fa"
+    if 'Organism' in CodeInfo:
+        OrganismName = CodeInfo['Organism'].replace(' ', '_')
+        GenomeFileName = PrefixName + "." + OrganismName + ".fa"
+
+    CompileToGenome(GenomeFileName, DataDir)
 
     Dataset = LoadData(DataDir)
     SetUpMatrix(Dataset, CompilerData)
-    OutputFile = open(OutputFileName, 'w')
+    OutputFile = open(OutputCodeName, 'w')
 
     Writer = codegen.TFCodeWriter(OutputFile, 0)
     # Writer = codegen.NumpyCodeWriter(OutputFile, 0)
@@ -463,41 +488,47 @@ def Compile(CodeFileName,
 
     OutputFile.close()
 
-    
+
 """
 """
 # PyCharm: set parameters configuration to "-d ../../data"
 if __name__ == '__main__':
+
+    version_str = 'lcc version {version}'.format(version=LCC_VERSION)
+
     parser = ArgumentParser(
         description='')
-    parser.add_argument('-d', '--data',
+    parser.add_argument('-L',
                         dest='data_dir',
                         type=str,
-                        help='Data directory')
-    parser.add_argument('-c', '--code',
-                        dest='CodeFileName',
-                        type=str,
-                        help='life source code filename')
+                        help='Library/Data directory')
     parser.add_argument('-o', '--out-file',
                         dest='OutputFileName',
                         type=str,
-                        default='cell.py',
+                        default='cell',
                         help='Output code file')
-    parser.add_argument('-v', '--verbose',
+    parser.add_argument('-V', '--verbose',
                         dest='verbose',
                         action='store_true',
                         help='also print some statistics to stderr')
-
+    parser.add_argument('infiles', 
+                        type=str, nargs='+',
+                        help='Code Files')
+    parser.add_argument('-v', '--version',
+                        action='version',
+                        version=version_str)
     args = parser.parse_args()
+    
     if not args.data_dir:
         parser.print_help()
         exit(1)
 
-    if not os.path.exists(args.CodeFileName):
-        print("Error: %s doesn't exist" % args.CodeFileName)
-        exit(1)
+    for codefile in args.infiles:
+        if not os.path.exists(codefile):
+            print("Error: %s doesn't exist" % codefile)
+            exit(1)
 
-    Compile(args.CodeFileName,
+    Compile(args.infiles,
             args.OutputFileName,
             args.data_dir,
             args.verbose)
