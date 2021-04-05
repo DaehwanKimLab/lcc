@@ -15,7 +15,7 @@ import os, sys
 import numpy as np
 import csv
 # import tensorflow as tf
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import datetime
 from argparse import ArgumentParser, FileType
 import codegen
@@ -74,6 +74,8 @@ def WriteImport(Writer):
     Writer.WriteStatement("import os, sys")
     Writer.WriteStatement("import numpy as np")
     Writer.WriteStatement("import tensorflow as tf")
+    Writer.WriteStatement("import matplotlib.pyplot as plt")
+
     Writer.WriteStatement("from argparse import ArgumentParser, FileType")
 
     Writer.SetIndentLevel(tmpLevel)
@@ -293,12 +295,22 @@ def WriteBody(writer, CompilerData):
         writer.WriteDebugPrintVar("TCSMolIndexTF")
         writer.WriteBlankLine()
 
+        # Visualization data repository
+        writer.WriteStatement("# Visualization data repository")
+        writer.WriteStatement("Step = []]")
+
+        writer.WriteStatement("# Transcript Elongation Visualization")
+        writer.WriteStatement("TE_Y = []")
+
+
         # Run simulation
         writer.WriteStatement("# Run simulation")
         writer.WritePrintStr("Simulation begins...")
         with writer.WriteStatement("for SimulationStep in range(SimulationSteps):"):
             writer.WritePrintStr('=============================================')
             writer.WritePrintStrVar('SimulationStep: ', "SimulationStep + 1")
+            writer.WriteStatement("Step.append(SimulationStep + 1)")
+
             writer.WriteBlankLine()
 
             # Transcript Elongation (TE)
@@ -335,6 +347,8 @@ def WriteBody(writer, CompilerData):
             writer.WriteDebugPrintVar("NTConcsNewTF")
             writer.WriteDebugStatement("tf.debugging.assert_none_equal(NTConcsNewTF, NTConcsAvailTF), 'NT consumption is not properly applied'")
             writer.WritePrintVar("NTConcsNewTF")
+            writer.WriteStatement("TE_Y.append(tf.reshape(NTConcsNewTF, -1).numpy())")
+
             writer.WriteBlankLine()
 
             # TE - Update Transcript counts - TO BE IMPLEMENTED
@@ -378,6 +392,9 @@ def WriteBody(writer, CompilerData):
         writer.WriteBlankLine()
         # End of simulation
 
+
+        writer.WriteStatement("plt.show()")
+
         # Print input genome
         with writer.WriteStatement("if GenomeFileName != \"\":"):
             writer.WriteStatement("GenomeFile = open(GenomeFileName, 'w')")
@@ -387,6 +404,15 @@ def WriteBody(writer, CompilerData):
                 writer.WriteStatement("print(Line, file=GenomeFile)")
             writer.WriteStatement("GenomeFile.close()")
 
+def VisualizeData(CompilerData):
+    # Transcript Elongation
+    X = CompilerData.SimulationStep
+    Y = CompilerData.NTConcsNewTF
+
+    fig, ax = plt.subplots()
+    ax.plot(X, Y)
+
+    plt.show()
 
 def WriteMain(Writer):
     tmpLevel = Writer.GetIndentLevel()
