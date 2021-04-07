@@ -219,6 +219,10 @@ def WriteBody(writer, CompilerData):
         writer.InitArrayWithZero('ZeroTF', [1])
         writer.BlankLine()
 
+        # Temporary visualization variables
+        writer.Variable_("SimStep", [])
+        writer.Variable_("TE_ACGU", [])
+
         # Load CellMX
         CellMX.Write_CellMX_Init(writer)
 
@@ -252,7 +256,7 @@ def WriteBody(writer, CompilerData):
         with writer.Statement("for SimulationStep in range(SimulationSteps):"):
             writer.PrintStrg('=============================================')
             writer.PrintStVa('SimulationStep: ', "SimulationStep + 1")
-            # writer.Statement("Step.append(SimulationStep + 1)")
+            writer.Statement("SimStep.append(SimulationStep + 1)")
             writer.BlankLine()
 
             TE.Write_TE_Loop(writer)
@@ -260,6 +264,16 @@ def WriteBody(writer, CompilerData):
 
             TCS.Write_TCS_Loop(writer)
             writer.Statement("TCS_Loop()")
+
+        # Temporary TE visualization code
+        writer.Statement("fig, ax = plt.subplots()")
+        # writer.Statement("ax.plot(SimStep, TE_ACGU)")
+        writer.Statement("lines = ax.plot(SimStep, TE_ACGU)")
+        writer.Statement("labels = ['ATP', 'CTP', 'GTP', 'UTP']")
+        writer.Statement("ax.legend(lines, labels)")
+        writer.Statement("ax.set(xlabel='SimStep', ylabel='Concentration (M)', title='NTP level')")
+        writer.Statement("ax.grid()")
+        writer.Statement("plt.show()")
 
         writer.BlankLine()
         # End of simulation

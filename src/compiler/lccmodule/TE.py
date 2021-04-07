@@ -87,7 +87,11 @@ def Write_TE_Loop(writer):
         writer.DebugSTMT(
             "tf.debugging.assert_none_equal(NTConcsNewTF, NTConcsAvailTF), 'NT consumption is not properly applied'")
         writer.PrintVari("NTConcsNewTF")
-        # writer.Statement("TE_Y.append(tf.reshape(NTConcsNewTF, -1).numpy())")
+
+        # temporary visualization code
+        writer.Statement("TE_ACGU.append(tf.reshape(NTConcsNewTF, -1).numpy())")
+
+
         writer.BlankLine()
 
         # TE - Update Transcript counts - TO BE IMPLEMENTED
