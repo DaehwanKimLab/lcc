@@ -16,11 +16,13 @@ import numpy as np
 import csv
 # import tensorflow as tf
 import matplotlib.pyplot as plt
-import datetime
-from argparse import ArgumentParser, FileType
+from argparse import ArgumentParser
 import codegen
 from codegen import Target
 import inspect
+from lccmodule import TCS
+from lccmodule import TE
+from lccmodule import CellMX
 
 LCC_VERSION = "0.1"
 
@@ -51,7 +53,6 @@ class FCompilerData:
         # Data Path
         self.DataPath = LCC_PATH
 
-
     def SetDataPath(self, InDataPath):
         self.DataPath = InDataPath
 
@@ -63,7 +64,7 @@ def WriteLicense(Writer):
     Writer.SetIndentLevel(0)
     for line in open(LCC_PATH + "/LICENSE.input"):
         line = line.strip()
-        Writer.WriteStatement(line)
+        Writer.Statement(line)
     Writer.SetIndentLevel(tmpLevel)
 
 
@@ -71,12 +72,12 @@ def WriteImport(Writer):
     tmpLevel = Writer.GetIndentLevel()
     Writer.SetIndentLevel(0)
 
-    Writer.WriteStatement("import os, sys")
-    Writer.WriteStatement("import numpy as np")
-    Writer.WriteStatement("import tensorflow as tf")
-    Writer.WriteStatement("import matplotlib.pyplot as plt")
+    Writer.Statement("import os, sys")
+    Writer.Statement("import numpy as np")
+    Writer.Statement("import tensorflow as tf")
+    Writer.Statement("import matplotlib.pyplot as plt")
 
-    Writer.WriteStatement("from argparse import ArgumentParser, FileType")
+    Writer.Statement("from argparse import ArgumentParser, FileType")
 
     Writer.SetIndentLevel(tmpLevel)
 
@@ -105,7 +106,7 @@ def LoadData(data_dir):
     return dataset
 
 
-def SetUpMatrix(Dataset, CompilerData):
+def SetUpCompilerData(Dataset, CompilerData):
 
     def SetUpDataIndexes():
         Metabolites = Dataset['metaboliteConcentrations.tsv']
@@ -189,243 +190,101 @@ def WriteBody(writer, CompilerData):
     writer.DebugAssertSwitch = True
 
 
-    writer.WriteVariable('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
+    writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Lines = [
         "def main(GenomeFileName, verbose):",
     ]
     for Line in Lines:
-        writer.WriteStatement(Line)
+        writer.Statement(Line)
 
     with writer:
         # Define simulation parameters
-        writer.WriteStatement("# Define simulation parameters")
-        writer.WriteVariable("CellCycles", 1)
-        writer.WriteVariable("SimulationSteps", 100)
-        writer.WriteVariable("TCSODETimeStep", 1)
-        writer.WriteBlankLine()
+        writer.Statement("# Define simulation parameters")
+        writer.Variable_("CellCycles", 1)
+        writer.Variable_("SimulationSteps", 100)
 
-        writer.WriteStatement("# This is a numpy code", TargetCode=Target.Numpy)
-        writer.WriteStatement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
+        writer.BlankLine()
+
+        writer.Statement("# This is a numpy code", TargetCode=Target.Numpy)
+        writer.Statement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
 
         # Define key constants
-        writer.WriteStatement("# Define key constants")
-        writer.WriteVariable("AvogadroNum", 6.022141527E23)
+        writer.Statement("# Define key constants")
+        writer.Variable_("AvogadroNum", 6.022141527E23)
         # Average E coli cell volume: 0.7 um3, which is 7e-16 liters
-        writer.WriteVariable("CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
+        writer.Variable_("CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
 
         # Define accessory variables - TF version only
         writer.InitArrayWithOne('OneTF', [1])
         writer.InitArrayWithZero('ZeroTF', [1])
-        writer.WriteBlankLine()
+        writer.BlankLine()
+
+        # Load CellMX
+        CellMX.Write_CellMX_Init(writer)
 
         # Save and load all Cell State matrices
         np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
-        writer.WriteStatement("# Load metabolite concentration table")
-        writer.WriteStatement("MetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')")
-        writer.WriteStatement("MetaboliteConcsTF = tf.convert_to_tensor(MetaboliteConcs)")
-        writer.WriteDebugPrintVar("MetaboliteConcs")
-        writer.WriteDebugPrintVar("MetaboliteConcsTF")
-        writer.WriteBlankLine()
-
-        # Matrices for Transcript Elongation
-        np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
-        writer.WriteStatement("# Matrices for Transcript Elongation")
-
-        # NT frequency table for transcripts
-        writer.WriteStatement("# Fetch NT frequency table for transcripts")
-        writer.WriteStatement("TranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')")
-        writer.WriteStatement("TranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)")
-        writer.WriteStatement("TranscriptNTFreqsTF = tf.transpose(TranscriptNTFreqs)")
-        writer.WriteDebugPrintVar("TranscriptNTFreqs")
-        writer.WriteDebugPrintVar("TranscriptNTFreqsTF")
-        writer.WriteStatement("NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
-        writer.WriteBlankLine()
-
-        # NT counts per transcript
-        NTIndexList = list()
-        writer.WriteStatement("# Fetch NT concentration")
-        ACGU = ["ATP", "CTP", "GTP", "UTP"]
-        writer.WriteStatement("NTConcs = np.zeros(" + str(len(ACGU)) + ").astype('float32')")
-        for i, NTName in enumerate(ACGU):
-            NTIndex = CompilerData.MetaboliteName2Index[NTName]
-            NTIndexList.append(int(NTIndex))
-            writer.WriteStatement("NTConcs[%d] = MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
-        writer.WriteStatement("NTConcsTF = tf.convert_to_tensor(NTConcs)")
-        writer.WriteStatement("NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
-        writer.WriteDebugPrintVar("NTConcs")
-        writer.WriteDebugPrintVar("NTConcsTF")
-        writer.WriteDebugPrintVar("NTConcsIndexTF")
-        writer.WriteBlankLine()
-
-        writer.WriteStatement("# Determine elongation rate")
-        writer.WriteVariable("ElongationRate", 10) # TO BE REPLACED AND MOVED INTO SIMULATION
-        writer.WriteBlankLine()
-
-        writer.WriteStatement("# Determine active RNAP count")
-        writer.WriteVariable("ActiveRNAPCount", 829) # TO BE REPLACED AND MOVED INTO SIMULATION
-        writer.WriteBlankLine()
-
-        # Set up matrices for Two Component Systems
-        writer.WriteStatement("# Two Component Systems model")
-        writer.WriteStatement("TCSModel = tf.keras.models.load_model(LCCDataPath + '/two_component.h5')")
-        writer.WriteStatement("TCSODETimeStepTF = tf.reshape(tf.constant([TCSODETimeStep], dtype='float32'), (1, 1))")
-        writer.WriteDebugPrintVar("TCSODDETimeStepTF")
-        writer.WriteBlankLine()
+        writer.Statement("# Load metabolite concentration table")
+        writer.Statement("CellMX.MetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')")
+        writer.Statement("CellMX.MetaboliteConcsTF = tf.convert_to_tensor(CellMX.MetaboliteConcs)")
+        writer.DebugPVar("CellMX.MetaboliteConcs")
+        writer.DebugPVar("CellMX.MetaboliteConcsTF")
+        writer.BlankLine()
 
         # Save and load all molecule count
         np.save("MolCounts.npy", CompilerData.MolCounts) # Maybe provided in another folder later
-        writer.WriteStatement("# Load molecule count table")
-        writer.WriteStatement("MolCounts = np.load(\"MolCounts.npy\").astype('float32')")
-        writer.WriteStatement("MolCountsTF = tf.convert_to_tensor(MolCounts)")
-        writer.WriteDebugPrintVar("MolCounts")
-        writer.WriteDebugPrintVar("MolCountsTF")
-        writer.WriteBlankLine()
+        writer.Statement("# Load molecule count table")
+        writer.Statement("MolCounts = np.load(\"MolCounts.npy\").astype('float32')")
+        writer.Statement("CellMX.MolCountsTF = tf.convert_to_tensor(MolCounts)")
+        writer.DebugPVar("MolCounts")
+        writer.DebugPVar("CellMX.MolCountsTF")
+        writer.BlankLine()
 
-        # Matrices for Two Component Systems
-        TCSMolIndexList = []
-        TCSMolNames = np.load('TCSMolNames.npy')
-        writer.WriteStatement("TCSMolCounts = np.zeros(" + str(len(TCSMolNames)) + ").astype('float32')")
-        for i, TCSMolName in enumerate(TCSMolNames):
-            TCSMolIndex = CompilerData.MolName2Index[TCSMolName]
-            TCSMolIndexList.append(int(TCSMolIndex))
-            writer.WriteStatement("TCSMolCounts[%d] = MolCounts[%d] # %s" % (i, TCSMolIndex, TCSMolName))
-        writer.WriteStatement("TCSMolCountsTF = tf.convert_to_tensor(TCSMolCounts)")
-        writer.WriteStatement("TCSMolIndexTF = tf.reshape(tf.constant(" + str(TCSMolIndexList) + "), (-1, 1))")
-        writer.WriteDebugPrintVar("TCSMolCountsTF")
-        writer.WriteDebugPrintVar("TCSMolIndexTF")
-        writer.WriteBlankLine()
+        TE.Write_TE_Init(writer, CompilerData)
+        writer.Statement("TE_Init()")
 
-        # Visualization data repository
-        writer.WriteStatement("# Visualization data repository")
-        writer.WriteStatement("Step = []]")
-
-        writer.WriteStatement("# Transcript Elongation Visualization")
-        writer.WriteStatement("TE_Y = []")
-
+        TCS.Write_TCS_Init(writer, CompilerData)
+        writer.Statement("TCS_Init()")
 
         # Run simulation
-        writer.WriteStatement("# Run simulation")
-        writer.WritePrintStr("Simulation begins...")
-        with writer.WriteStatement("for SimulationStep in range(SimulationSteps):"):
-            writer.WritePrintStr('=============================================')
-            writer.WritePrintStrVar('SimulationStep: ', "SimulationStep + 1")
-            writer.WriteStatement("Step.append(SimulationStep + 1)")
+        writer.Statement("# Run simulation")
+        writer.PrintStrg("Simulation begins...")
+        with writer.Statement("for SimulationStep in range(SimulationSteps):"):
+            writer.PrintStrg('=============================================')
+            writer.PrintStVa('SimulationStep: ', "SimulationStep + 1")
+            # writer.Statement("Step.append(SimulationStep + 1)")
+            writer.BlankLine()
 
-            writer.WriteBlankLine()
+            TE.Write_TE_Loop(writer)
+            writer.Statement("TE_Loop()")
 
-            # Transcript Elongation (TE)
-            writer.WriteStatement("# Transcript Elongation (TE)")
-            writer.WriteBlankLine()
+            TCS.Write_TCS_Loop(writer)
+            writer.Statement("TCS_Loop()")
 
-            # TE - Allocate RNAP to transcript
-            writer.WriteStatement("# TE - Allocate RNAP to transcript")
-            writer.WriteStatement("RNAPPerTranscriptTF = tf.zeros(NumberOfUniqueTranscripts)")
-            with writer.WriteStatement("for RNAPPosition in range(ActiveRNAPCount):"):
-                writer.WriteStatement("RNAPPosition = tf.random.uniform(shape=[1,1], minval=1, maxval=NumberOfUniqueTranscripts, dtype='int32')")
-                writer.WriteStatement("RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, RNAPPosition, OneTF)")
-            writer.WriteDebugAssert("tf.math.reduce_sum(RNAPPerTranscriptTF) == ActiveRNAPCount", 'Active RNAP is not properly allocated')
-            writer.WriteStatement("RNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])")
-            writer.WriteDebugPrintVar("RNAPPerTranscriptTF")
-            writer.WriteBlankLine()
-
-            # TE - Determine NT consumption
-            writer.WriteStatement("# TE - Determine NT consumption")
-            writer.WriteStatement("DeltaNTCountsTF = tf.linalg.matmul(TranscriptNTFreqsTF, RNAPPerTranscriptTF) * ElongationRate")
-            writer.WriteStatement("DeltaNTCountsTF = tf.reshape(DeltaNTCountsTF, -1)")
-            writer.WriteStatement("DeltaNTConcsTF = DeltaNTCountsTF / (CellVol * AvogadroNum)") # final unit: mol/L
-            writer.WriteDebugVariable("NTConcsAvailTF", "tf.gather(MetaboliteConcsTF, NTConcsIndexTF)")
-            writer.WriteDebugPrintVar("DeltaNTCountsTF")
-            writer.WriteDebugPrintVar("DeltaNTConcsTF")
-            writer.WriteDebugPrintVar("NTConcsAvailTF")
-            writer.WriteDebugStatement("tf.debugging.assert_positive(NTConcsAvailTF - DeltaNTConcsTF), 'The cell is running out of NTs'")
-            writer.WriteBlankLine()
-
-            # TE - Update NT concs
-            writer.WriteStatement("# TE - Update NT counts")
-            writer.WriteStatement("MetaboliteConcsTF = tf.tensor_scatter_nd_sub(MetaboliteConcsTF, NTConcsIndexTF, DeltaNTConcsTF)")
-            writer.WriteDebugVariable("NTConcsNewTF", "tf.gather(MetaboliteConcsTF, NTConcsIndexTF)")
-            writer.WriteDebugPrintVar("NTConcsNewTF")
-            writer.WriteDebugStatement("tf.debugging.assert_none_equal(NTConcsNewTF, NTConcsAvailTF), 'NT consumption is not properly applied'")
-            writer.WritePrintVar("NTConcsNewTF")
-            writer.WriteStatement("TE_Y.append(tf.reshape(NTConcsNewTF, -1).numpy())")
-
-            writer.WriteBlankLine()
-
-            # TE - Update Transcript counts - TO BE IMPLEMENTED
-
-            # Two Component Systems code (TCS)
-            writer.WriteStatement("# Two Component Systems code (TCS)")
-
-            # TCS - Run machine learned model
-            writer.WriteStatement("# TCS - Run machine learned model")
-            writer.WriteStatement("TCSMolCountsTF = tf.gather(MolCountsTF, TCSMolIndexTF)")
-            writer.WriteStatement("TCSMolConcsTF = TCSMolCountsTF / (CellVol * AvogadroNum)") # TCSMolConcsTF == y_init
-            writer.WriteStatement("TCSModelInput = tf.concat([TCSMolConcsTF, TCSODETimeStepTF], axis=0)")
-            writer.WriteStatement("TCSMolConcsNewTF = TCSModel.predict(tf.reshape(TCSModelInput, (1, -1)))[0, :]")
-            writer.WriteBlankLine()
-
-            # TCS - Replace values < 0 to 0
-            writer.WriteStatement("# TCS - Replace values < 0 to 0")
-            writer.WriteStatement("TCSMolConcsNewZeroIndexTF = tf.where(tf.less(TCSMolConcsNewTF, 0))")
-            writer.WriteStatement("TCSMolConcsNewReplaceTF = tf.zeros(TCSMolConcsNewZeroIndexTF.shape[0])")
-            writer.WriteStatement("TCSMolConcsNewTF = tf.tensor_scatter_nd_update(TCSMolConcsNewTF, TCSMolConcsNewZeroIndexTF, TCSMolConcsNewReplaceTF)")
-            writer.WriteDebugPrintVar("TCSMolConcsNewZeroIndexTF")
-            writer.WriteDebugPrintVar("TCSMolConcsNewReplaceTF")
-            writer.WriteDebugPrintVar("TCSMolConcsNewTF")
-            writer.WriteDebugStatement("tf.debugging.assert_non_negative(TCSMolConcsNewTF, 'TCSMolConcsNewTF contains a negative value(s)')")
-
-            writer.WriteDebugPrintVar("TCSMolCountsTF")
-            writer.WriteDebugPrintVar("TCSMolConcsTF")
-            writer.WriteDebugPrintVar("TCSMolConcsNewTF")
-            writer.WriteDebugPrintVar("TCSMolCountsNewTF")
-            writer.WriteBlankLine()
-
-            # TCS - Update TCS molecule counts
-            writer.WriteStatement("# Update two component systems molecule counts")
-            writer.WriteStatement("TCSMolCountsNewTF = TCSMolConcsNewTF * (CellVol * AvogadroNum)")
-            writer.WriteStatement("MolCountsTF = tf.tensor_scatter_nd_update(MolCountsTF, TCSMolIndexTF, TCSMolCountsNewTF)")
-            writer.WriteDebugStatement("TCSMolCountsUpdated = tf.gather(MolCountsTF, TCSMolIndexTF)")
-            # writer.WriteDebugStatement("tf.assert_equal(TCSMolCountsUpdated, TCSMolCountsNewTF, 'TCSMolCounts is not updated')")
-            writer.WritePrintVar("TCSMolCountsNewTF")
-            writer.WriteBlankLine()
-
-        writer.WriteBlankLine()
+        writer.BlankLine()
         # End of simulation
 
-
-        writer.WriteStatement("plt.show()")
-
         # Print input genome
-        with writer.WriteStatement("if GenomeFileName != \"\":"):
-            writer.WriteStatement("GenomeFile = open(GenomeFileName, 'w')")
-            writer.WriteStatement("InputGenomeFile = open('cell.fa')")
-            with writer.WriteStatement("for Line in InputGenomeFile:"):
-                writer.WriteStatement("Line = Line.strip()")
-                writer.WriteStatement("print(Line, file=GenomeFile)")
-            writer.WriteStatement("GenomeFile.close()")
-
-def VisualizeData(CompilerData):
-    # Transcript Elongation
-    X = CompilerData.SimulationStep
-    Y = CompilerData.NTConcsNewTF
-
-    fig, ax = plt.subplots()
-    ax.plot(X, Y)
-
-    plt.show()
+        with writer.Statement("if GenomeFileName != \"\":"):
+            writer.Statement("GenomeFile = open(GenomeFileName, 'w')")
+            writer.Statement("InputGenomeFile = open('cell.fa')")
+            with writer.Statement("for Line in InputGenomeFile:"):
+                writer.Statement("Line = Line.strip()")
+                writer.Statement("print(Line, file=GenomeFile)")
+            writer.Statement("GenomeFile.close()")
 
 def WriteMain(Writer):
     tmpLevel = Writer.GetIndentLevel()
     Writer.SetIndentLevel(0)
 
-    Writer.WriteBlankLine()
-    with Writer.WriteStatement("if __name__ == '__main__':"):
-        Writer.WriteStatement("parser = ArgumentParser(description='')")
-        Writer.WriteStatement("parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='also print some statistics to stderr')")
-        Writer.WriteStatement("parser.add_argument('-g', '--genome', dest='GenomeFileName', type=str, default='', help='')")
-        Writer.WriteBlankLine()
-        Writer.WriteStatement("args = parser.parse_args()")
-        Writer.WriteStatement("main(args.GenomeFileName, args.verbose)")
+    Writer.BlankLine()
+    with Writer.Statement("if __name__ == '__main__':"):
+        Writer.Statement("parser = ArgumentParser(description='')")
+        Writer.Statement("parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='also print some statistics to stderr')")
+        Writer.Statement("parser.add_argument('-g', '--genome', dest='GenomeFileName', type=str, default='', help='')")
+        Writer.BlankLine()
+        Writer.Statement("args = parser.parse_args()")
+        Writer.Statement("main(args.GenomeFileName, args.verbose)")
 
     Writer.SetIndentLevel(tmpLevel)
 
@@ -501,15 +360,15 @@ def Compile(CodeFileNames,
     CompileToGenome(GenomeFileName, DataDir)
 
     Dataset = LoadData(DataDir)
-    SetUpMatrix(Dataset, CompilerData)
+    SetUpCompilerData(Dataset, CompilerData)
     OutputFile = open(OutputCodeName, 'w')
 
     Writer = codegen.TFCodeWriter(OutputFile, 0)
     # Writer = codegen.NumpyCodeWriter(OutputFile, 0)
 
     WriteLicense(Writer)
-    WriteImport(Writer); Writer.WriteBlankLine()
-    WriteBody(Writer, CompilerData); Writer.WriteBlankLine()
+    WriteImport(Writer); Writer.BlankLine()
+    WriteBody(Writer, CompilerData); Writer.BlankLine()
     WriteMain(Writer)
 
     OutputFile.close()
@@ -531,7 +390,9 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--out-file',
                         dest='OutputFileName',
                         type=str,
-                        default='cell',
+                        default='cell'
+                                ''
+                                '',
                         help='Output code file')
     parser.add_argument('-V', '--verbose',
                         dest='verbose',

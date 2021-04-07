@@ -56,7 +56,7 @@ class CodeWriter():
         self.IndentLevel = IndentLevel
         self.BuildIndentationPrefix()
 
-    def WriteStatement(self, Line, **kwargs):
+    def Statement(self, Line, **kwargs):
         """
             keyword args
                 TargetCode=Target.All, Target.Numpy, Target.TensorFlow
@@ -65,66 +65,66 @@ class CodeWriter():
         print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
-    def WriteVariable(self, VariableName, Value):
+    def Variable_(self, VariableName, Value):
         Line = '%s = %s' % (VariableName, Value)
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
-    # def WriteComment(self, Comment):
+    # def Comment(self, Comment):
     #     Line = '# %s' % Comment
-    #     self.WriteStatement(Line)
+    #     self.Statement(Line)
     #     return self
 
-    def WriteBlankLine(self):
-        self.WriteStatement("")
+    def BlankLine(self):
+        self.Statement("")
 
-    def WritePrintStr(self, Str):
+    def PrintStrg(self, Str):
         Line = 'print("%s")' % Str
-        self.WriteStatement(Line)
+        self.Statement(Line)
         return self
 
-    def WritePrintVar(self, VariableName):
+    def PrintVari(self, VariableName):
         Line = 'print("%s = ", %s)' % (VariableName, VariableName)
-        self.WriteStatement(Line)
+        self.Statement(Line)
         return self
 
-    def WritePrintStrVar(self, Str, VariableName):
+    def PrintStVa(self, Str, VariableName):
         Line = 'print("%s: ", %s)' % (Str, VariableName)
-        self.WriteStatement(Line)
+        self.Statement(Line)
         return self
 
-    def WriteDebugStatement(self, Line):
+    def DebugSTMT(self, Line):
         if self.DebugPrintSwitch or self.DebugAssertSwitch:
-            self.WriteStatement(Line)
+            self.Statement(Line)
         return self
 
-    def WriteDebugVariable(self, VariableName, Value):
+    def DebugVari(self, VariableName, Value):
         if self.DebugPrintSwitch or self.DebugAssertSwitch:
             Line = '%s = %s' % (VariableName, Value)
-            self.WriteStatement(Line)
+            self.Statement(Line)
         return self
 
-    def WriteDebugPrintStr(self, Str):
+    def DebugPStr(self, Str):
         if self.DebugPrintSwitch:
             Line = 'print("%s")' % Str
-            self.WriteStatement(Line)
+            self.Statement(Line)
         return self
 
-    def WriteDebugPrintVar(self, VariableName):
+    def DebugPVar(self, VariableName):
         if self.DebugPrintSwitch:
             Line = 'print("%s = ", %s)' % (VariableName, VariableName)
-            self.WriteStatement(Line)
+            self.Statement(Line)
         return self
 
-    def WriteDebugPrintStrVar(self, Str, VariableName):
+    def DebugPStV(self, Str, VariableName):
         if self.DebugPrintSwitch:
             Line = 'print("%s: ", %s)' % (Str, VariableName)
-            self.WriteStatement(Line)
+            self.Statement(Line)
         return self
 
-    def WriteDebugAssert(self, Condition, ErrMsg):
+    def DebugAsrt(self, Condition, ErrMsg):
         if self.DebugAssertSwitch:
             Line = "assert %s, '%s'" % (Condition, ErrMsg)
-            self.WriteStatement(Line)
+            self.Statement(Line)
         return self
 
 
@@ -135,17 +135,17 @@ class CodeWriter():
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         # var = tf.ones([4,3])
         Line = "# Not implemented"
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
         # var = tf.zeros([4,3])
         Line = "# Not implemented"
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def InitArrayWithValue(self, VariableName, Value, Type='float32'):
         # var = tf.constant([3, 4, 5, 6, 7])
         Line = "# Not implemented"
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     """
     Array manipulation functions
@@ -153,7 +153,7 @@ class CodeWriter():
     def Reshape(self, DestVar, SrcVar, Shape):
         # var = tf.reshape(var, [4, -1])
         Line = "# Not implemented"
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
 
 class TFCodeWriter(CodeWriter):
@@ -168,21 +168,21 @@ class TFCodeWriter(CodeWriter):
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
         Line = '%s = tf.zeros(%s, dtype=tf.%s)' % (VariableName, str(Shape), Type)
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def InitArrayWithValue(self, VariableName, Value, Type='float32'):
         Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def Reshape(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
-    def WriteStatement(self, Line, **kwargs):
+    def Statement(self, Line, **kwargs):
 
         if 'TargetCode' in kwargs:
             TargetCode = kwargs['TargetCode']
@@ -192,7 +192,7 @@ class TFCodeWriter(CodeWriter):
         if TargetCode not in [Target.All, Target.TensorFlow]:
             return self
 
-        super().WriteStatement(Line)
+        super().Statement(Line)
         # print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
@@ -216,21 +216,21 @@ class NumpyCodeWriter(CodeWriter):
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = np.ones({Shape}).astype({Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=NumpyType.TypeToString[Type])
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
         Line = "%s = np.zeros(%s).astype(%s)" % (VariableName, str(Shape), NumpyType.TypeToString[Type])
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def InitArrayWithValue(self, VariableName, Value, Type='float32'):
         Line = "%s = np.array(%s).astype(%s)" % (VariableName, str(Value), Type)
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
     def Reshape(self, DestVar, SrcVar, Shape):
         Line = '%s = np.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
-        self.WriteStatement(Line)
+        self.Statement(Line)
 
-    def WriteStatement(self, Line, **kwargs):
+    def Statement(self, Line, **kwargs):
         if 'TargetCode' in kwargs:
             TargetCode = kwargs['TargetCode']
         else:
@@ -239,5 +239,5 @@ class NumpyCodeWriter(CodeWriter):
         if TargetCode not in [Target.All, Target.Numpy]:
             return
 
-        super().WriteStatement(Line)
+        super().Statement(Line)
         return self
