@@ -7,3 +7,5 @@ dependencies:
   - numpy
   - pip:
     - tensorflow
+    - matplotlib
+    - plot

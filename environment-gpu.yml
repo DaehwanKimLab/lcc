@@ -10,3 +10,5 @@ dependencies:
   - cudnn
   - pip:
     - tensorflow
+    - matplotlib
+    - plot
