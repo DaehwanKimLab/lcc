@@ -21,6 +21,16 @@ class Target(Enum):
     TensorFlow = 1
     Numpy = 2
 
+    @staticmethod
+    def from_str(label):
+        tmp_label = label.upper()
+        if tmp_label in ('TENSORFLOW', 'TF'):
+            return Target.TensorFlow
+        elif tmp_label in ('NUMPY', 'NP'):
+            return Target.Numpy
+        else:
+            raise NotImplementedError
+
 
 class CodeWriter():
     def __init__(self, CodeFile, IndentLevel=0):
