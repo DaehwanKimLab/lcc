@@ -37,7 +37,8 @@ class CodeWriter():
         self.DecreaseIndent()
 
     def BuildIndentationPrefix(self):
-        self.IndentationPrefix = '\t' * self.IndentLevel
+        # 4 spaces
+        self.IndentationPrefix = '    ' * self.IndentLevel
 
     def IncreaseIndent(self):
         self.IndentLevel += 1
