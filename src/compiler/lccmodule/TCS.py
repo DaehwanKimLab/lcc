@@ -19,10 +19,18 @@ def Write_TCS_Init(writer, CompilerData):
         TCSMolIndexList = []
         TCSMolNames = np.load('TCSMolNames.npy')
         writer.Statement("TCSMolCounts = np.zeros(" + str(len(TCSMolNames)) + ").astype('float32')")
-        for i, TCSMolName in enumerate(TCSMolNames):
-            TCSMolIndex = CompilerData.MolName2Index[TCSMolName]
-            TCSMolIndexList.append(int(TCSMolIndex))
-            writer.Statement("TCSMolCounts[%d] = MolCounts[%d] # %s" % (i, TCSMolIndex, TCSMolName))
+
+        # for i, TCSMolName in enumerate(TCSMolNames):
+        #     TCSMolIndex = CompilerData.MolName2Index[TCSMolName]
+        #     TCSMolIndexList.append(int(TCSMolIndex))
+        #     writer.Statement("TCSMolCounts[%d] = MolCounts[%d] # %s" % (i, TCSMolIndex, TCSMolName))
+
+        # Temporary replacement for loop in life code
+        with writer.Statement("for i in range(len(TCSMolCounts)):"):
+            writer.Statement("TCSMolCounts[i] = MolCounts[i]")
+        for i in range(len(TCSMolNames)):
+            TCSMolIndexList.append(i)
+
         writer.Statement("TCSMolCountsTF = tf.convert_to_tensor(TCSMolCounts)")
         writer.Statement("CellMX.TCSMolIndexTF = tf.reshape(tf.constant(" + str(TCSMolIndexList) + "), (-1, 1))")
         writer.DebugPVar("TCSMolCountsTF")
@@ -66,9 +74,9 @@ def Write_TCS_Loop(writer):
         writer.Statement("# Update two component systems molecule counts")
         writer.Statement("TCSMolCountsNewTF = TCSMolConcsNewTF * (CellVol * AvogadroNum)")
         writer.Statement("CellMX.MolCountsTF = tf.tensor_scatter_nd_update(CellMX.MolCountsTF, CellMX.TCSMolIndexTF, TCSMolCountsNewTF)")
-        writer.DebugSTMT("TCSMolCountsUpdated = tf.gather(CellMX.MolCountsTF, CellMX.TCSMolIndexTF)")
+        # writer.DebugSTMT("TCSMolCountsUpdated = tf.gather(CellMX.MolCountsTF, CellMX.TCSMolIndexTF)")
         # writer.DebugSTMT("tf.assert_equal(TCSMolCountsUpdated, TCSMolCountsNewTF, 'TCSMolCounts is not updated')")
-        writer.PrintVari("TCSMolCountsNewTF")
+        writer.PrintVari("TCSMolCountsNewTF[:10]")
         writer.BlankLine()
     return
 

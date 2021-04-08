@@ -165,7 +165,7 @@ class TFCodeWriter(CodeWriter):
         self.Target = Target.TensorFlow
         super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
 
-    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
+    def InitArrayWithOne(self, VariableName, Shape, Type='int32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
         self.Statement(Line)

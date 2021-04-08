@@ -20,9 +20,10 @@ from argparse import ArgumentParser
 import codegen
 from codegen import Target
 import inspect
+from lccmodule import CellMX
 from lccmodule import TCS
 from lccmodule import TE
-from lccmodule import CellMX
+from lccmodule import RNADeg
 
 LCC_VERSION = "0.1"
 
@@ -36,7 +37,7 @@ class FCompilerData:
         self.MetaboliteName2Index = {}
         self.MetaboliteConcs = None
 
-        self.TranscriptNTFreqs = None
+        self.TranscriptNTFreqs = []
 
         self.RXNIDs = []
         self.RXNID2Index = {}
@@ -49,6 +50,17 @@ class FCompilerData:
         self.MolName2Index = {}
         self.MolCounts = None
         self.MolConcs = None
+
+        self.RNAName2Index = {}
+        self.RNANames = []
+        self.RNAMonomerID2Index = {}
+        self.RNAMonomerIDs = []
+        self.RNAID2Index = {}
+        self.RNAIDs = []
+        self.RNAHalfLife = []
+        self.RNASeq = []
+        self.RNAType = []
+        self.RNAMolWeight= []
 
         # Data Path
         self.DataPath = LCC_PATH
@@ -136,51 +148,48 @@ def SetUpCompilerData(Dataset, CompilerData):
             CompilerData.MolName2Index[MolName] = len(CompilerData.MolNames) # = i
             CompilerData.MolNames.append(MolName)
             CompilerData.MolCounts[i] = MolCount
-
         # Temporary command to save a list of participating molecules in TCS
         np.save('TCSMolNames.npy', CompilerData.MolNames)
 
-    def TranscriptElongation():
+        RNAs = Dataset['rnas.tsv']
+        for i, Value in enumerate(RNAs):
+            HalfLife, Name, Seq, Type, ModifiedForms, MonomerID, Comments, MolWeight, Location, NTCount, ID, GeneID, MicArrExp = Value
+            assert Name not in CompilerData.RNAID2Index
+            CompilerData.RNAName2Index[Name] = len(CompilerData.RNANames) # = i
+            CompilerData.RNANames.append(Name)
+            CompilerData.RNAMonomerID2Index[MonomerID] = len(CompilerData.RNAMonomerIDs)
+            CompilerData.RNAMonomerIDs.append(MonomerID)
+            CompilerData.RNAID2Index[ID] = len(CompilerData.RNAIDs)
+            CompilerData.RNAIDs.append(ID)
+            CompilerData.RNAHalfLife.append(HalfLife)
+            CompilerData.RNASeq.append(Seq)
+            CompilerData.RNAType.append(Type)
+            CompilerData.RNAMolWeight.append(MolWeight)
 
-        def GetMatrixRNANTFreq():
-            NTFreqTable = list()
-            # num_rnas = len(dataset['rnas.tsv'])
-            RNAs = Dataset['rnas.tsv']
-            for RNA in RNAs:
-                Seq = RNA[2]
-                NTTotalCount = len(Seq)
-                NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
-                if np.sum(NTCounts) != NTTotalCount:
-                    print("WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
-                NTFreq = NTCounts / NTTotalCount
-                NTFreqTable.append(NTFreq)
-            return NTFreqTable
+        np.save('RNAIDs.npy', CompilerData.RNAIDs)
+        return
 
-
-
-
-        # def GetMatrixNtFlux():
-        #     metabolites = dataset("metabolites.tsv")
-        #     RearrangeLstToDict(metabolites, 1)
-        #
-        #     return acgu_flux
-        #
-
-        TranscriptNTFreqs = GetMatrixRNANTFreq()
-        return TranscriptNTFreqs
-
-    # def TwoComponentSystems():
-    #
-    #
-    #
-    #     # assert TCSMolNames in
-    #     return TCSMolNames
-        # mtrx_active_RNAP = GetMatrixActiveRNAP()
-        #
-        # mtrx_Nt_flux = GetMatrixNTFlux()
+    def GetMXRNANTFreq():
+        NTFreqTable = list()
+        # num_rnas = len(dataset['rnas.tsv'])
+        RNAs = Dataset['rnas.tsv'] # Columns: [0]halfLife, [1]name, [2]seq, [3]type, [4]modifiedForms, [5]monomerId
+        for RNA in RNAs:
+            # HalfLife = RNA[0]
+            # Name = RNA[1]
+            Seq = RNA[2]
+            # Type = RNA[3]
+            # ModifiedForms = RNA[4]
+            # MonomerID = RNA[5]
+            NTTotalCount = len(Seq)
+            NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
+            if np.sum(NTCounts) != NTTotalCount:
+                print("WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
+            NTFreq = NTCounts / NTTotalCount
+            CompilerData.TranscriptNTFreqs.append(NTFreq)
+        return
 
     SetUpDataIndexes()
-    CompilerData.TranscriptNTFreqs = TranscriptElongation()
+    GetMXRNANTFreq()
     # CompilerData.TCSMolNames = TwoComponentSystems()
 
 
@@ -219,12 +228,12 @@ def WriteBody(writer, CompilerData):
         writer.InitArrayWithZero('ZeroTF', [1])
         writer.BlankLine()
 
-        # Temporary visualization variables
-        writer.Variable_("SimStep", [])
-        writer.Variable_("TE_ACGU", [])
+        # GLOBAL INIT?
 
         # Load CellMX
         CellMX.Write_CellMX_Init(writer)
+        writer.Statement("CellMX = FCellMX()")
+        writer.BlankLine()
 
         # Save and load all Cell State matrices
         np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
@@ -244,11 +253,29 @@ def WriteBody(writer, CompilerData):
         writer.DebugPVar("CellMX.MolCountsTF")
         writer.BlankLine()
 
-        TE.Write_TE_Init(writer, CompilerData)
-        writer.Statement("TE_Init()")
+        # Save and load all RNA count (placeholder)
+        writer.Statement("# RNADeg - Transcript Counts")
+        writer.Variable_("DefaultCount", 100)
+        writer.Statement("RNACounts = np.ones(" + str(len(CompilerData.RNAIDs)) + ").astype('int32') * DefaultCount")
+        writer.Statement("CellMX.RNACountsTF = tf.convert_to_tensor(RNACounts)")
+        writer.DebugPVar("CellMX.RNACountsTF")
+        writer.BlankLine()
 
+
+        # Load initialization functions for each process
+        TE.Write_TE_Init(writer, CompilerData)
         TCS.Write_TCS_Init(writer, CompilerData)
+        RNADeg.Write_RNADeg_Init(writer, CompilerData)
+
+        # Load loop functions for each process
+        TE.Write_TE_Loop(writer)
+        TCS.Write_TCS_Loop(writer)
+        RNADeg.Write_RNADeg_Loop(writer)
+
+        # Run initialization functions for each process
+        writer.Statement("TE_Init()")
         writer.Statement("TCS_Init()")
+        writer.Statement("RNADeg_Init()")
 
         # Run simulation
         writer.Statement("# Run simulation")
@@ -256,19 +283,19 @@ def WriteBody(writer, CompilerData):
         with writer.Statement("for SimulationStep in range(SimulationSteps):"):
             writer.PrintStrg('=============================================')
             writer.PrintStVa('SimulationStep: ', "SimulationStep + 1")
-            writer.Statement("SimStep.append(SimulationStep + 1)")
+            writer.Statement("CellMX.SimStep.append(SimulationStep + 1)")
             writer.BlankLine()
 
-            TE.Write_TE_Loop(writer)
+            # Run loop functions for each process
             writer.Statement("TE_Loop()")
-
-            TCS.Write_TCS_Loop(writer)
             writer.Statement("TCS_Loop()")
+            writer.Statement("RNADeg_Loop()")
+            writer.BlankLine()
 
         # Temporary TE visualization code
         writer.Statement("fig, ax = plt.subplots()")
-        # writer.Statement("ax.plot(SimStep, TE_ACGU)")
-        writer.Statement("lines = ax.plot(SimStep, TE_ACGU)")
+        # writer.Statement("ax.plot(CellMX.SimStep, CellMX.TE_ACGU)")
+        writer.Statement("lines = ax.plot(CellMX.SimStep, CellMX.TE_ACGU)")
         writer.Statement("labels = ['ATP', 'CTP', 'GTP', 'UTP']")
         writer.Statement("ax.legend(lines, labels)")
         writer.Statement("ax.set(xlabel='SimStep', ylabel='Concentration (M)', title='NTP level')")
