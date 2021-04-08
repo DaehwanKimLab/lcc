@@ -385,6 +385,7 @@ def CompileToGenome(GenomeFileName,
 def Compile(CodeFileNames,
             PrefixName,
             DataDir,
+            TargetCodeModel,
             Verbose):
 
     OutputCodeName = PrefixName + ".py"
@@ -404,8 +405,11 @@ def Compile(CodeFileNames,
     SetUpCompilerData(Dataset, CompilerData)
     OutputFile = open(OutputCodeName, 'w')
 
-    Writer = codegen.TFCodeWriter(OutputFile, 0)
-    # Writer = codegen.NumpyCodeWriter(OutputFile, 0)
+    # TODO: use factory
+    if TargetCodeModel == Target.TensorFlow:
+        Writer = codegen.TFCodeWriter(OutputFile, 0)
+    else:
+        Writer = codegen.NumpyCodeWriter(OutputFile, 0)
 
     WriteLicense(Writer)
     WriteImport(Writer); Writer.BlankLine()
@@ -417,7 +421,7 @@ def Compile(CodeFileNames,
 
 """
 """
-# PyCharm: set parameters configuration to "-d ../../data"
+# PyCharm: set parameters configuration to "-L ../../data ecoli.lpp"
 if __name__ == '__main__':
 
     version_str = 'lcc version {version}'.format(version=LCC_VERSION)
@@ -431,10 +435,14 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--out-file',
                         dest='OutputFileName',
                         type=str,
-                        default='cell'
-                                ''
-                                '',
+                        default='cell',
                         help='Output code file')
+    parser.add_argument('-march',
+                        dest='arch',
+                        type=str,
+                        default='tensorflow',
+                        choices=['tensorflow', 'tf', 'numpy', 'np'],
+                        help='Specify output code type')
     parser.add_argument('-V', '--verbose',
                         dest='verbose',
                         action='store_true',
@@ -456,7 +464,14 @@ if __name__ == '__main__':
             print("Error: %s doesn't exist" % codefile)
             exit(1)
 
+    print(args.arch)
+    try:
+        TargetCodeModel = Target.from_str(args.arch)
+    except NotImplemented:
+        parser.print_help()
+
     Compile(args.infiles,
             args.OutputFileName,
             args.data_dir,
+            TargetCodeModel,
             args.verbose)
