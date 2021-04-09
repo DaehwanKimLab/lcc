@@ -94,7 +94,7 @@ class CodeWriter():
         return self
 
     def PrintVari(self, VariableName):
-        Line = 'print("%s = ", %s)' % (VariableName, VariableName)
+        Line = 'print("\t%s = ", %s)' % (VariableName, VariableName)
         self.Statement(Line)
         return self
 

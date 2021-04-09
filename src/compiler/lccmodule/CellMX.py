@@ -3,41 +3,62 @@ import numpy as np
 
 # Cell Matrix class
 
-def Write_CellMX_Init(writer):
-    writer.BlankLine()
-    with writer.Statement("class FCellMX():"):
-        with writer.Statement("def __init__(self):"):
+def Write_CellMX_Init(Writer):
+    Writer.BlankLine()
+    with Writer.Statement("class FCellMX():"):
+        with Writer.Statement("def __init__(self):"):
 
             # Single number variables (subject to change)
-            writer.Statement("# Single number variables (subject to change)")
-            writer.Variable_("self.NumberOfUniqueTranscripts", 0)
-            writer.Variable_("self.ActiveRNAPCount", 0)
-            writer.Variable_("self.ElongationRate", 0)
-            writer.Variable_("self.TCSModel", 0)
-            writer.Variable_("self.ActiveEndonucleaseCount", 0)
-            writer.Variable_("self.RNADegRate", 0)
-            writer.BlankLine()
+            Writer.Statement("# Single number variables (subject to change)")
+            Writer.Variable_("self.NumberOfUniqueRNA", 0)
+            Writer.Variable_("self.ActiveRNAPCount", 0)
+            Writer.Variable_("self.ActiveRNAPAvailCount", 0)
+            Writer.Variable_("self.ElongationRate", 0)
+            Writer.Variable_("self.TCSModel", 0)
+            Writer.Variable_("self.ActiveEndoRNaseCount", 0)
+            Writer.Variable_("self.ActiveEndoRNaseAvailCount", 0)
+            Writer.Variable_("self.RNADegRate", 0)
+            Writer.BlankLine()
 
             # Matrices
-            writer.Statement("# Matrices")
-            writer.Variable_("self.TranscriptNTFreqsTF", 0)
-            writer.Variable_("self.MetaboliteConcsTF", 0)
-            writer.Variable_("self.MetaboliteConcs", 0)
-            writer.Variable_("self.NTConcsIndexTF", 0)
-            writer.Variable_("self.MolCountsTF", 0)
-            writer.Variable_("self.TCSMolIndexTF", 0)
-            writer.Variable_("self.TCSODETimeStepTF", 0)
-            writer.Variable_("self.RNACountsTF", 0)
-            writer.Variable_("self.TranscriptCountsTF", 0)
-            writer.Variable_("self.TranscriptIndexTF", 0)
-            writer.BlankLine()
+            Writer.Statement("# Matrices")
+            Writer.BlankLine()
+            # Index matrices
+            Writer.Statement("# Index matrices")
+            Writer.Variable_("self.NTConcsIndexTF", 0)
+            Writer.Variable_("self.TCSMolIndexTF", 0)
+            Writer.Variable_("self.RNAIndex4AllRNATF", 0)
+            Writer.Variable_("self.RNAIndex4mRNATF", 0)
+            Writer.Variable_("self.RNAIndex4tRNATF", 0)
+            Writer.Variable_("self.RNAIndex4rRNATF", 0)
+            Writer.Variable_("self.RNAIndex4miscRNATF", 0)
+            Writer.Variable_("self.TranscriptIndexTF", 0)
+
+            Writer.BlankLine()
+
+            # Data matrices
+            Writer.Statement("# Data matrices")
+
+            Writer.Variable_("self.MetaboliteConcsTF", 0)
+            Writer.Variable_("self.MetaboliteConcs", 0)
+            Writer.Variable_("self.MolCountsTF", 0)
+            Writer.Variable_("self.TCSODETimeStepTF", 0)
+            Writer.Variable_("self.RNACountsTF", 0)
+            Writer.Variable_("self.RNAPDurationsTF", 0)
+            Writer.Variable_("self.ElongCompletionDurationTF", 0)
+            Writer.Variable_("self.RNAPPerTranscriptTF", 0)
+            Writer.Variable_("self.RNADeg_Transcript", [])
+            Writer.Variable_("self.RNALengthsTF", 0)
+            Writer.Variable_("self.RNANTFreqsTF", 0)
+            Writer.Variable_("self.TranscriptCountsTF", 0)
+            Writer.BlankLine()
 
             # Temporary - these empty lists do not seem to show up? currently moved to lcc.py
-            writer.Statement("# Temporary variables")
-            writer.Variable_("self.SimStep", [])
-            writer.Variable_("self.TE_ACGU", [])
-            writer.Variable_("self.RNADeg_Transcript", [])
-            writer.BlankLine()
+            Writer.Statement("# Temporary variables")
+            Writer.Variable_("self.SimStep", [])
+            Writer.Variable_("self.TE_ACGU", [])
+            Writer.Variable_("self.RNADeg_Transcript", [])
+            Writer.BlankLine()
 
 
 

@@ -3,100 +3,170 @@ import numpy as np
 
 # Transcript Elongation.
 
-def Write_TE_Init(writer, CompilerData):
-    writer.BlankLine()
-    with writer.Statement("def TE_Init():"):
+def Write_TE_Init(Writer, CompilerData):
+    Writer.BlankLine()
+    with Writer.Statement("def TE_Init():"):
         # Matrices for Transcript Elongation
-        np.save("TranscriptNTFreqs", CompilerData.TranscriptNTFreqs)
-        writer.Statement("# Matrices for Transcript Elongation")
-
-        # NT frequency table for transcripts
-        writer.Statement("# Fetch NT frequency table for transcripts")
-        writer.Statement("TranscriptNTFreqs = np.load(\"TranscriptNTFreqs.npy\").astype('float32')")
-        writer.Statement("CellMX.TranscriptNTFreqsTF = tf.convert_to_tensor(TranscriptNTFreqs)")
-        writer.Statement("CellMX.TranscriptNTFreqsTF = tf.transpose(TranscriptNTFreqs)")
-        writer.DebugPVar("TranscriptNTFreqs")
-        writer.DebugPVar("CellMX.TranscriptNTFreqsTF")
-        writer.Statement("CellMX.NumberOfUniqueTranscripts = len(TranscriptNTFreqs)")
-        writer.BlankLine()
+        np.save("RNANTFreqs", CompilerData.RNANTFreqs)
+        np.save("RNALengths", CompilerData.RNALengths)
+        
+        Writer.Statement("# Matrices for Transcript Elongation")
+        # NT frequency table for RNA
+        Writer.Statement("# Fetch NT frequency table for transcripts")
+        Writer.Statement("RNANTFreqs = np.load(\"RNANTFreqs.npy\").astype('float32')")
+        Writer.Statement("CellMX.RNANTFreqsTF = tf.convert_to_tensor(RNANTFreqs)")
+        Writer.Statement("CellMX.RNANTFreqsTF = tf.transpose(RNANTFreqs)")
+        Writer.DebugPVar("RNANTFreqs")
+        Writer.DebugPVar("CellMX.RNANTFreqsTF")
+        Writer.Statement("CellMX.NumberOfUniqueRNA = len(RNANTFreqs)")
+        Writer.BlankLine()
+        # RNA lengths
+        Writer.Statement("# Fetch RNA lengths")
+        Writer.Statement("RNALengths = np.load(\"RNALengths.npy\").astype('float32')")
+        Writer.Statement("CellMX.RNALengthsTF = tf.convert_to_tensor(RNALengths)")
+        Writer.BlankLine()
 
         # NT counts per transcript
         NTIndexList = list()
-        writer.Statement("# Fetch NT concentration")
+        Writer.Statement("# Fetch NT concentration")
         ACGU = ["ATP", "CTP", "GTP", "UTP"]
-        writer.Statement("NTConcs = np.zeros(" + str(len(ACGU)) + ").astype('float32')")
+        Writer.Statement("NTConcs = np.zeros(" + str(len(ACGU)) + ").astype('float32')")
         for i, NTName in enumerate(ACGU):
             NTIndex = CompilerData.MetaboliteName2Index[NTName]
             NTIndexList.append(int(NTIndex))
-            writer.Statement("NTConcs[%d] = CellMX.MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
-        writer.Statement("NTConcsTF = tf.convert_to_tensor(NTConcs)")
-        writer.Statement("CellMX.NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
-        writer.DebugPVar("CellMX.NTConcsIndexTF")
-        writer.BlankLine()
+            Writer.Statement("NTConcs[%d] = CellMX.MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
+        Writer.Statement("NTConcsTF = tf.convert_to_tensor(NTConcs)")
+        Writer.Statement("CellMX.NTConcsIndexTF = tf.reshape(tf.constant(" + str(NTIndexList) + "), [4, -1])")
+        Writer.DebugPVar("CellMX.NTConcsIndexTF")
+        Writer.BlankLine()
 
-        writer.Statement("# Determine elongation rate")
-        writer.Variable_("CellMX.ElongationRate", 10) # TO BE REPLACED AND MOVED INTO SIMULATION
-        writer.BlankLine()
+        # Determine elongation rate
+        Writer.Statement("# Determine elongation rate")
+        Writer.Variable_("CellMX.ElongationRate", 10) # TO BE REPLACED AND MOVED INTO SIMULATION
+        Writer.BlankLine()
 
-        writer.Statement("# Determine active RNAP count")
-        writer.Variable_("CellMX.ActiveRNAPCount", 829) # TO BE REPLACED AND MOVED INTO SIMULATION
-        writer.BlankLine()
+        # Determine active RNAP count
+        Writer.Statement("# Determine active RNAP count")
+        Writer.Variable_("CellMX.ActiveRNAPCount", 829) # TO BE REPLACED AND MOVED INTO SIMULATION
+        Writer.Statement("CellMX.ActiveRNAPAvailCount = CellMX.ActiveRNAPCount") # Initialize
+        Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.zeros(CellMX.NumberOfUniqueRNA, dtype='int32')")
+        Writer.Statement("CellMX.RNAPDurationsTF = tf.zeros(CellMX.NumberOfUniqueRNA, dtype='int32')")
+        Writer.BlankLine()
+
+        # Index for all unique RNA
+        Writer.Statement("# Index for all unique RNA")
+        Writer.Statement(
+            "CellMX.RNAIndex4AllRNATF = tf.convert_to_tensor(list(range(CellMX.NumberOfUniqueRNA)))")
+        Writer.Statement(
+            "CellMX.RNAIndex4AllRNATF = tf.reshape(CellMX.RNAIndex4AllRNATF, [-1, 1])")
+        Writer.BlankLine()
+
+        # Elongation completion duration for each RNA
+        Writer.Statement("# Elongation completion duration for each RNA")
+        Writer.Statement("ElongCompletionDuration = RNALengths // CellMX.ElongationRate")
+        Writer.Statement("CellMX.ElongCompletionDurationTF = tf.convert_to_tensor(ElongCompletionDuration, dtype='int32')")
+        Writer.Statement("CellMX.ElongCompletionDurationTF = tf.reshape(CellMX.ElongCompletionDurationTF, -1)")
+        Writer.BlankLine()
+
     return
 
-def Write_TE_Loop(writer):
-    writer.BlankLine()
-    with writer.Statement("def TE_Loop():"):
-        writer.Statement("# Transcript Elongation (TE)")
-        writer.BlankLine()
+def Write_TE_Loop(Writer):
+    Writer.BlankLine()
+    with Writer.Statement("def TE_Loop():"):
+        Writer.Statement("# Transcript Elongation (TE)")
+        Writer.PrintStrg("# Transcript Elongation Loop outputs:")
+        Writer.BlankLine()
 
         # TE - Allocate RNAP to transcript
-        writer.Statement("# TE - Allocate RNAP to transcript")
-        writer.Statement("RNAPPerTranscriptTF = tf.zeros(CellMX.NumberOfUniqueTranscripts, dtype='int32')")
-        with writer.Statement("for RNAPPosition in range(CellMX.ActiveRNAPCount):"):
-            writer.Statement(
-                "RNAPPosition = tf.random.uniform(shape=[1,1], minval=0, maxval=CellMX.NumberOfUniqueTranscripts, dtype='int32')")
-            writer.Statement("RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(RNAPPerTranscriptTF, RNAPPosition, OneTF)")
-        writer.DebugAsrt("tf.math.reduce_sum(RNAPPerTranscriptTF) == CellMX.ActiveRNAPCount",
-                         'Active RNAPs are not properly allocated')
-        writer.Statement("RNAPPerTranscriptTF = tf.reshape(RNAPPerTranscriptTF, [-1, 1])")
-        writer.Statement("RNAPPerTranscriptTF = tf.cast(RNAPPerTranscriptTF, dtype='float32')")
-        writer.DebugPVar("RNAPPerTranscriptTF")
-        writer.BlankLine()
+        Writer.Statement("# TE - Allocate RNAP to transcript")
+        with Writer.Statement("if CellMX.ActiveRNAPAvailCount > 0:"):
+            with Writer.Statement("for RNAPPosition in range(CellMX.ActiveRNAPAvailCount):"):
+                Writer.Statement(
+                    "RNAPPosition = tf.random.uniform(shape=[1,1], minval=0, maxval=CellMX.NumberOfUniqueRNA, dtype='int32')")
+                Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(CellMX.RNAPPerTranscriptTF, RNAPPosition, OneTF)")
+            Writer.DebugAsrt("tf.math.reduce_sum(CellMX.RNAPPerTranscriptTF) == CellMX.ActiveRNAPCount",
+                             'Active RNAPs are not properly allocated')
+            Writer.Statement("CellMX.ActiveRNAPAvailCount = 0")
+
+            Writer.DebugPVar("CellMX.RNAPPerTranscriptTF")
+            Writer.BlankLine()
 
         # TE - Determine NT consumption
-        writer.Statement("# TE - Determine NT consumption")
-        writer.Statement(
-            "DeltaNTCountsTF = tf.linalg.matmul(CellMX.TranscriptNTFreqsTF, RNAPPerTranscriptTF) * CellMX.ElongationRate")
-        writer.Statement("DeltaNTCountsTF = tf.reshape(DeltaNTCountsTF, -1)")
-        writer.Statement("DeltaNTConcsTF = DeltaNTCountsTF / (CellVol * AvogadroNum)")  # final unit: mol/L
-        writer.DebugVari("NTConcsAvailTF", "tf.gather(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF)")
-        writer.DebugPVar("DeltaNTCountsTF")
-        writer.DebugPVar("DeltaNTConcsTF")
-        writer.DebugPVar("NTConcsAvailTF")
-        writer.DebugSTMT(
+        Writer.Statement("# TE - Determine NT consumption")
+        Writer.Statement("RNAPPerTranscriptTF_Float = tf.cast(tf.reshape(CellMX.RNAPPerTranscriptTF, [-1, 1]), dtype='float32')")
+        Writer.Statement(
+            "DeltaNTCountsTF = tf.linalg.matmul(CellMX.RNANTFreqsTF, RNAPPerTranscriptTF_Float) * CellMX.ElongationRate")
+        Writer.Statement("DeltaNTCountsTF = tf.reshape(DeltaNTCountsTF, -1)")
+        Writer.Statement("DeltaNTConcsTF = DeltaNTCountsTF / (CellVol * AvogadroNum)")  # final unit: mol/L
+        Writer.DebugVari("NTConcsAvailTF", "tf.gather(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF)")
+        Writer.DebugPVar("DeltaNTCountsTF")
+        Writer.DebugPVar("DeltaNTConcsTF")
+        Writer.DebugPVar("NTConcsAvailTF")
+        Writer.DebugSTMT(
             "tf.debugging.assert_positive(NTConcsAvailTF - DeltaNTConcsTF), 'The cell is running out of NTs'")
-        writer.BlankLine()
+        Writer.BlankLine()
+
+        # TE - Determine RNA production and RNAP release
+        Writer.Statement("# TE - Determine RNA production and RNAP release")
+        Writer.Statement(
+            "CellMX.RNAPDurationsTF = tf.tensor_scatter_nd_add(CellMX.RNAPDurationsTF, CellMX.RNAIndex4AllRNATF, tf.reshape(CellMX.RNAPPerTranscriptTF, -1))")
+        Writer.Statement("CellMX.RNAPDurationsTF = tf.reshape(CellMX.RNAPDurationsTF, -1)")
+        Writer.BlankLine()
+
+        Writer.Statement("# Determine Index for Elongation Completion")
+        Writer.Statement("ElongCompletionIndexTF = tf.where(tf.math.greater_equal(CellMX.RNAPDurationsTF, CellMX.ElongCompletionDurationTF))")
+        Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, -1)")
+        Writer.BlankLine()
 
         # TE - Update NT concs
-        writer.Statement("# TE - Update NT counts")
-        writer.Statement(
+        Writer.Statement("# TE - Update NT counts")
+        Writer.Statement(
             "CellMX.MetaboliteConcsTF = tf.tensor_scatter_nd_sub(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF, DeltaNTConcsTF)")
-        writer.DebugVari("NTConcsNewTF", "tf.gather(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF)")
-        # writer.DebugSTMT(
-        #     "tf.debugging.assert_none_equal(NTConcsNewTF, NTConcsAvailTF), 'NT consumption is not properly applied'")
-        writer.PrintVari("tf.reshape(NTConcsNewTF, [-1])")
+        Writer.DebugVari("NTConcsNewTF", "tf.reshape(tf.gather(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF), [-1])")
+        Writer.DebugSTMT(
+            "tf.debugging.assert_none_equal(NTConcsNewTF, NTConcsAvailTF), 'NT consumption is not properly applied'")
+        Writer.PrintVari("NTConcsNewTF")
+        Writer.BlankLine()
 
-        # TE - Update RNA counts
-        writer.Statement("# TE - Update Transcript counts")
+        # If elongation was complete, update RNAP duration on RNA, RNA Counts, endoRNase counts
+        Writer.Statement("# Updates upon elongation completion")
+        Writer.PrintVari("ElongCompletionIndexTF")
+        with Writer.Statement("if tf.math.count_nonzero(ElongCompletionIndexTF):"):
+            # Update RNAP duration on RNA
+            Writer.Statement("# Update RNAP duration on RNA")
+            Writer.Statement("DeltaDurationsTF = tf.gather(CellMX.ElongCompletionDurationTF, ElongCompletionIndexTF)")
+            Writer.Statement("DeltaDurationsTF = tf.reshape(DeltaDurationsTF, -1)")
+            Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, [-1, 1])")
+            Writer.Statement("CellMX.RNAPDurationsTF = tf.tensor_scatter_nd_sub(CellMX.RNAPDurationsTF, ElongCompletionIndexTF, DeltaDurationsTF)")
+            Writer.BlankLine()
 
-        # TE - Update free active RNAP counts
-        writer.Statement("# TE - Update free active RNAP counts")
+            # Update RNAPPerTranscript
+            Writer.Statement("# Update RNAPPerTranscript")
+            Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, [-1, 1])")
+            Writer.InitArrayWithOne("ElongCompletionOnesTF", "tf.size(ElongCompletionIndexTF)")
+            Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.tensor_scatter_nd_sub(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF, ElongCompletionOnesTF)")
+
+            # TE - Update RNA counts
+            Writer.Statement("# TE - Update RNA counts")
+            Writer.Statement(
+                "CellMX.RNACountsTF = tf.tensor_scatter_nd_add(CellMX.RNACountsTF, ElongCompletionIndexTF, ElongCompletionOnesTF)")
+
+            Writer.BlankLine()
+
+            # TE - Update free active RNAP counts
+            Writer.Statement("# TE - Update free active RNAP counts")
+            Writer.Statement("CellMX.ActiveRNAPAvailCount = tf.size(ElongCompletionIndexTF)")
+            Writer.BlankLine()
+
+        Writer.PrintVari("CellMX.RNAPDurationsTF[:10]")
+        Writer.PrintVari("CellMX.RNACountsTF[:10]")
+        Writer.PrintVari("CellMX.ActiveRNAPAvailCount")
 
         # temporary visualization code
-        writer.Statement("CellMX.TE_ACGU.append(tf.reshape(NTConcsNewTF, -1).numpy())")
+        Writer.Statement("CellMX.TE_ACGU.append(tf.reshape(NTConcsNewTF, -1).numpy())")
 
 
-        writer.BlankLine()
+        Writer.BlankLine()
 
         # TE - Update Transcript counts - TO BE IMPLEMENTED
     return
