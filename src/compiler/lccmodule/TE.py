@@ -115,7 +115,7 @@ def Write_TE_Loop(Writer):
 
         Writer.Statement("# Determine Index for Elongation Completion")
         Writer.Statement("ElongCompletionIndexTF = tf.where(tf.math.greater_equal(CellMX.RNAPDurationsTF, CellMX.ElongCompletionDurationTF))")
-        Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, -1)")
+        Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, [-1, 1])")
         Writer.BlankLine()
 
         # TE - Update NT concs
@@ -130,21 +130,28 @@ def Write_TE_Loop(Writer):
 
         # If elongation was complete, update RNAP duration on RNA, RNA Counts, endoRNase counts
         Writer.Statement("# Updates upon elongation completion")
-        Writer.PrintVari("ElongCompletionIndexTF")
+        # Writer.PrintVari("ElongCompletionIndexTF")
         with Writer.Statement("if tf.math.count_nonzero(ElongCompletionIndexTF):"):
             # Update RNAP duration on RNA
             Writer.Statement("# Update RNAP duration on RNA")
             Writer.Statement("DeltaDurationsTF = tf.gather(CellMX.ElongCompletionDurationTF, ElongCompletionIndexTF)")
             Writer.Statement("DeltaDurationsTF = tf.reshape(DeltaDurationsTF, -1)")
-            Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, [-1, 1])")
+            # Writer.PrintStrg("RNAPDuration with Elongation completion index before update:")
+            # Writer.PrintVari("tf.reshape(tf.gather(CellMX.RNAPDurationsTF, ElongCompletionIndexTF), -1)")
             Writer.Statement("CellMX.RNAPDurationsTF = tf.tensor_scatter_nd_sub(CellMX.RNAPDurationsTF, ElongCompletionIndexTF, DeltaDurationsTF)")
+            # Writer.PrintStrg("RNAPDuration with Elongation completion index after update:")
+            # Writer.PrintVari("tf.reshape(tf.gather(CellMX.RNAPDurationsTF, ElongCompletionIndexTF), -1)")
             Writer.BlankLine()
 
             # Update RNAPPerTranscript
             Writer.Statement("# Update RNAPPerTranscript")
-            Writer.Statement("ElongCompletionIndexTF = tf.reshape(ElongCompletionIndexTF, [-1, 1])")
+            # Writer.PrintStrg("RNAPPerTranscript with Elongation completion index before update:")
+            # Writer.PrintVari("tf.reshape(tf.gather(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF), -1)")
             Writer.InitArrayWithOne("ElongCompletionOnesTF", "tf.size(ElongCompletionIndexTF)")
             Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.tensor_scatter_nd_sub(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF, ElongCompletionOnesTF)")
+            # Writer.PrintStrg("RNAPPerTranscript with Elongation completion index after update:")
+            # Writer.PrintVari("tf.reshape(tf.gather(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF), -1)")
+            Writer.BlankLine()
 
             # TE - Update RNA counts
             Writer.Statement("# TE - Update RNA counts")
@@ -158,8 +165,9 @@ def Write_TE_Loop(Writer):
             Writer.Statement("CellMX.ActiveRNAPAvailCount = tf.size(ElongCompletionIndexTF)")
             Writer.BlankLine()
 
-        Writer.PrintVari("CellMX.RNAPDurationsTF[:10]")
-        Writer.PrintVari("CellMX.RNACountsTF[:10]")
+        Writer.PrintVari("CellMX.ElongCompletionDurationTF[:20]")
+        Writer.PrintVari("CellMX.RNAPDurationsTF[:20]")
+        Writer.PrintVari("CellMX.RNACountsTF[:20]")
         Writer.PrintVari("CellMX.ActiveRNAPAvailCount")
 
         # temporary visualization code

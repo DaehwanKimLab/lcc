@@ -318,6 +318,7 @@ def WriteBody(Writer, CompilerData):
             Writer.BlankLine()
 
         # Temporary TE visualization code
+        Writer.Statement("# Temporary TE visualization code")
         Writer.Statement("fig, ax = plt.subplots()")
         # Writer.Statement("ax.plot(CellMX.SimStep, CellMX.TE_ACGU)")
         Writer.Statement("lines = ax.plot(CellMX.SimStep, CellMX.TE_ACGU)")

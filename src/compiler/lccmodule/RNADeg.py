@@ -36,9 +36,34 @@ def Write_RNADeg_Init(Writer, CompilerData):
         # Writer.Variable_("CellMX.RNADegRate", 10) # TO BE REPLACED AND MOVED INTO SIMULATION
         # Writer.BlankLine()
 
+        # RNADeg - Determine active endoRNase count - to be revised with EndoRNase with specific RNA type targets
         Writer.Statement("# RNADeg - Determine active endoRNase count")
-        Writer.Variable_("CellMX.ActiveEndoRNaseCount", 5000) # TO BE REPLACED AND MOVED INTO SIMULATION
-        Writer.Statement("CellMX.ActiveEndoRNAseAvailCount = CellMX.ActiveEndoRNaseCount")
+
+        # EndoRNaseIndexList = []
+        # EndoRNaseIDs = np.load('EndoRNaseIDs.npy') # can be a specific set to be loaded, i.e. mRNA or tRNA or rRNA
+        # Writer.Statement("TranscriptCounts = np.zeros(" + str(len(TranscriptIDs)) + ").astype('int32')")
+        # # for i, EndoRNaseID in enumerate(EndoRNaseIDs):
+        #     EndoRNaseIndex = CompilerData.EndoRNaseID2Index[EndoRNaseID]
+        #     TranscriptIndexList.append(int(EndoRNaseIndex)
+        #     Writer.Statement("EndoRNaseCounts[%d] = ProteinCounts[%d] # %s" % (i, EndoRNaseIndex, EndoRNaseID))
+
+        # EndoRNase4mRNAIndexList = []
+        # EndoRNase4tRNAIndexList = []
+        # EndoRNase4rRNAIndexList = []
+        # EndoRNase4miscRNAIndexList = []
+
+        EndoRNase4mRNACount = 1000
+        EndoRNase4tRNACount = 100
+        EndoRNase4rRNACount = 200
+        EndoRNase4miscRNACount = 50
+
+        EndoRNase4mRNAAvailCount = 1000
+        EndoRNase4tRNAAvailCount = 100
+        EndoRNase4rRNAAvailCount = 200
+        EndoRNase4miscRNAAvailCount = 50
+
+        Writer.Variable_("CellMX.ActiveEndoRNaseCount", 100) # TO BE REPLACED AND MOVED INTO SIMULATION
+        Writer.Statement("CellMX.ActiveEndoRNaseAvailCount = CellMX.ActiveEndoRNaseCount")
 
         Writer.BlankLine()
 
@@ -69,7 +94,7 @@ def Write_RNADeg_Loop(Writer):
         Writer.Statement("CellMX.RNACountsTF = tf.tensor_scatter_nd_sub(CellMX.RNACountsTF, CellMX.TranscriptIndexTF, EndoRNasePerTranscriptTF)")
         # Writer.DebugSTMT("RNACountsUpdated = tf.gather(CellMX.RNACountsTF, CellMX.TranscriptIndexTF)")
         # Writer.DebugSTMT("tf.assert_equal(TCSMolCountsUpdated, TCSMolCountsNewTF, 'TCSMolCounts is not updated')")
-        Writer.PrintVari("CellMX.RNACountsTF[:10]")
+        Writer.PrintVari("CellMX.RNACountsTF[:20]")
         Writer.BlankLine()
 
         # RNADeg - Release NTPs from Exonuclease activity
