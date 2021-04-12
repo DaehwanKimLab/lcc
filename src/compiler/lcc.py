@@ -277,6 +277,11 @@ def WriteBody(Writer, CompilerData):
         Writer.Statement("CellMX.RNAIndex4rRNATF = np.load(\"RNATypeIndex4rRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4miscRNATF = np.load(\"RNATypeIndex4miscRNA.npy\").astype('int32')")
 
+        Writer.Statement("CellMX.NumberOfUniquemRNA = len(CellMX.RNAIndex4mRNATF)")
+        Writer.Statement("CellMX.NumberOfUniquetRNA = len(CellMX.RNAIndex4tRNATF)")
+        Writer.Statement("CellMX.NumberOfUniquerRNA = len(CellMX.RNAIndex4rRNATF)")
+        Writer.Statement("CellMX.NumberOfUniquemiscRNA = len(CellMX.RNAIndex4miscRNATF)")
+
         # Load all RNA count (placeholder)
         Writer.Statement("# Transcript Counts")
         Writer.Variable_("DefaultCount", 100)
