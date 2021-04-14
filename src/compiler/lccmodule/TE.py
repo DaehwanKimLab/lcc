@@ -80,14 +80,14 @@ def Write_TE_Loop(Writer):
         # TE - Allocate RNAP to transcript
         Writer.Statement("# TE - Allocate RNAP to transcript")
         with Writer.Statement("if CellMX.ActiveRNAPAvailCount > 0:"):
-            with Writer.Statement("for RNAPPosition in range(CellMX.ActiveRNAPAvailCount):"):
-                Writer.Statement(
-                    "RNAPPosition = tf.random.uniform(shape=[1,1], minval=0, maxval=CellMX.NumberOfUniqueRNA, dtype='int32')")
-                Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(CellMX.RNAPPerTranscriptTF, RNAPPosition, OneTF)")
+            Writer.RndIncrmt("CellMX.RNAPPerTranscriptTF", "CellMX.ActiveRNAPAvailCount", "CellMX.RNAIndex4AllRNATF", "1")
+            # with Writer.Statement("for RNAPPosition in range(CellMX.ActiveRNAPAvailCount):"):
+            #     Writer.Statement(
+            #         "RNAPPosition = tf.random.uniform(shape=[1,1], minval=0, maxval=CellMX.NumberOfUniqueRNA, dtype='int32')")
+            #     Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.tensor_scatter_nd_add(CellMX.RNAPPerTranscriptTF, RNAPPosition, OneTF)")
+            Writer.Statement("CellMX.ActiveRNAPAvailCount = 0")
             Writer.DebugAsrt("tf.math.reduce_sum(CellMX.RNAPPerTranscriptTF) == CellMX.ActiveRNAPCount",
                              'Active RNAPs are not properly allocated')
-            Writer.Statement("CellMX.ActiveRNAPAvailCount = 0")
-
             Writer.DebugPVar("CellMX.RNAPPerTranscriptTF")
             Writer.BlankLine()
 
@@ -147,7 +147,7 @@ def Write_TE_Loop(Writer):
             Writer.Statement("# Update RNAPPerTranscript")
             # Writer.PrintStrg("RNAPPerTranscript with Elongation completion index before update:")
             # Writer.PrintVari("tf.reshape(tf.gather(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF), -1)")
-            Writer.InitArrayWithOne("ElongCompletionOnesTF", "tf.size(ElongCompletionIndexTF)")
+            Writer.InitArrayWithOne("ElongCompletionOnesTF", "tf.size(ElongCompletionIndexTF)", 'int32')
             Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.tensor_scatter_nd_sub(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF, ElongCompletionOnesTF)")
             # Writer.PrintStrg("RNAPPerTranscript with Elongation completion index after update:")
             # Writer.PrintVari("tf.reshape(tf.gather(CellMX.RNAPPerTranscriptTF, ElongCompletionIndexTF), -1)")

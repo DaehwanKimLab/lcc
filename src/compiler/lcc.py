@@ -65,6 +65,7 @@ class FCompilerData:
         self.RNANTCounts = []
         self.RNANTFreqs = []
 
+        self.RNATypeIndex4AllRNA = []
         self.RNATypeIndex4mRNA = []
         self.RNATypeIndex4tRNA = []
         self.RNATypeIndex4rRNA = []
@@ -179,6 +180,7 @@ def SetUpCompilerData(Dataset, CompilerData):
             CompilerData.RNATypes.append(Type)
             CompilerData.RNAMolWeights.append(MolWeight)
             CompilerData.RNANTCounts.append(NTCount)
+            CompilerData.RNATypeIndex4AllRNA.append(i)
             if Type == 'mRNA':
                 CompilerData.RNATypeIndex4mRNA.append(i)
             elif Type == 'tRNA':
@@ -190,6 +192,7 @@ def SetUpCompilerData(Dataset, CompilerData):
             else:
                 print('Warning: Unaccounted RNA type detected: ', Type)
         np.save('RNAIDs.npy', CompilerData.RNAIDs)
+        np.save('RNATypeIndex4AllRNA.npy', CompilerData.RNATypeIndex4AllRNA)
         np.save('RNATypeIndex4mRNA.npy', CompilerData.RNATypeIndex4mRNA)
         np.save('RNATypeIndex4tRNA.npy', CompilerData.RNATypeIndex4tRNA)
         np.save('RNATypeIndex4rRNA.npy', CompilerData.RNATypeIndex4rRNA)
@@ -244,8 +247,8 @@ def WriteBody(Writer, CompilerData):
         Writer.Variable_("CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
 
         # Define accessory variables - TF version only
-        Writer.InitArrayWithOne('OneTF', [1])
-        Writer.InitArrayWithZero('ZeroTF', [1])
+        Writer.InitArrayWithOne('OneTF', 1, 'int32')
+        Writer.InitArrayWithZero('ZeroTF', 1)
         Writer.BlankLine()
 
         # GLOBAL INIT?
@@ -272,11 +275,13 @@ def WriteBody(Writer, CompilerData):
 
         # Load all RNA Types indexes
         Writer.Statement("# Indices for RNA Types")
+        Writer.Statement("CellMX.RNAIndex4AllRNATF = np.load(\"RNATypeIndex4AllRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4mRNATF = np.load(\"RNATypeIndex4mRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4tRNATF = np.load(\"RNATypeIndex4tRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4rRNATF = np.load(\"RNATypeIndex4rRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4miscRNATF = np.load(\"RNATypeIndex4miscRNA.npy\").astype('int32')")
 
+        Writer.Statement("CellMX.NumberOfUniqueAllRNA = len(CellMX.RNAIndex4AllRNATF)")
         Writer.Statement("CellMX.NumberOfUniquemRNA = len(CellMX.RNAIndex4mRNATF)")
         Writer.Statement("CellMX.NumberOfUniquetRNA = len(CellMX.RNAIndex4tRNATF)")
         Writer.Statement("CellMX.NumberOfUniquerRNA = len(CellMX.RNAIndex4rRNATF)")

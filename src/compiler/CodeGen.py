@@ -176,7 +176,7 @@ class TFCodeWriter(CodeWriter):
         self.Target = Target.TensorFlow
         super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
 
-    def InitArrayWithOne(self, VariableName, Shape, Type='int32'):
+    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
         self.Statement(Line)
@@ -206,6 +206,23 @@ class TFCodeWriter(CodeWriter):
         super().Statement(Line)
         # print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
+
+    def RndValues(self, VariableName, Size, Max):
+        Line = '%s = tf.random.uniform(shape=[%s], minval=0, maxval=%s, dtype = "int32")' % (VariableName, Size, Max)
+        self.Statement(Line)
+
+    def RndIncrmt(self, TargetMX, NumberOfMoleculesToDistribute, Index, IncrementValue):
+        self.RndValues('RandVals', NumberOfMoleculesToDistribute, 'len(' + Index + ')')
+        Line = """
+        for i in range(%s):
+            j = RandVals[i]
+            Position = %s[j]
+            Position = tf.reshape(Position, [-1, 1])
+            TargetMXDataType = tf.shape(%s).dtype
+            One = tf.ones(1, TargetMXDataType)
+            %s = tf.tensor_scatter_nd_add(%s, Position, One * %s)
+            """ % (NumberOfMoleculesToDistribute, Index, TargetMX, TargetMX, TargetMX, IncrementValue)
+        self.Statement(Line)
 
 
 class NumpyType:

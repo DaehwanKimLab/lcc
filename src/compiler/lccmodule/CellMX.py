@@ -40,12 +40,12 @@ def Write_CellMX_Init(Writer):
             Writer.Variable_("self.RNAIndex4rRNATF", 0)
             Writer.Variable_("self.RNAIndex4miscRNATF", 0)
             Writer.Variable_("self.TranscriptIndexTF", 0)
+            Writer.Variable_("self.ExoRNaseTargetIndexTF", 0)
 
             Writer.BlankLine()
 
             # Data matrices
             Writer.Statement("# Data matrices")
-
             Writer.Variable_("self.MetaboliteConcsTF", 0)
             Writer.Variable_("self.MetaboliteConcs", 0)
             Writer.Variable_("self.MolCountsTF", 0)
@@ -58,6 +58,7 @@ def Write_CellMX_Init(Writer):
             Writer.Variable_("self.RNALengthsTF", 0)
             Writer.Variable_("self.RNANTFreqsTF", 0)
             Writer.Variable_("self.TranscriptCountsTF", 0)
+            Writer.Variable_("self.RNACleavedCountsTF", 0)
             Writer.BlankLine()
 
             # Temporary - these empty lists do not seem to show up? currently moved to lcc.py
