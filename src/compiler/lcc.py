@@ -24,6 +24,7 @@ from lccmodule import CellMX
 from lccmodule import TCS
 from lccmodule import TE
 from lccmodule import RNADeg
+from lccmodule import Metab
 
 LCC_VERSION = "0.1"
 
@@ -35,9 +36,12 @@ LCC_PATH = os.path.dirname(os.path.realpath(inspect.getsourcefile(lcc_dummy)))
 # Move out to a file
 class FCompilerData:
     def __init__(self):
-        self.MetaboliteNames = []
-        self.MetaboliteName2Index = {}
+        self.MetaboliteNames4Conc = []
+        self.MetaboliteName2ConcIndex = {}
         self.MetaboliteConcs = None
+        self.MetaboliteNames4MW = []
+        self.MetaboliteName2MWIndex = {}
+        self.MetaboliteMWs = None
 
         self.RXNIDs = []
         self.RXNID2Index = {}
@@ -135,11 +139,21 @@ def SetUpCompilerData(Dataset, CompilerData):
         CompilerData.MetaboliteConcs = np.zeros(len(Metabolites))
         for i, Value in enumerate(Metabolites):
             Name, Conc = Value
-            assert Name not in CompilerData.MetaboliteName2Index
-            CompilerData.MetaboliteName2Index[Name] = len(CompilerData.MetaboliteNames) # = i
-            CompilerData.MetaboliteNames.append(Name)
+            assert Name not in CompilerData.MetaboliteName2ConcIndex
+            CompilerData.MetaboliteName2ConcIndex[Name] = len(CompilerData.MetaboliteNames4Conc) # = i
+            CompilerData.MetaboliteNames4Conc.append(Name)
             CompilerData.MetaboliteConcs[i] = Conc
         np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
+
+        MetaboliteMWs = Dataset['metabolites.tsv']
+        CompilerData.MetaboliteMWs = np.zeros(len(MetaboliteMWs))
+        for i, Value in enumerate(MetaboliteMWs):
+            Name, MW, Localization = Value
+            assert Name not in CompilerData.MetaboliteName2MWIndex
+            CompilerData.MetaboliteName2MWIndex[Name] = len(CompilerData.MetaboliteNames4MW) # = i
+            CompilerData.MetaboliteNames4MW.append(Name)
+            CompilerData.MetaboliteMWs[i] = MW
+        np.save("MetaboliteMWs", CompilerData.MetaboliteMWs)
 
         RXNs = Dataset['reactions.tsv']
         for i, Value in enumerate(RXNs):
@@ -280,12 +294,14 @@ def WriteBody(Writer, CompilerData):
         Writer.Statement("CellMX.RNAIndex4tRNATF = np.load(\"RNATypeIndex4tRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4rRNATF = np.load(\"RNATypeIndex4rRNA.npy\").astype('int32')")
         Writer.Statement("CellMX.RNAIndex4miscRNATF = np.load(\"RNATypeIndex4miscRNA.npy\").astype('int32')")
+        Writer.BlankLine()
 
         Writer.Statement("CellMX.NumberOfUniqueAllRNA = len(CellMX.RNAIndex4AllRNATF)")
         Writer.Statement("CellMX.NumberOfUniquemRNA = len(CellMX.RNAIndex4mRNATF)")
         Writer.Statement("CellMX.NumberOfUniquetRNA = len(CellMX.RNAIndex4tRNATF)")
         Writer.Statement("CellMX.NumberOfUniquerRNA = len(CellMX.RNAIndex4rRNATF)")
         Writer.Statement("CellMX.NumberOfUniquemiscRNA = len(CellMX.RNAIndex4miscRNATF)")
+        Writer.BlankLine()
 
         # Load all RNA count (placeholder)
         Writer.Statement("# Transcript Counts")
@@ -301,16 +317,21 @@ def WriteBody(Writer, CompilerData):
         TE.Write_TE_Init(Writer, CompilerData)
         TCS.Write_TCS_Init(Writer, CompilerData)
         RNADeg.Write_RNADeg_Init(Writer, CompilerData)
+        Metab.Write_Metab_Init(Writer,CompilerData)
 
         # Load loop functions for each process
         TE.Write_TE_Loop(Writer)
         TCS.Write_TCS_Loop(Writer)
         RNADeg.Write_RNADeg_Loop(Writer)
+        Metab.Write_Metab_Loop(Writer)
 
         # Run initialization functions for each process
         Writer.Statement("TE_Init()")
         Writer.Statement("TCS_Init()")
         Writer.Statement("RNADeg_Init()")
+        Writer.Statement("Metab_Init()")
+
+        Writer.BlankLine()
 
         # Run simulation
         Writer.Statement("# Run simulation")
@@ -325,6 +346,7 @@ def WriteBody(Writer, CompilerData):
             Writer.Statement("TE_Loop()")
             Writer.Statement("TCS_Loop()")
             Writer.Statement("RNADeg_Loop()")
+            Writer.Statement("Metab_Loop()")
             Writer.BlankLine()
 
         # Temporary TE visualization code

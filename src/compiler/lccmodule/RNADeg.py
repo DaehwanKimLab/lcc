@@ -85,9 +85,11 @@ def Write_RNADeg_Loop(Writer):
         FourRNATypes = ['mRNA', 'tRNA', 'rRNA', 'miscRNA']
         for RNAType in FourRNATypes:
             Writer.RndIncrmt("EndoRNasePerTranscriptTF", "CellMX.ActiveEndoRNase4" + RNAType + "AvailCount", "CellMX.RNAIndex4" + RNAType + "TF", "1")
+            Writer.BlankLine()
         Writer.DebugAsrt("tf.math.reduce_sum(EndoRNasePerTranscriptTF) == CellMX.ActiveEndoRNaseCount",
                          'Active EndoRNases are not properly allocated')
         Writer.Statement("EndoRNasePerTranscriptTF = tf.reshape(EndoRNasePerTranscriptTF, -1)")
+        Writer.BlankLine()
 
         # RNADeg - Update RNA Deg Transcript counts and RNA cleaved counts
         Writer.Statement("# Update RNA Deg Transcript counts")
@@ -101,18 +103,22 @@ def Write_RNADeg_Loop(Writer):
         Writer.Statement("# RNADeg - Add RNA cleaved counts")
         Writer.Statement("CellMX.RNACleavedCountsTF += EndoRNasePerTranscriptTF")
         Writer.PrintVari("CellMX.RNACleavedCountsTF[:20]")
+        Writer.BlankLine()
 
         # RNADeg - Find index for all RNA cleaved thus far
         Writer.Statement("# RNADeg - Find index for all RNA cleaved thus far")
         Writer.Statement("CellMX.ExoRNaseTargetIndexTF = tf.where(tf.math.greater(CellMX.RNACleavedCountsTF, 0))")
-        Writer.Statement("CellMX.ExoRNaseTargetIndexTF = tf.cast(CellMX.ExoRNaseTargetIndexTF, dtype = 'int32')")
+        Writer.Statement("CellMX.ExoRNaseTargetIndexTF = tf.cast(CellMX.ExoRNaseTargetIndexTF, dtype='int32')")
         Writer.Statement("CellMX.ExoRNaseTargetIndexTF = tf.reshape(CellMX.ExoRNaseTargetIndexTF, -1)")
         Writer.PrintVari("CellMX.ExoRNaseTargetIndexTF")
+        Writer.BlankLine()
 
         # RNADeg - Allocate ExoRNases to the EndoRNase-processed RNAs
         Writer.RndIncrmt("CellMX.RNACleavedCountsTF", "CellMX.ActiveExoRNaseCount", "CellMX.ExoRNaseTargetIndexTF", "-1")
+        # Writer.WgtIncrmt("CellMX.RNACleavedCountsTF", "CellMX.ActiveExoRNaseCount", "CellMX.ExoRNaseTargetIndexTF", "-1")
         Writer.DebugSTMT("tf.debugging.assert_non_negative(CellMX.RNACleavedCountsTF, message='RNA Cleaved Counts became negative')")
         Writer.PrintVari("CellMX.RNACleavedCountsTF[:20]")
+        Writer.BlankLine()
 
 
         # temporary visualization code

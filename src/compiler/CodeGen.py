@@ -94,7 +94,7 @@ class CodeWriter():
         return self
 
     def PrintVari(self, VariableName):
-        Line = 'print("\t%s = ", %s)' % (VariableName, VariableName)
+        Line = 'print("%s = ", %s)' % (VariableName, VariableName)
         self.Statement(Line)
         return self
 
@@ -189,7 +189,7 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
         self.Statement(Line)
 
-    def Reshape(self, DestVar, SrcVar, Shape):
+    def ReshapeMX(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
         self.Statement(Line)
 
@@ -207,22 +207,70 @@ class TFCodeWriter(CodeWriter):
         # print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
+    # Random Value Generator
     def RndValues(self, VariableName, Size, Max):
-        Line = '%s = tf.random.uniform(shape=[%s], minval=0, maxval=%s, dtype = "int32")' % (VariableName, Size, Max)
+        Line = '%s = tf.random.uniform(shape=[%s], minval=0, maxval=%s, dtype="int32")' % (VariableName, Size, Max)
         self.Statement(Line)
 
+    # Randomly chosen molecules for finding molecular interaction - maybe more relevant to numpy later
     def RndIncrmt(self, TargetMX, NumberOfMoleculesToDistribute, Index, IncrementValue):
-        self.RndValues('RandVals', NumberOfMoleculesToDistribute, 'len(' + Index + ')')
-        Line = """
-        for i in range(%s):
-            j = RandVals[i]
-            Position = %s[j]
-            Position = tf.reshape(Position, [-1, 1])
-            TargetMXDataType = tf.shape(%s).dtype
-            One = tf.ones(1, TargetMXDataType)
-            %s = tf.tensor_scatter_nd_add(%s, Position, One * %s)
-            """ % (NumberOfMoleculesToDistribute, Index, TargetMX, TargetMX, TargetMX, IncrementValue)
-        self.Statement(Line)
+        self.RndValues('RandValuePicks', NumberOfMoleculesToDistribute, 'len(' + Index + ')')
+        with self.Statement("for i in range(%s):" % NumberOfMoleculesToDistribute):
+            self.Statement("j = RandValuePicks[i]")
+            self.Statement("SelectedFromIndex = %s[j]" % Index)
+            self.Statement("SelectedFromIndex = tf.reshape(SelectedFromIndex, [-1, 1])")
+            self.Statement("TargetMXDataType = tf.shape(%s).dtype" % TargetMX)
+            self.Statement("One = tf.ones(1, TargetMXDataType)")
+            self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
+
+    # Weighted Value generator
+    def WgtValues(self, VariableName, Size, Index, WeightMX):
+        self.InitArrayWithZero(VariableName, 0)
+        self.Statement("Weights = tf.gather(%s, %s)" % (WeightMX, Index))
+        self.Statement("Weights = Weights / len(Weights)")
+        with self.Statement("for i in range(%s):" % Size):
+            self.Statement("WeightedIndexSelected = tf.data.experimental.sample_from_datasets(%s, weights=Weights)" % Index)
+            self.Statement("%s = tf.concat([%s, WeightedIndexSelected], 0)" % (VariableName, VariableName))
+
+    def WgtIncrmt(self, TargetMX, NumberOfMoleculesToDistribute, Index, IncrementValue):
+        self.WgtValues('WeightedValuePicks', NumberOfMoleculesToDistribute, Index, TargetMX)
+        with self.Statement("for i in range(%s):" % NumberOfMoleculesToDistribute):
+            self.Statement("j = WeightedValuePicks[i]")
+            self.Statement("SelectedFromIndex = %s[j]" % Index)
+            self.Statement("SelectedFromIndex = tf.reshape(SelectedFromIndex, [-1, 1])")
+            self.Statement("TargetMXDataType = tf.shape(%s).dtype" % TargetMX)
+            self.Statement("One = tf.ones(1, TargetMXDataType)")
+            self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
+
+
+    def IndexList(self, MolList, Mol2Index):
+        self.InitArrayWithZero("MolIndices")
+        with self.Statement("for Molecule in %s:" % MolList):
+            self.Statement("MolIndex = %s(Molecule)" % Mol2Index)
+            self.Statement("MolIndices = tf.concat([MolIndices, MolIndex], 0)")
+        self.DebugAsrt("tf.debugging.assert_shapes([MolIndices, %s])" % MolList)
+        self.DebugPVar("MolIndices")
+
+    # Useful matrix reshaping routine for tf.scatter operation
+    def PrepScaNd(self, TargetMX, Index, Values):
+        self.Statement("%s = tf.reshape(%s, -1)" % (TargetMX, TargetMX))
+        self.Statement("%s = tf.reshape(%s, -1)" % (Values, Values))
+        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
+
+    def PrepGathr(self, TargetMX, Index):
+        self.Statement("%s = tf.reshape(%s, -1)" % (TargetMX, TargetMX))
+        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
+
+    def PrepMXMul(self, MX1, MX2):
+        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (MX1, MX1))
+        self.Statement("%s = tf.reshape(%s, [1, -1])" % (MX2, MX2))
+
+    def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolCounts):
+        self.IndexList(MolList, Mol2IndexDict) # Use MolIndices as variable name
+        self.PrepGathr("%s", "MolIndices" % MolCounts)
+        self.Statement("%s = tf.gather(%s, MolIndices)" % (VariableName, MolCounts))
+
+
 
 
 class NumpyType:

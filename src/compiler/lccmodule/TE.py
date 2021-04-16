@@ -32,7 +32,7 @@ def Write_TE_Init(Writer, CompilerData):
         ACGU = ["ATP", "CTP", "GTP", "UTP"]
         Writer.Statement("NTConcs = np.zeros(" + str(len(ACGU)) + ").astype('float32')")
         for i, NTName in enumerate(ACGU):
-            NTIndex = CompilerData.MetaboliteName2Index[NTName]
+            NTIndex = CompilerData.MetaboliteName2ConcIndex[NTName]
             NTIndexList.append(int(NTIndex))
             Writer.Statement("NTConcs[%d] = CellMX.MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
         Writer.Statement("NTConcsTF = tf.convert_to_tensor(NTConcs)")
@@ -98,6 +98,7 @@ def Write_TE_Loop(Writer):
             "DeltaNTCountsTF = tf.linalg.matmul(CellMX.RNANTFreqsTF, RNAPPerTranscriptTF_Float) * CellMX.ElongationRate")
         Writer.Statement("DeltaNTCountsTF = tf.reshape(DeltaNTCountsTF, -1)")
         Writer.Statement("DeltaNTConcsTF = DeltaNTCountsTF / (CellVol * AvogadroNum)")  # final unit: mol/L
+
         Writer.DebugVari("NTConcsAvailTF", "tf.gather(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF)")
         Writer.DebugPVar("DeltaNTCountsTF")
         Writer.DebugPVar("DeltaNTConcsTF")
