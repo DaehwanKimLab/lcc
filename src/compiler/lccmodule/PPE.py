@@ -3,36 +3,36 @@ import numpy as np
 
 # Transcript Elongation.
 
-def Write_TE_Init(Writer, CompilerData):
+def Write_PPE_Init(Writer, CompilerData):
     Writer.BlankLine()
-    with Writer.Statement("def TE_Init():"):
-        # Matrices for Transcript Elongation
-        Writer.Statement("# Matrices for Transcript Elongation")
-        Writer.Blankline()
-        # NT frequency table for RNA
+    with Writer.Statement("def PPE_Init():"):
+        # Matrices for Polypeptide Elongation
+
+        Writer.Statement("# Matrices for Polypeptide Elongation")
+        # NT frequency table for proteins
         Writer.Statement("# Fetch NT frequency table for transcripts")
-        Writer.Statement("RNANTFreqs = np.load(\"RNANTFreqs.npy\").astype('float32')")
-        Writer.Statement("CellMX.RNANTFreqsTF = tf.convert_to_tensor(RNANTFreqs)")
-        Writer.Statement("CellMX.RNANTFreqsTF = tf.transpose(RNANTFreqs)")
-        Writer.DebugPVar("RNANTFreqs")
-        Writer.DebugPVar("CellMX.RNANTFreqsTF")
-        Writer.Statement("CellMX.NumberOfUniqueRNA = len(RNANTFreqs)")
+        Writer.Statement("ProtAAFreqs = np.load(\"ProtAAFreqs.npy\").astype('float32')")
+        Writer.Statement("CellMX.ProtAAFreqsTF = tf.convert_to_tensor(ProtAAreqs)")
+        Writer.Statement("CellMX.ProtAAFreqsTF = tf.transpose(ProtAAFreqs)")
+        Writer.DebugPVar("ProtAAFreqs")
+        Writer.DebugPVar("CellMX.ProtAAFreqsTF")
+        Writer.Statement("CellMX.NumberOfUniqueProt = len(ProtAAFreqs)")
         Writer.BlankLine()
         # RNA lengths
-        Writer.Statement("# Fetch RNA lengths")
-        Writer.Statement("RNALengths = np.load(\"RNALengths.npy\").astype('float32')")
-        Writer.Statement("CellMX.RNALengthsTF = tf.convert_to_tensor(RNALengths)")
+        Writer.Statement("# Fetch Protein lengths")
+        Writer.Statement("ProtLengths = np.load(\"ProtLengths.npy\").astype('float32')")
+        Writer.Statement("CellMX.ProtLengthsTF = tf.convert_to_tensor(ProtLengths)")
         Writer.BlankLine()
 
         # NT counts per transcript
         NTIndexList = list()
-        Writer.Statement("# Fetch NT concentration")
-        NTPs = []
-        with open("ntps.txt", 'r') as OpenFile:
+        AAs = []
+        Writer.Statement("# Fetch AA concentration")
+        with open("amino_acids.txt", 'r') as OpenFile:
             for line in OpenFile:
-                NTPs.append(line)
-        Writer.Statement("NTConcs = np.zeros(" + str(len(NTPs)) + ").astype('float32')")
-        for i, NTName in enumerate(NTPs):
+                AAs.append(line,'[c]')
+        Writer.Statement("NTConcs = np.zeros(" + str(len(AAs)) + ").astype('float32')")
+        for i, NTName in enumerate(AAs):
             NTIndex = CompilerData.MetaboliteName2ConcIndex[NTName]
             NTIndexList.append(int(NTIndex))
             Writer.Statement("NTConcs[%d] = CellMX.MetaboliteConcs[%d] # %s" % (i, NTIndex, NTName))
@@ -46,9 +46,9 @@ def Write_TE_Init(Writer, CompilerData):
         Writer.Variable_("CellMX.ElongationRate", 10) # TO BE REPLACED AND MOVED INTO SIMULATION
         Writer.BlankLine()
 
-        # Determine active RNAP count
-        Writer.Statement("# Determine active RNAP count")
-        Writer.Variable_("CellMX.ActiveRNAPCount", 829) # TO BE REPLACED AND MOVED INTO SIMULATION
+        # Determine active Ribosome count
+        Writer.Statement("# Determine active Ribosome count")
+        Writer.Variable_("CellMX.ActiveRNAPCount", 13408) # TO BE REPLACED AND MOVED INTO SIMULATION
         Writer.Statement("CellMX.ActiveRNAPAvailCount = CellMX.ActiveRNAPCount") # Initialize
         Writer.Statement("CellMX.RNAPPerTranscriptTF = tf.zeros(CellMX.NumberOfUniqueRNA, dtype='int32')")
         Writer.Statement("CellMX.RNAPDurationsTF = tf.zeros(CellMX.NumberOfUniqueRNA, dtype='int32')")

@@ -265,12 +265,33 @@ class TFCodeWriter(CodeWriter):
         self.Statement("%s = tf.reshape(%s, [-1, 1])" % (MX1, MX1))
         self.Statement("%s = tf.reshape(%s, [1, -1])" % (MX2, MX2))
 
-    def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolCounts):
+    def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolConcs):
         self.IndexList(MolList, Mol2IndexDict) # Use MolIndices as variable name
-        self.PrepGathr("%s", "MolIndices" % MolCounts)
-        self.Statement("%s = tf.gather(%s, MolIndices)" % (VariableName, MolCounts))
+        self.PrepGathr("%s", "MolIndices" % MolConcs)
+        self.Statement("MolCounts4Indices = tf.gather(%s, MolIndices)" % (MolConcs))
+        self.Statement("%s = MolCounts4Indices * CellVol * AvogadroNum" % VariableName)
 
-
+    # WRONG EQUATION - to be fixed with %s and more
+    # def Cont2Conc(self, MolList, Mol2Index, CountsMX, MWsMX):
+    #     self.InitArrayWithZero("MolIndices", 0)
+    #     with self.Statement("for Molecule in %s:" % MolList):
+    #         self.Statement("MolIndex = MolNames2Index(Molecule)")
+    #         self.Statement("MolIndices = tf.concat([MolIndices, MolIndex], 0)")
+    #     self.ReshapeMX("CountsMX", "CountsMX", -1)
+    #     self.ReshapeMX("MWsMX", "MWsMX", -1)
+    #     self.ReshapeMX("MolIndices", "MolIndices", [-1, 1])
+    #     self.Statement("CountsForMolIndices = tf.gather(CountsMX, MolIndices)")
+    #     self.Statement("MWsForMolIndices = tf.gather(MWsMX, MolIndices)")
+    #     self.PrepMXMul("CountsForMolIndices", "MWsForMolIndices")
+    #     self.Statement("ConcsForMolIndices = tf.matmul(CountsForMolIndices, MWsForMolIndices) * ")
+    #
+    #     self.InitArrayWithZero("MWs", 0)
+    #     with self.Statement("for Molecule in MolList:"):
+    #         self.Statement("MolIndex = MolNames2Index(Molecule)")
+    #         self.Statement("MWs = tf.concat([MolIndices, MolIndex], 0))")
+    #         self.Statement("matmul(Counts, MWs")
+    #
+    #     return self
 
 
 class NumpyType:

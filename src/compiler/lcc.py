@@ -75,6 +75,22 @@ class FCompilerData:
         self.RNATypeIndex4rRNA = []
         self.RNATypeIndex4miscRNA = []
 
+        self.ProtName2Index = {}
+        self.ProtNames = []
+        self.ProtID2Index = {}
+        self.ProtIDs = []
+        self.ProtSeqs = []
+        self.ProtLengths = []
+        self.ProtMolWeights = []
+        self.ProtLocations = []
+        self.ProtAACounts = []
+        self.ProtAAFreqs = []
+        self.ProtID2GeneID = {}
+        self._GeneIDs = []
+        self.ProtID2RNAID = {}
+        self._RNAIDs = []
+
+
         # Data Path
         self.DataPath = LCC_PATH
 
@@ -192,7 +208,7 @@ def SetUpCompilerData(Dataset, CompilerData):
             CompilerData.RNASeqs.append(Seq)
             CompilerData.RNALengths.append(len(Seq))
             CompilerData.RNATypes.append(Type)
-            CompilerData.RNAMolWeights.append(MolWeight)
+            CompilerData.RNAMolWeights.append(MolWeight[1:-1].split(',')[5])
             CompilerData.RNANTCounts.append(NTCount)
             CompilerData.RNATypeIndex4AllRNA.append(i)
             if Type == 'mRNA':
@@ -212,6 +228,61 @@ def SetUpCompilerData(Dataset, CompilerData):
         np.save('RNATypeIndex4rRNA.npy', CompilerData.RNATypeIndex4rRNA)
         np.save('RNATypeIndex4miscRNA.npy', CompilerData.RNATypeIndex4miscRNA)
 
+        Proteins = Dataset['proteins.tsv']
+        SameProtName = 0
+        SameProtNameSeq = 0
+        SameProtNameSeqLocation = 0
+        SameProtNameLocation = 0
+        SameProtID = 0
+        SameGeneID = 0
+        SameRNAID = 0
+        for i, Value in enumerate(Proteins):
+            AACount, Name, Seq, Comments, CodingRNASeq, MolWeight, Location, RNAID, ProtID, GeneID = Value
+            if Name in CompilerData.ProtName2Index:
+                SameProtName += 1
+                # print(Name)
+                # print(Value)
+                if Seq in CompilerData.ProtSeqs:
+                    SameProtNameSeq += 1
+                    # print(Name)
+                    if Location == CompilerData.ProtLocations[CompilerData.ProtName2Index[Name]]:
+                        SameProtNameSeqLocation += 1
+                        print("Same Protein Name, Seq, Location", Name)
+                if Location == CompilerData.ProtLocations[CompilerData.ProtName2Index[Name]]:
+                    SameProtNameLocation += 1
+            # assert Name not in CompilerData.ProtName2Index
+            CompilerData.ProtName2Index[Name] = len(CompilerData.ProtNames) # = i
+            CompilerData.ProtNames.append(Name)
+            if ProtID in CompilerData.ProtIDs:
+                SameProtID += 1
+                print("Same ProtID:", ProtID)
+            CompilerData.ProtID2Index[ProtID] = len(CompilerData.ProtIDs)
+            CompilerData.ProtIDs.append(ProtID)
+            CompilerData.ProtSeqs.append(Seq)
+            CompilerData.ProtLengths.append(len(Seq))
+            CompilerData.ProtMolWeights.append(MolWeight[1:-1].split(',')[6])
+            CompilerData.ProtLocations.append(Location)
+            CompilerData.ProtAACounts.append(AACount)
+            if GeneID in CompilerData._GeneIDs:
+                SameGeneID += 1
+            CompilerData.ProtID2GeneID[ProtID] = GeneID
+            if RNAID in CompilerData._RNAIDs:
+                SameRNAID += 1
+            CompilerData.ProtID2RNAID[ProtID] = RNAID
+        np.save('ProtIDs.npy', CompilerData.ProtIDs)
+        np.save('ProtMolWeights.npy', CompilerData.ProtMolWeights)
+        np.save('ProtLocations.npy', CompilerData.ProtLocations)
+        np.save('PRotAACounts.npy', CompilerData.ProtAACounts)
+
+        print('Same Name Count: ', SameProtName)
+        print('Same Name and Seq Count: ', SameProtNameSeq)
+        print('Same Name and Location Count: ', SameProtNameLocation)
+        print('Same Name, Seq and Location Count: ', SameProtNameSeqLocation)
+        print('Same Protein ID Count: ', SameProtID)
+        print('Same RNA ID Count: ', SameRNAID)
+        print('Same Gene ID Count: ', SameGeneID)
+
+
         return
 
     def GetMXRNANTFreq():
@@ -223,10 +294,23 @@ def SetUpCompilerData(Dataset, CompilerData):
             NTFreq = NTCounts / NTTotalCount
             CompilerData.RNANTCounts.append(NTCounts)
             CompilerData.RNANTFreqs.append(NTFreq)
-        return
+            np.save("RNANTFreqs.npy", CompilerData.RNANTFreqs)
+            np.save("RNALengths.npy", CompilerData.RNALengths)
+
+    def GetMXProtAAFreq():
+        for ProtSeq, LineForAACounts in zip(CompilerData.ProtSeqs, CompilerData.ProtAACounts):
+            AATotalCount = len(ProtSeq)
+            if AATotalCount == CompilerData.ProtLengths:
+                print("WARNING: Protein length data may contain error.", file=sys.stderr)
+            AACounts = np.array(list(map(int, LineForAACounts[1:-1].split(','))))
+            AAFreq = AACounts / AATotalCount
+            CompilerData.ProtAAFreqs.append(AAFreq)
+        np.save("ProtAAFreqs.npy", CompilerData.ProtAAFreqs)
+        np.save("ProtLengths.npy", CompilerData.ProtLengths)
 
     SetUpDataIndexes()
     GetMXRNANTFreq()
+    GetMXProtAAFreq()
     # CompilerData.TCSMolNames = TwoComponentSystems()
 
 

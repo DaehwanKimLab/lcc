@@ -25,6 +25,8 @@ def Write_CellMX_Init(Writer):
             Writer.Variable_("self.ActiveEndoRNase4rRNACount", 0)
             Writer.Variable_("self.ActiveEndoRNase4miscRNACount", 0)
             Writer.Variable_("self.RNADegRate", 0)
+            Writer.Variable_("self.NumberOfUniqueProt", 0)
+            Writer.Variable_("self.ActiveRibosomeCount", 0)
             Writer.BlankLine()
 
             # Matrices
@@ -62,10 +64,11 @@ def Write_CellMX_Init(Writer):
             Writer.Variable_("self.RNANTFreqsTF", 0)
             Writer.Variable_("self.TranscriptCountsTF", 0)
             Writer.Variable_("self.RNACleavedCountsTF", 0)
+            Writer.Variable_("self.ProtAAFreqsTF", 0)
             Writer.BlankLine()
 
-            # Temporary - these empty lists do not seem to show up? currently moved to lcc.py
-            Writer.Statement("# Temporary variables")
+            # Temporary
+            Writer.Statement("# Temporary variables for misc processes, i.e 2D visualization")
             Writer.Variable_("self.SimStep", [])
             Writer.Variable_("self.TE_ACGU", [])
             Writer.Variable_("self.RNADeg_Transcript", [])
