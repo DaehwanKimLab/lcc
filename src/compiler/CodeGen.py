@@ -243,33 +243,57 @@ class TFCodeWriter(CodeWriter):
             self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
 
 
-    def IndexList(self, MolList, Mol2Index):
-        self.InitArrayWithZero("MolIndices")
-        with self.Statement("for Molecule in %s:" % MolList):
-            self.Statement("MolIndex = %s(Molecule)" % Mol2Index)
-            self.Statement("MolIndices = tf.concat([MolIndices, MolIndex], 0)")
-        self.DebugAsrt("tf.debugging.assert_shapes([MolIndices, %s])" % MolList)
-        self.DebugPVar("MolIndices")
+    def PrepGathr(self, Target, Index):
+        self.Statement("%s = tf.reshape(%s, -1)" % (Target, Target))
+        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
 
-    # Useful matrix reshaping routine for tf.scatter operation
-    def PrepScaNd(self, TargetMX, Index, Values):
-        self.Statement("%s = tf.reshape(%s, -1)" % (TargetMX, TargetMX))
+    def OperGathr(self, VariableName, Target, Index):
+        self.PrepGathr(Target, Index)
+        self.Statement("%s = tf.gather(%s, %s)" % (VariableName, Target, Index))
+
+    def PrepScNds(self, Target, Index, Values):
+        self.Statement("%s = tf.reshape(%s, -1)" % (Target, Target))
         self.Statement("%s = tf.reshape(%s, -1)" % (Values, Values))
         self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
 
-    def PrepGathr(self, TargetMX, Index):
-        self.Statement("%s = tf.reshape(%s, -1)" % (TargetMX, TargetMX))
-        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
+    def OperScAdd(self, Target, Index, Values):
+        self.PrepScNds(Target, Index, Values)
+        self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (Target, Target, Index, Values))
+
+    def OperScSub(self, Target, Index, Values):
+        self.PrepScNds(Target, Index, Values)
+        self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (Target, Target, Index, Values))
 
     def PrepMXMul(self, MX1, MX2):
-        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (MX1, MX1))
-        self.Statement("%s = tf.reshape(%s, [1, -1])" % (MX2, MX2))
+        with self.Statement("if tf.rank(%s) != 2:" % MX1):
+            self.Statement("%s = tf.reshape(%s, [-1, tf.shape(%s)[0]])" % (MX1, MX1, MX1))
+        with self.Statement("if tf.rank(%s) != 2:" % MX2):
+            self.Statement("%s = tf.reshape(%s, [tf.shape(%s)[0], -1])" % (MX2, MX2, MX1))
 
-    def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolConcs):
-        self.IndexList(MolList, Mol2IndexDict) # Use MolIndices as variable name
-        self.PrepGathr("%s", "MolIndices" % MolConcs)
-        self.Statement("MolCounts4Indices = tf.gather(%s, MolIndices)" % (MolConcs))
-        self.Statement("%s = MolCounts4Indices * CellVol * AvogadroNum" % VariableName)
+    def OperMXMul(self, VariableName, MX1, MX2):
+        self.PrepMXMul(MX1, MX2)
+        self.Statement("%s = tf.linalg.matmul(%s, %s)" % (VariableName, MX1, MX2))
+        self.Statement("%s = tf.reshape(%s, -1)" % (VariableName, VariableName))
+
+    def Ls2Index_(self, MolIndexList, MolList, Mol2Index):
+        self.InitArrayWithZero("%s" % MolIndexList)
+        with self.Statement("for Molecule in %s:" % MolList):
+            self.Statement("MolIndex = %s(Molecule)" % Mol2Index)
+            self.Statement("%s = tf.concat([%s, MolIndex], 0)" % (MolIndexList, MolIndexList))
+        self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList, MolList))
+        self.DebugPVar("%s" % MolIndexList)
+
+    def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolIndexList, MolConcs):
+        self.Ls2Index_(MolIndexList, MolList, Mol2IndexDict)
+        self.PrepGathr(MolConcs, MolIndexList)
+        self.OperGathr("MolConcs4MolIndexList", MolConcs, MolIndexList)
+        self.Statement("%s = MolConcs4MolIndexList * CellMX.CellVol * AvogadroNum" % VariableName)
+
+    def Cont2Conc(self, VariableName, MolList, Mol2IndexDict, MolIndexList, MolCounts):
+        self.Ls2Index_(MolIndexList, MolList, Mol2IndexDict)
+        self.PrepGathr(MolCounts, MolIndexList)
+        self.OperGathr("MolCounts4MolIndexList", MolCounts, MolIndexList)
+        self.Statement("%s = MolCounts4MolIndexList / CellMX.CellVol / AvogadroNum" % VariableName)
 
     # WRONG EQUATION - to be fixed with %s and more
     # def Cont2Conc(self, MolList, Mol2Index, CountsMX, MWsMX):

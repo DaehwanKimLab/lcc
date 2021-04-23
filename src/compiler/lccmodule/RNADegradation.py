@@ -81,7 +81,7 @@ def Write_RNADeg_Loop(Writer):
         Writer.BlankLine()
 
         # RNA Deg - Allocate endoRNase to specific substrates
-        Writer.Statement("EndoRNasePerTranscriptTF = tf.zeros(CellMX.NumberOfUniqueRNA, dtype='int32')")
+        Writer.Statement("EndoRNasePerTranscriptTF = tf.zeros(CellMX.NumberOfUniqueRNAs, dtype='int32')")
         FourRNATypes = ['mRNA', 'tRNA', 'rRNA', 'miscRNA']
         for RNAType in FourRNATypes:
             Writer.RndIncrmt("EndoRNasePerTranscriptTF", "CellMX.ActiveEndoRNase4" + RNAType + "AvailCount", "CellMX.RNAIndex4" + RNAType + "TF", "1")

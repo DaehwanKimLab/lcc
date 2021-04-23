@@ -50,7 +50,7 @@ def Write_TCS_Loop(Writer):
         # TCS - Run machine learned model
         Writer.Statement("# TCS - Run machine learned model")
         Writer.Statement("TCSMolCountsTF = tf.gather(CellMX.MolCountsTF, CellMX.TCSMolIndexTF)")
-        Writer.Statement("TCSMolConcsTF = TCSMolCountsTF / (CellVol * AvogadroNum)")  # TCSMolConcsTF == y_init
+        Writer.Statement("TCSMolConcsTF = TCSMolCountsTF / (CellMX.CellVol * AvogadroNum)")  # TCSMolConcsTF == y_init
         Writer.Statement("TCSModelInput = tf.concat([TCSMolConcsTF, CellMX.TCSODETimeStepTF], axis=0)")
         Writer.Statement("TCSMolConcsNewTF = CellMX.TCSModel.predict(tf.reshape(TCSModelInput, [1, -1]))[0, :]")
         Writer.BlankLine()
@@ -75,7 +75,7 @@ def Write_TCS_Loop(Writer):
 
         # TCS - Update TCS molecule counts
         Writer.Statement("# Update two component systems molecule counts")
-        Writer.Statement("TCSMolCountsNewTF = TCSMolConcsNewTF * (CellVol * AvogadroNum)")
+        Writer.Statement("TCSMolCountsNewTF = TCSMolConcsNewTF * (CellMX.CellVol * AvogadroNum)")
         Writer.Statement("CellMX.MolCountsTF = tf.tensor_scatter_nd_update(CellMX.MolCountsTF, CellMX.TCSMolIndexTF, TCSMolCountsNewTF)")
         # Writer.DebugSTMT("TCSMolCountsUpdated = tf.gather(CellMX.MolCountsTF, CellMX.TCSMolIndexTF)")
         # Writer.DebugSTMT("tf.assert_equal(TCSMolCountsUpdated, TCSMolCountsNewTF, 'TCSMolCounts is not updated')")
