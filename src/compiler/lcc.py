@@ -320,7 +320,7 @@ def SetUpCompilerData(Dataset, CompilerData):
     def GetBuildingBlockLists():
         # BuildingBlocks4TxtFiles = ['dntps', 'ntps', 'amino_acids']
         # BuildingBlocks4Variables = ['dNTPs', 'NTPs', 'AAs']
-        TxtFilePath = "../../data/"
+        TxtFilePath = CompilerData.GetDataPath() + '/'
         with open(TxtFilePath + "dntps.txt", 'r') as OpenFile:
             for line in OpenFile:
                 CompilerData.dNTPs.append(line[:-1])
