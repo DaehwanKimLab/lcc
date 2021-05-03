@@ -133,6 +133,7 @@ def WriteImport(Writer):
     Writer.Statement("import numpy as np")
     Writer.Statement("import tensorflow as tf")
     Writer.Statement("import matplotlib.pyplot as plt")
+    Writer.Statement("from datetime import datetime")
 
     Writer.Statement("from argparse import ArgumentParser, FileType")
 
@@ -575,9 +576,27 @@ def WriteMain(Writer):
         Writer.Statement("parser = ArgumentParser(description='')")
         Writer.Statement("parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='also print some statistics to stderr')")
         Writer.Statement("parser.add_argument('-g', '--genome', dest='GenomeFileName', type=str, default='', help='')")
+        Writer.Statement("parser.add_argument('-e', '--eager', dest='TFEagerMode', action='store_true', default=False, help='Running in the eager mode')")
+        Writer.Statement("parser.add_argument('--trace-graph', dest='TFTraceGraph', action='store_true', default=False, help='Tracing the TensorFlow Graph')")
         Writer.BlankLine()
         Writer.Statement("args = parser.parse_args()")
+        Writer.BlankLine()
+        Writer.Statement("print('TF Eager Mode:', args.TFEagerMode)", TargetCode=Target.TensorFlow)
+        Writer.Statement("tf.config.run_functions_eagerly(args.TFEagerMode)", TargetCode=Target.TensorFlow)
+        Writer.BlankLine()
+        with Writer.Statement("if args.TFTraceGraph:"):
+            Writer.Statement("tf.summary.trace_on(graph=True)  # , profiler=True)")
+        Writer.BlankLine()
         Writer.Statement("main(args.GenomeFileName, args.verbose)")
+        Writer.BlankLine()
+
+        with Writer.Statement("if args.TFTraceGraph:"):
+            Writer.Statement("timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')")
+            Writer.Statement("tf_logdir = 'logs/graph/%s' % timestamp")
+            Writer.Statement("summary_writer = tf.summary.create_file_writer(tf_logdir)")
+            with Writer.Statement("with summary_writer.as_default():"):
+                Writer.Statement("tf.summary.trace_export(name='lcc_trace', step=0, profiler_outdir=tf_logdir)")
+        Writer.BlankLine()
 
     Writer.SetIndentLevel(tmpLevel)
 
