@@ -20,101 +20,46 @@ from argparse import ArgumentParser
 import CodeGen
 from CodeGen import Target
 import inspect
-from lccmodule import CellMX
-from lccmodule import TwoComponentSystems
-from lccmodule import TranscriptElongation
-from lccmodule import RNADegradation
-from lccmodule import Metabolism
-from lccmodule import PolypeptideElongation
+from CompilerData import FCompilerData
+from lccclass import Class_Simulation
+from lccclass import Class_Constant
+from lccclass import Class_Environment
+from lccclass import Class_CellState
+from lccclass import Class_Visualization_2D
+# from lccclass.cellstate import GenomeState
+# from lccclass.cellstate import RNAState
+# from lccclass.cellstate import ProteinMonomerState
+# from lccclass.cellstate import ComplexState
+# from lccclass.cellstate import LipidState
+# from lccclass.cellstate.genomestate import GeneState
+# from lccclass.cellstate.genomestate import PromoterState
+from lccmodule.misc import Simulation
+from lccmodule.synthesis import Replication
+from lccmodule.synthesis import Transcription
+from lccmodule.synthesis import Translation
+from lccmodule.degradation import DNADegradation
+from lccmodule.degradation import RNADegradation
+from lccmodule.degradation import ProteinDegradation
+from lccmodule.modification import DNAModifications
+from lccmodule.modification import RNAModifications
+from lccmodule.modification import PostTranslationalModifications
+from lccmodule.conversion import Complexation
+from lccmodule.conversion import Equilibrium
+from lccmodule.metabolism import MetabolicNetwork
+from lccmodule.signaling import OneComponentSystems
+from lccmodule.signaling import TwoComponentSystems
+from lccmodule.signaling import ECFSigmaFactor
+from lccmodule.biophysics import Cytokinesis
+from lccmodule.biophysics import BiophysicalProperties
+from lccmodule.biophysics import Flagellum
+
+
 
 LCC_VERSION = "0.1"
 
 def lcc_dummy():
     pass
 LCC_PATH = os.path.dirname(os.path.realpath(inspect.getsourcefile(lcc_dummy)))
-
-
-# Move out to a file
-class FCompilerData:
-    def __init__(self):
-        self.dNTPs = []
-        self.NTPs = []
-        self.AAs = []
-        self.dNTPsWithLoc = []
-        self.NTPsWithLoc = []
-        self.AAsWithLoc = []
-        self.dNTPKeys = []
-        self.NTPKeys = []
-        self.AAKeys = []
-
-
-        self.MetaboliteNames4Conc = []
-        self.MetaboliteName2ConcIndex = {}
-        self.MetaboliteConcs = None
-        self.MetaboliteNames4MW = []
-        self.MetaboliteName2MWIndex = {}
-        self.MetaboliteMWs = None
-        self.MetaboliteNames4Counts = []
-        self.MetaboliteName2CountIndex = {}
-        self.MetaboliteCounts = None
-
-
-        self.RXNIDs = []
-        self.RXNID2Index = {}
-        self.RXNStoichiometries = []
-        self.RXNReversibilities = []
-        self.RXNEnzymes = []
-
-        # self.TCSRXNs = []
-        self.MolNames = []
-        self.MolName2Index = {}
-        self.MolCounts = None
-        self.MolConcs = None
-
-        self.RNAName2Index = {}
-        self.RNANames = []
-        self.RNAMonomerID2Index = {}
-        self.RNAMonomerIDs = []
-        self.RNAID2Index = {}
-        self.RNAIDs = []
-        self.RNAHalfLives = []
-        self.RNASeqs = []
-        self.RNALengths = []
-        self.RNATypes = []
-        self.RNAMolWeights = []
-        self.RNANTCounts = []
-        self.RNANTFreqs = []
-
-        self.RNATypeIndex4AllRNA = []
-        self.RNATypeIndex4mRNA = []
-        self.RNATypeIndex4tRNA = []
-        self.RNATypeIndex4rRNA = []
-        self.RNATypeIndex4miscRNA = []
-
-        self.ProtName2Index = {}
-        self.ProtNames = []
-        self.ProtID2Index = {}
-        self.ProtIDs = []
-        self.ProtSeqs = []
-        self.ProtLengths = []
-        self.ProtMolWeights = []
-        self.ProtLocations = []
-        self.ProtAACounts = []
-        self.ProtAAFreqs = []
-        self.ProtID2GeneID = {}
-        self._GeneIDs = []
-        self.ProtID2RNAID = {}
-        self._RNAIDs = []
-
-
-        # Data Path
-        self.DataPath = LCC_PATH
-
-    def SetDataPath(self, InDataPath):
-        self.DataPath = InDataPath
-
-    def GetDataPath(self):
-        return self.DataPath
 
 def WriteLicense(Writer):
     tmpLevel = Writer.GetIndentLevel()
@@ -139,250 +84,11 @@ def WriteImport(Writer):
     Writer.SetIndentLevel(tmpLevel)
 
 
-def LoadData(data_dir):
-    dataset = dict()
-    def parse_tsv(fpath, fname):
-        fullpath = fpath + '/' + fname
-        #print(fname)
-
-        with open(fullpath) as fp:
-            csv_reader = csv.reader(fp, delimiter = '\t')
-            list_of_rows = list(csv_reader)
-
-            dataset[fname] = list_of_rows[1:]
-
-    def dump_dataset():
-        for key, value in dataset.items():
-            print(key, len(value))
-
-    for fname in os.listdir(data_dir):
-        if fname.endswith('.tsv'):
-            parse_tsv(data_dir, fname)
-
-    for fname in os.listdir(data_dir + '/MolCount_Sim1'):
-        if fname.endswith('.tsv'):
-            parse_tsv(data_dir + '/MolCount_Sim1', fname)
-
-
-    dump_dataset()
-    return dataset
-
-
-def SetUpCompilerData(Dataset, CompilerData):
-
-    def SetUpDataIndexes():
-        # Saving npy files may be done in a separate temporary compiler data output folder
-
-        # This table is to be discarded and completely replaced by MetaboliteCounts Dataset
-        # MetaboliteMWs = Dataset['metabolites.tsv']
-        # CompilerData.MetaboliteMWs = np.zeros(len(MetaboliteMWs))
-        # for i, Value in enumerate(MetaboliteMWs):
-        #     Name, MW, Localization = Value
-        #     assert Name not in CompilerData.MetaboliteName2MWIndex
-        #     CompilerData.MetaboliteName2MWIndex[Name] = len(CompilerData.MetaboliteNames4MW) # = i
-        #     CompilerData.MetaboliteNames4MW.append(Name)
-        #     CompilerData.MetaboliteMWs[i] = MW
-        # np.save("MetaboliteMWs", CompilerData.MetaboliteMWs)
-
-        MetaboliteConcs = Dataset['metaboliteConcentrations.tsv']
-        CompilerData.MetaboliteConcs = np.zeros(len(MetaboliteConcs))
-        for i, Value in enumerate(MetaboliteConcs):
-            Name, Conc = Value
-            assert Name not in CompilerData.MetaboliteName2ConcIndex
-            CompilerData.MetaboliteName2ConcIndex[Name] = len(CompilerData.MetaboliteNames4Conc) # = i
-            CompilerData.MetaboliteNames4Conc.append(Name)
-            CompilerData.MetaboliteConcs[i] = Conc
-        np.save("MetaboliteConcs", CompilerData.MetaboliteConcs)
-
-        MetaboliteCounts = Dataset['DL_0_Metabolism_BulkMolecules.tsv']
-        CompilerData.MetaboliteCounts = np.zeros(len(MetaboliteCounts))
-        for i, Value in enumerate(MetaboliteCounts):
-            Name, Count = Value
-            assert Name not in CompilerData.MetaboliteName2ConcIndex
-            CompilerData.MetaboliteName2CountIndex[Name] = len(CompilerData.MetaboliteNames4Counts)  # = i
-            CompilerData.MetaboliteNames4Counts.append(Name)
-            CompilerData.MetaboliteCounts[i] = Count
-        np.save("MetaboliteCounts", CompilerData.MetaboliteCounts)
-
-        RXNs = Dataset['reactions.tsv']
-        for i, Value in enumerate(RXNs):
-            RXNID, RXNStoichiometry, RXNReversibility, RXNEnzyme = Value
-            assert RXNID not in CompilerData.RXNID2Index
-            CompilerData.RXNID2Index[RXNID] = len(CompilerData.RXNIDs) # = i
-            CompilerData.RXNIDs.append(RXNID)
-            CompilerData.RXNStoichiometries.append(RXNStoichiometry)
-            CompilerData.RXNReversibilities.append(RXNReversibility)
-            CompilerData.RXNEnzymes.append(RXNEnzyme)
-
-        # TwoComponentSystems = Dataset['twoComponentSystems.tsv']
-        MolCounts = Dataset['TwoComponentSystemsTemporary_DL.tsv'] # temporary data table
-        CompilerData.MolCounts = np.zeros(len(MolCounts))
-        for i, Value in enumerate(MolCounts):
-            MolName, MolCount = Value
-            CompilerData.MolName2Index[MolName] = len(CompilerData.MolNames) # = i
-            CompilerData.MolNames.append(MolName)
-            CompilerData.MolCounts[i] = MolCount
-        np.save("MolCounts.npy", CompilerData.MolCounts)
-
-        # Temporary command to save a list of participating molecules in TCS
-        np.save('TCSMolNames.npy', CompilerData.MolNames)
-
-        RNAs = Dataset['rnas.tsv']
-        for i, Value in enumerate(RNAs):
-            HalfLife, Name, Seq, Type, ModifiedForms, MonomerID, Comments, MolWeight, Location, NTCount, ID, GeneID, MicArrExp = Value
-            assert Name not in CompilerData.RNAID2Index
-            CompilerData.RNAName2Index[Name] = len(CompilerData.RNANames) # = i
-            CompilerData.RNANames.append(Name)
-            CompilerData.RNAMonomerID2Index[MonomerID] = len(CompilerData.RNAMonomerIDs)
-            CompilerData.RNAMonomerIDs.append(MonomerID)
-            CompilerData.RNAID2Index[ID] = len(CompilerData.RNAIDs)
-            CompilerData.RNAIDs.append(ID)
-            CompilerData.RNAHalfLives.append(HalfLife)
-            CompilerData.RNASeqs.append(Seq)
-            CompilerData.RNALengths.append(len(Seq))
-            CompilerData.RNATypes.append(Type)
-            CompilerData.RNAMolWeights.append(MolWeight[1:-1].split(',')[5])
-            CompilerData.RNANTCounts.append(NTCount)
-            CompilerData.RNATypeIndex4AllRNA.append(i)
-            if Type == 'mRNA':
-                CompilerData.RNATypeIndex4mRNA.append(i)
-            elif Type == 'tRNA':
-                CompilerData.RNATypeIndex4tRNA.append(i)
-            elif Type == 'rRNA':
-                CompilerData.RNATypeIndex4rRNA.append(i)
-            elif Type == 'miscRNA':
-                CompilerData.RNATypeIndex4miscRNA.append(i)
-            else:
-                print('Warning: Unaccounted RNA type detected: ', Type)
-        np.save('RNAIDs.npy', CompilerData.RNAIDs)
-        np.save('RNATypeIndex4AllRNA.npy', CompilerData.RNATypeIndex4AllRNA)
-        np.save('RNATypeIndex4mRNA.npy', CompilerData.RNATypeIndex4mRNA)
-        np.save('RNATypeIndex4tRNA.npy', CompilerData.RNATypeIndex4tRNA)
-        np.save('RNATypeIndex4rRNA.npy', CompilerData.RNATypeIndex4rRNA)
-        np.save('RNATypeIndex4miscRNA.npy', CompilerData.RNATypeIndex4miscRNA)
-
-        Proteins = Dataset['proteins.tsv']
-        SameProtName = 0
-        SameProtNameSeq = 0
-        SameProtNameSeqLocation = 0
-        SameProtNameLocation = 0
-        SameProtID = 0
-        SameGeneID = 0
-        SameRNAID = 0
-        for i, Value in enumerate(Proteins):
-            AACount, Name, Seq, Comments, CodingRNASeq, MolWeight, Location, RNAID, ProtID, GeneID = Value
-            if Name in CompilerData.ProtName2Index:
-                SameProtName += 1
-                # print(Name)
-                # print(Value)
-                if Seq in CompilerData.ProtSeqs:
-                    SameProtNameSeq += 1
-                    # print(Name)
-                    if Location == CompilerData.ProtLocations[CompilerData.ProtName2Index[Name]]:
-                        SameProtNameSeqLocation += 1
-                        # print("Same Protein Name, Seq, Location", Name)
-                if Location == CompilerData.ProtLocations[CompilerData.ProtName2Index[Name]]:
-                    SameProtNameLocation += 1
-            # assert Name not in CompilerData.ProtName2Index
-            CompilerData.ProtName2Index[Name] = len(CompilerData.ProtNames) # = i
-            CompilerData.ProtNames.append(Name)
-            if ProtID in CompilerData.ProtIDs:
-                SameProtID += 1
-                # print("Same ProtID:", ProtID)
-            CompilerData.ProtID2Index[ProtID] = len(CompilerData.ProtIDs)
-            CompilerData.ProtIDs.append(ProtID)
-            CompilerData.ProtSeqs.append(Seq)
-            CompilerData.ProtLengths.append(len(Seq))
-            CompilerData.ProtMolWeights.append(MolWeight[1:-1].split(',')[6])
-            CompilerData.ProtLocations.append(Location)
-            CompilerData.ProtAACounts.append(AACount)
-            if GeneID in CompilerData._GeneIDs:
-                SameGeneID += 1
-            CompilerData.ProtID2GeneID[ProtID] = GeneID
-            if RNAID in CompilerData._RNAIDs:
-                SameRNAID += 1
-            CompilerData.ProtID2RNAID[ProtID] = RNAID
-        np.save('ProtIDs.npy', CompilerData.ProtIDs)
-        np.save('ProtMolWeights.npy', CompilerData.ProtMolWeights)
-        np.save('ProtLocations.npy', CompilerData.ProtLocations)
-        np.save('PRotAACounts.npy', CompilerData.ProtAACounts)
-
-        # print('Same Name Count: ', SameProtName)
-        # print('Same Name and Seq Count: ', SameProtNameSeq)
-        # print('Same Name and Location Count: ', SameProtNameLocation)
-        # print('Same Name, Seq and Location Count: ', SameProtNameSeqLocation)
-        # print('Same Protein ID Count: ', SameProtID)
-        # print('Same RNA ID Count: ', SameRNAID)
-        # print('Same Gene ID Count: ', SameGeneID)
-        return
-
-    # Add [c] for each for reading in for count calling
-    def GetBuildingBlockLists():
-        # BuildingBlocks4TxtFiles = ['dntps', 'ntps', 'amino_acids']
-        # BuildingBlocks4Variables = ['dNTPs', 'NTPs', 'AAs']
-        TxtFilePath = "../../data/"
-        with open(TxtFilePath + "dntps.txt", 'r') as OpenFile:
-            for line in OpenFile:
-                CompilerData.dNTPs.append(line[:-1])
-                CompilerData.dNTPsWithLoc.append(line[:-1] + '[c]')
-        assert '\n' not in CompilerData.dNTPs
-        CompilerData.dNTPKeys = ['A', 'C', 'G', 'T']
-
-        with open(TxtFilePath + "ntps.txt", 'r') as OpenFile:
-            for line in OpenFile:
-                CompilerData.NTPs.append(line[:-1])
-                CompilerData.NTPsWithLoc.append(line[:-1] + '[c]')
-        assert '\n' not in CompilerData.NTPs
-        CompilerData.NTPKeys = ['A', 'C', 'G', 'U']
-
-        with open(TxtFilePath + "amino_acids.txt", 'r') as OpenFile:
-            for line in OpenFile:
-                CompilerData.AAs.append(line[:-1])
-                CompilerData.AAsWithLoc.append(line[:-1] + '[c]')
-        assert '\n' not in CompilerData.AAs
-
-        with open(TxtFilePath + "amino_acid_keys.txt", 'r') as OpenFile:
-            for line in OpenFile:
-                CompilerData.AAKeys.append(line[:-1])
-        assert '\n' not in CompilerData.AAKeys
-
-
-
-    def GetMXRNANTFreq():
-        for RNASeq in CompilerData.RNASeqs:
-            NTTotalCount = len(RNASeq)
-            NTCounts = np.array([RNASeq.count("A"), RNASeq.count("C"), RNASeq.count("G"), RNASeq.count("U")])
-            if np.sum(NTCounts) != NTTotalCount:
-                print("WARNING: RNA seq may contain non-ACGU text.", file=sys.stderr)
-            NTFreq = NTCounts / NTTotalCount
-            CompilerData.RNANTCounts.append(NTCounts)
-            CompilerData.RNANTFreqs.append(NTFreq)
-        np.save("RNANTFreqs.npy", CompilerData.RNANTFreqs)
-        np.save("RNALengths.npy", CompilerData.RNALengths)
-
-    def GetMXProtAAFreq():
-        for ProtSeq, LineForAACounts in zip(CompilerData.ProtSeqs, CompilerData.ProtAACounts):
-            AATotalCount = len(ProtSeq)
-            if AATotalCount == CompilerData.ProtLengths:
-                print("WARNING: Protein length data may contain error.", file=sys.stderr)
-            AACounts = np.array(list(map(int, LineForAACounts[1:-1].split(','))))
-            AAFreq = AACounts / AATotalCount
-            CompilerData.ProtAAFreqs.append(AAFreq)
-        np.save("ProtAAFreqs.npy", CompilerData.ProtAAFreqs)
-        np.save("ProtLengths.npy", CompilerData.ProtLengths)
-
-    SetUpDataIndexes()
-    GetBuildingBlockLists()
-    GetMXRNANTFreq()
-    GetMXProtAAFreq()
-    # CompilerData.TCSMolNames = TwoComponentSystems()
-
-
 def WriteBody(Writer, CompilerData):
 
-    Writer.DebugPrintSwitch = False # ON/OFF switch to print data being processed
-    Writer.DebugAssertSwitch = True
-
+    Writer.Switch4DebugCompiler = False
+    Writer.Switch4DebugSimulation = False
+    Writer.Switch4Graph = False
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Lines = [
@@ -392,139 +98,77 @@ def WriteBody(Writer, CompilerData):
         Writer.Statement(Line)
 
     with Writer:
-        # Define simulation parameters
-        Writer.Statement("# Define simulation parameters")
-        Writer.Variable_("CellCycles", 1)
-        Writer.Variable_("SimulationSteps", 100)
-
         Writer.BlankLine()
 
+        # Specify the mode of data processing
         Writer.Statement("# This is a numpy code", TargetCode=Target.Numpy)
         Writer.Statement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
 
-        # Define key constants
-        Writer.Statement("# Define key constants")
-        Writer.Variable_("AvogadroNum", 6.022141527E23)
+        # Load all object classes
+        Writer.Statement("# Load all object classes.")
+        Class_Simulation.Write_Class_Simulation_Init(Writer)
+        Class_Constant.Write_Class_Constant_Init(Writer)
+        Class_Environment.Write_Class_Environment_Init(Writer)
+        Class_CellState.Write_Class_CellState_Init(Writer)
+        # GenomeState.Write_Class_GenomeState_Init(Writer)
+        # GeneState.Write_Class_GeneState_Init(Writer)
+        # PromoterState.Write_Class_PromoterState_Init(Writer)
+        # RNAState.Write_Class_RNAState_Init(Writer)
+        # ProteinMonomerState.Write_Class_ProteinMonomerState_Init(Writer)
+        # ComplexState.Write_Class_ComplexState_Init(Writer)
+        # LipidState.Write_Class_LipidState_Init(Writer)
 
-        # Define accessory variables - TF version only
-        Writer.InitArrayWithOne('OneTF', 1, 'int32')
-        Writer.InitArrayWithZero('ZeroTF', 1)
         Writer.BlankLine()
 
-        # GLOBAL INIT?
-
-        # Load CellMX
-        CellMX.Write_CellMX_Init(Writer)
-        Writer.Statement("CellMX = FCellMX()")
+        # Initialize all variables
+        Writer.Statement("# Initialize all variables.")
+        Writer.Statement("Sim = FSimulation()")
+        Writer.Statement("Cst = FConstant()")
+        Writer.Statement("Env = FEnvironment()")
+        Writer.Statement("Cel = FCellState()")
+        # Writer.Statement("DNA = FGenomeState()") # Subclass of Cel
+        # Writer.Statement("RNA = FRNAState()") # Subclass of Cel
+        # Writer.Statement("PRT = FProteinMonomerState()") # Subclass of Cel
+        # Writer.Statement("CPX = FComplexState()") # Subclass of Cel
+        # Writer.Statement("LIP = FLipidState()") # Subclass of Cel
+        # Writer.Statement("GEN = FGeneState()") # Subclass of DNA
+        # Writer.Statement("PRM = FPromoterState()") # Subclass of DNA
         Writer.BlankLine()
 
-        # Temporary E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
-        Writer.Variable_("CellMX.CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
+        # Load all simulation initialization functions
 
-        # Set up commonly used Cell State and index matrices - Make a separate py file
-        Writer.Statement("# Load metabolite concentration table")
-        Writer.Statement("CellMX.MetaboliteConcs = np.load(\"MetaboliteConcs.npy\").astype('float32')")
-        Writer.Statement("CellMX.MetaboliteConcsTF = tf.convert_to_tensor(CellMX.MetaboliteConcs)")
-        Writer.DebugPVar("CellMX.MetaboliteConcs")
-        Writer.DebugPVar("CellMX.MetaboliteConcsTF")
-        Writer.BlankLine()
-
-        Writer.Statement("# Load metabolite counts table")
-        Writer.Statement("CellMX.MetaboliteCounts = np.load(\"MetaboliteCounts.npy\").astype('float32')")
-        Writer.Statement("CellMX.MetaboliteCountsTF = tf.convert_to_tensor(CellMX.MetaboliteCounts)")
-        Writer.DebugPVar("CellMX.MetaboliteCounts")
-        Writer.DebugPVar("CellMX.MetaboliteCountsTF")
-
-        Writer.Statement("# Load molecule count table")
-        Writer.Statement("MolCounts = np.load(\"MolCounts.npy\").astype('float32')")
-        Writer.Statement("CellMX.MolCountsTF = tf.convert_to_tensor(MolCounts)")
-        Writer.DebugPVar("MolCounts")
-        Writer.DebugPVar("CellMX.MolCountsTF")
-        Writer.BlankLine()
-
-        # Load all RNA counts (placeholder)
-        Writer.Statement("# RNA Counts")
-        Writer.Variable_("DefaultCount", 100)
-        Writer.Statement("RNACounts = np.ones(" + str(len(CompilerData.RNAIDs)) + ").astype('int32') * DefaultCount")
-        Writer.Statement("CellMX.RNACountsTF = tf.convert_to_tensor(RNACounts)")
-        Writer.DebugPVar("CellMX.RNACountsTF")
-        Writer.BlankLine()
-
-        # Load all RNA Types indexes
-        Writer.Statement("# Indices for RNA Types")
-        Writer.Statement("CellMX.RNAIndex4mRNATF = np.load(\"RNATypeIndex4mRNA.npy\").astype('int32')")
-        Writer.Statement("CellMX.RNAIndex4tRNATF = np.load(\"RNATypeIndex4tRNA.npy\").astype('int32')")
-        Writer.Statement("CellMX.RNAIndex4rRNATF = np.load(\"RNATypeIndex4rRNA.npy\").astype('int32')")
-        Writer.Statement("CellMX.RNAIndex4miscRNATF = np.load(\"RNATypeIndex4miscRNA.npy\").astype('int32')")
-        Writer.BlankLine()
-
-        # Load the number of unique RNAs
-        Writer.Statement("CellMX.NumberOfUniqueRNAs = len(RNACounts)")
-        Writer.Statement("CellMX.NumberOfUniquemRNAs = len(CellMX.RNAIndex4mRNATF)")
-        Writer.Statement("CellMX.NumberOfUniquetRNAs = len(CellMX.RNAIndex4tRNATF)")
-        Writer.Statement("CellMX.NumberOfUniquerRNAs = len(CellMX.RNAIndex4rRNATF)")
-        Writer.Statement("CellMX.NumberOfUniquemiscRNAs = len(CellMX.RNAIndex4miscRNATF)")
-        Writer.BlankLine()
-
-        # Index for all unique RNA
-        Writer.Statement("# Index for all unique RNA")
-        Writer.Statement(
-            "CellMX.RNAIndex4AllRNATF = tf.convert_to_tensor(list(range(CellMX.NumberOfUniqueRNAs)))")
-        Writer.BlankLine()
-
-        # Load all RNA lengths
-        Writer.Statement("RNALengths = np.load(\"RNALengths.npy\").astype('int32')")
-        Writer.Statement("CellMX.RNALengthsTF = tf.convert_to_tensor(RNALengths)")
-        Writer.BlankLine()
-
-        # Load all Protein counts (placeholder)
-        Writer.Statement("# Protein Counts")
-        Writer.Variable_("DefaultCount", 100)
-        Writer.Statement("ProtCounts = np.ones(" + str(len(CompilerData.ProtIDs)) + ").astype('int32') * DefaultCount")
-        Writer.Statement("CellMX.ProtCountsTF = tf.convert_to_tensor(ProtCounts)")
-        Writer.DebugPVar("CellMX.ProtCountsTF")
-        Writer.BlankLine()
-
-        # Load the number of unique Proteins
-        Writer.Statement("CellMX.NumberOfUniqueProts = len(ProtCounts)")
-        Writer.BlankLine()
-
-        # Index for all unique Protein
-        Writer.Statement("# Index for all unique Prot")
-        Writer.Statement(
-            "CellMX.ProtIndexTF = tf.convert_to_tensor(list(range(CellMX.NumberOfUniqueProts)))")
-        Writer.BlankLine()
-
-        # Load all Protein lengths
-        Writer.Statement("ProtLengths = np.load(\"ProtLengths.npy\").astype('int32')")
-        Writer.Statement("CellMX.ProtLengthsTF = tf.convert_to_tensor(ProtLengths)")
+        # Temporary parameters
+        #
+        # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
+        Writer.Variable_("Cel.CellVol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
         Writer.BlankLine()
 
 
         # Load initialization functions for each process
-        TranscriptElongation.Write_TE_Init(Writer, CompilerData)
-        TwoComponentSystems.Write_TCS_Init(Writer, CompilerData)
-        RNADegradation.Write_RNADeg_Init(Writer, CompilerData)
-        PolypeptideElongation.Write_PE_Init(Writer, CompilerData)
-        Metabolism.Write_Metab_Init(Writer, CompilerData)
+        # TranscriptElongation.Write_TE_Init(Writer, CompilerData)
+        # TwoComponentSystems.Write_TCS_Init(Writer, CompilerData)
+        # RNADegradation.Write_RNADeg_Init(Writer, CompilerData)
+        # PolypeptideElongation.Write_PE_Init(Writer, CompilerData)
+        # Metabolism.Write_Metab_Init(Writer, CompilerData)
+        # Writer.BlankLine()
 
 
         # Load loop functions for each process
-        TranscriptElongation.Write_TE_Loop(Writer)
-        TwoComponentSystems.Write_TCS_Loop(Writer)
-        RNADegradation.Write_RNADeg_Loop(Writer)
-        PolypeptideElongation.Write_PE_Loop(Writer)
-        Metabolism.Write_Metab_Loop(Writer)
+        # TranscriptElongation.Write_TE_Loop(Writer)
+        # TwoComponentSystems.Write_TCS_Loop(Writer)
+        # RNADegradation.Write_RNADeg_Loop(Writer)
+        # PolypeptideElongation.Write_PE_Loop(Writer)
+        # Metabolism.Write_Metab_Loop(Writer)
+        # Writer.BlankLine()
+
 
         # Run initialization functions for each process
-        Writer.Statement("TE_Init()")
-        Writer.Statement("TCS_Init()")
-        Writer.Statement("RNADeg_Init()")
-        Writer.Statement("PE_Init()")
-        Writer.Statement("Metab_Init()")
-
-
-        Writer.BlankLine()
+        # Writer.Statement("TE_Init()")
+        # Writer.Statement("TCS_Init()")
+        # Writer.Statement("RNADeg_Init()")
+        # Writer.Statement("PE_Init()")
+        # Writer.Statement("Metab_Init()")
+        # Writer.BlankLine()
 
         # Run simulation
         Writer.Statement("# Run simulation")
@@ -532,27 +176,15 @@ def WriteBody(Writer, CompilerData):
         with Writer.Statement("for SimulationStep in range(SimulationSteps):"):
             Writer.PrintStrg('=============================================')
             Writer.PrintStVa('SimulationStep: ', "SimulationStep + 1")
-            Writer.Statement("CellMX.SimStep.append(SimulationStep + 1)")
             Writer.BlankLine()
 
             # Run loop functions for each process
-            Writer.Statement("TE_Loop()")
-            Writer.Statement("TCS_Loop()")
-            Writer.Statement("RNADeg_Loop()")
-            Writer.Statement("PE_Loop()")
-            Writer.Statement("Metab_Loop()")
-            Writer.BlankLine()
-
-        # Temporary TE visualization code
-        Writer.Statement("# Temporary TE visualization code")
-        Writer.Statement("fig, ax = plt.subplots()")
-        # Writer.Statement("ax.plot(CellMX.SimStep, CellMX.TE_ACGU)")
-        Writer.Statement("lines = ax.plot(CellMX.SimStep, CellMX.TE_ACGU)")
-        Writer.Statement("labels = ['ATP', 'CTP', 'GTP', 'UTP']")
-        Writer.Statement("ax.legend(lines, labels)")
-        Writer.Statement("ax.set(xlabel='SimStep', ylabel='Concentration (M)', title='NTP level')")
-        Writer.Statement("ax.grid()")
-        Writer.Statement("plt.show()")
+            # Writer.Statement("TE_Loop()")
+            # Writer.Statement("TCS_Loop()")
+            # Writer.Statement("RNADeg_Loop()")
+            # Writer.Statement("PE_Loop()")
+            # Writer.Statement("Metab_Loop()")
+            # Writer.BlankLine()
 
         Writer.BlankLine()
         # End of simulation
@@ -632,6 +264,7 @@ def CompileToGenome(GenomeFileName,
     fp.close()
     print(Seq, file=GenomeFile)
     GenomeFile.close()
+    return Seq
 
 
 def Compile(CodeFileNames,
@@ -651,10 +284,11 @@ def Compile(CodeFileNames,
         OrganismName = CodeInfo['Organism'].replace(' ', '_')
         GenomeFileName = PrefixName + "." + OrganismName + ".fa"
 
-    CompileToGenome(GenomeFileName, DataDir)
+    CompilerData.InputGenomeSeq = CompileToGenome(GenomeFileName, DataDir)
 
-    Dataset = LoadData(DataDir)
-    SetUpCompilerData(Dataset, CompilerData)
+    Dataset = CompilerData.LoadData(DataDir)
+    CompilerData.SetUpData(Dataset)
+    CompilerData.SaveAllCompilerData()
     OutputFile = open(OutputCodeName, 'w')
 
     # TODO: use factory

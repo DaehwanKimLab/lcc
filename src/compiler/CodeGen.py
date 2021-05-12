@@ -37,8 +37,10 @@ class CodeWriter():
         self.IndentLevel = IndentLevel
         self.fp = CodeFile
         self.BuildIndentationPrefix()
-        self.DebugPrintSwitch = False
-        self.DebugAssertSwitch = False
+
+        self.Switch4DebugSimulationPrint = False
+        self.Switch4DebugSimulationAssert = False
+        self.Switch4Graph = False
 
     def __enter__(self):
         self.IncreaseIndent()
@@ -76,9 +78,6 @@ class CodeWriter():
         print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
-    def Variable_(self, VariableName, Value):
-        Line = '%s = %s' % (VariableName, Value)
-        self.Statement(Line)
 
     # def Comment(self, Comment):
     #     Line = '# %s' % Comment
@@ -104,36 +103,36 @@ class CodeWriter():
         return self
 
     def DebugSTMT(self, Line):
-        if self.DebugPrintSwitch or self.DebugAssertSwitch:
+        if self.Switch4DebugSimulationPrint or self.Switch4DebugSimulationAssert:
             self.Statement(Line)
         return self
 
     def DebugVari(self, VariableName, Value):
-        if self.DebugPrintSwitch or self.DebugAssertSwitch:
+        if self.Switch4DebugSimulationPrint or self.Switch4DebugSimulationAssert:
             Line = '%s = %s' % (VariableName, Value)
             self.Statement(Line)
         return self
 
     def DebugPStr(self, Str):
-        if self.DebugPrintSwitch:
+        if self.Switch4DebugSimulationPrint:
             Line = 'print("%s")' % Str
             self.Statement(Line)
         return self
 
     def DebugPVar(self, VariableName):
-        if self.DebugPrintSwitch:
+        if self.Switch4DebugSimulationPrint:
             Line = 'print("%s = ", %s)' % (VariableName, VariableName)
             self.Statement(Line)
         return self
 
     def DebugPStV(self, Str, VariableName):
-        if self.DebugPrintSwitch:
+        if self.Switch4DebugSimulationPrint:
             Line = 'print("%s: ", %s)' % (Str, VariableName)
             self.Statement(Line)
         return self
 
     def DebugAsrt(self, Condition, ErrMsg):
-        if self.DebugAssertSwitch:
+        if self.Switch4DebugSimulationAssert:
             Line = "assert %s, '%s'" % (Condition, ErrMsg)
             self.Statement(Line)
         return self
@@ -176,6 +175,10 @@ class TFCodeWriter(CodeWriter):
         self.Target = Target.TensorFlow
         super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
 
+    def Variable_(self, VariableName, Value):
+        Line = '%s = tf.constant([%s])' % (VariableName, Value)
+        self.Statement(Line)
+
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
@@ -189,9 +192,16 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
         self.Statement(Line)
 
-    def ReshapeMX(self, DestVar, SrcVar, Shape):
+    def Convert__(self, VariableName):
+        Line = '%s = tf.convert_to_tensor(%s)' % (VariableName, VariableName)
+        self.Statement(Line)
+        self.DebugPVar(VariableName)
+
+    def Reshape__(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
         self.Statement(Line)
+        self.DebugPVar(DestVar)
+
 
     def Statement(self, Line, **kwargs):
 
@@ -207,54 +217,51 @@ class TFCodeWriter(CodeWriter):
         # print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
-    # Random Value Generator
-    def RndValues(self, VariableName, Size, Max):
-        Line = '%s = tf.random.uniform(shape=[%s], minval=0, maxval=%s, dtype="int32")' % (VariableName, Size, Max)
-        self.Statement(Line)
+    def TF_Graph_(self):
+        if self.Switch4Graph:
+            self.Statement("@tf.function")
 
-    # Randomly chosen molecules for finding molecular interaction - maybe more relevant to numpy later
-    def RndIncrmt(self, TargetMX, NumberOfMoleculesToDistribute, Index, IncrementValue):
-        self.RndValues('RandValuePicks', NumberOfMoleculesToDistribute, 'len(' + Index + ')')
-        with self.Statement("for i in range(%s):" % NumberOfMoleculesToDistribute):
-            self.Statement("j = RandValuePicks[i]")
-            self.Statement("SelectedFromIndex = %s[j]" % Index)
-            self.Statement("SelectedFromIndex = tf.reshape(SelectedFromIndex, [-1, 1])")
-            self.Statement("TargetMXDataType = tf.shape(%s).dtype" % TargetMX)
-            self.Statement("One = tf.ones(1, TargetMXDataType)")
-            self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
-
-    # Weighted Value generator
-    def WgtValues(self, VariableName, Size, Index, WeightMX):
+    def GenValues(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
         self.InitArrayWithZero(VariableName, 0)
-        self.Statement("Weights = tf.gather(%s, %s)" % (WeightMX, Index))
-        self.Statement("Weights = Weights / len(Weights)")
-        with self.Statement("for i in range(%s):" % Size):
-            self.Statement("WeightedIndexSelected = tf.data.experimental.sample_from_datasets(%s, weights=Weights)" % Index)
-            self.Statement("%s = tf.concat([%s, WeightedIndexSelected], 0)" % (VariableName, VariableName))
+        if Weights:
+            self.OperGathr("Weights", Weights, Indexes)
+            self.Statement("Weights = Weights / len(Weights)")
+        else:
+            self.InitArrayWithOne("Weights", len(Indexes), Type='int32')
+        with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
+            self.Statement("Values = tf.data.experimental.sample_from_datasets(%s, weights=Weights)" % Indexes)
+            self.Statement("%s = tf.concat([%s, Value], 0)" % (VariableName, VariableName))
+        self.DebugPStV("Values Generated:", VariableName)
+        return VariableName
 
-    def WgtIncrmt(self, TargetMX, NumberOfMoleculesToDistribute, Index, IncrementValue):
-        self.WgtValues('WeightedValuePicks', NumberOfMoleculesToDistribute, Index, TargetMX)
-        with self.Statement("for i in range(%s):" % NumberOfMoleculesToDistribute):
-            self.Statement("j = WeightedValuePicks[i]")
-            self.Statement("SelectedFromIndex = %s[j]" % Index)
+    def Increment(self, TargetMX, N_MoleculesToDistribute, Indexes, IncrementValue, WeightMX='None'):
+        self.GenValues('Values', N_MoleculesToDistribute, Indexes, Weights=WeightMX)
+        self.DebugPStV("Before Increment:", TargetMX)
+        with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
+            self.Statement("j = Values[i]")
+            self.Statement("SelectedFromIndex = %s[j]" % Indexes)
             self.Statement("SelectedFromIndex = tf.reshape(SelectedFromIndex, [-1, 1])")
             self.Statement("TargetMXDataType = tf.shape(%s).dtype" % TargetMX)
             self.Statement("One = tf.ones(1, TargetMXDataType)")
             self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
+        self.DebugPStV("After Increment:", TargetMX)
 
+    def OperCncat(self, DestVar, SrcVar, Axis=0):
+        # self.PrepCncat(DestVar, SrcVar)
+        self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, DestVar, SrcVar, Axis))
 
     def PrepGathr(self, Target, Index):
-        self.Statement("%s = tf.reshape(%s, -1)" % (Target, Target))
-        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
+        self.Reshape__(Target, Target, -1)
+        self.Reshape__(Index, Index, [-1, 1])
 
     def OperGathr(self, VariableName, Target, Index):
         self.PrepGathr(Target, Index)
         self.Statement("%s = tf.gather(%s, %s)" % (VariableName, Target, Index))
 
     def PrepScNds(self, Target, Index, Values):
-        self.Statement("%s = tf.reshape(%s, -1)" % (Target, Target))
-        self.Statement("%s = tf.reshape(%s, -1)" % (Values, Values))
-        self.Statement("%s = tf.reshape(%s, [-1, 1])" % (Index, Index))
+        self.Reshape__(Target, Target, -1)
+        self.Reshape__(Values, Values, -1)
+        self.Reshape__(Index, Index, [-1, 1])
 
     def OperScAdd(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
@@ -273,27 +280,31 @@ class TFCodeWriter(CodeWriter):
     def OperMXMul(self, VariableName, MX1, MX2):
         self.PrepMXMul(MX1, MX2)
         self.Statement("%s = tf.linalg.matmul(%s, %s)" % (VariableName, MX1, MX2))
-        self.Statement("%s = tf.reshape(%s, -1)" % (VariableName, VariableName))
+        self.Reshape__(VariableName, VariableName, -1)
 
     def Ls2Index_(self, MolIndexList, MolList, Mol2Index):
-        self.InitArrayWithZero("%s" % MolIndexList)
+        self.InitArrayWithZero("%s" % MolIndexList, 0)
         with self.Statement("for Molecule in %s:" % MolList):
             self.Statement("MolIndex = %s(Molecule)" % Mol2Index)
-            self.Statement("%s = tf.concat([%s, MolIndex], 0)" % (MolIndexList, MolIndexList))
+            self.OperCncat(MolIndexList, 'MolIndex')
         self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList, MolList))
         self.DebugPVar("%s" % MolIndexList)
+
+    def LoadNP2TF(self, VariableName, SavedFile, DataType='float32'):
+        self.Statement("%s = np.load(\"%s\").astype(%s)" % (VariableName, SavedFile, DataType))
+        self.Convert__("%s" % VariableName)
 
     def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolIndexList, MolConcs):
         self.Ls2Index_(MolIndexList, MolList, Mol2IndexDict)
         self.PrepGathr(MolConcs, MolIndexList)
         self.OperGathr("MolConcs4MolIndexList", MolConcs, MolIndexList)
-        self.Statement("%s = MolConcs4MolIndexList * CellMX.CellVol * AvogadroNum" % VariableName)
+        self.Statement("%s = MolConcs4MolIndexList * (Cel.CellVol * Cst.NA)" % VariableName)
 
     def Cont2Conc(self, VariableName, MolList, Mol2IndexDict, MolIndexList, MolCounts):
         self.Ls2Index_(MolIndexList, MolList, Mol2IndexDict)
         self.PrepGathr(MolCounts, MolIndexList)
         self.OperGathr("MolCounts4MolIndexList", MolCounts, MolIndexList)
-        self.Statement("%s = MolCounts4MolIndexList / CellMX.CellVol / AvogadroNum" % VariableName)
+        self.Statement("%s = MolCounts4MolIndexList / (Cel.CellVol * Cst.NA)" % VariableName)
 
     # WRONG EQUATION - to be fixed with %s and more
     # def Cont2Conc(self, MolList, Mol2Index, CountsMX, MWsMX):
@@ -333,6 +344,10 @@ class NumpyCodeWriter(CodeWriter):
     def __init__(self, CodeFile, IndentLevel=0):
         self.Target = Target.Numpy
         super(NumpyCodeWriter, self).__init__(CodeFile, IndentLevel)
+
+    def Variable_(self, VariableName, Value):
+        Line = '%s = %s' % (VariableName, Value)
+        self.Statement(Line)
 
     def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = np.ones({Shape}).astype({Type})"\
