@@ -343,6 +343,7 @@ if __name__ == '__main__':
     parser.add_argument('-S',
                         dest='save_dir',
                         type=str,
+                        default='',
                         help='Library/Save directory')
     parser.add_argument('-o', '--out-file',
                         dest='OutputFileName',
