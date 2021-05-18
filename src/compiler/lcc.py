@@ -289,6 +289,7 @@ def CompileToGenome(GenomeFileName,
 def Compile(CodeFileNames,
             PrefixName,
             DataDir,
+            SaveDir,
             TargetCodeModel,
             Verbose):
 
@@ -296,6 +297,7 @@ def Compile(CodeFileNames,
 
     CompilerData = FCompilerData()
     CompilerData.SetDataPath(os.path.realpath(DataDir))
+    CompilerData.SetSavePath(os.path.realpath(SaveDir))
     CodeInfo = Parse(CodeFileNames)
 
     GenomeFileName = PrefixName + ".ecoli.fa"
@@ -305,9 +307,10 @@ def Compile(CodeFileNames,
 
     CompilerData.InputGenomeSeq = CompileToGenome(GenomeFileName, DataDir)
 
-    Dataset = CompilerData.LoadData(DataDir)
-    CompilerData.SetUpData(Dataset)
-    CompilerData.SaveAllCompilerData()
+    Dataset = CompilerData.LoadRawData(DataDir)
+    CompilerData.InitializeCompilerData(Dataset)
+    CompilerData.SetUpCompilerData(Dataset)
+    CompilerData.SaveCompilerData()
     OutputFile = open(OutputCodeName, 'w')
 
     # TODO: use factory
@@ -322,7 +325,7 @@ def Compile(CodeFileNames,
     WriteMain(Writer)
 
     OutputFile.close()
-
+    print('"%s" has been successfully generated.' % OutputCodeName)
 
 """
 """
@@ -337,6 +340,10 @@ if __name__ == '__main__':
                         dest='data_dir',
                         type=str,
                         help='Library/Data directory')
+    parser.add_argument('-S',
+                        dest='save_dir',
+                        type=str,
+                        help='Library/Save directory')
     parser.add_argument('-o', '--out-file',
                         dest='OutputFileName',
                         type=str,
@@ -378,5 +385,6 @@ if __name__ == '__main__':
     Compile(args.infiles,
             args.OutputFileName,
             args.data_dir,
+            args.save_dir,
             TargetCodeModel,
             args.verbose)

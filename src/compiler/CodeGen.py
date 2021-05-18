@@ -87,6 +87,11 @@ class CodeWriter():
     def BlankLine(self):
         self.Statement("")
 
+    def ReturnVar(self, VariableName):
+        Line = 'return "%s"' % VariableName
+        self.Statement(Line)
+        return self
+
     def PrintStrg(self, Str):
         Line = 'print("%s")' % Str
         self.Statement(Line)
@@ -131,7 +136,7 @@ class CodeWriter():
             self.Statement(Line)
         return self
 
-    def DebugAsrt(self, Condition, ErrMsg):
+    def DebugAsrt(self, Condition, ErrMsg=None):
         if self.Switch4DebugSimulationAssert:
             Line = "assert %s, '%s'" % (Condition, ErrMsg)
             self.Statement(Line)
@@ -221,7 +226,7 @@ class TFCodeWriter(CodeWriter):
         if self.Switch4Graph:
             self.Statement("@tf.function")
 
-    def GenValues(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
+    def SelectIdx(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
         self.InitArrayWithZero(VariableName, 0)
         if Weights:
             self.OperGathr("Weights", Weights, Indexes)
@@ -235,7 +240,7 @@ class TFCodeWriter(CodeWriter):
         return VariableName
 
     def Increment(self, TargetMX, N_MoleculesToDistribute, Indexes, IncrementValue, WeightMX='None'):
-        self.GenValues('Values', N_MoleculesToDistribute, Indexes, Weights=WeightMX)
+        self.SelectIdx('Values', N_MoleculesToDistribute, Indexes, Weights=WeightMX)
         self.DebugPStV("Before Increment:", TargetMX)
         with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
             self.Statement("j = Values[i]")
@@ -250,13 +255,13 @@ class TFCodeWriter(CodeWriter):
         # self.PrepCncat(DestVar, SrcVar)
         self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, DestVar, SrcVar, Axis))
 
-    def PrepGathr(self, Target, Index):
-        self.Reshape__(Target, Target, -1)
+    def PrepGathr(self, Source, Index):
+        self.Reshape__(Source, Source, -1)
         self.Reshape__(Index, Index, [-1, 1])
 
-    def OperGathr(self, VariableName, Target, Index):
-        self.PrepGathr(Target, Index)
-        self.Statement("%s = tf.gather(%s, %s)" % (VariableName, Target, Index))
+    def OperGathr(self, VariableName, Source, Index):
+        self.PrepGathr(Source, Index)
+        self.Statement("%s = tf.gather(%s, %s)" % (VariableName, Source, Index))
 
     def PrepScNds(self, Target, Index, Values):
         self.Reshape__(Target, Target, -1)
@@ -282,34 +287,43 @@ class TFCodeWriter(CodeWriter):
         self.Statement("%s = tf.linalg.matmul(%s, %s)" % (VariableName, MX1, MX2))
         self.Reshape__(VariableName, VariableName, -1)
 
-    def Ls2Index_(self, MolIndexList, MolList, Mol2Index):
+    # # To operate in CellState Class?
+    # def ID2IdxSim(self, MolIDList, MolID2Index):
+    #     self.InitArrayWithZero("MolIndexList", 0)
+    #     with self.Statement("for Molecule in %s:" % MolIDList):
+    #         self.Statement("MolIndex = %s(Molecule)" % MolID2Index)
+    #         self.OperCncat("MolIndexList", 'MolIndex')
+    #     self.DebugAsrt("tf.debugging.assert_shapes([MolIndexList, %s])" % (MolIDList))
+    #     self.DebugPVar("MolIndexList")
+    #     self.ReturnVar("MolIndexList")
+
+    # To get indexes from molecule ID when using the compiler
+    def ID2IdxCom(self, MolIndexList, MolIDList_Compiler, MolID2Index_Compiler):
         self.InitArrayWithZero("%s" % MolIndexList, 0)
-        with self.Statement("for Molecule in %s:" % MolList):
-            self.Statement("MolIndex = %s(Molecule)" % Mol2Index)
-            self.OperCncat(MolIndexList, 'MolIndex')
-        self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList, MolList))
+        for i, MoleculeID in enumerate(MolIDList_Compiler):
+            # Item assignment only works in Graph
+            self.Statement("%s[%s] = %s # %s" % (MolIndexList, i, MolID2Index_Compiler[MoleculeID], MoleculeID))
+        self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList, MolIDList_Compiler), ErrMsg='Incomplete Indexing for "%s"' % MolIDList_Compiler)
         self.DebugPVar("%s" % MolIndexList)
 
     def LoadNP2TF(self, VariableName, SavedFile, DataType='float32'):
         self.Statement("%s = np.load(\"%s\").astype(%s)" % (VariableName, SavedFile, DataType))
         self.Convert__("%s" % VariableName)
 
-    def Conc2Cont(self, VariableName, MolList, Mol2IndexDict, MolIndexList, MolConcs):
-        self.Ls2Index_(MolIndexList, MolList, Mol2IndexDict)
+    def Conc2Cont(self, VariableName, MolIndexList, MolConcs):
         self.PrepGathr(MolConcs, MolIndexList)
         self.OperGathr("MolConcs4MolIndexList", MolConcs, MolIndexList)
         self.Statement("%s = MolConcs4MolIndexList * (Cel.CellVol * Cst.NA)" % VariableName)
 
-    def Cont2Conc(self, VariableName, MolList, Mol2IndexDict, MolIndexList, MolCounts):
-        self.Ls2Index_(MolIndexList, MolList, Mol2IndexDict)
+    def Cont2Conc(self, VariableName, MolIndexList, MolCounts):
         self.PrepGathr(MolCounts, MolIndexList)
         self.OperGathr("MolCounts4MolIndexList", MolCounts, MolIndexList)
         self.Statement("%s = MolCounts4MolIndexList / (Cel.CellVol * Cst.NA)" % VariableName)
 
     # WRONG EQUATION - to be fixed with %s and more
-    # def Cont2Conc(self, MolList, Mol2Index, CountsMX, MWsMX):
+    # def Cont2Conc(self, MolIDList, Mol2Index, CountsMX, MWsMX):
     #     self.InitArrayWithZero("MolIndices", 0)
-    #     with self.Statement("for Molecule in %s:" % MolList):
+    #     with self.Statement("for Molecule in %s:" % MolIDList):
     #         self.Statement("MolIndex = MolNames2Index(Molecule)")
     #         self.Statement("MolIndices = tf.concat([MolIndices, MolIndex], 0)")
     #     self.ReshapeMX("CountsMX", "CountsMX", -1)
@@ -321,7 +335,7 @@ class TFCodeWriter(CodeWriter):
     #     self.Statement("ConcsForMolIndices = tf.matmul(CountsForMolIndices, MWsForMolIndices) * ")
     #
     #     self.InitArrayWithZero("MWs", 0)
-    #     with self.Statement("for Molecule in MolList:"):
+    #     with self.Statement("for Molecule in MolIDList:"):
     #         self.Statement("MolIndex = MolNames2Index(Molecule)")
     #         self.Statement("MWs = tf.concat([MolIndices, MolIndex], 0))")
     #         self.Statement("matmul(Counts, MWs")
