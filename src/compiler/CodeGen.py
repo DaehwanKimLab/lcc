@@ -197,10 +197,19 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
         self.Statement(Line)
 
-    def Convert__(self, VariableName):
-        Line = '%s = tf.convert_to_tensor(%s)' % (VariableName, VariableName)
+    def LoadSaved(self, SavePath, SaveFile, DataType=None):
+        if DataType:
+            VariableName = SaveFile.split('.')[0]
+            VariableLoad = 'np.load(r"%s\%s")' % (SavePath,SaveFile)
+            self.Convert__('self.%s' % VariableName, VariableLoad, DataType)
+
+    def Convert__(self, VariableNameNew, VariableNamePrev=None, DataType='float32'):
+        if VariableNamePrev:
+            Line = '%s = tf.convert_to_tensor(%s, dtype=tf.%s)' % (VariableNameNew, VariableNamePrev, DataType)
+        else:
+            Line = '%s = tf.convert_to_tensor(%s)' % (VariableNameNew, VariableNameNew)
         self.Statement(Line)
-        self.DebugPVar(VariableName)
+        self.DebugPVar(VariableNameNew)
 
     def Reshape__(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
@@ -307,7 +316,7 @@ class TFCodeWriter(CodeWriter):
         self.DebugPVar("%s" % MolIndexList)
 
     def LoadNP2TF(self, VariableName, SavedFile, DataType='float32'):
-        self.Statement("%s = np.load(\"%s\").astype(%s)" % (VariableName, SavedFile, DataType))
+        self.Statement("%s = np.load(\"%s\").astype(\'%s\')" % (VariableName, SavedFile, DataType))
         self.Convert__("%s" % VariableName)
 
     def Conc2Cont(self, VariableName, MolIndexList, MolConcs):

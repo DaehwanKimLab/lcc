@@ -1,6 +1,6 @@
 
 
-def Write_Class_Constant_Init(Writer):
+def Write_Constant_Init(Writer, CompilerData):
     Writer.BlankLine()
     with Writer.Statement("class FConstant():"):
         with Writer.Statement("def __init__(self):"):

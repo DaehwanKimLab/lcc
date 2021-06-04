@@ -22,67 +22,74 @@ class FDataset():
         return VariableName[:-3]
 
     def AddToMaster(self, MasterDataset, IDs, Counts, MWs, Localizations='None'):
-        # self.AddToMaster(self.MetaboliteIDs, self.MetaboliteCounts, self.MetaboliteMWs)
+        # self.AddToMaster(self.ID_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
         for ID in IDs:
-            MasterDataset.MasterID2Index[ID] = len(IDs)
-            MasterDataset.MasterIDs.append(ID)
+            MasterDataset.ID2Idx_Master[ID] = len(MasterDataset.ID_Master)
+            MasterDataset.ID_Master.append(ID)
 
-        MasterDataset.MasterCounts = np.append(MasterDataset.MasterCounts, Counts)
-        MasterDataset.MasterMWs = np.append(MasterDataset.MasterMWs, MWs)
+        MasterDataset.Count_Master = np.append(MasterDataset.Count_Master, Counts)
+        MasterDataset.MW_Master = np.append(MasterDataset.MW_Master, MWs)
         # if Localizations:
         #     self.MasterLocalizations = np.append(self.MasterLocalizations, Localizations)
 
         if MasterDataset.Switch4DebugMasterDataset:
             for Key, Value in self.__dict__.items():
                 if (Value == IDs) and (Key[:6] != 'Master'):
-                    print('MasterDataset addition completed: Class "%s"' % Key[:-3])
+                    print('MasterDataset addition completed: Class "%s"' % Key[3:])
 
                 if Key[:6] == 'Master':
                     LengthOfValue = len(Value)
                     print('The length of "%s": %d' % (Key, LengthOfValue))
 
-        assert len(MasterDataset.MasterIDs) == len(MasterDataset.MasterID2Index) and len(MasterDataset.MasterIDs) == len(MasterDataset.MasterCounts) and len(MasterDataset.MasterIDs) == len(MasterDataset.MasterMWs)
+        assert len(MasterDataset.ID_Master) == len(MasterDataset.ID2Idx_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.Count_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.MW_Master)
 
+    def AppendStr(self, List, Str):
+        # Appends Str to the List
+        ListStr = []
+        for i in List:
+            i += Str
+            ListStr.append(i)
+        return ListStr
 
 class FMetabolite(FDataset):
     def __init__(self):
-        self.MetaboliteID2MWTemp = {}
-        self.MetaboliteIDs = []
-        self.MetaboliteID2Index = {}
-        self.MetaboliteCounts = 0
-        self.MetaboliteMWs = 0
-        self.N_Metabolites = 0
+        self.ID2MW_Metabolites_Temp = {}
+        self.ID_Metabolites = []
+        self.ID2Idx_Metabolites = {}
+        self.Count_Metabolites = 0
+        self.MW_Metabolites = 0
+        self.NUniq_Metabolites = 0
 
         super().__init__() # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset = None):
-        MetaboliteMWs = Dataset['metabolites.tsv']
+        MW_Metabolites = Dataset['metabolites.tsv']
         WaterMW = Dataset['water.tsv'][0]
-        MetaboliteMWs.append(WaterMW)
+        MW_Metabolites.append(WaterMW)
 
-        for Value in MetaboliteMWs:
+        for Value in MW_Metabolites:
             Name, MW, Localization = Value
-            assert Name not in self.MetaboliteID2MWTemp
-            self.MetaboliteID2MWTemp[Name] = MW
+            assert Name not in self.ID2MW_Metabolites_Temp
+            self.ID2MW_Metabolites_Temp[Name] = MW
 
-        MetaboliteCounts = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
-        self.N_Metabolites = len(MetaboliteCounts)
-        self.MetaboliteCounts = np.zeros(self.N_Metabolites)
-        self.MetaboliteMWs = np.zeros(self.N_Metabolites)
+        Count_Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
+        self.NUniq_Metabolites = len(Count_Metabolites)
+        self.Count_Metabolites = np.zeros(self.NUniq_Metabolites)
+        self.MW_Metabolites = np.zeros(self.NUniq_Metabolites)
 
-        for i, Value in enumerate(MetaboliteCounts):
+        for i, Value in enumerate(Count_Metabolites):
             Name, Count, Request = Value
             NameLocRemoved = self.RemoveLocalizationFromMolName(Name)
-            assert Name not in self.MetaboliteID2Index
-            self.MetaboliteID2Index[Name] = len(self.MetaboliteIDs)  # = i
-            self.MetaboliteIDs.append(Name)
-            self.MetaboliteCounts[i] = Count
-            self.MetaboliteMWs[i] = self.MetaboliteID2MWTemp[NameLocRemoved]
-            assert self.MetaboliteMWs[i] != 0
+            assert Name not in self.ID2Idx_Metabolites
+            self.ID2Idx_Metabolites[Name] = len(self.ID_Metabolites)  # = i
+            self.ID_Metabolites.append(Name)
+            self.Count_Metabolites[i] = Count
+            self.MW_Metabolites[i] = self.ID2MW_Metabolites_Temp[NameLocRemoved]
+            assert self.MW_Metabolites[i] != 0
         
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.MetaboliteIDs, self.MetaboliteCounts, self.MetaboliteMWs)
+        self.AddToMaster(MasterDataset, self.ID_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -91,50 +98,60 @@ class FMetabolite(FDataset):
 
 
 class FChromosome(FDataset):
-    def __init__(self): # MasterLocalizations
-        self.ChromosomeLengthsInGenome = 0
+    def __init__(self):
+        self.Len_ChromosomesInGenome = 0
+        self.Count_NTsInChromosomesInGenome = []
+        self.Freq_NTsInChromosomesInGenome = []
         self.Genome = None
 
         self.NMax_Chromosomes = 0
-        self.ChromosomeIDs = []
-        self.ChromosomeBPCounts = 0
-        self.DNABasePairMWs = 0
-        self.N_ChromosomesInGenome = 0
+        self.ID_Chromosomes = []
+        self.Count_BasePairsInChromosomes = 0
+        self.MW_DNABasePairs = 0
+        self.Freq_NTsInChromosomes = []
+        self.NUniq_ChromosomesInGenome = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
         Genome = Dataset['EscherichiaColi.fasta']
-        # Genome is a dictionary where key is 'Ch#' and value is its seq.
+        # Genome is a dictionary where its key is 'Ch#' and its value is its corresponding DNA seq.
 
         self.Genome = Genome
-        self.N_ChromosomesInGenome = len(self.Genome)
+        self.NUniq_ChromosomesInGenome = len(self.Genome)
+        self.Len_ChromosomesInGenome = np.zeros(self.NUniq_ChromosomesInGenome)
 
-        self.ChromosomeLengthsInGenome = np.zeros(self.N_ChromosomesInGenome)
         for i, (ChromosomeName, ChromosomeSeq) in enumerate(self.Genome.items()):
-            self.ChromosomeLengthsInGenome[i] = len(ChromosomeSeq)
+            self.Len_ChromosomesInGenome[i] = len(ChromosomeSeq)
+
+            # ChromosomeNTFreq
+            NTCounts = np.array([ChromosomeSeq.count("A"), ChromosomeSeq.count("C"), ChromosomeSeq.count("G"), ChromosomeSeq.count("T")])
+            if np.sum(NTCounts) != self.Len_ChromosomesInGenome[i]:
+                print("WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
+            NTFreq = NTCounts / self.Len_ChromosomesInGenome[i]
+            self.Count_NTsInChromosomesInGenome.append(NTCounts)
+            self.Freq_NTsInChromosomesInGenome.append(NTFreq)
 
         # Set up an arbitrary max number to keep NT Count arrays for all chromosomes
         MaxCopyNumberOfEachChromosome = 5
-        self.NMax_Chromosomes = self.N_ChromosomesInGenome * MaxCopyNumberOfEachChromosome
-        self.ChromosomeLengths = np.zeros(self.NMax_Chromosomes)
-        self.ChromosomeBPCounts = np.zeros(self.NMax_Chromosomes)
-        self.DNABasePairMWs = np.zeros(self.NMax_Chromosomes)
-        DNABasePairMW = 650
+        self.NMax_Chromosomes = self.NUniq_ChromosomesInGenome * MaxCopyNumberOfEachChromosome
+        self.Count_BasePairsInChromosomes = np.zeros(self.NMax_Chromosomes)
+        self.MW_DNABasePairs = np.zeros(self.NMax_Chromosomes)
+        DNABasePairMW = 650 # average molecular weight of one base pair: 650 Daltons, which is 650 g/mol
 
-        for i in range(self.NMax_Chromosomes):
-            for j in range(self.N_ChromosomesInGenome):
+        for i in range(self.NMax_Chromosomes): # i = all chromosomes (original and replicates)
+            for j in range(self.NUniq_ChromosomesInGenome): # j is the reference to the original set of chromosomes
                 ChromosomeNumber = j + 1
                 ChromosomeReplication = i + 1
                 ChromosomeID = 'Ch%d_%d' % (ChromosomeNumber, ChromosomeReplication)
-                self.ChromosomeIDs.append(ChromosomeID)
+                self.ID_Chromosomes.append(ChromosomeID)
                 if i == 0:
-                    self.ChromosomeBPCounts[j] = self.ChromosomeLengthsInGenome
-                self.DNABasePairMWs[i] = DNABasePairMW
-        # average molecular weight of one base pair: 650 Daltons, which is 650 g/mol
+                    self.Count_BasePairsInChromosomes[j] = self.Len_ChromosomesInGenome[j]
+                self.MW_DNABasePairs[i] = DNABasePairMW
+                self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[j])
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ChromosomeIDs, self.ChromosomeBPCounts, self.DNABasePairMWs)
+        self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.Count_BasePairsInChromosomes, self.MW_DNABasePairs)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -143,53 +160,63 @@ class FChromosome(FDataset):
 
 
 class FGene(FDataset):
-    def __init__(self): # MasterLocalizations
-        self.GeneLengths = 0
-        self.GeneCoordinates = 0
-        self.GeneDirections = []
-        self.GeneNames = []
-        self.GeneSymbols = []
-        self.GeneIDs = []
-        self.GeneSeqs = []
-        self.GeneTypes = []
-        self.GeneID2Index = {}
-        self.GeneSymbol2Index = {}
-        self.GeneName2ID = {}
-        self.GeneCounts = 0
-        self.N_Genes = 0
+    def __init__(self):
+        self.Len_Genes = 0
+        self.Coord_Genes = 0 # Coord for Coordinate
+        self.MW_Genes = 0
+        self.Dir_Genes = 0 # Dir for Direction
+        self.Name_Genes = []
+        self.Sym_Genes = [] # Sym for Symbols
+        self.ID_Genes = []
+        self.Seq_Genes = []
+        self.Type_Genes = []
+        self.ID2Idx_Genes = {}
+        self.Sym2Idx_Genes = {}
+        self.Name2ID_Genes = {}
+        self.Count_Genes = 0
+        self.NUniq_Genes = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
         Genes = Dataset['genes.tsv']
-        self.N_Genes = len(Genes)
-        self.GeneLengths = np.zeros(self.N_Genes)
-        self.GeneCoordinates = np.zeros(self.N_Genes)
-        self.GeneNames = []
-        self.GeneSymbols = []
-        self.GeneIDs = []
-        self.GeneTypes = []
-        self.GeneName2ID = {}
-        self.GeneID2Index = {}
-        self.GeneSymbol2Index = {}
-        
+        self.NUniq_Genes = len(Genes)
+        self.Len_Genes = np.zeros(self.NUniq_Genes)
+        self.Coord_Genes = np.zeros(self.NUniq_Genes)
+        self.MW_Genes = np.zeros(self.NUniq_Genes) # No molecular weights to be calculated
+        self.Dir_Genes = np.zeros(self.NUniq_Genes)
+        self.Count_Genes = np.ones(self.NUniq_Genes) # The count may be adjusted according to the starting replication state of the chromosomes.
+        self.Name_Genes = []
+        self.Sym_Genes = []
+        self.ID_Genes = []
+        self.Type_Genes = []
+        self.Name2ID_Genes = {}
+        self.ID2Idx_Genes = {}
+        self.Sym2Idx_Genes = {}
+
+        DirectionBinaryDict = {}
+        DirectionBinaryDict['+'] = 1
+        DirectionBinaryDict['-'] = 0
+
         for i, Value in enumerate(Genes):
             Length, Name, Seq, RNAID, Coordinate, Direction, Symbol, Type, GeneID, MonomerID = Value
-            # assert Name not in self.GeneName2ID, '"%s" has a redundant name in GeneName2ID dictionary' % Name
-            # self.GeneNames.append(Name)
-            # self.GeneName2ID[Name] = GeneID
-            self.GeneSymbols.append(Symbol)
-            self.GeneSymbol2Index[Symbol] = len(self.GeneIDs)
-            assert GeneID not in self.GeneID2Index
-            self.GeneIDs.append(GeneID)
-            self.GeneID2Index[GeneID] = len(self.GeneSeqs)
-            self.GeneSeqs.append(Seq)
-            self.GeneLengths[i] = (len(Seq))
-            self.GeneCoordinates[i] = Coordinate
-            self.GeneDirections.append(Direction)
-            self.GeneTypes.append(Type)
+            # assert Name not in self.Name2ID_Genes, '"%s" has a redundant name in GeneName2ID dictionary' % Name
+            # self.Name_Genes.append(Name)
+            # self.Name2ID_Genes[Name] = GeneID
+            self.Sym_Genes.append(Symbol)
+            self.Sym2Idx_Genes[Symbol] = len(self.ID_Genes)
+            assert GeneID not in self.ID2Idx_Genes
+            self.ID_Genes.append(GeneID)
+            self.ID2Idx_Genes[GeneID] = len(self.Seq_Genes)
+            self.Seq_Genes.append(Seq)
+            self.Len_Genes[i] = (len(Seq))
+            self.Coord_Genes[i] = Coordinate
+            DirectionBinary = DirectionBinaryDict[Direction]
+            self.Dir_Genes[i] = DirectionBinary
+            self.Type_Genes.append(Type)
 
-        self.GeneCounts = np.ones(self.N_Genes)
+        # Add to the Master Dataset
+        self.AddToMaster(MasterDataset, self.ID_Genes, self.Count_Genes, self.MW_Genes)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -198,29 +225,35 @@ class FGene(FDataset):
 
 
 class FPromoter(FDataset):
-    def __init__(self): # MasterLocalizations
-        self.PromoterCoordinates = 0
-        self.PromoterDirections = []
-        self.PromoterIDs = []
-        self.PromoterID2Index = {}
-        self.PromoterTargetGenesSymbols = []
-        self.N_Promoters = 0
+    def __init__(self):
+        self.Coord_Promoters = 0
+        self.Dir_Promoters = 0
+        self.ID_Promoters = []
+        self.ID2Idx_Promoters = {}
+        self.Sym_PromoterTargetGenes = []
+        self.NUniq_Promoters = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
         Promoters = Dataset['promoters.tsv']
 
-        self.N_Promoters = len(Promoters)
-        self.PromoterCoordinates = np.zeros(self.N_Promoters)
+        self.NUniq_Promoters = len(Promoters)
+        self.Coord_Promoters = np.zeros(self.NUniq_Promoters)
+        self.Dir_Promoters = np.zeros(self.NUniq_Promoters)
         IrregularNames = 0
+
+        DirectionBinaryDict = {}
+        DirectionBinaryDict['+'] = 1
+        DirectionBinaryDict['-'] = 0
 
         for i, Value in enumerate(Promoters):
             Position, Direction, PromoterID, Name = Value
-            self.PromoterIDs.append(PromoterID)
-            self.PromoterID2Index = len(self.PromoterDirections)  # i
-            self.PromoterDirections.append(Direction)
-            self.PromoterCoordinates[i] = Position
+            self.ID_Promoters.append(PromoterID)
+            self.ID2Idx_Promoters = len(self.Dir_Promoters)  # i
+            DirectionBinary = DirectionBinaryDict[Direction]
+            self.Dir_Promoters[i] = DirectionBinary
+            self.Coord_Promoters[i] = Position
             # Parse Name to identify promoter's target gene. Cases to cover:
             # "grxD"
             # "cadBp"
@@ -285,9 +318,9 @@ class FPromoter(FDataset):
                 TargetGeneSymbol = Name
             # Check if the gene is expressed by multiple promoters
             if self.Switch4DebugDataset:
-                if TargetGeneSymbol in self.PromoterTargetGenesSymbols:
+                if TargetGeneSymbol in self.Sym_PromoterTargetGenes:
                     print('The gene symbol %s is expressed by multiple promoters' % TargetGeneSymbol)
-            self.PromoterTargetGenesSymbols.append(TargetGeneSymbol)
+            self.Sym_PromoterTargetGenes.append(TargetGeneSymbol)
         if self.Switch4DebugDataset:
             print("# of Irregular Names: ", IrregularNames)
             # print("Names containing '-#' pattern:", NamesWithDashDigit)
@@ -307,87 +340,115 @@ class FPromoter(FDataset):
 
 
 class FRNA(FDataset):
-    def __init__(self): # MasterLocalizations
-        self.RNAName2CountTemp = {}
-        self.RNANames = []
-        self.RNAName2ID = {}
-        self.RNAID2Index = {}
-        self.RNAIDs = []
-        self.RNAHalfLives = 0
-        self.RNASeqs = []
-        self.RNALengths = 0
-        self.RNATypes = []
-        self.RNAMWs = 0
-        self.RNANTCounts = []
-        self.RNANTFreqs = []
+    def __init__(self):
+        self.ID2Count_RNAs_Temp = {}
+        self.Name_RNAs = []
+        self.Name2ID_RNAs = {}
+        self.ID2Idx_RNAs = {}
+        self.ID_RNAs = []
+        self.HalfLife_RNAs = 0
+        self.Seq_RNAs = []
+        self.Len_RNAs = 0
+        self.Type_RNAs = []
+        self.MW_RNAs = 0
+        self.Count_NTsInRNAs = []
+        self.Freq_NTsInRNAs = []
+        self.Count_RNAs = 0
 
-        self.N_RNAs = 0
-        self.N_mRNAs = 0
-        self.N_tRNAs = 0
-        self.N_rRNAs = 0
-        self.N_miscRNAs = 0
+        self.NUniq_RNAs = 0
+        self.NUniq_mRNAs = 0
+        self.NUniq_tRNAs = 0
+        self.NUniq_rRNAs = 0
+        self.NUniq_miscRNAs = 0
 
-        self.RNATypeIndex4AllRNA = []
-        self.RNATypeIndex4mRNA = []
-        self.RNATypeIndex4tRNA = []
-        self.RNATypeIndex4rRNA = []
-        self.RNATypeIndex4miscRNA = []
+        self.ID2Type_RNA = {}
 
-        super().__init__() # MasterLocalizations
+        self.Idx_AllRNAs = []
+        self.Idx_mRNA = []
+        self.Idx_tRNA = []
+        self.Idx_rRNA = []
+        self.Idx_miscRNA = []
+
+        self.ID_RNAsNascent = []
+        self.Count_RNAsNascent = 0
+        self.MW_RNAsNascent = 0
+
+        self.ID_RNAsCleaved = []
+        self.Count_RNAsCleaved = 0
+        self.MW_RNAsCleaved = 0
+
+        super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
         RNACounts = Dataset['Counts4AllRNAs_DL_19_totalIs_17_3_TranscriptElongation_BulkMolecules.tsv']
         for Value in RNACounts:
-            Name, Count, Request = Value
-            assert Name not in self.RNAName2CountTemp
-            self.RemoveLocalizationFromMolName(Name)
-            Name = self.RemoveLocalizationFromMolName(Name)
-            self.RNAName2CountTemp[Name] = int(Count)
+            ID, Count, Request = Value
+            assert ID not in self.ID2Count_RNAs_Temp
+            self.RemoveLocalizationFromMolName(ID)
+            ID = self.RemoveLocalizationFromMolName(ID)
+            self.ID2Count_RNAs_Temp[ID] = int(Count)
 
         RNAs = Dataset['rnas.tsv']
-        self.N_RNAs = len(RNAs)
-        self.RNAHalfLives = np.zeros(self.N_RNAs)
-        self.RNALengths = np.zeros(self.N_RNAs)
-        self.RNAMWs = np.zeros(self.N_RNAs)
-        self.RNACounts = np.zeros(self.N_RNAs)
+        self.NUniq_RNAs = len(RNAs)
+        self.HalfLife_RNAs = np.zeros(self.NUniq_RNAs)
+        self.Len_RNAs = np.zeros(self.NUniq_RNAs)
+        self.MW_RNAs = np.zeros(self.NUniq_RNAs)
+        self.Count_RNAs = np.zeros(self.NUniq_RNAs)
 
         for i, Value in enumerate(RNAs):
             HalfLife, Name, Seq, Type, ModifiedForms, MonomerID, Comments, MW, Location, NTCount, RNAID, GeneID, MicArrExp = Value
-            assert Name not in self.RNAID2Index
-            self.RNANames.append(Name)
-            self.RNAName2ID[Name] = RNAID
-            self.RNAID2Index[RNAID] = len(self.RNAIDs)
-            self.RNAIDs.append(RNAID)
-            self.RNAHalfLives[i] = HalfLife
-            self.RNASeqs.append(Seq)
-            self.RNALengths[i] = (len(Seq))
-            self.RNATypes.append(Type)
-            self.RNAMWs[i] = max(np.fromstring(MW[1:-1], dtype='float32', sep=','))
-            assert self.RNAMWs[i] != 0
-            self.RNANTCounts.append(NTCount)
-            self.RNACounts[i] = self.RNAName2CountTemp[self.RNAName2ID[Name]]
-            self.RNATypeIndex4AllRNA.append(i)
+            assert Name not in self.ID2Idx_RNAs
+            self.Name_RNAs.append(Name)
+            self.Name2ID_RNAs[Name] = RNAID
+            self.ID2Idx_RNAs[RNAID] = len(self.ID_RNAs)
+            self.ID_RNAs.append(RNAID)
+            self.HalfLife_RNAs[i] = HalfLife
+            self.Seq_RNAs.append(Seq)
+            self.Len_RNAs[i] = (len(Seq))
+            self.Type_RNAs.append(Type)
+            self.MW_RNAs[i] = max(np.fromstring(MW[1:-1], dtype='float32', sep=','))
+            assert self.MW_RNAs[i] != 0
+            self.Count_NTsInRNAs.append(NTCount)
+            self.Count_RNAs[i] = self.ID2Count_RNAs_Temp[self.Name2ID_RNAs[Name]]
+            self.Idx_AllRNAs.append(i)
+
             if Type == 'mRNA':
-                self.RNATypeIndex4mRNA.append(i)
+                self.NUniq_mRNAs += 1
+                self.Idx_mRNA.append(i)
             elif Type == 'tRNA':
-                self.RNATypeIndex4tRNA.append(i)
+                self.NUniq_tRNAs += 1
+                self.Idx_tRNA.append(i)
             elif Type == 'rRNA':
-                self.RNATypeIndex4rRNA.append(i)
+                self.NUniq_rRNAs += 1
+                self.Idx_rRNA.append(i)
             elif Type == 'miscRNA':
-                self.RNATypeIndex4miscRNA.append(i)
+                self.NUniq_miscRNAs += 1
+                self.Idx_miscRNA.append(i)
             else:
                 print('Warning: Unaccounted RNA type detected: ', Type)
+            self.ID2Type_RNA[RNAID] = Type
+
             # RNANTFreq
             NTTotalCount = len(Seq)
             NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
             if np.sum(NTCounts) != NTTotalCount:
                 print("WARNING: RNA seq may contain non-ACGU text.", file=sys.stderr)
             NTFreq = NTCounts / NTTotalCount
-            self.RNANTCounts[i] = NTCounts
-            self.RNANTFreqs = NTFreq
+            self.Count_NTsInRNAs[i] = NTCounts
+            self.Freq_NTsInRNAs = NTFreq
+
+        self.ID_RNAsNascent = self.AppendStr(self.ID_RNAs, '_Nas')
+        self.Count_RNAsNascent = np.zeros(self.NUniq_RNAs)
+        self.MW_RNAsNascent = self.MW_RNAs / 2 # On average assuming transcription runs completely
+
+        self.ID_RNAsCleaved = self.AppendStr(self.ID_RNAs, '_Cleaved')
+        self.Count_RNAsCleaved = np.zeros(self.NUniq_RNAs)
+        self.MW_RNAsCleaved = self.MW_RNAs
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.RNAIDs, self.RNACounts, self.RNAMWs)
+        self.AddToMaster(MasterDataset, self.ID_RNAs, self.Count_RNAs, self.MW_RNAs)
+        self.AddToMaster(MasterDataset, self.ID_RNAsNascent, self.Count_RNAsNascent, self.MW_RNAsNascent)
+        self.AddToMaster(MasterDataset, self.ID_RNAsCleaved, self.Count_RNAsCleaved, self.MW_RNAsCleaved)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -396,27 +457,35 @@ class FRNA(FDataset):
 
 
 class FProtein(FDataset):
-    def __init__(self): # MasterLocalizations
-        self.ProteinName2CountTemp = {}
-        self.ProteinNames = []
-        self.ProteinName2ID = {}
-        self.ProteinID2Index = {}
-        self.ProteinIDs = []
-        self.ProteinSeqs = []
-        self.ProteinLengths = 0
-        self.ProteinMWs = 0
-        self.ProteinLocations = []
-        self.ProteinAACounts = []
-        self.ProteinCounts = 0
-        self.ProteinAAFreqs = []
-        self.ProteinID2GeneID = {}
+    def __init__(self):
+        self.ID2Count_Proteins_Temp = {}
+        self.Name_Proteins = []
+        self.Name2ID_Proteins = {}
+        self.ID2Idx_Proteins = {}
+        self.ID_Proteins = []
+        self.Seq_Proteins = []
+        self.Len_Proteins = 0
+        self.MW_Proteins = 0
+        self.Loc_Proteins = []
+        self.Count_AAsInProteins = []
+        self.Count_Proteins = 0
+        self.Freq_AAsInProteins = []
+        self.ID2ID_Protein2Gene = {}
         self._GeneIDs = []
-        self.ProteinID2RNAID = {}
+        self.ID2ID_Protein2RNA = {}
         self._RNAIDs = []
 
-        self.N_Proteins = 0
+        self.NUniq_Proteins = 0
+        
+        self.ID_ProteinsNascent = []
+        self.Count_ProteinsNascent = 0
+        self.MW_ProteinsNascent = 0
 
-        super().__init__() # MasterLocalizations
+        self.ID_ProteinsCleaved = []
+        self.Count_ProteinsCleaved = 0
+        self.MW_ProteinsCleaved = 0
+
+        super().__init__()
 
         return
 
@@ -424,42 +493,53 @@ class FProtein(FDataset):
     def SetUpData(self, Dataset, MasterDataset = None):
         ProteinCounts = Dataset['Counts4AllProteinMonomers_DL_28_totalIs_26_5_PolypeptideElongation_BulkMolecules.tsv']
         for Value in ProteinCounts:
-            Name, Count, Request = Value
-            assert Name not in self.ProteinName2CountTemp
-            # self.RemoveLocalizationFromMolName(Name)
-            Name = self.RemoveLocalizationFromMolName(Name)
-            self.ProteinName2CountTemp[Name] = int(Count)
+            ID, Count, Request = Value
+            assert ID not in self.ID2Count_Proteins_Temp
+            # self.RemoveLocalizationFromMolID(ID)
+            ID = self.RemoveLocalizationFromMolName(ID)
+            self.ID2Count_Proteins_Temp[ID] = int(Count)
 
         Proteins = Dataset['proteins.tsv']
-        self.N_Proteins = len(Proteins)
-        self.ProteinLengths = np.zeros(self.N_Proteins)
-        self.ProteinMWs = np.zeros(self.N_Proteins)
-        self.ProteinCounts = np.zeros(self.N_Proteins)
+        self.NUniq_Proteins = len(Proteins)
+        self.Len_Proteins = np.zeros(self.NUniq_Proteins)
+        self.MW_Proteins = np.zeros(self.NUniq_Proteins)
+        self.Count_Proteins = np.zeros(self.NUniq_Proteins)
 
         for i, Value in enumerate(Proteins):
             AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
-            self.ProteinNames.append(Name)
-            self.ProteinName2ID[Name] = ProtMonomerID
-            self.ProteinID2Index[ProtMonomerID] = len(self.ProteinIDs)
-            self.ProteinIDs.append(ProtMonomerID)
-            self.ProteinSeqs.append(Seq)
-            self.ProteinLengths[i] = len(Seq)
-            self.ProteinMWs[i] = max(np.fromstring(MW[1:-1], dtype='float32', sep=','))
-            assert self.ProteinMWs[i] != 0
-            self.ProteinLocations.append(Location)
-            self.ProteinAACounts.append(AACount)
-            self.ProteinCounts[i] = self.ProteinName2CountTemp[self.ProteinName2ID[Name]]
-            self.ProteinID2RNAID[ProtMonomerID] = RNAID
+            self.Name_Proteins.append(Name)
+            self.Name2ID_Proteins[Name] = ProtMonomerID
+            self.ID2Idx_Proteins[ProtMonomerID] = len(self.ID_Proteins)
+            self.ID_Proteins.append(ProtMonomerID)
+            self.Seq_Proteins.append(Seq)
+            self.Len_Proteins[i] = len(Seq)
+            self.MW_Proteins[i] = max(np.fromstring(MW[1:-1], dtype='float32', sep=','))
+            assert self.MW_Proteins[i] != 0
+            self.Loc_Proteins.append(Location)
+            AACount = ast.literal_eval(AACount)
+            self.Count_AAsInProteins.append(AACount)
+            self.Count_Proteins[i] = self.ID2Count_Proteins_Temp[ProtMonomerID]
+            self.ID2ID_Protein2RNA[ProtMonomerID] = RNAID
             # ProteinAAFreq
             AATotalCount = len(Seq)
-            if AATotalCount != self.ProteinLengths[i]:
+            if AATotalCount != self.Len_Proteins[i]:
                 print("WARNING: Protein length data may contain error.", file=sys.stderr)
-            AACounts = np.array(list(map(int, AACount[1:-1].split(','))))
+            AACounts = np.array(AACount)
             AAFreq = AACounts / AATotalCount
-            self.ProteinAAFreqs.append(AAFreq)
-        
+            self.Freq_AAsInProteins.append(AAFreq)
+
+        self.ID_ProteinsNascent = self.AppendStr(self.ID_Proteins, '_Nas')
+        self.Count_ProteinsNascent = np.zeros(self.NUniq_Proteins)
+        self.MW_ProteinsNascent = self.MW_Proteins / 2 # On average assuming transcription runs completely
+
+        self.ID_ProteinsCleaved = self.AppendStr(self.ID_Proteins, '_Cleaved')
+        self.Count_ProteinsCleaved = np.zeros(self.NUniq_Proteins)
+        self.MW_ProteinsCleaved = self.MW_Proteins
+
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ProteinIDs, self.ProteinCounts, self.ProteinMWs)
+        self.AddToMaster(MasterDataset, self.ID_Proteins, self.Count_Proteins, self.MW_Proteins)
+        self.AddToMaster(MasterDataset, self.ID_ProteinsNascent, self.Count_ProteinsNascent, self.MW_ProteinsNascent)
+        self.AddToMaster(MasterDataset, self.ID_ProteinsCleaved, self.Count_ProteinsCleaved, self.MW_ProteinsCleaved)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -468,20 +548,21 @@ class FProtein(FDataset):
 
 
 class FComplex(FDataset):
-    def __init__(self): # MasterLocalizations
-        self.ProteinIDs = []
+    def __init__(self):
+        self.ID_Proteins = []
+        self.ID2Count_Proteins_Temp = {}
 
-        self.ComplexName2CountTemp = {}
-        self.ComplexNameWithoutLocalization2CountTemp = {}
-        self.ComplexNames = []
-        self.ComplexName2ID = {}
-        self.ComplexIDs = []
-        self.ComplexID2Index = {}
-        self.ComplexCounts = 0
-        self.ComplexMWs = 0
-        self.ComplexLocations = []
+        self.ID2Count_Complexes_Temp = {}
+        self.IDWithoutLoc2Count_Complexes_Temp = {}
+        self.Name_Complexes = []
+        self.Name2ID_Complexes = {}
+        self.ID_Complexes = []
+        self.ID2Idx_Complexes = {}
+        self.Count_Complexes = []
+        self.MW_Complexes = []
+        self.Loc_Complexes = []
 
-        self.N_Complexes = 0
+        self.NUniq_Complexes = 0
 
         super().__init__() # MasterLocalizations
 
@@ -489,50 +570,56 @@ class FComplex(FDataset):
         Proteins = Dataset['proteins.tsv']
         for Value in Proteins:
             AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
-            self.ProteinIDs.append(ProtMonomerID)
+            self.ID_Proteins.append(ProtMonomerID)
+
+        ProteinCounts = Dataset['Counts4AllProteinMonomers_DL_28_totalIs_26_5_PolypeptideElongation_BulkMolecules.tsv']
+        for Value in ProteinCounts:
+            ID, Count, Request = Value
+            assert ID not in self.ID2Count_Proteins_Temp
+            ID = self.RemoveLocalizationFromMolName(ID)
+            self.ID2Count_Proteins_Temp[ID] = int(Count)
 
         ComplexCounts = Dataset['Counts4AllProteinMonomersAndCPLXsForComplexation_DL_44_totalIs_42_8_Complexation_BulkMolecules.tsv']
         for Value in ComplexCounts:
-            Name, Count, Request = Value
-            NameWithoutLocalization = self.RemoveLocalizationFromMolName(Name)
-            assert Name not in self.ComplexName2CountTemp
-            assert NameWithoutLocalization not in self.ComplexName2CountTemp
-            if (Name or NameWithoutLocalization) in self.ProteinIDs:
+            ID, Count, Request = Value
+            IDWithoutLocalization = self.RemoveLocalizationFromMolName(ID)
+            assert ID not in self.ID2Count_Complexes_Temp
+            assert IDWithoutLocalization not in self.IDWithoutLoc2Count_Complexes_Temp
+            if (ID or IDWithoutLocalization) in self.ID_Proteins:
                 continue
-            # self.RemoveLocalizationFromMolName(Name)
-            self.ComplexName2CountTemp[Name] = int(Count)
-            self.ComplexNameWithoutLocalization2CountTemp[NameWithoutLocalization] = int(Count)
+            # self.RemoveLocalizationFromMolName(ID)
+            self.ID2Count_Complexes_Temp[ID] = int(Count)
+            self.IDWithoutLoc2Count_Complexes_Temp[IDWithoutLocalization] = int(Count)
 
         Complexes = Dataset['proteinComplexes_large.tsv'] + Dataset['proteinComplexes.tsv']
+
+        NoCountInfo = 0
+        # Determine the number of unique complex entries from two combined datasets
         for Value in Complexes:
             Name, Comments, MW, Location, RxnID, ComplexID = Value
-            if ComplexID in self.ComplexIDs:
+            if ComplexID in self.ID_Complexes:
                 continue
-            self.ComplexNames.append(Name)
-            self.ComplexName2ID[Name] = ComplexID
-            self.ComplexID2Index[ComplexID] = len(self.ComplexIDs)
-            self.ComplexIDs.append(ComplexID)
-        self.N_Complexes = len(self.ComplexIDs)
-        self.ComplexMWs = np.zeros(self.N_Complexes)
-        self.ComplexCounts = np.zeros(self.N_Complexes)
-
-        for i, Value in enumerate(Complexes):
-            Name, Comments, MW, Location, RxnID, ComplexID = Value
-            if ComplexID in self.ComplexIDs:
-                continue
-            self.ComplexMWs[i] = max(np.fromstring(MW[1:-1], dtype='float32', sep=','))
-            assert self.ComplexMWs[i] != 0
-            self.ComplexLocations.append(Location)
-            if ComplexID in self.ComplexNameWithoutLocalization2CountTemp:
-                Count = self.ComplexNameWithoutLocalization2CountTemp[ComplexID]
-                self.ComplexCounts[i] = Count
+            self.Name_Complexes.append(Name)
+            self.Name2ID_Complexes[Name] = ComplexID
+            self.ID2Idx_Complexes[ComplexID] = len(self.ID_Complexes)
+            self.ID_Complexes.append(ComplexID)
+            self.MW_Complexes.append(max(np.fromstring(MW[1:-1], dtype='float32', sep=',')))
+            assert self.MW_Complexes[-1] != 0
+            self.Loc_Complexes.append(Location)
+            if ComplexID in self.IDWithoutLoc2Count_Complexes_Temp:
+                Count = self.IDWithoutLoc2Count_Complexes_Temp[ComplexID]
+                self.Count_Complexes.append(Count)
             else:
-                if ComplexID not in self.ProteinIDs:
-                    print('%s is not found in either Protein or Complex IDs' % ComplexID)
-                # assert ComplexID in self.ProteinIDs, '%s is not found in either Protein or Complex IDs' % ComplexID
+                if ComplexID not in self.ID2Count_Proteins_Temp:
+                    NoCountInfo += 1
+                    # print('%s is not found in either Protein or Complex IDs' % ComplexID)
+                    self.Count_Complexes.append(0)
+
+        print('# of Complexes missing Count info from wcm:', NoCountInfo)
+        self.NUniq_Complexes = len(self.ID_Complexes)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ComplexIDs, self.ComplexCounts, self.ComplexMWs)
+        self.AddToMaster(MasterDataset, self.ID_Complexes, self.Count_Complexes, self.MW_Complexes)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -541,51 +628,74 @@ class FComplex(FDataset):
 
 
 class FReaction(FDataset):
-    def __init__(self): # MasterLocalizations
+    def __init__(self):
 
-        self.RXNIDs = []
-        self.RXNID2Index = {}
-        self.RXNStoichiometries = []
-        self.RXNReversibilities = []
-        self.RXNEnzymeIDs = []
-        self.RXNSubstrates = []
-        self.RXNSubstrateStoichs = []
-        self.RXNProducts = []
-        self.RXNProductStoichs = []
+        self.ID_RXNs = []
+        self.ID2Idx_RXNs = {}
+        self.Stoich_MolStoichDictInRXN = []
+        self.ID_MolsInRXNs = []
+        self.Stoich_MolsInRXNs = [] # Stoich for Stoichiometry
+        self.Dir_RevRXNs = 0 # Rev for Reversibility
+        self.ID_Enzs4RXNs = []
+        # self.ID_SubstratesInRXNs = []
+        # self.Stoich_SubstratesInRXNs = []
+        # self.ID_ProductsInRXNs = []
+        # self.Stoich_ProductsInRXNs = []
 
-        self.N_RXNs = 0
+        self.NUniq_RXNs = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()
 
     # Reactions and kinetic parameters (K values)
     def SetUpData(self, Dataset, MasterDataset = None):
         RXNs = Dataset['reactions.tsv']
+
+        self.NUniq_RXNs = len(RXNs)
+        self.Dir_RevRXNs = np.zeros(self.NUniq_RXNs)
+
+        ReversibilityBinaryDict = {}
+        ReversibilityBinaryDict['true'] = 1
+        ReversibilityBinaryDict['false'] = 0
+
         for i, Value in enumerate(RXNs):
             RXNID, RXNStoichiometry, RXNReversibility, RXNEnzymeID = Value
-            assert RXNID not in self.RXNID2Index
-            self.RXNID2Index[RXNID] = len(self.RXNIDs) # = i
-            self.RXNIDs.append(RXNID)
-            self.RXNStoichiometries.append(RXNStoichiometry)
-            self.RXNReversibilities.append(RXNReversibility)
-            self.RXNEnzymeIDs.append(RXNEnzymeID)
-            Substrates = []
-            SubstrateStoichs = []
-            Products = []
-            ProductStoichs = []
+            assert RXNID not in self.ID2Idx_RXNs
+            self.ID2Idx_RXNs[RXNID] = len(self.ID_RXNs) # = i
+            self.ID_RXNs.append(RXNID)
+            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
+            self.Dir_RevRXNs[i] = RXNReversibilityBinary
+            if RXNEnzymeID.strip('[').strip(']'):
+                RXNEnzymeID = ast.literal_eval(RXNEnzymeID.strip('[').strip(']'))
+                if type(RXNEnzymeID) == tuple:
+                    for ID in RXNEnzymeID:
+                        self.ID_Enzs4RXNs.append(ID)
+                else:
+                    self.ID_Enzs4RXNs.append(RXNEnzymeID)
+            MolsInRXN = []
+            StoichInRXN = []
+            # Substrates = []
+            # SubstrateStoichs = []
+            # Products = []
+            # ProductStoichs = []
             RXNStoichiometry = ast.literal_eval(RXNStoichiometry)
             for Mol, Stoich in RXNStoichiometry.items(): # RXNStoichiometry is a string dictionary
-                self.RemoveLocalizationFromMolName(Mol)
-                if Stoich < 0:
-                    Substrates.append(Mol)
-                    SubstrateStoichs.append(-Stoich)
-                if Stoich > 0:
-                    Products.append(Mol)
-                    ProductStoichs.append(Stoich)
-            assert SubstrateStoichs or ProductStoichs > 0, '%s: The exported Stoich value has to be greater than 0' % RXNID
-            self.RXNSubstrates.append([Substrates])
-            self.RXNSubstrateStoichs.append([SubstrateStoichs])
-            self.RXNProducts.append([Products])
-            self.RXNProductStoichs.append([ProductStoichs])
+                MolsInRXN.append(Mol)
+                StoichInRXN.append(Stoich)
+            #     Mol = self.RemoveLocalizationFromMolName(Mol)
+            #     if Stoich < 0:
+            #         Substrates.append(Mol)
+            #         SubstrateStoichs.append(-Stoich)
+            #     if Stoich > 0:
+            #         Products.append(Mol)
+            #         ProductStoichs.append(Stoich)
+            # assert SubstrateStoichs or ProductStoichs > 0, '%s: The exported Stoich value has to be greater than 0' % RXNID
+            self.Stoich_MolStoichDictInRXN.append(RXNStoichiometry)
+            self.ID_MolsInRXNs.append(MolsInRXN)
+            self.Stoich_MolsInRXNs.append(StoichInRXN)
+            # self.ID_SubstratesInRXNs.append([Substrates])
+            # self.Stoich_SubstratesInRXNs.append([SubstrateStoichs])
+            # self.ID_ProductsInRXNs.append([Products])
+            # self.Stoich_ProductsInRXNs.append([ProductStoichs])
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -600,29 +710,29 @@ class FEnzyme(FDataset):
         self.KinRXNClassIDs = []
         self.KinEnzymeIDs = []
         self.KinSubstrateIDs = []
-        self.KinTemperature = 0
-        self.KinKcats = 0
-        self.KinKms = []
-        self.KinKis = 0
+        self.Temp_EnzKinetics = 0
+        self.Kcat_EnzKinetics = 0
+        self.Km_EnzKinetics = []
+        self.Ki_EnzKinetics = 0
 
-        self.N_KinRXNs = 0
+        self.NUniq_EnzKinetics = 0
 
         super().__init__() # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset = None):
         # This kinetic table has no info on pH condition
-        Kinetics = Dataset['enzymeKinetics.tsv']
-        self.N_KinRXNs = len(Kinetics)
-        self.KinTemperature = np.zeros(self.N_KinRXNs)
-        self.KinKcats = np.zeros(self.N_KinRXNs)
-        self.KinKis = np.zeros(self.N_KinRXNs)
+        EnzymeKinetics = Dataset['enzymeKinetics.tsv']
+        self.NUniq_EnzKinetics = len(EnzymeKinetics)
+        self.Temp_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
+        self.Kcat_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
+        self.Ki_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
         N_TempAbscent = 0
         N_KcatValueAbscent = 0
         N_KmValueAbscent = 0
         N_KiValueAbscent = 0
         N_KmValueUnmatched = 0
 
-        for i, Value in enumerate(Kinetics):
+        for i, Value in enumerate(EnzymeKinetics):
             PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs,\
             SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters,\
             CustomParameterConstants, CustomParameterConstantValues, CustomParameterVariables, CheckedBy = Value
@@ -638,15 +748,15 @@ class FEnzyme(FDataset):
             # Exception handling: Temp and K values are missing
             Temp = Temp.replace('[', '').replace(']', '')
             if Temp:
-                self.KinTemperature[i] = float(Temp)
+                self.Temp_EnzKinetics[i] = float(Temp)
             else:
                 N_TempAbscent += 1
-                if self.Switch4Debug:
+                if self.Switch4DebugDataset:
                     print('TempAbscent:', ReactionID)
 
             kcat = kcat.replace(',', '').replace('[', '').replace(']', '')
             if kcat:
-                self.KinKcats[i] = float(kcat)
+                self.Kcat_EnzKinetics[i] = float(kcat)
             else:
                 N_KcatValueAbscent += 1
                 if self.Switch4DebugDataset:
@@ -660,32 +770,32 @@ class FEnzyme(FDataset):
                     kM_Rebuilt = np.zeros(N_SubstrateIDs)
                     for j, kM_value in enumerate(kM.split(',')):
                         kM_Rebuilt[j] = float(kM_value)
-                    self.KinKms.append(kM_Rebuilt)
+                    self.Km_EnzKinetics.append(kM_Rebuilt)
                 else:
                     N_KmValueUnmatched += 1
                     if self.Switch4DebugDataset:
                         print(ReactionID, ': The number of kM values do not match the number of substrates')
-                    self.KinKms.append(0.0)
+                    self.Km_EnzKinetics.append(0.0)
             else:
                 if kM:
-                    self.KinKms.append(float(kM))
+                    self.Km_EnzKinetics.append(float(kM))
                 else:
-                    self.KinKms.append(0.0)
+                    self.Km_EnzKinetics.append(0.0)
                     N_KmValueAbscent += 1
                     if self.Switch4DebugDataset:
                         print('KmValueAbscent:', ReactionID)
 
             kI = kI.replace(',', '').replace('[', '').replace(']', '')
             if kI:
-                self.KinKis[i] = float(kI)
+                self.Ki_EnzKinetics[i] = float(kI)
             else:
                 N_KiValueAbscent += 1
                 if self.Switch4DebugDataset:
                     print('KiValueAbscent:', ReactionID)
-        Km_ExportShort = self.N_KinRXNs - len(self.KinKms)
-        assert len(self.KinKms) == self.N_KinRXNs, '%s Km exporting fell short' % Km_ExportShort
+        Km_ExportShort = self.NUniq_EnzKinetics - len(self.Km_EnzKinetics)
+        assert len(self.Km_EnzKinetics) == self.NUniq_EnzKinetics, '%s Km exporting fell short' % Km_ExportShort
         if self.Switch4DebugDataset:
-            print('N_Total:', self.N_KinRXNs)
+            print('N_Total:', self.NUniq_EnzKinetics)
             print('N_TempAbscent:', N_TempAbscent)
             print('N_KcatValueAbscent:', N_KcatValueAbscent)
             print('N_KmValueAbscent:', N_KmValueAbscent)
@@ -709,23 +819,24 @@ class FEnzyme(FDataset):
 class FCompartment(FDataset):
     def __init__(self): # MasterLocalizations
 
-        self.CompartmentIDs = []
-        self.CompartmentKeys = []
-        self.CompartmentKey2Index = {}
-        self.N_Compartments = 0
+        self.ID_Compartments = []
+        self.Key_Compartments = []
+        self.Key2Idx_Compartments = {}
+        self.NUniq_Compartments = 0
 
         super().__init__() # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset = None):
         Compartments = Dataset['compartments.tsv']
-        self.N_Compartments = len(Compartments)
-        self.CompartmentIndexes = np.zeros(self.N_Compartments)
+        self.NUniq_Compartments = len(Compartments)
+        self.Idx_Compartments = np.zeros(self.NUniq_Compartments)
 
         for i, Value in enumerate(Compartments):
             Abbrev, ID = Value
-            self.CompartmentKey2Index[Abbrev] = len(self.CompartmentKeys)
-            self.CompartmentKeys.append(Abbrev)
-            self.CompartmentIDs.append(ID)
+            self.Key2Idx_Compartments[Abbrev] = len(self.Key_Compartments)
+            self.Idx_Compartments[i] = len(self.Key_Compartments)
+            self.Key_Compartments.append(Abbrev)
+            self.ID_Compartments.append(ID)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -736,39 +847,39 @@ class FCompartment(FDataset):
 class FBuildingBlock(FDataset):
     def __init__(self):
         # Lists of molecular specie
-        self.dNTPs = []
-        self.NTPs = []
-        self.AAs = []
-        self.dNTPKeys = []
-        self.NTPKeys = []
-        self.AAKeys = []
-        self.N_dNTPs = 0
-        self.N_NTPs = 0
-        self.N_AAs = 0
+        self.Name_dNTPs = []
+        self.Name_NTPs = []
+        self.Name_AAs = []
+        self.Key_dNTPs = []
+        self.Key_NTPs = []
+        self.Key_AAs = []
+        self.NUniq_dNTPs = 0
+        self.NUniq_NTPs = 0
+        self.NUniq_AAs = 0
 
         super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
         dNTPs = Dataset['dntps.txt']
         for BuildingBlock in dNTPs:
-            self.dNTPs.append(BuildingBlock)
-        self.dNTPKeys = ['A', 'C', 'G', 'T']
-        self.N_dNTPs = len(self.dNTPs)
+            self.Name_dNTPs.append(BuildingBlock)
+        self.Key_dNTPs = ['A', 'C', 'G', 'T']
+        self.NUniq_dNTPs = len(self.Name_dNTPs)
 
         NTPs = Dataset['ntps.txt']
         for BuildingBlock in NTPs:
-            self.NTPs.append(BuildingBlock)
-        self.NTPKeys = ['A', 'C', 'G', 'U']
-        self.N_NTPs = len(self.NTPs)
+            self.Name_NTPs.append(BuildingBlock)
+        self.Key_NTPs = ['A', 'C', 'G', 'U']
+        self.NUniq_NTPs = len(self.Name_NTPs)
 
         AAs = Dataset['amino_acids.txt']
         for BuildingBlock in AAs:
-            self.AAs.append(BuildingBlock)
-        self.N_AAs = len(self.AAs)
+            self.Name_AAs.append(BuildingBlock)
+        self.NUniq_AAs = len(self.Name_AAs)
 
         AAKeys = Dataset['amino_acid_keys.txt']
         for BuildingBlock in AAKeys:
-            self.AAKeys.append(BuildingBlock)
+            self.Key_AAs.append(BuildingBlock)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -780,10 +891,10 @@ class FMaster():
     def __init__(self):
         self.Switch4DebugMasterDataset = True
 
-        self.MasterID2Index = {}
-        self.MasterIDs = []
-        self.MasterCounts = []
-        self.MasterMWs = []
+        self.ID2Idx_Master = {}
+        self.ID_Master = []
+        self.Count_Master = []
+        self.MW_Master = []
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():

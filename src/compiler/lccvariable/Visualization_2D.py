@@ -1,6 +1,6 @@
 
 
-def Write_Class_Visulization_2D_Init(Writer):
+def Write_Visulization_2D_Init(Writer, CompilerData):
     Writer.BlankLine()
     with Writer.Statement("class FVisualization_2D():"):
         with Writer.Statement("def __init__(self):"):

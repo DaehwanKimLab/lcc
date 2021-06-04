@@ -21,19 +21,19 @@ import CodeGen
 from CodeGen import Target
 import inspect
 from CompilerData import FCompilerData
-from lccclass import Class_Simulation
-from lccclass import Class_Constant
-from lccclass import Class_Environment
-from lccclass import Class_CellState
-from lccclass import Class_Visualization_2D
-# from lccclass.cellstate import GenomeState
-# from lccclass.cellstate import RNAState
-# from lccclass.cellstate import ProteinMonomerState
-# from lccclass.cellstate import ComplexState
-# from lccclass.cellstate import LipidState
-# from lccclass.cellstate.genomestate import GeneState
-# from lccclass.cellstate.genomestate import PromoterState
-from lccmodule.misc import Simulation
+from lccvariable import Simulation
+from lccvariable import Constant
+from lccvariable import Environment
+from lccvariable import CellState
+from lccvariable import Visualization_2D
+# from lccvariable.cellstate import GenomeState
+# from lccvariable.cellstate import RNAState
+# from lccvariable.cellstate import ProteinMonomerState
+# from lccvariable.cellstate import ComplexState
+# from lccvariable.cellstate import LipidState
+# from lccvariable.cellstate.genomestate import GeneState
+# from lccvariable.cellstate.genomestate import PromoterState
+from lccmodule.misc import MasterSimulation
 from lccmodule.synthesis import Replication
 from lccmodule.synthesis import Transcription
 from lccmodule.synthesis import Translation
@@ -79,7 +79,7 @@ def WriteImport(Writer):
     Writer.Statement("import tensorflow as tf")
     Writer.Statement("import matplotlib.pyplot as plt")
     Writer.Statement("from datetime import datetime")
-
+    Writer.Statement("from os import listdir")
     Writer.Statement("from argparse import ArgumentParser, FileType")
 
     Writer.SetIndentLevel(tmpLevel)
@@ -105,28 +105,30 @@ def WriteBody(Writer, CompilerData):
         Writer.Statement("# This is a numpy code", TargetCode=Target.Numpy)
         Writer.Statement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
 
-        # Load all object classes
+        # Load all object classes for variables
         Writer.Statement("# Load all object classes.")
-        Class_Simulation.Write_Class_Simulation_Init(Writer)
-        Class_Constant.Write_Class_Constant_Init(Writer)
-        Class_Environment.Write_Class_Environment_Init(Writer)
-        Class_CellState.Write_Class_CellState_Init(Writer)
-        # GenomeState.Write_Class_GenomeState_Init(Writer)
-        # GeneState.Write_Class_GeneState_Init(Writer)
-        # PromoterState.Write_Class_PromoterState_Init(Writer)
-        # RNAState.Write_Class_RNAState_Init(Writer)
-        # ProteinMonomerState.Write_Class_ProteinMonomerState_Init(Writer)
-        # ComplexState.Write_Class_ComplexState_Init(Writer)
-        # LipidState.Write_Class_LipidState_Init(Writer)
+        Simulation.Write_Simulation_Init(Writer, CompilerData)
+        Constant.Write_Constant_Init(Writer, CompilerData)
+        Environment.Write_Environment_Init(Writer, CompilerData)
+        CellState.Write_CellState_Init(Writer, CompilerData)
 
+        # GenomeState.Write_GenomeState_Init(Writer)
+        # GeneState.Write_GeneState_Init(Writer)
+        # PromoterState.Write_PromoterState_Init(Writer)
+        # RNAState.Write_RNAState_Init(Writer)
+        # ProteinMonomerState.Write_ProteinMonomerState_Init(Writer)
+        # ComplexState.Write_ComplexState_Init(Writer)
+        # LipidState.Write_LipidState_Init(Writer)
         Writer.BlankLine()
 
-        # Initialize all variables
-        Writer.Statement("# Initialize all variables.")
+        # Declare all variables
+        Writer.Statement("# Declare all variables.")
         Writer.Statement("Sim = FSimulation()")
         Writer.Statement("Cst = FConstant()")
         Writer.Statement("Env = FEnvironment()")
         Writer.Statement("Cel = FCellState()")
+        # Writer.Statement("Pro = FCellProcess()")
+
         # Writer.Statement("DNA = FGenomeState()") # Subclass of Cel
         # Writer.Statement("RNA = FRNAState()") # Subclass of Cel
         # Writer.Statement("PRT = FProteinMonomerState()") # Subclass of Cel
@@ -135,6 +137,25 @@ def WriteBody(Writer, CompilerData):
         # Writer.Statement("GEN = FGeneState()") # Subclass of DNA
         # Writer.Statement("PRM = FPromoterState()") # Subclass of DNA
         Writer.BlankLine()
+
+        # Initialize all variables
+        Writer.Statement("# Initialize all variables.")
+        # Writer.Statement("Sim.Initialize()")
+        # Writer.Statement("Cst.Initialize()")
+        # Writer.Statement("Env.Initialize()")
+        Writer.Statement("Cel.Initialize()")
+        # Writer.Statement("Pro.Initialize()")
+
+        # Writer.Statement("DNA = FGenomeState()") # Subclass of Cel
+        # Writer.Statement("RNA = FRNAState()") # Subclass of Cel
+        # Writer.Statement("PRT = FProteinMonomerState()") # Subclass of Cel
+        # Writer.Statement("CPX = FComplexState()") # Subclass of Cel
+        # Writer.Statement("LIP = FLipidState()") # Subclass of Cel
+        # Writer.Statement("GEN = FGeneState()") # Subclass of DNA
+        # Writer.Statement("PRM = FPromoterState()") # Subclass of DNA
+        Writer.BlankLine()
+
+        #
 
         # Load all simulation initialization functions
 
@@ -174,7 +195,7 @@ def WriteBody(Writer, CompilerData):
         # Run simulation
         Writer.Statement("# Run simulation")
         Writer.PrintStrg("Simulation begins...")
-        with Writer.Statement("for SimulationStep in range(SimulationSteps):"):
+        with Writer.Statement("for SimulationStep in range(Sim.SimulationSteps):"):
             Writer.PrintStrg('=============================================')
             Writer.PrintStVa('SimulationStep: ', "SimulationStep + 1")
             Writer.BlankLine()

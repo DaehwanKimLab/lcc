@@ -6,12 +6,14 @@ def Write_Transcription_Init(Writer, CompilerData):
     with Writer.Statement("def Transcription_Init():"):
         Writer.Statement("")
 
+
 def Write_Transcription_Loop(Writer, CompilerData):
     Writer.BlankLine()
-    with Writer.Statement("def Transcription_Init():"):
+    with Writer.Statement("def Transcription_Loop():"):
         Writer.Statement("")
 
 '''
+
                     # RNA selection to be transcribe by RNAP
 # [DYNAMIC -> Loop]     # Draw indexes of RNAs to be transcribed
 
@@ -52,7 +54,7 @@ def Write_Transcription_Loop(Writer, CompilerData):
 
             # Get Indexes for NTPs
             # def IDlst2Idx(self, MolIndexList, MolList, Mol2Index):
-            Writer.IDlst2Idx('Idx_NTPs', IDs_NTP, 'MasterID2Index')
+            Writer.IDlst2Idx('Idx_NTPs', IDs_NTP, 'ID2Idx_Master')
 
 
             # Consume NTPs
