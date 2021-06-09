@@ -2,19 +2,24 @@ import numpy as np
 import os, sys
 from os import listdir
 
-def Write_CellState_Init(Writer, CompilerData):
+
+# Abstract Methods for CellProcess
+def Write_CellState(Writer, Comp):
     Writer.BlankLine()
     with Writer.Statement("class FCellState():"):
         with Writer.Statement("def __init__(self):"):
             Writer.Variable_("self.Species", 0) # Index for Exact or closest species
-            Writer.Variable_("self.CellID", 0) # Not implemented yet
-            Writer.Variable_("self.CellVol", 0) # Not implemented yet
+            Writer.Variable_("self.ID", 0) # Not implemented yet
+            Writer.Variable_("self.Vol", 0) # Not implemented yet
+
+            Writer.Variable_("self.MasterStoich", 0) # Stoichimetry matrix for all elementary reactions
+            Writer.Variable_("self.MasterRates", 0) # Rate matrix for all elementary reactions
             Writer.Statement("self.Initialize()")
             Writer.BlankLine()
 
         with Writer.Statement("def Initialize(self):"):
             # Load CompilerData.
-            SavePath = os.path.realpath(CompilerData.SavePath)
+            SavePath = os.path.realpath(Comp.SavePath)
             SaveFiles = listdir(SavePath)
             FileTypes = ['npy']
 

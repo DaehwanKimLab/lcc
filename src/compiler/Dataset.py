@@ -8,7 +8,7 @@ from abc import abstractmethod
 class FDataset():
     def __init__(self):
         self.Switch4DebugDataset = False
-        pass
+
 
     @abstractmethod
     def SetUpData(self, Dataset, MasterDataset = None):
@@ -18,15 +18,26 @@ class FDataset():
     def SaveData(self, SavePath):
         pass
 
+    def AddLocalizationToMolName(self, VariableName, Localization):
+        assert VariableName[-3] != '[' and VariableName[-1] != ']', 'Variable already has a localization info to be added'
+        assert Localization[0] == '[' and Localization[2] == ']', 'Localization String must be in the format of "[x]"'
+        return VariableName + Localization
+
     def RemoveLocalizationFromMolName(self, VariableName):
+        assert VariableName[-3] == '[' and VariableName[-1] == ']', 'Variable has no localization info to remove'
         return VariableName[:-3]
 
-    def AddToMaster(self, MasterDataset, IDs, Counts, MWs, Localizations='None'):
+
+
+    def AddToMaster(self, MasterDataset, IDs, MolType, Counts, MWs, Localizations='None'):
         # self.AddToMaster(self.ID_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
         for ID in IDs:
             MasterDataset.ID2Idx_Master[ID] = len(MasterDataset.ID_Master)
             MasterDataset.ID_Master.append(ID)
+            MasterDataset.ID2Type_Master[ID] = MolType
+            MasterDataset.Type_Master.append(MolType)
+
 
         MasterDataset.Count_Master = np.append(MasterDataset.Count_Master, Counts)
         MasterDataset.MW_Master = np.append(MasterDataset.MW_Master, MWs)
@@ -42,6 +53,8 @@ class FDataset():
                     LengthOfValue = len(Value)
                     print('The length of "%s": %d' % (Key, LengthOfValue))
 
+        MasterDataset.NUniq_Master = len(MasterDataset.ID_Master)
+
         assert len(MasterDataset.ID_Master) == len(MasterDataset.ID2Idx_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.Count_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.MW_Master)
 
     def AppendStr(self, List, Str):
@@ -54,6 +67,7 @@ class FDataset():
 
 class FMetabolite(FDataset):
     def __init__(self):
+        self.MolType_Metabolites = 'Metabolite'
         self.ID2MW_Metabolites_Temp = {}
         self.ID_Metabolites = []
         self.ID2Idx_Metabolites = {}
@@ -64,6 +78,7 @@ class FMetabolite(FDataset):
         super().__init__() # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset = None):
+        MW_Metabolites = Dataset['metabolites.tsv']
         MW_Metabolites = Dataset['metabolites.tsv']
         WaterMW = Dataset['water.tsv'][0]
         MW_Metabolites.append(WaterMW)
@@ -89,7 +104,7 @@ class FMetabolite(FDataset):
             assert self.MW_Metabolites[i] != 0
         
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
+        self.AddToMaster(MasterDataset, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -99,6 +114,7 @@ class FMetabolite(FDataset):
 
 class FChromosome(FDataset):
     def __init__(self):
+        self.MolType_Chromosomes = 'Chromosome'
         self.Len_ChromosomesInGenome = 0
         self.Count_NTsInChromosomesInGenome = []
         self.Freq_NTsInChromosomesInGenome = []
@@ -133,7 +149,8 @@ class FChromosome(FDataset):
             self.Freq_NTsInChromosomesInGenome.append(NTFreq)
 
         # Set up an arbitrary max number to keep NT Count arrays for all chromosomes
-        MaxCopyNumberOfEachChromosome = 5
+        MaxConcurrentReplications = 1
+        MaxCopyNumberOfEachChromosome = 2 ** MaxConcurrentReplications
         self.NMax_Chromosomes = self.NUniq_ChromosomesInGenome * MaxCopyNumberOfEachChromosome
         self.Count_BasePairsInChromosomes = np.zeros(self.NMax_Chromosomes)
         self.MW_DNABasePairs = np.zeros(self.NMax_Chromosomes)
@@ -143,7 +160,7 @@ class FChromosome(FDataset):
             for j in range(self.NUniq_ChromosomesInGenome): # j is the reference to the original set of chromosomes
                 ChromosomeNumber = j + 1
                 ChromosomeReplication = i + 1
-                ChromosomeID = 'Ch%d_%d' % (ChromosomeNumber, ChromosomeReplication)
+                ChromosomeID = 'Chromosome%d_Rep%d' % (ChromosomeNumber, ChromosomeReplication)
                 self.ID_Chromosomes.append(ChromosomeID)
                 if i == 0:
                     self.Count_BasePairsInChromosomes[j] = self.Len_ChromosomesInGenome[j]
@@ -151,7 +168,7 @@ class FChromosome(FDataset):
                 self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[j])
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.Count_BasePairsInChromosomes, self.MW_DNABasePairs)
+        self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_BasePairsInChromosomes, self.MW_DNABasePairs)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -161,6 +178,8 @@ class FChromosome(FDataset):
 
 class FGene(FDataset):
     def __init__(self):
+        self.MolType_Genes = 'Gene'
+
         self.Len_Genes = 0
         self.Coord_Genes = 0 # Coord for Coordinate
         self.MW_Genes = 0
@@ -216,7 +235,7 @@ class FGene(FDataset):
             self.Type_Genes.append(Type)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Genes, self.Count_Genes, self.MW_Genes)
+        self.AddToMaster(MasterDataset, self.ID_Genes, self.MolType_Genes, self.Count_Genes, self.MW_Genes)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -226,6 +245,7 @@ class FGene(FDataset):
 
 class FPromoter(FDataset):
     def __init__(self):
+        self.MolType_Promoters = 'Promoter'
         self.Coord_Promoters = 0
         self.Dir_Promoters = 0
         self.ID_Promoters = []
@@ -341,6 +361,10 @@ class FPromoter(FDataset):
 
 class FRNA(FDataset):
     def __init__(self):
+        self.MolType_RNAs = 'RNA'
+        self.MolType_RNAsNascent = 'RNA_Nascent'
+        self.MolType_RNAsCleaved = 'RNA_Cleaved'
+
         self.ID2Count_RNAs_Temp = {}
         self.Name_RNAs = []
         self.Name2ID_RNAs = {}
@@ -446,9 +470,9 @@ class FRNA(FDataset):
         self.MW_RNAsCleaved = self.MW_RNAs
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_RNAs, self.Count_RNAs, self.MW_RNAs)
-        self.AddToMaster(MasterDataset, self.ID_RNAsNascent, self.Count_RNAsNascent, self.MW_RNAsNascent)
-        self.AddToMaster(MasterDataset, self.ID_RNAsCleaved, self.Count_RNAsCleaved, self.MW_RNAsCleaved)
+        self.AddToMaster(MasterDataset, self.ID_RNAs, self.MolType_RNAs, self.Count_RNAs, self.MW_RNAs)
+        self.AddToMaster(MasterDataset, self.ID_RNAsNascent, self.MolType_RNAsNascent, self.Count_RNAsNascent, self.MW_RNAsNascent)
+        self.AddToMaster(MasterDataset, self.ID_RNAsCleaved, self.MolType_RNAsCleaved, self.Count_RNAsCleaved, self.MW_RNAsCleaved)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -458,6 +482,10 @@ class FRNA(FDataset):
 
 class FProtein(FDataset):
     def __init__(self):
+        self.MolType_Proteins = 'Protein'
+        self.MolType_Proteins_Nascent = 'Protein_Nascent'
+        self.MolType_Proteins_Cleaved = 'Protein_Cleaved'
+
         self.ID2Count_Proteins_Temp = {}
         self.Name_Proteins = []
         self.Name2ID_Proteins = {}
@@ -537,9 +565,9 @@ class FProtein(FDataset):
         self.MW_ProteinsCleaved = self.MW_Proteins
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Proteins, self.Count_Proteins, self.MW_Proteins)
-        self.AddToMaster(MasterDataset, self.ID_ProteinsNascent, self.Count_ProteinsNascent, self.MW_ProteinsNascent)
-        self.AddToMaster(MasterDataset, self.ID_ProteinsCleaved, self.Count_ProteinsCleaved, self.MW_ProteinsCleaved)
+        self.AddToMaster(MasterDataset, self.ID_Proteins, self.MolType_Proteins, self.Count_Proteins, self.MW_Proteins)
+        self.AddToMaster(MasterDataset, self.ID_ProteinsNascent, self.MolType_Proteins_Nascent, self.Count_ProteinsNascent, self.MW_ProteinsNascent)
+        self.AddToMaster(MasterDataset, self.ID_ProteinsCleaved, self.MolType_Proteins_Cleaved, self.Count_ProteinsCleaved, self.MW_ProteinsCleaved)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -549,6 +577,8 @@ class FProtein(FDataset):
 
 class FComplex(FDataset):
     def __init__(self):
+        self.MolType_Complexes = 'Complex'
+
         self.ID_Proteins = []
         self.ID2Count_Proteins_Temp = {}
 
@@ -619,7 +649,7 @@ class FComplex(FDataset):
         self.NUniq_Complexes = len(self.ID_Complexes)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Complexes, self.Count_Complexes, self.MW_Complexes)
+        self.AddToMaster(MasterDataset, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -629,6 +659,7 @@ class FComplex(FDataset):
 
 class FReaction(FDataset):
     def __init__(self):
+        self.MolType_RXNs = 'RXN'
 
         self.ID_RXNs = []
         self.ID2Idx_RXNs = {}
@@ -705,6 +736,7 @@ class FReaction(FDataset):
 
 class FEnzyme(FDataset):
     def __init__(self): # MasterLocalizations
+        self.MolType_Kinetics = 'Kinetics'
 
         self.KinRXNID2KineticData = {}
         self.KinRXNClassIDs = []
@@ -820,6 +852,7 @@ class FCompartment(FDataset):
     def __init__(self): # MasterLocalizations
 
         self.ID_Compartments = []
+        self.ID2Key_Compartments = {}
         self.Key_Compartments = []
         self.Key2Idx_Compartments = {}
         self.NUniq_Compartments = 0
@@ -837,6 +870,7 @@ class FCompartment(FDataset):
             self.Idx_Compartments[i] = len(self.Key_Compartments)
             self.Key_Compartments.append(Abbrev)
             self.ID_Compartments.append(ID)
+            self.ID2Key_Compartments[ID] = Abbrev
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -862,18 +896,21 @@ class FBuildingBlock(FDataset):
     def SetUpData(self, Dataset, MasterDataset = None):
         dNTPs = Dataset['dntps.txt']
         for BuildingBlock in dNTPs:
+            BuildingBlock = self.AddLocalizationToMolName(BuildingBlock, '[c]')
             self.Name_dNTPs.append(BuildingBlock)
         self.Key_dNTPs = ['A', 'C', 'G', 'T']
         self.NUniq_dNTPs = len(self.Name_dNTPs)
 
         NTPs = Dataset['ntps.txt']
         for BuildingBlock in NTPs:
+            BuildingBlock = self.AddLocalizationToMolName(BuildingBlock, '[c]')
             self.Name_NTPs.append(BuildingBlock)
         self.Key_NTPs = ['A', 'C', 'G', 'U']
         self.NUniq_NTPs = len(self.Name_NTPs)
 
         AAs = Dataset['amino_acids.txt']
         for BuildingBlock in AAs:
+            BuildingBlock = self.AddLocalizationToMolName(BuildingBlock, '[c]')
             self.Name_AAs.append(BuildingBlock)
         self.NUniq_AAs = len(self.Name_AAs)
 
@@ -886,15 +923,18 @@ class FBuildingBlock(FDataset):
             SaveFileName = "%s/%s" % (SavePath, Key)
             np.save('%s.npy' % SaveFileName, Value)
 
-
+# Master Dataset is an exception to the SetUpData method
 class FMaster():
     def __init__(self):
         self.Switch4DebugMasterDataset = True
 
         self.ID2Idx_Master = {}
+        self.Type_Master = []
+        self.ID2Type_Master = {}
         self.ID_Master = []
         self.Count_Master = []
         self.MW_Master = []
+        self.NUniq_Master = 0
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():

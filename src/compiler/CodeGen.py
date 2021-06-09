@@ -11,7 +11,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 from enum import Enum
-
+import numpy as np
+import os
 
 class Target(Enum):
     """
@@ -78,86 +79,152 @@ class CodeWriter():
         print("{Indent}{Line}".format(Indent=self.IndentationPrefix, Line=Line), file=self.fp)
         return self
 
-
-    # def Comment(self, Comment):
-    #     Line = '# %s' % Comment
-    #     self.Statement(Line)
-    #     return self
+    def Comment__(self, Comment):
+        Line = '# %s' % Comment
+        self.Statement(Line)
 
     def BlankLine(self):
         self.Statement("")
 
+    def Pass_____(self):
+        self.Statement("pass")
+
+    def AbsMethod(self):
+        self.Statement("@abc.abstractmethod")
+
     def ReturnVar(self, VariableName):
         Line = 'return "%s"' % VariableName
         self.Statement(Line)
-        return self
 
     def PrintStrg(self, Str):
         Line = 'print("%s")' % Str
         self.Statement(Line)
-        return self
 
     def PrintVari(self, VariableName):
         Line = 'print("%s = ", %s)' % (VariableName, VariableName)
         self.Statement(Line)
-        return self
 
     def PrintStVa(self, Str, VariableName):
         Line = 'print("%s: ", %s)' % (Str, VariableName)
         self.Statement(Line)
-        return self
 
     def DebugSTMT(self, Line):
         if self.Switch4DebugSimulationPrint or self.Switch4DebugSimulationAssert:
             self.Statement(Line)
-        return self
 
     def DebugVari(self, VariableName, Value):
         if self.Switch4DebugSimulationPrint or self.Switch4DebugSimulationAssert:
             Line = '%s = %s' % (VariableName, Value)
             self.Statement(Line)
-        return self
 
     def DebugPStr(self, Str):
         if self.Switch4DebugSimulationPrint:
             Line = 'print("%s")' % Str
             self.Statement(Line)
-        return self
 
     def DebugPVar(self, VariableName):
         if self.Switch4DebugSimulationPrint:
             Line = 'print("%s = ", %s)' % (VariableName, VariableName)
             self.Statement(Line)
-        return self
 
     def DebugPStV(self, Str, VariableName):
         if self.Switch4DebugSimulationPrint:
             Line = 'print("%s: ", %s)' % (Str, VariableName)
             self.Statement(Line)
-        return self
 
     def DebugAsrt(self, Condition, ErrMsg=None):
         if self.Switch4DebugSimulationAssert:
             Line = "assert %s, '%s'" % (Condition, ErrMsg)
             self.Statement(Line)
-        return self
 
+    """
+    Reaction Matrix Building functions
+    """
+
+    def RefineBBs(self, IDs, Stoichiometries, Comp):
+        assert len(IDs) == len(Stoichiometries), "#'s of Molecule IDs and Stoichiometries do not match"
+        BuildingBlocks = ['dNTP', 'NTP', 'AA']
+        # MolTypes = ['Chromosome', 'Gene', 'Promoter', 'RNA', 'Protein', 'Complex', 'Metabolite']
+        IDs_Refined = []
+        Stoichiometries_Refined = []
+        for ID, Stoichiometry in zip(IDs, Stoichiometries):
+            if ID in Comp.Master.ID_Master:
+                IDs_Refined.append(ID)
+                Stoichiometries_Refined.append(Stoichiometry)
+            elif ID in BuildingBlocks:
+                ID_BuildingBlocks, Stoich_BuildingBlocks = self.ParseBBs_(ID, Stoichiometry, Comp)
+                for ID_BuildingBlock in ID_BuildingBlocks:
+                    assert ID_BuildingBlock in Comp.Master.ID_Master, '%s not found in Master ID list' % ID_BuildingBlock
+                IDs_Refined.append(ID_BuildingBlocks)
+                Stoichiometries_Refined.append(Stoich_BuildingBlocks)
+            else:
+                print('Molecule ID not defined in the organism: %s' % ID)
+        IDs_Refined = self.FlatList_(IDs_Refined)
+        Stoichiometries_Refined = self.FlatList_(Stoichiometries_Refined)
+        return IDs_Refined, Stoichiometries_Refined
+
+    def ParseBBs_(self, MolGroup, Stoichiometry, Comp):
+        MolGroupParsed = []
+        StoichiometryParsed = []
+        if MolGroup == 'dNTP':
+            MolGroupParsed = Comp.BuildingBlock.Name_dNTPs
+            StoichiometryParsed = self.FlatList_(Comp.Chromosome.Freq_NTsInChromosomesInGenome) # This is a temporary solution for a single chromosome
+        elif MolGroup == 'NTP':
+            MolGroupParsed = Comp.BuildingBlock.Name_NTPs
+            StoichiometryParsed = Comp.RNA.Freq_NTsInRNAs
+        elif MolGroup == 'AA':
+            MolGroupParsed = Comp.BuildingBlock.Name_AAs
+            StoichiometryParsed = Comp.Protein.Freq_AAsInProteins
+        StoichiometryParsed = [i * Stoichiometry for i in StoichiometryParsed]
+        return MolGroupParsed, StoichiometryParsed
+
+    def FlatList_(self, List):
+        ListFlattened = []
+        for i in List:
+            if isinstance(i, str):
+                ListFlattened.append(i)
+            elif isinstance(i, int):
+                ListFlattened.append(i)
+            elif isinstance(i, float):
+                ListFlattened.append(i)
+            else:
+                for j in i:
+                    ListFlattened.append(j)
+        return ListFlattened
+
+    def GetMolIdx(self, Molecules, MolIdxRef):
+        MolIdxList = []
+
+        # For ID2Idx cases
+        if isinstance(MolIdxRef, dict):
+            for Molecule in Molecules:
+                MolIdx = MolIdxRef[Molecule]
+                MolIdxList.append(MolIdx)
+            return MolIdxList
+        # For Type2Idx cases
+        elif isinstance(MolIdxRef, list):
+            for MolIdx, Type in enumerate(MolIdxRef):
+                if Type == Molecules:
+                    MolIdxList.append(MolIdx)
+            return MolIdxList
+        else:
+            print("Inappropriate reference type used in GetMolIdx function parameter: %s" % MolIdxRef)
 
     """
     Array creation functions
     """
 
-    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
+    def InitOnes_(self, VariableName, Shape, Type='float32'):
         # var = tf.ones([4,3])
         Line = "# Not implemented"
         self.Statement(Line)
 
-    def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
+    def InitZeros(self, VariableName, Shape, Type='float32'):
         # var = tf.zeros([4,3])
         Line = "# Not implemented"
         self.Statement(Line)
 
-    def InitArrayWithValue(self, VariableName, Value, Type='float32'):
+    def InitVals_(self, VariableName, Value, Type='float32'):
         # var = tf.constant([3, 4, 5, 6, 7])
         Line = "# Not implemented"
         self.Statement(Line)
@@ -184,23 +251,25 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.constant([%s])' % (VariableName, Value)
         self.Statement(Line)
 
-    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
+    def InitOnes_(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
         self.Statement(Line)
 
-    def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
+    def InitZeros(self, VariableName, Shape, Type='float32'):
         Line = '%s = tf.zeros(%s, dtype=tf.%s)' % (VariableName, str(Shape), Type)
         self.Statement(Line)
 
-    def InitArrayWithValue(self, VariableName, Value, Type='float32'):
+    def InitVals_(self, VariableName, Value, Type='float32'):
         Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
         self.Statement(Line)
 
     def LoadSaved(self, SavePath, SaveFile, DataType=None):
-        if DataType:
+        FileType = SaveFile.split('.')[-1]
+        if FileType == 'npy':
             VariableName = SaveFile.split('.')[0]
-            VariableLoad = 'np.load(r"%s\%s")' % (SavePath,SaveFile)
+            SaveFilePath = os.path.join(SavePath, SaveFile)
+            VariableLoad = 'np.load(r"%s")' % (SaveFilePath)
             self.Convert__('self.%s' % VariableName, VariableLoad, DataType)
 
     def Convert__(self, VariableNameNew, VariableNamePrev=None, DataType='float32'):
@@ -235,13 +304,17 @@ class TFCodeWriter(CodeWriter):
         if self.Switch4Graph:
             self.Statement("@tf.function")
 
+    def TFForLoop(self, Timer, MaxTime):
+        pass
+
+
     def SelectIdx(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
-        self.InitArrayWithZero(VariableName, 0)
+        self.InitZeros(VariableName, 0)
         if Weights:
             self.OperGathr("Weights", Weights, Indexes)
             self.Statement("Weights = Weights / len(Weights)")
         else:
-            self.InitArrayWithOne("Weights", len(Indexes), Type='int32')
+            self.InitOnes_("Weights", len(Indexes), Type='int32')
         with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
             self.Statement("Values = tf.data.experimental.sample_from_datasets(%s, weights=Weights)" % Indexes)
             self.Statement("%s = tf.concat([%s, Value], 0)" % (VariableName, VariableName))
@@ -307,13 +380,13 @@ class TFCodeWriter(CodeWriter):
     #     self.ReturnVar("MolIndexList")
 
     # To get indexes from molecule ID when using the compiler
-    def ID2IdxCom(self, MolIndexList, MolIDList_Compiler, MolID2Index_Compiler):
-        self.InitArrayWithZero("%s" % MolIndexList, 0)
-        for i, MoleculeID in enumerate(MolIDList_Compiler):
-            # Item assignment only works in Graph
-            self.Statement("%s[%s] = %s # %s" % (MolIndexList, i, MolID2Index_Compiler[MoleculeID], MoleculeID))
-        self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList, MolIDList_Compiler), ErrMsg='Incomplete Indexing for "%s"' % MolIDList_Compiler)
-        self.DebugPVar("%s" % MolIndexList)
+    # def ID2Idx___(self, MolIndexList_Cel, MolIDList_Compiler, MolID2Idx_Compiler):
+    #     self.InitArrayWithZero("%s" % MolIndexList_Cel, 0)
+    #     for i, MoleculeID in enumerate(MolIDList_Compiler):
+    #         # Item assignment only works in Graph
+    #         self.Statement("%s[%s] = %s # %s" % (MolIndexList_Cel, i, MolID2Idx_Compiler[MoleculeID], MoleculeID))
+    #     self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList_Cel, MolIDList_Compiler), ErrMsg='Incomplete Indexing for "%s"' % MolIDList_Compiler)
+    #     self.DebugPVar("%s" % MolIndexList_Cel)
 
     def LoadNP2TF(self, VariableName, SavedFile, DataType='float32'):
         self.Statement("%s = np.load(\"%s\").astype(\'%s\')" % (VariableName, SavedFile, DataType))
@@ -372,12 +445,12 @@ class NumpyCodeWriter(CodeWriter):
         Line = '%s = %s' % (VariableName, Value)
         self.Statement(Line)
 
-    def InitArrayWithOne(self, VariableName, Shape, Type='float32'):
+    def InitOnes_(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = np.ones({Shape}).astype({Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=NumpyType.TypeToString[Type])
         self.Statement(Line)
 
-    def InitArrayWithZero(self, VariableName, Shape, Type='float32'):
+    def InitZeros(self, VariableName, Shape, Type='float32'):
         Line = "%s = np.zeros(%s).astype(%s)" % (VariableName, str(Shape), NumpyType.TypeToString[Type])
         self.Statement(Line)
 

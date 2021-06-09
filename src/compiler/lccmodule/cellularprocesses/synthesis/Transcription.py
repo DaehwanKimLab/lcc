@@ -1,16 +1,55 @@
 # transcription
 # use sigma factor
 
-def Write_Transcription_Init(Writer, CompilerData):
+# Interface for all lcc modules, a.k.a. cellular processes
+
+# Comp is a short hand for CompilerData
+def Write_SynRNA(Writer, Comp):
     Writer.BlankLine()
-    with Writer.Statement("def Transcription_Init():"):
-        Writer.Statement("")
+    with Writer.Statement("class FSynRNA():"):
+        with Writer.Statement("def __init__(self):"):
+            Writer.BlankLine()
+            Writer.Statement("super().__init__()")
+
+            Writer.BlankLine()
+
+        # Abstract Methods for CellProcess
+        Writer.AbsMethod()
+        with Writer.Statement("def InitProcess(self, Cel, Cst, Env):"):
+            # Call AddElementaryProcess
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        Writer.AbsMethod()
+        with Writer.Statement("def LoopProcess(self, Cel, Cst, Env, Sim):"):
+            # Call UpdateReactionRate
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        Writer.AbsMethod()
+        with Writer.Statement("def AddElementaryProcess(self, Cel, Cst, Env):"):
+            # Call GetReactionMolIndex, GetReactionStoich, GetReactionRate methods
+            # Call AddToMasterReactionStoichs, AddToMasterReactionRates
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        Writer.AbsMethod()
+        with Writer.Statement("def GetReactionMolIndex(self, Cel):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        Writer.AbsMethod()
+        with Writer.Statement("def GetReactionStoich(self, Cel):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        Writer.AbsMethod()
+        with Writer.Statement("def GetReactionRate(self, Cel):"):
+            # AdjustRate
+            Writer.Pass_____()
+            Writer.BlankLine()
 
 
-def Write_Transcription_Loop(Writer, CompilerData):
-    Writer.BlankLine()
-    with Writer.Statement("def Transcription_Loop():"):
-        Writer.Statement("")
 
 '''
 
@@ -101,12 +140,12 @@ def Write_Transcription_Loop(Writer, CompilerData):
             self.DebugPStV("After Increment:", TargetMX)
 
         def GenValues(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
-            self.InitArrayWithZero(VariableName, 0)
+            self.InitZeros(VariableName, 0)
             if Weights:
                 self.OperGathr("Weights", Weights, Indexes)
                 self.Statement("Weights = Weights / len(Weights)")
             else:
-                self.InitArrayWithOne("Weights", len(Indexes), Type='int32')
+                self.InitZeros("Weights", len(Indexes), Type='int32')
             with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
                 self.Statement("Values = tf.data.experimental.sample_from_datasets(%s, weights=Weights)" % Indexes)
                 self.Statement("%s = tf.concat([%s, Value], 0)" % (VariableName, VariableName))

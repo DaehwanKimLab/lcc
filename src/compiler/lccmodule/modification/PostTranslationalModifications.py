@@ -1,2 +1,0 @@
-# posttranslational modifications
-# protein localization

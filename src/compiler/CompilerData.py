@@ -16,18 +16,18 @@ class FCompilerData:
         self.Dict_DataClass = {}
 
         # Data classes
-        self.Comp_Genome = None
-        self.Comp_Metabolite = None
-        self.Comp_Chromosome = None
-        self.Comp_Gene = None
-        self.Comp_Promoter = None
-        self.Comp_RNA = None
-        self.Comp_Protein = None
-        self.Comp_Complex = None
-        self.Comp_RXN = None
-        self.Comp_Compartment = None
-        self.Comp_BuildingBlock = None
-        self.Comp_Master = None
+        self.Genome = None
+        self.Metabolite = None
+        self.Chromosome = None
+        self.Gene = None
+        self.Promoter = None
+        self.RNA = None
+        self.Protein = None
+        self.Complex = None
+        self.RXN = None
+        self.Compartment = None
+        self.BuildingBlock = None
+        self.Master = None
 
         # Data Path
         self.DataPath = None
@@ -64,7 +64,7 @@ class FCompilerData:
             with open(fullpath, 'r') as fp:
                 list_of_rows = fp.read().splitlines()
 
-                dataset[fname] = list_of_rows[1:]
+                dataset[fname] = list_of_rows[:]
 
         def parse_fasta(fpath, fname):
             fullpath = fpath + '/' + fname
@@ -102,38 +102,38 @@ class FCompilerData:
         return dataset
 
     def InitializeCompilerData(self, Dataset):
-        self.Comp_Metabolite = FMetabolite()
-        self.Dict_DataClass['Metabolite'] = self.Comp_Metabolite
+        self.BuildingBlock = FBuildingBlock()
+        self.Dict_DataClass['BuildingBlock'] = self.BuildingBlock
 
-        self.Comp_Chromosome = FChromosome()
-        self.Dict_DataClass['Chromosome'] = self.Comp_Chromosome
+        self.Compartment = FCompartment()
+        self.Dict_DataClass['Compartment'] = self.Compartment
 
-        self.Comp_Gene = FGene()
-        self.Dict_DataClass['Gene'] = self.Comp_Gene
+        self.Chromosome = FChromosome()
+        self.Dict_DataClass['Chromosome'] = self.Chromosome
 
-        self.Comp_Promoter = FPromoter()
-        self.Dict_DataClass['Promoter'] = self.Comp_Promoter
+        self.Gene = FGene()
+        self.Dict_DataClass['Gene'] = self.Gene
 
-        self.Comp_RNA = FRNA()
-        self.Dict_DataClass['RNA'] = self.Comp_RNA
+        self.Promoter = FPromoter()
+        self.Dict_DataClass['Promoter'] = self.Promoter
 
-        self.Comp_Protein = FProtein()
-        self.Dict_DataClass['Protein'] = self.Comp_Protein
+        self.RNA = FRNA()
+        self.Dict_DataClass['RNA'] = self.RNA
 
-        self.Comp_Complex = FComplex()
-        self.Dict_DataClass['Complex'] = self.Comp_Complex
+        self.Protein = FProtein()
+        self.Dict_DataClass['Protein'] = self.Protein
 
-        self.Comp_RXN = FReaction()
-        self.Dict_DataClass['RXN'] = self.Comp_RXN
+        self.Complex = FComplex()
+        self.Dict_DataClass['Complex'] = self.Complex
 
-        self.Comp_Compartment = FCompartment()
-        self.Dict_DataClass['Compartment'] = self.Comp_Compartment
+        self.RXN = FReaction()
+        self.Dict_DataClass['RXN'] = self.RXN
 
-        self.Comp_BuildingBlock = FBuildingBlock()
-        self.Dict_DataClass['BuildingBlock'] = self.Comp_BuildingBlock
+        self.Metabolite = FMetabolite()
+        self.Dict_DataClass['Metabolite'] = self.Metabolite
 
-        self.Comp_Master = FMaster()
-        self.Dict_DataClass['Master'] = self.Comp_Master
+        self.Master = FMaster()
+        self.Dict_DataClass['Master'] = self.Master
 
         print('Compiler data have been successfully initialized. # of Classes: %s' % len(self.Dict_DataClass))
 
@@ -141,7 +141,7 @@ class FCompilerData:
     def SetUpCompilerData(self, Dataset):
         for DataClassName, DataClassDataset in self.Dict_DataClass.items():
             if DataClassName != 'Master':
-                DataClassDataset.SetUpData(Dataset, self.Comp_Master)
+                DataClassDataset.SetUpData(Dataset, self.Master)
                 print('Compiler data have been successfully set up. Class: "%s"' % DataClassName)
 
 
