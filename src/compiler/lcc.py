@@ -11,23 +11,18 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import os, sys
-from os import listdir
-import numpy as np
-import csv
+import os
 # import tensorflow as tf
-import matplotlib.pyplot as plt
 from argparse import ArgumentParser
 import CodeGen
 from CodeGen import Target
 import inspect
 from CompilerData import FCompilerData
-from lccvariable import Simulation
-from lccvariable import Constant
-from lccvariable import Environment
-from lccvariable import CellState
-from lccvariable import CellProcess
-from lccvariable import Visualization_2D
+from lccclass import Simulation
+from lccclass import Constant
+from lccclass import Environment
+from lccclass import CellState
+from lccclass import CellProcess
 # from lccvariable.cellstate import GenomeState
 # from lccvariable.cellstate import RNAState
 # from lccvariable.cellstate import ProteinMonomerState
@@ -35,28 +30,10 @@ from lccvariable import Visualization_2D
 # from lccvariable.cellstate import LipidState
 # from lccvariable.cellstate.genomestate import GeneState
 # from lccvariable.cellstate.genomestate import PromoterState
-from lccmodule.cellularprocesses import *
-from lccmodule.simulation import ReactionExecution
-from lccmodule.simulation import ConservationOfMass
-from lccmodule.cellularprocesses.synthesis import Replication
-from lccmodule.cellularprocesses.synthesis import Transcription
-from lccmodule.cellularprocesses.synthesis import Translation
-from lccmodule.cellularprocesses.degradation import DNADegradation
-from lccmodule.cellularprocesses.degradation import RNADegradation
-from lccmodule.cellularprocesses.degradation import ProteinDegradation
-from lccmodule.cellularprocesses.modification import DNAModifications
-from lccmodule.cellularprocesses.modification import RNAModifications
-from lccmodule.cellularprocesses.modification import PostTranslationalModifications
-from lccmodule.cellularprocesses.conversion import Complexation
-from lccmodule.cellularprocesses.conversion import Equilibrium
-from lccmodule.cellularprocesses.metabolism import MetabolicNetwork
-from lccmodule.cellularprocesses.signaling import OneComponentSystems
-from lccmodule.cellularprocesses.signaling import TwoComponentSystems
-from lccmodule.cellularprocesses.signaling import ECFSigmaFactor
-from lccmodule.cellularprocesses.biophysics import Cytokinesis
-from lccmodule.cellularprocesses.biophysics import BiophysicalProperties
-from lccmodule.cellularprocesses.biophysics import Flagellum
-
+from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
+from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
+from lccclass.simulation import ReactionExecution
+from lccclass.simulation.reactionexecution import RateGaugeModelOnly
 
 
 LCC_VERSION = "0.1"
@@ -94,8 +71,8 @@ def WriteImport(Writer):
 
 def WriteBody(Writer, CompilerData):
 
-    Writer.Switch4DebugCompiler = False
-    Writer.Switch4DebugSimulation = False
+    Writer.Switch4DebugSimulationPrint = True
+    Writer.Switch4DebugSimulationAssert = True
     Writer.Switch4Graph = False
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
@@ -114,51 +91,36 @@ def WriteBody(Writer, CompilerData):
         Writer.Statement("# This is a numpy code", TargetCode=Target.Numpy)
         Writer.Statement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
 
-        # Load all object classes for variables
-        Writer.Statement("# Load all object classes.")
+        # Define classes for whole cell simulation
+        Writer.Statement("# Define all object classes.")
         Simulation.Write_Simulation(Writer, CompilerData)
         Constant.Write_Constant(Writer, CompilerData)
         Environment.Write_Environment(Writer, CompilerData)
         CellState.Write_CellState(Writer, CompilerData)
-        CellProcess.Write_CellProcess_Init(Writer, CompilerData)
+        CellProcess.Write_CellProcess(Writer, CompilerData)
+        ReactionExecution.Write_ReactionExecution(Writer, CompilerData)
+        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer,CompilerData)
 
-        # GenomeState.Write_GenomeState_Init(Writer)
-        # GeneState.Write_GeneState_Init(Writer)
-        # PromoterState.Write_PromoterState_Init(Writer)
-        # RNAState.Write_RNAState_Init(Writer)
-        # ProteinMonomerState.Write_ProteinMonomerState_Init(Writer)
-        # ComplexState.Write_ComplexState_Init(Writer)
-        # LipidState.Write_LipidState_Init(Writer)
         Writer.BlankLine()
 
-        # Declare all simulation components
+        # Instantiate high level objects.
         Writer.Statement("# Declare all simulation components.")
         Writer.Statement("Sim = FSimulation()")
         Writer.Statement("Cst = FConstant()")
         Writer.Statement("Env = FEnvironment()")
         Writer.Statement("Cel = FCellState()")
 
-        # Writer.Statement("DNA = FGenomeState()") # Subclass of Cel
-        # Writer.Statement("RNA = FRNAState()") # Subclass of Cel
-        # Writer.Statement("PRT = FProteinMonomerState()") # Subclass of Cel
-        # Writer.Statement("CPX = FComplexState()") # Subclass of Cel
-        # Writer.Statement("LIP = FLipidState()") # Subclass of Cel
-        # Writer.Statement("GEN = FGeneState()") # Subclass of DNA
-        # Writer.Statement("PRM = FPromoterState()") # Subclass of DNA
         Writer.BlankLine()
 
-        # Declare all processes
-        Writer.Statement("# Declare all processes.")
+        # Instantiate reaction execution objects.
+        Writer.Statement("Exe = FRateGaugeModelOnly()")
+
+        Writer.BlankLine()
+
+        # Define classes for all cell processes.
+        Writer.Statement("# Define all processes.")
         Writer.Statement("Dict_CellProcess = dict()")
 
-        # Dict_ProcessTypes = dict()
-        # Dict_ProcessTypes['Syn'] = 'Synthesis'
-        # Dict_ProcessTypes['Deg'] = 'Degradation'
-        # Dict_ProcessTypes['Mod'] = 'Modification'
-        # Dict_ProcessTypes['Cnv'] = 'Conversion'
-        # Dict_ProcessTypes['Met'] = 'Metabolism'
-
-        # Initialize all processes
         Replication.Write_SynDNA(Writer, CompilerData)
         Transcription.Write_SynRNA(Writer, CompilerData)
         Translation.Write_SynPRT(Writer, CompilerData)
@@ -166,6 +128,9 @@ def WriteBody(Writer, CompilerData):
         RNADegradation.Write_DegRNA(Writer, CompilerData)
         ProteinDegradation.Write_DegPRT(Writer, CompilerData)
 
+        Writer.BlankLine()
+
+        # Instantiate cell processes.
 
         # Central Dogma
         ProcessTypes = ['Syn', 'Deg'] # add 'Mod' later
@@ -176,41 +141,36 @@ def WriteBody(Writer, CompilerData):
                 ProcessTypeTarget = ProcessType + ProcessTarget
                 Writer.Statement("{0} = F{0}()".format(ProcessTypeTarget))
                 Writer.Statement("Dict_CellProcess['{0}'] = {0}".format(ProcessTypeTarget))
-                Writer.BlankLine()
 
-        # Initialize all simulation components.
-        Writer.Statement("# Initialize all simulation components.") # Only if Initialize not included by __init__()
-        # Writer.Statement("Cst.Initialize()")
-        # Writer.Statement("Env.Initialize()")
-
-        # Initialize all processes.
-        with Writer.Statement("for CellProcessKey, CellProcessValue in Dict_CellProcess.items():"):
-            Writer.PrintVari("CellProcessKey")
-            # Writer.Statement("CellProcessKey.Init()")
-
-        # Writer.Statement("DNA = FGenomeState()") # Subclass of Cel
-        # Writer.Statement("RNA = FRNAState()") # Subclass of Cel
-        # Writer.Statement("PRT = FProteinMonomerState()") # Subclass of Cel
-        # Writer.Statement("CPX = FComplexState()") # Subclass of Cel
-        # Writer.Statement("LIP = FLipidState()") # Subclass of Cel
-        # Writer.Statement("GEN = FGeneState()") # Subclass of DNA
-        # Writer.Statement("PRM = FPromoterState()") # Subclass of DNA
         Writer.BlankLine()
 
-        #
+        # Link Objects
+        ObjectsToLink = ["Cel", "Cst", "Env", "Exe"]
+        for Object in ObjectsToLink:
+            Writer.Statement("Sim.{0} = {0}".format(Object))
+            with Writer.Statement("for CellProcessStr, CellProcessRef in Dict_CellProcess.items():"):
+                Writer.Statement("CellProcessRef.{0} = {0}".format(Object))
 
-        # Load all simulation initialization functions
+        Writer.BlankLine()
+
+        for ProcessType in ProcessTypes:
+            for ProcessTarget in ProcessTargets:
+                ProcessTypeTarget = ProcessType + ProcessTarget
+                Writer.Statement("Sim.{0} = {0}".format(ProcessTypeTarget))
+
+        Writer.BlankLine()
 
         # Temporary parameters
-        #
+        Writer.Comment__("Temporary parameters")
         # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
         Writer.Variable_("Cel.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
-        Writer.BlankLine()
 
+        Writer.BlankLine()
 
         # Run simulation
         Writer.Statement("# Run simulation")
-        # Writer.Statement("Sim.RunSimulation(Cel, Cst, Env, )")
+        Writer.Statement("Sim.Initialize()")
+        Writer.Statement("Sim.Run()")
 
         Writer.BlankLine()
         # End of simulation

@@ -17,7 +17,7 @@ Pol III resumes elongation.[8]
 
 def Write_DegDNA(Writer, Comp):
     Writer.BlankLine()
-    with Writer.Statement("class FDegDNA():"):
+    with Writer.Statement("class FDegDNA(FCellProcess):"):
         with Writer.Statement("def __init__(self):"):
             Writer.BlankLine()
             Writer.Statement("super().__init__()")
@@ -26,36 +26,36 @@ def Write_DegDNA(Writer, Comp):
 
         # Abstract Methods for CellProcess
         Writer.AbsMethod()
-        with Writer.Statement("def InitProcess(self, Cel, Cst, Env):"):
+        with Writer.Statement("def InitProcess(self):"):
             # Call AddElementaryProcess
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def LoopProcess(self, Cel, Cst, Env, Sim):"):
+        with Writer.Statement("def LoopProcess(self):"):
             # Call UpdateReactionRate
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def AddElementaryProcess(self, Cel, Cst, Env):"):
+        with Writer.Statement("def AddElementaryProcess(self):"):
             # Call GetReactionMolIndex, GetReactionStoich, GetReactionRate methods
             # Call AddToMasterReactionStoichs, AddToMasterReactionRates
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def GetReactionMolIndex(self, Cel):"):
+        with Writer.Statement("def GetReactionMolIndex(self):"):
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def GetReactionStoich(self, Cel):"):
+        with Writer.Statement("def GetReactionStoich(self):"):
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def GetReactionRate(self, Cel):"):
+        with Writer.Statement("def GetReactionRate(self):"):
             # AdjustRate
             Writer.Pass_____()
             Writer.BlankLine()

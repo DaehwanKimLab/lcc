@@ -74,6 +74,7 @@ class FMetabolite(FDataset):
         self.Count_Metabolites = 0
         self.MW_Metabolites = 0
         self.NUniq_Metabolites = 0
+        self.SpecieIdx_Metabolites = 0
 
         super().__init__() # MasterLocalizations
 

@@ -96,6 +96,10 @@ class CodeWriter():
         Line = 'return "%s"' % VariableName
         self.Statement(Line)
 
+    def Overwrite(self, DestinationVariable, SourceVariable):
+        Line = '%s = %s' % (DestinationVariable, SourceVariable)
+        self.Statement(Line)
+
     def PrintStrg(self, Str):
         Line = 'print("%s")' % Str
         self.Statement(Line)
@@ -107,6 +111,21 @@ class CodeWriter():
     def PrintStVa(self, Str, VariableName):
         Line = 'print("%s: ", %s)' % (Str, VariableName)
         self.Statement(Line)
+
+    def PrintDict(self, DictVariableName):
+        with self.Statement("for Key, Value in %s.items():" % DictVariableName):
+            self.PrintStVa("Keys and Values in ", DictVariableName)
+            self.Statement('print("%s: %s" % (Key, Value))')
+
+    def PrintKeys(self, DictVariableName):
+        with self.Statement("for Key, Value in %s.items():" % DictVariableName):
+            self.PrintStVa("Keys in ", DictVariableName)
+            self.Statement('print("%s" % Key)')
+
+    def PrintVals(self, DictVariableName):
+        with self.Statement("for Key, Value in %s.items():" % DictVariableName):
+            self.PrintStVa("Values in ", DictVariableName)
+            self.Statement('print("%s" % Val)')
 
     def DebugSTMT(self, Line):
         if self.Switch4DebugSimulationPrint or self.Switch4DebugSimulationAssert:
@@ -137,78 +156,6 @@ class CodeWriter():
             Line = "assert %s, '%s'" % (Condition, ErrMsg)
             self.Statement(Line)
 
-    """
-    Reaction Matrix Building functions
-    """
-
-    def RefineBBs(self, IDs, Stoichiometries, Comp):
-        assert len(IDs) == len(Stoichiometries), "#'s of Molecule IDs and Stoichiometries do not match"
-        BuildingBlocks = ['dNTP', 'NTP', 'AA']
-        # MolTypes = ['Chromosome', 'Gene', 'Promoter', 'RNA', 'Protein', 'Complex', 'Metabolite']
-        IDs_Refined = []
-        Stoichiometries_Refined = []
-        for ID, Stoichiometry in zip(IDs, Stoichiometries):
-            if ID in Comp.Master.ID_Master:
-                IDs_Refined.append(ID)
-                Stoichiometries_Refined.append(Stoichiometry)
-            elif ID in BuildingBlocks:
-                ID_BuildingBlocks, Stoich_BuildingBlocks = self.ParseBBs_(ID, Stoichiometry, Comp)
-                for ID_BuildingBlock in ID_BuildingBlocks:
-                    assert ID_BuildingBlock in Comp.Master.ID_Master, '%s not found in Master ID list' % ID_BuildingBlock
-                IDs_Refined.append(ID_BuildingBlocks)
-                Stoichiometries_Refined.append(Stoich_BuildingBlocks)
-            else:
-                print('Molecule ID not defined in the organism: %s' % ID)
-        IDs_Refined = self.FlatList_(IDs_Refined)
-        Stoichiometries_Refined = self.FlatList_(Stoichiometries_Refined)
-        return IDs_Refined, Stoichiometries_Refined
-
-    def ParseBBs_(self, MolGroup, Stoichiometry, Comp):
-        MolGroupParsed = []
-        StoichiometryParsed = []
-        if MolGroup == 'dNTP':
-            MolGroupParsed = Comp.BuildingBlock.Name_dNTPs
-            StoichiometryParsed = self.FlatList_(Comp.Chromosome.Freq_NTsInChromosomesInGenome) # This is a temporary solution for a single chromosome
-        elif MolGroup == 'NTP':
-            MolGroupParsed = Comp.BuildingBlock.Name_NTPs
-            StoichiometryParsed = Comp.RNA.Freq_NTsInRNAs
-        elif MolGroup == 'AA':
-            MolGroupParsed = Comp.BuildingBlock.Name_AAs
-            StoichiometryParsed = Comp.Protein.Freq_AAsInProteins
-        StoichiometryParsed = [i * Stoichiometry for i in StoichiometryParsed]
-        return MolGroupParsed, StoichiometryParsed
-
-    def FlatList_(self, List):
-        ListFlattened = []
-        for i in List:
-            if isinstance(i, str):
-                ListFlattened.append(i)
-            elif isinstance(i, int):
-                ListFlattened.append(i)
-            elif isinstance(i, float):
-                ListFlattened.append(i)
-            else:
-                for j in i:
-                    ListFlattened.append(j)
-        return ListFlattened
-
-    def GetMolIdx(self, Molecules, MolIdxRef):
-        MolIdxList = []
-
-        # For ID2Idx cases
-        if isinstance(MolIdxRef, dict):
-            for Molecule in Molecules:
-                MolIdx = MolIdxRef[Molecule]
-                MolIdxList.append(MolIdx)
-            return MolIdxList
-        # For Type2Idx cases
-        elif isinstance(MolIdxRef, list):
-            for MolIdx, Type in enumerate(MolIdxRef):
-                if Type == Molecules:
-                    MolIdxList.append(MolIdx)
-            return MolIdxList
-        else:
-            print("Inappropriate reference type used in GetMolIdx function parameter: %s" % MolIdxRef)
 
     """
     Array creation functions
@@ -264,27 +211,36 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.constant(%s, dtype=%s)' % (VariableName, str(Value), Type)
         self.Statement(Line)
 
-    def LoadSaved(self, SavePath, SaveFile, DataType=None):
-        FileType = SaveFile.split('.')[-1]
+    def AddElwise(self, VariableName, Value):
+        Line = '%s = tf.add(%s, %s)' % (VariableName, VariableName, str(Value))
+        self.Statement(Line)
+
+    def LoadSaved(self, SaveFilePath, VariableName, DataType=None):
+        FileType = SaveFilePath.split('.')[-1]
         if FileType == 'npy':
-            VariableName = SaveFile.split('.')[0]
-            SaveFilePath = os.path.join(SavePath, SaveFile)
             VariableLoad = 'np.load(r"%s")' % (SaveFilePath)
-            self.Convert__('self.%s' % VariableName, VariableLoad, DataType)
+            Line = self.Convert__('self.%s' % VariableName, VariableLoad, DataType)
+            self.Statement(Line)
+            self.DebugPStV(VariableName, 'self.%s' % VariableName)
+        else:
+            self.Statement('LoadSaved function cannot handle the filetype: %s' % FileType)
 
     def Convert__(self, VariableNameNew, VariableNamePrev=None, DataType='float32'):
         if VariableNamePrev:
             Line = '%s = tf.convert_to_tensor(%s, dtype=tf.%s)' % (VariableNameNew, VariableNamePrev, DataType)
         else:
             Line = '%s = tf.convert_to_tensor(%s)' % (VariableNameNew, VariableNameNew)
-        self.Statement(Line)
-        self.DebugPVar(VariableNameNew)
+        return Line
 
     def Reshape__(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
         self.Statement(Line)
         self.DebugPVar(DestVar)
 
+    def Transpose(self, Variable):
+        Line = '%s = tf.transpose(%s)' % (Variable, Variable)
+        self.Statement(Line)
+        self.DebugPVar(Variable)
 
     def Statement(self, Line, **kwargs):
 
@@ -333,9 +289,9 @@ class TFCodeWriter(CodeWriter):
             self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
         self.DebugPStV("After Increment:", TargetMX)
 
-    def OperCncat(self, DestVar, SrcVar, Axis=0):
-        # self.PrepCncat(DestVar, SrcVar)
-        self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, DestVar, SrcVar, Axis))
+    def OperCncat(self, DestVar, SrcVar1, SrcVar2, Axis=0):
+        # self.PrepCncat(DestVar, SrcVar1, SrcVar2)
+        self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, SrcVar1, SrcVar2, Axis))
 
     def PrepGathr(self, Source, Index):
         self.Reshape__(Source, Source, -1)
@@ -358,16 +314,34 @@ class TFCodeWriter(CodeWriter):
         self.PrepScNds(Target, Index, Values)
         self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (Target, Target, Index, Values))
 
+    def OperScUpd(self, Target, Index, Values):
+        self.PrepScNds(Target, Index, Values)
+        self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, Target, Index, Values))
+
     def PrepMXMul(self, MX1, MX2):
+        with self.Statement("if (tf.rank(%s) = 2) and (tf.rank(%s) = 2):" % (MX1, MX2)):
+            self.Statement("if Row_%s = ")
+
         with self.Statement("if tf.rank(%s) != 2:" % MX1):
             self.Statement("%s = tf.reshape(%s, [-1, tf.shape(%s)[0]])" % (MX1, MX1, MX1))
         with self.Statement("if tf.rank(%s) != 2:" % MX2):
             self.Statement("%s = tf.reshape(%s, [tf.shape(%s)[0], -1])" % (MX2, MX2, MX1))
 
+    def OperMXAdd(self, VariableName, MX1, MX2):
+        self.Statement("%s = tf.math.add(%s, %s)" % (VariableName, MX1, MX2))
+
     def OperMXMul(self, VariableName, MX1, MX2):
         self.PrepMXMul(MX1, MX2)
         self.Statement("%s = tf.linalg.matmul(%s, %s)" % (VariableName, MX1, MX2))
         self.Reshape__(VariableName, VariableName, -1)
+
+    def OperRound(self, VariableName, MX):
+        self.Statement("RoundedMatrix = tf.math.round(%s)" % MX)
+        self.Cast_____(VariableName, "RoundedMatrix")
+
+    def Cast_____(self, VariableName, MX, Type='int32'):
+        self.Statement("%s = tf.cast(%s, dtype=tf.%s)" % (VariableName, MX, Type))
+
 
     # # To operate in CellState Class?
     # def ID2IdxSim(self, MolIDList, MolID2Index):

@@ -51,69 +51,78 @@ Examples:
 """
 
 # Comp is a short hand for CompilerData
-def Write_CellProcess_Init(Writer, Comp):
+def Write_CellProcess(Writer, Comp):
     Writer.BlankLine()
     with Writer.Statement("class FCellProcess():"):
         with Writer.Statement("def __init__(self):"):
             Writer.BlankLine()
             Writer.Statement("super().__init__()")
+            Writer.BlankLine()
 
+            Writer.Statement("self.Cel = None")
+            Writer.Statement("self.Cst = None")
+            Writer.Statement("self.Env = None")
+            Writer.Statement("self.Exe = None")
+            Writer.BlankLine()
+
+        with Writer.Statement("def SetUpLink(self, Variable, Object):"):
+            Writer.Overwrite("Variable", "Object")
             Writer.BlankLine()
 
         # Abstract Methods for CellProcess
         Writer.AbsMethod()
-        with Writer.Statement("def InitProcess(self, Cel, Cst, Env):"):
+        with Writer.Statement("def InitProcess(self):"):
             # Call AddElementaryProcess
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def LoopProcess(self, Cel, Cst, Env, Sim):"):
+        with Writer.Statement("def LoopProcess(self):"):
             # Call UpdateReactionRate
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def AddElementaryProcess(self, Cel, Cst, Env):"):
+        with Writer.Statement("def AddElementaryProcess(self):"):
             # Call GetReactionMolIndex, GetReactionStoich, GetReactionRate methods
             # Call AddToMasterReactionStoichs, AddToMasterReactionRates
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def GetReactionMolIndex(self, Cel):"):
+        with Writer.Statement("def GetReactionMolIndex(self):"):
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def GetReactionStoich(self, Cel):"):
+        with Writer.Statement("def GetReactionStoich(self):"):
             Writer.Pass_____()
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def GetReactionRate(self, Cel):"):
+        with Writer.Statement("def GetReactionRate(self):"):
             # AdjustRate
             Writer.Pass_____()
             Writer.BlankLine()
 
         # Methods
-        with Writer.Statement("def AdjustReactionRate(self, Cel):"):
+        with Writer.Statement("def AdjustReactionRate(self):"):
             Writer.Pass_____()
 
             Writer.BlankLine()
 
-        with Writer.Statement("def AddToMasterReactionStoichs(self, Cel):"):
+        with Writer.Statement("def AddToMasterReactionStoichs(self):"):
             Writer.Pass_____()
 
             Writer.BlankLine()
 
-        with Writer.Statement("def AddToMasterReactionRates(self, Cel):"):
+        with Writer.Statement("def AddToMasterReactionRates(self):"):
             Writer.Pass_____()
 
             Writer.BlankLine()
 
         Writer.TF_Graph_()
-        with Writer.Statement("def UpdateMasterReactionRates(self, Cel):"):
+        with Writer.Statement("def UpdateMasterReactionRates(self):"):
             Writer.Pass_____()
 
             Writer.BlankLine()
