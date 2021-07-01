@@ -16,6 +16,7 @@ import os
 from argparse import ArgumentParser
 import CodeGen
 from CodeGen import Target
+import ProcGen
 import inspect
 from CompilerData import FCompilerData
 from lccclass import Simulation
@@ -69,8 +70,9 @@ def WriteImport(Writer):
     Writer.BlankLine()
 
 
-def WriteBody(Writer, CompilerData):
+def WriteBody(Writer, CompilerData, ProGen):
 
+    Writer.Switch4Comment = True
     Writer.Switch4DebugSimulationPrint = True
     Writer.Switch4DebugSimulationAssert = True
     Writer.Switch4Graph = False
@@ -87,95 +89,111 @@ def WriteBody(Writer, CompilerData):
     with Writer:
         Writer.BlankLine()
 
-        # Specify the mode of data processing
+        # Specify the mode of data processing.
         Writer.Statement("# This is a numpy code", TargetCode=Target.Numpy)
         Writer.Statement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
 
-        # Define classes for whole cell simulation
-        Writer.Statement("# Define all object classes.")
-        Simulation.Write_Simulation(Writer, CompilerData)
-        Constant.Write_Constant(Writer, CompilerData)
-        Environment.Write_Environment(Writer, CompilerData)
-        CellState.Write_CellState(Writer, CompilerData)
-        CellProcess.Write_CellProcess(Writer, CompilerData)
-        ReactionExecution.Write_ReactionExecution(Writer, CompilerData)
-        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer,CompilerData)
+        Writer.BlankLine()
+
+        # Define classes for simulation.
+        Writer.Comment__("Define all object classes.")
+        Simulation.Write_Simulation(Writer, CompilerData, ProGen)
+        ReactionExecution.Write_ReactionExecution(Writer)
+        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
 
         Writer.BlankLine()
 
-        # Instantiate high level objects.
-        Writer.Statement("# Declare all simulation components.")
+        # Define classes for data.
+        Writer.Comment__("Define classes for data.")
+        Constant.Write_Constant(Writer, CompilerData)
+        Environment.Write_Environment(Writer, CompilerData)
+        CellState.Write_CellState(Writer, CompilerData)
+
+        Writer.BlankLine()
+
+        # Define classes for all cell processes.
+        Writer.Comment__("Define classes for all processes.")
+
+        CellProcess.Write_CellProcess(Writer, ProGen)
+        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+            Reactions = ProGen.Dict_ProcessReactions[ProcessID]
+            Module.WriteCellProcess(Writer, ProGen, ProcessID, Reactions)
+
+        Writer.BlankLine()
+
+        # Instantiate simulation objects.
+        Writer.Comment__("Instantiate all simulation components.")
+
         Writer.Statement("Sim = FSimulation()")
+        # if Model = UserDefinedModel
+        #     Writer.Statement("Exe = F%s()" % Model)
+        Writer.Statement("Exe = FRateGaugeModelOnly()")
+
+        Writer.BlankLine()
+
+        # Instantiate simulation objects.
+        Writer.Comment__("Instantiate all data components.")
+
         Writer.Statement("Cst = FConstant()")
         Writer.Statement("Env = FEnvironment()")
         Writer.Statement("Cel = FCellState()")
 
         Writer.BlankLine()
 
-        # Instantiate reaction execution objects.
-        Writer.Statement("Exe = FRateGaugeModelOnly()")
+        # Instantiate cell process objects.
+        Writer.Comment__("Instantiate cell process objects.")
+
+        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+            Writer.Statement("{0} = F{0}()".format(ProcessID))
 
         Writer.BlankLine()
 
-        # Define classes for all cell processes.
-        Writer.Statement("# Define all processes.")
-        Writer.Statement("Dict_CellProcess = dict()")
+        # Link data objects to simulation object.
+        Writer.Comment__("Link data objects to simulation object.")
 
-        Replication.Write_SynDNA(Writer, CompilerData)
-        Transcription.Write_SynRNA(Writer, CompilerData)
-        Translation.Write_SynPRT(Writer, CompilerData)
-        DNADegradation.Write_DegDNA(Writer, CompilerData)
-        RNADegradation.Write_DegRNA(Writer, CompilerData)
-        ProteinDegradation.Write_DegPRT(Writer, CompilerData)
+        DataObjects = ["Cel", "Cst", "Env", "Exe"]
+        for DataObject in DataObjects:
+            Writer.Statement("Sim.{0} = {0}".format(DataObject))
 
         Writer.BlankLine()
 
-        # Instantiate cell processes.
+        # Link data objects to cell process objects.
+        Writer.Comment__("Link data objects to simulation object.")
 
-        # Central Dogma
-        ProcessTypes = ['Syn', 'Deg'] # add 'Mod' later
-        ProcessTargets = ['DNA', 'RNA', 'PRT']
+        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+            for DataObject in DataObjects:
+                Writer.Statement("{0}.{1} = {1}".format(ProcessID, DataObject))
+            Writer.BlankLine()
 
-        for ProcessType in ProcessTypes:
-            for ProcessTarget in ProcessTargets:
-                ProcessTypeTarget = ProcessType + ProcessTarget
-                Writer.Statement("{0} = F{0}()".format(ProcessTypeTarget))
-                Writer.Statement("Dict_CellProcess['{0}'] = {0}".format(ProcessTypeTarget))
-
-        Writer.BlankLine()
-
-        # Link Objects
-        ObjectsToLink = ["Cel", "Cst", "Env", "Exe"]
-        for Object in ObjectsToLink:
-            Writer.Statement("Sim.{0} = {0}".format(Object))
-            with Writer.Statement("for CellProcessStr, CellProcessRef in Dict_CellProcess.items():"):
-                Writer.Statement("CellProcessRef.{0} = {0}".format(Object))
-
-        Writer.BlankLine()
-
-        for ProcessType in ProcessTypes:
-            for ProcessTarget in ProcessTargets:
-                ProcessTypeTarget = ProcessType + ProcessTarget
-                Writer.Statement("Sim.{0} = {0}".format(ProcessTypeTarget))
+        # Link cell process objects to simulation object.
+        Writer.Comment__("Link cell process objects to simulation object.")
+        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+            Writer.Statement("Sim.{0} = {0}".format(ProcessID))
 
         Writer.BlankLine()
 
         # Temporary parameters
-        Writer.Comment__("Temporary parameters")
+        Writer.Comment__("Declare temporary parameters")
+
         # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
         Writer.Variable_("Cel.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
 
         Writer.BlankLine()
 
         # Run simulation
-        Writer.Statement("# Run simulation")
+        Writer.Comment__("Run simulation.")
         Writer.Statement("Sim.Initialize()")
         Writer.Statement("Sim.Run()")
 
         Writer.BlankLine()
-        # End of simulation
 
-        # Print input genome
+        # End of simulation.
+        Writer.Comment__("End of simulation.")
+
+
+        # Print input genome.
+        Writer.Comment__("Print input genome")
+
         with Writer.Statement("if GenomeFileName != \"\":"):
             Writer.Statement("GenomeFile = open(GenomeFileName, 'w')")
             Writer.Statement("InputGenomeFile = open('cell.fa')")
@@ -183,6 +201,8 @@ def WriteBody(Writer, CompilerData):
                 Writer.Statement("Line = Line.strip()")
                 Writer.Statement("print(Line, file=GenomeFile)")
             Writer.Statement("GenomeFile.close()")
+
+        Writer.BlankLine()
 
 def WriteMain(Writer):
     tmpLevel = Writer.GetIndentLevel()
@@ -298,6 +318,11 @@ def Compile(CodeFileNames,
     CompilerData.SaveCompilerData()
     OutputFile = open(OutputCodeName, 'w')
 
+    ProGen = ProcGen.FProcessGenerator()
+    ProGen.LinkCompilerObj(CompilerData)
+    ProGen.SetUpProcesses()
+    ProGen.SaveProcesses()
+
     # TODO: use factory
     if TargetCodeModel == Target.TensorFlow:
         Writer = CodeGen.TFCodeWriter(OutputFile, 0)
@@ -306,7 +331,7 @@ def Compile(CodeFileNames,
 
     WriteLicense(Writer)
     WriteImport(Writer); Writer.BlankLine()
-    WriteBody(Writer, CompilerData); Writer.BlankLine()
+    WriteBody(Writer, CompilerData, ProGen); Writer.BlankLine()
     WriteMain(Writer)
 
     OutputFile.close()

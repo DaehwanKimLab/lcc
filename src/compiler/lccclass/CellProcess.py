@@ -1,5 +1,40 @@
 # Interface for all lcc modules, a.k.a. cellular processes
 
+
+# Comp is a short hand for CompilerData
+def Write_CellProcess(Writer, ProGen):
+    ProGen.GenerateCellProcessInterface(Writer)
+
+        # with Writer.Statement("class FCellProcess():"):
+    #     with Writer.Statement("def __init__(self):"):
+    #         Writer.BlankLine()
+    #
+    #         Writer.Statement("super().__init__()")
+    #         Writer.BlankLine()
+    #
+    #     Writer.AbsMethod()
+    #     with Writer.Statement("def AddToStoichiometryMatrix(self):"):
+    #         Writer.Pass_____()
+    #         Writer.BlankLine()
+    #
+    #     Writer.AbsMethod()
+    #     with Writer.Statement("def CalculateRate(self):"):
+    #         Writer.Pass_____()
+    #         Writer.BlankLine()
+    #
+    #     Writer.AbsMethod()
+    #     with Writer.Statement("def AddToRateMatrix(self):"):
+    #         Writer.Pass_____()
+    #         Writer.BlankLine()
+    #
+    #     Writer.TF_Graph_()
+    #     with Writer.Statement("def UpdateRates(self):"):
+    #         Writer.Statement("self.Cel.ClearRateMatrix()")
+    #         Writer.Statement("self.AddToReactionRateMatrix()")
+    #         Writer.BlankLine()
+
+
+
 """
 Reaction (RXN) Types
 
@@ -50,80 +85,22 @@ Examples:
 
 """
 
-# Comp is a short hand for CompilerData
-def Write_CellProcess(Writer, Comp):
-    Writer.BlankLine()
-    with Writer.Statement("class FCellProcess():"):
-        with Writer.Statement("def __init__(self):"):
-            Writer.BlankLine()
-            Writer.Statement("super().__init__()")
-            Writer.BlankLine()
+# 'Type'
+# 'RXNID'
+# 'MoleculeIDs'
+# 'Stoichiometry'
+# 'Reversibility'
+# 'Order'
+# 'Rate'
+# 'ModulatorIDs'
+# 'Trigger'
 
-            Writer.Statement("self.Cel = None")
-            Writer.Statement("self.Cst = None")
-            Writer.Statement("self.Env = None")
-            Writer.Statement("self.Exe = None")
-            Writer.BlankLine()
-
-        with Writer.Statement("def SetUpLink(self, Variable, Object):"):
-            Writer.Overwrite("Variable", "Object")
-            Writer.BlankLine()
-
-        # Abstract Methods for CellProcess
-        Writer.AbsMethod()
-        with Writer.Statement("def InitProcess(self):"):
-            # Call AddElementaryProcess
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def LoopProcess(self):"):
-            # Call UpdateReactionRate
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def AddElementaryProcess(self):"):
-            # Call GetReactionMolIndex, GetReactionStoich, GetReactionRate methods
-            # Call AddToMasterReactionStoichs, AddToMasterReactionRates
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def GetReactionMolIndex(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def GetReactionStoich(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def GetReactionRate(self):"):
-            # AdjustRate
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        # Methods
-        with Writer.Statement("def AdjustReactionRate(self):"):
-            Writer.Pass_____()
-
-            Writer.BlankLine()
-
-        with Writer.Statement("def AddToMasterReactionStoichs(self):"):
-            Writer.Pass_____()
-
-            Writer.BlankLine()
-
-        with Writer.Statement("def AddToMasterReactionRates(self):"):
-            Writer.Pass_____()
-
-            Writer.BlankLine()
-
-        Writer.TF_Graph_()
-        with Writer.Statement("def UpdateMasterReactionRates(self):"):
-            Writer.Pass_____()
-
-            Writer.BlankLine()
-
+# ReactionType = ['Non-biochemical'] # Consider boolean for biochemical vs. non-biochemical
+# Condition = ['DNAPolymerase']  # Enzymes for biochemical reactions
+# ReactionTrigger = ['']
+# ID_Consumed = ['dNTP']
+# ID_Produced = ['Chromosome1_Rep2', 'PPI[c]']
+# Stoich_Consumed = [2]
+# Stoich_Produced = [1, 2]
+# ReactionOrder = [0]
+# Rate = [1000.0]

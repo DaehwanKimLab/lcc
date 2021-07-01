@@ -1,6 +1,6 @@
 
 # Comp is a short hand for CompilerData
-def Write_Simulation(Writer, Comp):
+def Write_Simulation(Writer, Comp, ProGen):
     Writer.BlankLine()
     with Writer.Statement("class FSimulation():"):
         with Writer.Statement("def __init__(self):"):
@@ -14,83 +14,99 @@ def Write_Simulation(Writer, Comp):
             Writer.Variable_("self.SimStepsExecuted", 0)
             Writer.BlankLine()
 
-        #     Writer.Statement("self.Cel = None")
-        #     Writer.Statement("self.Cst = None")
-        #     Writer.Statement("self.Env = None")
-        #     Writer.Statement("self.Exe = None")
-        #     Writer.BlankLine()
-        #
-        # with Writer.Statement("def SetUpLink(self, Variable, Object):"):
-        #     Writer.Overwrite("Variable", "Object")
-        #     Writer.BlankLine()
+        with Writer.Statement("def ConvertSimTimeToSimStep(self, Time, Step):"):
+            Writer.Statement("self.SimStepsRequested = tf.math.multiply(self.SimTimeRequested, self.SimStepsPerSecond)")
+            Writer.BlankLine()
 
-        with Writer.Statement("def Initialize(self):"):
+        with Writer.Statement("def SetUpSimClock(self):"):
             # Implement user input for delta t value
             Writer.Variable_("self.SimTimeRequested", 100)  # Simulation time request in seconds
             Writer.Variable_("self.SimStepsPerSecond", 1)  # Simulation time resolution per second
             Writer.Statement("self.ConvertSimTimeToSimStep(self.SimTimeRequested, self.SimStepsRequested)")
-            Writer.Statement("self.RunCellStateSetUp()")
-            Writer.BlankLine()
-
-        with Writer.Statement("def ConvertSimTimeToSimStep(self, Time, Step):"):
-            Writer.Statement("self.SimStepsRequested = tf.math.multiply(self.SimTimeRequested, self.SimStepsPerSecond)")
             Writer.BlankLine()
 
         with Writer.Statement("def UpdateSimTime(self):"):
             Writer.Statement("self.SimTimeExecuted = tf.math.divide(self.SimStepsExecuted, self.SimStepsPerSecond)")
             Writer.BlankLine()
 
-        with Writer.Statement("def RunCellStateSetUp(self):"):
-            # Generate reaction stoichiometry and rate matrices
-            Writer.Statement("self.Cel.SetUpMatrices()")
-
-            # Initialize all cell processes to set up Cel.Stoichs and Cel.Rates
-            # with Writer.Statement("for Key_CellProcessStr, Value_CellProcessRef in Dict_CellProcess.items():"):
-            #     Writer.Statement("Value_CellProcessRef.Init()")
-            #     Writer.Pass_____()
-
-            # Example
-            Writer.Statement("SynDNA.InitProcess()")
+        with Writer.Statement("def IncrementSimClock(self):"):
+            Writer.AddElwise("self.SimStepsExecuted", 1)
+            Writer.Statement("self.UpdateSimTime()")
+            Writer.PrintVari("self.SimStepsExecuted")
+            Writer.DebugPVar("self.SimTimeExecuted")
             Writer.BlankLine()
 
-            # Finalize RXN stoichiometry and rate matrices
-            Writer.Statement("self.Cel.FinalizeMatrices()")
+        with Writer.Statement("def SetUpStoichiometryMatrix(self, ProcessID):"):
+            # Set up Cel.MX_Stoichiometries and Cel.MX_Rates
+            Writer.Statement("ProcessID.SetUpStoichiometryMatrix()")
+            Writer.BlankLine()
 
+        with Writer.Statement("def SetUpCellStateMatrices(self):"):
+            # Initialize reaction stoichiometry and rate matrices
+            Writer.Statement("self.Cel.InitializeMatrices()")
+
+            # Set up reaction stoichiometry matrix
+            for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                Writer.Statement("self.SetUpStoichiometryMatrix(%s)" % ProcessID)
+
+            # Finalize Reaction stoichiometry matrix
+            Writer.Statement("self.Cel.FinalizeReactionMatrices()")
+
+            # Load stoichiometry matrix to Exe
+            Writer.Statement("self.LoadStoichiometryMatrix()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def LoadStoichiometryMatrix(self):"):
             # Load updated stoichiometry to Exe
-            Writer.Statement("self.Exe.LoadStoichMatrix(self.Cel.Stoichs)")
+            Writer.Statement("self.Exe.LoadStoichMatrix(self.Cel.MX_Stoichiometries)")
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateRate(self):"):
-            # Run all rate update codes
-            # For each cell process
+        with Writer.Statement("def LoadRateMatrix(self):"):
+            # Load updated stoichiometry to Exe
+            Writer.Statement("self.Exe.LoadRateMatrix(self.Cel.MX_Rates)")
+            Writer.BlankLine()
 
+        with Writer.Statement("def LoadCountMatrix(self):"):
+            Writer.Statement("self.Exe.LoadCountMatrix(self.Cel.MX_Counts)")
+            Writer.BlankLine()
+
+        with Writer.Statement("def UpdateRates(self):"):  # Make the analogous method for stoich later
+            # Reinitialize the rate matrix.
+            Writer.Statement("self.Cel.ClearRateMatrix()")
+
+            # Run all rate update codes
+            for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                Writer.Statement("%s.UpdateRates()" % ProcessID)
 
             # Reshape the rate matrix for matrix multiplication
-            Writer.Statement("self.Cel.FinalizeMatrices()")
+            Writer.Statement("self.Cel.FinalizeRateMatrix()")
 
             # Load updated rates to Exe
-            Writer.Statement("self.Exe.LoadRateMatrix(self.Cel.Rates)")
+            Writer.Statement("self.LoadRateMatrix()")
             Writer.BlankLine()
 
-        with Writer.Statement("def RunReactions(self):"):
+        with Writer.Statement("def ExecuteReactions(self):"):
             Writer.Statement("self.Exe.MultiplyRXNMatrices()")
             Writer.Statement("self.Exe.RoundDeltaCountMatrix()")
+            Writer.Statement("self.Exe.Solver()")
+            Writer.Statement("self.Exe.OrdinaryDifferentialEquations()")
             Writer.BlankLine()
 
         with Writer.Statement("def UpdateCounts(self):"):
-            Writer.Statement("self.Exe.LoadCountMatrix(self.Cel.Counts)")
-            Writer.Statement("self.Exe.AddCountMatrices()")
-            Writer.Overwrite("self.Cel.Counts", "self.Exe.Count")
+            Writer.Statement("self.LoadCountMatrix()")
+            Writer.Overwrite("self.Cel.MX_Counts", "self.Exe.AddCountMatrices()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def Initialize(self):"):
+            Writer.Statement("self.SetUpSimClock()")
+            Writer.Statement("self.SetUpCellStateMatrices()")
             Writer.BlankLine()
 
         with Writer.Statement("def Run(self):"):
             Writer.PrintStrg("Simulation Begins...")
             with Writer.Statement("while self.SimStepsExecuted < self.SimStepsRequested:"):
                 # Increment simulation steps.
-                Writer.AddElwise("self.SimStepsExecuted", 1)
-                Writer.Statement("self.UpdateSimTime()")
-                Writer.PrintVari("self.SimStepsExecuted")
-                Writer.DebugPVar("self.SimTimeExecuted")
+                Writer.Statement("self.IncrementSimClock()")
 
                 # Models:
                 # Rate Gauge Model (the current version)
@@ -98,12 +114,12 @@ def Write_Simulation(Writer, Comp):
 
 
                 # Update rate matrix.
-                Writer.Statement("self.UpdateRate()")
+                Writer.Statement("self.UpdateRates()")
 
 
                 # Execute reactions by multiplying reaction and rate matrices.
                 # This calculates delta value for all molecular counts
-                Writer.Statement("self.RunReactions()")
+                Writer.Statement("self.ExecuteReactions()")
 
                 # Hook for plugging in cellular processes not based on matrix calculations
 

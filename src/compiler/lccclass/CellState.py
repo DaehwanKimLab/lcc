@@ -13,11 +13,11 @@ def Write_CellState(Writer, Comp):
             Writer.Variable_("self.Vol", 0) # Not implemented yet
 
 
-            Writer.Variable_("self.Stoichs", 0)  # Stoichiometry matrix for all elementary reactions
-            Writer.Variable_("self.Rates", 0)  # Rate matrix for all elementary reactions
-            Writer.Variable_("self.Counts", 0)  # Counts matrix for all molecules
-            Writer.Variable_("self.MWs", 0)  # MW matrix for molecules
-            Writer.Variable_("self.DeltaCounts", 0)
+            Writer.Variable_("self.MX_Stoichiometries", 0)  # Stoichiometry matrix for all elementary reactions
+            Writer.Variable_("self.MX_Rates", 0)  # Rate matrix for all elementary reactions
+            Writer.Variable_("self.MX_Counts", 0)  # Counts matrix for all molecules
+            Writer.Variable_("self.MX_MWs", 0)  # MW matrix for molecules
+            Writer.Variable_("self.MX_DeltaCounts", 0)
 
             Writer.Statement("self.Initialize()")
             Writer.BlankLine()
@@ -46,25 +46,51 @@ def Write_CellState(Writer, Comp):
                     Writer.LoadSaved(SaveFilePath, VariableName, DataType)
             Writer.BlankLine()
 
-        with Writer.Statement("def SetUpMatrices(self):"):
-            Writer.InitZeros("self.Stoichs", [1, Comp.Master.NUniq_Master])
-            Writer.InitZeros("self.Rates", [1, 1])  # Rate matrix for all elementary reactions
-            Writer.Overwrite("self.Counts", "self.Count_Master")
-            Writer.Reshape__("self.Counts", "self.Counts", [-1, 1])
-            Writer.Overwrite("self.MWs", "self.MW_Master")
-            Writer.Reshape__("self.MWs", "self.MWs", [-1, 1])
+        with Writer.Statement("def InitializeMatrices(self):"):
+            Writer.Overwrite("self.MX_Counts", "self.Count_Master")
+            Writer.Reshape__("self.MX_Counts", "self.MX_Counts", [-1, 1])
+            Writer.Overwrite("self.MX_MWs", "self.MW_Master")
+            Writer.Reshape__("self.MX_MWs", "self.MX_MWs", [-1, 1])
             Writer.BlankLine()
 
-        with Writer.Statement("def FinalizeMatrices(self):"):
-            # Transposition of RXN stoichiometry matrix is necessary for proper matrix multiplication
-            Writer.Transpose("self.Stoichs")
-            # Reshaping of RXN rate matrix to be 2-dimentional is necessary for proper matrix multiplication
+            Writer.Statement("self.InitializeStoichiometryMatrix()")
+            Writer.Statement("self.InitializeRateMatrix()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def FinalizeReactionMatrices(self):"):
+            Writer.Statement("self.FinalizeStoichiometryMatrix()")
             Writer.Statement("self.FinalizeRateMatrix()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def FinalizeStoichiometryMatrix(self):"):
+            # Transposition of RXN stoichiometry matrix is necessary for proper matrix multiplication
+            Writer.Transpose("self.MX_Stoichiometries")
             Writer.BlankLine()
 
         with Writer.Statement("def FinalizeRateMatrix(self):"):
             # Reshaping of RXN rate matrix to be 2-dimentional is necessary for proper matrix multiplication
-            Writer.Reshape__("self.Rates", "self.Rates", [-1, 1])
+            Writer.Reshape__("self.MX_Rates", "self.MX_Rates", [-1, 1])
             Writer.BlankLine()
 
+        with Writer.Statement("def InitializeStoichiometryMatrix(self):"):
+            # Reset self.Stoichs to a 2D array of zeros for concatenation
+            Writer.InitZeros("self.MX_Stoichiometries", [1, Comp.Master.NUniq_Master])
+            Writer.BlankLine()
 
+        with Writer.Statement("def InitializeRateMatrix(self):"):
+            # Reset self.Rates to a 2D array of zero for concatenation
+            Writer.InitZeros("self.MX_Rates", [1, 1])  # Rate matrix for all elementary reactions
+            Writer.BlankLine()
+
+        with Writer.Statement("def ClearRateMatrix(self):"):
+            # Reset self.Rates to the initialized state.
+            Writer.Statement("self.InitializeRateMatrix()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToStoichiometryMatrix(self, Stoichiometry):"):
+            Writer.OperCncat("self.MX_Stoichiometries", "self.MX_Stoichiometries", "Stoichiometry")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToRateMatrix(self, Rate):"):
+            Writer.OperCncat("self.MX_Rates", "self.MX_Rates", "Rate")
+            Writer.BlankLine()

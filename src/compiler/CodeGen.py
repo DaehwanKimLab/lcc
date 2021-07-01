@@ -39,6 +39,7 @@ class CodeWriter():
         self.fp = CodeFile
         self.BuildIndentationPrefix()
 
+        self.Switch4Comment = False
         self.Switch4DebugSimulationPrint = False
         self.Switch4DebugSimulationAssert = False
         self.Switch4Graph = False
@@ -80,8 +81,9 @@ class CodeWriter():
         return self
 
     def Comment__(self, Comment):
-        Line = '# %s' % Comment
-        self.Statement(Line)
+        if self.Switch4Comment:
+            Line = '# %s' % Comment
+            self.Statement(Line)
 
     def BlankLine(self):
         self.Statement("")
@@ -93,7 +95,7 @@ class CodeWriter():
         self.Statement("@abc.abstractmethod")
 
     def ReturnVar(self, VariableName):
-        Line = 'return "%s"' % VariableName
+        Line = 'return %s' % VariableName
         self.Statement(Line)
 
     def Overwrite(self, DestinationVariable, SourceVariable):
@@ -197,6 +199,11 @@ class TFCodeWriter(CodeWriter):
     def Variable_(self, VariableName, Value):
         Line = '%s = tf.constant([%s])' % (VariableName, Value)
         self.Statement(Line)
+
+    def VarCmnt__(self, VariableName, Value, Comment):
+        Line = '%s = tf.constant([%s]) # %s' % (VariableName, Value, Comment)
+        self.Statement(Line)
+
 
     def InitOnes_(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\

@@ -3,28 +3,6 @@ Reaction Matrix Building functions
 """
 
 
-def RefineBuildingBlocks(IDs, Stoichiometries, Comp):
-    assert len(IDs) == len(Stoichiometries), "#'s of Molecule IDs and Stoichiometries do not match"
-    BuildingBlocks = ['dNTP', 'NTP', 'AA']
-    # MolTypes = ['Chromosome', 'Gene', 'Promoter', 'RNA', 'Protein', 'Complex', 'Metabolite']
-    IDs_Refined = []
-    Stoichiometries_Refined = []
-    for ID, Stoichiometry in zip(IDs, Stoichiometries):
-        if ID in Comp.Master.ID_Master:
-            IDs_Refined.append(ID)
-            Stoichiometries_Refined.append(Stoichiometry)
-        elif ID in BuildingBlocks:
-            ID_BuildingBlocks, Stoich_BuildingBlocks = ParseBuildingBlocks_(ID, Stoichiometry, Comp)
-            for ID_BuildingBlock in ID_BuildingBlocks:
-                assert ID_BuildingBlock in Comp.Master.ID_Master, '%s not found in Master ID list' % ID_BuildingBlock
-            IDs_Refined.append(ID_BuildingBlocks)
-            Stoichiometries_Refined.append(Stoich_BuildingBlocks)
-        else:
-            print('Molecule ID not defined in the organism: %s' % ID)
-    IDs_Refined = FlatList(IDs_Refined)
-    Stoichiometries_Refined = FlatList(Stoichiometries_Refined)
-    return IDs_Refined, Stoichiometries_Refined
-
 
 def ParseBuildingBlocks_(MolGroup, Stoichiometry, Comp):
     MolGroupParsed = []
@@ -42,6 +20,53 @@ def ParseBuildingBlocks_(MolGroup, Stoichiometry, Comp):
     StoichiometryParsed = [i * Stoichiometry for i in StoichiometryParsed]
     return MolGroupParsed, StoichiometryParsed
 
+def RefineBuildingBlocks(IDs, Stoichiometries, Comp, ReactionOrder=None):
+    assert len(IDs) == len(Stoichiometries), "#'s of Molecule IDs and Stoichiometries do not match"
+    BuildingBlocks = ['dNTP', 'NTP', 'AA']
+    # MolTypes = ['Chromosome', 'Gene', 'Promoter', 'RNA', 'Protein', 'Complex', 'Metabolite']
+    IDs_Refined = []
+    Stoichiometries_Refined = []
+    ReactionOrder_Refined = []
+    for ID, Stoichiometry in zip(IDs, Stoichiometries):
+        if ID in Comp.Master.ID_Master:
+            IDs_Refined.append(ID)
+            Stoichiometries_Refined.append(Stoichiometry)
+        elif ID in BuildingBlocks:
+            ID_BuildingBlocks, Stoich_BuildingBlocks = ParseBuildingBlocks_(ID, Stoichiometry, Comp)
+            for ID_BuildingBlock in ID_BuildingBlocks:
+                assert ID_BuildingBlock in Comp.Master.ID_Master, '%s not found in Master ID list' % ID_BuildingBlock
+            IDs_Refined.append(ID_BuildingBlocks)
+            Stoichiometries_Refined.append(Stoich_BuildingBlocks)
+        else:
+            print('Molecule ID not defined in the organism: %s' % ID)
+    IDs_Refined = FlatList(IDs_Refined)
+    Stoichiometries_Refined = FlatList(Stoichiometries_Refined)
+    return IDs_Refined, Stoichiometries_Refined
+
+
+def PrepareReactionForMatrix(Stoichiometry, Comp):
+    Idx, Stoich = None, None
+    for MolIDs, Stoichiometries in Stoi:
+        Idx, Stoich = RefineBuildingBlocks(MolIDs, Stoichiometries, Comp)
+    return Idx, Stoich
+
+def ParseStoichiometry(Stoichiometry, Comp):
+    [MolIDs, Coeffs] = Stoichiometry
+    Idx, Stoich = None, None
+    Stoichiometry_Parsed = RefineBuildingBlocks(MolIDs, Coeffs, Comp)
+    return Stoichiometry_Parsed
+
+def ParseStoichiometries(Stoichiometries, Comp):
+    Stoichiometries_Parsed = []
+    for Stoichiometry in Stoichiometries:
+        Stoichiometry_Parsed = ParseStoichiometry(Stoichiometry)
+        Stoichiometries_Parsed.append(Stoichiometry_Parsed)
+    return Stoichiometries_Parsed
+
+def ParseRXNRate(Rate):
+    # Parse Rxn rate (to be expanded)
+    RXNRateParsed = Rate
+    return RXNRateParsed
 
 def FlatList(List):
     ListFlattened = []
@@ -76,7 +101,7 @@ def GetMolIdx(Molecules, MolIdxRef):
     else:
         print("Inappropriate reference type used in GetMolIdx function parameter: %s" % MolIdxRef)
 
-
 def ReverseNumberSign(ListOfNumbers):
     NewListOfNumbers = [-Number for Number in ListOfNumbers]
     return NewListOfNumbers
+

@@ -17,115 +17,31 @@ the θ subunit (holE) stimulates the ε subunit's proofreading.
 
 '''
 When Chr bp + 1,
-+ 2 Pi
++ 2 PPi
 - 1 (use ACGT (frequency table for stoichiometry))
 
 rate: + 1000 bp / 1 second
 '''
 
-import Utils
+def SetUpReactions(ProGen):
+    Reactions = []
 
-# Comp is a short hand for CompilerData
-def Write_SynDNA(Writer, Comp):
-    Writer.BlankLine()
-    with Writer.Statement("class FSynDNA(FCellProcess):"):
-        with Writer.Statement("def __init__(self):"):
-            Writer.Variable_("self.Idx_RXN", 0)
+    # Reaction No.1
 
-            Writer.Variable_("self.Idx_Mols", 0)
-            Writer.Variable_("self.Stoich", 0)
+    RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi, DNAPIII holozyme'
+    RXNRate = '1000 events per second'
 
-            Writer.Variable_("self.Rate", 0)
+    # # The final product would be the following:
 
-            Writer.BlankLine()
-            Writer.Statement("super().__init__()")
+    MolIDs = ['dNTP', 'Chromosome1_Rep2', 'PPI[c]']
+    Coeffs = [-2, 1, 2]
+    Rate = 1000.0
 
-            Writer.BlankLine()
+    Reaction = ProGen.SetUpReaction(MolIDs, Coeffs, Rate)
+    Reactions.append(Reaction)
 
+    return Reactions
 
-        with Writer.Statement("def InitProcess(self):"):
-            # Enter elementary reaction equation and rate
-
-            Writer.Statement("self.DefineElementaryRXN()")
-            Writer.Statement("self.AddElementaryRXN()")
-
-            Writer.BlankLine()
-
-        Writer.TF_Graph_()
-        with Writer.Statement("def LoopProcess(self):"):
-
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        with Writer.Statement("def DefineElementaryRXN(self):"):
-            # Information from L++ code parsed by the compiler:
-
-            RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi'
-            RXNRate = '1000 events per second'
-
-            Writer.Comment__(RXNEquation)
-            Writer.Comment__(RXNRate)
-
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        with Writer.Statement("def AddElementaryRXN(self):"):
-            # Use regular expression to parse the reaction stoichiometry info
-            # The final product would be the following:
-
-            ID_Consumed = ['dNTP']
-            ID_Produced = ['Chromosome1_Rep2', 'PPI[c]']
-            Stoich_Consumed = [2]
-            Stoich_Produced = [1, 2]
-            Rate = 1000.0
-
-            # Parse the molecule inputs for indexing
-            ID_Consumed, Stoich_Consumed = Utils.RefineBuildingBlocks(ID_Consumed, Stoich_Consumed, Comp)
-            ID_Produced, Stoich_Produced = Utils.RefineBuildingBlocks(ID_Produced, Stoich_Produced, Comp)
-
-            # Correct Stoich_Consumed to negative values
-            Stoich_Consumed = Utils.ReverseNumberSign(Stoich_Consumed)
-
-            # Concatenate ID and Stoich of the Consumed and Produced
-            ID_All = ID_Consumed + ID_Produced
-            Stoich_All = Stoich_Consumed + Stoich_Produced
-
-            # Find Indexes for Molecules
-            Idx_All = Utils.GetMolIdx(ID_All, Comp.Master.ID2Idx_Master)
-
-            # Convert index and stoichiometry to tensor for simulation
-            Writer.Variable_("Idx", Idx_All)
-            Writer.Variable_("Stoich", Stoich_All)
-
-            # Initialize RXN stoichiometry array for all molecules
-            Writer.InitZeros("RXNEquationParsed", Comp.Master.NUniq_Master)
-
-            # Update RXN stoichiometry array with Idx and Stoich participating in the RXN
-            Writer.OperScUpd("RXNEquationParsed", "Idx", "Stoich")
-            Writer.Reshape__("RXNEquationParsed", "RXNEquationParsed", [1, -1])
-
-            # Add RXN Stoichiometry array to the Cel.Stoichs
-            Writer.OperCncat("self.Cel.Stoichs", "self.Cel.Stoichs", "RXNEquationParsed", 0)
-
-
-
-
-            # Parse Rxn rate (to be expanded)
-            Writer.Variable_("RXNRateParsed", Rate)
-            Writer.Reshape__("RXNRateParsed", "RXNRateParsed", [-1, 1])
-
-            # Add RXN Rate to the Cel.Rates
-            Writer.OperCncat("self.Cel.Rates", "self.Cel.Rates", "RXNRateParsed", 0)
-
-            # Call GetReactionMolIndex, GetReactionStoich, GetReactionRate methods
-            # Call AddToMasterReactionStoichs, AddToMasterReactionRates
-
-            Writer.BlankLine()
-
-
-        Writer.TF_Graph_()
-        with Writer.Statement("def GetReactionRate(self):"):
-            # AdjustRate
-            Writer.Pass_____()
-            Writer.BlankLine()
+def WriteCellProcess(Writer, ProGen, ProcessID, Reactions):
+    ProGen.GenerateCellProcess(Writer, ProcessID, Reactions)
 
