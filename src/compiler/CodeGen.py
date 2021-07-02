@@ -226,8 +226,7 @@ class TFCodeWriter(CodeWriter):
         FileType = SaveFilePath.split('.')[-1]
         if FileType == 'npy':
             VariableLoad = 'np.load(r"%s")' % (SaveFilePath)
-            Line = self.Convert__('self.%s' % VariableName, VariableLoad, DataType)
-            self.Statement(Line)
+            self.Convert__('self.%s' % VariableName, VariableLoad, DataType)
             self.DebugPStV(VariableName, 'self.%s' % VariableName)
         else:
             self.Statement('LoadSaved function cannot handle the filetype: %s' % FileType)
@@ -237,7 +236,7 @@ class TFCodeWriter(CodeWriter):
             Line = '%s = tf.convert_to_tensor(%s, dtype=tf.%s)' % (VariableNameNew, VariableNamePrev, DataType)
         else:
             Line = '%s = tf.convert_to_tensor(%s)' % (VariableNameNew, VariableNameNew)
-        return Line
+        self.Statement(Line)
 
     def Reshape__(self, DestVar, SrcVar, Shape):
         Line = '%s = tf.reshape(%s, %s)' % (DestVar, SrcVar, str(Shape))
@@ -269,7 +268,6 @@ class TFCodeWriter(CodeWriter):
 
     def TFForLoop(self, Timer, MaxTime):
         pass
-
 
     def SelectIdx(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
         self.InitZeros(VariableName, 0)

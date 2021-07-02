@@ -59,7 +59,7 @@ class FDataset():
 
     def AppendStr(self, List, Str):
         # Appends Str to the List
-        ListStr = []
+        ListStr = list()
         for i in List:
             i += Str
             ListStr.append(i)
@@ -68,9 +68,9 @@ class FDataset():
 class FMetabolite(FDataset):
     def __init__(self):
         self.MolType_Metabolites = 'Metabolite'
-        self.ID2MW_Metabolites_Temp = {}
-        self.ID_Metabolites = []
-        self.ID2Idx_Metabolites = {}
+        self.ID2MW_Metabolites_Temp = dict()
+        self.ID_Metabolites = list()
+        self.ID2Idx_Metabolites = dict()
         self.Count_Metabolites = 0
         self.MW_Metabolites = 0
         self.NUniq_Metabolites = 0
@@ -117,15 +117,15 @@ class FChromosome(FDataset):
     def __init__(self):
         self.MolType_Chromosomes = 'Chromosome'
         self.Len_ChromosomesInGenome = 0
-        self.Count_NTsInChromosomesInGenome = []
-        self.Freq_NTsInChromosomesInGenome = []
+        self.Count_NTsInChromosomesInGenome = list()
+        self.Freq_NTsInChromosomesInGenome = list()
         self.Genome = None
 
         self.NMax_Chromosomes = 0
-        self.ID_Chromosomes = []
+        self.ID_Chromosomes = list()
         self.Count_BasePairsInChromosomes = 0
         self.MW_DNABasePairs = 0
-        self.Freq_NTsInChromosomes = []
+        self.Freq_NTsInChromosomes = list()
         self.NUniq_ChromosomesInGenome = 0
 
         super().__init__()
@@ -185,14 +185,14 @@ class FGene(FDataset):
         self.Coord_Genes = 0 # Coord for Coordinate
         self.MW_Genes = 0
         self.Dir_Genes = 0 # Dir for Direction
-        self.Name_Genes = []
-        self.Sym_Genes = [] # Sym for Symbols
-        self.ID_Genes = []
-        self.Seq_Genes = []
-        self.Type_Genes = []
-        self.ID2Idx_Genes = {}
-        self.Sym2Idx_Genes = {}
-        self.Name2ID_Genes = {}
+        self.Name_Genes = list()
+        self.Sym_Genes = list() # Sym for Symbols
+        self.ID_Genes = list()
+        self.Seq_Genes = list()
+        self.Type_Genes = list()
+        self.ID2Idx_Genes = dict()
+        self.Sym2Idx_Genes = dict()
+        self.Name2ID_Genes = dict()
         self.Count_Genes = 0
         self.NUniq_Genes = 0
 
@@ -206,15 +206,15 @@ class FGene(FDataset):
         self.MW_Genes = np.zeros(self.NUniq_Genes) # No molecular weights to be calculated
         self.Dir_Genes = np.zeros(self.NUniq_Genes)
         self.Count_Genes = np.ones(self.NUniq_Genes) # The count may be adjusted according to the starting replication state of the chromosomes.
-        self.Name_Genes = []
-        self.Sym_Genes = []
-        self.ID_Genes = []
-        self.Type_Genes = []
-        self.Name2ID_Genes = {}
-        self.ID2Idx_Genes = {}
-        self.Sym2Idx_Genes = {}
+        self.Name_Genes = list()
+        self.Sym_Genes = list()
+        self.ID_Genes = list()
+        self.Type_Genes = list()
+        self.Name2ID_Genes = dict()
+        self.ID2Idx_Genes = dict()
+        self.Sym2Idx_Genes = dict()
 
-        DirectionBinaryDict = {}
+        DirectionBinaryDict = dict()
         DirectionBinaryDict['+'] = 1
         DirectionBinaryDict['-'] = 0
 
@@ -249,9 +249,9 @@ class FPromoter(FDataset):
         self.MolType_Promoters = 'Promoter'
         self.Coord_Promoters = 0
         self.Dir_Promoters = 0
-        self.ID_Promoters = []
-        self.ID2Idx_Promoters = {}
-        self.Sym_PromoterTargetGenes = []
+        self.ID_Promoters = list()
+        self.ID2Idx_Promoters = dict()
+        self.Sym_PromoterTargetGenes = list()
         self.NUniq_Promoters = 0
 
         super().__init__()
@@ -264,7 +264,7 @@ class FPromoter(FDataset):
         self.Dir_Promoters = np.zeros(self.NUniq_Promoters)
         IrregularNames = 0
 
-        DirectionBinaryDict = {}
+        DirectionBinaryDict = dict()
         DirectionBinaryDict['+'] = 1
         DirectionBinaryDict['-'] = 0
 
@@ -294,7 +294,7 @@ class FPromoter(FDataset):
                     print("Promoter '%s' contains more than two '-' in the promoter name: %s" % (PromoterID, Name))
 
             TargetGeneSymbol = None
-            TargetGeneSymbolsOnly = []
+            TargetGeneSymbolsOnly = list()
             if Name[:5] == 'p_WC_':
                 Name = Name[5:]
                 N_SplitName = len(Name.split('-'))
@@ -321,7 +321,7 @@ class FPromoter(FDataset):
                 #
                 #     TargetGeneSymbol =
                 #
-                #     TargetGeneSymbol = []
+                #     TargetGeneSymbol = list()
                 else:
                     for Item in Name.split('-'):
                         TargetGeneSymbolsOnly.append(Item)
@@ -366,18 +366,18 @@ class FRNA(FDataset):
         self.MolType_RNAsNascent = 'RNA_Nascent'
         self.MolType_RNAsCleaved = 'RNA_Cleaved'
 
-        self.ID2Count_RNAs_Temp = {}
-        self.Name_RNAs = []
-        self.Name2ID_RNAs = {}
-        self.ID2Idx_RNAs = {}
-        self.ID_RNAs = []
+        self.ID2Count_RNAs_Temp = dict()
+        self.Name_RNAs = list()
+        self.Name2ID_RNAs = dict()
+        self.ID2Idx_RNAs = dict()
+        self.ID_RNAs = list()
         self.HalfLife_RNAs = 0
-        self.Seq_RNAs = []
+        self.Seq_RNAs = list()
         self.Len_RNAs = 0
-        self.Type_RNAs = []
+        self.Type_RNAs = list()
         self.MW_RNAs = 0
-        self.Count_NTsInRNAs = []
-        self.Freq_NTsInRNAs = []
+        self.Count_NTsInRNAs = list()
+        self.Freq_NTsInRNAs = list()
         self.Count_RNAs = 0
 
         self.NUniq_RNAs = 0
@@ -386,19 +386,19 @@ class FRNA(FDataset):
         self.NUniq_rRNAs = 0
         self.NUniq_miscRNAs = 0
 
-        self.ID2Type_RNA = {}
+        self.ID2Type_RNA = dict()
 
-        self.Idx_AllRNAs = []
-        self.Idx_mRNA = []
-        self.Idx_tRNA = []
-        self.Idx_rRNA = []
-        self.Idx_miscRNA = []
+        self.Idx_AllRNAs = list()
+        self.Idx_mRNA = list()
+        self.Idx_tRNA = list()
+        self.Idx_rRNA = list()
+        self.Idx_miscRNA = list()
 
-        self.ID_RNAsNascent = []
+        self.ID_RNAsNascent = list()
         self.Count_RNAsNascent = 0
         self.MW_RNAsNascent = 0
 
-        self.ID_RNAsCleaved = []
+        self.ID_RNAsCleaved = list()
         self.Count_RNAsCleaved = 0
         self.MW_RNAsCleaved = 0
 
@@ -487,30 +487,30 @@ class FProtein(FDataset):
         self.MolType_Proteins_Nascent = 'Protein_Nascent'
         self.MolType_Proteins_Cleaved = 'Protein_Cleaved'
 
-        self.ID2Count_Proteins_Temp = {}
-        self.Name_Proteins = []
-        self.Name2ID_Proteins = {}
-        self.ID2Idx_Proteins = {}
-        self.ID_Proteins = []
-        self.Seq_Proteins = []
+        self.ID2Count_Proteins_Temp = dict()
+        self.Name_Proteins = list()
+        self.Name2ID_Proteins = dict()
+        self.ID2Idx_Proteins = dict()
+        self.ID_Proteins = list()
+        self.Seq_Proteins = list()
         self.Len_Proteins = 0
         self.MW_Proteins = 0
-        self.Loc_Proteins = []
-        self.Count_AAsInProteins = []
+        self.Loc_Proteins = list()
+        self.Count_AAsInProteins = list()
         self.Count_Proteins = 0
-        self.Freq_AAsInProteins = []
-        self.ID2ID_Protein2Gene = {}
-        self._GeneIDs = []
-        self.ID2ID_Protein2RNA = {}
-        self._RNAIDs = []
+        self.Freq_AAsInProteins = list()
+        self.ID2ID_Protein2Gene = dict()
+        self._GeneIDs = list()
+        self.ID2ID_Protein2RNA = dict()
+        self._RNAIDs = list()
 
         self.NUniq_Proteins = 0
         
-        self.ID_ProteinsNascent = []
+        self.ID_ProteinsNascent = list()
         self.Count_ProteinsNascent = 0
         self.MW_ProteinsNascent = 0
 
-        self.ID_ProteinsCleaved = []
+        self.ID_ProteinsCleaved = list()
         self.Count_ProteinsCleaved = 0
         self.MW_ProteinsCleaved = 0
 
@@ -580,18 +580,18 @@ class FComplex(FDataset):
     def __init__(self):
         self.MolType_Complexes = 'Complex'
 
-        self.ID_Proteins = []
-        self.ID2Count_Proteins_Temp = {}
+        self.ID_Proteins = list()
+        self.ID2Count_Proteins_Temp = dict()
 
-        self.ID2Count_Complexes_Temp = {}
-        self.IDWithoutLoc2Count_Complexes_Temp = {}
-        self.Name_Complexes = []
-        self.Name2ID_Complexes = {}
-        self.ID_Complexes = []
-        self.ID2Idx_Complexes = {}
-        self.Count_Complexes = []
-        self.MW_Complexes = []
-        self.Loc_Complexes = []
+        self.ID2Count_Complexes_Temp = dict()
+        self.IDWithoutLoc2Count_Complexes_Temp = dict()
+        self.Name_Complexes = list()
+        self.Name2ID_Complexes = dict()
+        self.ID_Complexes = list()
+        self.ID2Idx_Complexes = dict()
+        self.Count_Complexes = list()
+        self.MW_Complexes = list()
+        self.Loc_Complexes = list()
 
         self.NUniq_Complexes = 0
 
@@ -662,17 +662,17 @@ class FReaction(FDataset):
     def __init__(self):
         self.MolType_RXNs = 'RXN'
 
-        self.ID_RXNs = []
-        self.ID2Idx_RXNs = {}
-        self.Stoich_MolStoichDictInRXN = []
-        self.ID_MolsInRXNs = []
-        self.Stoich_MolsInRXNs = [] # Stoich for Stoichiometry
+        self.ID_RXNs = list()
+        self.ID2Idx_RXNs = dict()
+        self.Stoich_MolStoichDictInRXN = list()
+        self.ID_MolsInRXNs = list()
+        self.Stoich_MolsInRXNs = list() # Stoich for Stoichiometry
         self.Dir_RevRXNs = 0 # Rev for Reversibility
-        self.ID_Enzs4RXNs = []
-        # self.ID_SubstratesInRXNs = []
-        # self.Stoich_SubstratesInRXNs = []
-        # self.ID_ProductsInRXNs = []
-        # self.Stoich_ProductsInRXNs = []
+        self.ID_Enzs4RXNs = list()
+        # self.ID_SubstratesInRXNs = list()
+        # self.Stoich_SubstratesInRXNs = list()
+        # self.ID_ProductsInRXNs = list()
+        # self.Stoich_ProductsInRXNs = list()
 
         self.NUniq_RXNs = 0
 
@@ -685,7 +685,7 @@ class FReaction(FDataset):
         self.NUniq_RXNs = len(RXNs)
         self.Dir_RevRXNs = np.zeros(self.NUniq_RXNs)
 
-        ReversibilityBinaryDict = {}
+        ReversibilityBinaryDict = dict()
         ReversibilityBinaryDict['true'] = 1
         ReversibilityBinaryDict['false'] = 0
 
@@ -703,12 +703,12 @@ class FReaction(FDataset):
                         self.ID_Enzs4RXNs.append(ID)
                 else:
                     self.ID_Enzs4RXNs.append(RXNEnzymeID)
-            MolsInRXN = []
-            StoichInRXN = []
-            # Substrates = []
-            # SubstrateStoichs = []
-            # Products = []
-            # ProductStoichs = []
+            MolsInRXN = list()
+            StoichInRXN = list()
+            # Substrates = list()
+            # SubstrateStoichs = list()
+            # Products = list()
+            # ProductStoichs = list()
             RXNStoichiometry = ast.literal_eval(RXNStoichiometry)
             for Mol, Stoich in RXNStoichiometry.items(): # RXNStoichiometry is a string dictionary
                 MolsInRXN.append(Mol)
@@ -739,13 +739,13 @@ class FEnzyme(FDataset):
     def __init__(self): # MasterLocalizations
         self.MolType_Kinetics = 'Kinetics'
 
-        self.KinRXNID2KineticData = {}
-        self.KinRXNClassIDs = []
-        self.KinEnzymeIDs = []
-        self.KinSubstrateIDs = []
+        self.KinRXNID2KineticData = dict()
+        self.KinRXNClassIDs = list()
+        self.KinEnzymeIDs = list()
+        self.KinSubstrateIDs = list()
         self.Temp_EnzKinetics = 0
         self.Kcat_EnzKinetics = 0
-        self.Km_EnzKinetics = []
+        self.Km_EnzKinetics = list()
         self.Ki_EnzKinetics = 0
 
         self.NUniq_EnzKinetics = 0
@@ -773,7 +773,7 @@ class FEnzyme(FDataset):
             self.KinRXNClassIDs.append(ReactionClassID)
             self.KinEnzymeIDs.append(EnzymeIDs)
             # Exception handling: Substrates may be more than one. Same applies to Km values
-            SubstrateIDs_Rebuilt = []
+            SubstrateIDs_Rebuilt = list()
             for Substrate in SubstrateIDs.split(','):
                 SubstrateIDs_Rebuilt.append(Substrate)
             self.KinSubstrateIDs.append(SubstrateIDs_Rebuilt)
@@ -852,10 +852,10 @@ class FEnzyme(FDataset):
 class FCompartment(FDataset):
     def __init__(self): # MasterLocalizations
 
-        self.ID_Compartments = []
-        self.ID2Key_Compartments = {}
-        self.Key_Compartments = []
-        self.Key2Idx_Compartments = {}
+        self.ID_Compartments = list()
+        self.ID2Key_Compartments = dict()
+        self.Key_Compartments = list()
+        self.Key2Idx_Compartments = dict()
         self.NUniq_Compartments = 0
 
         super().__init__() # MasterLocalizations
@@ -882,12 +882,12 @@ class FCompartment(FDataset):
 class FBuildingBlock(FDataset):
     def __init__(self):
         # Lists of molecular specie
-        self.Name_dNTPs = []
-        self.Name_NTPs = []
-        self.Name_AAs = []
-        self.Key_dNTPs = []
-        self.Key_NTPs = []
-        self.Key_AAs = []
+        self.Name_dNTPs = list()
+        self.Name_NTPs = list()
+        self.Name_AAs = list()
+        self.Key_dNTPs = list()
+        self.Key_NTPs = list()
+        self.Key_AAs = list()
         self.NUniq_dNTPs = 0
         self.NUniq_NTPs = 0
         self.NUniq_AAs = 0
@@ -929,12 +929,12 @@ class FMaster():
     def __init__(self):
         self.Switch4DebugMasterDataset = True
 
-        self.ID2Idx_Master = {}
-        self.Type_Master = []
-        self.ID2Type_Master = {}
-        self.ID_Master = []
-        self.Count_Master = []
-        self.MW_Master = []
+        self.ID2Idx_Master = dict()
+        self.Type_Master = list()
+        self.ID2Type_Master = dict()
+        self.ID_Master = list()
+        self.Count_Master = list()
+        self.MW_Master = list()
         self.NUniq_Master = 0
 
     def SaveData(self, SavePath):

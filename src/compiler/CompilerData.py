@@ -7,13 +7,13 @@ from Dataset import *
 
 class FCompilerData:
     def __init__(self):
-        self.InputGenomeSeq = []
+        self.InputGenomeSeq = list()
 
         self.Switch4DebugCompilerData = False
         self.Switch4SaveAllData = True
         self.Switch4SaveProcessedData = False
 
-        self.Dict_DataClass = {}
+        self.Dict_DataClass = dict()
 
         # Data classes
         self.Genome = None
@@ -68,7 +68,7 @@ class FCompilerData:
 
         def parse_fasta(fpath, fname):
             fullpath = fpath + '/' + fname
-            fasta = {}
+            fasta = dict()
             #print(fname)
 
             with open(fullpath, 'r') as fp:

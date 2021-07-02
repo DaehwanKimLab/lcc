@@ -45,7 +45,7 @@ def Write_ProtDeg_Init(Writer, CompilerData):
 
         # Set up matrices for RNA Degradation
         # # Currently RNA is general, Transcript is specific to the process
-        # TranscriptIndexList = []
+        # TranscriptIndexList = list()
         # TranscriptIDs = np.load('RNAIDs.npy') # can be a specific set to be loaded, i.e. types of RNA?
         # Writer.Statement("TranscriptCounts = np.zeros(" + str(len(TranscriptIDs)) + ").astype('int32')")
         #
@@ -69,7 +69,7 @@ def Write_ProtDeg_Init(Writer, CompilerData):
         # ProtDeg - Determine active endoRNase count - to be revised with EndoRNase with specific RNA type targets
         Writer.Statement("# ProtDeg - Determine active endoRNase count")
 
-        # EndoRNaseIndexList = []
+        # EndoRNaseIndexList = list()
         # EndoRNaseIDs = np.load('EndoRNaseIDs.npy') # can be a specific set to be loaded, i.e. mRNA or tRNA or rRNA
         # Writer.Statement("TranscriptCounts = np.zeros(" + str(len(TranscriptIDs)) + ").astype('int32')")
         # # for i, EndoRNaseID in enumerate(EndoRNaseIDs):
@@ -77,10 +77,10 @@ def Write_ProtDeg_Init(Writer, CompilerData):
         #     TranscriptIndexList.append(int(EndoRNaseIndex)
         #     Writer.Statement("EndoRNaseCounts[%d] = ProteinCounts[%d] # %s" % (i, EndoRNaseIndex, EndoRNaseID))
 
-        # EndoRNase4mRNAIndexList = []
-        # EndoRNase4tRNAIndexList = []
-        # EndoRNase4rRNAIndexList = []
-        # EndoRNase4miscRNAIndexList = []
+        # EndoRNase4mRNAIndexList = list()
+        # EndoRNase4tRNAIndexList = list()
+        # EndoRNase4rRNAIndexList = list()
+        # EndoRNase4miscRNAIndexList = list()
 
         # EndoRNase4mRNACount = 1000
         # EndoRNase4tRNACount = 100

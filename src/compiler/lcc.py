@@ -35,6 +35,9 @@ from lccclass.cellprocess.synthesis import Replication, Translation, Transcripti
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
 from lccclass.simulation import ReactionExecution
 from lccclass.simulation.reactionexecution import RateGaugeModelOnly
+from lccclass.simulation import RateFunction
+from lccclass.simulation.ratefunction import BiochemicalReactionRate
+from lccclass.simulation.ratefunction import BiologicalEventReactionRate
 
 
 LCC_VERSION = "0.1"
@@ -100,11 +103,15 @@ def WriteBody(Writer, CompilerData, ProGen):
         Simulation.Write_Simulation(Writer, CompilerData, ProGen)
         ReactionExecution.Write_ReactionExecution(Writer)
         RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
+        RateFunction.Write_RateFunction(Writer, CompilerData)
+        BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
+        BiologicalEventReactionRate.Write_BiologicalEventRateFunction(Writer, CompilerData)
 
         Writer.BlankLine()
 
         # Define classes for data.
         Writer.Comment__("Define classes for data.")
+
         Constant.Write_Constant(Writer, CompilerData)
         Environment.Write_Environment(Writer, CompilerData)
         CellState.Write_CellState(Writer, CompilerData)
@@ -115,9 +122,9 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Comment__("Define classes for all processes.")
 
         CellProcess.Write_CellProcess(Writer, ProGen)
-        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+        for ProcessID, ProcessObject in ProGen.Dict_CellProcesses.items():
             Reactions = ProGen.Dict_ProcessReactions[ProcessID]
-            Module.WriteCellProcess(Writer, ProGen, ProcessID, Reactions)
+            ProcessObject.Write_CellProcess(Writer, ProGen, ProcessID, Reactions)
 
         Writer.BlankLine()
 
@@ -128,6 +135,8 @@ def WriteBody(Writer, CompilerData, ProGen):
         # if Model = UserDefinedModel
         #     Writer.Statement("Exe = F%s()" % Model)
         Writer.Statement("Exe = FRateGaugeModelOnly()")
+        Writer.Statement("Bch = FBiochemicalReactionRateFunction()")
+        Writer.Statement("Evt = FBiologicalEventRateFunction()")
 
         Writer.BlankLine()
 
@@ -148,16 +157,16 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Writer.BlankLine()
 
-        # Link data objects to simulation object.
+        # Link data and simulation objects to Sim.
         Writer.Comment__("Link data objects to simulation object.")
 
-        DataObjects = ["Cel", "Cst", "Env", "Exe"]
+        DataObjects = ['Bch', 'Cel', 'Cst', 'Env', 'Evt', 'Exe']
         for DataObject in DataObjects:
             Writer.Statement("Sim.{0} = {0}".format(DataObject))
 
         Writer.BlankLine()
 
-        # Link data objects to cell process objects.
+        # Link data and simulation objects to cell process objects.
         Writer.Comment__("Link data objects to simulation object.")
 
         for ProcessID, Module in ProGen.Dict_CellProcesses.items():
@@ -189,7 +198,7 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         # End of simulation.
         Writer.Comment__("End of simulation.")
-
+        Writer.BlankLine()
 
         # Print input genome.
         Writer.Comment__("Print input genome")
@@ -243,7 +252,7 @@ def NewLine(code_file):
 
 
 def Parse(CodeFileNames):
-    Result = {}
+    Result = dict()
 
     for CodeFileName in CodeFileNames:
         CodeFile = open(CodeFileName)

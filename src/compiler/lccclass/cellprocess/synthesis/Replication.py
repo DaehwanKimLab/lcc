@@ -24,24 +24,41 @@ rate: + 1000 bp / 1 second
 '''
 
 def SetUpReactions(ProGen):
-    Reactions = []
+    Reactions = list()
 
+    Reaction = dict()
     # Reaction No.1
 
-    RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi, DNAPIII holozyme'
-    RXNRate = '1000 events per second'
+    RXNType = 'Biological Event'
+    RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi'
+    RXNRate = '600~1000 events per second'
+    RXNTrigger = 'DNA polymerase III, core enzyme >= 4'
 
     # # The final product would be the following:
+    Type = 'Biological Event'
 
-    MolIDs = ['dNTP', 'Chromosome1_Rep2', 'PPI[c]']
-    Coeffs = [-2, 1, 2]
-    Rate = 1000.0
+    Stoich_MolIDs = ['dNTP', 'Chromosome1_Rep2', 'PPI[c]']
+    Stoich_Coeffs = [-2, 1, 2]
 
-    Reaction = ProGen.SetUpReaction(MolIDs, Coeffs, Rate)
-    Reactions.append(Reaction)
+    Rate_Min = 600
+    Rate_Max = 1000
+
+    Trigger_MolIDs = ['CPLX0-2361'] # DNA polymerase III, core enzyme
+    Trigger_Thresholds = ['4']
+    Trigger_Conditions = ['>='] # Greater than or equal to
+
+    # Generate a reaction dictionary with above inputs
+    Reaction['Type'] = Type
+    Reaction['Stoichiometry'] = [Stoich_MolIDs, Stoich_Coeffs]
+    Reaction['Rate'] = [Rate_Min, Rate_Max]
+    Reaction['Trigger'] = [Trigger_MolIDs, Trigger_Thresholds, Trigger_Conditions]
+
+    Reaction_SetUp = ProGen.SetUpReaction(Reaction)
+    # MolIdxs have been added to Stoichiometry and Trigger variables
+    Reactions.append(Reaction_SetUp)
 
     return Reactions
 
-def WriteCellProcess(Writer, ProGen, ProcessID, Reactions):
+def Write_CellProcess(Writer, ProGen, ProcessID, Reactions):
     ProGen.GenerateCellProcess(Writer, ProcessID, Reactions)
 

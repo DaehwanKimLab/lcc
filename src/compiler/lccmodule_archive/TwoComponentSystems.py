@@ -18,7 +18,7 @@ def Write_TCS_Init(Writer, CompilerData):
         Writer.BlankLine()
 
         # Set up matrices for Two Component Systems
-        TCSMolIndexList = []
+        TCSMolIndexList = list()
         TCSMolNames = np.load('TCSMolNames.npy')
         Writer.Statement("TCSMolCounts = np.zeros(" + str(len(TCSMolNames)) + ").astype('float32')")
 

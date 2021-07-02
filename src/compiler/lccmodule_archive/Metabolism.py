@@ -16,7 +16,7 @@ def Write_Metab_Init(Writer, CompilerData):
         # Set up Molecular Weight Matrix
         # Writer.Statement("# Metab - Set up Molecular Weight Matrix for all metabolites for Metab function")
         # MetaboliteMWs4All = np.load('MetaboliteMWs.npy')
-        # MetaboliteIndexList4Metab = []
+        # MetaboliteIndexList4Metab = list()
         # Writer.Statement("MetaboliteMWs = np.zeros(" + str(len(CompilerData.MetaboliteNames4Conc)) + ").astype('float32')")
         # for i, Name in enumerate(CompilerData.MetaboliteNames4Conc):
         #     MetaboliteIndex = CompilerData.MetaboliteName2MWIndex[Name]

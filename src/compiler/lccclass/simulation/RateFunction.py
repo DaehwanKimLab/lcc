@@ -25,55 +25,10 @@ def Write_RateFunction(Writer, CompilerData):
     Writer.BlankLine()
     with Writer.Statement("class FRateFunction():"):
         with Writer.Statement("def __init__(self):"):
-            # Writer.Variable_("self.Stoich", 0)
-            # Writer.Variable_("self.Rate", 0)
-            # Writer.Variable_("self.Count", 0)
-            # Writer.Variable_("self.DeltaCount", 0)
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-
-
-
-
-
-
-
-        with Writer.Statement("def LoadStoichMatrix(self, Stoich):"):
-            Writer.Overwrite("self.Stoich", "Stoich")
-            Writer.BlankLine()
-
-        with Writer.Statement("def LoadRateMatrix(self, Rate):"):
-            Writer.Overwrite("self.Rate", "Rate")
-            Writer.BlankLine()
-
-        with Writer.Statement("def LoadCountMatrix(self, Count):"):
-            Writer.Overwrite("self.Count", "Count")
-            Writer.BlankLine()
-
-        # RunReactions method may be overwritten
-        with Writer.Statement("def MultiplyRXNMatrices(self):"):
-            # Multiplies all Reaction Stoichiometry and Rate matrices.
-            Writer.Statement("self.DeltaCount = tf.linalg.matmul(self.Stoich, self.Rate)")
-            Writer.DebugPVar("self.DeltaCount")
-            Writer.BlankLine()
-
-        with Writer.Statement("def RoundDeltaCountMatrix(self):"):
-            # Multiplies all Reaction Stoichiometry and Rate matrices.
-            Writer.OperRound("self.DeltaCount", "self.DeltaCount")
-            Writer.BlankLine()
-
-        with Writer.Statement("def AddCountMatrices(self):"):
-            Writer.OperMXAdd("self.Count", "self.Count", "self.DeltaCount")
-            Writer.DebugPVar("self.Count")
+            Writer.Variable_("self.Rate", 0)
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def Solver(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def OrdinaryDifferentialEquations(self):"):
+        with Writer.Statement("def DetermineRate(self):"):
             Writer.Pass_____()
             Writer.BlankLine()

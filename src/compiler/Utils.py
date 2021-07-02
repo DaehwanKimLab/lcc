@@ -5,8 +5,8 @@ Reaction Matrix Building functions
 
 
 def ParseBuildingBlocks_(MolGroup, Stoichiometry, Comp):
-    MolGroupParsed = []
-    StoichiometryParsed = []
+    MolGroupParsed = list()
+    StoichiometryParsed = list()
     if MolGroup == 'dNTP':
         MolGroupParsed = Comp.BuildingBlock.Name_dNTPs
         StoichiometryParsed = FlatList(
@@ -24,9 +24,9 @@ def RefineBuildingBlocks(IDs, Stoichiometries, Comp, ReactionOrder=None):
     assert len(IDs) == len(Stoichiometries), "#'s of Molecule IDs and Stoichiometries do not match"
     BuildingBlocks = ['dNTP', 'NTP', 'AA']
     # MolTypes = ['Chromosome', 'Gene', 'Promoter', 'RNA', 'Protein', 'Complex', 'Metabolite']
-    IDs_Refined = []
-    Stoichiometries_Refined = []
-    ReactionOrder_Refined = []
+    IDs_Refined = list()
+    Stoichiometries_Refined = list()
+    ReactionOrder_Refined = list()
     for ID, Stoichiometry in zip(IDs, Stoichiometries):
         if ID in Comp.Master.ID_Master:
             IDs_Refined.append(ID)
@@ -57,7 +57,7 @@ def ParseStoichiometry(Stoichiometry, Comp):
     return Stoichiometry_Parsed
 
 def ParseStoichiometries(Stoichiometries, Comp):
-    Stoichiometries_Parsed = []
+    Stoichiometries_Parsed = list()
     for Stoichiometry in Stoichiometries:
         Stoichiometry_Parsed = ParseStoichiometry(Stoichiometry)
         Stoichiometries_Parsed.append(Stoichiometry_Parsed)
@@ -69,7 +69,7 @@ def ParseRXNRate(Rate):
     return RXNRateParsed
 
 def FlatList(List):
-    ListFlattened = []
+    ListFlattened = list()
     for i in List:
         if isinstance(i, str):
             ListFlattened.append(i)
@@ -84,7 +84,7 @@ def FlatList(List):
 
 
 def GetMolIdx(Molecules, MolIdxRef):
-    MolIdxList = []
+    MolIdxList = list()
 
     # For ID2Idx cases
     if isinstance(MolIdxRef, dict):

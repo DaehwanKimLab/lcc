@@ -25,9 +25,9 @@ data_files = [
 # CellState matrix contains a specific type of values for all molecules
 class CellState:
     def __init__(self):
-        self.data_files = []
+        self.data_files = list()
         self.n_data_files = 0
-        self.data_types_list = []
+        self.data_types_list = list()
         self.n_data_types = 0
         self.n_items = 0
         #self.cellStateMatx = tf.zeros(0)

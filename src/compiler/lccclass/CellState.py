@@ -30,7 +30,7 @@ def Write_CellState(Writer, Comp):
 
             SavedDataType4Int = ['Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev']
             SavedDataType4Float = ['Freq', 'MW']
-            SavedDataTypeDict = {}
+            SavedDataTypeDict = dict()
             for SavedDataType in SavedDataType4Int:
                 SavedDataTypeDict[SavedDataType] = 'int32'
             for SavedDataType in SavedDataType4Float:
