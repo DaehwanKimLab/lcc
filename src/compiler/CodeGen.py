@@ -341,8 +341,7 @@ class TFCodeWriter(CodeWriter):
         self.Reshape__(VariableName, VariableName, -1)
 
     def OperRound(self, VariableName, MX):
-        self.Statement("RoundedMatrix = tf.math.round(%s)" % MX)
-        self.Cast_____(VariableName, "RoundedMatrix")
+        self.Statement("%s = tf.math.round(%s)" % (VariableName, MX))
 
     def Cast_____(self, VariableName, MX, Type='int32'):
         self.Statement("%s = tf.cast(%s, dtype=tf.%s)" % (VariableName, MX, Type))

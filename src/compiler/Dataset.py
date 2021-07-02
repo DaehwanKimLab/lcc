@@ -80,7 +80,6 @@ class FMetabolite(FDataset):
 
     def SetUpData(self, Dataset, MasterDataset = None):
         MW_Metabolites = Dataset['metabolites.tsv']
-        MW_Metabolites = Dataset['metabolites.tsv']
         WaterMW = Dataset['water.tsv'][0]
         MW_Metabolites.append(WaterMW)
 

@@ -54,6 +54,7 @@ def Write_ReactionExecution(Writer):
         with Writer.Statement("def RoundDeltaCountMatrix(self):"):
             # Multiplies all Reaction Stoichiometry and Rate matrices.
             Writer.OperRound("self.DeltaCount", "self.DeltaCount")
+            Writer.Cast_____("self.DeltaCount", "self.DeltaCount", 'int32')
             Writer.BlankLine()
 
         with Writer.Statement("def AddCountMatrices(self):"):

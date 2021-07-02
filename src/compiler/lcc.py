@@ -37,7 +37,7 @@ from lccclass.simulation import ReactionExecution
 from lccclass.simulation.reactionexecution import RateGaugeModelOnly
 from lccclass.simulation import RateFunction
 from lccclass.simulation.ratefunction import BiochemicalReactionRate
-from lccclass.simulation.ratefunction import BiologicalEventReactionRate
+from lccclass.simulation.ratefunction import PolymerizationRate
 
 
 LCC_VERSION = "0.1"
@@ -105,7 +105,7 @@ def WriteBody(Writer, CompilerData, ProGen):
         RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
         RateFunction.Write_RateFunction(Writer, CompilerData)
         BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
-        BiologicalEventReactionRate.Write_BiologicalEventRateFunction(Writer, CompilerData)
+        PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
 
         Writer.BlankLine()
 
@@ -136,7 +136,7 @@ def WriteBody(Writer, CompilerData, ProGen):
         #     Writer.Statement("Exe = F%s()" % Model)
         Writer.Statement("Exe = FRateGaugeModelOnly()")
         Writer.Statement("Bch = FBiochemicalReactionRateFunction()")
-        Writer.Statement("Evt = FBiologicalEventRateFunction()")
+        Writer.Statement("Pol = FPolymerizationRateFunction()")
 
         Writer.BlankLine()
 
@@ -160,7 +160,7 @@ def WriteBody(Writer, CompilerData, ProGen):
         # Link data and simulation objects to Sim.
         Writer.Comment__("Link data objects to simulation object.")
 
-        DataObjects = ['Bch', 'Cel', 'Cst', 'Env', 'Evt', 'Exe']
+        DataObjects = ['Bch', 'Cel', 'Cst', 'Env', 'Pol', 'Exe']
         for DataObject in DataObjects:
             Writer.Statement("Sim.{0} = {0}".format(DataObject))
 

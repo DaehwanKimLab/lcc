@@ -42,7 +42,7 @@ class FProcessGenerator():
     def SetUpReactionTypeReference(self):
         self.Dict_ReactionTypeReference = {
             'Biochemical Reaction': 'Bch',
-            'Biological Event': 'Evt'
+            'Polymerization Rate': 'Pol'
         }
 
     # def PrepareReactionForMatrix(self, Reaction):
@@ -268,8 +268,7 @@ class FProcessGenerator():
                     # Reaction type dependent rate calculation
                     Type = Reaction['Type']
 
-
-                    if Type == 'Evt':
+                    if Type == 'Pol':
                         MolIDs, MolIdxs, Thresholds, Conditions = Reaction['Trigger']
                         for MolID, MolIdx, Threshold, Condition in zip(MolIDs, MolIdxs, Thresholds, Conditions):
                             # Generate an evaluation phrase
@@ -279,12 +278,14 @@ class FProcessGenerator():
                                 # Update rate only if this is the first time to determine rate for the current reaction
                                 with Writer.Statement("if Rate == 0:"):
 
-                                    Rate_Min, Rate_Max = Reaction['Rate']
-                                    Writer.Variable_("Rate_Min", Rate_Min)
-                                    Writer.Variable_("Rate_Max", Rate_Max)
+                                    Rate_Mean, Rate_SD, Rate_UnitTime = Reaction['Rate']
+                                    Writer.Variable_("Rate_Mean", Rate_Mean)
+                                    Writer.Variable_("Rate_SD", Rate_SD)
 
-                                    Writer.Statement("self.Evt.LoadRateMinMax(Rate_Min, Rate_Max)")
-                                    Writer.Statement("Rate = self.Evt.DetermineRate()")
+                                    Writer.Statement("self.Pol.LoadRateMean(Rate_Mean)")
+                                    Writer.Statement("self.Pol.LoadRateSD(Rate_SD)")
+
+                                    Writer.Statement("Rate = self.Pol.DetermineRate()")
 
                             with Writer.Statement("else:"):
                                 Writer.Variable_("Rate", 0)
