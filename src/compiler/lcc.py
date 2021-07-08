@@ -132,9 +132,9 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         # Instantiate simulation objects.
         Writer.Comment__("Instantiate all data components.")
-        Writer.Statement("Cst = FConstant()")
-        Writer.Statement("Env = FEnvironment()")
-        Writer.Statement("Cel = FCellState()")
+        Writer.Statement("Cst = FConstant()  # contains all universal constants")
+        Writer.Statement("Env = FEnvironment()  # contains all environmental conditions (nutrient availability, temperature, pH, etc")
+        Writer.Statement("Cel = FCellState()  # contains all cell state mol info (counts_dynamic, molweights, reaction stoichiometry, reaction rate, etc")
 
         Writer.BlankLine()
 
@@ -142,9 +142,10 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Comment__("Instantiate all reaction components.")
         # if Model = UserDefinedModel
         #     Writer.Statement("Exe = F%s()" % Model)
-        Writer.Statement("Exe = FRateGaugeModelOnly()")
-        Writer.Statement("Bch = FBiochemicalReactionRateFunction()")
-        Writer.Statement("Pol = FPolymerizationRateFunction()")
+        Writer.Statement("Exe = FRateGaugeModelOnly()  # handles matrix operations")
+        Writer.BlankLine()
+        Writer.Statement("Bch = FBiochemicalReactionRateFunction()  # handles rate calculation for biochemical reactions")
+        Writer.Statement("Pol = FPolymerizationRateFunction()  # handles rate calculation and update for polymerization reactions")
 
         Writer.BlankLine()
 
@@ -152,6 +153,9 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Comment__("Instantiate cell process objects.")
         for ProcessID, Module in ProGen.Dict_CellProcesses.items():
             Writer.Statement("{0} = F{0}(Bch, Cel, Cst, Env, Exe, Pol)".format(ProcessID))
+        Writer.Comment__("contains and sets up all reactions and other related info for replication reactions.")
+        Writer.Comment__("uses Cel, Cst, Env to set up reaction stoichiometry matrix and calculate rate for rate matrix.")
+        Writer.Comment__("uses Exe, Bch, Pol to perform matrix update and operations.")
 
         Writer.BlankLine()
 
@@ -161,20 +165,14 @@ def WriteBody(Writer, CompilerData, ProGen):
         for ProcessID in ProGen.Dict_CellProcesses.keys():
             Writer.Statement("Dict_CellProcesses['%s'] = %s" % (ProcessID, ProcessID))
 
-        # Separator = ', '
-        # CellProcessIDs = Separator.join(ProGen.Dict_CellProcesses.keys())
-        # Writer.Statement("CellProcessIDs = [%s]" % CellProcessIDs)
-
         Writer.BlankLine()
 
         # Instantiate simulation object.
         Writer.Comment__("Instantiate simulation object.")
         Writer.Statement("Sim = FSimulation(Bch, Cel, Cst, Env, Exe, Pol, Dict_CellProcesses)")
+        Writer.Comment__("handles simulation structure and order, controls time")
 
         Writer.BlankLine()
-
-        # Temporary parameters
-        Writer.Comment__("Declare temporary parameters")
 
         # Run simulation
         Writer.Comment__("Run simulation.")

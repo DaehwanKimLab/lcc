@@ -65,6 +65,7 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def ShowSimulationTime(self):"):
             Writer.Statement("self.EndSimTimer()")
             Writer.Statement("self.CalculateSimTimeImprovement()")
+            Writer.PrintLine()
             Writer.PrintStrg("Simulation Time Summary (seconds):")
             Writer.Statement('print("Simulation Steps Executed: %s" % self.SimStepsExecuted)')
             Writer.Statement('print("     Simulation Wall Time: %s" % self.SimWallTimeExecuted)')

@@ -87,6 +87,12 @@ class CodeWriter():
             Line = '# %s' % Comment
             self.Statement(Line)
 
+    def PrintLine(self):
+        Unit = '-'
+        Length = 100
+        Line = 'print("%s")' % (Unit * Length)
+        self.Statement(Line)
+
     def BlankLine(self):
         self.Statement("")
 

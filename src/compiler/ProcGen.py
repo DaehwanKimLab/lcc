@@ -240,18 +240,12 @@ class FProcessGenerator():
                 Writer.BlankLine()
 
             Writer.TF_Graph_()
-            with Writer.Statement("def ClearRateMatrix(self):"):
-                Writer.Statement("self.Cel.ClearRateMatrix()")
-                Writer.BlankLine()
-
-            Writer.TF_Graph_()
             with Writer.Statement("def SetUpStoichiometryMatrix(self):"):
                 Writer.Statement("self.AddToStoichiometryMatrix()")
                 Writer.BlankLine()
 
             Writer.TF_Graph_()
             with Writer.Statement("def UpdateRates(self):"):
-                Writer.Statement("self.ClearRateMatrix()")
                 Writer.Statement("self.CalculateRate()")
                 Writer.Statement("self.AddToRateMatrix()")
                 Writer.BlankLine()
