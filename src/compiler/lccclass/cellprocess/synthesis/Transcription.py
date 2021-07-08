@@ -1,53 +1,72 @@
 # transcription
 # use sigma factor
 
-# Interface for all lcc modules, a.k.a. cellular processes
+def SetUpReactions(ProGen):
+    Reactions = list()
 
-# Comp is a short hand for CompilerData
-def Write_SynRNA(Writer, Comp):
-    Writer.BlankLine()
-    with Writer.Statement("class FSynRNA(FCellProcess):"):
-        with Writer.Statement("def __init__(self):"):
-            Writer.BlankLine()
-            Writer.Statement("super().__init__()")
+    Reaction = dict()
+    # Reaction No.1
 
-            Writer.BlankLine()
+    RXNType = 'Polymerization'
+    RXNEquation = '4 NTP -> 1 RNA size + 2 PPi'
+    RXNRate = '60 +- 20 events per second'
+    RXNTrigger = 'DNA polymerase III, core enzyme >= 4'
 
-        # Abstract Methods for CellProcess
-        Writer.AbsMethod()
-        with Writer.Statement("def InitProcess(self):"):
-            # Call AddElementaryProcess
-            Writer.Pass_____()
-            Writer.BlankLine()
+    # The final product would be the following:
 
-        Writer.AbsMethod()
-        with Writer.Statement("def LoopProcess(self):"):
-            # Call UpdateReactionRate
-            Writer.Pass_____()
-            Writer.BlankLine()
+    # Type = 'Polymerization' or 'Biochemical Reaction'
 
-        Writer.AbsMethod()
-        with Writer.Statement("def AddElementaryProcess(self):"):
-            # Call GetReactionMolIndex, GetReactionStoich, GetReactionRate methods
-            # Call AddToMasterReactionStoichs, AddToMasterReactionRates
-            Writer.Pass_____()
-            Writer.BlankLine()
+    # Type 'Polymerization'
+    # Stoich_MolIDs = ['MolID #1', 'MolID #2', etc],
+    #                   where MolIDs of reactants and products must exist in 'Cel.ID_Master'
+    # Stoich_Coeffs = [Coeff for Mol #1, Coeff for Mol #2, etc],
+    #                   where negative and positive integers are used for reactants and products, respectively
+    # Rate_Min = integer
+    # Rate_Max = integer
+    # Rate_Distribution = 'Normal', 'Uniform',
+    #
+    # Trigger_MolIDs = ['MolID #1', 'MolID #2', etc],
+    #                   where conditional presence of MolIDs (or environmental condition to be implemented)
+    # Trigger_Thresholds = ['string of integer count for MolID #1', etc],
+    #                   where there many be many triggers to satisfy
 
-        Writer.AbsMethod()
-        with Writer.Statement("def GetReactionMolIndex(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
 
-        Writer.AbsMethod()
-        with Writer.Statement("def GetReactionStoich(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
 
-        Writer.AbsMethod()
-        with Writer.Statement("def GetReactionRate(self):"):
-            # AdjustRate
-            Writer.Pass_____()
-            Writer.BlankLine()
+    # Transcriptional elongation
+
+    RNAP = ProGen.Comp.Complex.Name2ID_Complexes['RNA polymerase, core enzyme']
+
+    for i, ID_RNANascent in enumerate(ProGen.Comp.RNA.ID_RNAsNascent):
+
+        Type = 'Polymerization'
+
+        Stoich_MolIDs = ['NTP', ID_RNANascent, 'PPI[c]']
+        Stoich_Coeffs = [-1, 1, 2]
+
+        Rate_Mean = 60  # basepairs per second, accounting for both directions
+        Rate_SD = 20
+        Rate_UnitTime = 'Second'
+
+        Trigger_MolIDs = [RNAP]  # 'RNA polymerase, core enzyme'
+        Trigger_Thresholds = ['1']  # To be replaced
+        Trigger_Conditions = ['>=']  # Greater than or equal to
+
+        # Generate a reaction dictionary with above inputs
+        Reaction['Type'] = Type
+        Reaction['Stoichiometry'] = [Stoich_MolIDs, Stoich_Coeffs]
+        Reaction['Rate'] = [Rate_Mean, Rate_SD, Rate_UnitTime]
+        Reaction['Trigger'] = [Trigger_MolIDs, Trigger_Thresholds, Trigger_Conditions]
+
+        Reaction_SetUp = ProGen.SetUpReaction(Reaction)
+        # MolIdxs have been added to Stoichiometry and Trigger variables
+        Reactions.append(Reaction_SetUp)
+
+    return Reactions
+
+
+def Write_CellProcess(Writer, ProGen, ProcessID, Reactions):
+    ProGen.GenerateCellProcess(Writer, ProcessID, Reactions)
+
 
 
 

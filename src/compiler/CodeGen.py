@@ -43,6 +43,8 @@ class CodeWriter():
         self.Switch4DebugSimulationPrint = False
         self.Switch4DebugSimulationAssert = False
         self.Switch4Graph = False
+        self.Switch4ProcessSummary = False
+        self.Switch4SimStepsExecuted = False
 
     def __enter__(self):
         self.IncreaseIndent()
@@ -93,6 +95,10 @@ class CodeWriter():
 
     def AbsMethod(self):
         self.Statement("@abc.abstractmethod")
+
+    def LinkClObj(self, VariableName):
+        Line = 'self.%s = %s' % (VariableName, VariableName)
+        self.Statement(Line)
 
     def ReturnVar(self, VariableName):
         Line = 'return %s' % VariableName

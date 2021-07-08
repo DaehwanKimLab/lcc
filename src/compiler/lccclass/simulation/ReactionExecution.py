@@ -63,12 +63,6 @@ def Write_ReactionExecution(Writer):
             Writer.ReturnVar("FinalCount")
             Writer.BlankLine()
 
-        Writer.AbsMethod()
-        with Writer.Statement("def Solver(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Statement("def OrdinaryDifferentialEquations(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
+        with Writer.Statement("def RunReactions(self):"):
+            Writer.Statement("self.MultiplyRXNMatrices()")
+            Writer.Statement("self.RoundDeltaCountMatrix()")

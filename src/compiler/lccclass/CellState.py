@@ -12,7 +12,6 @@ def Write_CellState(Writer, Comp):
             Writer.Variable_("self.ID", 0) # Not implemented yet
             Writer.Variable_("self.Vol", 0) # Not implemented yet
 
-
             Writer.Variable_("self.MX_Stoichiometries", 0)  # Stoichiometry matrix for all elementary reactions
             Writer.Variable_("self.MX_Rates", 0)  # Rate matrix for all elementary reactions
             Writer.Variable_("self.MX_Counts", 0)  # Counts matrix for all molecules
@@ -44,6 +43,10 @@ def Write_CellState(Writer, Comp):
                     SaveFilePath = os.path.join(SavePath, SaveFile)
                     VariableName = SaveFile.split('.')[0]
                     Writer.LoadSaved(SaveFilePath, VariableName, DataType)
+            Writer.BlankLine()
+
+            # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
+            Writer.Variable_("self.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
             Writer.BlankLine()
 
         with Writer.Statement("def InitializeMatrices(self):"):

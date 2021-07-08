@@ -30,16 +30,16 @@ def SetUpReactions(ProGen):
     Reaction = dict()
     # Reaction No.1
 
-    RXNType = 'Polymerization Rate'
+    RXNType = 'Polymerization'
     RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi'
     RXNRate = '1000 +- 100 events per second'
     RXNTrigger = 'DNA polymerase III, core enzyme >= 4'
 
     # The final product would be the following:
 
-    # Type = 'Polymerization Rate' or 'Biochemical Reaction'
+    # Type = 'Polymerization' or 'Biochemical Reaction'
 
-    # Type 'Polymerization Rate'
+    # Type 'Polymerization'
     # Stoich_MolIDs = ['MolID #1', 'MolID #2', etc],
     #                   where MolIDs of reactants and products must exist in 'Cel.ID_Master'
     # Stoich_Coeffs = [Coeff for Mol #1, Coeff for Mol #2, etc],
@@ -53,28 +53,41 @@ def SetUpReactions(ProGen):
     # Trigger_Thresholds = ['string of integer count for MolID #1', etc],
     #                   where there many be many triggers to satisfy
 
-    Type = 'Polymerization Rate'
+    DNAPI = ProGen.Comp.Protein.Name2ID_Proteins["DNA polymerase I, 5' --> 3' polymerase, 5' --> 3'  and 3' --> 5' exonuclease"]
+    DNAPIII = ProGen.Comp.Complex.Name2ID_Complexes['DNA polymerase III, core enzyme']
+    DNAPrimase = ProGen.Comp.Protein.Name2ID_Proteins['DNA primase']
 
-    Stoich_MolIDs = ['dNTP', 'Chromosome1_Rep2', 'PPI[c]']
-    Stoich_Coeffs = [-2, 1, 2]
+    ChromosomeNumber = 1
+    ChromosomeRepNumber = 1
 
-    Rate_Mean = 1000 * 2  # basepairs per second, accounting for both directions
-    Rate_SD = 100
-    Rate_UnitTime = 'Second'
+    # This is for leading
 
-    Trigger_MolIDs = ['CPLX0-2361']  # DNA polymerase III, core enzyme
-    Trigger_Thresholds = ['4']
-    Trigger_Conditions = ['>=']  # Greater than or equal to
+    for Attribute in ProGen.Comp.Chromosome.ReplicatingChromosomeAttributes:
+        Type = 'Polymerization'
 
-    # Generate a reaction dictionary with above inputs
-    Reaction['Type'] = Type
-    Reaction['Stoichiometry'] = [Stoich_MolIDs, Stoich_Coeffs]
-    Reaction['Rate'] = [Rate_Mean, Rate_SD, Rate_UnitTime]
-    Reaction['Trigger'] = [Trigger_MolIDs, Trigger_Thresholds, Trigger_Conditions]
+        ChromosomeState = 'Partial_' + Attribute
+        ChromosomeID = 'Ch%d_Rep%d_%s' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
 
-    Reaction_SetUp = ProGen.SetUpReaction(Reaction)
-    # MolIdxs have been added to Stoichiometry and Trigger variables
-    Reactions.append(Reaction_SetUp)
+        Stoich_MolIDs = ['dNTP', ChromosomeID, 'PPI[c]']
+        Stoich_Coeffs = [-2, 1, 2]
+
+        Rate_Mean = 1000 * 2  # basepairs per second, accounting for both directions
+        Rate_SD = 100
+        Rate_UnitTime = 'Second'
+
+        Trigger_MolIDs = [DNAPIII, DNAPrimase, DNAPI]  # 'DNA polymerase III, core enzyme'
+        Trigger_Thresholds = ['4', '4', '4']
+        Trigger_Conditions = ['>=', '>=', '>=']  # Greater than or equal to
+
+        # Generate a reaction dictionary with above inputs
+        Reaction['Type'] = Type
+        Reaction['Stoichiometry'] = [Stoich_MolIDs, Stoich_Coeffs]
+        Reaction['Rate'] = [Rate_Mean, Rate_SD, Rate_UnitTime]
+        Reaction['Trigger'] = [Trigger_MolIDs, Trigger_Thresholds, Trigger_Conditions]
+
+        Reaction_SetUp = ProGen.SetUpReaction(Reaction)
+        # MolIdxs have been added to Stoichiometry and Trigger variables
+        Reactions.append(Reaction_SetUp)
 
     return Reactions
 

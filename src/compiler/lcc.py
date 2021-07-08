@@ -76,9 +76,11 @@ def WriteImport(Writer):
 def WriteBody(Writer, CompilerData, ProGen):
 
     Writer.Switch4Comment = True
-    Writer.Switch4DebugSimulationPrint = True
-    Writer.Switch4DebugSimulationAssert = True
+    Writer.Switch4DebugSimulationPrint = False
+    Writer.Switch4DebugSimulationAssert = False
     Writer.Switch4Graph = False
+    Writer.Switch4ProcessSummary = False
+    Writer.Switch4SimStepsExecuted = True
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()
@@ -95,17 +97,6 @@ def WriteBody(Writer, CompilerData, ProGen):
         # Specify the mode of data processing.
         Writer.Statement("# This is a numpy code", TargetCode=Target.Numpy)
         Writer.Statement("# This is a tensorflow code", TargetCode=Target.TensorFlow)
-
-        Writer.BlankLine()
-
-        # Define classes for simulation.
-        Writer.Comment__("Define all object classes.")
-        Simulation.Write_Simulation(Writer, CompilerData, ProGen)
-        ReactionExecution.Write_ReactionExecution(Writer)
-        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
-        RateFunction.Write_RateFunction(Writer, CompilerData)
-        BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
-        PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
 
         Writer.BlankLine()
 
@@ -128,10 +119,27 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Writer.BlankLine()
 
-        # Instantiate simulation objects.
-        Writer.Comment__("Instantiate all simulation components.")
+        # Define classes for simulation.
+        Writer.Comment__("Define all object classes.")
+        Simulation.Write_Simulation(Writer, CompilerData, ProGen)
+        ReactionExecution.Write_ReactionExecution(Writer)
+        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
+        RateFunction.Write_RateFunction(Writer, CompilerData)
+        BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
+        PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
 
-        Writer.Statement("Sim = FSimulation()")
+        Writer.BlankLine()
+
+        # Instantiate simulation objects.
+        Writer.Comment__("Instantiate all data components.")
+        Writer.Statement("Cst = FConstant()")
+        Writer.Statement("Env = FEnvironment()")
+        Writer.Statement("Cel = FCellState()")
+
+        Writer.BlankLine()
+
+        # Instantiate simulation objects.
+        Writer.Comment__("Instantiate all reaction components.")
         # if Model = UserDefinedModel
         #     Writer.Statement("Exe = F%s()" % Model)
         Writer.Statement("Exe = FRateGaugeModelOnly()")
@@ -140,54 +148,33 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Writer.BlankLine()
 
-        # Instantiate simulation objects.
-        Writer.Comment__("Instantiate all data components.")
-
-        Writer.Statement("Cst = FConstant()")
-        Writer.Statement("Env = FEnvironment()")
-        Writer.Statement("Cel = FCellState()")
-
-        Writer.BlankLine()
-
         # Instantiate cell process objects.
         Writer.Comment__("Instantiate cell process objects.")
-
         for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-            Writer.Statement("{0} = F{0}()".format(ProcessID))
+            Writer.Statement("{0} = F{0}(Bch, Cel, Cst, Env, Exe, Pol)".format(ProcessID))
 
         Writer.BlankLine()
 
-        # Link data and simulation objects to Sim.
-        Writer.Comment__("Link data objects to simulation object.")
+        # Generate a string of a dictionary of cell process object names
+        Writer.Comment__("Generate a dictionary of cell process object names")
+        Writer.Statement("Dict_CellProcesses = dict()")
+        for ProcessID in ProGen.Dict_CellProcesses.keys():
+            Writer.Statement("Dict_CellProcesses['%s'] = %s" % (ProcessID, ProcessID))
 
-        DataObjects = ['Bch', 'Cel', 'Cst', 'Env', 'Pol', 'Exe']
-        for DataObject in DataObjects:
-            Writer.Statement("Sim.{0} = {0}".format(DataObject))
+        # Separator = ', '
+        # CellProcessIDs = Separator.join(ProGen.Dict_CellProcesses.keys())
+        # Writer.Statement("CellProcessIDs = [%s]" % CellProcessIDs)
 
         Writer.BlankLine()
 
-        # Link data and simulation objects to cell process objects.
-        Writer.Comment__("Link data objects to simulation object.")
-
-        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-            for DataObject in DataObjects:
-                Writer.Statement("{0}.{1} = {1}".format(ProcessID, DataObject))
-            Writer.BlankLine()
-
-        # Link cell process objects to simulation object.
-        Writer.Comment__("Link cell process objects to simulation object.")
-        for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-            Writer.Statement("Sim.{0} = {0}".format(ProcessID))
+        # Instantiate simulation object.
+        Writer.Comment__("Instantiate simulation object.")
+        Writer.Statement("Sim = FSimulation(Bch, Cel, Cst, Env, Exe, Pol, Dict_CellProcesses)")
 
         Writer.BlankLine()
 
         # Temporary parameters
         Writer.Comment__("Declare temporary parameters")
-
-        # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
-        Writer.Variable_("Cel.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
-
-        Writer.BlankLine()
 
         # Run simulation
         Writer.Comment__("Run simulation.")
@@ -198,6 +185,7 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         # End of simulation.
         Writer.Comment__("End of simulation.")
+
         Writer.BlankLine()
 
         # Print input genome.
