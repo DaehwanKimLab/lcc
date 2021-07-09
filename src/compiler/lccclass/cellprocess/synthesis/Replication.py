@@ -71,7 +71,7 @@ def SetUpReactions(ProGen):
         Stoich_MolIDs = ['dNTP', ChromosomeID, 'PPI[c]']
         Stoich_Coeffs = [-2, 1, 2]
 
-        Rate_Mean = 1000 * 2  # basepairs per second, accounting for both directions
+        Rate_Mean = 1000  # basepairs per second, accounting for both directions
         Rate_SD = 100
         Rate_UnitTime = 'Second'
 

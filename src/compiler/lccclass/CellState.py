@@ -45,6 +45,7 @@ def Write_CellState(Writer, Comp):
                     Writer.LoadSaved(SaveFilePath, VariableName, DataType)
             Writer.BlankLine()
 
+            # Temporary code
             # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
             Writer.Variable_("self.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
             Writer.BlankLine()

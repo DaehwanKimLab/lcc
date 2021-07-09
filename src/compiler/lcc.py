@@ -33,8 +33,10 @@ from lccclass import CellProcess
 # from lccvariable.cellstate.genomestate import PromoterState
 from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
+from lccclass.cellprocess.metabolism import Metabolism
 from lccclass.simulation import ReactionExecution
 from lccclass.simulation.reactionexecution import RateGaugeModelOnly
+from lccclass.simulation.reactionexecution import RGM_MetaboliteReplenish
 from lccclass.simulation import RateFunction
 from lccclass.simulation.ratefunction import BiochemicalReactionRate
 from lccclass.simulation.ratefunction import PolymerizationRate
@@ -75,12 +77,17 @@ def WriteImport(Writer):
 
 def WriteBody(Writer, CompilerData, ProGen):
 
+    Model = 2
+
     Writer.Switch4Comment = True
     Writer.Switch4DebugSimulationPrint = False
     Writer.Switch4DebugSimulationAssert = False
     Writer.Switch4Graph = False
-    Writer.Switch4ProcessSummary = False
+    Writer.Switch4ProcessSummary = True
     Writer.Switch4SimStepsExecuted = True
+    Writer.Switch4PostSimulationStepCorrection = False
+    if Model == 2:
+        Writer.Switch4PostSimulationStepCorrection = True
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()
@@ -124,6 +131,7 @@ def WriteBody(Writer, CompilerData, ProGen):
         Simulation.Write_Simulation(Writer, CompilerData, ProGen)
         ReactionExecution.Write_ReactionExecution(Writer)
         RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
+        RGM_MetaboliteReplenish.Write_RGM_MetaboliteReplenish(Writer)
         RateFunction.Write_RateFunction(Writer, CompilerData)
         BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
         PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
@@ -140,9 +148,18 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         # Instantiate simulation objects.
         Writer.Comment__("Instantiate all reaction components.")
-        # if Model = UserDefinedModel
+
         #     Writer.Statement("Exe = F%s()" % Model)
-        Writer.Statement("Exe = FRateGaugeModelOnly()  # handles matrix operations")
+        # Model will be selected by the user
+        Dict_Model = dict()
+        Dict_Model[1] = 'RateGaugeModelOnly'
+        Dict_Model[2] = 'RGM_MetaboliteReplenish'
+        Dict_Model[3] = 'RGM_Solver'
+        Dict_Model[4] = 'RGM_ODE'
+        Dict_Model[5] = 'RGM_SolverODE'
+
+        Writer.Statement("Exe = F%s()  # handles matrix operations" % Dict_Model[Model])
+
         Writer.BlankLine()
         Writer.Statement("Bch = FBiochemicalReactionRateFunction()  # handles rate calculation for biochemical reactions")
         Writer.Statement("Pol = FPolymerizationRateFunction()  # handles rate calculation and update for polymerization reactions")

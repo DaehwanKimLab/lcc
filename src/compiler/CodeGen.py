@@ -45,6 +45,7 @@ class CodeWriter():
         self.Switch4Graph = False
         self.Switch4ProcessSummary = False
         self.Switch4SimStepsExecuted = False
+        self.Switch4PostSimulationStepCorrection = False
 
     def __enter__(self):
         self.IncreaseIndent()

@@ -88,6 +88,7 @@ def Write_Simulation(Writer, Comp, ProGen):
 
         with Writer.Statement("def PrintSimStepsExecuted(self):"):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                Writer.PrintLine()
                 Writer.PrintVari("self.SimStepsExecuted")
                 Writer.DebugPVar("self.SimWallTimeExecuted")
             Writer.BlankLine()
@@ -158,13 +159,24 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Statement("def DisplayCounts(self):"):
-            for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                Writer.Statement("self.%s.DisplayCounts()" % ProcessID)
+            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                Writer.PrintStrg("# Simulation Step Molecule Count Summary:")
+                for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                        Writer.PrintStrg("%s:" % ProcessID)
+                        Writer.Statement("self.%s.DisplayCounts()" % ProcessID)
+                Writer.BlankLine()
+
+        with Writer.Statement("def PostSimulationStepCorrection(self):"):
+            Writer.Statement("self.Cel.MX_Counts = self.Exe.ReplenishMetabolites(self.Cel.MX_Counts)")
+            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                Writer.PrintStrg("[Post simulation step correction: Metabolites have been replenished.]")
             Writer.BlankLine()
+
 
         with Writer.Statement("def Initialize(self):"):
             Writer.Statement("self.SetUpSimClock()")
             Writer.Statement("self.SetUpCellStateMatrices()")
+            Writer.Statement("self.DisplayCounts()")
             Writer.BlankLine()
 
         with Writer.Statement("def Run(self):"):
@@ -196,10 +208,13 @@ def Write_Simulation(Writer, Comp, ProGen):
                 if Writer.Switch4ProcessSummary:
                     Writer.Statement("self.DisplayCounts()")
 
+                # Apply post-simulation step corrections for selected reaction models:
+                if Writer.Switch4PostSimulationStepCorrection:
+                    Writer.Statement("self.PostSimulationStepCorrection()")
 
                 Writer.BlankLine()
 
-
+            Writer.PrintLine()
             Writer.PrintStrg("Simulation Ended")
 
             Writer.BlankLine()

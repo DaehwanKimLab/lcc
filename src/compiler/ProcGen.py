@@ -15,9 +15,9 @@ import numpy as np
 import os
 import abc
 import CodeGen
-from lccclass.cellprocess.synthesis import Replication
-from lccclass.cellprocess.synthesis import Transcription
-from lccclass.cellprocess.synthesis import Translation
+from lccclass.cellprocess.synthesis import Replication, Transcription, Translation
+from lccclass.cellprocess.degradation import DNADegradation, RNADegradation, ProteinDegradation
+from lccclass.cellprocess.metabolism import Metabolism
 
 class FProcessGenerator():
     def __init__(self):
@@ -57,7 +57,8 @@ class FProcessGenerator():
 
     def SetUpProcesses(self):
 
-        Processes = [Replication]
+        Processes = [Replication, Metabolism]
+
         for Process in Processes:
             ProcessStr = Process.__name__.split('.')[-1]
             self.Dict_CellProcesses[ProcessStr] = Process
@@ -253,13 +254,26 @@ class FProcessGenerator():
     def GenerateCellProcess(self, Writer, ProcessID, Reactions):
         with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
             with Writer.Statement("def __init__(self, Bch, Cel, Cst, Env, Exe, Pol):"):
+                Writer.Statement("super().__init__(Bch, Cel, Cst, Env, Exe, Pol)")
                 Writer.BlankLine()
 
-                Writer.Statement("super().__init__(Bch, Cel, Cst, Env, Exe, Pol)")
+                # Process-specific attributes
+                if ProcessID == 'Metabolism':
+                    Writer.Variable_("self.MetaboliteIdxs", 0)
+                    Writer.Variable_("self.MetaboliteCountsInitial", 0)
+                    Writer.Statement("self.GetMetaboliteIdxsAndCounts()")
+                    Writer.BlankLine()
+
                 Writer.BlankLine()
 
             with Writer.Statement("def AddToStoichiometryMatrix(self):"):
                 for Reaction in Reactions:
+
+                    if Reaction is None:
+                        Writer.Pass_____()
+                        Writer.BlankLine()
+                        continue
+
                     MolIDs, MolIdxs, Coeffs = Reaction['Stoichiometry']
 
                     # Convert index and stoichiometry to tensor for simulation
@@ -285,6 +299,12 @@ class FProcessGenerator():
 
             with Writer.Statement("def AddToRateMatrix(self):"):
                 for Reaction in Reactions:
+
+                    if Reaction is None:
+                        Writer.Pass_____()
+                        Writer.BlankLine()
+                        continue
+
                     # Initialize Rate value to 0
                     Writer.Variable_("Rate", 0)
 
@@ -329,10 +349,43 @@ class FProcessGenerator():
             with Writer.Statement("def DisplayCounts(self):"):
                 Dict_MolIdx_ID_Pairs = dict()
                 for Reaction in Reactions:
+
+                    if Reaction is None:
+                        Writer.PrintStrg("No reactions found in %s" % ProcessID)
+                        Writer.BlankLine()
+                        continue
+
                     MolIDs, MolIdxs, Coeffs = Reaction['Stoichiometry']
                     for MolID, MolIdx in zip(MolIDs, MolIdxs):
                         if MolIdx not in Dict_MolIdx_ID_Pairs.keys():
                             Dict_MolIdx_ID_Pairs[MolIdx] = MolID
+
                 for MolIdx, MolID in sorted(Dict_MolIdx_ID_Pairs.items()):
+
+                    if Reaction is None:
+                        Writer.Pass_____()
+                        Writer.BlankLine()
+                        continue
+
                     Writer.Statement("print('%s Count:\t', self.Cel.MX_Counts[%s])" % (MolID, MolIdx))
                 Writer.BlankLine()
+
+
+            # Class-specific methods
+            if ProcessID == 'Metabolism':
+                with Writer.Statement("def GetMetaboliteIdxsAndCounts(self):"):
+                    MetaboliteIdxs = list()
+                    MetaboliteCountsInitial = list()
+                    for MolIdx in range(self.Comp.Master.NUniq_Master):
+                        if self.Comp.Master.Type_Master[MolIdx] == 'Metabolite':
+                            MetaboliteCountsInitial.append(self.Comp.Master.Count_Master[MolIdx])
+                            MetaboliteIdxs.append(MolIdx)
+
+                    Writer.Variable_("self.MetaboliteIdxs", MetaboliteIdxs)
+                    Writer.Reshape__("self.MetaboliteIdxs", "self.MetaboliteIdxs", [1, -1])
+                    Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.MetaboliteIdxs)")
+
+                    Writer.Variable_("self.MetaboliteCountsInitial", MetaboliteCountsInitial)
+                    Writer.Reshape__("self.MetaboliteCountsInitial", "self.MetaboliteCountsInitial", [-1])
+                    Writer.Statement("self.Exe.LoadMetaboliteCountsInitial(self.MetaboliteCountsInitial)")
+                    Writer.BlankLine()
