@@ -23,74 +23,87 @@ When Chr bp + 1,
 rate: + 1000 bp / 1 second
 '''
 
+def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
+    # ProGen.GenerateCellProcess(Writer, ProcessID)
 
-def SetUpReactions(ProGen):
-    Reactions = list()
+    with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
+        ProGen.Init_Common(Writer)
 
-    Reaction = dict()
-    # Reaction No.1
+        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
 
-    RXNType = 'Polymerization'
-    RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi'
-    RXNRate = '1000 +- 100 events per second'
-    RXNTrigger = 'DNA polymerase III, core enzyme >= 4'
+        with Writer.Statement("def ExecuteProcess(self):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
 
-    # The final product would be the following:
+# def SetUpReactions(ProGen):
+#     Reactions = list()
+#
+#     Reaction = dict()
+#     # Reaction No.1
+#
+#     RXNType = 'Polymerization'
+#     RXNEquation = '2 dNTP -> 1 ChromosomeSize + 2 PPi'
+#     RXNRate = '1000 +- 100 events per second'
+#     RXNTrigger = 'DNA polymerase III, core enzyme >= 4'
+#
+#     # The final product would be the following:
+#
+#     # Type = 'Polymerization' or 'Biochemical Reaction'
+#
+#     # Type 'Polymerization'
+#     # Stoich_MolIDs = ['MolID #1', 'MolID #2', etc],
+#     #                   where MolIDs of reactants and products must exist in 'Cel.ID_Master'
+#     # Stoich_Coeffs = [Coeff for Mol #1, Coeff for Mol #2, etc],
+#     #                   where negative and positive integers are used for reactants and products, respectively
+#     # Rate_Min = integer
+#     # Rate_Max = integer
+#     # Rate_Distribution = 'Normal', 'Uniform',
+#     #
+#     # Trigger_MolIDs = ['MolID #1', 'MolID #2', etc],
+#     #                   where conditional presence of MolIDs (or environmental condition to be implemented)
+#     # Trigger_Thresholds = ['string of integer count for MolID #1', etc],
+#     #                   where there many be many triggers to satisfy
+#
+#     # DNAPI = ProGen.Comp.Protein.Name2ID_Proteins["DNA polymerase I, 5' --> 3' polymerase, 5' --> 3'  and 3' --> 5' exonuclease"]
+#     # DNAPrimase = ProGen.Comp.Protein.Name2ID_Proteins['DNA primase']
+#     DNAPIII = ProGen.Comp.Complex.Name2ID_Complexes['DNA polymerase III, core enzyme']
+#
+#     # Temporary parameters
+#     ChromosomeNumber = 1
+#     ChromosomeRepNumber = 1
+#
+#     # This is for leading
+#
+#     for Attribute in ProGen.Comp.Chromosome.ReplicatingChromosomeAttributes:
+#         Type = 'Polymerization'
+#
+#         ChromosomeState = 'Partial_' + Attribute
+#         ChromosomeID = 'Ch%d_Rep%d_%s' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
+#
+#         Stoich_MolIDs = ['dNTP', ChromosomeID, 'PPI[c]']
+#         Stoich_Coeffs = [-2, 1, 2]
+#
+#         Rate_Mean = 1000  # basepairs per second, accounting for both directions
+#         Rate_SD = 100
+#         Rate_UnitTime = 'Second'
+#
+#         # Trigger_MolIDs = [DNAPIII, DNAPrimase, DNAPI]  # 'DNA polymerase III, core enzyme'
+#         # Trigger_Thresholds = ['4', '4', '4']
+#         # Trigger_Conditions = ['>=', '>=', '>=']  # Greater than or equal to
+#
+#         # Generate a reaction dictionary with above inputs
+#         Reaction['Type'] = Type
+#         Reaction['Stoichiometry'] = [Stoich_MolIDs, Stoich_Coeffs]
+#         Reaction['Rate'] = [Rate_Mean, Rate_SD, Rate_UnitTime]
+#         # Reaction['Trigger'] = [Trigger_MolIDs, Trigger_Thresholds, Trigger_Conditions]
+#
+#         Reaction_SetUp = ProGen.SetUpReaction(Reaction)
+#         # MolIdxs have been added to Stoichiometry and Trigger variables
+#         Reactions.append(Reaction_SetUp)
+#
+#     return Reactions
 
-    # Type = 'Polymerization' or 'Biochemical Reaction'
-
-    # Type 'Polymerization'
-    # Stoich_MolIDs = ['MolID #1', 'MolID #2', etc],
-    #                   where MolIDs of reactants and products must exist in 'Cel.ID_Master'
-    # Stoich_Coeffs = [Coeff for Mol #1, Coeff for Mol #2, etc],
-    #                   where negative and positive integers are used for reactants and products, respectively
-    # Rate_Min = integer
-    # Rate_Max = integer
-    # Rate_Distribution = 'Normal', 'Uniform',
-    #
-    # Trigger_MolIDs = ['MolID #1', 'MolID #2', etc],
-    #                   where conditional presence of MolIDs (or environmental condition to be implemented)
-    # Trigger_Thresholds = ['string of integer count for MolID #1', etc],
-    #                   where there many be many triggers to satisfy
-
-    DNAPI = ProGen.Comp.Protein.Name2ID_Proteins["DNA polymerase I, 5' --> 3' polymerase, 5' --> 3'  and 3' --> 5' exonuclease"]
-    DNAPIII = ProGen.Comp.Complex.Name2ID_Complexes['DNA polymerase III, core enzyme']
-    DNAPrimase = ProGen.Comp.Protein.Name2ID_Proteins['DNA primase']
-
-    ChromosomeNumber = 1
-    ChromosomeRepNumber = 1
-
-    # This is for leading
-
-    for Attribute in ProGen.Comp.Chromosome.ReplicatingChromosomeAttributes:
-        Type = 'Polymerization'
-
-        ChromosomeState = 'Partial_' + Attribute
-        ChromosomeID = 'Ch%d_Rep%d_%s' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
-
-        Stoich_MolIDs = ['dNTP', ChromosomeID, 'PPI[c]']
-        Stoich_Coeffs = [-2, 1, 2]
-
-        Rate_Mean = 1000  # basepairs per second, accounting for both directions
-        Rate_SD = 100
-        Rate_UnitTime = 'Second'
-
-        Trigger_MolIDs = [DNAPIII, DNAPrimase, DNAPI]  # 'DNA polymerase III, core enzyme'
-        Trigger_Thresholds = ['4', '4', '4']
-        Trigger_Conditions = ['>=', '>=', '>=']  # Greater than or equal to
-
-        # Generate a reaction dictionary with above inputs
-        Reaction['Type'] = Type
-        Reaction['Stoichiometry'] = [Stoich_MolIDs, Stoich_Coeffs]
-        Reaction['Rate'] = [Rate_Mean, Rate_SD, Rate_UnitTime]
-        Reaction['Trigger'] = [Trigger_MolIDs, Trigger_Thresholds, Trigger_Conditions]
-
-        Reaction_SetUp = ProGen.SetUpReaction(Reaction)
-        # MolIdxs have been added to Stoichiometry and Trigger variables
-        Reactions.append(Reaction_SetUp)
-
-    return Reactions
 
 
-def Write_CellProcess(Writer, ProGen, ProcessID, Reactions):
-    ProGen.GenerateCellProcess(Writer, ProcessID, Reactions)

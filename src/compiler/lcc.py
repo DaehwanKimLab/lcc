@@ -112,17 +112,17 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Constant.Write_Constant(Writer, CompilerData)
         Environment.Write_Environment(Writer, CompilerData)
-        CellState.Write_CellState(Writer, CompilerData)
+        CellState.Write_CellState(Writer, CompilerData, ProGen)
 
         Writer.BlankLine()
 
         # Define classes for all cell processes.
         Writer.Comment__("Define classes for all processes.")
 
-        CellProcess.Write_CellProcess(Writer, ProGen)
+        CellProcess.Write_CellProcess(Writer)
         for ProcessID, ProcessObject in ProGen.Dict_CellProcesses.items():
-            Reactions = ProGen.Dict_ProcessReactions[ProcessID]
-            ProcessObject.Write_CellProcess(Writer, ProGen, ProcessID, Reactions)
+            # Reactions = ProGen.Dict_ProcessReactions[ProcessID]
+            ProcessObject.Write_CellProcess(Writer, CompilerData, ProGen, ProcessID)
 
         Writer.BlankLine()
 
@@ -130,11 +130,11 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Comment__("Define all object classes.")
         Simulation.Write_Simulation(Writer, CompilerData, ProGen)
         ReactionExecution.Write_ReactionExecution(Writer)
-        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
+        # RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
         RGM_MetaboliteReplenish.Write_RGM_MetaboliteReplenish(Writer)
-        RateFunction.Write_RateFunction(Writer, CompilerData)
-        BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
-        PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
+        # RateFunction.Write_RateFunction(Writer, CompilerData)
+        # BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
+        # PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
 
         Writer.BlankLine()
 
@@ -161,18 +161,18 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Statement("Exe = F%s()  # handles matrix operations" % Dict_Model[Model])
 
         Writer.BlankLine()
-        Writer.Statement("Bch = FBiochemicalReactionRateFunction()  # handles rate calculation for biochemical reactions")
-        Writer.Statement("Pol = FPolymerizationRateFunction()  # handles rate calculation and update for polymerization reactions")
+        # Writer.Statement("Bch = FBiochemicalReactionRateFunction()  # handles rate calculation for biochemical reactions")
+        # Writer.Statement("Pol = FPolymerizationRateFunction()  # handles rate calculation and update for polymerization reactions")
 
         Writer.BlankLine()
 
         # Instantiate cell process objects.
         Writer.Comment__("Instantiate cell process objects.")
         for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-            Writer.Statement("{0} = F{0}(Bch, Cel, Cst, Env, Exe, Pol)".format(ProcessID))
+            Writer.Statement("{0} = F{0}(Cel, Cst, Env, Exe)".format(ProcessID))
         Writer.Comment__("contains and sets up all reactions and other related info for replication reactions.")
         Writer.Comment__("uses Cel, Cst, Env to set up reaction stoichiometry matrix and calculate rate for rate matrix.")
-        Writer.Comment__("uses Exe, Bch, Pol to perform matrix update and operations.")
+        Writer.Comment__("uses Exe to perform matrix update and operations.")
 
         Writer.BlankLine()
 
@@ -186,7 +186,7 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         # Instantiate simulation object.
         Writer.Comment__("Instantiate simulation object.")
-        Writer.Statement("Sim = FSimulation(Bch, Cel, Cst, Env, Exe, Pol, Dict_CellProcesses)")
+        Writer.Statement("Sim = FSimulation(Cel, Cst, Env, Exe, Dict_CellProcesses)")
         Writer.Comment__("handles simulation structure and order, controls time")
 
         Writer.BlankLine()
@@ -333,7 +333,7 @@ def Compile(CodeFileNames,
     ProGen = ProcGen.FProcessGenerator()
     ProGen.LinkCompilerObj(CompilerData)
     ProGen.SetUpProcesses()
-    ProGen.SaveProcesses()
+    # ProGen.SaveProcesses()
 
     # TODO: use factory
     if TargetCodeModel == Target.TensorFlow:

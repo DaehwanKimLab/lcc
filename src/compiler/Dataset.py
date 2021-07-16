@@ -27,8 +27,6 @@ class FDataset():
         assert VariableName[-3] == '[' and VariableName[-1] == ']', 'Variable has no localization info to remove'
         return VariableName[:-3]
 
-
-
     def AddToMaster(self, MasterDataset, IDs, MolType, Counts, MWs, Localizations='None'):
         # self.AddToMaster(self.ID_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
@@ -451,6 +449,8 @@ class FRNA(FDataset):
         self.Count_RNAsCleaved = 0
         self.MW_RNAsCleaved = 0
 
+        self.ID2ID_Gene2RNA = dict()
+
         super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
@@ -462,7 +462,8 @@ class FRNA(FDataset):
             ID = self.RemoveLocalizationFromMolName(ID)
             self.ID2Count_RNAs_Temp[ID] = int(Count)
 
-        RNAs = Dataset['rnas.tsv']
+        RNAs = Dataset['rnas_Sorted_DL.tsv']  # sorted by GeneID
+        # RNAs = Dataset['rnas.tsv']
         self.NUniq_RNAs = len(RNAs)
         self.HalfLife_RNAs = np.zeros(self.NUniq_RNAs)
         self.Len_RNAs = np.zeros(self.NUniq_RNAs)
@@ -485,6 +486,7 @@ class FRNA(FDataset):
             self.Count_NTsInRNAs.append(NTCount)
             self.Count_RNAs[i] = self.ID2Count_RNAs_Temp[self.Name2ID_RNAs[Name]]
             self.Idx_AllRNAs.append(i)
+            self.ID2ID_Gene2RNA[GeneID] = RNAID
 
             if Type == 'mRNA':
                 self.NUniq_mRNAs += 1
@@ -509,7 +511,7 @@ class FRNA(FDataset):
                 print("WARNING: RNA seq may contain non-ACGU text.", file=sys.stderr)
             NTFreq = NTCounts / NTTotalCount
             self.Count_NTsInRNAs[i] = NTCounts
-            self.Freq_NTsInRNAs = NTFreq
+            self.Freq_NTsInRNAs.append(NTFreq)
 
         self.ID_RNAsNascent = self.AppendStr(self.ID_RNAs, '_Nas')
         self.Count_RNAsNascent = np.zeros(self.NUniq_RNAs)
@@ -523,6 +525,9 @@ class FRNA(FDataset):
         self.AddToMaster(MasterDataset, self.ID_RNAs, self.MolType_RNAs, self.Count_RNAs, self.MW_RNAs)
         self.AddToMaster(MasterDataset, self.ID_RNAsNascent, self.MolType_RNAsNascent, self.Count_RNAsNascent, self.MW_RNAsNascent)
         self.AddToMaster(MasterDataset, self.ID_RNAsCleaved, self.MolType_RNAsCleaved, self.Count_RNAsCleaved, self.MW_RNAsCleaved)
+
+        # Add a single variable to the Master Dataset
+        MasterDataset.ID2ID_Gene2RNA_Master = self.ID2ID_Gene2RNA
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -563,6 +568,8 @@ class FProtein(FDataset):
         self.Count_ProteinsCleaved = 0
         self.MW_ProteinsCleaved = 0
 
+        self.ID2ID_mRNA2Protein = dict()
+
         super().__init__()
 
         return
@@ -577,7 +584,8 @@ class FProtein(FDataset):
             ID = self.RemoveLocalizationFromMolName(ID)
             self.ID2Count_Proteins_Temp[ID] = int(Count)
 
-        Proteins = Dataset['proteins.tsv']
+        Proteins = Dataset['proteins_Sorted_DL.tsv']  # Sorted by GeneID
+        # Proteins = Dataset['proteins.tsv']
         self.NUniq_Proteins = len(Proteins)
         self.Len_Proteins = np.zeros(self.NUniq_Proteins)
         self.MW_Proteins = np.zeros(self.NUniq_Proteins)
@@ -598,6 +606,7 @@ class FProtein(FDataset):
             self.Count_AAsInProteins.append(AACount)
             self.Count_Proteins[i] = self.ID2Count_Proteins_Temp[ProtMonomerID]
             self.ID2ID_Protein2RNA[ProtMonomerID] = RNAID
+            self.ID2ID_mRNA2Protein[RNAID] = ProtMonomerID
             # ProteinAAFreq
             AATotalCount = len(Seq)
             if AATotalCount != self.Len_Proteins[i]:
@@ -618,6 +627,9 @@ class FProtein(FDataset):
         self.AddToMaster(MasterDataset, self.ID_Proteins, self.MolType_Proteins, self.Count_Proteins, self.MW_Proteins)
         self.AddToMaster(MasterDataset, self.ID_ProteinsNascent, self.MolType_Proteins_Nascent, self.Count_ProteinsNascent, self.MW_ProteinsNascent)
         self.AddToMaster(MasterDataset, self.ID_ProteinsCleaved, self.MolType_Proteins_Cleaved, self.Count_ProteinsCleaved, self.MW_ProteinsCleaved)
+
+        # Add a single variable to the Master Dataset
+        MasterDataset.ID2ID_mRNA2Protein_Master = self.ID2ID_mRNA2Protein
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -700,6 +712,7 @@ class FComplex(FDataset):
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
+
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -985,8 +998,106 @@ class FMaster():
         self.Count_Master = list()
         self.MW_Master = list()
         self.NUniq_Master = 0
+        self.ID2ID_Gene2RNA_Master = dict()
+        self.ID2ID_mRNA2Protein_Master = dict()
+
+        self.Idx2Idx_Gene2RNA_Master = dict()
+        self.Idx2Idx_mRNA2ProteinMonomer_Master = dict()
+        
+        # MasterIndices
+        self.Idx_Master_Chromosomes = list()
+        self.Idx_Master_Genes = list()
+        self.Idx_Master_Promoters = list()
+        self.Idx_Master_RNAs = list()
+        self.Idx_Master_mRNAs = list()
+        self.Idx_Master_rRNAs = list()
+        self.Idx_Master_tRNAs = list()
+        self.Idx_Master_miscRNAs = list()
+        self.Idx_Master_RNAsNascent = list()
+        self.Idx_Master_RNAsCleaved = list()
+        self.Idx_Master_Proteins = list()
+        self.Idx_Master_ProteinsNascent = list()
+        self.Idx_Master_ProteinsCleaved = list()
+        self.Idx_Master_Complexes = list()
+        self.Idx_Master_Metabolites = list()
+
+    def SetUpData(self, Comp):
+        # Master Indices
+        self.Idx_Master_Chromosomes = self.GetMolIdx(Comp.Chromosome.ID_Chromosomes, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_Chromosomes) == Comp.Chromosome.N_AllChromosomes
+
+        self.Idx_Master_Genes = self.GetMolIdx(Comp.Gene.ID_Genes, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_Genes) == Comp.Gene.NUniq_Genes
+
+        # self.Idx_Master_Promoters = self.GetMolIdx(Comp.Promoter.ID_Promoters, Comp.Master.ID2Idx_Master)
+
+        self.Idx_Master_RNAs = self.GetMolIdx(Comp.RNA.ID_RNAs, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_RNAs) == Comp.RNA.NUniq_RNAs
+
+        self.Idx_Master_RNAsNascent = self.GetMolIdx(Comp.RNA.ID_RNAsNascent, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_RNAsNascent) == Comp.RNA.NUniq_RNAs
+
+        self.Idx_Master_RNAsCleaved = self.GetMolIdx(Comp.RNA.ID_RNAsCleaved, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_RNAsCleaved) == Comp.RNA.NUniq_RNAs
+
+        self.Idx_Master_Proteins = self.GetMolIdx(Comp.Protein.ID_Proteins, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_Proteins) == Comp.Protein.NUniq_Proteins
+
+        self.Idx_Master_ProteinsNascent = self.GetMolIdx(Comp.Protein.ID_ProteinsNascent, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_ProteinsNascent) == Comp.Protein.NUniq_Proteins
+
+        self.Idx_Master_ProteinsCleaved = self.GetMolIdx(Comp.Protein.ID_ProteinsCleaved, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_ProteinsCleaved) == Comp.Protein.NUniq_Proteins
+
+        self.Idx_Master_Complexes = self.GetMolIdx(Comp.Complex.ID_Complexes, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_Complexes) == Comp.Complex.NUniq_Complexes
+
+        self.Idx_Master_Metabolites = self.GetMolIdx(Comp.Metabolite.ID_Metabolites, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_Metabolites) == Comp.Metabolite.NUniq_Metabolites
+
+        for i, Idx_Master in enumerate(self.Idx_Master_RNAs):
+            if i in Comp.RNA.Idx_mRNA:
+                self.Idx_Master_mRNAs.append(Idx_Master)
+            elif i in Comp.RNA.Idx_rRNA:
+                self.Idx_Master_rRNAs.append(Idx_Master)
+            elif i in Comp.RNA.Idx_tRNA:
+                self.Idx_Master_tRNAs.append(Idx_Master)
+            elif i in Comp.RNA.Idx_miscRNA:
+                self.Idx_Master_miscRNAs.append(Idx_Master)
+            else:
+                print("Unmapped RNA type found in 'self.Idx_Master_RNA'")
+
+        assert len(self.Idx_Master_mRNAs) == Comp.RNA.NUniq_mRNAs
+        assert len(self.Idx_Master_rRNAs) == Comp.RNA.NUniq_rRNAs
+        assert len(self.Idx_Master_tRNAs) == Comp.RNA.NUniq_tRNAs
+        assert len(self.Idx_Master_miscRNAs) == Comp.RNA.NUniq_miscRNAs
+
+        # Index to Index mapping dictionaries
+        for i, ID in enumerate(self.ID_Master):
+            if self.ID2Type_Master[ID] == 'Gene':
+                GeneID = ID
+                RNAID = self.ID2ID_Gene2RNA_Master[GeneID]
+                GeneIdx = self.ID2Idx_Master[GeneID]
+                RNAIdx = self.ID2Idx_Master[RNAID]
+                self.Idx2Idx_Gene2RNA_Master['%s' % str(GeneIdx)] = RNAIdx
+            elif self.ID2Type_Master[ID] == 'RNA':
+                RNAID = ID
+                if RNAID not in self.ID2ID_mRNA2Protein_Master.keys():
+                    continue
+                else:
+                    ProteinID = self.ID2ID_mRNA2Protein_Master[RNAID]
+                    RNAIdx = self.ID2Idx_Master[RNAID]
+                    ProteinIdx = self.ID2Idx_Master[ProteinID]
+                    self.Idx2Idx_mRNA2ProteinMonomer_Master['%s' % str(RNAIdx)] = ProteinIdx
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
             SaveFileName = "%s/%s" % (SavePath, Key)
             np.save('%s.npy' % SaveFileName, Value)
+
+    def GetMolIdx(self, Molecules, MolIdxRef):
+        MolIdxList = list()
+        for Molecule in Molecules:
+            MolIdx = MolIdxRef[Molecule]
+            MolIdxList.append(MolIdx)
+        return MolIdxList

@@ -59,6 +59,6 @@ def Write_PolymerizationRateFunction(Writer, CompilerData):
 
         with Writer.Statement("def DetermineRate(self):"):
             Writer.Statement("self.Rate = tf.random.normal(shape=[1], mean=self.Mean, stddev=self.SD)")
-            Writer.OperRound("self.Rate", "self.Rate")
+            Writer.Round____("self.Rate", "self.Rate")
             Writer.ReturnVar("self.Rate")
             Writer.BlankLine()

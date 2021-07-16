@@ -49,6 +49,6 @@ def Write_RGM_MetaboliteReplenish(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def AddCountMatrices(self):"):
-            Writer.OperMXAdd("FinalCount", "self.Count", "self.DeltaCount")
+            Writer.OperElAdd("FinalCount", "self.Count", "self.DeltaCount")
             Writer.ReturnVar("FinalCount")
             Writer.BlankLine()

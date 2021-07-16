@@ -1,39 +1,42 @@
-# dna replication: DNA Polymerase III holozyme,  DNA Polymerase II (back-up)
-'''
-https://en.wikipedia.org/wiki/DNA_polymerase_III_holoenzyme
-The replisome is composed of the following:
+# Metabolism
 
-2 DNA Pol III enzymes, each comprising α, ε and θ subunits. (It has been proven that there is a third copy of Pol III at the replisome.[1])
-the α subunit (encoded by the dnaE gene) has the polymerase activity.
-the ε subunit (dnaQ) has 3'→5' exonuclease activity.
-the θ subunit (holE) stimulates the ε subunit's proofreading.
-2 β units (dnaN) which act as sliding DNA clamps, they keep the polymerase bound to the DNA.
-2 τ units (dnaX) which act to dimerize two of the core enzymes (α, ε, and θ subunits).
-1 γ unit (also dnaX) which acts as a clamp loader for the lagging strand Okazaki fragments, helping the two β subunits to form a unit and bind to DNA. The γ unit is made up of 5 γ subunits which include 3 γ subunits, 1 δ subunit (holA), and 1 δ' subunit (holB). The δ is involved in copying of the lagging strand.
-Χ (holC) and Ψ (holD) which form a 1:1 complex and bind to γ or τ. X can also mediate the switch from RNA primer to DNA.[2]
+def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
+    # ProGen.GenerateCellProcess(Writer, ProcessID)
 
-1000 nucleotides per second
-'''
+    with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
+        ProGen.Init_Common(Writer)
 
-'''
-When Chr bp + 1,
-+ 2 PPi
-- 1 (use ACGT (frequency table for stoichiometry))
+        with Writer.Statement("def Init_ProcessSpecificVariables()"):
+            Writer.Variable_("self.MetaboliteIdxs", 0)
+            Writer.Variable_("self.MetaboliteCountsInitial", 0)
+            Writer.Statement("self.GetMetaboliteIdxsAndCounts()")
+            Writer.BlankLine()
 
-rate: + 1000 bp / 1 second
-'''
+        with Writer.Statement("def GetMetaboliteIdxsAndCounts(self):"):
+            MetaboliteIdxs = list()
+            MetaboliteCountsInitial = list()
+            for MolIdx in range(Comp.Master.NUniq_Master):
+                if Comp.Master.Type_Master[MolIdx] == 'Metabolite':
+                    MetaboliteCountsInitial.append(Comp.Master.Count_Master[MolIdx])
+                    MetaboliteIdxs.append(MolIdx)
 
+            Writer.Variable_("self.MetaboliteIdxs", MetaboliteIdxs)
+            Writer.Reshape__("self.MetaboliteIdxs", "self.MetaboliteIdxs", [1, -1])
+            Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.MetaboliteIdxs)")
 
-def SetUpReactions(ProGen):
-    Reactions = list()
+            Writer.Variable_("self.MetaboliteCountsInitial", MetaboliteCountsInitial)
+            Writer.Reshape__("self.MetaboliteCountsInitial", "self.MetaboliteCountsInitial", [-1])
+            Writer.Statement("self.Exe.LoadMetaboliteCountsInitial(self.MetaboliteCountsInitial)")
+            Writer.BlankLine()
 
-    Reaction = None
+# def SetUpReactions(ProGen):
+#     Reactions = list()
+#
+#     Reaction = None
+#
+#     Reaction_SetUp = Reaction
+#     Reactions.append(Reaction_SetUp)
+#
+#     return Reactions
+#
 
-    Reaction_SetUp = Reaction
-    Reactions.append(Reaction_SetUp)
-
-    return Reactions
-
-
-def Write_CellProcess(Writer, ProGen, ProcessID, Reactions):
-    ProGen.GenerateCellProcess(Writer, ProcessID, Reactions)

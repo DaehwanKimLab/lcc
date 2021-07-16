@@ -22,14 +22,14 @@ from lccclass.cellprocess.metabolism import Metabolism
 class FProcessGenerator():
     def __init__(self):
         self.Dict_CellProcesses = dict()
-        self.Dict_ProcessReactions = dict()
-        self.Dict_ReactionTypeReference = dict()
+        # self.Dict_ProcessReactions = dict()
+        # self.Dict_ReactionTypeReference = dict()
 
-        self.Reactions_Replication = list()
-        self.Reactions_Transcription = list()
-        self.Reactions_Translation = list()
+        # self.Reactions_Replication = list()
+        # self.Reactions_Transcription = list()
+        # self.Reactions_Translation = list()
 
-        self.SetUpReactionTypeReference()
+        # self.SetUpReactionTypeReference()
 
     def LinkCompilerObj(self, Comp):
         self.Comp = Comp
@@ -39,14 +39,17 @@ class FProcessGenerator():
         self.Switch4SaveAllData = self.Comp.Switch4SaveAllData
         self.SavePath = self.Comp.SavePath
 
-    def PrintCompletion(self, Process):
-        print("Reactions are successfully set up. Process: %s" % Process)
+    def PrintProcessID(self, ProcessID):
+        print("Cell process module to run: %s" % ProcessID)
 
-    def SetUpReactionTypeReference(self):
-        self.Dict_ReactionTypeReference = {
-            'Biochemical Reaction': 'Bch',
-            'Polymerization': 'Pol'
-        }
+    # def PrintCompletion(self, ProcessID):
+    #     print("Reactions are successfully set up. Process: %s" % ProcessID)
+
+    # def SetUpReactionTypeReference(self):
+    #     self.Dict_ReactionTypeReference = {
+    #         'Biochemical Reaction': 'Bch',
+    #         'Polymerization': 'Pol'
+    #     }
 
     # def PrepareReactionForMatrix(self, Reaction):
     #     # Put all reaction info in the lists
@@ -57,13 +60,15 @@ class FProcessGenerator():
 
     def SetUpProcesses(self):
 
-        Processes = [Replication, Metabolism]
+        Processes = [Transcription]
 
         for Process in Processes:
             ProcessStr = Process.__name__.split('.')[-1]
             self.Dict_CellProcesses[ProcessStr] = Process
-            self.Dict_ProcessReactions[ProcessStr] = Process.SetUpReactions(self)
-            self.PrintCompletion(ProcessStr)
+            self.PrintProcessID(ProcessStr)
+
+            # self.Dict_ProcessReactions[ProcessStr] = Process.SetUpReactions(self)
+            # self.PrintCompletion(ProcessStr)
         #
         # self.Dict_CellProcesses['Replication'] = Replication
         # self.Reactions_Replication = Replication.SetUpReactions(self)
@@ -83,6 +88,27 @@ class FProcessGenerator():
                 SaveFileName = "%s/%s" % (self.SavePath, ProcessName)
                 np.save('%s.npy' % SaveFileName, Reactions)
                 print('Process data have been successfully saved. Process: "%s"' % ProcessName)
+
+    def BuildingBlockIDs(self, BuildingBlocks):
+        if BuildingBlocks == 'dNTP':
+            BuildingBlocksExpanded = self.Comp.BuildingBlock.Name_dNTPs
+            return BuildingBlocksExpanded
+        elif BuildingBlocks == 'NTP':
+            BuildingBlocksExpanded = self.Comp.BuildingBlock.Name_NTPs
+            return BuildingBlocksExpanded
+        elif BuildingBlocks == 'AA':
+            BuildingBlocksExpanded = self.Comp.BuildingBlock.Name_AAs
+            return BuildingBlocksExpanded
+        else:
+            print("BuildingBlocks do not exist: %s" % BuildingBlocks)
+
+    def BuildingBlockIdxs(self, BuildingBlocks):
+        BuildingBlocksExpanded = self.BuildingBlockIDs(BuildingBlocks)
+        BuildingBlocksIdxs = self.GetMolIdx(BuildingBlocksExpanded, self.Comp.Master.ID2Idx_Master)
+        return BuildingBlocksIdxs
+
+
+
 
     def SetUpType(self, Type):
         Type_Parsed = self.Dict_ReactionTypeReference[Type]
@@ -117,7 +143,7 @@ class FProcessGenerator():
         Reaction_SetUp['Type'] = self.SetUpType(Reaction['Type'])
         Reaction_SetUp['Stoichiometry'] = self.SetUpStoichiometry(Reaction['Stoichiometry'])
         Reaction_SetUp['Rate'] = self.SetUpRate(Reaction['Rate'])
-        Reaction_SetUp['Trigger'] = self.SetUpTrigger(Reaction['Trigger'])
+        # Reaction_SetUp['Trigger'] = self.SetUpTrigger(Reaction['Trigger'])
         return Reaction_SetUp
 
     # def SetUpReactions(self, Reactions):
@@ -205,187 +231,187 @@ class FProcessGenerator():
         NewListOfNumbers = [-Number for Number in ListOfNumbers]
         return NewListOfNumbers
 
-    def GenerateCellProcessInterface(self, Writer):
-        with Writer.Statement("class FCellProcess():"):
-            with Writer.Statement("def __init__(self, Bch, Cel, Cst, Env, Exe, Pol):"):
-                Writer.LinkClObj('Cel')
-                Writer.LinkClObj('Cst')
-                Writer.LinkClObj('Env')
+    # Generate Cell Process Methods
+    def Init_Common(self, Writer):
+        with Writer.Statement("def __init__(self, Cel, Cst, Env, Exe):"):
+            Writer.Statement("super().__init__(Cel, Cst, Env, Exe)")
+            Writer.Statement("self.Init_ProcessSpecificVariables()")
+            Writer.BlankLine()
 
-                Writer.LinkClObj('Bch')
-                Writer.LinkClObj('Pol')
-                Writer.LinkClObj('Exe')
-                Writer.BlankLine()
+    # def GenerateCellProcessInterface(self, Writer):
+    #     with Writer.Statement("class FCellProcess():"):
+    #         with Writer.Statement("def __init__(self, Bch, Cel, Cst, Env, Exe, Pol):"):
+    #             Writer.LinkClObj('Cel')
+    #             Writer.LinkClObj('Cst')
+    #             Writer.LinkClObj('Env')
+    #
+    #             Writer.LinkClObj('Bch')
+    #             Writer.LinkClObj('Pol')
+    #             Writer.LinkClObj('Exe')
+    #             Writer.BlankLine()
+    #
+    #             Writer.Statement("super().__init__()")
+    #             Writer.BlankLine()
+    #
+    #         Writer.AbsMethod()
+    #         with Writer.Statement("def AddToStoichiometryMatrix(self):"):
+    #             Writer.Pass_____()
+    #             Writer.BlankLine()
+    #
+    #         Writer.AbsMethod()
+    #         with Writer.Statement("def CalculateRate(self):"):
+    #             Writer.Pass_____()
+    #             Writer.BlankLine()
+    #
+    #         Writer.AbsMethod()
+    #         with Writer.Statement("def AddToRateMatrix(self):"):
+    #             Writer.Pass_____()
+    #             Writer.BlankLine()
+    #
+    #         Writer.AbsMethod()
+    #         with Writer.Statement("def PrintMolCounts(self):"):
+    #             Writer.Pass_____()
+    #             Writer.BlankLine()
+    #
+    #         Writer.TF_Graph_()
+    #         with Writer.Statement("def SetUpStoichiometryMatrix(self):"):
+    #             Writer.Statement("self.AddToStoichiometryMatrix()")
+    #             Writer.BlankLine()
+    #
+    #         Writer.TF_Graph_()
+    #         with Writer.Statement("def UpdateRates(self):"):
+    #             Writer.Statement("self.CalculateRate()")
+    #             Writer.Statement("self.AddToRateMatrix()")
+    #             Writer.BlankLine()
 
-                Writer.Statement("super().__init__()")
-                Writer.BlankLine()
-
-            Writer.AbsMethod()
-            with Writer.Statement("def AddToStoichiometryMatrix(self):"):
-                Writer.Pass_____()
-                Writer.BlankLine()
-
-            Writer.AbsMethod()
-            with Writer.Statement("def CalculateRate(self):"):
-                Writer.Pass_____()
-                Writer.BlankLine()
-
-            Writer.AbsMethod()
-            with Writer.Statement("def AddToRateMatrix(self):"):
-                Writer.Pass_____()
-                Writer.BlankLine()
-
-            Writer.AbsMethod()
-            with Writer.Statement("def PrintMolCounts(self):"):
-                Writer.Pass_____()
-                Writer.BlankLine()
-
-            Writer.TF_Graph_()
-            with Writer.Statement("def SetUpStoichiometryMatrix(self):"):
-                Writer.Statement("self.AddToStoichiometryMatrix()")
-                Writer.BlankLine()
-
-            Writer.TF_Graph_()
-            with Writer.Statement("def UpdateRates(self):"):
-                Writer.Statement("self.CalculateRate()")
-                Writer.Statement("self.AddToRateMatrix()")
-                Writer.BlankLine()
-
-    def GenerateCellProcess(self, Writer, ProcessID, Reactions):
-        with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
-            with Writer.Statement("def __init__(self, Bch, Cel, Cst, Env, Exe, Pol):"):
-                Writer.Statement("super().__init__(Bch, Cel, Cst, Env, Exe, Pol)")
-                Writer.BlankLine()
-
-                # Process-specific attributes
-                if ProcessID == 'Metabolism':
-                    Writer.Variable_("self.MetaboliteIdxs", 0)
-                    Writer.Variable_("self.MetaboliteCountsInitial", 0)
-                    Writer.Statement("self.GetMetaboliteIdxsAndCounts()")
-                    Writer.BlankLine()
-
-                Writer.BlankLine()
-
-            with Writer.Statement("def AddToStoichiometryMatrix(self):"):
-                for Reaction in Reactions:
-
-                    if Reaction is None:
-                        Writer.Pass_____()
-                        Writer.BlankLine()
-                        continue
-
-                    MolIDs, MolIdxs, Coeffs = Reaction['Stoichiometry']
-
-                    # Convert index and stoichiometry to tensor for simulation
-                    Writer.Comment__("MolIDs = %s" % MolIDs)
-                    Writer.Variable_("MolIdxs", MolIdxs)
-                    Writer.Variable_("Coeffs", Coeffs)
-                    Writer.BlankLine()
-
-                    # Initialize RXN stoichiometry array for all molecules
-                    Writer.InitZeros("StoichiometryArray", self.Comp.Master.NUniq_Master)
-
-                    # Update RXN stoichiometry array with Idx and Stoich participating in the RXN
-                    Writer.OperScUpd("StoichiometryArray", "MolIdxs", "Coeffs")
-                    Writer.Reshape__("StoichiometryArray", "StoichiometryArray", [1, -1])
-
-                    # Add StoichiometryArray to the Cel.MX_Stoichiometries matrix
-                    Writer.Statement("self.Cel.AddToStoichiometryMatrix(StoichiometryArray)")
-                    Writer.BlankLine()
-
-            with Writer.Statement("def CalculateRate(self):"):
-                Writer.Pass_____()
-                Writer.BlankLine()
-
-            with Writer.Statement("def AddToRateMatrix(self):"):
-                for Reaction in Reactions:
-
-                    if Reaction is None:
-                        Writer.Pass_____()
-                        Writer.BlankLine()
-                        continue
-
-                    # Initialize Rate value to 0
-                    Writer.Variable_("Rate", 0)
-
-                    # Reaction type dependent rate calculation
-                    Type = Reaction['Type']
-
-                    if Type == 'Pol':
-                        MolIDs, MolIdxs, Thresholds, Conditions = Reaction['Trigger']
-                        for MolID, MolIdx, Threshold, Condition in zip(MolIDs, MolIdxs, Thresholds, Conditions):
-                            # Generate an evaluation phrase
-                            Trigger = "self.Cel.MX_Counts[%s] " % MolIdx + Condition + ' ' + Threshold
-                            with Writer.Statement("if " + Trigger + ":  # Evaluate Molecule ID: \"%s\"" % MolID):
-
-                                # Update rate only if this is the first time to determine rate for the current reaction
-                                with Writer.Statement("if Rate == 0:"):
-
-                                    Rate_Mean, Rate_SD, Rate_UnitTime = Reaction['Rate']
-                                    Writer.Variable_("Rate_Mean", Rate_Mean)
-                                    Writer.Variable_("Rate_SD", Rate_SD)
-
-                                    Writer.Statement("self.Pol.LoadRateMean(Rate_Mean)")
-                                    Writer.Statement("self.Pol.LoadRateSD(Rate_SD)")
-
-                                    Writer.Statement("Rate = self.Pol.DetermineRate()")
-
-                            with Writer.Statement("else:"):
-                                Writer.Variable_("Rate", 0)
-                            Writer.BlankLine()
-
-                    elif Type == 'Bch':
-                        # To be implemented
-                        pass
-
-                    Writer.Cast_____("Rate", "Rate", 'float32')
-                    Writer.Reshape__("Rate", "Rate", [1, 1])
-                    Writer.BlankLine()
-
-                    # Add RXN to the rate matrix
-                    Writer.Statement("self.Cel.AddToRateMatrix(Rate)")
-                    Writer.BlankLine()
-
-            with Writer.Statement("def DisplayCounts(self):"):
-                Dict_MolIdx_ID_Pairs = dict()
-                for Reaction in Reactions:
-
-                    if Reaction is None:
-                        Writer.PrintStrg("No reactions found in %s" % ProcessID)
-                        Writer.BlankLine()
-                        continue
-
-                    MolIDs, MolIdxs, Coeffs = Reaction['Stoichiometry']
-                    for MolID, MolIdx in zip(MolIDs, MolIdxs):
-                        if MolIdx not in Dict_MolIdx_ID_Pairs.keys():
-                            Dict_MolIdx_ID_Pairs[MolIdx] = MolID
-
-                for MolIdx, MolID in sorted(Dict_MolIdx_ID_Pairs.items()):
-
-                    if Reaction is None:
-                        Writer.Pass_____()
-                        Writer.BlankLine()
-                        continue
-
-                    Writer.Statement("print('%s Count:\t', self.Cel.MX_Counts[%s])" % (MolID, MolIdx))
-                Writer.BlankLine()
+    # def GenerateCellProcess(self, Writer, ProcessID):
+    #     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
+    #         with Writer.Statement("def __init__(self, Bch, Cel, Cst, Env, Exe, Pol):"):
+    #             Writer.Statement("super().__init__(Bch, Cel, Cst, Env, Exe, Pol)")
+    #             Writer.Statement("self.Init_ProcessSpecificVariables()")
+    #             Writer.BlankLine()
 
 
-            # Class-specific methods
-            if ProcessID == 'Metabolism':
-                with Writer.Statement("def GetMetaboliteIdxsAndCounts(self):"):
-                    MetaboliteIdxs = list()
-                    MetaboliteCountsInitial = list()
-                    for MolIdx in range(self.Comp.Master.NUniq_Master):
-                        if self.Comp.Master.Type_Master[MolIdx] == 'Metabolite':
-                            MetaboliteCountsInitial.append(self.Comp.Master.Count_Master[MolIdx])
-                            MetaboliteIdxs.append(MolIdx)
-
-                    Writer.Variable_("self.MetaboliteIdxs", MetaboliteIdxs)
-                    Writer.Reshape__("self.MetaboliteIdxs", "self.MetaboliteIdxs", [1, -1])
-                    Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.MetaboliteIdxs)")
-
-                    Writer.Variable_("self.MetaboliteCountsInitial", MetaboliteCountsInitial)
-                    Writer.Reshape__("self.MetaboliteCountsInitial", "self.MetaboliteCountsInitial", [-1])
-                    Writer.Statement("self.Exe.LoadMetaboliteCountsInitial(self.MetaboliteCountsInitial)")
-                    Writer.BlankLine()
+            # with Writer.Statement("def AddToStoichiometryMatrix(self):"):
+            #     for Reaction in Reactions:
+            #
+            #         if Reaction is None:
+            #             Writer.Pass_____()
+            #             Writer.BlankLine()
+            #             continue
+            #
+            #         MolIDs, MolIdxs, Coeffs = Reaction['Stoichiometry']
+            #
+            #         # Convert index and stoichiometry to tensor for simulation
+            #         Writer.Comment__("MolIDs = %s" % MolIDs)
+            #         Writer.Variable_("MolIdxs", MolIdxs)
+            #         Writer.Variable_("Coeffs", Coeffs)
+            #         Writer.BlankLine()
+            #
+            #         # Initialize RXN stoichiometry array for all molecules
+            #         Writer.InitZeros("StoichiometryArray", self.Comp.Master.NUniq_Master)
+            #
+            #         # Update RXN stoichiometry array with Idx and Stoich participating in the RXN
+            #         Writer.OperScUpd("StoichiometryArray", "MolIdxs", "Coeffs")
+            #         Writer.Reshape__("StoichiometryArray", "StoichiometryArray", [1, -1])
+            #
+            #         # Add StoichiometryArray to the Cel.MX_Stoichiometries matrix
+            #         Writer.Statement("self.Cel.AddToStoichiometryMatrix(StoichiometryArray)")
+            #         Writer.BlankLine()
+            #
+            # with Writer.Statement("def CalculateRate(self):"):
+            #     Writer.Pass_____()
+            #     Writer.BlankLine()
+            #
+            # with Writer.Statement("def AddToRateMatrix(self):"):
+            #     for Reaction in Reactions:
+            #
+            #         if Reaction is None:
+            #             Writer.Pass_____()
+            #             Writer.BlankLine()
+            #             continue
+            #
+            #         # Initialize Rate value to 0
+            #         Writer.Variable_("Rate", 0)
+            #
+            #         # Reaction type dependent rate calculation
+            #         Type = Reaction['Type']
+            #
+            #         if Type == 'Pol':
+            #             MolIDs, MolIdxs, Thresholds, Conditions = Reaction['Trigger']
+            #             for MolID, MolIdx, Threshold, Condition in zip(MolIDs, MolIdxs, Thresholds, Conditions):
+            #                 # Generate an evaluation phrase
+            #                 Trigger = "self.Cel.Counts[%s] " % MolIdx + Condition + ' ' + Threshold
+            #                 with Writer.Statement("if " + Trigger + ":  # Evaluate Molecule ID: \"%s\"" % MolID):
+            #
+            #                     # Update rate only if this is the first time to determine rate for the current reaction
+            #                     with Writer.Statement("if Rate == 0:"):
+            #
+            #                         Rate_Mean, Rate_SD, Rate_UnitTime = Reaction['Rate']
+            #                         Writer.Variable_("Rate_Mean", Rate_Mean)
+            #                         Writer.Variable_("Rate_SD", Rate_SD)
+            #
+            #                         Writer.Statement("self.Pol.LoadRateMean(Rate_Mean)")
+            #                         Writer.Statement("self.Pol.LoadRateSD(Rate_SD)")
+            #
+            #                         Writer.Statement("Rate = self.Pol.DetermineRate()")
+            #
+            #                 with Writer.Statement("else:"):
+            #                     Writer.Variable_("Rate", 0)
+            #                 Writer.BlankLine()
+            #
+            #         elif Type == 'Bch':
+            #             # To be implemented
+            #             pass
+            #
+            #         Writer.Cast_____("Rate", "Rate", 'float32')
+            #         Writer.Reshape__("Rate", "Rate", [1, 1])
+            #         Writer.BlankLine()
+            #
+            #         # Add RXN to the rate matrix
+            #         Writer.Statement("self.Cel.AddToRateMatrix(Rate)")
+            #         Writer.BlankLine()
+            #
+            # with Writer.Statement("def DisplayCounts(self):"):
+            #     Dict_MolIdx_ID_Pairs = dict()
+            #     for Reaction in Reactions:
+            #
+            #         if Reaction is None:
+            #             Writer.PrintStrg("No reactions found in %s" % ProcessID)
+            #             Writer.BlankLine()
+            #             continue
+            #
+            #         MolIDs, MolIdxs, Coeffs = Reaction['Stoichiometry']
+            #         for MolID, MolIdx in zip(MolIDs, MolIdxs):
+            #             if MolIdx not in Dict_MolIdx_ID_Pairs.keys():
+            #                 Dict_MolIdx_ID_Pairs[MolIdx] = MolID
+            #
+            #     for MolIdx, MolID in sorted(Dict_MolIdx_ID_Pairs.items()):
+            #
+            #         if Reaction is None:
+            #             Writer.Pass_____()
+            #             Writer.BlankLine()
+            #             continue
+            #
+            #         Writer.Statement("print('%s Count:\t', self.Cel.Counts[%s])" % (MolID, MolIdx))
+            #     Writer.BlankLine()
+            #
+            #
+            # # Class-specific methods
+            # if ProcessID == 'Metabolism':
+            #     with Writer.Statement("def GetMetaboliteIdxsAndCounts(self):"):
+            #         MetaboliteIdxs = list()
+            #         MetaboliteCountsInitial = list()
+            #         for MolIdx in range(self.Comp.Master.NUniq_Master):
+            #             if self.Comp.Master.Type_Master[MolIdx] == 'Metabolite':
+            #                 MetaboliteCountsInitial.append(self.Comp.Master.Count_Master[MolIdx])
+            #                 MetaboliteIdxs.append(MolIdx)
+            #
+            #         Writer.Variable_("self.MetaboliteIdxs", MetaboliteIdxs)
+            #         Writer.Reshape__("self.MetaboliteIdxs", "self.MetaboliteIdxs", [1, -1])
+            #         Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.MetaboliteIdxs)")
+            #
+            #         Writer.Variable_("self.MetaboliteCountsInitial", MetaboliteCountsInitial)
+            #         Writer.Reshape__("self.MetaboliteCountsInitial", "self.MetaboliteCountsInitial", [-1])
+            #         Writer.Statement("self.Exe.LoadMetaboliteCountsInitial(self.MetaboliteCountsInitial)")
+            #         Writer.BlankLine()

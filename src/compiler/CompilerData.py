@@ -140,10 +140,12 @@ class FCompilerData:
 
     def SetUpCompilerData(self, Dataset):
         for DataClassName, DataClassDataset in self.Dict_DataClass.items():
-            if DataClassName != 'Master':
+            if DataClassDataset == self.Master:
+                DataClassDataset.SetUpData(self)
+                print('Compiler data have been successfully set up. Class: "%s"' % DataClassName)
+            else:
                 DataClassDataset.SetUpData(Dataset, self.Master)
                 print('Compiler data have been successfully set up. Class: "%s"' % DataClassName)
-
 
     def SaveCompilerData(self):
         # Save all compiler data
