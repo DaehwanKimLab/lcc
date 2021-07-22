@@ -46,6 +46,12 @@ class CodeWriter():
         self.Switch4ProcessSummary = False
         self.Switch4SimStepsExecuted = False
         self.Switch4PostSimulationStepCorrection = False
+        self.Switch4SoftCheckCounts = False
+        self.Switch4HardCheckCounts = False
+        self.Switch4CheckDeltaCountsNeg = False
+        self.Switch4ShowDeltaCounts = False
+        self.s = False
+
 
     def __enter__(self):
         self.IncreaseIndent()
@@ -119,13 +125,17 @@ class CodeWriter():
         Line = 'print("%s")' % Str
         self.Statement(Line)
 
-    def PrintVari(self, VariableName):
-        Line = 'print("%s = ", %s)' % (VariableName, VariableName)
+    def PrintVar_(self, VariableName):
+        Line = 'print(\t%s)' % VariableName
+        self.Statement(Line)
+
+    def PrintVaVa(self, VariableName):
+        Line = 'print("\t%s = ", %s)' % (VariableName, VariableName)
         self.Statement(Line)
 
     def PrintStVa(self, Str, VariableName):
-        Line = 'print("%s: ", %s)' % (Str, VariableName)
-        self.Statement(Line)
+        self.Statement('print("%s: ")' % Str)
+        self.Statement('print("\t%s = ", %s)' % (VariableName, VariableName))
 
     def PrintDict(self, DictVariableName):
         with self.Statement("for Key, Value in %s.items():" % DictVariableName):
@@ -357,6 +367,10 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Elementwise equal to evaluation")
         self.Statement("%s = tf.math.equal(%s, %s)" % (DestVar, MX1, MX2))
 
+    def OperElNEq(self, DestVar, MX1, MX2):
+        self.Comment__("Elementwise not_equal to evaluation")
+        self.Statement("%s = tf.math.not_equal(%s, %s)" % (DestVar, MX1, MX2))
+
     def OperCncat(self, DestVar, SrcVar1, SrcVar2, Axis=0):
         # self.PrepCncat(DestVar, SrcVar1, SrcVar2)
         self.Comment__("Concatenation")
@@ -393,30 +407,34 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Scatter operation")
         self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, Target, Index, Values))
 
-    def OperRdSum(self, VariableName, MX, Axis=None):
+    def OperRdSum(self, DestVar, MX, Axis=None):
         self.Comment__("Reduce sum operation")
-        self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (VariableName, MX, Axis))
+        self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (DestVar, MX, Axis))
 
-    def OperElAdd(self, VariableName, MX1, MX2):
+    def OperElAdd(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise addition")
-        self.Statement("%s = tf.math.add(%s, %s)" % (VariableName, MX1, MX2))
+        self.Statement("%s = tf.math.add(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElSub(self, VariableName, MX1, MX2):
+    def OperElSub(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise subtraction")
-        self.Statement("%s = tf.math.subtract(%s, %s)" % (VariableName, MX1, MX2))
+        self.Statement("%s = tf.math.subtract(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElMul(self, VariableName, MX1, MX2):
+    def OperElMul(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise multiplication")
-        self.Statement("%s = tf.math.multiply(%s, %s)" % (VariableName, MX1, MX2))
+        self.Statement("%s = tf.math.multiply(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElQuo(self, VariableName, MX1, MX2):
+    def OperElQuo(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise division to get the quotient")
-        self.Statement("%s = tf.math.floordiv(%s, %s)" % (VariableName, MX1, MX2))
+        self.Statement("%s = tf.math.floordiv(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElRem(self, VariableName, MX1, MX2):
+    def OperElRem(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise division to get the remainder")
-        self.Statement("%s = tf.math.floormod(%s, %s)" % (VariableName, MX1, MX2))
+        self.Statement("%s = tf.math.floormod(%s, %s)" % (DestVar, MX1, MX2))
 
+    def OperMax__(self, DestVar, MX1, MX2):
+        self.Comment__("Element-wise maximum operation")
+        self.Statement("%s = tf.math.maximum(%s, %s)" % (DestVar, MX1, MX2))
+        
     # def PrepMXMul(self, MX1, MX2):
     #     self.Comment__("Reshape matrices for matrix multiplication")
     #     with self.Statement("if tf.rank(%s) != 2:" % MX1):
@@ -438,9 +456,52 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Change data type")
         self.Statement("%s = tf.cast(%s, dtype=tf.%s)" % (VariableName, MX, Type))
 
+    def BoolToBin(self, BinMX, BoolMX):
+        self.Cast_____(BinMX, BoolMX)
+
+    def GetIdx___(self, DestVar, MX):
+        self.Statement("%s = tf.where(%s)" % (DestVar, MX))
+
+    def GetIdxGr_(self, DestVar, MX, Cond):
+        self.Statement("%s = tf.where(%s > %s)" % (DestVar, MX, Cond))
+
+    def PrtIdxGr_(self, MX, Cond):
+        self.Statement('print("Idx_%s: ", tf.where(%s > %s))' % (str(MX), MX, Cond))
+
     def RoundInt_(self, VariableName, MX, Type='int32'):
         self.Comment__("Round and change data type to integer")
         self.Statement("%s = tf.cast(tf.math.round(%s), dtype=tf.%s)" % (VariableName, MX, Type))
+
+    def AsrtElGrE(self, MX1, MX2):
+        self.Statement("tf.debugging.assert_greater_equal(%s, %s)" % (MX1, MX2))
+
+    def AsrtElGr_(self, MX1, MX2):
+        self.Statement("tf.debugging.assert_greater(%s, %s)" % (MX1, MX2))
+
+    def AsrtElLeE(self, MX1, MX2):
+        self.Statement("tf.debugging.assert_less_equal(%s, %s)" % (MX1, MX2))
+
+    def AsrtElLe_(self, MX1, MX2):
+        self.Statement("tf.debugging.assert_less(%s, %s)" % (MX1, MX2))
+
+    def AsrtElEq_(self, MX1, MX2):
+        self.Statement("tf.debugging.assert_equal(%s, %s)" % (MX1, MX2))
+
+    def AsrtNeg__(self, MX):
+        self.Statement("tf.debugging.assert_negative(%s)" % MX)
+
+    def AsrtNoNeg(self, MX):
+        self.Statement("tf.debugging.assert_non_negative(%s)" % MX)
+
+    def AsrtPos__(self, MX):
+        self.Statement("tf.debugging.assert_positive(%s)" % MX)
+
+    def AsrtNoPos(self, MX):
+        self.Statement("tf.debugging.assert_non_positive(%s)" % MX)
+
+    def AsrtNoEq_(self, MX1, MX2):
+        self.Statement("tf.debugging.assert_none_equal(%s, %s)" % (MX1, MX2))
+
 
     # # To operate in CellState Class?
     # def ID2IdxSim(self, MolIDList, MolID2Index):

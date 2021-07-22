@@ -17,8 +17,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             MetaboliteCountsInitial = list()
             for MolIdx in range(Comp.Master.NUniq_Master):
                 if Comp.Master.Type_Master[MolIdx] == 'Metabolite':
-                    MetaboliteCountsInitial.append(Comp.Master.Count_Master[MolIdx])
                     MetaboliteIdxs.append(MolIdx)
+                    MetaboliteCountsInitial.append(Comp.Master.Count_Master[MolIdx])
 
             Writer.Variable_("self.MetaboliteIdxs", MetaboliteIdxs)
             Writer.Reshape__("self.MetaboliteIdxs", "self.MetaboliteIdxs", [1, -1])

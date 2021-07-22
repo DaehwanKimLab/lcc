@@ -77,17 +77,22 @@ def WriteImport(Writer):
 
 def WriteBody(Writer, CompilerData, ProGen):
 
-    Model = 2
+    Model = 1
 
     Writer.Switch4Comment = True
     Writer.Switch4DebugSimulationPrint = False
     Writer.Switch4DebugSimulationAssert = False
     Writer.Switch4Graph = False
+
     Writer.Switch4ProcessSummary = True
     Writer.Switch4SimStepsExecuted = True
     Writer.Switch4PostSimulationStepCorrection = False
-    if Model == 2:
-        Writer.Switch4PostSimulationStepCorrection = True
+    Writer.Switch4SoftCheckCounts = False
+    Writer.Switch4HardCheckCounts = False
+    Writer.Switch4CheckDeltaCountsNeg = False
+    Writer.Switch4ShowDeltaCounts = False
+    Writer.Switch4ProcessDebuggingMessages = False
+
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()
@@ -130,8 +135,8 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Comment__("Define all object classes.")
         Simulation.Write_Simulation(Writer, CompilerData, ProGen)
         ReactionExecution.Write_ReactionExecution(Writer)
-        # RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
-        RGM_MetaboliteReplenish.Write_RGM_MetaboliteReplenish(Writer)
+        RateGaugeModelOnly.Write_RateGaugeModelOnly(Writer)
+        # RGM_MetaboliteReplenish.Write_RGM_MetaboliteReplenish(Writer)
         # RateFunction.Write_RateFunction(Writer, CompilerData)
         # BiochemicalReactionRate.Write_BiochemicalReactionRateFunction(Writer, CompilerData)
         # PolymerizationRate.Write_PolymerizationRateFunction(Writer, CompilerData)
@@ -192,15 +197,13 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.BlankLine()
 
         # Run simulation
-        Writer.Comment__("Run simulation.")
+        Writer.Comment__("Run Simulation.")
         Writer.Statement("Sim.Initialize()")
         Writer.Statement("Sim.Run()")
-
         Writer.BlankLine()
 
         # End of simulation.
-        Writer.Comment__("End of simulation.")
-
+        Writer.Comment__("End of Simulation.")
         Writer.BlankLine()
 
         # Print input genome.

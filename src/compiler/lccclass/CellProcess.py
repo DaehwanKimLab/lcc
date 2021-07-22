@@ -38,6 +38,16 @@ def Write_CellProcess(Writer):
             Writer.Pass_____()
             Writer.BlankLine()
 
+        Writer.AbsMethod()
+        with Writer.Statement("def ViewProcessDebuggingMessages(self):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        with Writer.Statement("def DebuggingVar(self, VarBefore, VarAfter):"):
+            Writer.Statement("print('[Debug] %s' % VarAfter)")
+            Writer.OperElSub("Delta", "VarBefore", "VarAfter")
+            Writer.PrintVaVa("Delta")
+            Writer.BlankLine()
 
         # Writer.AbsMethod()
         # with Writer.Statement("def AddToStoichiometryMatrix(self):"):

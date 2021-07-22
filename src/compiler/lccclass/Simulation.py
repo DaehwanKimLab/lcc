@@ -40,6 +40,8 @@ def Write_Simulation(Writer, Comp, ProGen):
 
             Writer.BlankLine()
 
+        # Simulation time control code
+
         with Writer.Statement("def ConvertSimTimeToSimStep(self, Time, Step):"):
             Writer.Statement("self.SimStepsRequested = tf.math.multiply(self.SimWallTimeRequested, self.SimStepsPerSecond)")
             Writer.BlankLine()
@@ -74,10 +76,10 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def SetUpSimClock(self):"):
             # Implement user input for delta t value
             Writer.Statement("self.StartSimTimer()")
-            Writer.Variable_("self.SimWallTimeRequested", 2400)  # Simulation time request in seconds
+            Writer.Variable_("self.SimWallTimeRequested", 100)  # Simulation time request in seconds
             Writer.Variable_("self.SimStepsPerSecond", 1)  # Simulation time resolution per second
             Writer.Statement("self.ConvertSimTimeToSimStep(self.SimWallTimeRequested, self.SimStepsRequested)")
-            Writer.Variable_("self.SimStepsPrintResolution", 100)
+            Writer.Variable_("self.SimStepsPrintResolution", 1)
             Writer.BlankLine()
 
         with Writer.Statement("def UpdateSimTime(self):"):
@@ -87,7 +89,8 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def PrintSimStepsExecuted(self):"):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintLine()
-                Writer.PrintVari("self.SimStepsExecuted")
+                Writer.PrintStrg("Simulation Steps Executed:")
+                Writer.PrintVar_("self.SimStepsExecuted")
                 Writer.DebugPVar("self.SimWallTimeExecuted")
             Writer.BlankLine()
 
@@ -103,13 +106,19 @@ def Write_Simulation(Writer, Comp, ProGen):
         #     Writer.Statement("ProcessID.SetUpStoichiometryMatrix()")
         #     Writer.BlankLine()
 
-        with Writer.Statement("def SetUpProcessSpecificVariables(self, ProcessID):"):
+        # Simulation module control code
+
+        with Writer.Statement("def SIM_ClearDeltaCounts(self):"):
+            Writer.Statement("self.Cel.ClearDeltaCounts()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def SIM_SetUpProcessSpecificVariables(self, ProcessID):"):
             # Set up Cel.MX_Stoichiometries and Cel.MX_Rates
             Writer.Statement("ProcessID.Init_ProcessSpecificVariables()")
             Writer.Statement("ProcessID.SetUp_ProcessSpecificVariables()")
             Writer.BlankLine()
 
-        with Writer.Statement("def SetUpCellStateMatrices(self):"):
+        with Writer.Statement("def SIM_SetUpCellStateMatrices(self):"):
             # Initialize reaction stoichiometry and rate matrices
             Writer.Statement("self.Cel.InitializeMatrices()")
 
@@ -126,7 +135,8 @@ def Write_Simulation(Writer, Comp, ProGen):
 
             # Set up process-specific variables
             for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                Writer.Statement("self.SetUpProcessSpecificVariables(self.%s)" % ProcessID)
+                Writer.Statement("self.SIM_SetUpProcessSpecificVariables(self.%s)" % ProcessID)
+            Writer.BlankLine()
 
         with Writer.Statement("def LoadStoichiometryMatrix(self):"):
             # Load updated stoichiometry to Exe
@@ -162,69 +172,116 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.Statement("self.Exe.RunReactions()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ExecuteProcesses(self):"):
+        with Writer.Statement("def SIM_ExecuteProcesses(self):"):
             # Run all matrix operation codes
             for ProcessID, Module in ProGen.Dict_CellProcesses.items():
                 Writer.Statement("self.%s.ExecuteProcess()" % ProcessID)
                 Writer.BlankLine()
 
-        with Writer.Statement("def RunCellProcesses(self):"):
+        with Writer.Statement("def SIM_RunCellProcesses(self):"):
             # Execute reactions by multiplying reaction and rate matrices.
             # This calculates delta value for all molecular counts
             # Writer.Statement("self.ExecuteReactions()")
 
             # Run all matrix operations: This level of mask may be removed after getting rid of "reaction" style classes
-            Writer.Statement("self.ExecuteProcesses()")
+            Writer.Statement("self.SIM_ExecuteProcesses()")
 
             # Update delta Counts after executing cell processes.
             Writer.Statement("")
 
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateCounts(self):"):
-            Writer.Statement("self.LoadCountMatrix()")
-            Writer.Overwrite("self.Cel.Counts", "self.Exe.AddCountMatrices()")
+        with Writer.Statement("def SIM_UpdateCounts(self):"):
+            if Writer.Switch4ShowDeltaCounts:
+                Writer.Statement("self.Cel.ShowDeltaCounts()")
+
+            if Writer.Switch4CheckDeltaCountsNeg:
+                Writer.Statement("self.Cel.CheckDeltaCountsNeg()")
+
+
+            # Update Counts
+
+            Writer.OperElAdd("self.Cel.Counts", "self.Cel.Counts", "self.Cel.DeltaCounts")
+
+            if Writer.Switch4SoftCheckCounts or Writer.Switch4HardCheckCounts:
+                Writer.Statement("self.SIM_CheckCountsPos()")
+
+            # Writer.Statement("self.LoadCountMatrix()")
+            # Writer.Overwrite("self.Cel.Counts", "self.Exe.AddCountMatrices()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ViewProcessSummaries(self):"):
+        with Writer.Statement("def SIM_CheckCountsPos(self):"):
+            Writer.Statement("self.Cel.CheckCountsPos()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def SIM_ViewProcessDebuggingMessages(self):"):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("# Simulation Step Molecule Count Summary:")
+                Writer.PrintStrg("# Simulation Step Process Debugging Message:")
+                for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                        Writer.PrintStrg("%s:" % ProcessID)
+                        Writer.Statement("self.%s.ViewProcessDebuggingMessages()" % ProcessID)
+                Writer.BlankLine()
+
+        with Writer.Statement("def SIM_ViewProcessSummaries(self):"):
+            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                Writer.PrintStrg("### Simulation Step Process Summary ###")
                 for ProcessID, Module in ProGen.Dict_CellProcesses.items():
                         Writer.PrintStrg("%s:" % ProcessID)
                         Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
                 Writer.BlankLine()
 
+        with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
+            Writer.OperScUpd("FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
+            Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
+            Writer.ReturnVar("FinalCount_Replenished")
+            Writer.BlankLine()
+
         with Writer.Statement("def PostSimulationStepCorrection(self):"):
+            Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.Cel.Idx_Master_Metabolites)")
             Writer.Statement("self.Cel.Counts = self.Exe.ReplenishMetabolites(self.Cel.Counts)")
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintStrg("[Post simulation step correction: Metabolites have been replenished.]")
             Writer.BlankLine()
 
         with Writer.Statement("def Initialize(self):"):
+            Writer.PrintStrg("Simulation Initialization Begins...")
             Writer.Statement("self.SetUpSimClock()")
-            Writer.Statement("self.SetUpCellStateMatrices()")
-            Writer.Statement("self.ViewProcessSummaries()")
+            Writer.Statement("self.SIM_SetUpCellStateMatrices()")
+            Writer.PrintStrg("Simulation Initialization Completed.")
             Writer.BlankLine()
 
+            # Writer.Statement("self.SIM_ViewProcessSummaries()")
+            # Writer.BlankLine()
+
         with Writer.Statement("def Run(self):"):
-            Writer.PrintStrg("Simulation Begins...")
+            Writer.PrintStrg("Simulation Run Begins...")
             with Writer.Statement("while self.SimStepsExecuted < self.SimStepsRequested:"):
                 # Increment simulation steps.
                 Writer.Statement("self.IncrementSimClock()")
+
+                Writer.Statement("self.SIM_ClearDeltaCounts()")
+
+                if Writer.Switch4ProcessDebuggingMessages:
+                    Writer.PrintStrg(">>> Before running the processes <<<")
+                    Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
 
                 # Models:
                 # Rate Gauge Model (the current version)
                 # This will be a user input later
 
                 # Hook for plugging in cellular processes not based on matrix calculations
-                Writer.Statement("self.RunCellProcesses()")
+                Writer.Statement("self.SIM_RunCellProcesses()")
 
                 # Overwrite delta value for the applicable molecular counts
-                Writer.Statement("self.UpdateCounts()")
+                Writer.Statement("self.SIM_UpdateCounts()")
+
+                if Writer.Switch4ProcessDebuggingMessages:
+                    Writer.PrintStrg(">>> After running the processes <<<")
+                    Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
 
                 # Display the molecular counts of molecules involved in reactions
                 if Writer.Switch4ProcessSummary:
-                    Writer.Statement("self.ViewProcessSummaries()")
+                    Writer.Statement("self.SIM_ViewProcessSummaries()")
 
                 # Apply post-simulation step corrections for selected reaction models:
                 if Writer.Switch4PostSimulationStepCorrection:
@@ -233,10 +290,9 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.BlankLine()
 
             Writer.PrintLine()
-            Writer.PrintStrg("Simulation Ended")
 
+            Writer.PrintStrg("Simulation Run Completed.")
             Writer.BlankLine()
 
             Writer.Statement("self.ShowSimulationTime()")
-
             Writer.BlankLine()

@@ -97,10 +97,16 @@ class FMetabolite(FDataset):
             assert Name not in self.ID2Idx_Metabolites
             self.ID2Idx_Metabolites[Name] = len(self.ID_Metabolites)  # = i
             self.ID_Metabolites.append(Name)
-            self.Count_Metabolites[i] = Count
             self.MW_Metabolites[i] = self.ID2MW_Metabolites_Temp[NameLocRemoved]
+            self.Count_Metabolites[i] = Count
             assert self.MW_Metabolites[i] != 0
-        
+
+            # Temporary correction for water count(out of int32 range)
+            if (int(Count) < 0) or (int(Count) > 2147483647):
+                Count_Temporary_Int32 = int(1e7)
+                self.Count_Metabolites[i] = Count_Temporary_Int32
+                print("Metabolite Dataset: The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s" % (Name, Count, Count_Temporary_Int32))
+
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
