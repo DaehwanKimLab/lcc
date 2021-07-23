@@ -337,7 +337,7 @@ def Compile(CodeFileNames,
     # To be passing user inputs in the future: List cell processes to incorporate in the simulation code
     CellProcesses = [
         Transcription,
-        # Translation,
+        Translation,
         Metabolism
     ]
     ProGen.SetProcessList(CellProcesses)

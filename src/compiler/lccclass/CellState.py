@@ -122,6 +122,7 @@ def Write_CellState(Writer, Comp, ProGen):
         with Writer.Statement("def InitializeVariablesForCellProcesses(self):"):
             # Popular
             Writer.Variable_("self.One", 1)
+            Writer.Variable_("self.Zero", 0)
             Writer.BlankLine()
 
             # Replication
@@ -190,8 +191,11 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
             Writer.Variable_("self.Idx_Ribosome30S", 0)
             Writer.Variable_("self.Idx_Ribosome50S", 0)
+            Writer.Variable_("self.Idx_Ribosome70S", 0)
             Writer.Variable_("self.Idx_AAs", 0)
             Writer.Variable_("self.Idx_PPi", 0)
+            Writer.Variable_("self.Idx_SelenoCysteineInAAs", 0)
+            Writer.Variable_("self.Idx_AAsLocalAssignmentNoSelenoCysteine", 0)
             Writer.Variable_("self.Idx_RndProteinsNascent", 0)
             Writer.BlankLine()
             Writer.Variable_("self.Rate_RibosomeActive", 0)  # Not implemented yet

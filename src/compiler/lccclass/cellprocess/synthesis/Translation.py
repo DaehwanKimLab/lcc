@@ -4,11 +4,18 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # ProGen.mRNArateCellProcess(Writer, ProcessID)
 
     # Molecule indices for Molecular IDs
-    Idx_Ribosome30S = Comp.Master.ID2Idx_Master[Comp.Complex.Name2ID_Complexes['CPLX0-3953']]
-    Idx_Ribosome50S = Comp.Master.ID2Idx_Master[Comp.Complex.Name2ID_Complexes['CPLX0-3956']]
+    Idx_Ribosome30S = Comp.Master.ID2Idx_Master['CPLX0-3953']
+    Idx_Ribosome50S = Comp.Master.ID2Idx_Master['CPLX0-3956']
 
     Idx_AAs = ProGen.BuildingBlockIdxs('AA')
     Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
+
+    Idx_SelenoCysteineInAAs = 19
+    Idx_AAsLocalAssignmentNoSelenoCysteine = list()
+    for i in range(len(Idx_AAs)):
+        if i == Idx_SelenoCysteineInAAs:
+            continue
+        Idx_AAsLocalAssignmentNoSelenoCysteine.append(i)
 
     # Set up Idx to Idx system in cell.py
 
@@ -19,8 +26,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     NMax_RibosomesPermRNA = 10
 
     # Temporary references
-    NUniq_mRNAs = Comp.mRNA.NUniq_mRNAs
+    NUniq_mRNAs = Comp.RNA.NUniq_mRNAs
     NUniq_Proteins = Comp.Protein.NUniq_Proteins
+    assert NUniq_mRNAs == NUniq_Proteins
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
@@ -32,6 +40,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.Variable_("self.Cel.Idx_AAs", Idx_AAs)
             Writer.Variable_("self.Cel.Idx_PPi", Idx_PPi)
+            Writer.Variable_("self.Cel.Idx_SelenoCysteineInAAs", Idx_SelenoCysteineInAAs)
+            Writer.Variable_("self.Cel.Idx_AAsLocalAssignmentNoSelenoCysteine", Idx_AAsLocalAssignmentNoSelenoCysteine)
             Writer.BlankLine()
 
             Writer.Variable_("self.Cel.Rate_RibosomeActive", Rate_RibosomeActive)  # Not implemented yet
@@ -240,7 +250,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Cast_____("self.Cel.Count_ProteinElongationLengthPerProtein", "self.Cel.Count_ProteinElongationLengthPerProtein",
                              'float32')
             # AA Frequency per mRNA * elongating Polypeptide (in NT count) per mRNA
-            Writer.OperMXMul("AAConsumption_Raw", "self.Cel.Freq_NTsInProteins",
+            Writer.OperMXMul("AAConsumption_Raw", "self.Cel.Freq_AAsInProteins",
                              "self.Cel.Count_ProteinElongationLengthPerProtein")
             Writer.ReturnVar("AAConsumption_Raw")
             Writer.BlankLine()
@@ -260,13 +270,13 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def AdjustAAConsumption(self, AAConsumption_Rounded, Discrepancy):"):
-            # Get equal amount of AAs if discrepancy is greater than or equal to 4 or less than or eqqal to -4.
+            # Get equal amount of AAs if discrepancy is greater than or equal to 4 or less than or equal to -4.
             Writer.OperElQuo("N_AASets", "Discrepancy", "self.Cel.NUniq_AAs")
             Writer.VarRepeat("N_AASets", "N_AASets", "self.Cel.NUniq_AAs")
             Writer.OperElAdd("AAConsumption_MissingSet", "AAConsumption_Rounded", "N_AASets")
             Writer.BlankLine()
 
-            # Get random AA for the remainder (replace with weighted random AA based on ACGU in all mRNAs)
+            # Get random AA for the remainder (replace with weighted random AA based on aa frequency in all mRNAs)
             Writer.OperElRem("N_AARemainder", "Discrepancy", "self.Cel.NUniq_AAs")
             Writer.Reshape__("N_AARemainder", "N_AARemainder", -1)
             Writer.InitZeros("AAConsumption_MissingRemainder", "self.Cel.NUniq_AAs", 'int32')
@@ -275,8 +285,23 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.OperScAdd("AAConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
             Writer.BlankLine()
 
-            # Return the adjusted AA Consumption
+            # Calculate adjusted AA Consumption
             Writer.OperElAdd("AAConsumption_Adjusted", "AAConsumption_MissingSet", "AAConsumption_MissingRemainder")
+
+            # Correction for Seleno-cysteine when -1
+            Writer.OperGathr("Count_SelenoCysteine", "AAConsumption_Adjusted", "self.Cel.Idx_SelenoCysteineInAAs")
+            Writer.OperElLe_("Bool_SelenoCysteine", "Count_SelenoCysteine", 0)
+            Writer.BoolToBin("Bin_SelenoCysteine", "Bool_SelenoCysteine")
+            Writer.OperElMul("CountToAdjust", "Bin_SelenoCysteine", "self.Cel.One")
+            Writer.OperScAdd("AAConsumption_Adjusted", "self.Cel.Idx_SelenoCysteineInAAs", "CountToAdjust")
+
+
+            Writer.RndIdxUni("Idx_RndAA", [1],
+                             "self.Cel.Idx_AAsLocalAssignmentNoSelenoCysteine")
+            Writer.NegValue_("CountToAdjust_Neg", "CountToAdjust")
+            Writer.OperScAdd("AAConsumption_Adjusted", "Idx_RndAA", "CountToAdjust_Neg")
+
+            # Return the adjusted AA Consumption
             Writer.OperRdSum("TotalAAConsumption", "AAConsumption_Adjusted")
             Writer.AsrtElEq_("TotalAAConsumption", "self.Cel.Count_ProteinElongationLengthTotal")
             Writer.ReturnVar("AAConsumption_Adjusted")

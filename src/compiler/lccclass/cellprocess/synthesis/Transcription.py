@@ -22,6 +22,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # Temporary references
     NUniq_Genes = Comp.Gene.NUniq_Genes
     NUniq_RNAs = Comp.RNA.NUniq_RNAs
+    assert NUniq_Genes == NUniq_RNAs
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)

@@ -286,6 +286,10 @@ class TFCodeWriter(CodeWriter):
         self.Statement(Line)
         self.DebugPVar(Variable)
 
+    def NegValue_(self, DestVar, SrcVar):
+        self.Statement('%s = tf.math.negative(%s)' % (DestVar, SrcVar))
+        self.DebugPVar(DestVar)
+
     def Statement(self, Line, **kwargs):
 
         if 'TargetCode' in kwargs:
