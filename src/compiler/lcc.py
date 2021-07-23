@@ -86,13 +86,12 @@ def WriteBody(Writer, CompilerData, ProGen):
 
     Writer.Switch4ProcessSummary = True
     Writer.Switch4SimStepsExecuted = True
-    Writer.Switch4PostSimulationStepCorrection = False
+    Writer.Switch4PostSimulationStepCorrection = True
     Writer.Switch4SoftCheckCounts = False
-    Writer.Switch4HardCheckCounts = False
+    Writer.Switch4HardCheckCounts = True
     Writer.Switch4CheckDeltaCountsNeg = False
     Writer.Switch4ShowDeltaCounts = False
     Writer.Switch4ProcessDebuggingMessages = False
-
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()
@@ -335,6 +334,13 @@ def Compile(CodeFileNames,
 
     ProGen = ProcGen.FProcessGenerator()
     ProGen.LinkCompilerObj(CompilerData)
+    # To be passing user inputs in the future: List cell processes to incorporate in the simulation code
+    CellProcesses = [
+        Transcription,
+        Translation,
+        Metabolism
+    ]
+    ProGen.SetProcessList(CellProcesses)
     ProGen.SetUpProcesses()
     # ProGen.SaveProcesses()
 

@@ -435,6 +435,10 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Element-wise maximum operation")
         self.Statement("%s = tf.math.maximum(%s, %s)" % (DestVar, MX1, MX2))
         
+    def OperMin__(self, DestVar, MX1, MX2):
+        self.Comment__("Element-wise minimum operation")
+        self.Statement("%s = tf.math.minimum(%s, %s)" % (DestVar, MX1, MX2))
+        
     # def PrepMXMul(self, MX1, MX2):
     #     self.Comment__("Reshape matrices for matrix multiplication")
     #     with self.Statement("if tf.rank(%s) != 2:" % MX1):
@@ -442,19 +446,19 @@ class TFCodeWriter(CodeWriter):
     #     with self.Statement("if tf.rank(%s) != 2:" % MX2):
     #         self.Statement("%s = tf.reshape(%s, [tf.shape(%s)[0, -1])" % (MX2, MX2, MX1))
 
-    def OperMXMul(self, VariableName, MX1, MX2):
+    def OperMXMul(self, DestVar, MX1, MX2):
         # self.PrepMXMul(MX1, MX2)
         self.Comment__("Matrix multiplication addition")
-        self.Statement("%s = tf.linalg.matmul(%s, %s)" % (VariableName, MX1, MX2))
-        self.Reshape__(VariableName, VariableName, -1)
+        self.Statement("%s = tf.linalg.matmul(%s, %s)" % (DestVar, MX1, MX2))
+        self.Reshape__(DestVar, DestVar, -1)
 
-    def Round____(self, VariableName, MX):
+    def Round____(self, DestVar, MX):
         self.Comment__("Round without changing data type")
-        self.Statement("%s = tf.math.round(%s)" % (VariableName, MX))
+        self.Statement("%s = tf.math.round(%s)" % (DestVar, MX))
 
-    def Cast_____(self, VariableName, MX, Type='int32'):
+    def Cast_____(self, DestVar, MX, Type='int32'):
         self.Comment__("Change data type")
-        self.Statement("%s = tf.cast(%s, dtype=tf.%s)" % (VariableName, MX, Type))
+        self.Statement("%s = tf.cast(%s, dtype=tf.%s)" % (DestVar, MX, Type))
 
     def BoolToBin(self, BinMX, BoolMX):
         self.Cast_____(BinMX, BoolMX)
@@ -468,9 +472,9 @@ class TFCodeWriter(CodeWriter):
     def PrtIdxGr_(self, MX, Cond):
         self.Statement('print("Idx_%s: ", tf.where(%s > %s))' % (str(MX), MX, Cond))
 
-    def RoundInt_(self, VariableName, MX, Type='int32'):
+    def RoundInt_(self, DestVar, MX, Type='int32'):
         self.Comment__("Round and change data type to integer")
-        self.Statement("%s = tf.cast(tf.math.round(%s), dtype=tf.%s)" % (VariableName, MX, Type))
+        self.Statement("%s = tf.cast(tf.math.round(%s), dtype=tf.%s)" % (DestVar, MX, Type))
 
     def AsrtElGrE(self, MX1, MX2):
         self.Statement("tf.debugging.assert_greater_equal(%s, %s)" % (MX1, MX2))
@@ -522,19 +526,19 @@ class TFCodeWriter(CodeWriter):
     #     self.DebugAsrt("tf.debugging.assert_shapes([%s, %s])" % (MolIndexList_Cel, MolIDList_Compiler), ErrMsg='Incomplete Indexing for "%s"' % MolIDList_Compiler)
     #     self.DebugPVar("%s" % MolIndexList_Cel)
 
-    def LoadNP2TF(self, VariableName, SavedFile, DataType='float32'):
-        self.Statement("%s = np.load(\"%s\").astype(\'%s\')" % (VariableName, SavedFile, DataType))
-        self.Convert__("%s" % VariableName)
+    def LoadNP2TF(self, DestVar, SavedFile, DataType='float32'):
+        self.Statement("%s = np.load(\"%s\").astype(\'%s\')" % (DestVar, SavedFile, DataType))
+        self.Convert__("%s" % DestVar)
 
-    def Conc2Cont(self, VariableName, MolIndexList, MolConcs):
+    def Conc2Cont(self, DestVar, MolIndexList, MolConcs):
         self.PrepGathr(MolConcs, MolIndexList)
         self.OperGathr("MolConcs4MolIndexList", MolConcs, MolIndexList)
-        self.Statement("%s = MolConcs4MolIndexList * (Cel.CellVol * Cst.NA)" % VariableName)
+        self.Statement("%s = MolConcs4MolIndexList * (Cel.CellVol * Cst.NA)" % DestVar)
 
-    def Cont2Conc(self, VariableName, MolIndexList, MolCounts):
+    def Cont2Conc(self, DestVar, MolIndexList, MolCounts):
         self.PrepGathr(MolCounts, MolIndexList)
         self.OperGathr("MolCounts4MolIndexList", MolCounts, MolIndexList)
-        self.Statement("%s = MolCounts4MolIndexList / (Cel.CellVol * Cst.NA)" % VariableName)
+        self.Statement("%s = MolCounts4MolIndexList / (Cel.CellVol * Cst.NA)" % DestVar)
 
     # WRONG EQUATION - to be fixed with %s and more
     # def Cont2Conc(self, MolIDList, Mol2Index, CountsMX, MWsMX):

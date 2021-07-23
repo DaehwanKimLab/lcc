@@ -35,6 +35,7 @@ def Write_CellProcess(Writer):
 
         Writer.AbsMethod()
         with Writer.Statement("def ViewProcessSummary(self):"):
+            Writer.PrintStrg("Summery message not implemented yet")
             Writer.Pass_____()
             Writer.BlankLine()
 

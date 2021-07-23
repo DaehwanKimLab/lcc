@@ -21,6 +21,7 @@ from lccclass.cellprocess.metabolism import Metabolism
 
 class FProcessGenerator():
     def __init__(self):
+        self.CellProcesses = list()
         self.Dict_CellProcesses = dict()
         # self.Dict_ProcessReactions = dict()
         # self.Dict_ReactionTypeReference = dict()
@@ -38,6 +39,9 @@ class FProcessGenerator():
     def ImportSaveVariables(self):
         self.Switch4SaveAllData = self.Comp.Switch4SaveAllData
         self.SavePath = self.Comp.SavePath
+
+    def SetProcessList(self, CellProcesses):
+        self.CellProcesses = CellProcesses
 
     def PrintProcessID(self, ProcessID):
         print("Cell process module to run: %s" % ProcessID)
@@ -60,9 +64,7 @@ class FProcessGenerator():
 
     def SetUpProcesses(self):
 
-        Processes = [Transcription]
-
-        for Process in Processes:
+        for Process in self.CellProcesses:
             ProcessStr = Process.__name__.split('.')[-1]
             self.Dict_CellProcesses[ProcessStr] = Process
             self.PrintProcessID(ProcessStr)

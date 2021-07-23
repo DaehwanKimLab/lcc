@@ -6,28 +6,28 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables()"):
-            Writer.Variable_("self.MetaboliteIdxs", 0)
-            Writer.Variable_("self.MetaboliteCountsInitial", 0)
-            Writer.Statement("self.GetMetaboliteIdxsAndCounts()")
+        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+            Writer.Variable_("self.Count_MetabolitesInitial", 0)
+            Writer.Statement("self.GetMetaboliteCounts()")
             Writer.BlankLine()
 
-        with Writer.Statement("def GetMetaboliteIdxsAndCounts(self):"):
-            MetaboliteIdxs = list()
-            MetaboliteCountsInitial = list()
-            for MolIdx in range(Comp.Master.NUniq_Master):
-                if Comp.Master.Type_Master[MolIdx] == 'Metabolite':
-                    MetaboliteIdxs.append(MolIdx)
-                    MetaboliteCountsInitial.append(Comp.Master.Count_Master[MolIdx])
-
-            Writer.Variable_("self.MetaboliteIdxs", MetaboliteIdxs)
-            Writer.Reshape__("self.MetaboliteIdxs", "self.MetaboliteIdxs", [1, -1])
-            Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.MetaboliteIdxs)")
-
-            Writer.Variable_("self.MetaboliteCountsInitial", MetaboliteCountsInitial)
-            Writer.Reshape__("self.MetaboliteCountsInitial", "self.MetaboliteCountsInitial", [-1])
-            Writer.Statement("self.Exe.LoadMetaboliteCountsInitial(self.MetaboliteCountsInitial)")
+        with Writer.Statement("def GetMetaboliteCounts(self):"):
+            Writer.OperGathr("self.Cel.Count_MetabolitesInitial", "self.Cel.Count_Master", "self.Cel.Idx_Master_Metabolites")
             Writer.BlankLine()
+
+        with Writer.Statement("def ReplenishMetabolites(self):"):
+            Writer.OperScUpd("self.Cel.Counts", "self.Cel.Idx_Master_Metabolites", "self.Cel.Count_MetabolitesInitial")
+            Writer.BlankLine()
+
+        with Writer.Statement("def Message_ReplenishMetabolites(self):"):
+            Writer.PrintStrg("\t- Metabolites have been replenished.")
+            Writer.BlankLine()
+
+        with Writer.Statement("def ExecuteProcess(self):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+
 
 # def SetUpReactions(ProGen):
 #     Reactions = list()

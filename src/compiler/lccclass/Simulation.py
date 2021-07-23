@@ -218,7 +218,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintStrg("# Simulation Step Process Debugging Message:")
                 for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                        Writer.PrintStrg("%s:" % ProcessID)
+                        Writer.PrintStrg("[%s]:" % ProcessID)
                         Writer.Statement("self.%s.ViewProcessDebuggingMessages()" % ProcessID)
                 Writer.BlankLine()
 
@@ -226,7 +226,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintStrg("### Simulation Step Process Summary ###")
                 for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                        Writer.PrintStrg("%s:" % ProcessID)
+                        Writer.PrintStrg("[%s]:" % ProcessID)
                         Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
                 Writer.BlankLine()
 
@@ -237,10 +237,10 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Statement("def PostSimulationStepCorrection(self):"):
-            Writer.Statement("self.Exe.LoadMetaboliteIdxs(self.Cel.Idx_Master_Metabolites)")
-            Writer.Statement("self.Cel.Counts = self.Exe.ReplenishMetabolites(self.Cel.Counts)")
+            Writer.Statement("self.Metabolism.ReplenishMetabolites()")
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("[Post simulation step correction: Metabolites have been replenished.]")
+                Writer.PrintStrg("[Post simulation step correction]")
+                Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
             Writer.BlankLine()
 
         with Writer.Statement("def Initialize(self):"):
