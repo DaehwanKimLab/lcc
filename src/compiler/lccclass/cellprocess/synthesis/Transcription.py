@@ -89,12 +89,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def SelectRNAsToTranscribe(self):"):
-            # Replace with weighted random later
-            Writer.RndIdxUni("self.Cel.Idx_RndRNAsNascent", "self.Cel.Count_RNAPWillBind", "self.Cel.Idx_Master_RNAsNascent")
-
             # Weighted random distribution later
-            # Writer.OperGathr("self.Cel.Count_GeneCopies", "self.Cel.Counts", "self.Cel.Idx_Master_Genes")
-            # Writer.RndIdxWgh("self.Cel.Idx_RndRNAsNascent", "self.Cel.Count_RNAP", "self.Cel.Count_GeneCopies")
+            Writer.OperGathr("Count_Genes", "self.Cel.Counts", "self.Cel.Idx_Master_Genes")
+            Writer.RndIdxWgh("self.Cel.Idx_RndRNAsNascent", "self.Cel.Count_RNAPWillBind", "self.Cel.Idx_Master_RNAsNascent", "Count_Genes")
             Writer.BlankLine()
 
         with Writer.Statement("def IncrementCountOfNascentRNAs(self):"):

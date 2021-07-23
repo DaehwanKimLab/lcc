@@ -1078,6 +1078,11 @@ class FMaster():
         assert len(self.Idx_Master_tRNAs) == Comp.RNA.NUniq_tRNAs
         assert len(self.Idx_Master_miscRNAs) == Comp.RNA.NUniq_miscRNAs
 
+        assert len(self.Idx_Master_Genes) == len(self.Idx_Master_RNAs)
+        assert len(self.Idx_Master_Genes) == len(self.Idx_Master_RNAsNascent)
+        assert len(self.Idx_Master_mRNAs) == len(self.Idx_Master_Proteins)
+        assert len(self.Idx_Master_mRNAs) == len(self.Idx_Master_ProteinsNascent)
+
         # Index to Index mapping dictionaries
         for i, ID in enumerate(self.ID_Master):
             if self.ID2Type_Master[ID] == 'Gene':

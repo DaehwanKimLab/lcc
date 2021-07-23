@@ -320,11 +320,14 @@ class TFCodeWriter(CodeWriter):
     def RndIdxUni(self, VariableName, N_MoleculesToDistribute, Indices):
         self.Comment__("Select random indices")
         self.RndNumUni("RndVals", Shape=N_MoleculesToDistribute, MaxVal="len(%s)" % Indices, Type='int32')
-        self.BlankLine()
         self.OperGathr(VariableName, Indices, "RndVals")
 
-    def RndIdxWgh(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
-        pass
+    def RndIdxWgh(self, DestVar, N_MoleculesToDistribute, Indices, Weights):
+        self.Reshape__("Counts", Weights, -1)
+        self.Reshape__("Indices", Indices, -1)
+        self.VarRepeat("PoolOfIndices", "Indices", "Counts")
+        self.Reshape__("N_IndicesToDraw", N_MoleculesToDistribute, -1)
+        self.RndIdxUni(DestVar, "N_IndicesToDraw", "PoolOfIndices")
 
     # def SelectIdx(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
     #     self.InitZeros(VariableName, 0)
