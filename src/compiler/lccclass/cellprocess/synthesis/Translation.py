@@ -1,7 +1,6 @@
 
 
 def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
-    # ProGen.mRNArateCellProcess(Writer, ProcessID)
 
     # Molecule indices for Molecular IDs
     Idx_Ribosome30S = Comp.Master.ID2Idx_Master['CPLX0-3953']
@@ -21,8 +20,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     # Temporary parameters
     Rate_ProteinElongation = 20
-    Rate_RibosomeActive = 0.22  # 22% of Free Ribosome is active
-    Rate_RibosomeActiveCanBind = 0.5  # 50% of Free Ribosome binds to the promoter
+    Rate_RibosomeActive = 0.22  # 22% of Free Ribosome is active CHECK
+    Rate_RibosomeActiveCanBind = 0.5  # 50% of Free Ribosome binds to the promoter CHECK
+
     NMax_RibosomesPermRNA = 10
 
     # Temporary references
@@ -32,6 +32,18 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
+
+        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+            Writer.Variable_("self.Bool_ProteinsNascentElongating", 0)
+            Writer.Variable_("self.Bool_ProteinsNascentOverElongated", 0)
+            Writer.Variable_("self.Bool_ProteinsNascentElongationCompleted", 0)
+            Writer.BlankLine()
+            Writer.Variable_("self.Bin_ProteinsNascentElongating", 0)
+            Writer.Variable_("self.Bin_ProteinsNascentOverElongated", 0)
+            Writer.Variable_("self.Bin_ProteinsNascentElongationCompleted", 0)
+            Writer.BlankLine()
+            Writer.Variable_("self.Rate_ProteinElongation_Matrix", 0)
+            Writer.BlankLine()
 
         # Override the abstract method
         with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
@@ -165,10 +177,10 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                                  "RibosomeArrayForCurrentPolypeptide")
             Writer.Reshape__("RibosomeArrayForAllPolypeptides", "RibosomeArrayForAllPolypeptides", [-1, NMax_RibosomesPermRNA])
 
-            Writer.OperElGr_("self.Cel.Bool_ProteinsNascentElongating", "RibosomeArrayForAllPolypeptides", 0)
-            Writer.Cast_____("self.Cel.Bin_ProteinsNascentElongating", "self.Cel.Bool_ProteinsNascentElongating", 'int32')
+            Writer.OperElGr_("self.Bool_ProteinsNascentElongating", "RibosomeArrayForAllPolypeptides", 0)
+            Writer.Cast_____("self.Bin_ProteinsNascentElongating", "self.Bool_ProteinsNascentElongating", 'int32')
             Writer.OperRdSum("self.Cel.Count_ProteinsNascentElongatingTotal",
-                             "self.Cel.Bin_ProteinsNascentElongating")  # For summary, the number of all elongating Proteins with Ribosome
+                             "self.Bin_ProteinsNascentElongating")  # For summary, the number of all elongating Proteins with Ribosome
             Writer.BlankLine()
 
         with Writer.Statement("def GetNascentProteinsIndicesInLengthMatrix(self):"):
@@ -178,7 +190,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def ElongateNascentProteinsInLengthMatrix(self):"):
             # Rate Matrix * bin(boolean) + length table (overelongated not counted yet)
-            Writer.OperElMul("self.Cel.Rate_ProteinElongation_Matrix", "self.Cel.Bin_ProteinsNascentElongating",
+            Writer.OperElMul("self.Cel.Rate_ProteinElongation_Matrix", "self.Bin_ProteinsNascentElongating",
                              "self.Cel.Rate_ProteinElongation")
             Writer.OperElAdd("self.Cel.Len_ProteinsNascentElongated", "self.Cel.Len_ProteinsNascentInitial",
                              "self.Cel.Rate_ProteinElongation_Matrix")
@@ -186,17 +198,17 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def DetermineOverElongatedNascentProteins(self):"):
             # compare with len MAX to get boolean matrix for overelongated (>= MAX)
-            Writer.OperElGr_("self.Cel.Bool_ProteinsNascentOverElongated", "self.Cel.Len_ProteinsNascentElongated",
+            Writer.OperElGr_("self.Bool_ProteinsNascentOverElongated", "self.Cel.Len_ProteinsNascentElongated",
                              "self.Cel.Len_ProteinsNascentMax")
-            Writer.BoolToBin("self.Cel.Bin_ProteinsNascentOverElongated", "self.Cel.Bool_ProteinsNascentOverElongated")
+            Writer.BoolToBin("self.Bin_ProteinsNascentOverElongated", "self.Bool_ProteinsNascentOverElongated")
             Writer.OperRdSum("self.Cel.Count_ProteinsNascentOverElongatedTotal",
-                             "self.Cel.Bin_ProteinsNascentOverElongated")  # For summary, the number of completed/overelongated Proteins
+                             "self.Bin_ProteinsNascentOverElongated")  # For summary, the number of completed/overelongated Proteins
             Writer.BlankLine()
 
         with Writer.Statement("def DetermineAmountOfOverElongatedAAs(self):"):
-            Writer.OperElMul("MaxLengthForOverElongated", "self.Cel.Bin_ProteinsNascentOverElongated",
+            Writer.OperElMul("MaxLengthForOverElongated", "self.Bin_ProteinsNascentOverElongated",
                              "self.Cel.Len_ProteinsNascentMax")
-            Writer.OperElMul("LengthForOverElongatedOnly", "self.Cel.Bin_ProteinsNascentOverElongated",
+            Writer.OperElMul("LengthForOverElongatedOnly", "self.Bin_ProteinsNascentOverElongated",
                              "self.Cel.Len_ProteinsNascentElongated")
             # Get the over-elongated length of nascent Proteins
             Writer.OperElSub("self.Cel.Len_ProteinsNascentOverElongated", "LengthForOverElongatedOnly",
@@ -216,16 +228,16 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def CorrectElongatedLengthForProteins(self):"):
             # Initial elongation rate
             Writer.OperElMul("Rate_ProteinElongation_Matrix_Initial", "self.Cel.Rate_ProteinElongation_Matrix",
-                             "self.Cel.Bin_ProteinsNascentElongating")
+                             "self.Bin_ProteinsNascentElongating")
             # Adjusted elongation rate (initial - elongated)
-            Writer.OperElSub("self.Cel.Rate_ProteinElongation_Matrix_Corrected", "Rate_ProteinElongation_Matrix_Initial",
+            Writer.OperElSub("self.Rate_ProteinElongation_Matrix", "Rate_ProteinElongation_Matrix_Initial",
                              "self.Cel.Len_ProteinsNascentOverElongated")
             # Calculate the length of elongation per mRNA
-            Writer.OperRdSum("self.Cel.Count_ProteinElongationLengthPerProtein", "self.Cel.Rate_ProteinElongation_Matrix_Corrected",
+            Writer.OperRdSum("self.Cel.Count_ProteinElongationLengthPerProtein", "self.Rate_ProteinElongation_Matrix",
                              1)  # For summary, total elongation length per mRNA
             # Calculate the total length of elongation
             Writer.OperRdSum("self.Cel.Count_ProteinElongationLengthTotal",
-                             "self.Cel.Rate_ProteinElongation_Matrix_Corrected")  # For summary, total elongation length in this sim step
+                             "self.Rate_ProteinElongation_Matrix")  # For summary, total elongation length in this sim step
             Writer.BlankLine()
 
         with Writer.Statement("def ElongatePolypeptides(self):"):
@@ -259,7 +271,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Determine the difference between rounded vs corrected elongation
             Writer.OperRdSum("Sum_Rounded", "AAConsumption_Rounded")
             Writer.Cast_____("Sum_Rounded", "Sum_Rounded", 'int32')
-            Writer.OperRdSum("Sum_CorrectedElongationRate", "self.Cel.Rate_ProteinElongation_Matrix_Corrected")
+            Writer.OperRdSum("Sum_CorrectedElongationRate", "self.Rate_ProteinElongation_Matrix")
             Writer.OperElSub("DeltaSum", "Sum_CorrectedElongationRate", "Sum_Rounded")
             Writer.ReturnVar("DeltaSum")
             Writer.BlankLine()
@@ -328,30 +340,30 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def IdentifyCompletedProteinElongation(self):"):
             # identify all NMAX values by comparison (boolean)
-            Writer.OperElEq_("self.Cel.Bool_ProteinsNascentElongationCompleted", "self.Cel.Len_ProteinsNascentAdjusted",
+            Writer.OperElEq_("self.Bool_ProteinsNascentElongationCompleted", "self.Cel.Len_ProteinsNascentAdjusted",
                              "self.Cel.Len_ProteinsNascentMax")
-            Writer.BoolToBin("self.Cel.Bin_ProteinsNascentElongationCompleted",
-                             "self.Cel.Bool_ProteinsNascentElongationCompleted")
+            Writer.BoolToBin("self.Bin_ProteinsNascentElongationCompleted",
+                             "self.Bool_ProteinsNascentElongationCompleted")
             Writer.BlankLine()
 
         with Writer.Statement("def CountCompletedProteinElongation(self):"):
             # Count all completed per Protein and total
             Writer.OperRdSum("self.Cel.Count_ProteinElongationCompletedPerProtein",
-                             "self.Cel.Bin_ProteinsNascentElongationCompleted", 1)
+                             "self.Bin_ProteinsNascentElongationCompleted", 1)
             Writer.OperRdSum("self.Cel.Count_ProteinElongationCompletedTotal",
-                             "self.Cel.Bin_ProteinsNascentElongationCompleted")  # For summary, total completed elongation
+                             "self.Bin_ProteinsNascentElongationCompleted")  # For summary, total completed elongation
             Writer.BlankLine()
 
         with Writer.Statement("def ResetLengthOfCompletedNascentProteins(self):"):
             # Reset all NMAX lengths to zero by subtracting max length from completed
             Writer.OperElMul("self.Cel.Len_ProteinsNascentCompleted", "self.Cel.Len_ProteinsNascentMax",
-                             "self.Cel.Bin_ProteinsNascentElongationCompleted")
+                             "self.Bin_ProteinsNascentElongationCompleted")
             Writer.OperElSub("self.Cel.Len_ProteinsNascentFinal", "self.Cel.Len_ProteinsNascentAdjusted",
                              "self.Cel.Len_ProteinsNascentCompleted")
 
             # Check reset status
             Writer.OperElMul("CheckCompletionReset", "self.Cel.Len_ProteinsNascentFinal",
-                             "self.Cel.Bin_ProteinsNascentElongationCompleted")
+                             "self.Bin_ProteinsNascentElongationCompleted")
             Writer.AsrtElEq_("CheckCompletionReset", 0)
             Writer.BlankLine()
 
@@ -411,11 +423,11 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.PrtIdxGr_("self.Cel.Len_ProteinsNascentElongated", 0)
             Writer.PrtIdxGr_("self.Cel.Len_ProteinsNascentOverElongated", 0)
 
-            Writer.PrtIdxGr_("self.Cel.Rate_ProteinElongation_Matrix_Corrected", 0)
+            Writer.PrtIdxGr_("self.Rate_ProteinElongation_Matrix", 0)
 
-            Writer.PrtIdxGr_("self.Cel.Bin_ProteinsNascentElongating", 0)
-            Writer.PrtIdxGr_("self.Cel.Bin_ProteinsNascentOverElongated", 0)
-            Writer.PrtIdxGr_("self.Cel.Bin_ProteinsNascentElongationCompleted", 0)
+            Writer.PrtIdxGr_("self.Bin_ProteinsNascentElongating", 0)
+            Writer.PrtIdxGr_("self.Bin_ProteinsNascentOverElongated", 0)
+            Writer.PrtIdxGr_("self.Bin_ProteinsNascentElongationCompleted", 0)
 
             Writer.BlankLine()
 

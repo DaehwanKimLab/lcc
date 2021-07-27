@@ -124,20 +124,22 @@ class FChromosome(FDataset):
         self.Freq_NTsInChromosomesInGenome = list()
         self.Genome = None
 
-        self.N_InitialCopyPerChromosome = 0
-        self.N_FullChromosomesPerReplication = 0
-        self.N_PartialChromosomesPerReplication = 0
+        # self.N_InitialCopyPerChromosome = 0
+        # self.N_FullChromosomesPerReplication = 0
+        # self.N_PartialChromosomesPerReplication = 0
         self.N_PossibleRoundsOfConcurrentReplications = 0
-        self.ReplicatingChromosomeAttributes = list()
+        # self.ReplicatingChromosomeAttributes = list()
 
-        self.N_FullChromosomes = 0
-        self.N_PartialChromosomes = 0
-        self.N_AllChromosomes = 0
+        # self.N_FullChromosomes = 0
+        # self.N_PartialChromosomes = 0
+        # self.N_AllChromosomes = 0
+
         self.ID_Chromosomes = list()
-        self.Count_BasePairsInChromosomes = 0
+        self.Count_Chromosomes = 0
         self.MW_DNABasePairs = 0
         self.Freq_NTsInChromosomes = list()
         self.NUniq_ChromosomesInGenome = 0
+        self.NMax_Chromosomes = 0
 
         super().__init__()
 
@@ -160,69 +162,52 @@ class FChromosome(FDataset):
             self.Count_NTsInChromosomesInGenome.append(NTCounts)
             self.Freq_NTsInChromosomesInGenome.append(NTFreq)
 
-        # Set up an arbitrary max number to keep NT Count arrays for all chromosomes
-        self.N_InitialCopyPerChromosome = 1
-        self.N_FullChromosomesPerReplication = 1
-        self.N_PartialChromosomesPerReplication = 4
-        # Attributes for each partial chromosomes during replication
-        self.ReplicatingChromosomeAttributes = ['LeftLeading', 'LeftLagging', 'RightLeading', 'RightLagging'] # Left/Right Lead/Lag
+        # Set up an arbitrary max number to keep NT Count arrays for all chromosomes.
         self.N_PossibleRoundsOfConcurrentReplications = 2  # n
+        RepFactor = 2 ** self.N_PossibleRoundsOfConcurrentReplications
+        self.NMax_Chromosomes = self.NUniq_ChromosomesInGenome * RepFactor
 
-        # Simplified variable name for the chromosome count formula
-        Ch_Uniq = self.NUniq_ChromosomesInGenome
-        Ch_Full = self.N_FullChromosomesPerReplication
-        Ch_Partial = self.N_PartialChromosomesPerReplication
-        N_Rep = self.N_PossibleRoundsOfConcurrentReplications
-
-        # Number of full and partial chromosome entries in the count matrix
-        # General formula: 1 * 2^n + 4 * (2^n - 1)
-        # examples for the first four 3 possible rounds of concurrent replication
-        # 1 = (1 * 1) + (4 * 0)
-        # 1 + (1+4) = (1 * 2) + (4 * 1)
-        # 1 + (1+4) + ((1+4) + (1+4)) = (1 * 4) + (4 * 3)
-        # 1 + (1+4) + ((1+4) + (1+4)) + (((1+4) + (1+4)) + ((1+4) + (1+4))) = (1 * 8) + (4 * 7)
-
-        RepFactor = 2 ** N_Rep
-        self.N_FullChromosomes = Ch_Uniq * (Ch_Full * RepFactor)
-        self.N_PartialChromosomes = Ch_Uniq * (Ch_Partial * (RepFactor - 1))
-        self.N_AllChromosomes = self.N_FullChromosomes + self.N_PartialChromosomes
-
-        self.Count_BasePairsInChromosomes = np.zeros(self.N_AllChromosomes)
-        self.MW_DNABasePairs = np.zeros(self.N_AllChromosomes)
+        self.Count_Chromosomes = np.zeros(self.NMax_Chromosomes)
+        self.MW_DNABasePairs = np.zeros(self.NMax_Chromosomes)
         DNABasePairMW = 650 # average molecular weight of one base pair: 650 Daltons, which is 650 g/mol
 
         ChromosomeCount = 0
-        for i in range(self.NUniq_ChromosomesInGenome):
-            ChromosomeNumber = i + 1
-            for j in range(RepFactor):
-                ChromosomeRepNumber = j
+        for ReplicationRoundID in range(RepFactor):
 
-                if j == 0:
-                    ChromosomeState = 'Full_Original'
-                    ChromosomeID = 'Ch%d_%s' % (ChromosomeNumber, ChromosomeState)
+            for ChromosomeNumber in range(self.NUniq_ChromosomesInGenome):
+                if ReplicationRoundID == 0:
+                    ChromosomeID = 'Ch%d_Original' % (ChromosomeNumber)
                     self.ID_Chromosomes.append(ChromosomeID)
-                    self.Count_BasePairsInChromosomes[ChromosomeCount] = self.Len_ChromosomesInGenome[i]
-                    self.MW_DNABasePairs[ChromosomeCount] = DNABasePairMW
-                    self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[i])
+                    self.Count_Chromosomes[ChromosomeCount] = 1
+                    self.MW_DNABasePairs[ChromosomeCount] = self.Len_ChromosomesInGenome[
+                                                                ChromosomeNumber] * DNABasePairMW
+                    self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[ChromosomeNumber])
                     ChromosomeCount += 1
                     continue
 
-                ChromosomeState = 'Full_Pseudo'
-                ChromosomeID = 'Ch%d_Rep%d_%s' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
-                self.ID_Chromosomes.append(ChromosomeID)
-                self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[i])  # Just a filler for the list
-                ChromosomeCount += 1
-
-                for Attribute in self.ReplicatingChromosomeAttributes:
-                    ChromosomeState = 'Partial_' + Attribute
-                    ChromosomeID = 'Ch%d_Rep%d_%s' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
+                else:
+                    ChromosomeID = 'Ch%d_Replicating_Round%d' % (ChromosomeNumber, ReplicationRoundID)
                     self.ID_Chromosomes.append(ChromosomeID)
-                    self.MW_DNABasePairs[ChromosomeCount] = DNABasePairMW
-                    self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[i])
+                    self.MW_DNABasePairs[ChromosomeCount] = self.Len_ChromosomesInGenome[ChromosomeNumber] * DNABasePairMW / 2  # average length
+                    self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[ChromosomeNumber])
                     ChromosomeCount += 1
 
+                # ChromosomeState = 'Replicating'
+                # ChromosomeID = 'Ch%d_' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
+                # self.ID_Chromosomes.append(ChromosomeID)
+                # self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[i])  # Just a filler for the list
+                # ChromosomeCount += 1
+                #
+                # for Attribute in self.ReplicatingChromosomeAttributes:
+                #     ChromosomeState = 'Partial_' + Attribute
+                #     ChromosomeID = 'Ch%d_Rep%d_%s' % (ChromosomeNumber, ChromosomeRepNumber, ChromosomeState)
+                #     self.ID_Chromosomes.append(ChromosomeID)
+                #     self.MW_DNABasePairs[ChromosomeCount] = DNABasePairMW
+                #     self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[i])
+                #     ChromosomeCount += 1
+
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_BasePairsInChromosomes, self.MW_DNABasePairs)
+        self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_Chromosomes, self.MW_DNABasePairs)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -1030,7 +1015,7 @@ class FMaster():
     def SetUpData(self, Comp):
         # Master Indices
         self.Idx_Master_Chromosomes = self.GetMolIdx(Comp.Chromosome.ID_Chromosomes, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_Chromosomes) == Comp.Chromosome.N_AllChromosomes
+        assert len(self.Idx_Master_Chromosomes) == Comp.Chromosome.NMax_Chromosomes
 
         self.Idx_Master_Genes = self.GetMolIdx(Comp.Gene.ID_Genes, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Genes) == Comp.Gene.NUniq_Genes
