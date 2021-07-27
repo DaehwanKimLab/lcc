@@ -60,9 +60,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         # Override the abstract method
         with Writer.Statement("def ExecuteProcess(self):"):
-            Writer.Statement("self.TranscriptionInitiation()")
-            Writer.Statement("self.TranscriptElongation()")
-            Writer.Statement("self.TranscriptionTermination()")
+            Writer.Statement("self.Initiation()")
+            Writer.Statement("self.Elongation()")
+            Writer.Statement("self.Termination()")
             Writer.BlankLine()
 
         with Writer.Statement("def SigmaFactorBinding(self):"):
@@ -129,7 +129,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.DetermineRNAPUnbound()")
             Writer.BlankLine()
 
-        with Writer.Statement("def TranscriptionInitiation(self):"):
+        with Writer.Statement("def Initiation(self):"):
             Writer.Statement("self.SigmaFactorBinding()  # Not implemented")
             Writer.Statement("self.DistributeRNAPToGenes()")
             Writer.BlankLine()
@@ -279,7 +279,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_PPi, self.Cel.Count_RNAElongationPPiProduction)")
             Writer.BlankLine()
 
-        with Writer.Statement("def TranscriptElongation(self):"):
+        with Writer.Statement("def Elongation(self):"):
             Writer.Statement("self.ElongateTranscripts()")
             Writer.Statement("self.ConsumeNTPs()")
             Writer.Statement("self.ReleasePPi()")
@@ -336,7 +336,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Overwrite("self.Cel.Len_RNAsNascentInitial", "self.Cel.Len_RNAsNascentFinal")
             Writer.BlankLine()
 
-        with Writer.Statement("def TranscriptionTermination(self):"):
+        with Writer.Statement("def Termination(self):"):
             Writer.Statement("self.IdentifyCompletedRNAElongation()")
             Writer.Statement("self.CountCompletedRNAElongation()")
             Writer.Statement("self.ResetLengthOfCompletedNascentRNAs()")
@@ -347,65 +347,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.UpdateLengthOfNascentRNAsMatrix()")
             Writer.BlankLine()
             
-        with Writer.Statement("def Debugging_RNA_Indices(self, Str):"):
-            Writer.Statement("print(Str)")
-            Writer.BlankLine()
-
-            Writer.Comment__("RNA length Indices")
-            Writer.PrintStrg("RNA length Indices")
-
-            Writer.PrintVar_("self.Cel.Idx_RndRNAsNascent")
-
-            Writer.PrtIdxGr_("self.Cel.Len_RNAsNascentInitial", 0)
-            Writer.PrtIdxGr_("self.Cel.Len_RNAsNascentElongated", 0)
-            Writer.PrtIdxGr_("self.Cel.Len_RNAsNascentOverElongated", 0)
-
-            Writer.PrtIdxGr_("self.Rate_RNAElongation_Matrix", 0)
-
-            Writer.PrtIdxGr_("self.Bin_RNAsNascentElongating", 0)
-            Writer.PrtIdxGr_("self.Bin_RNAsNascentOverElongated", 0)
-            Writer.PrtIdxGr_("self.Bin_RNAsNascentElongationCompleted", 0)
-
-            Writer.BlankLine()
-
-        with Writer.Statement("def Debugging_Count_RNAsNascent(self, Str):"):
-            Writer.Statement("print(Str)")
-            Writer.BlankLine()
-            
-            Writer.Comment__("Nascent RNAs")
-            Writer.PrintStrg("Nascent RNAs")
-            
-            Writer.OperRdSum("Reduced_Sum_Of_self_Cel_Count_RNAsNascent", "self.Cel.Count_RNAsNascent")
-            Writer.PrintVaVa("Reduced_Sum_Of_self_Cel_Count_RNAsNascent")
-            Writer.BlankLine()
-            
-            Writer.OperGathr("Counts_RNAsNascent", "self.Cel.Counts", "self.Cel.Idx_Master_RNAsNascent")
-            Writer.OperRdSum("Reduced_Sum_Of_Counts_RNAsNascent", "Counts_RNAsNascent")
-            Writer.PrintVaVa("Reduced_Sum_Of_Counts_RNAsNascent")
-            Writer.BlankLine()
-            
-            Writer.OperGathr("DeltaCounts_RNAsNascent", "self.Cel.DeltaCounts", "self.Cel.Idx_Master_RNAsNascent")
-            Writer.OperRdSum("Reduced_Sum_Of_DeltaCounts_RNAsNascent", "DeltaCounts_RNAsNascent")
-            Writer.PrintVaVa("Reduced_Sum_Of_DeltaCounts_RNAsNascent")
-            Writer.BlankLine()
-
-            Writer.Comment__("RNAs (full)")
-            Writer.PrintStrg("RNAs (full)")
-
-            Writer.OperRdSum("Reduced_Sum_Of_self_Cel_Count_RNAs", "self.Cel.Count_RNAs")
-            Writer.PrintVaVa("Reduced_Sum_Of_self_Cel_Count_RNAs")
-            Writer.BlankLine()
-
-            Writer.OperGathr("Counts_RNAs", "self.Cel.Counts", "self.Cel.Idx_Master_RNAs")
-            Writer.OperRdSum("Reduced_Sum_Of_Counts_RNAs", "Counts_RNAs")
-            Writer.PrintVaVa("Reduced_Sum_Of_Counts_RNAs")
-            Writer.BlankLine()
-
-            Writer.OperGathr("DeltaCounts_RNAs", "self.Cel.DeltaCounts", "self.Cel.Idx_Master_RNAs")
-            Writer.OperRdSum("Reduced_Sum_Of_DeltaCounts_RNAs", "DeltaCounts_RNAs")
-            Writer.PrintVaVa("Reduced_Sum_Of_DeltaCounts_RNAs")
-            Writer.BlankLine()
-
         with Writer.Statement("def ViewProcessSummary(self):"):
 
             Writer.PrintStrg("===== Transcription Initiation ===== ")
@@ -413,7 +354,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.PrintStVa("# of Total RNAPs",
                              "self.Cel.Count_RNAP")
             # Number of Active RNAP
-            Writer.PrintStVa("# of active RNAPs",
+            Writer.PrintStVa("# of Active RNAPs",
                              "self.Cel.Count_RNAPActive")
             # Number of RNAP binding
             Writer.PrintStVa("# of RNAPs available that can bind a promoter",
@@ -425,29 +366,29 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.PrintStrg("===== Transcript Elongation ===== ")
             # Number of Nascent RNAs elongated
-            Writer.PrintStVa("# of all nascent RNAs elongating",
+            Writer.PrintStVa("# of All Nascent RNAs Elongating",
                              "self.Cel.Count_RNAsNascentElongatingTotal")
             # Total elongation length of RNAs
-            Writer.PrintStVa("Total elongation length of RNAs (nt)",
+            Writer.PrintStVa("Total Elongation Length of RNAs (nt)",
                              "self.Cel.Count_RNAElongationLengthTotal")
             # Total NTP consumption and PPi production
-            Writer.PrintStVa("Total NTP consumption [ATP, CTP, GTP, UTP]",
+            Writer.PrintStVa("Total NTP Consumption [ATP, CTP, GTP, UTP]",
                              "self.Cel.Count_RNAElongationNTPConsumption")
-            Writer.PrintStVa("Total PPi production",
+            Writer.PrintStVa("Total PPi Production",
                              "self.Cel.Count_RNAElongationPPiProduction")
             Writer.BlankLine()
 
             Writer.PrintStrg("===== Transcription Termination ===== ")
-            # Number of RNA elongation Completed
+            # Number of RNA Elongation Completed
             Writer.PrintStVa("# of RNA Elongation Completed",
                              "self.Cel.Count_RNAElongationCompletedTotal")
-            # Number of RNAPs released
-            Writer.PrintStVa("# of RNAPs released",
+            # Number of RNAPs Released
+            Writer.PrintStVa("# of RNAPs Released",
                              "self.Cel.Count_RNAPReleased")
-            # Number of RNAP bound to DNA
-            Writer.PrintStVa("# of total RNAPs bound to DNA",
+            # Number of RNAP Bound to DNA
+            Writer.PrintStVa("# of Total RNAPs Bound to DNA",
                              "self.Cel.Count_RNAPBound")
-            # Number of RNAP freely floating
-            Writer.PrintStVa("# of total RNAPs unbound floating",
+            # Number of RNAP Unbound Floating
+            Writer.PrintStVa("# of Total RNAPs Unbound Floating",
                              "self.Cel.Count_RNAPUnbound")
             Writer.BlankLine()

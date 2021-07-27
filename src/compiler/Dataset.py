@@ -138,6 +138,7 @@ class FChromosome(FDataset):
         self.Count_Chromosomes = 0
         self.MW_DNABasePairs = 0
         self.Freq_NTsInChromosomes = list()
+        self.Freq_NTsInChromosomesReplicating = list()
         self.NUniq_ChromosomesInGenome = 0
         self.NMax_Chromosomes = 0
 
@@ -190,6 +191,8 @@ class FChromosome(FDataset):
                     self.ID_Chromosomes.append(ChromosomeID)
                     self.MW_DNABasePairs[ChromosomeCount] = self.Len_ChromosomesInGenome[ChromosomeNumber] * DNABasePairMW / 2  # average length
                     self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[ChromosomeNumber])
+                    self.Freq_NTsInChromosomesReplicating.append(self.Freq_NTsInChromosomesInGenome[ChromosomeNumber])
+
                     ChromosomeCount += 1
 
                 # ChromosomeState = 'Replicating'
@@ -230,6 +233,7 @@ class FGene(FDataset):
         self.Type_Genes = list()
         self.ID2Idx_Genes = dict()
         self.Sym2Idx_Genes = dict()
+        self.Sym2ID_Genes = dict()
         self.Name2ID_Genes = dict()
         self.Count_Genes = 0
         self.NUniq_Genes = 0
@@ -262,6 +266,7 @@ class FGene(FDataset):
             # self.Name_Genes.append(Name)
             # self.Name2ID_Genes[Name] = GeneID
             self.Sym_Genes.append(Symbol)
+            self.Sym2ID_Genes[Symbol] = GeneID
             self.Sym2Idx_Genes[Symbol] = len(self.ID_Genes)
             assert GeneID not in self.ID2Idx_Genes
             self.ID_Genes.append(GeneID)
@@ -544,10 +549,11 @@ class FProtein(FDataset):
         self.Count_AAsInProteins = list()
         self.Count_Proteins = 0
         self.Freq_AAsInProteins = list()
+
         self.ID2ID_Protein2Gene = dict()
-        self._GeneIDs = list()
+        self.ID2ID_Gene2Protein = dict()
         self.ID2ID_Protein2RNA = dict()
-        self._RNAIDs = list()
+        self.ID2ID_RNA2Protein = dict()
 
         self.NUniq_Proteins = 0
         
@@ -596,7 +602,10 @@ class FProtein(FDataset):
             AACount = ast.literal_eval(AACount)
             self.Count_AAsInProteins.append(AACount)
             self.Count_Proteins[i] = self.ID2Count_Proteins_Temp[ProtMonomerID]
+            self.ID2ID_Protein2Gene[ProtMonomerID] = GeneID
+            self.ID2ID_Gene2Protein[GeneID] = ProtMonomerID
             self.ID2ID_Protein2RNA[ProtMonomerID] = RNAID
+            self.ID2ID_RNA2Protein[RNAID] = ProtMonomerID
             self.ID2ID_mRNA2Protein[RNAID] = ProtMonomerID
             # ProteinAAFreq
             AATotalCount = len(Seq)

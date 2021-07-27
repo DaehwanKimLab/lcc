@@ -70,9 +70,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         # Override the abstract method
         with Writer.Statement("def ExecuteProcess(self):"):
-            Writer.Statement("self.TranslationInitiation()")
-            Writer.Statement("self.PolypeptideElongation()")
-            Writer.Statement("self.TranslationTermination()")
+            Writer.Statement("self.Initiation()")
+            Writer.Statement("self.Elongation()")
+            Writer.Statement("self.Termination()")
             Writer.BlankLine()
 
         with Writer.Statement("def SigmaFactorBinding(self):"):
@@ -149,7 +149,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.DetermineRibosomeUnbound()")
             Writer.BlankLine()
 
-        with Writer.Statement("def TranslationInitiation(self):"):
+        with Writer.Statement("def Initiation(self):"):
             Writer.Statement("self.SigmaFactorBinding()  # Not implemented")
             Writer.Statement("self.DistributeRibosomeTomRNAs()")
             Writer.BlankLine()
@@ -332,7 +332,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_PPi, self.Cel.Count_ProteinElongationPPiProduction)")
             Writer.BlankLine()
 
-        with Writer.Statement("def PolypeptideElongation(self):"):
+        with Writer.Statement("def Elongation(self):"):
             Writer.Statement("self.ElongatePolypeptides()")
             Writer.Statement("self.ConsumeAAs()")
             Writer.Statement("self.ReleasePPi()")
@@ -399,7 +399,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Overwrite("self.Cel.Len_ProteinsNascentInitial", "self.Cel.Len_ProteinsNascentFinal")
             Writer.BlankLine()
 
-        with Writer.Statement("def TranslationTermination(self):"):
+        with Writer.Statement("def Termination(self):"):
             Writer.Statement("self.IdentifyCompletedProteinElongation()")
             Writer.Statement("self.CountCompletedProteinElongation()")
             Writer.Statement("self.ResetLengthOfCompletedNascentProteins()")
@@ -475,7 +475,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.PrintStVa("# of Total Ribosomes",
                              "self.Cel.Count_Ribosome")
             # Number of Active Ribosome
-            Writer.PrintStVa("# of active Ribosomes",
+            Writer.PrintStVa("# of Active Ribosomes",
                              "self.Cel.Count_RibosomeActive")
             # Number of Ribosome binding
             Writer.PrintStVa("# of Ribosomes available that can bind a promoter",
@@ -487,15 +487,15 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.PrintStrg("===== Polypeptide Elongation ===== ")
             # Number of Nascent Proteins elongated
-            Writer.PrintStVa("# of all nascent Proteins elongating",
+            Writer.PrintStVa("# of All Nascent Proteins Elongating",
                              "self.Cel.Count_ProteinsNascentElongatingTotal")
             # Total elongation length of Proteins
-            Writer.PrintStVa("Total elongation length of Proteins (nt)",
+            Writer.PrintStVa("Total Elongation Length of Proteins (aa)",
                              "self.Cel.Count_ProteinElongationLengthTotal")
             # Total AA consumption and PPi production
-            Writer.PrintStVa("Total AA consumption [ATP, CTP, GTP, UTP]",
+            Writer.PrintStVa("Total AA Consumption [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
                              "self.Cel.Count_ProteinElongationAAConsumption")
-            Writer.PrintStVa("Total PPi production",
+            Writer.PrintStVa("Total PPi Production",
                              "self.Cel.Count_ProteinElongationPPiProduction")
             Writer.BlankLine()
 
@@ -504,12 +504,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.PrintStVa("# of Protein Elongation Completed",
                              "self.Cel.Count_ProteinElongationCompletedTotal")
             # Number of Ribosomes released
-            Writer.PrintStVa("# of Ribosomes released",
+            Writer.PrintStVa("# of Ribosomes Released",
                              "self.Cel.Count_RibosomeReleased")
             # Number of Ribosome bound to DNA
-            Writer.PrintStVa("# of total Ribosomes bound to DNA",
+            Writer.PrintStVa("# of Total Ribosomes Bound to mRNA",
                              "self.Cel.Count_RibosomeBound")
             # Number of Ribosome freely floating
-            Writer.PrintStVa("# of total Ribosomes unbound floating",
+            Writer.PrintStVa("# of Total Ribosomes Unbound Floating",
                              "self.Cel.Count_RibosomeUnbound")
             Writer.BlankLine()

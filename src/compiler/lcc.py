@@ -336,6 +336,7 @@ def Compile(CodeFileNames,
     ProGen.LinkCompilerObj(CompilerData)
     # To be passing user inputs in the future: List cell processes to incorporate in the simulation code
     CellProcesses = [
+        Replication,
         Transcription,
         Translation,
         Metabolism

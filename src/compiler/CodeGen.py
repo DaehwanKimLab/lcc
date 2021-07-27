@@ -414,10 +414,6 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Scatter operation")
         self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, Target, Index, Values))
 
-    def OperRdSum(self, DestVar, MX, Axis=None):
-        self.Comment__("Reduce sum operation")
-        self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (DestVar, MX, Axis))
-
     def OperElAdd(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise addition")
         self.Statement("%s = tf.math.add(%s, %s)" % (DestVar, MX1, MX2))
@@ -429,6 +425,10 @@ class TFCodeWriter(CodeWriter):
     def OperElMul(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise multiplication")
         self.Statement("%s = tf.math.multiply(%s, %s)" % (DestVar, MX1, MX2))
+
+    def OperElDiv(self, DestVar, MX1, MX2):
+        self.Comment__("Element-wise division to get the quotient")
+        self.Statement("%s = tf.math.divide(%s, %s)" % (DestVar, MX1, MX2))
 
     def OperElQuo(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise division to get the quotient")
@@ -458,6 +458,14 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Matrix multiplication addition")
         self.Statement("%s = tf.linalg.matmul(%s, %s)" % (DestVar, MX1, MX2))
         self.Reshape__(DestVar, DestVar, -1)
+
+    def OperRdSum(self, DestVar, MX, Axis=None):
+        self.Comment__("Reduce sum operation")
+        self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (DestVar, MX, Axis))
+
+    def CtNonZero(self, DestVar, MX, Axis=None):
+        self.Comment__("Reduce sum operation")
+        self.Statement("%s = tf.math.count_nonzero(%s, axis=%s)" % (DestVar, MX, Axis))
 
     def Round____(self, DestVar, MX):
         self.Comment__("Round without changing data type")
