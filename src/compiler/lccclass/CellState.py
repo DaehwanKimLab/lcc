@@ -19,6 +19,17 @@ def Write_CellState(Writer, Comp, ProGen):
 
             Writer.Variable_("self.Counts", 0)  # Counts matrix for all molecules
             Writer.Variable_("self.DeltaCounts", 0)
+
+            Writer.Variable_("self.Len_ChsReplicating", 0)
+            Writer.Variable_("self.Len_RNAsNascent", 0)
+            Writer.Variable_("self.Len_ProteinsNascent", 0)
+
+            Writer.Variable_("self.Count_NTPs_RNAsCleaved", 0)
+            Writer.Variable_("self.Count_AAS_ProteinsCleaved", 0)
+
+            Writer.Variable_("self.Freq_NTPs_RNAsCleaved", 0)
+            Writer.Variable_("self.Freq_AAs_RNAsCleaved", 0)
+
             Writer.Variable_("self.MWs", 0)  # MW matrix for molecules
             Writer.BlankLine()
 

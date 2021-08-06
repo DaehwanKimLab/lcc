@@ -233,12 +233,18 @@ class FProcessGenerator():
         NewListOfNumbers = [-Number for Number in ListOfNumbers]
         return NewListOfNumbers
 
+
+
+
+
     # Generate Cell Process Methods
     def Init_Common(self, Writer):
         with Writer.Statement("def __init__(self, Cel, Cst, Env, Exe):"):
             Writer.Statement("super().__init__(Cel, Cst, Env, Exe)")
             Writer.Statement("self.Init_ProcessSpecificVariables()")
             Writer.BlankLine()
+
+
 
     # def GenerateCellProcessInterface(self, Writer):
     #     with Writer.Statement("class FCellProcess():"):

@@ -238,6 +238,11 @@ class FGene(FDataset):
         self.Count_Genes = 0
         self.NUniq_Genes = 0
 
+        self.Coord_Genes_Reindexed = 0
+        self.Coord_Genes_Reindexed_Leftward = 0
+        self.Coord_Genes_Reindexed_Rightward = 0
+
+
         super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
@@ -273,13 +278,48 @@ class FGene(FDataset):
             self.ID2Idx_Genes[GeneID] = len(self.Seq_Genes)
             self.Seq_Genes.append(Seq)
             self.Len_Genes[i] = (len(Seq))
-            self.Coord_Genes[i] = Coordinate
+            self.Coord_Genes[i] = int(Coordinate)
             DirectionBinary = DirectionBinaryDict[Direction]
             self.Dir_Genes[i] = DirectionBinary
             self.Type_Genes.append(Type)
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Genes, self.MolType_Genes, self.Count_Genes, self.MW_Genes)
+
+        # Reindexing coordinates according to the center of OriC as 0
+        Genome = Dataset['EscherichiaColi.fasta']
+        Len_Genome = len(Genome['Ch1'])
+
+        Coord_Ori_Start = 3925744
+        Len_Ori = 232
+        Coord_Ori = Coord_Ori_Start + int(Len_Ori / 2)
+
+        self.Coord_Genes_Reindexed = np.zeros(self.NUniq_Genes)
+        for i, Coord in enumerate(self.Coord_Genes):
+            if (Coord >= Coord_Ori) and (Coord <= Len_Genome):
+                self.Coord_Genes_Reindexed[i] = Coord - Coord_Ori
+            elif (Coord >= 0) and (Coord <= Coord_Ori):
+                self.Coord_Genes_Reindexed[i] = Coord + (Len_Genome - Coord_Ori)
+            else:
+                print("WARNING: Unidentifiable coordinate range", file=sys.stderr)
+        assert max(self.Coord_Genes_Reindexed) < Len_Genome, 'Reindexing failed'
+
+        # Buffering and organizing coordinates for bidirectional scanning during replication
+
+        Len_Buffer4Promoter = 50
+
+        self.Coord_Genes_Reindexed_Leftward = np.zeros(self.NUniq_Genes)
+        self.Coord_Genes_Reindexed_Rightward = np.zeros(self.NUniq_Genes)
+        for i, Coord in enumerate(self.Coord_Genes_Reindexed):
+            if self.Dir_Genes[i]:
+                self.Coord_Genes_Reindexed_Leftward[i] = (Len_Genome - Coord) + Len_Buffer4Promoter
+                self.Coord_Genes_Reindexed_Rightward[i] = Coord
+            else:
+                self.Coord_Genes_Reindexed_Leftward[i] = (Len_Genome - Coord)
+                self.Coord_Genes_Reindexed_Rightward[i] = Coord + Len_Buffer4Promoter
+
+        assert max(self.Coord_Genes_Reindexed_Leftward) < Len_Genome, 'Reindexing failed'
+        assert max(self.Coord_Genes_Reindexed_Rightward) < Len_Genome, 'Reindexing failed'
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
