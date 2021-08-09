@@ -234,7 +234,6 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Idx_AAs", 0)
             Writer.Variable_("self.Idx_SelenoCysteineInAAs", 0)
             Writer.Variable_("self.Idx_AAsLocalAssignmentNoSelenoCysteine", 0)
-            Writer.Variable_("self.Idx_RndProteinsNascent", 0)
             Writer.BlankLine()
             Writer.Variable_("self.Rate_RibosomeActive", 0)  # Not implemented yet
             Writer.Variable_("self.Rate_RibosomeActiveCanBind", 0)
@@ -266,6 +265,9 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
             Writer.Variable_("self.Count_AAsOverElongated", 0)
             Writer.BlankLine()
+            Writer.Variable_("self.Len_ProteinsNascent", 0)
+            Writer.BlankLine()
+
             Writer.Variable_("self.Len_ProteinsNascentInitial", 0)
             Writer.Variable_("self.Len_ProteinsNascentMax", 0)
             Writer.Variable_("self.Len_ProteinsNascentElongated", 0)

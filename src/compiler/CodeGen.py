@@ -394,37 +394,36 @@ class TFCodeWriter(CodeWriter):
         self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, SrcVar1, SrcVar2, Axis))
 
     def PrepGathr(self, Source, Index):
-        self.Comment__("Reshape for a gather operation")
-        self.Reshape__(Source, Source, -1)
-        self.Reshape__(Index, Index, [-1, 1])
+        self.Reshape__("Source", Source, -1)
+        self.Reshape__("Index", Index, [-1, 1])
 
     def OperGathr(self, VariableName, Source, Index):
-        # self.PrepGathr(Source, Index)
         self.Comment__("Gather operation")
-        self.Statement("Source = tf.reshape(%s, [-1])   # Reshape the index matrix for gather function" % Source)
-        self.Statement("Index = tf.reshape(%s, [-1, 1])   # Reshape the index matrix for gather function" % Index)
+        self.PrepGathr(Source, Index)
+        # self.Statement("Source = tf.reshape(%s, [-1])   # Reshape source matrix for gather function" % Source)
+        # self.Statement("Index = tf.reshape(%s, [-1, 1])   # Reshape index matrix for gather function" % Index)
         self.Statement("%s = tf.gather(%s, %s)" % (VariableName, "Source", "Index"))
 
     def PrepScNds(self, Target, Index, Values):
         self.Comment__("Reshape matrices for a scatter operation")
-        self.ReshInt__(Target, Target, -1)
-        self.ReshInt__(Index, Index, [-1, 1])
-        self.ReshInt__(Values, Values, -1)
+        self.ReshInt__("Target", Target, -1)
+        self.ReshInt__("Index", Index, [-1, 1])
+        self.ReshInt__("Values", Values, -1)
 
     def OperScAdd(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
         self.Comment__("Scatter operation")
-        self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (Target, Target, Index, Values))
+        self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
 
     def OperScSub(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
         self.Comment__("Scatter operation")
-        self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (Target, Target, Index, Values))
+        self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
 
     def OperScUpd(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
         self.Comment__("Scatter operation")
-        self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, Target, Index, Values))
+        self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
 
     def OperElAnd(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise AND logic evaluation")
@@ -485,6 +484,9 @@ class TFCodeWriter(CodeWriter):
         self.Comment__("Reduce sum operation")
         self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (DestVar, MX, Axis))
 
+    def CumSum___(self, DestVar, MX, Axis=0, Exclusive=False, Reverse=False):
+        self.Statement("%s = tf.math.cumsum(%s, axis=%s, exclusive=%s, reverse=%s)" % (DestVar, MX, Axis, Exclusive, Reverse))
+
     def NonZeros_(self, DestVar, MX, Axis=None):
         self.Comment__("Reduce sum operation")
         self.Statement("%s = tf.math.count_nonzero(%s, axis=%s)" % (DestVar, MX, Axis))
@@ -519,6 +521,10 @@ class TFCodeWriter(CodeWriter):
     def ArgMin___(self, DestVar, MX, Axis=None, Type='int32'):
         self.Comment__("Returns the index with the largest value across axes of a tensor")
         self.Statement("%s = tf.math.argmin(%s, %s, output_type=tf.%s)" % (DestVar, MX, Axis, Type))
+
+    def Sort_____(self, DestVar, MX, Axis=1, Direction='DESCENDING'):
+        # Direction may be either 'ASCENDING' or 'DESCENDING'
+        self.Statement("%s = tf.sort(%s, axis=%s, direction=%s)" % (DestVar, MX, Axis, Direction))
 
     def RoundInt_(self, DestVar, MX, Type='int32'):
         self.Comment__("Round and change data type to integer")
@@ -567,7 +573,7 @@ class TFCodeWriter(CodeWriter):
         self.Reshape__("N_IndicesToDraw", N_MoleculesToDistribute, -1)
         self.RndIdxUni(DestVar, "N_IndicesToDraw", "PoolOfIndices")
 
-    def ContToBin(self, DestVar, Count, N_Columns):
+    def Count2Bin(self, DestVar, Count, N_Columns):
         # Generate binary pair vector
         self.Statement("Length_Count = tf.shape(%s)" % Count)
         self.OperElMul("Length_BinaryPairArray", "Length_Count", "2")
