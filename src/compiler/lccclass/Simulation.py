@@ -95,7 +95,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Statement("def IncrementSimClock(self):"):
-            Writer.AddElwise("self.SimStepsExecuted", 1)
+            Writer.Add______("self.SimStepsExecuted", "self.SimStepsExecuted", 1)
             Writer.Statement("self.UpdateSimTime()")
             if Writer.Switch4SimStepsExecuted:
                 Writer.Statement("self.PrintSimStepsExecuted()")
@@ -201,7 +201,7 @@ def Write_Simulation(Writer, Comp, ProGen):
 
             # Update Counts
 
-            Writer.OperElAdd("self.Cel.Counts", "self.Cel.Counts", "self.Cel.DeltaCounts")
+            Writer.Add______("self.Cel.Counts", "self.Cel.Counts", "self.Cel.DeltaCounts")
 
             if Writer.Switch4SoftCheckCounts or Writer.Switch4HardCheckCounts:
                 Writer.Statement("self.SIM_CheckCountsPos()")
@@ -231,7 +231,7 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
-            Writer.OperScUpd("FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
+            Writer.ScatNdUpd("FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
             Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
             Writer.ReturnVar("FinalCount_Replenished")
             Writer.BlankLine()

@@ -58,7 +58,7 @@ def Write_ReactionExecution(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def AddCountMatrices(self):"):
-            Writer.OperElAdd("FinalCount", "self.Count", "self.DeltaCount")
+            Writer.Add______("FinalCount", "self.Count", "self.DeltaCount")
             Writer.DebugPVar("FinalCount")
             Writer.ReturnVar("FinalCount")
             Writer.BlankLine()

@@ -320,7 +320,7 @@ class FProcessGenerator():
             #         Writer.InitZeros("StoichiometryArray", self.Comp.Master.NUniq_Master)
             #
             #         # Update RXN stoichiometry array with Idx and Stoich participating in the RXN
-            #         Writer.OperScUpd("StoichiometryArray", "MolIdxs", "Coeffs")
+            #         Writer.ScatNdUpd("StoichiometryArray", "MolIdxs", "Coeffs")
             #         Writer.Reshape__("StoichiometryArray", "StoichiometryArray", [1, -1])
             #
             #         # Add StoichiometryArray to the Cel.MX_Stoichiometries matrix

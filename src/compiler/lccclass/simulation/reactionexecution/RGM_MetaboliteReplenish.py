@@ -41,12 +41,12 @@ def Write_RGM_MetaboliteReplenish(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
-            Writer.OperScUpd("FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
+            Writer.ScatNdUpd("FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
             Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
             Writer.ReturnVar("FinalCount_Replenished")
             Writer.BlankLine()
 
         with Writer.Statement("def AddCountMatrices(self):"):
-            Writer.OperElAdd("FinalCount", "self.Count", "self.DeltaCount")
+            Writer.Add______("FinalCount", "self.Count", "self.DeltaCount")
             Writer.ReturnVar("FinalCount")
             Writer.BlankLine()

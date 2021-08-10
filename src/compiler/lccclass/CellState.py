@@ -34,7 +34,7 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
 
             Writer.Statement("self.ImportCompilerData()")
-            Writer.Statement("self.TransposeFreqMatrices()")
+            Writer.Statement("self.TransposeFreqNCountMatrices()")
             Writer.BlankLine()
 
             # Initialize variables for (organization purpose)
@@ -87,14 +87,14 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Statement("def ShowDeltaCounts(self):"):
-            Writer.OperElNEq("Bool_CheckPointNonZero", "self.DeltaCounts", "tf.constant(0)")
+            Writer.NotEqual_("Bool_CheckPointNonZero", "self.DeltaCounts", "tf.constant(0)")
             Writer.PrintStrg("[DeltaCounts] Non-zeros:")
             Writer.PrintStVa("\tIndex", "tf.reshape(tf.where(Bool_CheckPointNonZero), -1)")
             Writer.PrintStVa("\tValue", "tf.reshape(tf.gather(self.DeltaCounts, tf.where(Bool_CheckPointNonZero)), -1)")
             Writer.BlankLine()
 
         with Writer.Statement("def CheckDeltaCountsNeg(self):"):
-            Writer.OperElLe_("Bool_CheckPointLessThanZero", "self.DeltaCounts", "tf.constant(0)")
+            Writer.Less_____("Bool_CheckPointLessThanZero", "self.DeltaCounts", "tf.constant(0)")
             Writer.PrintStrg("[DeltaCounts] Negatives:")
             Writer.PrintStVa("\tIndex", "tf.reshape(tf.where(Bool_CheckPointLessThanZero), -1)")
             Writer.PrintStVa("\tValue", "tf.reshape(tf.gather(self.DeltaCounts, tf.where(Bool_CheckPointLessThanZero)), -1)")
@@ -103,7 +103,7 @@ def Write_CellState(Writer, Comp, ProGen):
         with Writer.Statement("def CheckCountsPos(self):"):
             if Writer.Switch4SoftCheckCounts:
                 Writer.Comment__("Soft Checkpoint")
-                Writer.OperElLe_("Bool_SoftCheckPoint", "self.Counts", "tf.constant(0)")
+                Writer.Less_____("Bool_SoftCheckPoint", "self.Counts", "tf.constant(0)")
                 Writer.PrintStrg("[Counts] Negatives:")
                 Writer.PrintStVa("\tIndex", "tf.reshape(tf.where(Bool_SoftCheckPoint), -1)")
                 Writer.PrintStVa("\tValue", "tf.reshape(tf.gather(self.Counts, tf.where(Bool_SoftCheckPoint)), -1)")
@@ -118,12 +118,17 @@ def Write_CellState(Writer, Comp, ProGen):
                 Writer.Pass_____()
                 Writer.BlankLine()
 
-        with Writer.Statement("def TransposeFreqMatrices(self):"):
+        with Writer.Statement("def TransposeFreqNCountMatrices(self):"):
             Writer.Transpose("self.Freq_NTsInChromosomes")
             Writer.Transpose("self.Freq_NTsInChromosomesReplicating")
             Writer.Transpose("self.Freq_NTsInChromosomesInGenome")
             Writer.Transpose("self.Freq_NTsInRNAs")
             Writer.Transpose("self.Freq_AAsInProteins")
+            Writer.BlankLine()
+            Writer.Transpose("self.Count_BasePairsInChromosomes")
+            Writer.Transpose("self.Count_NTsInChromosomesInGenome")
+            Writer.Transpose("self.Count_NTsInRNAs")
+            Writer.Transpose("self.Count_AAsInProteins")
             Writer.BlankLine()
 
         with Writer.Statement("def InitializeMatrices(self):"):
@@ -138,6 +143,11 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Zero", 0)
 
             Writer.Variable_("self.Idx_PPi", 0)
+            Writer.Variable_("self.Idx_Pi", 0)
+            Writer.Variable_("self.Idx_ADP", 0)
+            Writer.Variable_("self.Idx_ATP", 0)
+            Writer.Variable_("self.Idx_H2O", 0)
+            Writer.Variable_("self.Idx_Proton", 0)
 
             Writer.BlankLine()
 
@@ -277,6 +287,10 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Len_ProteinsNascentFinal", 0)
             Writer.BlankLine()
 
+            # Protein Degradation
+            Writer.Variable_("self.Rate_ProteinDegradation", 0)
+            Writer.Variable_("self.Count_AAsToBeReplenished", 0)
+
 
             # Metabolism
             Writer.Comment__("Metabolism")
@@ -319,9 +333,9 @@ def Write_CellState(Writer, Comp, ProGen):
         #     Writer.BlankLine()
         #
         # with Writer.Statement("def AddToStoichiometryMatrix(self, Stoichiometry):"):
-        #     Writer.OperCncat("self.MX_Stoichiometries", "self.MX_Stoichiometries", "Stoichiometry")
+        #     Writer.Concat___("self.MX_Stoichiometries", "self.MX_Stoichiometries", "Stoichiometry")
         #     Writer.BlankLine()
         #
         # with Writer.Statement("def AddToRateMatrix(self, Rate):"):
-        #     Writer.OperCncat("self.MX_Rates", "self.MX_Rates", "Rate")
+        #     Writer.Concat___("self.MX_Rates", "self.MX_Rates", "Rate")
         #     Writer.BlankLine()

@@ -30,12 +30,12 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
-            Writer.OperScAdd("self.Cel.DeltaCounts", "MolIdxs", "MolCounts")
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "MolIdxs", "MolCounts")
             Writer.BlankLine()
 
         Writer.AbsMethod()
         with Writer.Statement("def ViewProcessSummary(self):"):
-            Writer.PrintStrg("Summery message not implemented yet")
+            Writer.PrintStrg("Summary message not implemented yet")
             Writer.Pass_____()
             Writer.BlankLine()
 
@@ -46,7 +46,7 @@ def Write_CellProcess(Writer):
 
         with Writer.Statement("def DebuggingVar(self, VarBefore, VarAfter):"):
             Writer.Statement("print('[Debug] %s' % VarAfter)")
-            Writer.OperElSub("Delta", "VarBefore", "VarAfter")
+            Writer.Subtract_("Delta", "VarBefore", "VarAfter")
             Writer.PrintVaVa("Delta")
             Writer.BlankLine()
 

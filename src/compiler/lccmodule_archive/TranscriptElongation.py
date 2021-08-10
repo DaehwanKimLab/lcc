@@ -95,7 +95,7 @@ def Write_TE_Loop(Writer):
 
         # TE - Determine RNA production and RNAP release
         Writer.Statement("# TE - Determine RNA production and RNAP release")
-        Writer.OperScAdd("CellMX.RNAPDurationsTF", "CellMX.RNAIndex4AllRNATF", "CellMX.RNAPPerTranscriptTF")
+        Writer.ScatNdAdd("CellMX.RNAPDurationsTF", "CellMX.RNAIndex4AllRNATF", "CellMX.RNAPPerTranscriptTF")
         Writer.Statement("CellMX.RNAPDurationsTF = tf.reshape(CellMX.RNAPDurationsTF, -1)")
         Writer.BlankLine()
 
@@ -106,7 +106,7 @@ def Write_TE_Loop(Writer):
 
         # TE - Update NT concs
         Writer.Statement("# TE - Update NT counts")
-        Writer.OperScSub("CellMX.MetaboliteConcsTF", "CellMX.NTConcsIndexTF", "DeltaNTConcsTF")
+        Writer.ScatNdSub("CellMX.MetaboliteConcsTF", "CellMX.NTConcsIndexTF", "DeltaNTConcsTF")
         Writer.DebugVari("NTConcsNewTF", "tf.reshape(tf.gather(CellMX.MetaboliteConcsTF, CellMX.NTConcsIndexTF), [-1])")
         Writer.DebugSTMT(
             "tf.debugging.assert_none_equal(NTConcsNewTF, NTConcsAvailTF), 'NT consumption is not properly applied'")

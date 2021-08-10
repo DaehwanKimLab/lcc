@@ -82,7 +82,7 @@ def Write_PE_Loop(Writer):
         # PE - Determine AA consumption
         Writer.Statement("# PE - Determine AA consumption")
         Writer.Statement("RibosomePerPolypeptideTF_Float = tf.cast(tf.reshape(CellMX.RibosomePerPolypeptideTF, [-1, 1]), dtype='float32')")
-        Writer.OperMXMul("DeltaAACountsTF", "CellMX.ProtAAFreqsTF", "RibosomePerPolypeptideTF_Float")
+        Writer.MatrixMul("DeltaAACountsTF", "CellMX.ProtAAFreqsTF", "RibosomePerPolypeptideTF_Float")
         Writer.Statement("DeltaAACountsTF *= CellMX.RibosomeElongationRate")
         Writer.Statement("DeltaAACountsTF = tf.reshape(DeltaAACountsTF, -1)")
         Writer.Statement("DeltaAAConcsTF = DeltaAACountsTF / (CellMX.CellVol * AvogadroNum)")  # final unit: mol/L
@@ -97,7 +97,7 @@ def Write_PE_Loop(Writer):
 
         # PE - Determine Prot production and Ribosome release
         Writer.Statement("# PE - Determine Prot production and Ribosome release")
-        Writer.OperScAdd("CellMX.RibosomeDurationsTF", "CellMX.ProtIndexTF", "CellMX.RibosomePerPolypeptideTF")
+        Writer.ScatNdAdd("CellMX.RibosomeDurationsTF", "CellMX.ProtIndexTF", "CellMX.RibosomePerPolypeptideTF")
         Writer.Statement("CellMX.RibosomeDurationsTF = tf.reshape(CellMX.RibosomeDurationsTF, -1)")
         Writer.BlankLine()
 
@@ -108,7 +108,7 @@ def Write_PE_Loop(Writer):
 
         # PE - Update AA concs
         Writer.Statement("# PE - Update AA counts")
-        Writer.OperScSub("CellMX.MetaboliteConcsTF", "CellMX.AAConcsIndexTF", "DeltaAAConcsTF")
+        Writer.ScatNdSub("CellMX.MetaboliteConcsTF", "CellMX.AAConcsIndexTF", "DeltaAAConcsTF")
         Writer.DebugVari("AAConcsNewTF", "tf.reshape(tf.gather(CellMX.MetaboliteConcsTF, CellMX.AAConcsIndexTF), [-1])")
         Writer.DebugSTMT(
             "tf.debugging.assert_none_equal(AAConcsNewTF, AAConcsAvailTF), 'AA consumption is not properly applied'")
@@ -121,11 +121,11 @@ def Write_PE_Loop(Writer):
         with Writer.Statement("if tf.math.count_nonzero(CellMX.PECompletionIndexTF):"):
             # Update Ribosome duration on Polypeptide
             Writer.Statement("# Update Ribosome duration on Polypeptide")
-            Writer.OperGathr("DeltaDurationsTF", "CellMX.PECompletionDurationTF", "CellMX.PECompletionIndexTF")
+            Writer.Gather___("DeltaDurationsTF", "CellMX.PECompletionDurationTF", "CellMX.PECompletionIndexTF")
             Writer.Statement("DeltaDurationsTF = tf.reshape(DeltaDurationsTF, -1)")
             Writer.PrintStrg("RibosomeDuration with Elongation completion index before update:")
             Writer.PrintVari("tf.reshape(tf.gather(CellMX.RibosomeDurationsTF, CellMX.PECompletionIndexTF), -1)")
-            Writer.OperScSub("CellMX.RibosomeDurationsTF", "CellMX.PECompletionIndexTF", "DeltaDurationsTF")
+            Writer.ScatNdSub("CellMX.RibosomeDurationsTF", "CellMX.PECompletionIndexTF", "DeltaDurationsTF")
             Writer.PrintStrg("RibosomeDuration with Elongation completion index after update:")
             Writer.PrintVari("tf.reshape(tf.gather(CellMX.RibosomeDurationsTF, CellMX.PECompletionIndexTF), -1)")
             Writer.BlankLine()
@@ -135,14 +135,14 @@ def Write_PE_Loop(Writer):
             Writer.PrintStrg("RibosomePerPolypeptide with Elongation completion index before update:")
             Writer.PrintVari("tf.reshape(tf.gather(CellMX.RibosomePerPolypeptideTF, CellMX.PECompletionIndexTF), -1)")
             Writer.InitArrayWithOne("ElongCompletionOnesTF", "tf.size(CellMX.PECompletionIndexTF)", 'int32')
-            Writer.OperScSub("CellMX.RibosomePerPolypeptideTF", "CellMX.PECompletionIndexTF", "ElongCompletionOnesTF")
+            Writer.ScatNdSub("CellMX.RibosomePerPolypeptideTF", "CellMX.PECompletionIndexTF", "ElongCompletionOnesTF")
             Writer.PrintStrg("RibosomePerPolypeptide with Elongation completion index after update:")
             Writer.PrintVari("tf.reshape(tf.gather(CellMX.RibosomePerPolypeptideTF, CellMX.PECompletionIndexTF), -1)")
             Writer.BlankLine()
 
             # PE - Update Protein counts
             Writer.Statement("# PE - Update Protein counts")
-            Writer.OperScAdd("CellMX.ProtCountsTF", "CellMX.PECompletionIndexTF", "ElongCompletionOnesTF")
+            Writer.ScatNdAdd("CellMX.ProtCountsTF", "CellMX.PECompletionIndexTF", "ElongCompletionOnesTF")
             Writer.BlankLine()
 
             # PE - Update free active Ribosome counts

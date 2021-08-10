@@ -273,10 +273,6 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.shape(%s, dtype=tf.%s)' % (DestVar, Input, Type)
         self.Statement(Line)
 
-    def AddElwise(self, VariableName, Value):
-        Line = '%s = tf.add(%s, %s)' % (VariableName, VariableName, str(Value))
-        self.Statement(Line)
-
     def LoadSaved(self, SaveFilePath, VariableName, DataType=None):
         FileType = SaveFilePath.split('.')[-1]
         if FileType == 'npy':
@@ -342,7 +338,7 @@ class TFCodeWriter(CodeWriter):
     # def SelectIdx(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
     #     self.InitZeros(VariableName, 0)
     #     if Weights:
-    #         self.OperGathr("Weights", Weights, Indexes)
+    #         self.Gather___("Weights", Weights, Indexes)
     #         self.Statement("Weights = Weights / len(Weights)")
     #     else:
     #         self.InitOnes_("Weights", len(Indexes), Type='int32')
@@ -364,41 +360,34 @@ class TFCodeWriter(CodeWriter):
     #         self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
     #     self.DebugPStV("After Increment:", TargetMX)
 
-    def OperElGrE(self, DestVar, MX1, MX2):
-        self.Comment__("Elementwise greater than or equal to evaluation")
+    def GreaterEq(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.greater_equal(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElGr_(self, DestVar, MX1, MX2):
-        self.Comment__("Elementwise greater than evaluation")
+    def Greater__(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.greater(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElLeE(self, DestVar, MX1, MX2):
-        self.Comment__("Elementwise less than or equal to evaluation")
+    def LessEq___(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.less_equal(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElLe_(self, DestVar, MX1, MX2):
-        self.Comment__("Elementwise less than evaluation")
+    def Less_____(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.less(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElEq_(self, DestVar, MX1, MX2):
-        self.Comment__("Elementwise equal to evaluation")
+    def Equal____(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.equal(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElNEq(self, DestVar, MX1, MX2):
-        self.Comment__("Elementwise not_equal to evaluation")
+    def NotEqual_(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.not_equal(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperCncat(self, DestVar, SrcVar1, SrcVar2, Axis=0):
+    def Concat___(self, DestVar, SrcVar1, SrcVar2, Axis=0):
         # self.PrepCncat(DestVar, SrcVar1, SrcVar2)
-        self.Comment__("Concatenation")
         self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, SrcVar1, SrcVar2, Axis))
 
     def PrepGathr(self, Source, Index):
         self.Reshape__("Source", Source, -1)
         self.Reshape__("Index", Index, [-1, 1])
 
-    def OperGathr(self, VariableName, Source, Index):
-        self.Comment__("Gather operation")
+    def Gather___(self, VariableName, Source, Index):
+        self.Comment__("Reshape matrices for a gather operation")
         self.PrepGathr(Source, Index)
         # self.Statement("Source = tf.reshape(%s, [-1])   # Reshape source matrix for gather function" % Source)
         # self.Statement("Index = tf.reshape(%s, [-1, 1])   # Reshape index matrix for gather function" % Index)
@@ -410,60 +399,53 @@ class TFCodeWriter(CodeWriter):
         self.ReshInt__("Index", Index, [-1, 1])
         self.ReshInt__("Values", Values, -1)
 
-    def OperScAdd(self, Target, Index, Values):
+    def ScatNdAdd(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
-        self.Comment__("Scatter operation")
         self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
 
-    def OperScSub(self, Target, Index, Values):
+    def ScatNdSub(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
-        self.Comment__("Scatter operation")
         self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
 
-    def OperScUpd(self, Target, Index, Values):
+    def ScatNdUpd(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
-        self.Comment__("Scatter operation")
         self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
 
-    def OperElAnd(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise AND logic evaluation")
+    def LogicAnd_(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.logical_and(%s, %s)" % (DestVar, MX1, MX2))
         # self.Statement("%s = %s & %s)" % (DestVar, MX1, MX2))
 
-    def OperElOr_(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise OR logic evaluation")
+    def LogicOr__(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.logical_or(%s, %s)" % (DestVar, MX1, MX2))
         # self.Statement("%s = %s | %s)" % (DestVar, MX1, MX2))
 
-    def OperElAdd(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise addition")
+    def Add______(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.add(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElSub(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise subtraction")
+    def Subtract_(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.subtract(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElMul(self, DestVar, MX1, MX2):
+    def Multiply_(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise multiplication")
         self.Statement("%s = tf.math.multiply(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElDiv(self, DestVar, MX1, MX2):
+    def Divide___(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise division to get the quotient")
         self.Statement("%s = tf.math.divide(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElQuo(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise division to get the quotient")
+    def FloorDiv_(self, DestVar, MX1, MX2):
+        # Element-wise division to get the quotient
         self.Statement("%s = tf.math.floordiv(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperElRem(self, DestVar, MX1, MX2):
+    def Remainder(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise division to get the remainder")
         self.Statement("%s = tf.math.floormod(%s, %s)" % (DestVar, MX1, MX2))
 
-    def OperMax__(self, DestVar, MX1, MX2):
+    def Maximum__(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise maximum operation")
         self.Statement("%s = tf.math.maximum(%s, %s)" % (DestVar, MX1, MX2))
         
-    def OperMin__(self, DestVar, MX1, MX2):
+    def Minimum__(self, DestVar, MX1, MX2):
         self.Comment__("Element-wise minimum operation")
         self.Statement("%s = tf.math.minimum(%s, %s)" % (DestVar, MX1, MX2))
         
@@ -474,29 +456,31 @@ class TFCodeWriter(CodeWriter):
     #     with self.Statement("if tf.rank(%s) != 2:" % MX2):
     #         self.Statement("%s = tf.reshape(%s, [tf.shape(%s)[0, -1])" % (MX2, MX2, MX1))
 
-    def OperMXMul(self, DestVar, MX1, MX2):
+    def MatrixMul(self, DestVar, MX1, MX2):
         # self.PrepMXMul(MX1, MX2)
         self.Comment__("Matrix multiplication addition")
         self.Statement("%s = tf.linalg.matmul(%s, %s)" % (DestVar, MX1, MX2))
         self.Reshape__(DestVar, DestVar, -1)
 
-    def OperRdSum(self, DestVar, MX, Axis=None):
-        self.Comment__("Reduce sum operation")
+    def ReduceSum(self, DestVar, MX, Axis=None):
         self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (DestVar, MX, Axis))
 
+    def ReduceMax(self, DestVar, MX, Axis=None):
+        self.Statement("%s = tf.math.reduce_max(%s, axis=%s)" % (DestVar, MX, Axis))
+
     def CumSum___(self, DestVar, MX, Axis=0, Exclusive=False, Reverse=False):
+        # Cumulative sum
         self.Statement("%s = tf.math.cumsum(%s, axis=%s, exclusive=%s, reverse=%s)" % (DestVar, MX, Axis, Exclusive, Reverse))
 
     def NonZeros_(self, DestVar, MX, Axis=None):
-        self.Comment__("Reduce sum operation")
         self.Statement("%s = tf.math.count_nonzero(%s, axis=%s)" % (DestVar, MX, Axis))
 
     def Round____(self, DestVar, MX):
-        self.Comment__("Round without changing data type")
+        # Round without changing data type
         self.Statement("%s = tf.math.round(%s)" % (DestVar, MX))
 
     def Cast_____(self, DestVar, MX, Type='int32'):
-        self.Comment__("Change data type")
+        # Change data type
         self.Statement("%s = tf.cast(%s, dtype=tf.%s)" % (DestVar, MX, Type))
 
     def BoolToBin(self, BinMX, BoolMX):
@@ -505,11 +489,11 @@ class TFCodeWriter(CodeWriter):
     def ConvToBin(self, DestVar, MX, Equality, Value):
         self.Statement("%s = tf.where(%s %s %s, 1, 0)" % (DestVar, MX, str(Equality), Value))
 
-    def GetIdx___(self, DestVar, MX):
+    def GenIdx___(self, DestVar, MX):
         self.Statement("%s = tf.where(%s)" % (DestVar, MX))
 
-    def GetIdxGr_(self, DestVar, MX, Cond):
-        self.Statement("%s = tf.where(%s > %s)" % (DestVar, MX, Cond))
+    def GetIdx___(self, DestVar, MX, Equality, Value):
+        self.Statement("%s = tf.where(%s %s %s)" % (DestVar, MX, str(Equality), Value))
 
     def PrtIdxGr_(self, MX, Cond):
         self.Statement('print("Idx_%s: ", tf.where(%s > %s))' % (str(MX), MX, Cond))
@@ -562,27 +546,43 @@ class TFCodeWriter(CodeWriter):
 
     # Routines
     def RndIdxUni(self, VariableName, N_MoleculesToDistribute, Indices):
-        self.Comment__("Select random indices")
+        self.Comment__("Select random values")
         self.RndNumUni("RndVals", Shape=N_MoleculesToDistribute, MaxVal="len(%s)" % Indices, Type='int32')
-        self.OperGathr(VariableName, Indices, "RndVals")
+        self.Comment__("Select indices corresponding to the random values")
+        self.Gather___(VariableName, Indices, "RndVals")
 
-    def RndIdxWgh(self, DestVar, N_MoleculesToDistribute, Indices, Weights):
+    def RndIdxWg_(self, DestVar, N_MoleculesToDistribute, Indices, Weights):
         self.Reshape__("Counts", Weights, -1)
         self.Reshape__("Indices", Indices, -1)
         self.VarRepeat("PoolOfIndices", "Indices", "Counts")
         self.Reshape__("N_IndicesToDraw", N_MoleculesToDistribute, -1)
         self.RndIdxUni(DestVar, "N_IndicesToDraw", "PoolOfIndices")
 
+    def RndIdxWgN(self, DestVar, N_MoleculesToDistribute, Indices, Weights):
+        self.Reshape__("Counts", Weights, -1)
+        self.Reshape__("Indices", Indices, -1)
+
+        # This code removes minimally represented indices from being selected
+        self.ReduceMax("MaxCount", "Counts", 0)
+        self.Variable_("NormalizationFactor", 1000)
+        self.Divide___("NormalizationPoint", "MaxCount", "NormalizationFactor")
+        self.Cast_____("NormalizationPoint", "NormalizationPoint", 'int32')
+        self.FloorDiv_("Weights", "Counts", "NormalizationPoint")
+
+        self.VarRepeat("PoolOfIndices", "Indices", "Weights")
+        self.Reshape__("N_IndicesToDraw", N_MoleculesToDistribute, -1)
+        self.RndIdxUni(DestVar, "N_IndicesToDraw", "PoolOfIndices")
+
     def Count2Bin(self, DestVar, Count, N_Columns):
         # Generate binary pair vector
         self.Statement("Length_Count = tf.shape(%s)" % Count)
-        self.OperElMul("Length_BinaryPairArray", "Length_Count", "2")
+        self.Multiply_("Length_BinaryPairArray", "Length_Count", "2")
         self.VarTile__("BinaryPairArray", "[1, 0]", "Length_BinaryPairArray")
 
         # Generate binary count vector
         self.Reshape__("Count", Count, [1, -1])
-        self.OperElSub("Count_Inv", N_Columns, "Count")
-        self.OperCncat("BinaryPairCount", "Count", "Count_Inv", 0)
+        self.Subtract_("Count_Inv", N_Columns, "Count")
+        self.Concat___("BinaryPairCount", "Count", "Count_Inv", 0)
         self.Transpose("BinaryPairCount")
         self.Reshape__("BinaryPairCount", "BinaryPairCount", -1)
 
@@ -596,7 +596,7 @@ class TFCodeWriter(CodeWriter):
     #     self.InitArrayWithZero("MolIndexList", 0)
     #     with self.Statement("for Molecule in %s:" % MolIDList):
     #         self.Statement("MolIndex = %s(Molecule)" % MolID2Index)
-    #         self.OperCncat("MolIndexList", 'MolIndex')
+    #         self.Concat___("MolIndexList", 'MolIndex')
     #     self.DebugAsrt("tf.debugging.assert_shapes([MolIndexList, %s])" % (MolIDList))
     #     self.DebugPVar("MolIndexList")
     #     self.ReturnVar("MolIndexList")
@@ -612,12 +612,12 @@ class TFCodeWriter(CodeWriter):
 
     def Conc2Cont(self, DestVar, MolIndexList, MolConcs):
         self.PrepGathr(MolConcs, MolIndexList)
-        self.OperGathr("MolConcs4MolIndexList", MolConcs, MolIndexList)
+        self.Gather___("MolConcs4MolIndexList", MolConcs, MolIndexList)
         self.Statement("%s = MolConcs4MolIndexList * (Cel.CellVol * Cst.NA)" % DestVar)
 
     def Cont2Conc(self, DestVar, MolIndexList, MolCounts):
         self.PrepGathr(MolCounts, MolIndexList)
-        self.OperGathr("MolCounts4MolIndexList", MolCounts, MolIndexList)
+        self.Gather___("MolCounts4MolIndexList", MolCounts, MolIndexList)
         self.Statement("%s = MolCounts4MolIndexList / (Cel.CellVol * Cst.NA)" % DestVar)
 
     # WRONG EQUATION - to be fixed with %s and more

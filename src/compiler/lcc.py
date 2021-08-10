@@ -339,6 +339,7 @@ def Compile(CodeFileNames,
         Replication,
         Transcription,
         Translation,
+        ProteinDegradation,
         Metabolism
     ]
     ProGen.SetProcessList(CellProcesses)

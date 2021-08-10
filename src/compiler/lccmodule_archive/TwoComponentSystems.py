@@ -49,7 +49,7 @@ def Write_TCS_Loop(Writer):
 
         # TCS - Run machine learned model
         Writer.Statement("# TCS - Run machine learned model")
-        Writer.OperGathr("TCSMolCountsTF", "CellMX.MolCountsTF", "CellMX.TCSMolIndexTF")
+        Writer.Gather___("TCSMolCountsTF", "CellMX.MolCountsTF", "CellMX.TCSMolIndexTF")
         Writer.Statement("TCSMolConcsTF = TCSMolCountsTF / (CellMX.CellVol * AvogadroNum)")  # TCSMolConcsTF == y_init
         Writer.Statement("TCSModelInput = tf.concat([TCSMolConcsTF, CellMX.TCSODETimeStepTF], axis=0)")
         Writer.Statement("TCSModelInput = tf.reshape(TCSModelInput, [1, -1])")
