@@ -287,7 +287,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             # Return the adjusted dNTP Consumption
             Writer.ReduceSum("TotaldNTPConsumption", "dNTPConsumption_Adjusted")
-            Writer.AsrtElEq_("TotaldNTPConsumption", "self.Cel.Count_DNAStrandElongationLengthNTTotal")
+            Writer.AsrtEq___("TotaldNTPConsumption", "self.Cel.Count_DNAStrandElongationLengthNTTotal")
             Writer.ReturnVar("dNTPConsumption_Adjusted")
             Writer.BlankLine()
 
@@ -376,7 +376,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         #     # Check reset status
         #     Writer.Multiply_("CheckCompletionReset", "self.Cel.Len_ChromosomesReplicatingFinal",
         #                      "self.Bin_ChromosomesReplicatingElongationCompleted")
-        #     Writer.AsrtElEq_("CheckCompletionReset", 0)
+        #     Writer.AsrtEq___("CheckCompletionReset", 0)
         #     Writer.BlankLine()
 
         # with Writer.Statement("def GetIndicesOfChromosomesCompletedElongation(self):"):
@@ -391,7 +391,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Writer.Subtract_("self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeReleased")
             # Writer.Add______("self.Cel.Count_ReplisomeUnbound", "self.Cel.Count_ReplisomeUnbound", "self.Cel.Count_ReplisomeReleased")
             # Writer.Add______("SumOfBoundUnbound", "self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeUnbound")
-            # Writer.AsrtElEq_("self.Cel.Count_Replisome", "SumOfBoundUnbound")
+            # Writer.AsrtEq___("self.Cel.Count_Replisome", "SumOfBoundUnbound")
             Writer.Pass_____()
             Writer.BlankLine()
 

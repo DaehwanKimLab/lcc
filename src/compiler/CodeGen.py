@@ -135,7 +135,7 @@ class CodeWriter():
 
     def PrintStVa(self, Str, VariableName):
         self.Statement('print("%s: ")' % Str)
-        self.Statement('print("\t%s = ", %s)' % (VariableName, VariableName))
+        self.Statement('print(%s)' % VariableName)
 
     def PrintDict(self, DictVariableName):
         with self.Statement("for Key, Value in %s.items():" % DictVariableName):
@@ -235,9 +235,17 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.zeros(%s, dtype=tf.%s)' % (VariableName, str(Shape), Type)
         self.Statement(Line)
 
+    def ZerosLike(self, VariableName, SrcVar, Type='float32'):
+        Line = '%s = tf.zeros_like(%s, dtype=tf.%s)' % (VariableName, SrcVar, Type)
+        self.Statement(Line)
+
     def InitOnes_(self, VariableName, Shape, Type='float32'):
         Line = "{VariableName} = tf.ones({Shape}, dtype=tf.{Type})"\
             .format(VariableName=VariableName, Shape=str(Shape), Type=Type)
+        self.Statement(Line)
+
+    def OnesLike_(self, VariableName, SrcVar, Type='float32'):
+        Line = '%s = tf.ones_like(%s, dtype=tf.%s)' % (VariableName, SrcVar, Type)
         self.Statement(Line)
 
     def InitNOnes(self, VariableName, Shape, Type='float32'):
@@ -292,9 +300,10 @@ class TFCodeWriter(CodeWriter):
         self.Statement(Line)
         self.DebugPVar(DestVar)
 
-    def ReshInt__(self, DestVar, SrcVar, Shape, DataType='int32'):
+    def ReshType_(self, DestVar, SrcVar, Shape, DataType):
         self.Statement('%s = tf.cast(tf.reshape(%s, %s), dtype=tf.%s)' % (DestVar, SrcVar, str(Shape), DataType))
         self.DebugPVar(DestVar)
+
 
     def Transpose(self, Variable):
         Line = '%s = tf.transpose(%s)' % (Variable, Variable)
@@ -332,34 +341,6 @@ class TFCodeWriter(CodeWriter):
     def RndNumUni(self, VariableName, Shape=0, MinVal=0, MaxVal=1, Type='int32'):
         self.Statement("%s = tf.random.uniform(shape=%s, minval=%s, maxval=%s, dtype=tf.%s)" % (VariableName, Shape, MinVal, MaxVal, Type))
 
-
-
-
-    # def SelectIdx(self, VariableName, N_MoleculesToDistribute, Indexes, Weights='None'):
-    #     self.InitZeros(VariableName, 0)
-    #     if Weights:
-    #         self.Gather___("Weights", Weights, Indexes)
-    #         self.Statement("Weights = Weights / len(Weights)")
-    #     else:
-    #         self.InitOnes_("Weights", len(Indexes), Type='int32')
-    #     with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
-    #         self.Statement("Values = tf.data.experimental.sample_from_datasets(%s, weights=Weights)" % Indexes)
-    #         self.Statement("%s = tf.concat([%s, Value], 0)" % (VariableName, VariableName))
-    #     self.DebugPStV("Values Generated:", VariableName)
-    #     return VariableName
-    #
-    # def Increment(self, TargetMX, N_MoleculesToDistribute, Indexes, IncrementValue, WeightMX='None'):
-    #     self.SelectIdx('Values', N_MoleculesToDistribute, Indexes, Weights=WeightMX)
-    #     self.DebugPStV("Before Increment:", TargetMX)
-    #     with self.Statement("for i in range(%s):" % N_MoleculesToDistribute):
-    #         self.Statement("j = Values[i]")
-    #         self.Statement("SelectedFromIndex = %s[j]" % Indexes)
-    #         self.Statement("SelectedFromIndex = tf.reshape(SelectedFromIndex, [-1, 1])")
-    #         self.Statement("TargetMXDataType = tf.shape(%s).dtype" % TargetMX)
-    #         self.Statement("One = tf.ones(1, TargetMXDataType)")
-    #         self.Statement("%s = tf.tensor_scatter_nd_add(%s, SelectedFromIndex, One * %s)" % (TargetMX, TargetMX, IncrementValue))
-    #     self.DebugPStV("After Increment:", TargetMX)
-
     def GreaterEq(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.greater_equal(%s, %s)" % (DestVar, MX1, MX2))
 
@@ -395,9 +376,9 @@ class TFCodeWriter(CodeWriter):
 
     def PrepScNds(self, Target, Index, Values):
         self.Comment__("Reshape matrices for a scatter operation")
-        self.ReshInt__("Target", Target, -1)
-        self.ReshInt__("Index", Index, [-1, 1])
-        self.ReshInt__("Values", Values, -1)
+        self.ReshType_("Target", Target, -1, 'int32')
+        self.ReshType_("Index", Index, [-1, 1], 'int32')
+        self.ReshType_("Values", Values, -1, 'int32')
 
     def ScatNdAdd(self, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
@@ -426,23 +407,18 @@ class TFCodeWriter(CodeWriter):
         self.Statement("%s = tf.math.subtract(%s, %s)" % (DestVar, MX1, MX2))
 
     def Multiply_(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise multiplication")
         self.Statement("%s = tf.math.multiply(%s, %s)" % (DestVar, MX1, MX2))
 
     def Divide___(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise division to get the quotient")
         self.Statement("%s = tf.math.divide(%s, %s)" % (DestVar, MX1, MX2))
 
     def FloorDiv_(self, DestVar, MX1, MX2):
-        # Element-wise division to get the quotient
         self.Statement("%s = tf.math.floordiv(%s, %s)" % (DestVar, MX1, MX2))
 
     def Remainder(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise division to get the remainder")
         self.Statement("%s = tf.math.floormod(%s, %s)" % (DestVar, MX1, MX2))
 
     def Maximum__(self, DestVar, MX1, MX2):
-        self.Comment__("Element-wise maximum operation")
         self.Statement("%s = tf.math.maximum(%s, %s)" % (DestVar, MX1, MX2))
         
     def Minimum__(self, DestVar, MX1, MX2):
@@ -458,7 +434,6 @@ class TFCodeWriter(CodeWriter):
 
     def MatrixMul(self, DestVar, MX1, MX2):
         # self.PrepMXMul(MX1, MX2)
-        self.Comment__("Matrix multiplication addition")
         self.Statement("%s = tf.linalg.matmul(%s, %s)" % (DestVar, MX1, MX2))
         self.Reshape__(DestVar, DestVar, -1)
 
@@ -486,6 +461,9 @@ class TFCodeWriter(CodeWriter):
     def BoolToBin(self, BinMX, BoolMX):
         self.Cast_____(BinMX, BoolMX)
 
+    def CondVal__(self, DestVar, MX, Equality, Value, IfTrue=None, IfFalse=None):
+        self.Statement("%s = tf.where(%s %s %s, x=%s, y=%s)" % (DestVar, MX, str(Equality), Value, IfTrue, IfFalse))
+
     def ConvToBin(self, DestVar, MX, Equality, Value):
         self.Statement("%s = tf.where(%s %s %s, 1, 0)" % (DestVar, MX, str(Equality), Value))
 
@@ -499,11 +477,9 @@ class TFCodeWriter(CodeWriter):
         self.Statement('print("Idx_%s: ", tf.where(%s > %s))' % (str(MX), MX, Cond))
 
     def ArgMax___(self, DestVar, MX, Axis=None, Type='int32'):
-        self.Comment__("Returns the index with the largest value across axes of a tensor")
         self.Statement("%s = tf.math.argmax(%s, %s, output_type=tf.%s)" % (DestVar, MX, Axis, Type))
 
     def ArgMin___(self, DestVar, MX, Axis=None, Type='int32'):
-        self.Comment__("Returns the index with the largest value across axes of a tensor")
         self.Statement("%s = tf.math.argmin(%s, %s, output_type=tf.%s)" % (DestVar, MX, Axis, Type))
 
     def Sort_____(self, DestVar, MX, Axis=1, Direction='DESCENDING'):
@@ -511,22 +487,21 @@ class TFCodeWriter(CodeWriter):
         self.Statement("%s = tf.sort(%s, axis=%s, direction=%s)" % (DestVar, MX, Axis, Direction))
 
     def RoundInt_(self, DestVar, MX, Type='int32'):
-        self.Comment__("Round and change data type to integer")
         self.Statement("%s = tf.cast(tf.math.round(%s), dtype=tf.%s)" % (DestVar, MX, Type))
 
-    def AsrtElGrE(self, MX1, MX2):
+    def AsrtGrEq_(self, MX1, MX2):
         self.Statement("tf.debugging.assert_greater_equal(%s, %s)" % (MX1, MX2))
 
-    def AsrtElGr_(self, MX1, MX2):
+    def AsrtGr___(self, MX1, MX2):
         self.Statement("tf.debugging.assert_greater(%s, %s)" % (MX1, MX2))
 
-    def AsrtElLeE(self, MX1, MX2):
+    def AsrtLeEq_(self, MX1, MX2):
         self.Statement("tf.debugging.assert_less_equal(%s, %s)" % (MX1, MX2))
 
-    def AsrtElLe_(self, MX1, MX2):
+    def AsrtLe___(self, MX1, MX2):
         self.Statement("tf.debugging.assert_less(%s, %s)" % (MX1, MX2))
 
-    def AsrtElEq_(self, MX1, MX2):
+    def AsrtEq___(self, MX1, MX2):
         self.Statement("tf.debugging.assert_equal(%s, %s)" % (MX1, MX2))
 
     def AsrtNeg__(self, MX):
@@ -572,6 +547,62 @@ class TFCodeWriter(CodeWriter):
         self.VarRepeat("PoolOfIndices", "Indices", "Weights")
         self.Reshape__("N_IndicesToDraw", N_MoleculesToDistribute, -1)
         self.RndIdxUni(DestVar, "N_IndicesToDraw", "PoolOfIndices")
+
+    # Ultimate version
+    def RndIdxWgh(self, DestVar, N_MoleculesToDistribute, Indices, Weights):
+        self.Reshape__("Counts", Weights, -1)
+        self.Reshape__("Indices", Indices, -1)
+
+        # Shape[0] on Counts
+
+        # Cumsum on Counts
+
+        # Generate random number ranging between first and last elements of cumsum int values
+
+        # Repeat random number array then reshape to generate matrix shaped with [Count shape, -1]
+
+        # Boolean operation on (repeated random number array < Cumsum (2D matrix)) for which count range it falls
+        
+        # Boolean operation on (Counts > 0) for idxs with counts
+        
+        # Logical_and on (repeated random number array < Cumsum, Counts > 0) then convert to binary
+
+        # Argmax on the binary to get the first indices of 1's in each random number generated.
+        
+        
+
+
+        self.ReduceMax("MaxCount", "Counts", 0)
+        self.Variable_("NormalizationFactor", 1000)
+        self.Divide___("NormalizationPoint", "MaxCount", "NormalizationFactor")
+        self.Cast_____("NormalizationPoint", "NormalizationPoint", 'int32')
+        self.FloorDiv_("Weights", "Counts", "NormalizationPoint")
+
+        self.VarRepeat("PoolOfIndices", "Indices", "Weights")
+        self.Reshape__("N_IndicesToDraw", N_MoleculesToDistribute, -1)
+        self.RndIdxUni(DestVar, "N_IndicesToDraw", "PoolOfIndices")
+
+    def Put0InLen(self, LengthMatrix, CountMatrixToAdd):
+        # Generate boolean and binary matrices for element availability in nascent proteins length matrix.
+        self.Less_____("Bool_LenAvailable", LengthMatrix, 0)
+        self.BoolToBin("Bin_LenAvailable", "Bool_LenAvailable")
+    
+        # Generate a cumulative sum matrix for labeling the available elements with count.
+        self.CumSum___("LenCumsum", "Bin_LenAvailable", 1)
+    
+        # Generate a boolean matrix of the count label matrix > 0, < count.
+        self.Greater__("Bool_LenCumsumGreaterThanZero", "LenCumsum", 0)
+        self.Reshape__("CountMatrixToAdd", CountMatrixToAdd, [-1, 1])
+        self.LessEq___("Bool_LenCumsumLessThanOrEqualToCountMatrixToAdd", "LenCumsum", "CountMatrixToAdd")
+        self.LogicAnd_("Bool_LenCumsum", "Bool_LenCumsumGreaterThanZero", "Bool_LenCumsumLessThanOrEqualToCountMatrixToAdd")
+    
+        # Generate a binary matrix for elements satisfying both availability and count conditions.
+        self.LogicAnd_("Bool_LenSelected", "Bool_LenAvailable", "Bool_LenCumsum")
+        self.BoolToBin("Bin_LenSelected", "Bool_LenSelected")
+    
+        # Turn -1 to 0 where nascent proteins are to be made in the nascent protein length table.
+        self.Add______(LengthMatrix, LengthMatrix, "Bin_LenSelected")
+        self.BlankLine()
 
     def Count2Bin(self, DestVar, Count, N_Columns):
         # Generate binary pair vector

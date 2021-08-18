@@ -671,15 +671,15 @@ class FProtein(FDataset):
         # Add a single variable to the Master Dataset
         MasterDataset.ID2ID_mRNA2Protein_Master = self.ID2ID_mRNA2Protein
 
-        # # Search for protein names containing 'protease' or 'peptidase'
-        # for i, Value in enumerate(Proteins):
-        #     AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
-        #     if 'protease' in Name:
-        #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
-        #     if 'peptidase' in Name:
-        #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
-        #     if 'Clp' in Name:
-        #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
+        # Search for protein names containing 'protease' or 'peptidase'
+        for i, Value in enumerate(Proteins):
+            AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
+            # if 'endoribonuclease' in Name:
+            #     print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
+            if 'poly A' in Name:
+                print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
+            # if 'RNase' in Name:
+            #     print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():

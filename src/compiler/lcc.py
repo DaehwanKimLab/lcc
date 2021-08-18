@@ -218,6 +218,9 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Writer.BlankLine()
 
+# def WriteUtil(Writer):
+#     Writer.BlankLine()
+
 def WriteMain(Writer):
     tmpLevel = Writer.GetIndentLevel()
     Writer.SetIndentLevel(0)
@@ -354,6 +357,7 @@ def Compile(CodeFileNames,
 
     WriteLicense(Writer)
     WriteImport(Writer); Writer.BlankLine()
+    # WriteUtil(Writer)
     WriteBody(Writer, CompilerData, ProGen); Writer.BlankLine()
     WriteMain(Writer)
 

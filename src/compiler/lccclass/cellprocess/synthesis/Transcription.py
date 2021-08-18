@@ -257,7 +257,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Return the adjusted NTP Consumption
             Writer.Add______("NTPConsumption_Adjusted", "NTPConsumption_MissingSet", "NTPConsumption_MissingRemainder")
             Writer.ReduceSum("TotalNTPConsumption", "NTPConsumption_Adjusted")
-            Writer.AsrtElEq_("TotalNTPConsumption", "self.Cel.Count_RNAElongationLengthTotal")
+            Writer.AsrtEq___("TotalNTPConsumption", "self.Cel.Count_RNAElongationLengthTotal")
             Writer.ReturnVar("NTPConsumption_Adjusted")
             Writer.BlankLine()
 
@@ -304,7 +304,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             # Check reset status
             Writer.Multiply_("CheckCompletionReset", "self.Cel.Len_RNAsNascentFinal", "self.Bin_RNAsNascentElongationCompleted")
-            Writer.AsrtElEq_("CheckCompletionReset", 0)
+            Writer.AsrtEq___("CheckCompletionReset", 0)
             Writer.BlankLine()
 
         with Writer.Statement("def GetIndicesOfRNAsCompletedElongation(self):"):
@@ -318,7 +318,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Subtract_("self.Cel.Count_RNAPBound", "self.Cel.Count_RNAPBound", "self.Cel.Count_RNAPReleased")
             Writer.Add______("self.Cel.Count_RNAPUnbound", "self.Cel.Count_RNAPUnbound", "self.Cel.Count_RNAPReleased")
             Writer.Add______("SumOfBoundUnbound", "self.Cel.Count_RNAPBound", "self.Cel.Count_RNAPUnbound")
-            Writer.AsrtElEq_("self.Cel.Count_RNAP", "SumOfBoundUnbound")
+            Writer.AsrtEq___("self.Cel.Count_RNAP", "SumOfBoundUnbound")
             Writer.BlankLine()
 
         with Writer.Statement("def DeductCountOfNascentRNAs(self):"):

@@ -185,10 +185,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Idx_Proteins", 0)
             Writer.Variable_("self.Idx_RndProteinsDegraded", 0)
             Writer.BlankLine()
-            Writer.Variable_("self.Bin_ProteinsDegradedElongating", 0)
-            Writer.Variable_("self.Bin_ProteinsDegradedOverElongated", 0)
-            Writer.Variable_("self.Bin_ProteinsDegradedDegradationCompleted", 0)
-            Writer.BlankLine()
             Writer.Variable_("self.Count_ProteinsToBeDegraded", 0)
             Writer.Variable_("self.Count_AAsToBeReleased", 0)
             Writer.BlankLine()
@@ -211,6 +207,10 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Cel.Rate_ProteinDegradation", Rate_ProteinDegradation)
             # Writer.Variable_("self.Cel.Rate_ProteinDegradation_Matrix", Rate_ProteinDegradation, Shape=[NUniq_mRNAs, NMax_ProteasesPermRNA])
             Writer.BlankLine()
+
+
+            # Writer.Random()
+            # Writer.Statement("random_id = Random()");
 
             Writer.InitZeros("self.Cel.Count_AAsToBeReplenished", NUniq_AAs, 'int32')
 
@@ -325,32 +325,34 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def ViewProcessSummary(self):"):
-            Writer.PrintStrg("===== Protein Degradation Initiation ===== ")
-            # # Number of Total Protease
-            # Writer.PrintStVa("# of Total Proteases",
-            #                  "self.Cel.Count_Protease")
-            # # Number of Active Protease
-            # Writer.PrintStVa("# of Active Proteases",
-            #                  "self.Cel.Count_ProteaseActive")
-            # # Number of Protease binding
-            # Writer.PrintStVa("# of Proteases available that can bind a promoter",
-            #                  "self.Cel.Count_ProteaseActiveCanBind")
-            # # Number of new Protease binding in this step (= new Degraded Proteins to elongate next step)
-            # Writer.PrintStVa("# of Proteases that newly bind a promoter in this step",
-            #                  "self.Cel.Count_ProteaseWillBind")
-            # Writer.BlankLine()
+            Writer.Pass_____()
+            Writer.BlankLine()
 
-            Writer.PrintStrg("===== Polypeptide Degradation ===== ")
-            # # Number of Degraded Proteins elongated
-            # Writer.PrintStVa("# of All Degraded Proteins Elongating",
-            #                  "self.Cel.Count_ProteinsDegradedElongatingTotal")
+            # Writer.Variable_("self.Idx_Proteins", 0)
+            # Writer.Variable_("self.Idx_RndProteinsDegraded", 0)
+            # Writer.BlankLine()
+            # Writer.Variable_("self.Count_ProteinsToBeDegraded", 0)
+            # Writer.Variable_("self.Count_AAsToBeReleased", 0)
+            #
+            # Writer.PrintStrg("===== Protein Degradation ===== ")
+            # # Number of Total Proteins to degrade
+            # Writer.PrintStVa("# of Total Proteins degraded",
+            #                  "self.Cel.Count_Protease")
             # # Total Degradation length of Proteins
             # Writer.PrintStVa("Total Degradation Length of Proteins (aa)",
             #                  "self.Cel.Count_ProteinDegradationLengthTotal")
             # # Total AA consumption and PPi production
-            # Writer.PrintStVa("Total AA Consumption [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
-            #                  "self.Cel.Count_ProteinDegradationAAConsumption")
-            # Writer.PrintStVa("Total PPi Production",
-            #                  "self.Cel.Count_ProteinDegradationPPiProduction")
-            Writer.BlankLine()
+            # Writer.PrintStVa("Total AA Release [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
+            #                  "self.Count_AAsToBeReleased")
+            # Writer.PrintStVa("Total ATP Consumption",
+            #                  "")
+            # Writer.PrintStVa("Total AA Release [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
+            #                  "")
+            # Writer.PrintStVa("Total Pi Release",
+            #                  "")
+            # Writer.PrintStVa("Total AA Release [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
+            #                  "")
+            # Writer.PrintStVa("Total Pi Release",
+            #                  "")
+            # Writer.BlankLine()
 
