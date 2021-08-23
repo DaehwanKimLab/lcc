@@ -27,9 +27,6 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Count_NTPs_RNAsCleaved", 0)
             Writer.Variable_("self.Count_AAS_ProteinsCleaved", 0)
 
-            Writer.Variable_("self.Freq_NTPs_RNAsCleaved", 0)
-            Writer.Variable_("self.Freq_AAs_RNAsCleaved", 0)
-
             Writer.Variable_("self.MWs", 0)  # MW matrix for molecules
             Writer.BlankLine()
 
@@ -245,45 +242,11 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Idx_SelenoCysteineInAAs", 0)
             Writer.Variable_("self.Idx_AAsLocalAssignmentNoSelenoCysteine", 0)
             Writer.BlankLine()
-            # Writer.Variable_("self.Count_mRNACopies", 0)
-            # Writer.Variable_("self.Count_Ribosome", 0)
-            # Writer.Variable_("self.Count_RibosomeActive", 0)
-            # Writer.Variable_("self.Count_RibosomeActiveCanBind", 0)
-            # Writer.Variable_("self.Count_RibosomeActiveToBindThisStep", 0)
-            # Writer.Variable_("self.Count_RibosomeBound", 0)
-            # Writer.Variable_("self.Count_RibosomeUnbound", 0)
-            # Writer.Variable_("self.Count_RibosomeReleased", 0)
-            # Writer.Variable_("self.Count_ProteinsNascent_Matrix", 0)
-            # Writer.Variable_("self.Count_ProteinsNascentInitialTotal", 0)
-            # Writer.Variable_("self.Count_ProteinsNascentElongatingTotal", 0)
-            # Writer.Variable_("self.Count_ProteinsNascentOverElongatedTotal", 0)
-            # Writer.Variable_("self.Count_ProteinsNascentFinalTotal", 0)
-            # Writer.BlankLine()
-            # Writer.Variable_("self.Count_ProteinElongationLengthFinalPerProtein", 0)
-            # Writer.Variable_("self.Count_ProteinElongationLengthFinalTotal", 0)
-            # Writer.Variable_("self.Count_ProteinElongationAAConsumption", 0)
-            # Writer.Variable_("self.Count_ProteinElongationPPiProduction", 0)
-            # Writer.Variable_("self.Count_ProteinElongationCompletedPerProtein", 0)
-            # Writer.Variable_("self.Count_ProteinElongationCompletedTotal", 0)
-            # Writer.BlankLine()
-            # Writer.Variable_("self.Count_AAsOverElongated", 0)
-            # Writer.BlankLine()
+
             Writer.Variable_("self.Len_ProteinsNascent", 0)
             Writer.BlankLine()
 
-            Writer.Variable_("self.Len_ProteinsNascentInitial", 0)
-            Writer.Variable_("self.Len_ProteinsNascentMax", 0)
-            Writer.Variable_("self.Len_ProteinsNascentElongated", 0)
-            Writer.Variable_("self.Len_ProteinsNascentOverElongated", 0)
-            Writer.Variable_("self.Len_ProteinsNascentAdjusted", 0)
-            Writer.Variable_("self.Len_ProteinsNascentCompleted", 0)
-            Writer.Variable_("self.Len_ProteinsNascentFinal", 0)
-            Writer.BlankLine()
-
             # Protein Degradation
-            Writer.Variable_("self.Rate_ProteinDegradation", 0)
-            Writer.Variable_("self.Count_AAsToBeReplenished", 0)
-
 
             # Metabolism
             Writer.Comment__("Metabolism")

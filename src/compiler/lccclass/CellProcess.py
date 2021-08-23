@@ -30,7 +30,7 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "MolIdxs", "MolCounts")
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs", "MolCounts")
             Writer.BlankLine()
 
         Writer.AbsMethod()
@@ -48,6 +48,58 @@ def Write_CellProcess(Writer):
             Writer.Statement("print('[Debug] %s' % VarAfter)")
             Writer.Subtract_("Delta", "VarBefore", "VarAfter")
             Writer.PrintVaVa("Delta")
+            Writer.BlankLine()
+
+        with Writer.Statement("def GetFrequencyMatrix(self, Count_Matrix):"):
+            Writer.ReduceSum("ReducedSum_Count", "Count_Matrix")
+            Writer.Divide___("Freq_Count", "Count_Matrix", "ReducedSum_Count")
+            Writer.Transpose("Freq_Count")
+            Writer.ReturnVar("Freq_Count")
+            Writer.BlankLine()
+
+        with Writer.Statement("def DetermineAmountOfBuildingBlocks(self, Len_Polymers, Freq_Monomers):"):
+            Writer.Statement("NUniq_Monomers = tf.shape(Freq_Monomers, out_type='int32')[0]")
+            Writer.BlankLine()
+
+            Writer.Comment__("GetRawMonomerConsumption")
+            # Prepare NT elongation length for each mRNA matrix for multiplication
+            Writer.ReshType_("Len_Polymers_Float", "Len_Polymers", [-1, 1], 'float32')
+            # Monomer Frequency per mRNA * elongating Polypeptide (in NT count) per mRNA
+            Writer.MatrixMul("MonomerConsumption_Raw", "Freq_Monomers",
+                             "Len_Polymers_Float")
+            Writer.BlankLine()
+
+            Writer.Comment__("GetRoundedMonomerConsumption")
+            Writer.RoundInt_("MonomerConsumption_Rounded", "MonomerConsumption_Raw")
+            Writer.BlankLine()
+
+            Writer.Comment__("CalculateDiscrepancy")
+            # Determine the difference between rounded vs corrected elongation
+            Writer.ReduceSum("LenSum_AfterRounding", "MonomerConsumption_Rounded")
+            Writer.Cast_____("LenSum_AfterRounding", "LenSum_AfterRounding", 'int32')
+            Writer.ReduceSum("LenSum_BeforeRounding", "Len_Polymers")
+            Writer.Subtract_("Discrepancy", "LenSum_BeforeRounding", "LenSum_AfterRounding")
+            Writer.BlankLine()
+
+            Writer.Comment__("AdjustMonomerConsumption")
+            # Get equal amount of Monomers if discrepancy is greater than or equal to 4 or less than or equal to -4.
+            Writer.FloorDiv_("N_MonomerSets", "Discrepancy", "NUniq_Monomers")
+            Writer.VarRepeat("N_MonomerSets", "N_MonomerSets", "NUniq_Monomers")
+            Writer.Add______("MonomerConsumption_Rounded_MissingSet", "MonomerConsumption_Rounded", "N_MonomerSets")
+            Writer.BlankLine()
+
+            # Get random Monomer for the remainder (replace with weighted random Monomer based on Monomer frequency in all mRNAs)
+            Writer.Remainder("N_MonomerRemainder", "Discrepancy", "NUniq_Monomers")
+            Writer.Reshape__("N_MonomerRemainder", "N_MonomerRemainder", -1)
+            Writer.InitZeros("MonomerConsumption_MissingRemainder", "NUniq_Monomers", 'int32')
+            Writer.RndNumUni("Idx_Remainder", "N_MonomerRemainder", "0", "NUniq_Monomers")
+            Writer.InitOnes_("OnesForRemainder", "N_MonomerRemainder", 'int32')
+            Writer.ScatNdAdd("MonomerConsumption_MissingRemainder", "MonomerConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
+            Writer.BlankLine()
+
+            # Calculate adjusted Monomer Consumption
+            Writer.Add______("Count_Monomers", "MonomerConsumption_Rounded_MissingSet", "MonomerConsumption_MissingRemainder")
+            Writer.ReturnVar("Count_Monomers")
             Writer.BlankLine()
 
         with Writer.Statement("def GetBinToAddNewCountToLenMatrix(self, LengthMatrix, CountMatrixToAdd):"):
@@ -190,6 +242,8 @@ def Write_CellProcess(Writer):
 
             Writer.ReturnVar("Len_Matrix_ZeroToNegOne")
             Writer.BlankLine()
+
+        # with Writer.Statement("def UpdateCounts(self, MatrixToUpdate, "):
 
         # Writer.AbsMethod()
         # with Writer.Statement("def AddToStoichiometryMatrix(self):"):

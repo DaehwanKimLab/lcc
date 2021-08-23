@@ -16,7 +16,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self):"):
-            Writer.ScatNdUpd("self.Cel.Counts", "self.Cel.Idx_Master_Metabolites", "self.Cel.Count_MetabolitesInitial")
+            Writer.ScatNdUpd("self.Cel.Counts", "self.Cel.Counts", "self.Cel.Idx_Master_Metabolites", "self.Cel.Count_MetabolitesInitial")
             Writer.BlankLine()
 
         with Writer.Statement("def Message_ReplenishMetabolites(self):"):

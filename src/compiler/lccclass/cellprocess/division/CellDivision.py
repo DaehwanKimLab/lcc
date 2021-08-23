@@ -17,18 +17,26 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_DNAStrand_Proxy_Right = [2]
 
 
-    # Tasks to do
+    # Tasks to do (temporary hard coding solution)
+
+    # Conditioning
+    # Chromosomes Len == Max
 
     # Chromosome counts
     # New Original = Old Round 1 (unchanged count)
-    # New Round 1 = Old Round 2
+    # New Round 1 = Reset to 0
     # New Round 2 = Reset to 0
 
-    # Gene Counts -1
+    # Chromosome Len to 0
 
-    # Promoter Counts
+    # Gene Counts / 2
 
-    # RNA, Protein, Complexes, Metabolites / 2 (floordiv)
+    # Promoter Counts (not implemented yet)
+
+    # RNA, Protein, Complex, Metabolite Counts / 2 (floordiv)
+
+    # RNA, Protein Len
+    # generate a mosaic random binary table
 
 
 
@@ -118,7 +126,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Temporary set up before implementing initiation
             Writer.InitOnes_("IdxOne", 1)
             Writer.InitOnes_("CountOne", 1)
-            Writer.OperScAdd("self.Cel.Counts", "IdxOne", "CountOne")
+            Writer.ScatNdAdd("self.Cel.Counts", "self.Cel.Counts", "IdxOne", "CountOne")
             Writer.BlankLine()
 
         # Override the abstract method
@@ -133,8 +141,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def GetReplicatingChromosomeCounts(self):"):
-            Writer.OperGathr("self.Cel.Count_ChromosomesReplicating_Matrix", "self.Cel.Counts", "self.Cel.Idx_Ch_Replicating")
-            Writer.OperRdSum("self.Cel.Count_ChromosomesReplicatingInitialTotal", "self.Cel.Count_ChromosomesReplicating_Matrix")   # for summary
+            Writer.Gather___("self.Cel.Count_ChromosomesReplicating_Matrix", "self.Cel.Counts", "self.Cel.Idx_Ch_Replicating")
+            Writer.ReduceSum("self.Cel.Count_ChromosomesReplicatingInitialTotal", "self.Cel.Count_ChromosomesReplicating_Matrix")   # for summary
             Writer.BlankLine()
 
         with Writer.Statement("def DetermineReplicatingChromosomeIndices(self):"):
@@ -145,15 +153,15 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             with Writer.Statement("for i, Count in enumerate(self.Cel.Count_ChromosomesReplicating_Matrix):"):
                 Writer.InitOnes_("Replisome_Present", "Count * %s" % N_ReplicatingStrands, 'int32')
                 Writer.InitZeros("Replisome_Abscent", "(1 - Count) * %s" % N_ReplicatingStrands, 'int32')
-                Writer.OperCncat("ReplisomeArrayForCurrentDNAStrand", "Replisome_Present", "Replisome_Abscent")
+                Writer.Concat___("ReplisomeArrayForCurrentDNAStrand", "Replisome_Present", "Replisome_Abscent")
                 with Writer.Statement("if i == 0:"):
                     Writer.Statement("ReplisomeArrayForAllDNAStrands = ReplisomeArrayForCurrentDNAStrand")
                     Writer.Statement("continue")
-                Writer.OperCncat("ReplisomeArrayForAllDNAStrands", "ReplisomeArrayForAllDNAStrands",
+                Writer.Concat___("ReplisomeArrayForAllDNAStrands", "ReplisomeArrayForAllDNAStrands",
                                  "ReplisomeArrayForCurrentDNAStrand")
             Writer.Reshape__("ReplisomeArrayForAllDNAStrands", "ReplisomeArrayForAllDNAStrands", [-1, N_ReplicatingStrands])
 
-            Writer.OperElGr_("self.Bool_ChromosomesReplicatingElongating", "ReplisomeArrayForAllDNAStrands", 0)
+            Writer.Greater__("self.Bool_ChromosomesReplicatingElongating", "ReplisomeArrayForAllDNAStrands", 0)
             Writer.Cast_____("self.Bin_ChromosomesReplicatingElongating", "self.Bool_ChromosomesReplicatingElongating", 'int32')
             Writer.BlankLine()
 
@@ -164,36 +172,36 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def ElongateReplicatingChromosomesInLengthMatrix(self):"):
             # Rate Matrix * bin(boolean) + length table (overelongated not counted yet)
-            Writer.OperElMul("self.Cel.Rate_DNAReplication_Matrix", "self.Bin_ChromosomesReplicatingElongating",
+            Writer.Multiply_("self.Cel.Rate_DNAReplication_Matrix", "self.Bin_ChromosomesReplicatingElongating",
                              "self.Cel.Rate_DNAReplication")
-            Writer.OperElAdd("self.Cel.Len_ChromosomesReplicatingElongated", "self.Cel.Len_ChromosomesReplicatingInitial",
+            Writer.Add______("self.Cel.Len_ChromosomesReplicatingElongated", "self.Cel.Len_ChromosomesReplicatingInitial",
                              "self.Cel.Rate_DNAReplication_Matrix")
             Writer.BlankLine()
 
         with Writer.Statement("def DetermineOverElongatedReplicatingChromosomes(self):"):
             # compare with len MAX to get boolean matrix for overelongated (>= MAX)
-            Writer.OperElGr_("self.Bool_ChromosomesReplicatingOverElongated", "self.Cel.Len_ChromosomesReplicatingElongated",
+            Writer.Greater__("self.Bool_ChromosomesReplicatingOverElongated", "self.Cel.Len_ChromosomesReplicatingElongated",
                              "self.Cel.Len_ChromosomesReplicatingMax")
             Writer.BoolToBin("self.Bin_ChromosomesReplicatingOverElongated", "self.Bool_ChromosomesReplicatingOverElongated")
-            Writer.OperRdSum("self.Cel.Count_ChromosomesReplicatingOverElongatedTotal",
+            Writer.ReduceSum("self.Cel.Count_ChromosomesReplicatingOverElongatedTotal",
                              "self.Bin_ChromosomesReplicatingOverElongated")  # For summary, the number of completed/overelongated Chromosomes
             Writer.BlankLine()
 
         with Writer.Statement("def DetermineAmountOfOverElongateddNTPs(self):"):
-            Writer.OperElMul("MaxLengthForOverElongated", "self.Bin_ChromosomesReplicatingOverElongated",
+            Writer.Multiply_("MaxLengthForOverElongated", "self.Bin_ChromosomesReplicatingOverElongated",
                              "self.Cel.Len_ChromosomesReplicatingMax")
-            Writer.OperElMul("LengthForOverElongatedOnly", "self.Bin_ChromosomesReplicatingOverElongated",
+            Writer.Multiply_("LengthForOverElongatedOnly", "self.Bin_ChromosomesReplicatingOverElongated",
                              "self.Cel.Len_ChromosomesReplicatingElongated")
             # Get the over-elongated length of Replicating Chromosomes
-            Writer.OperElSub("self.Cel.Len_ChromosomesReplicatingOverElongated", "LengthForOverElongatedOnly",
+            Writer.Subtract_("self.Cel.Len_ChromosomesReplicatingOverElongated", "LengthForOverElongatedOnly",
                              "MaxLengthForOverElongated")
-            Writer.OperRdSum("self.Cel.Count_dNTPsOverElongated",
+            Writer.ReduceSum("self.Cel.Count_dNTPsOverElongated",
                              "self.Cel.Len_ChromosomesReplicatingOverElongated")  # For summary, over consumped dNTPs to be corrected
             Writer.BlankLine()
 
         with Writer.Statement("def CorrectOverElongationInLengthMatrix(self):"):
             # Update Replicating Chromosome length by removing over elongated length
-            Writer.OperElSub("self.Cel.Len_ChromosomesReplicatingAdjusted", "self.Cel.Len_ChromosomesReplicatingElongated",
+            Writer.Subtract_("self.Cel.Len_ChromosomesReplicatingAdjusted", "self.Cel.Len_ChromosomesReplicatingElongated",
                              "self.Cel.Len_ChromosomesReplicatingOverElongated")
             # now all completed elongation has its max value
 
@@ -201,18 +209,18 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def CorrectElongatedLengthForChromosomes(self):"):
             # Initial elongation rate
-            Writer.OperElMul("Rate_DNAReplication_Matrix_Initial", "self.Cel.Rate_DNAReplication_Matrix",
+            Writer.Multiply_("Rate_DNAReplication_Matrix_Initial", "self.Cel.Rate_DNAReplication_Matrix",
                              "self.Bin_ChromosomesReplicatingElongating")
             # Adjusted elongation rate (initial - elongated)
-            Writer.OperElSub("self.Cel.Rate_DNAReplication_Matrix_Corrected", "Rate_DNAReplication_Matrix_Initial",
+            Writer.Subtract_("self.Cel.Rate_DNAReplication_Matrix_Corrected", "Rate_DNAReplication_Matrix_Initial",
                              "self.Cel.Len_ChromosomesReplicatingOverElongated")
             # Calculate the length of elongation per Chromosome
-            Writer.OperRdSum("self.Cel.Count_DNAStrandElongationLengthNTPerChromosome", "self.Cel.Rate_DNAReplication_Matrix_Corrected",
+            Writer.ReduceSum("self.Cel.Count_DNAStrandElongationLengthNTPerChromosome", "self.Cel.Rate_DNAReplication_Matrix_Corrected",
                              1)  # For summary, total Elongation length per Chromosome
-            Writer.OperElDiv("self.Cel.Count_ChromosomeElongationLengthBPPerChromosome", "self.Cel.Count_DNAStrandElongationLengthNTPerChromosome", 2)
+            Writer.Divide___("self.Cel.Count_ChromosomeElongationLengthBPPerChromosome", "self.Cel.Count_DNAStrandElongationLengthNTPerChromosome", 2)
 
             # Calculate the total length of Elongation
-            Writer.OperRdSum("self.Cel.Count_DNAStrandElongationLengthNTTotal",
+            Writer.ReduceSum("self.Cel.Count_DNAStrandElongationLengthNTTotal",
                              "self.Cel.Rate_DNAReplication_Matrix_Corrected")  # For summary, total Elongation length in this sim step
 
             Writer.BlankLine()
@@ -234,7 +242,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Cast_____("self.Cel.Count_DNAStrandElongationLengthNTPerChromosome", "self.Cel.Count_DNAStrandElongationLengthNTPerChromosome",
                              'float32')
             # dNTP Frequency per chromosome * elongating DNAStrand (in NT count) per chromosome
-            Writer.OperMXMul("dNTPConsumption_Raw", "self.Cel.Freq_NTsInChromosomesReplicating",
+            Writer.MatrixMul("dNTPConsumption_Raw", "self.Cel.Freq_NTsInChromosomesReplicating",
                              "self.Cel.Count_DNAStrandElongationLengthNTPerChromosome")
             Writer.ReturnVar("dNTPConsumption_Raw")
             Writer.BlankLine()
@@ -246,35 +254,35 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def CalculateDiscrepancy(self, dNTPConsumption_Rounded):"):
             # Determine the difference between rounded vs corrected Elongation
-            Writer.OperRdSum("Sum_Rounded", "dNTPConsumption_Rounded")
+            Writer.ReduceSum("Sum_Rounded", "dNTPConsumption_Rounded")
             Writer.Cast_____("Sum_Rounded", "Sum_Rounded", 'int32')
-            Writer.OperRdSum("Sum_CorrectedElongationRate", "self.Cel.Rate_DNAReplication_Matrix_Corrected")
-            Writer.OperElSub("DeltaSum", "Sum_CorrectedElongationRate", "Sum_Rounded")
+            Writer.ReduceSum("Sum_CorrectedElongationRate", "self.Cel.Rate_DNAReplication_Matrix_Corrected")
+            Writer.Subtract_("DeltaSum", "Sum_CorrectedElongationRate", "Sum_Rounded")
             Writer.ReturnVar("DeltaSum")
             Writer.BlankLine()
 
         with Writer.Statement("def AdjustdNTPConsumption(self, dNTPConsumption_Rounded, Discrepancy):"):
             # Get equal amount of dNTPs if discrepancy is greater than or equal to 4 or less than or equal to -4.
-            Writer.OperElQuo("N_dNTPsets", "Discrepancy", "self.Cel.NUniq_dNTPs")
+            Writer.FloorDiv_("N_dNTPsets", "Discrepancy", "self.Cel.NUniq_dNTPs")
             Writer.VarRepeat("N_dNTPsets", "N_dNTPsets", "self.Cel.NUniq_dNTPs")
-            Writer.OperElAdd("dNTPConsumption_MissingSet", "dNTPConsumption_Rounded", "N_dNTPsets")
+            Writer.Add______("dNTPConsumption_MissingSet", "dNTPConsumption_Rounded", "N_dNTPsets")
             Writer.BlankLine()
 
             # Get random dNTP for the remainder (replace with weighted random dNTP based on dNTP frequency in all mRNAs)
-            Writer.OperElRem("N_dNTPRemainder", "Discrepancy", "self.Cel.NUniq_dNTPs")
+            Writer.Remainder("N_dNTPRemainder", "Discrepancy", "self.Cel.NUniq_dNTPs")
             Writer.Reshape__("N_dNTPRemainder", "N_dNTPRemainder", -1)
             Writer.InitZeros("dNTPConsumption_MissingRemainder", "self.Cel.NUniq_dNTPs", 'int32')
             Writer.RndNumUni("Idx_Remainder", "N_dNTPRemainder", "0", "self.Cel.NUniq_dNTPs")
             Writer.InitOnes_("OnesForRemainder", "N_dNTPRemainder", 'int32')
-            Writer.OperScAdd("dNTPConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
+            Writer.ScatNdAdd("dNTPConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
             Writer.BlankLine()
 
             # Calculate adjusted dNTP Consumption
-            Writer.OperElAdd("dNTPConsumption_Adjusted", "dNTPConsumption_MissingSet", "dNTPConsumption_MissingRemainder")
+            Writer.Add______("dNTPConsumption_Adjusted", "dNTPConsumption_MissingSet", "dNTPConsumption_MissingRemainder")
 
             # Return the adjusted dNTP Consumption
-            Writer.OperRdSum("TotaldNTPConsumption", "dNTPConsumption_Adjusted")
-            Writer.AsrtElEq_("TotaldNTPConsumption", "self.Cel.Count_DNAStrandElongationLengthNTTotal")
+            Writer.ReduceSum("TotaldNTPConsumption", "dNTPConsumption_Adjusted")
+            Writer.AsrtEq___("TotaldNTPConsumption", "self.Cel.Count_DNAStrandElongationLengthNTTotal")
             Writer.ReturnVar("dNTPConsumption_Adjusted")
             Writer.BlankLine()
 
@@ -299,23 +307,23 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("IncrementGeneCount(self):"):
             # Determine Start and End positions.
             # TODO: Expand this part to handle more than a single chromosome
-            Writer.OperGathr("Len_Initial_Left", "self.Len_ChromosomesReplicatingInitial", "self.Idx_DNAStrand_Proxy_Left")
-            Writer.OperGathr("Len_Initial_Right", "self.Len_ChromosomesReplicatingInitial", "self.Idx_DNAStrand_Proxy_Right")
+            Writer.Gather___("Len_Initial_Left", "self.Len_ChromosomesReplicatingInitial", "self.Idx_DNAStrand_Proxy_Left")
+            Writer.Gather___("Len_Initial_Right", "self.Len_ChromosomesReplicatingInitial", "self.Idx_DNAStrand_Proxy_Right")
             Writer.BlankLine()
-            Writer.OperGathr("Len_Final_Left", "self.Len_ChromosomesReplicatingFinal", "self.Idx_DNAStrand_Proxy_Left")
-            Writer.OperGathr("Len_Final_Right", "self.Len_ChromosomesReplicatingFinal", "self.Idx_DNAStrand_Proxy_Right")
+            Writer.Gather___("Len_Final_Left", "self.Len_ChromosomesReplicatingFinal", "self.Idx_DNAStrand_Proxy_Left")
+            Writer.Gather___("Len_Final_Right", "self.Len_ChromosomesReplicatingFinal", "self.Idx_DNAStrand_Proxy_Right")
             Writer.BlankLine()
 
             # Check if reindexed gene coordinates is between Start and End positions.
-            Writer.OperElGrE("Bool_Initial_Left", "self.Cel.Coord_Genes_Reindexed_Leftward", "Len_Initial_Left")
-            Writer.OperElGrE("Bool_Final_Left", "self.Cel.Coord_Genes_Reindexed_Leftward", "Len_Final_Left")
-            Writer.OperElAnd("Bool_Left", "Bool_Initial_Left", "Bool_Final_Left")
+            Writer.GreaterEq("Bool_Initial_Left", "self.Cel.Coord_Genes_Reindexed_Leftward", "Len_Initial_Left")
+            Writer.GreaterEq("Bool_Final_Left", "self.Cel.Coord_Genes_Reindexed_Leftward", "Len_Final_Left")
+            Writer.LogicAnd_("Bool_Left", "Bool_Initial_Left", "Bool_Final_Left")
             Writer.BlankLine()
-            Writer.OperElGrE("Bool_Initial_Right", "self.Cel.Coord_Genes_Reindexed_Rightward", "Len_Initial_Right")
-            Writer.OperElGrE("Bool_Final_Right", "self.Cel.Coord_Genes_Reindexed_Rightward", "Len_Final_Right")
-            Writer.OperElAnd("Bool_Right", "Bool_Initial_Right", "Bool_Final_Right")
+            Writer.GreaterEq("Bool_Initial_Right", "self.Cel.Coord_Genes_Reindexed_Rightward", "Len_Initial_Right")
+            Writer.GreaterEq("Bool_Final_Right", "self.Cel.Coord_Genes_Reindexed_Rightward", "Len_Final_Right")
+            Writer.LogicAnd_("Bool_Right", "Bool_Initial_Right", "Bool_Final_Right")
             Writer.BlankLine()
-            Writer.OperElOr_("Bool_GenesReplicated", "Bool_Left", "Bool_Right")
+            Writer.LogicOr__("Bool_GenesReplicated", "Bool_Left", "Bool_Right")
             Writer.GetIdx___("Idx_GenesReplicated", "Bool_GenesReplicated")
             Writer.BlankLine()
 
@@ -346,7 +354,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def IdentifyCompletedChromosomeElongation(self):"):
             # identify all NMAX values by comparison (boolean)
-            Writer.OperElEq_("self.Bool_ChromosomesReplicatingElongationCompleted", "self.Cel.Len_ChromosomesReplicatingAdjusted",
+            Writer.Equal____("self.Bool_ChromosomesReplicatingElongationCompleted", "self.Cel.Len_ChromosomesReplicatingAdjusted",
                              "self.Cel.Len_ChromosomesReplicatingMax")
             Writer.BoolToBin("self.Bin_ChromosomesReplicatingElongationCompleted",
                              "self.Bool_ChromosomesReplicatingElongationCompleted")
@@ -354,38 +362,38 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def CountCompletedChromosomeElongation(self):"):
             # Count all completed per Chromosome and total
-            Writer.OperRdSum("self.Cel.Count_DNAStrandElongationCompletedPerChromosome",
+            Writer.ReduceSum("self.Cel.Count_DNAStrandElongationCompletedPerChromosome",
                              "self.Bin_ChromosomesReplicatingElongationCompleted", 1)
-            Writer.OperRdSum("self.Cel.Count_DNAStrandElongationCompletedTotal",
+            Writer.ReduceSum("self.Cel.Count_DNAStrandElongationCompletedTotal",
                              "self.Bin_ChromosomesReplicatingElongationCompleted")  # For summary, total completed elongation
             Writer.BlankLine()
 
         with Writer.Statement("def ResetLengthOfCompletedReplicatingChromosomes(self):"):
             # Reset all NMAX lengths to zero by subtracting max length from completed
-            Writer.OperElMul("self.Cel.Len_ChromosomesReplicatingCompleted", "self.Cel.Len_ChromosomesReplicatingMax",
+            Writer.Multiply_("self.Cel.Len_ChromosomesReplicatingCompleted", "self.Cel.Len_ChromosomesReplicatingMax",
                              "self.Bin_ChromosomesReplicatingElongationCompleted")
-            Writer.OperElSub("self.Cel.Len_ChromosomesReplicatingFinal", "self.Cel.Len_ChromosomesReplicatingAdjusted",
+            Writer.Subtract_("self.Cel.Len_ChromosomesReplicatingFinal", "self.Cel.Len_ChromosomesReplicatingAdjusted",
                              "self.Cel.Len_ChromosomesReplicatingCompleted")
 
             # Check reset status
-            Writer.OperElMul("CheckCompletionReset", "self.Cel.Len_ChromosomesReplicatingFinal",
+            Writer.Multiply_("CheckCompletionReset", "self.Cel.Len_ChromosomesReplicatingFinal",
                              "self.Bin_ChromosomesReplicatingElongationCompleted")
-            Writer.AsrtElEq_("CheckCompletionReset", 0)
+            Writer.AsrtEq___("CheckCompletionReset", 0)
             Writer.BlankLine()
 
         with Writer.Statement("def GetIndicesOfChromosomesCompletedElongation(self):"):
             # Get indices of Chromosomes completed elongation. Currently not used
             Writer.GetIdxGr_("Idx_ChromosomeElongationCompleted", "self.Cel.Count_DNAStrandElongationCompletedPerChromosome", 0)
-            Writer.OperGathr("self.Cel.Idx_ChromosomeElongationCompleted", "self.Cel.Idx_ChromosomesReplicating",
+            Writer.Gather___("self.Cel.Idx_ChromosomeElongationCompleted", "self.Cel.Idx_ChromosomesReplicating",
                              "Idx_ChromosomeElongationCompleted")
             Writer.BlankLine()
 
         with Writer.Statement("def ReleaseReplisome(self):"):
             # Writer.Overwrite("self.Cel.Count_ReplisomeReleased", "self.Cel.Count_DNAStrandElongationCompletedTotal")
-            # Writer.OperElSub("self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeReleased")
-            # Writer.OperElAdd("self.Cel.Count_ReplisomeUnbound", "self.Cel.Count_ReplisomeUnbound", "self.Cel.Count_ReplisomeReleased")
-            # Writer.OperElAdd("SumOfBoundUnbound", "self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeUnbound")
-            # Writer.AsrtElEq_("self.Cel.Count_Replisome", "SumOfBoundUnbound")
+            # Writer.Subtract_("self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeReleased")
+            # Writer.Add______("self.Cel.Count_ReplisomeUnbound", "self.Cel.Count_ReplisomeUnbound", "self.Cel.Count_ReplisomeReleased")
+            # Writer.Add______("SumOfBoundUnbound", "self.Cel.Count_ReplisomeBound", "self.Cel.Count_ReplisomeUnbound")
+            # Writer.AsrtEq___("self.Cel.Count_Replisome", "SumOfBoundUnbound")
             Writer.Pass_____()
             Writer.BlankLine()
 

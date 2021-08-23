@@ -136,7 +136,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Temporary set up before implementing initiation
             Writer.InitOnes_("IdxOne", 1)
             Writer.InitOnes_("CountOne", 1)
-            Writer.ScatNdAdd("self.Cel.Counts", "IdxOne", "CountOne")
+            Writer.ScatNdAdd("self.Cel.Counts", "self.Cel.Counts", "IdxOne", "CountOne")
             Writer.BlankLine()
 
         # Override the abstract method
@@ -279,7 +279,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.InitZeros("dNTPConsumption_MissingRemainder", "self.Cel.NUniq_dNTPs", 'int32')
             Writer.RndNumUni("Idx_Remainder", "N_dNTPRemainder", "0", "self.Cel.NUniq_dNTPs")
             Writer.InitOnes_("OnesForRemainder", "N_dNTPRemainder", 'int32')
-            Writer.ScatNdAdd("dNTPConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
+            Writer.ScatNdAdd("dNTPConsumption_MissingRemainder", "dNTPConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
             Writer.BlankLine()
 
             # Calculate adjusted dNTP Consumption

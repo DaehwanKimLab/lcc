@@ -676,9 +676,9 @@ class FProtein(FDataset):
             AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
             # if 'endoribonuclease' in Name:
             #     print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
-            if 'poly A' in Name:
+            if 'RNA helicase' in Name:
                 print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
-            # if 'RNase' in Name:
+            # if 'EG10844-MONOMER' in ProtMonomerID:
             #     print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
 
     def SaveData(self, SavePath):

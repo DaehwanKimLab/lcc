@@ -185,8 +185,11 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Idx_Proteins", 0)
             Writer.Variable_("self.Idx_RndProteinsDegraded", 0)
             Writer.BlankLine()
+            Writer.Variable_("self.Rate_ProteinDegradation", 0)
+            Writer.BlankLine()
             Writer.Variable_("self.Count_ProteinsToBeDegraded", 0)
             Writer.Variable_("self.Count_AAsToBeReleased", 0)
+            Writer.Variable_("self.Count_AAsToBeReleasedTotal", 0)
             Writer.BlankLine()
 
         # Override the abstract method
@@ -204,7 +207,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Cel.Idx_AAs", Idx_AAs)
             Writer.BlankLine()
 
-            Writer.Variable_("self.Cel.Rate_ProteinDegradation", Rate_ProteinDegradation)
+            Writer.Variable_("self.Rate_ProteinDegradation", Rate_ProteinDegradation)
             # Writer.Variable_("self.Cel.Rate_ProteinDegradation_Matrix", Rate_ProteinDegradation, Shape=[NUniq_mRNAs, NMax_ProteasesPermRNA])
             Writer.BlankLine()
 
@@ -212,7 +215,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Writer.Random()
             # Writer.Statement("random_id = Random()");
 
-            Writer.InitZeros("self.Cel.Count_AAsToBeReplenished", NUniq_AAs, 'int32')
+            # Writer.InitZeros("self.Count_AAsToBeReplenished", NUniq_AAs, 'int32')
 
             # Writer.VarFill__("self.Cel.Len_ProteinsDegraded", [NUniq_Proteins, NMax_ProteasesPermRNA], -1)
             # Writer.Overwrite("self.Cel.Len_ProteinsDegradedMax", "self.Cel.Len_Proteins")
@@ -248,7 +251,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Gather___("Count_Proteins", "self.Cel.Counts", "self.Cel.Idx_Master_Proteins")
             Writer.ReduceSum("Count_ProteinsTotal", "Count_Proteins", 0)
             Writer.Cast_____("Count_ProteinsTotal_Float", "Count_ProteinsTotal", 'float32')
-            Writer.Multiply_("Count_ProteinsToBeDegraded", "Count_ProteinsTotal_Float", "self.Cel.Rate_ProteinDegradation")
+            Writer.Multiply_("Count_ProteinsToBeDegraded", "Count_ProteinsTotal_Float", "self.Rate_ProteinDegradation")
             Writer.RoundInt_("self.Count_ProteinsToBeDegraded", "Count_ProteinsToBeDegraded")
             Writer.BlankLine()
 
@@ -259,7 +262,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def GetCountOfDegradedProteins(self):"):
             Writer.InitZeros("self.Count_ProteinsDegraded", NUniq_Proteins, 'int32')
             Writer.InitOnes_("OnesForRndProteins", "self.Count_ProteinsToBeDegraded", 'int32')
-            Writer.ScatNdUpd("self.Count_ProteinsDegraded", "self.Idx_RndProteinsDegraded", "OnesForRndProteins")
+            Writer.ScatNdUpd("self.Count_ProteinsDegraded", "self.Count_ProteinsDegraded", "self.Idx_RndProteinsDegraded", "OnesForRndProteins")
             Writer.BlankLine()
 
         with Writer.Statement("def Initiation(self):"):
@@ -289,6 +292,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def UpdateByproducts(self):"):
             Writer.ReduceSum("Count_AAsToBeReleasedTotal", "self.Count_AAsToBeReleased", 0)
+            Writer.Overwrite("self.Count_AAsToBeReleasedTotal", "Count_AAsToBeReleasedTotal")
             Writer.ReduceSum("Count_RndProteinsDegradedTotal", "self.Count_ProteinsDegraded", 0)
             Writer.BlankLine()
 
@@ -325,34 +329,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def ViewProcessSummary(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-            # Writer.Variable_("self.Idx_Proteins", 0)
-            # Writer.Variable_("self.Idx_RndProteinsDegraded", 0)
-            # Writer.BlankLine()
-            # Writer.Variable_("self.Count_ProteinsToBeDegraded", 0)
-            # Writer.Variable_("self.Count_AAsToBeReleased", 0)
-            #
-            # Writer.PrintStrg("===== Protein Degradation ===== ")
-            # # Number of Total Proteins to degrade
-            # Writer.PrintStVa("# of Total Proteins degraded",
-            #                  "self.Cel.Count_Protease")
-            # # Total Degradation length of Proteins
-            # Writer.PrintStVa("Total Degradation Length of Proteins (aa)",
-            #                  "self.Cel.Count_ProteinDegradationLengthTotal")
-            # # Total AA consumption and PPi production
-            # Writer.PrintStVa("Total AA Release [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
-            #                  "self.Count_AAsToBeReleased")
-            # Writer.PrintStVa("Total ATP Consumption",
-            #                  "")
-            # Writer.PrintStVa("Total AA Release [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
-            #                  "")
-            # Writer.PrintStVa("Total Pi Release",
-            #                  "")
-            # Writer.PrintStVa("Total AA Release [A,R,N,D,C,E,Q,G,H,I,L,K,M,F,P,S,T,W,Y,O,V]",
-            #                  "")
-            # Writer.PrintStVa("Total Pi Release",
-            #                  "")
-            # Writer.BlankLine()
-
+            Writer.PrintStrg("===== Protein Degradation ===== ")
+            Writer.PrintStVa("# of Proteins Degraded",
+                             "tf.shape(self.Idx_RndProteinsDegraded)[0]")
+            Writer.PrintStVa("# of AA release",
+                             "self.Count_AAsToBeReleasedTotal")

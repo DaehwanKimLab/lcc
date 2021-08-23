@@ -41,7 +41,7 @@ def Write_RGM_MetaboliteReplenish(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
-            Writer.ScatNdUpd("FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
+            Writer.ScatNdUpd("FinalCount", "FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
             Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
             Writer.ReturnVar("FinalCount_Replenished")
             Writer.BlankLine()

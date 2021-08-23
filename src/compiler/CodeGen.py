@@ -135,7 +135,7 @@ class CodeWriter():
 
     def PrintStVa(self, Str, VariableName):
         self.Statement('print("%s: ")' % Str)
-        self.Statement('print(%s)' % VariableName)
+        self.Statement('print("\t", %s)' % VariableName)
 
     def PrintDict(self, DictVariableName):
         with self.Statement("for Key, Value in %s.items():" % DictVariableName):
@@ -380,17 +380,17 @@ class TFCodeWriter(CodeWriter):
         self.ReshType_("Index", Index, [-1, 1], 'int32')
         self.ReshType_("Values", Values, -1, 'int32')
 
-    def ScatNdAdd(self, Target, Index, Values):
+    def ScatNdAdd(self, DestVar, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
-        self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
+        self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (DestVar, "Target", "Index", "Values"))
 
-    def ScatNdSub(self, Target, Index, Values):
+    def ScatNdSub(self, DestVar, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
-        self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
+        self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (DestVar, "Target", "Index", "Values"))
 
-    def ScatNdUpd(self, Target, Index, Values):
+    def ScatNdUpd(self, DestVar, Target, Index, Values):
         self.PrepScNds(Target, Index, Values)
-        self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (Target, "Target", "Index", "Values"))
+        self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (DestVar, "Target", "Index", "Values"))
 
     def LogicAnd_(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.logical_and(%s, %s)" % (DestVar, MX1, MX2))

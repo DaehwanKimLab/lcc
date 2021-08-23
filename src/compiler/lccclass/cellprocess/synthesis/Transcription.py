@@ -251,7 +251,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.InitZeros("NTPConsumption_MissingRemainder", "self.Cel.NUniq_NTPs", 'int32')
             Writer.RndNumUni("Idx_Remainder", "N_NTPRemainder", "0", "self.Cel.NUniq_NTPs")
             Writer.InitOnes_("OnesForRemainder", "N_NTPRemainder", 'int32')
-            Writer.ScatNdAdd("NTPConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
+            Writer.ScatNdAdd("NTPConsumption_MissingRemainder", "NTPConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
             Writer.BlankLine()
 
             # Return the adjusted NTP Consumption
@@ -349,46 +349,44 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             
         with Writer.Statement("def ViewProcessSummary(self):"):
 
-            Writer.PrintStrg("===== Transcription Initiation ===== ")
+            Writer.PrintStrg("===== Transcription ===== ")
             # Number of Total RNAP
             Writer.PrintStVa("# of Total RNAPs",
                              "self.Cel.Count_RNAP")
-            # Number of Active RNAP
-            Writer.PrintStVa("# of Active RNAPs",
-                             "self.Cel.Count_RNAPActive")
-            # Number of RNAP binding
-            Writer.PrintStVa("# of RNAPs available that can bind a promoter",
-                             "self.Cel.Count_RNAPActiveCanBind")
+            # # Number of Active RNAP
+            # Writer.PrintStVa("# of Active RNAPs",
+            #                  "self.Cel.Count_RNAPActive")
+            # # Number of RNAP binding
+            # Writer.PrintStVa("# of RNAPs available that can bind a promoter",
+            #                  "self.Cel.Count_RNAPActiveCanBind")
             # Number of new RNAP binding in this step (= new nascent RNAs to elongate next step)
             Writer.PrintStVa("# of RNAPs that newly bind a promoter in this step",
                              "self.Cel.Count_RNAPWillBind")
             Writer.BlankLine()
 
-            Writer.PrintStrg("===== Transcript Elongation ===== ")
+            # Writer.PrintStrg("===== Transcript Elongation ===== ")
             # Number of Nascent RNAs elongated
             Writer.PrintStVa("# of All Nascent RNAs Elongating",
                              "self.Cel.Count_RNAsNascentElongatingTotal")
-            # Total elongation length of RNAs
-            Writer.PrintStVa("Total Elongation Length of RNAs (nt)",
-                             "self.Cel.Count_RNAElongationLengthTotal")
             # Total NTP consumption and PPi production
-            Writer.PrintStVa("Total NTP Consumption [ATP, CTP, GTP, UTP]",
-                             "self.Cel.Count_RNAElongationNTPConsumption")
-            Writer.PrintStVa("Total PPi Production",
-                             "self.Cel.Count_RNAElongationPPiProduction")
+            Writer.ReduceSum("Count_RNAElongationNTPConsumptionTotal", "self.Cel.Count_RNAElongationNTPConsumption")
+            Writer.PrintStVa("Total NTP Consumption",
+                             "Count_RNAElongationNTPConsumptionTotal")
+            # Writer.PrintStVa("Total PPi Production",
+            #                  "self.Cel.Count_RNAElongationPPiProduction")
             Writer.BlankLine()
 
-            Writer.PrintStrg("===== Transcription Termination ===== ")
+            # Writer.PrintStrg("===== Transcription Termination ===== ")
             # Number of RNA Elongation Completed
-            Writer.PrintStVa("# of RNA Elongation Completed",
+            Writer.PrintStVa("# of RNA Generated",
                              "self.Cel.Count_RNAElongationCompletedTotal")
-            # Number of RNAPs Released
-            Writer.PrintStVa("# of RNAPs Released",
-                             "self.Cel.Count_RNAPReleased")
-            # Number of RNAP Bound to DNA
-            Writer.PrintStVa("# of Total RNAPs Bound to DNA",
-                             "self.Cel.Count_RNAPBound")
-            # Number of RNAP Unbound Floating
-            Writer.PrintStVa("# of Total RNAPs Unbound Floating",
-                             "self.Cel.Count_RNAPUnbound")
+            # # Number of RNAPs Released
+            # Writer.PrintStVa("# of RNAPs Released",
+            #                  "self.Cel.Count_RNAPReleased")
+            # # Number of RNAP Bound to DNA
+            # Writer.PrintStVa("# of Total RNAPs Bound to DNA",
+            #                  "self.Cel.Count_RNAPBound")
+            # # Number of RNAP Unbound Floating
+            # Writer.PrintStVa("# of Total RNAPs Unbound Floating",
+            #                  "self.Cel.Count_RNAPUnbound")
             Writer.BlankLine()

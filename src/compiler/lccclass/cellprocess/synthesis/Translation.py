@@ -42,6 +42,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Rate_ProteinElongation", 0)
             Writer.BlankLine()
             Writer.Variable_("self.Count_Ribosome", 0)
+            Writer.Variable_("self.Count_ElongatedTotal", 0)
             Writer.Variable_("self.Count_ElongationCompletionTotal", 0)
             Writer.Variable_("self.Count_AAConsumptionTotal", 0)
             Writer.BlankLine()
@@ -136,7 +137,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # To turn -1 to 0 where nascent proteins are to be made in the nascent protein length table.
             Writer.InitZeros("Count_ProteinsNascentNew", NUniq_Proteins, 'int32')
             Writer.OnesLike_("Ones", "Idx_NewSelected", 'int32')
-            Writer.ScatNdAdd("Count_ProteinsNascentNew", "Idx_NewSelected", "Ones")
+            Writer.ScatNdAdd("Count_ProteinsNascentNew", "Count_ProteinsNascentNew", "Idx_NewSelected", "Ones")
 
             Writer.Statement("Bin_AddNewCount = self.GetBinToAddNewCountToLenMatrix(Len_Matrix, Count_ProteinsNascentNew)")
             Writer.Add______("Len_Matrix_NewCountAdded", "Len_Matrix", "Bin_AddNewCount")
@@ -165,60 +166,24 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def DetermineAAConsumption(self, Len_ToElongate):"):
-            Writer.Comment__("GetRawAAConsumption")
-            # Prepare NT elongation length for each mRNA matrix for multiplication
-            Writer.ReshType_("Len_ToElongate_Float", "Len_ToElongate", [-1, 1], 'float32')
-            # AA Frequency per mRNA * elongating Polypeptide (in NT count) per mRNA
-            Writer.MatrixMul("AAConsumption_Raw", "self.Cel.Freq_AAsInProteins",
-                             "Len_ToElongate_Float")
-            Writer.BlankLine()
-
-            Writer.Comment__("GetRoundedAAConsumption")
-            Writer.RoundInt_("AAConsumption_Rounded", "AAConsumption_Raw")
-            Writer.BlankLine()
-
-            Writer.Comment__("CalculateDiscrepancy")
-            # Determine the difference between rounded vs corrected elongation
-            Writer.ReduceSum("LenSum_AfterRounding", "AAConsumption_Rounded")
-            Writer.Cast_____("LenSum_AfterRounding", "LenSum_AfterRounding", 'int32')
-            Writer.ReduceSum("LenSum_BeforeRounding", "Len_ToElongate")
-            Writer.Subtract_("Discrepancy", "LenSum_BeforeRounding", "LenSum_AfterRounding")
-            Writer.BlankLine()
-
-            Writer.Comment__("AdjustAAConsumption")
-            # Get equal amount of AAs if discrepancy is greater than or equal to 4 or less than or equal to -4.
-            Writer.FloorDiv_("N_AASets", "Discrepancy", "self.Cel.NUniq_AAs")
-            Writer.VarRepeat("N_AASets", "N_AASets", "self.Cel.NUniq_AAs")
-            Writer.Add______("AAConsumption_MissingSet", "AAConsumption_Rounded", "N_AASets")
-            Writer.BlankLine()
-
-            # Get random AA for the remainder (replace with weighted random AA based on aa frequency in all mRNAs)
-            Writer.Remainder("N_AARemainder", "Discrepancy", "self.Cel.NUniq_AAs")
-            Writer.Reshape__("N_AARemainder", "N_AARemainder", -1)
-            Writer.InitZeros("AAConsumption_MissingRemainder", "self.Cel.NUniq_AAs", 'int32')
-            Writer.RndNumUni("Idx_Remainder", "N_AARemainder", "0", "self.Cel.NUniq_AAs")
-            Writer.InitOnes_("OnesForRemainder", "N_AARemainder", 'int32')
-            Writer.ScatNdAdd("AAConsumption_MissingRemainder", "Idx_Remainder", "OnesForRemainder")
-            Writer.BlankLine()
-
-            # Calculate adjusted AA Consumption
-            Writer.Add______("AAConsumption_Adjusted", "AAConsumption_MissingSet", "AAConsumption_MissingRemainder")
+            Writer.Statement("AAConsumption = self.DetermineAmountOfBuildingBlocks(Len_ToElongate, self.Cel.Freq_AAsInProteins)")
 
             # Correction for Seleno-cysteine when -1
-            Writer.Gather___("Count_SelenoCysteine", "AAConsumption_Adjusted", "self.Cel.Idx_SelenoCysteineInAAs")
+            Writer.Gather___("Count_SelenoCysteine", "AAConsumption", "self.Cel.Idx_SelenoCysteineInAAs")
             Writer.ConvToBin("Bin_SelenoCysteine", "Count_SelenoCysteine", "<", 0)
             Writer.Multiply_("CountToAdjust", "Bin_SelenoCysteine", "self.Cel.One")
-            Writer.ScatNdAdd("AAConsumption_Adjusted", "self.Cel.Idx_SelenoCysteineInAAs", "CountToAdjust")
+            Writer.ScatNdAdd("AAConsumption_Adjusted", "AAConsumption", "self.Cel.Idx_SelenoCysteineInAAs", "CountToAdjust")
 
             Writer.RndIdxUni("Idx_RndAA", [1],
                              "self.Cel.Idx_AAsLocalAssignmentNoSelenoCysteine")
             Writer.NegValue_("CountToAdjust_Neg", "CountToAdjust")
-            Writer.ScatNdAdd("AAConsumption_Adjusted", "Idx_RndAA", "CountToAdjust_Neg")
+            Writer.ScatNdAdd("AAConsumption_Adjusted", "AAConsumption_Adjusted", "Idx_RndAA", "CountToAdjust_Neg")
             Writer.BlankLine()
 
             # Return the adjusted AA Consumption
-            Writer.ReduceSum("TotalAAConsumption", "AAConsumption_Adjusted")
-            Writer.AsrtEq___("TotalAAConsumption", "LenSum_BeforeRounding")
+            Writer.ReduceSum("TotalAAConsumptionFinal", "AAConsumption_Adjusted")
+            Writer.ReduceSum("TotalAAConsumptionInitial", "Len_ToElongate")
+            Writer.AsrtEq___("TotalAAConsumptionFinal", "TotalAAConsumptionInitial")
             Writer.ReturnVar("AAConsumption_Adjusted")
             Writer.BlankLine()
 
@@ -242,6 +207,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def Elongation(self):"):
             Writer.Statement("Len_ProteinsNascent_Elongated = self.DetermineAmountOfElongation(self.Cel.Len_ProteinsNascent, self.Rate_ProteinElongation, self.Len_ProteinsNascentMax)")
             Writer.Statement("Len_ToElongate = Len_ProteinsNascent_Elongated - self.Cel.Len_ProteinsNascent")
+            Writer.ConvToBin("Bin_Elongated", "Len_ToElongate", ">", 0)
+            Writer.ReduceSum("self.Count_ElongatedTotal", "Bin_Elongated")
             Writer.Statement("self.UpdateNascentProteinLengths(Len_ProteinsNascent_Elongated)")
             Writer.Statement("self.UpdateByproducts(Len_ToElongate)")
             Writer.BlankLine()
@@ -275,11 +242,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def ViewProcessSummary(self):"):
             Writer.PrintStrg("===== Translation ===== ")
-            # Number of Total Ribosome
             Writer.PrintStVa("# of Ribosomes",
                              "self.Count_Ribosome")
             Writer.PrintStVa("# of Ribosomes Newly Bound To mRNA",
                              "tf.shape(self.Idx_RndProteinsNascent)[0]")
+            Writer.PrintStVa("# of Nascent Proteins Elongated (= # of Active Ribosomes)",
+                             "self.Count_ElongatedTotal")
             Writer.PrintStVa("# of New Proteins Generated",
                              "self.Count_ElongationCompletionTotal")
             Writer.PrintStVa("# of AA consumption",
