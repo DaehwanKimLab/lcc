@@ -116,16 +116,19 @@ def Write_CellState(Writer, Comp, ProGen):
                 Writer.BlankLine()
 
         with Writer.Statement("def TransposeFreqNCountMatrices(self):"):
-            Writer.Transpose("self.Freq_NTsInChromosomes")
-            Writer.Transpose("self.Freq_NTsInChromosomesReplicating")
-            Writer.Transpose("self.Freq_NTsInChromosomesInGenome")
-            Writer.Transpose("self.Freq_NTsInRNAs")
-            Writer.Transpose("self.Freq_AAsInProteins")
-            Writer.BlankLine()
-            Writer.Transpose("self.Count_BasePairsInChromosomes")
-            Writer.Transpose("self.Count_NTsInChromosomesInGenome")
-            Writer.Transpose("self.Count_NTsInRNAs")
-            Writer.Transpose("self.Count_AAsInProteins")
+            ListOfMatrixVariablesToTranspose = [
+                "self.Freq_NTsInChromosomes",
+                "self.Freq_NTsInChromosomesReplicating",
+                "self.Freq_NTsInChromosomesInGenome",
+                "self.Freq_NTsInRNAs",
+                "self.Freq_AAsInProteins",
+                "self.Count_BasePairsInChromosomes",
+                "self.Count_NTsInChromosomesInGenome",
+                "self.Count_NTsInRNAs",
+                "self.Count_AAsInProteins",
+            ]
+            for Variable in ListOfMatrixVariablesToTranspose:
+                Writer.Transpose(Variable, Variable)
             Writer.BlankLine()
 
         with Writer.Statement("def InitializeMatrices(self):"):
@@ -247,6 +250,9 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
 
             # Protein Degradation
+
+            # RNA Degradation
+            Writer.Variable_("self.Count_NTsInRNAsCleaved", 0)
 
             # Metabolism
             Writer.Comment__("Metabolism")

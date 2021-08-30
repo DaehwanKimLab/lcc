@@ -342,6 +342,7 @@ def Compile(CodeFileNames,
         Replication,
         Transcription,
         Translation,
+        RNADegradation,
         ProteinDegradation,
         Metabolism
     ]

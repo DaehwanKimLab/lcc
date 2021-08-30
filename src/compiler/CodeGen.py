@@ -281,6 +281,10 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.shape(%s, dtype=tf.%s)' % (DestVar, Input, Type)
         self.Statement(Line)
 
+    def ShapeAxis(self, DestVar, Input, Axis):
+        Line = '%s = tf.shape(%s)[%s]' % (DestVar, Input, Axis)
+        self.Statement(Line)
+
     def LoadSaved(self, SaveFilePath, VariableName, DataType=None):
         FileType = SaveFilePath.split('.')[-1]
         if FileType == 'npy':
@@ -304,11 +308,9 @@ class TFCodeWriter(CodeWriter):
         self.Statement('%s = tf.cast(tf.reshape(%s, %s), dtype=tf.%s)' % (DestVar, SrcVar, str(Shape), DataType))
         self.DebugPVar(DestVar)
 
-
-    def Transpose(self, Variable):
-        Line = '%s = tf.transpose(%s)' % (Variable, Variable)
+    def Transpose(self, DestVar, SrcVar):
+        Line = '%s = tf.transpose(%s)' % (DestVar, SrcVar)
         self.Statement(Line)
-        self.DebugPVar(Variable)
 
     def NegValue_(self, DestVar, SrcVar):
         self.Statement('%s = tf.math.negative(%s)' % (DestVar, SrcVar))
@@ -614,7 +616,7 @@ class TFCodeWriter(CodeWriter):
         self.Reshape__("Count", Count, [1, -1])
         self.Subtract_("Count_Inv", N_Columns, "Count")
         self.Concat___("BinaryPairCount", "Count", "Count_Inv", 0)
-        self.Transpose("BinaryPairCount")
+        self.Transpose("BinaryPairCount", "BinaryPairCount")
         self.Reshape__("BinaryPairCount", "BinaryPairCount", -1)
 
         # Generate binary matrix

@@ -29,9 +29,61 @@ def Write_CellProcess(Writer):
             Writer.Pass_____()
             Writer.BlankLine()
 
+        with Writer.Statement("def GetCounts(self, MolIdxs):"):
+            Writer.Gather___("Counts", "self.Cel.Counts", "self.Cel.Idx_Master_mRNAs")
+            Writer.ReturnVar("Counts")
+            Writer.BlankLine()
+
         with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
             Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs", "MolCounts")
             Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_RndIdx(self, MolIdxs):"):
+            Writer.OnesLike_("MolCounts_Ones", "MolIdxs", 'int32')
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs", "MolCounts_Ones")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_dNTPs(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_dNTPs", "MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_NTPs(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_NTPs", "MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_AAs(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_AAs", "MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_DehydrationSynthesis(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_Hydrolysis(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "-MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_PiRelease(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "-MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_Phosphorolysis(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "-MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_ATPConsumption(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_ATP", "-MolCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts_PPiRelease(self, MolCounts):"):
+            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "MolCounts")
+            Writer.BlankLine()
+
+
+
+        # with Writer.Statement("def AddToDeltaCounts_Hydrolysis(self, MolCounts):"):
+        #     Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "MolCounts")
+        #     Writer.BlankLine()
 
         Writer.AbsMethod()
         with Writer.Statement("def ViewProcessSummary(self):"):
@@ -53,7 +105,7 @@ def Write_CellProcess(Writer):
         with Writer.Statement("def GetFrequencyMatrix(self, Count_Matrix):"):
             Writer.ReduceSum("ReducedSum_Count", "Count_Matrix")
             Writer.Divide___("Freq_Count", "Count_Matrix", "ReducedSum_Count")
-            Writer.Transpose("Freq_Count")
+            Writer.Transpose("Freq_Count", "Freq_Count")
             Writer.ReturnVar("Freq_Count")
             Writer.BlankLine()
 
@@ -136,7 +188,7 @@ def Write_CellProcess(Writer):
             Writer.Reshape__("Count_2D", "Count", "[1, -1]")
             Writer.Subtract_("Count_Inv", "N_Columns", "Count_2D")
             Writer.Concat___("BinaryPairCount", "Count", "Count_Inv", "0")
-            Writer.Transpose("BinaryPairCount")
+            Writer.Transpose("BinaryPairCount", "BinaryPairCount")
             Writer.Reshape__("BinaryPairCount", "BinaryPairCount", "-1")
             Writer.BlankLine()
 
@@ -171,20 +223,37 @@ def Write_CellProcess(Writer):
             Writer.VarRepeat("RandomValues_RepeatArray", "RandomValues", "N_RandomValues")
             Writer.Reshape__("RandomValues_Matrix", "RandomValues_RepeatArray", "[-1, N_RandomValues]")
 
+            # # Boolean operation on (repeated random number array < Cumsum (2D matrix)) for which count range it falls
+            # Writer.Less_____("Bool_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "WeightCumSum")
+            #
+            # # Boolean operation on (Counts > 0) for idxs with counts
+            # Writer.Greater__("Bool_RandomValuesGreaterThanZero", "RandomValues_Matrix", 0)
+            #
+            # # Logical_and on (repeated random number array < Cumsum, Counts > 0) then convert to binary
+            # Writer.LogicAnd_("Bool_RandomValuesSelected", "Bool_RandomValuesLessThanWeightCumSum", "Bool_RandomValuesGreaterThanZero")
+            # Writer.BoolToBin("Bin_RandomValuesSelected", "Bool_RandomValuesSelected")
+
+            # # Argmax on the binary to get the first indices of 1's in each random number generated.
+            # Writer.ArgMax___("Idx_Random", "Bin_RandomValuesSelected", Axis=1)
+
             # Boolean operation on (repeated random number array < Cumsum (2D matrix)) for which count range it falls
-            Writer.Less_____("Bool_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "WeightCumSum")
-
-            # Boolean operation on (Counts > 0) for idxs with counts
-            Writer.Greater__("Bool_RandomValuesGreaterThanZero", "RandomValues_Matrix", 0)
-
-            # Logical_and on (repeated random number array < Cumsum, Counts > 0) then convert to binary
-            Writer.LogicAnd_("Bool_RandomValuesSelected", "Bool_RandomValuesLessThanWeightCumSum", "Bool_RandomValuesGreaterThanZero")
-            Writer.BoolToBin("Bin_RandomValuesSelected", "Bool_RandomValuesSelected")
+            Writer.ConvToBin("Bin_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "<", "WeightCumSum")
 
             # Argmax on the binary to get the first indices of 1's in each random number generated.
-            Writer.ArgMax___("Idx_Random", "Bin_RandomValuesSelected", Axis=1)
+            Writer.ArgMax___("Idx_Random", "Bin_RandomValuesLessThanWeightCumSum", Axis=1)
+
+            # # Argmax on the binary to get the first indices of 1's in each random number generated.
+            # Writer.ArgMax___("Idx_Random_Local", "Bin_RandomValuesLessThanWeightCumSum", Axis=1)
+            #
+            # # Map back to the original indices
+            # Writer.Gather___("Idx_Random", "Indices", "Idx_Random_Local")
 
             Writer.ReturnVar("Idx_Random")
+            Writer.BlankLine()
+
+        with Writer.Statement("def IdxFromLocalToReference(self, Idx_Local, Idx_Reference):"):
+            Writer.Gather___("Idx_Converted", "Idx_Reference", "Idx_Local")
+            Writer.ReturnVar("Idx_Converted")
             Writer.BlankLine()
 
         with Writer.Statement("def DetermineAmountOfElongation(self, Len_Matrix, Rate_Elongation, MaxLen_Matrix):"):
@@ -227,6 +296,13 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
             Writer.ReturnVar("Len_Matrix_MaxToZero")
+            Writer.BlankLine()
+
+        with Writer.Statement("def DetermineAmountFromRate(self, Count, Rate):"):
+            Writer.Cast_____("Count_Float", "Count", 'float32')
+            Writer.Multiply_("Count_ToCleave", "Count_Float", "Rate")
+            Writer.RoundInt_("Count_ToCleave", "Count_ToCleave")
+            Writer.ReturnVar("Count_ToCleave")
             Writer.BlankLine()
 
         with Writer.Statement("def ResetZerosToNegOnes(self, Len_Matrix):"):
