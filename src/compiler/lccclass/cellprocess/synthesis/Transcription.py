@@ -94,8 +94,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.RoundInt_("Count_RNAPActiveCanBind", "Count_RNAPActiveCanBind")
 
             Writer.Comment__("DetermineRNAPWillBind")
-            Writer.ConvToBin("Bin_RNAPBound", "self.Celo.Len_RNAsNascent", ">=", 0)
-            Writer.ReduceSum("Count_RNAPBound", "Bin_RNAPBund")
+            Writer.ConvToBin("Bin_RNAPBound", "self.Cel.Len_RNAsNascent", ">=", 0)
+            Writer.ReduceSum("Count_RNAPBound", "Bin_RNAPBound")
             Writer.Subtract_("Count_RNAPWillBind", "Count_RNAPActiveCanBind",
                              "Count_RNAPBound")
             Writer.ConvToBin("Bin_RNAPWillBind", "Count_RNAPActiveCanBind", ">",

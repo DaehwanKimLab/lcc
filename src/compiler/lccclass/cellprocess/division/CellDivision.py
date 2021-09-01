@@ -58,7 +58,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.CellDivisionSwitch = self.EvaluateCellStateForCellDivision()")
             Writer.Statement("self.SplitCountMatrix()")
             Writer.Statement("self.SplitLengthMatrices()")
-            Writer.Statement("self.PrintMessage()")
             Writer.BlankLine()
 
         with Writer.Statement("def EvaluateCellStateForCellDivision(self):"):
@@ -94,13 +93,16 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def SplitLengthMatrices(self):"):
+            Writer.Subtract_("CellDivisionCounterSwitch", 1, "self.CellDivisionSwitch")
+
             LengthMatrices = [
                 "RNAsNascent",
                 "ProteinsNascent"
                 ]
             for Matrix in LengthMatrices:
                 Writer.Statement("Matrix_RandElements = self.SplitMatrixInElements(self.Cel.Len_%s)" % Matrix)
-                Writer.Overwrite("self.Cel.Len_%s" % Matrix, "Matrix_RandElements")
+                Writer.Statement("Matrix_Updated = tf.math.add(tf.math.multiply(CellDivisionCounterSwitch, self.Cel.Len_%s), tf.math.multiply(self.CellDivisionSwitch, Matrix_RandElements))" % Matrix)
+                Writer.Overwrite("self.Cel.Len_%s" % Matrix, "Matrix_Updated")
                 Writer.BlankLine()
 
         with Writer.Statement("def TestCellDivision(self):"):
