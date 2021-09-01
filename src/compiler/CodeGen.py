@@ -40,6 +40,7 @@ class CodeWriter():
         self.BuildIndentationPrefix()
 
         self.Switch4Comment = False
+        self.Switch4PrintString = False
         self.Switch4DebugSimulationPrint = False
         self.Switch4DebugSimulationAssert = False
         self.Switch4Graph = False
@@ -50,7 +51,7 @@ class CodeWriter():
         self.Switch4HardCheckCounts = False
         self.Switch4CheckDeltaCountsNeg = False
         self.Switch4ShowDeltaCounts = False
-        self.s = False
+        self.Switch4TestCellDivision = False
 
 
     def __enter__(self):
@@ -122,20 +123,24 @@ class CodeWriter():
         self.Statement(Line)
 
     def PrintStrg(self, Str):
-        Line = 'print("%s")' % Str
-        self.Statement(Line)
+        if self.Switch4PrintString:
+            Line = 'print("%s")' % Str
+            self.Statement(Line)
 
     def PrintVar_(self, VariableName):
-        Line = 'print(\t%s)' % VariableName
-        self.Statement(Line)
+        if self.Switch4PrintString:
+            Line = 'print(\t%s)' % VariableName
+            self.Statement(Line)
 
     def PrintVaVa(self, VariableName):
-        Line = 'print("\t%s = ", %s)' % (VariableName, VariableName)
-        self.Statement(Line)
+        if self.Switch4PrintString:
+            Line = 'print("\t%s = ", %s)' % (VariableName, VariableName)
+            self.Statement(Line)
 
     def PrintStVa(self, Str, VariableName):
-        self.Statement('print("%s: ")' % Str)
-        self.Statement('print("\t", %s)' % VariableName)
+        if self.Switch4PrintString:
+            self.Statement('print("%s: ")' % Str)
+            self.Statement('print("\t", %s)' % VariableName)
 
     def PrintDict(self, DictVariableName):
         with self.Statement("for Key, Value in %s.items():" % DictVariableName):
@@ -219,6 +224,43 @@ class TFCodeWriter(CodeWriter):
         self.Target = Target.TensorFlow
         super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
 
+    # tf.print
+    def PrintStrg(self, Str):
+        if self.Switch4PrintString:
+            Line = 'tf.print("%s", output_stream=sys.stdout)' % Str
+            self.Statement(Line)
+        else:
+            self.Pass_____()
+            self.BlankLine()
+
+    def PrintVar_(self, VariableName):
+        if self.Switch4PrintString:
+            Line = 'tf.print(\t%s, output_stream=sys.stdout)' % VariableName
+            self.Statement(Line)
+        else:
+            self.Pass_____()
+            self.BlankLine()
+
+    def PrintVaVa(self, VariableName):
+        if self.Switch4PrintString:
+            Line = 'tf.print("\t%s = ", %s, output_stream=sys.stdout)' % (VariableName, VariableName)
+            self.Statement(Line)
+        else:
+            self.Pass_____()
+            self.BlankLine()
+
+    def PrintStVa(self, Str, VariableName):
+        if self.Switch4PrintString:
+            # For a double liner
+            self.Statement('tf.print("%s: ", output_stream=sys.stdout)' % Str)
+            self.Statement('tf.print("\t", %s, output_stream=sys.stdout)' % VariableName)
+
+            # For a single liner
+            # self.Statement('tf.print("%s:\t", %s, output_stream=sys.stdout)' % (Str, VariableName))
+        else:
+            self.Pass_____()
+            self.BlankLine()
+
     def Variable_(self, VariableName, Value, Type=None, Shape=None):
         Line = '%s = tf.constant([%s], dtype=%s, shape=%s)' % (VariableName, Value, Type, Shape)
         self.Statement(Line)
@@ -277,8 +319,8 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.constant(0, dtype=tf.%s)' % (VariableName, Type)
         self.Statement(Line)
 
-    def Shape____(self, DestVar, Input, Type='float32'):
-        Line = '%s = tf.shape(%s, dtype=tf.%s)' % (DestVar, Input, Type)
+    def Shape____(self, DestVar, Input):
+        Line = '%s = tf.shape(%s)' % (DestVar, Input)
         self.Statement(Line)
 
     def ShapeAxis(self, DestVar, Input, Axis):
@@ -445,6 +487,10 @@ class TFCodeWriter(CodeWriter):
     def ReduceMax(self, DestVar, MX, Axis=None):
         self.Statement("%s = tf.math.reduce_max(%s, axis=%s)" % (DestVar, MX, Axis))
 
+    def ReduceAll(self, DestVar, MX, Axis=None):
+        # Reduction operation for the elementwise tf.math.logical_and op.
+        self.Statement("%s = tf.math.reduce_all(%s, axis=%s)" % (DestVar, MX, Axis))
+
     def CumSum___(self, DestVar, MX, Axis=0, Exclusive=False, Reverse=False):
         # Cumulative sum
         self.Statement("%s = tf.math.cumsum(%s, axis=%s, exclusive=%s, reverse=%s)" % (DestVar, MX, Axis, Exclusive, Reverse))
@@ -475,9 +521,6 @@ class TFCodeWriter(CodeWriter):
     def GetIdx___(self, DestVar, MX, Equality, Value):
         self.Statement("%s = tf.where(%s %s %s)" % (DestVar, MX, str(Equality), Value))
 
-    def PrtIdxGr_(self, MX, Cond):
-        self.Statement('print("Idx_%s: ", tf.where(%s > %s))' % (str(MX), MX, Cond))
-
     def ArgMax___(self, DestVar, MX, Axis=None, Type='int32'):
         self.Statement("%s = tf.math.argmax(%s, %s, output_type=tf.%s)" % (DestVar, MX, Axis, Type))
 
@@ -491,35 +534,35 @@ class TFCodeWriter(CodeWriter):
     def RoundInt_(self, DestVar, MX, Type='int32'):
         self.Statement("%s = tf.cast(tf.math.round(%s), dtype=tf.%s)" % (DestVar, MX, Type))
 
-    def AsrtGrEq_(self, MX1, MX2):
-        self.Statement("tf.debugging.assert_greater_equal(%s, %s)" % (MX1, MX2))
+    def AsrtGrEq_(self, MX1, MX2, Message=None):
+        self.Statement("tf.debugging.assert_greater_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
-    def AsrtGr___(self, MX1, MX2):
-        self.Statement("tf.debugging.assert_greater(%s, %s)" % (MX1, MX2))
+    def AsrtGr___(self, MX1, MX2, Message=None):
+        self.Statement("tf.debugging.assert_greater(%s, %s, message=%s)" % (MX1, MX2, Message))
 
-    def AsrtLeEq_(self, MX1, MX2):
-        self.Statement("tf.debugging.assert_less_equal(%s, %s)" % (MX1, MX2))
+    def AsrtLeEq_(self, MX1, MX2, Message=None):
+        self.Statement("tf.debugging.assert_less_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
-    def AsrtLe___(self, MX1, MX2):
-        self.Statement("tf.debugging.assert_less(%s, %s)" % (MX1, MX2))
+    def AsrtLe___(self, MX1, MX2, Message=None):
+        self.Statement("tf.debugging.assert_less(%s, %s, message=%s)" % (MX1, MX2, Message))
 
-    def AsrtEq___(self, MX1, MX2):
-        self.Statement("tf.debugging.assert_equal(%s, %s)" % (MX1, MX2))
+    def AsrtEq___(self, MX1, MX2, Message=None):
+        self.Statement("tf.debugging.assert_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
-    def AsrtNeg__(self, MX):
-        self.Statement("tf.debugging.assert_negative(%s)" % MX)
+    def AsrtNeg__(self, MX, Message=None):
+        self.Statement("tf.debugging.assert_negative(%s, message=%s)" % (MX, Message))
 
-    def AsrtNoNeg(self, MX):
-        self.Statement("tf.debugging.assert_non_negative(%s)" % MX)
+    def AsrtNoNeg(self, MX, Message=None):
+        self.Statement("tf.debugging.assert_non_negative(%s, message=%s)" % (MX, Message))
 
-    def AsrtPos__(self, MX):
-        self.Statement("tf.debugging.assert_positive(%s)" % MX)
+    def AsrtPos__(self, MX, Message=None):
+        self.Statement("tf.debugging.assert_positive(%s, message=%s)" % (MX, Message))
 
-    def AsrtNoPos(self, MX):
-        self.Statement("tf.debugging.assert_non_positive(%s)" % MX)
+    def AsrtNoPos(self, MX, Message=None):
+        self.Statement("tf.debugging.assert_non_positive(%s, message=%s)" % (MX, Message))
 
-    def AsrtNoEq_(self, MX1, MX2):
-        self.Statement("tf.debugging.assert_none_equal(%s, %s)" % (MX1, MX2))
+    def AsrtNoEq_(self, MX1, MX2, Message=None):
+        self.Statement("tf.debugging.assert_none_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     # Routines
     def RndIdxUni(self, VariableName, N_MoleculesToDistribute, Indices):

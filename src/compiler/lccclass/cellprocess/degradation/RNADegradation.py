@@ -428,9 +428,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.PrintStrg("===== RNA Degradation ===== ")
             Writer.PrintStVa("# of RNAs Cleaved",
-                             "self.N_RNAsCleaved")
+                             "self.N_RNAsCleaved[0]")
             Writer.PrintStVa("# of NTP digested from RNA degradation",
-                             "self.N_NTPsDigested")
+                             "self.N_NTPsDigested[0]")
             Writer.PrintStVa("# of remaining NTPs from cleaved RNAs to be digested",
-                             "self.Cel.Count_NTsInRNAsCleaved")
-
+                             "self.Cel.Count_NTsInRNAsCleaved[0][0]")
+            Writer.BlankLine()

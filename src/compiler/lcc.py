@@ -34,6 +34,7 @@ from lccclass import CellProcess
 from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
 from lccclass.cellprocess.metabolism import Metabolism
+from lccclass.cellprocess.division import CellDivision
 from lccclass.simulation import ReactionExecution
 from lccclass.simulation.reactionexecution import RateGaugeModelOnly
 from lccclass.simulation.reactionexecution import RGM_MetaboliteReplenish
@@ -80,6 +81,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Model = 1
 
     Writer.Switch4Comment = True
+    Writer.Switch4PrintString = True
     Writer.Switch4DebugSimulationPrint = False
     Writer.Switch4DebugSimulationAssert = False
     Writer.Switch4Graph = False
@@ -92,6 +94,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4CheckDeltaCountsNeg = False
     Writer.Switch4ShowDeltaCounts = False
     Writer.Switch4ProcessDebuggingMessages = False
+    Writer.Switch4TestCellDivision = True
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()
@@ -344,7 +347,8 @@ def Compile(CodeFileNames,
         Translation,
         RNADegradation,
         ProteinDegradation,
-        Metabolism
+        Metabolism,
+        CellDivision
     ]
     ProGen.SetProcessList(CellProcesses)
     ProGen.SetUpProcesses()

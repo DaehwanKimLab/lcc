@@ -108,7 +108,11 @@ def Write_CellState(Writer, Comp, ProGen):
 
             if Writer.Switch4HardCheckCounts:
                 Writer.Comment__("Hard Checkpoint")
-                Writer.AsrtNoNeg("self.Counts")
+
+                Writer.ConvToBin("Bin_NegPos", "self.Counts", "<", "0")
+                Writer.GetIdx___("Idx_NegPos", "Bin_NegPos", "==", "1")
+                Writer.ShapeAxis("N_NegPos", "Idx_NegPos", 0)
+                Writer.AsrtNoNeg("self.Counts", "'# of Negative Values in Cel.Counts: %s, Indices: %s' % (N_NegPos, Idx_NegPos)")
                 Writer.BlankLine()
 
             else:

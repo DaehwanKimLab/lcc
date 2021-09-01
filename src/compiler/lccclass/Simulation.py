@@ -176,7 +176,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             # Run all matrix operation codes
             for ProcessID, Module in ProGen.Dict_CellProcesses.items():
                 Writer.Statement("self.%s.ExecuteProcess()" % ProcessID)
-                Writer.BlankLine()
+            Writer.BlankLine()
 
         with Writer.Statement("def SIM_RunCellProcesses(self):"):
             # Execute reactions by multiplying reaction and rate matrices.
@@ -226,9 +226,14 @@ def Write_Simulation(Writer, Comp, ProGen):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintStrg("### Simulation Step Process Summary ###")
                 for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                        Writer.PrintStrg("[%s]:" % ProcessID)
                         Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
                 Writer.BlankLine()
+
+        with Writer.Statement("def SIM_CellDivision(self):"):
+            Writer.Statement("self.CellDivision.ExecuteCellDivision()")
+            if Writer.Switch4TestCellDivision:
+                Writer.Statement("self.CellDivision.TestCellDivision()")
+            Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
             Writer.ScatNdUpd("FinalCount", "FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
@@ -239,7 +244,7 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def PostSimulationStepCorrection(self):"):
             Writer.Statement("self.Metabolism.ReplenishMetabolites()")
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("[Post simulation step correction]")
+                Writer.PrintStrg("===== Post simulation step correction =====")
                 Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
             Writer.BlankLine()
 
@@ -272,9 +277,6 @@ def Write_Simulation(Writer, Comp, ProGen):
                 # Hook for plugging in cellular processes not based on matrix calculations
                 Writer.Statement("self.SIM_RunCellProcesses()")
 
-                # Overwrite delta value for the applicable molecular counts
-                Writer.Statement("self.SIM_UpdateCounts()")
-
                 if Writer.Switch4ProcessDebuggingMessages:
                     Writer.PrintStrg(">>> After running the processes <<<")
                     Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
@@ -282,6 +284,16 @@ def Write_Simulation(Writer, Comp, ProGen):
                 # Display the molecular counts of molecules involved in reactions
                 if Writer.Switch4ProcessSummary:
                     Writer.Statement("self.SIM_ViewProcessSummaries()")
+
+                # Overwrite delta value for the applicable molecular counts
+                Writer.Statement("self.SIM_UpdateCounts()")
+
+                if 'CellDivision' in ProGen.Dict_CellProcesses:
+                    Writer.Statement("self.SIM_CellDivision()")
+                    Writer.BlankLine()
+
+                # Writer.Statement("self.SIM_CellFusion()")
+                # Writer.BlankLine()
 
                 # Apply post-simulation step corrections for selected reaction models:
                 if Writer.Switch4PostSimulationStepCorrection:

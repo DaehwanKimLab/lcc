@@ -412,6 +412,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def UpdateLengthOfReplicatingChromosomesMatrix(self):"):
             # Overwrite self.Cel.Len_ChromosomesReplicatingInitial with self.Cel.Len_ChromosomesReplicatingFinal
             Writer.Overwrite("self.Cel.Len_ChromosomesReplicatingInitial", "self.Cel.Len_ChromosomesReplicatingFinal")
+            Writer.Overwrite("self.Cel.Len_ChsReplicating", "self.Cel.Len_ChromosomesReplicatingFinal")
             Writer.BlankLine()
 
         with Writer.Statement("def Termination(self):"):
@@ -441,16 +442,16 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             #                  "self.Cel.Count_ReplisomeWillBind")
             # Writer.BlankLine()
 
-            Writer.PrintStrg("===== DNAStrand Elongation ===== ")
+            Writer.PrintStrg("===== DNA Strand Elongation ===== ")
             # Number of Replicating Chromosomes elongated
-            Writer.PrintStVa("# of all Replicating DNA strands elongating",
+            Writer.PrintStVa("# of Replicating Chromosomes",
                              "self.Cel.Count_ChromosomesReplicatingInitialTotal")
             # Total elongation length of Chromosomes
-            Writer.PrintStVa("Total elongation length of Chromosomes (bp)",
-                             "self.Cel.Count_ChromosomeElongationLengthBPPerChromosome")
+            Writer.PrintStVa("Total Elongation Length of Replicating Chromosomes (bp)",
+                             "self.Cel.Count_ChromosomeElongationLengthBPPerChromosome[0]")
             # Resulting length of elongating DNA strands of the Chromosomes
-            Writer.PrintStVa("Resulting length of elongating DNA strands of the Chromosomes (nt)",
-                             "self.Cel.Len_ChromosomesReplicatingFinal")
+            Writer.PrintStVa("Resulting Length of Elongating DNA Strands of the Chromosomes (nt)",
+                             "self.Cel.Len_ChromosomesReplicatingFinal[0]")
             # New gene copies
             Writer.PrintStVa("# of new genes copied",
                              "self.N_GenesReplicated")
@@ -465,7 +466,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                              "self.Cel.Count_DNAStrandElongationPPiProduction")
             Writer.BlankLine()
 
-            Writer.PrintStrg("===== DNAReplication Termination ===== ")
+            # Writer.PrintStrg("===== DNA Replication Termination ===== ")
             # Number of Chromosome elongation Completed
             Writer.PrintStVa("# of Chromosome Elongation Completed",
                              "self.Cel.Count_DNAStrandElongationCompletedTotal")

@@ -334,3 +334,4 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                              "tf.shape(self.Idx_RndProteinsDegraded)[0]")
             Writer.PrintStVa("# of AA release",
                              "self.Count_AAsToBeReleasedTotal")
+            Writer.BlankLine()

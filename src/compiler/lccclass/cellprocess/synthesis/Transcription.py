@@ -361,13 +361,13 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             #                  "self.Cel.Count_RNAPActiveCanBind")
             # Number of new RNAP binding in this step (= new nascent RNAs to elongate next step)
             Writer.PrintStVa("# of RNAPs that newly bind a promoter in this step",
-                             "self.Cel.Count_RNAPWillBind")
+                             "self.Cel.Count_RNAPWillBind[0]")
             Writer.BlankLine()
 
             # Writer.PrintStrg("===== Transcript Elongation ===== ")
             # Number of Nascent RNAs elongated
             Writer.PrintStVa("# of All Nascent RNAs Elongating",
-                             "self.Cel.Count_RNAsNascentElongatingTotal")
+                             "self.Cel.Count_RNAsNascentElongatingTotal + self.Cel.Count_RNAPWillBind[0]")
             # Total NTP consumption and PPi production
             Writer.ReduceSum("Count_RNAElongationNTPConsumptionTotal", "self.Cel.Count_RNAElongationNTPConsumption")
             Writer.PrintStVa("Total NTP Consumption",
