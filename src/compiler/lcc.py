@@ -94,7 +94,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4CheckDeltaCountsNeg = False
     Writer.Switch4ShowDeltaCounts = False
     Writer.Switch4ProcessDebuggingMessages = False
-    Writer.Switch4TestCellDivision = True
+    Writer.Switch4TestCellDivision = False
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()

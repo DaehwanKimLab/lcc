@@ -78,10 +78,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.Termination()")
             Writer.BlankLine()
 
-        with Writer.Statement("def SigmaFactorBinding(self):"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
         with Writer.Statement("def DetermineRibosomeToBind(self):"):
 
             Writer.Comment__("RetrieveTotalRibosomeCount")
@@ -157,7 +153,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def Initiation(self):"):
-            Writer.Statement("self.SigmaFactorBinding()  # Not implemented")
             Writer.Statement("self.Idx_RndProteinsNascent = self.DistributeRibosomesTomRNAs()")
 
             # Update the nascent protein length matrix
