@@ -1,3 +1,6 @@
+# Simulation time request in seconds
+SimWallTimeRequested = 45 * 60
+SimStepsPrintResolution = 50
 
 # Comp is a short hand for CompilerData
 def Write_Simulation(Writer, Comp, ProGen):
@@ -76,10 +79,10 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def SetUpSimClock(self):"):
             # Implement user input for delta t value
             Writer.Statement("self.StartSimTimer()")
-            Writer.Variable_("self.SimWallTimeRequested", 100)  # Simulation time request in seconds
+            Writer.Variable_("self.SimWallTimeRequested", SimWallTimeRequested)  # Simulation time request in seconds
             Writer.Variable_("self.SimStepsPerSecond", 1)  # Simulation time resolution per second
             Writer.Statement("self.ConvertSimTimeToSimStep(self.SimWallTimeRequested, self.SimStepsRequested)")
-            Writer.Variable_("self.SimStepsPrintResolution", 1)
+            Writer.Variable_("self.SimStepsPrintResolution", SimStepsPrintResolution)
             Writer.BlankLine()
 
         with Writer.Statement("def UpdateSimTime(self):"):
@@ -227,6 +230,7 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.PrintStrg("### Simulation Step Process Summary ###")
                 for ProcessID, Module in ProGen.Dict_CellProcesses.items():
                         Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
+                Writer.Statement("self.CellDivision.PrintMessage()")
                 Writer.BlankLine()
 
         with Writer.Statement("def SIM_CellDivision(self):"):

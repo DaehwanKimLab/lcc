@@ -141,8 +141,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # The proportion of mRNAs getting cleaved by cytosolic RNaseE
     Rate_mRNACleavage_RNaseE = 0.1 / 60
 
-    # apply arbitrary 1.5 adjustment factor for exponential character for now
-    Rate_mRNACleavage_RNaseE *= 1.5
+    # # apply arbitrary 1.5 adjustment factor for exponential character for now
+    # Rate_mRNACleavage_RNaseE *= 1.5
 
     # The proportion of mRNAs getting cleaved by membrane-targetted degradosome
     Rate_mRNACleavage_Degradosome = Rate_mRNACleavage_RNaseE / 10   # Arbitrary value
@@ -151,10 +151,10 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Len_PolyA = 20
 
     # The proportion of cleaved RNAs getting digested by ExoRNases RNaseII
-    Rate_ExoRNase_RNaseII = 0.5
+    Rate_ExoRNase_RNaseII = 0.8
 
     # The proportion of cleaved RNAs getting digested by ExoRNases PNPase
-    Rate_ExoRNase_PNPase = 0.5
+    Rate_ExoRNase_PNPase = 0.9
 
     # Temporary references
     NUniq_RNAs = Comp.RNA.NUniq_RNAs

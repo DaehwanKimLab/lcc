@@ -122,7 +122,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Count_RibosomeWillBind")
             Writer.BlankLine()
 
-        with Writer.Statement("def SelectProteinsToTranscribe(self, Count_RibosomeWillBind):"):
+        with Writer.Statement("def SelectProteinsToTranslate(self, Count_RibosomeWillBind):"):
             # Weighted random distribution later
             Writer.Gather___("Count_mRNAs", "self.Cel.Counts", "self.Cel.Idx_Master_mRNAs")
             Writer.Statement("Idx_RndProteinsNascent = self.PickRandomIndexFromPool_Weighted(Count_RibosomeWillBind, self.Idx_Proteins, Count_mRNAs)")
@@ -142,7 +142,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def DistributeRibosomesTomRNAs(self):"):
             Writer.Statement("Count_RibosomeWillBind = self.DetermineRibosomeToBind()")
-            Writer.Statement("Idx_RndProteinsNascent = self.SelectProteinsToTranscribe(Count_RibosomeWillBind)")
+            Writer.Statement("Idx_RndProteinsNascent = self.SelectProteinsToTranslate(Count_RibosomeWillBind)")
             Writer.ReturnVar("Idx_RndProteinsNascent")
 
             # TODO: RNAP-bound mRNAs are committed to translation, resistant to RNA degradation. Make a separate matrix?

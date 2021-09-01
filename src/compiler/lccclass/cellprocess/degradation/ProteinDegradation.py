@@ -226,11 +226,15 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         # Override the abstract method
         with Writer.Statement("def ExecuteProcess(self):"):
+            Writer.Statement("self.ResetVariables()")
             Writer.Statement("self.Initiation()")
             Writer.Statement("self.Degradation()")
             # Writer.Statement("self.Termination()   # Not Implemented")
             Writer.BlankLine()
 
+        with Writer.Statement("def ResetVariables(self):"):
+            Writer.InitZeros("self.Count_ProteinsDegraded", NUniq_Proteins, 'int32')
+            Writer.BlankLine()
 
         # TODO: Model Protease Specificity Interaction
         with Writer.Statement("def ProteaseSubstrateBinding(self):"):
@@ -250,18 +254,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Determine the number of proteins to degrade
             Writer.Gather___("Count_Proteins", "self.Cel.Counts", "self.Cel.Idx_Master_Proteins")
             Writer.ReduceSum("Count_ProteinsTotal", "Count_Proteins", 0)
-            Writer.Cast_____("Count_ProteinsTotal_Float", "Count_ProteinsTotal", 'float32')
-            Writer.Multiply_("Count_ProteinsToBeDegraded", "Count_ProteinsTotal_Float", "self.Rate_ProteinDegradation")
-            Writer.RoundInt_("self.Count_ProteinsToBeDegraded", "Count_ProteinsToBeDegraded")
-            Writer.BlankLine()
-
-            # Weighted random distribution later
-            Writer.RndIdxWgN("self.Idx_RndProteinsDegraded", "self.Count_ProteinsToBeDegraded", "self.Idx_Proteins", "Count_Proteins")
+            Writer.Statement("N_ProteinsToBeDegraded = self.DetermineAmountFromRate(Count_ProteinsTotal, self.Rate_ProteinDegradation)")
+            Writer.Statement("self.Idx_RndProteinsDegraded = self.PickRandomIndexFromPool_Weighted(N_ProteinsToBeDegraded, self.Idx_Proteins, Count_Proteins)")
             Writer.BlankLine()
 
         with Writer.Statement("def GetCountOfDegradedProteins(self):"):
-            Writer.InitZeros("self.Count_ProteinsDegraded", NUniq_Proteins, 'int32')
-            Writer.InitOnes_("OnesForRndProteins", "self.Count_ProteinsToBeDegraded", 'int32')
+            Writer.OnesLike_("OnesForRndProteins", "self.Idx_RndProteinsDegraded", 'int32')
             Writer.ScatNdUpd("self.Count_ProteinsDegraded", "self.Count_ProteinsDegraded", "self.Idx_RndProteinsDegraded", "OnesForRndProteins")
             Writer.BlankLine()
 
