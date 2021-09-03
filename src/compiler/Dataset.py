@@ -446,8 +446,6 @@ class FPromoter(FDataset):
 class FRNA(FDataset):
     def __init__(self):
         self.MolType_RNAs = 'RNA'
-        self.MolType_RNAsNascent = 'RNA_Nascent'
-        self.MolType_RNAsCleaved = 'RNA_Cleaved'
 
         self.ID2Count_RNAs_Temp = dict()
         self.Name_RNAs = list()
@@ -476,14 +474,6 @@ class FRNA(FDataset):
         self.Idx_tRNA = list()
         self.Idx_rRNA = list()
         self.Idx_miscRNA = list()
-
-        self.ID_RNAsNascent = list()
-        self.Count_RNAsNascent = 0
-        self.MW_RNAsNascent = 0
-
-        self.ID_RNAsCleaved = list()
-        self.Count_RNAsCleaved = 0
-        self.MW_RNAsCleaved = 0
 
         self.ID2ID_Gene2RNA = dict()
 
@@ -549,18 +539,8 @@ class FRNA(FDataset):
             self.Count_NTsInRNAs[i] = NTCounts
             self.Freq_NTsInRNAs.append(NTFreq)
 
-        self.ID_RNAsNascent = self.AppendStr(self.ID_RNAs, '_Nas')
-        self.Count_RNAsNascent = np.zeros(self.NUniq_RNAs)
-        self.MW_RNAsNascent = self.MW_RNAs / 2 # On average assuming transcription runs completely
-
-        self.ID_RNAsCleaved = self.AppendStr(self.ID_RNAs, '_Cleaved')
-        self.Count_RNAsCleaved = np.zeros(self.NUniq_RNAs)
-        self.MW_RNAsCleaved = self.MW_RNAs
-
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_RNAs, self.MolType_RNAs, self.Count_RNAs, self.MW_RNAs)
-        self.AddToMaster(MasterDataset, self.ID_RNAsNascent, self.MolType_RNAsNascent, self.Count_RNAsNascent, self.MW_RNAsNascent)
-        self.AddToMaster(MasterDataset, self.ID_RNAsCleaved, self.MolType_RNAsCleaved, self.Count_RNAsCleaved, self.MW_RNAsCleaved)
 
         # Add a single variable to the Master Dataset
         MasterDataset.ID2ID_Gene2RNA_Master = self.ID2ID_Gene2RNA
@@ -574,8 +554,6 @@ class FRNA(FDataset):
 class FProtein(FDataset):
     def __init__(self):
         self.MolType_Proteins = 'Protein'
-        self.MolType_Proteins_Nascent = 'Protein_Nascent'
-        self.MolType_Proteins_Cleaved = 'Protein_Cleaved'
 
         self.ID2Count_Proteins_Temp = dict()
         self.Name_Proteins = list()
@@ -596,14 +574,6 @@ class FProtein(FDataset):
         self.ID2ID_RNA2Protein = dict()
 
         self.NUniq_Proteins = 0
-        
-        self.ID_ProteinsNascent = list()
-        self.Count_ProteinsNascent = 0
-        self.MW_ProteinsNascent = 0
-
-        self.ID_ProteinsCleaved = list()
-        self.Count_ProteinsCleaved = 0
-        self.MW_ProteinsCleaved = 0
 
         self.ID2ID_mRNA2Protein = dict()
 
@@ -655,18 +625,8 @@ class FProtein(FDataset):
             AAFreq = AACounts / AATotalCount
             self.Freq_AAsInProteins.append(AAFreq)
 
-        self.ID_ProteinsNascent = self.AppendStr(self.ID_Proteins, '_Nas')
-        self.Count_ProteinsNascent = np.zeros(self.NUniq_Proteins)
-        self.MW_ProteinsNascent = self.MW_Proteins / 2 # On average assuming transcription runs completely
-
-        self.ID_ProteinsCleaved = self.AppendStr(self.ID_Proteins, '_Cleaved')
-        self.Count_ProteinsCleaved = np.zeros(self.NUniq_Proteins)
-        self.MW_ProteinsCleaved = self.MW_Proteins
-
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Proteins, self.MolType_Proteins, self.Count_Proteins, self.MW_Proteins)
-        self.AddToMaster(MasterDataset, self.ID_ProteinsNascent, self.MolType_Proteins_Nascent, self.Count_ProteinsNascent, self.MW_ProteinsNascent)
-        self.AddToMaster(MasterDataset, self.ID_ProteinsCleaved, self.MolType_Proteins_Cleaved, self.Count_ProteinsCleaved, self.MW_ProteinsCleaved)
 
         # Add a single variable to the Master Dataset
         MasterDataset.ID2ID_mRNA2Protein_Master = self.ID2ID_mRNA2Protein
@@ -762,7 +722,6 @@ class FComplex(FDataset):
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
-
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -1063,11 +1022,7 @@ class FMaster():
         self.Idx_Master_rRNAs = list()
         self.Idx_Master_tRNAs = list()
         self.Idx_Master_miscRNAs = list()
-        self.Idx_Master_RNAsNascent = list()
-        self.Idx_Master_RNAsCleaved = list()
         self.Idx_Master_Proteins = list()
-        self.Idx_Master_ProteinsNascent = list()
-        self.Idx_Master_ProteinsCleaved = list()
         self.Idx_Master_Complexes = list()
         self.Idx_Master_Metabolites = list()
 
@@ -1084,20 +1039,8 @@ class FMaster():
         self.Idx_Master_RNAs = self.GetMolIdx(Comp.RNA.ID_RNAs, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_RNAs) == Comp.RNA.NUniq_RNAs
 
-        self.Idx_Master_RNAsNascent = self.GetMolIdx(Comp.RNA.ID_RNAsNascent, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_RNAsNascent) == Comp.RNA.NUniq_RNAs
-
-        self.Idx_Master_RNAsCleaved = self.GetMolIdx(Comp.RNA.ID_RNAsCleaved, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_RNAsCleaved) == Comp.RNA.NUniq_RNAs
-
         self.Idx_Master_Proteins = self.GetMolIdx(Comp.Protein.ID_Proteins, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Proteins) == Comp.Protein.NUniq_Proteins
-
-        self.Idx_Master_ProteinsNascent = self.GetMolIdx(Comp.Protein.ID_ProteinsNascent, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_ProteinsNascent) == Comp.Protein.NUniq_Proteins
-
-        self.Idx_Master_ProteinsCleaved = self.GetMolIdx(Comp.Protein.ID_ProteinsCleaved, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_ProteinsCleaved) == Comp.Protein.NUniq_Proteins
 
         self.Idx_Master_Complexes = self.GetMolIdx(Comp.Complex.ID_Complexes, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Complexes) == Comp.Complex.NUniq_Complexes
@@ -1123,9 +1066,7 @@ class FMaster():
         assert len(self.Idx_Master_miscRNAs) == Comp.RNA.NUniq_miscRNAs
 
         assert len(self.Idx_Master_Genes) == len(self.Idx_Master_RNAs)
-        assert len(self.Idx_Master_Genes) == len(self.Idx_Master_RNAsNascent)
         assert len(self.Idx_Master_mRNAs) == len(self.Idx_Master_Proteins)
-        assert len(self.Idx_Master_mRNAs) == len(self.Idx_Master_ProteinsNascent)
 
         # Index to Index mapping dictionaries
         for i, ID in enumerate(self.ID_Master):
