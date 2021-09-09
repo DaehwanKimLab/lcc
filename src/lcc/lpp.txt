@@ -1,0 +1,53 @@
+// L++ syntax (Backus–Naur form)
+digit := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+letter := a | b | c | … | z | A | B | C | … | Z
+
+symbol := . | , | - | …
+
+number := digit {digit}                        
+id := (_|letter) {_|letter|digit}               
+string := { digit | letter | symbol } | ε
+
+keyword := molecule | …
+molecule := atp | co2 | oxaloacetate | acetyl-CoA | citrate | isocitrate | predefined 20 atoms and 300 molecules name
+
+program := statement
+program := statement program
+
+statement := structure id [as id];
+statement := condition id [as id];
+statement := protein id (molecule { + molecule }  --> molecule {+ molecule} [with reaction-property] [, protein-property] );
+
+reaction-property := reaction-property {and reaction-property} | Km = number | ε 
+protein-property := protein-property {, protein-property} | id | ε
+statement := protein_complex id = id {+ id};
+pid := id {+ id}
+statement := pathway id = pid {| pid} { --> pid {| pid} };
+
+statement := uncharacterized id = id {| id};
+statement := complement id = “string”;
+
+#----------------------------------------------------
+
+complement ecoli = “E. coli K-12 MG1655”;
+
+structure cytoplasm as cp;
+structure inner_membrane as im;
+structure outer_membrane as om;
+structure periplasm as pp;
+condition aerobic as ae;
+condition anaerobic as an;
+
+// Tricarboxylic Acid Cycle (TCA), a.k.a. Citric Acid Cycle (CAC)
+protein GltA(oxaloacetate + acetyl-CoA --> citrate with Km = 5, cp);
+protein AcnA(citrate --> isocitrate with Km = 7, cp), AcnB(citrate --> isocitrate with Km = 6, cp);
+protein Icd(isocitrate --> keto-glutarate with Km = 10, im);
+protein AceK(Icd <--> Icd@phosphate with Km = 10, cp);
+protein SucA, SucB, SucD, SucC;
+protein SdhA(succinate --> fumarate with Km = 6 and FAD, im), SdhB(succinate --> fumarate with Km = 6 and Fe-S, im), SdhC(succinate --> fumarate with Km = 6 and cytochrome b556, im), SdhD(anchor, im), SdhE(succinate --> fumarate with Km = 8);
+protein FumA(ae, im), FumB(an, im), FumC(im), FumD(im), FumE(im);
+protein Mdh(malate --> oxaloacetate, cp);
+protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
+
+uncharacterized FUM = FumA | FumB | FumC | FumD | FumE;
+pathway TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh -->;
