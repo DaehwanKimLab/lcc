@@ -1,0 +1,7 @@
+protein GltA(oxaloacetate + acetyl-CoA --> citrate);
+protein AcnA(citrate --> isocitrate);
+protein AcnB(citrate --> isocitrate);
+protein Icd(isocitrate --> keto-glutarate);
+protein SucA();
+protein SucB();
+pathway TCA = GltA --> AcnA | AcnB --> SucA + SucB; 
