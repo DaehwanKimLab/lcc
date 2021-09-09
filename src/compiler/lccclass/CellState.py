@@ -30,7 +30,12 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.MWs", 0)  # MW matrix for molecules
             Writer.BlankLine()
 
-            Writer.Statement("self.ImportCompilerData()")
+            Writer.Variable_("self.Coeff_Complexation", 0)
+            Writer.Variable_("self.Coeff_Equilibrium", 0)
+            Writer.Variable_("self.Coeff_Reaction", 0)
+
+            Writer.Statement("self.LoadStaticCompilerData()")
+            Writer.Statement("self.InitializeMatrices()")
             Writer.Statement("self.TransposeFreqNCountMatrices()")
             Writer.BlankLine()
 
@@ -41,13 +46,13 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Statement("self.CheckCountsPos()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ImportCompilerData(self):"):
+        with Writer.Statement("def LoadStaticCompilerData(self):"):
             # Load CompilerData.
             SavePath = os.path.realpath(Comp.SavePath)
             SaveFiles = listdir(SavePath)
             FileTypes = ['npy']
 
-            SavedDataType4Int = ['Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev']
+            SavedDataType4Int = ['Coeff', 'Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev']
             SavedDataType4Float = ['Freq', 'MW']
             SavedDataTypeDict = dict()
             for SavedDataType in SavedDataType4Int:
@@ -63,16 +68,6 @@ def Write_CellState(Writer, Comp, ProGen):
                     SaveFilePath = os.path.join(SavePath, SaveFile)
                     VariableName = SaveFile.split('.')[0]
                     Writer.LoadSaved(SaveFilePath, VariableName, DataType)
-            Writer.BlankLine()
-
-            Writer.Statement("self.Counts = self.Count_Master")
-            Writer.Statement("self.N_Counts = len(self.Counts)")
-            Writer.InitZeros("self.DeltaCounts", "self.N_Counts")
-            Writer.Statement("self.MWs = self.MW_Master")
-
-            # Temporary code
-            # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
-            Writer.Variable_("self.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
             Writer.BlankLine()
 
         with Writer.Statement("def InitializeDeltaCounts(self):"):
@@ -110,7 +105,7 @@ def Write_CellState(Writer, Comp, ProGen):
                 Writer.Comment__("Hard Checkpoint")
 
                 Writer.ConvToBin("Bin_NegPos", "self.Counts", "<", "0")
-                Writer.GetIdx___("Idx_NegPos", "Bin_NegPos", "==", "1")
+                Writer.GenIdxCnd("Idx_NegPos", "Bin_NegPos", "==", "1")
                 Writer.ShapeAxis("N_NegPos", "Idx_NegPos", 0)
                 Writer.AsrtNoNeg("self.Counts", "'# of Negative Values in Cel.Counts: %s, Indices: %s' % (N_NegPos, Idx_NegPos)")
                 Writer.BlankLine()
@@ -118,6 +113,37 @@ def Write_CellState(Writer, Comp, ProGen):
             else:
                 Writer.Pass_____()
                 Writer.BlankLine()
+
+        with Writer.Statement("def InitializeMatrices(self):"):
+            Writer.Statement("self.Counts = self.Count_Master")
+            Writer.Statement("self.N_Counts = len(self.Counts)")
+            Writer.InitZeros("self.DeltaCounts", "self.N_Counts")
+            Writer.Statement("self.MWs = self.MW_Master")
+            Writer.BlankLine()
+
+            Writer.Statement("self.Coeff_Complexation = self.Coeff_MolsInCPLXs")
+            # Writer.Statement("self.Coeff_Equilibrium = self.Coeff_MolsInEQMs")
+            # Writer.Statement("self.Coeff_Reaction = self.Coeff_MolsInRXNs")
+            Writer.BlankLine()
+
+            # Temporary code
+            # E coli cell volume: 0.7 um3 (average), which is 7e-16 liters
+            Writer.Variable_("self.Vol", 7e-16)  # TO BE REPLACED AND MOVED INTO SIMULATION
+            Writer.BlankLine()
+
+            Writer.Statement("self.SwitchToSparseMatrices()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def SwitchToSparseMatrices(self):"):
+            ListOfMatrixVariablesToSwitchToSparseTensorType = [
+                "self.Coeff_Complexation",
+                # "self.Coeff_Equilibrium",
+                # "self.Coeff_Reaction",
+            ]
+            for Variable in ListOfMatrixVariablesToSwitchToSparseTensorType:
+                Writer.ToSparse_(Variable, Variable)
+            Writer.Pass_____()
+            Writer.BlankLine()
 
         with Writer.Statement("def TransposeFreqNCountMatrices(self):"):
             ListOfMatrixVariablesToTranspose = [
@@ -135,16 +161,13 @@ def Write_CellState(Writer, Comp, ProGen):
                 Writer.Transpose(Variable, Variable)
             Writer.BlankLine()
 
-        with Writer.Statement("def InitializeMatrices(self):"):
-            Writer.Reshape__("self.Counts", "self.Count_Master", [-1, 1])
-            Writer.Reshape__("self.MWs", "self.MW_Master", [-1, 1])
-            Writer.BlankLine()
-
         with Writer.Statement("def InitializeVariablesForCellProcesses(self):"):
-            # Popular
+
             Writer.Comment__("Popular")
+            Writer.BlankLine()
             Writer.Variable_("self.One", 1)
             Writer.Variable_("self.Zero", 0)
+            Writer.BlankLine()
 
             Writer.Variable_("self.Idx_PPi", 0)
             Writer.Variable_("self.Idx_Pi", 0)
@@ -152,11 +175,10 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Idx_ATP", 0)
             Writer.Variable_("self.Idx_H2O", 0)
             Writer.Variable_("self.Idx_Proton", 0)
-
             Writer.BlankLine()
 
-            # Replication
             Writer.Comment__("Replication")
+            Writer.BlankLine()
             Writer.Variable_("self.Idx_Ch_Original", 0)
             Writer.Variable_("self.Idx_Ch_Replicating", 0)
             Writer.Variable_("self.Idx_dNTPs", 0)
@@ -220,16 +242,29 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Len_ProteinsNascent", 0)
             Writer.BlankLine()
 
-            # Protein Degradation
-
             # RNA Degradation
+            Writer.Comment__("RNA Degradation")
+            Writer.BlankLine()
             Writer.Variable_("self.Count_NTsInRNAsCleaved", 0)
+            Writer.BlankLine()
+
+            # Protein Degradation
+            Writer.Comment__("Protein Degradation")
+            Writer.BlankLine()
+            Writer.BlankLine()
 
             # Metabolism
             Writer.Comment__("Metabolism")
             Writer.BlankLine()
             Writer.Variable_("self.Count_MetabolitesInitial", 0)
+            Writer.BlankLine()
 
+            # Complexation
+            Writer.Comment__("Complexation")
+            Writer.BlankLine()
+            Writer.Variable_("self.Idx_MolsInComplexation", 0)
+            Writer.Variable_("self.Bool_ReactantsInComplexation", 0)
+            Writer.BlankLine()
 
         #     Writer.Statement("self.InitializeStoichiometryMatrix()")
         #     Writer.Statement("self.InitializeRateMatrix()")

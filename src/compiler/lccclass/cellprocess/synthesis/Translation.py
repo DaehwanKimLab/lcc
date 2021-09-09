@@ -125,7 +125,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def SelectProteinsToTranslate(self, Count_RibosomeWillBind):"):
             # Weighted random distribution later
             Writer.Gather___("Count_mRNAs", "self.Cel.Counts", "self.Cel.Idx_Master_mRNAs")
-            Writer.Statement("Idx_RndProteinsNascent = self.PickRandomIndexFromPool_Weighted(Count_RibosomeWillBind, self.Idx_Proteins, Count_mRNAs)")
+            Writer.Statement("Idx_RndProteinsNascent = self.PickRandomIndexFromPool_Weighted_Local(Count_RibosomeWillBind, self.Idx_Proteins, Count_mRNAs)")
             Writer.ReturnVar("Idx_RndProteinsNascent")
             Writer.BlankLine()
 
@@ -171,7 +171,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.RndIdxUni("Idx_RndAA", [1],
                              "self.Cel.Idx_AAsLocalAssignmentNoSelenoCysteine")
-            Writer.NegValue_("CountToAdjust_Neg", "CountToAdjust")
+            Writer.Negative_("CountToAdjust_Neg", "CountToAdjust")
             Writer.ScatNdAdd("AAConsumption_Adjusted", "AAConsumption_Adjusted", "Idx_RndAA", "CountToAdjust_Neg")
             Writer.BlankLine()
 

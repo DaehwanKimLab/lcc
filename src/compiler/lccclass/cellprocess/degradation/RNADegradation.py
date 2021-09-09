@@ -352,7 +352,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("Count_RNAs = self.GetCounts(Idx_Master_RNA)")
             Writer.ReduceSum("Count_RNAsTotal", "Count_RNAs")
             Writer.Statement("N_RNAsToCleave = self.DetermineAmountFromRate(Count_RNAsTotal, Rate_RNACleavage)")
-            Writer.Statement("Idx_RndRNAsToCleave = self.PickRandomIndexFromPool_Weighted(N_RNAsToCleave, Idx_Master_RNA, Count_RNAs)")
+            Writer.Statement("Idx_RndRNAsToCleave = self.PickRandomIndexFromPool_Weighted_Local(N_RNAsToCleave, Idx_Master_RNA, Count_RNAs)")
             Writer.Statement("Count_NTsInRNAsCleaved = self.DetermineNTsInRNA(Idx_RndRNAsToCleave)")
             Writer.Statement("self.UpdateNTCountsForRNACleavage(Idx_RndRNAsToCleave, Count_NTsInRNAsCleaved)")
             Writer.Statement("return N_RNAsToCleave, Count_NTsInRNAsCleaved")

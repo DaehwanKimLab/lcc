@@ -31,6 +31,9 @@ class FDataset():
         # self.AddToMaster(self.ID_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
         for ID in IDs:
+            # assert ID not in MasterDataset.ID_Master, 'Redundant ID in MasterDataset.ID_Master: %s' % ID
+            # assert ID not in MasterDataset.ID2Idx_Master, 'Redundant ID in MasterDataset.ID2Idx_Master: %s' % ID
+            # assert ID not in MasterDataset.ID2Type_Master, 'Redundant ID in MasterDataset.ID2Type_Master: %s' % ID
             MasterDataset.ID2Idx_Master[ID] = len(MasterDataset.ID_Master)
             MasterDataset.ID_Master.append(ID)
             MasterDataset.ID2Type_Master[ID] = MolType
@@ -631,15 +634,15 @@ class FProtein(FDataset):
         # Add a single variable to the Master Dataset
         MasterDataset.ID2ID_mRNA2Protein_Master = self.ID2ID_mRNA2Protein
 
-        # Search for protein names containing 'protease' or 'peptidase'
-        for i, Value in enumerate(Proteins):
-            AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
-            # if 'endoribonuclease' in Name:
-            #     print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
-            if 'RNA helicase' in Name:
-                print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
-            # if 'EG10844-MONOMER' in ProtMonomerID:
-            #     print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
+        # # Search for protein names containing 'protease' or 'peptidase'
+        # for i, Value in enumerate(Proteins):
+        #     AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
+        #     if 'endoribonuclease' in Name:
+        #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
+        #     if 'RNA helicase' in Name:
+        #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
+        #     if 'EG10844-MONOMER' in ProtMonomerID:
+        #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -722,6 +725,296 @@ class FComplex(FDataset):
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
+
+    def SaveData(self, SavePath):
+        for Key, Value in self.__dict__.items():
+            SaveFileName = "%s/%s" % (SavePath, Key)
+            np.save('%s.npy' % SaveFileName, Value)
+
+
+class FComplexation(FDataset):
+    def __init__(self):
+        self.MolType_CPLXs = 'CPLX'
+
+        self.ID_CPLXs = list()
+        self.ID2Idx_CPLXs = dict()
+        self.Rate_CPLXs = list()
+        self.Dir_RevCPLXs = 0  # Rev for Reversibility
+
+
+        self.ID_MolsInCPLXs = list()
+        self.ID2Idx_MolsInCPLXs = dict()
+        self.Coeff_MolsInCPLXs = list()
+
+        self.NUniq_CPLXs = 0
+
+        self.IDModification = dict()
+
+        # To handle unregistered metabolites
+        self.ID_Metabolites = list()
+
+        self.ID_UnregisteredFromComplexation = list()   # Mostly additional metabolites
+        self.MolType_UnregisteredFromComplexation = 'MetabolitesUnregisteredFromComplexation'
+        self.Count_UnregisteredFromComplexation = 0
+        self.MW_UnregisteredFromComplexation = 0
+
+        super().__init__()
+
+    # Reactions and kinetic parameters (K values)
+    def SetUpData(self, Dataset, MasterDataset=None):
+
+        Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
+        for Metabolite in Metabolites:
+            self.ID_Metabolites.append(Metabolite[0][:-3])
+
+        CPLXs = Dataset['complexationReactions_large.tsv']
+
+        # Remove molecules not listed in other flat data (mostly copied and pasted from wcs)
+
+        NONSPECIFIC_METABOLITES = [
+            "ALLOSE",
+            "N-ACETYL-D-GLUCOSAMINE-6-P",
+            'RIBOSE',
+            'ACYL-COA',
+            'N-ACETYLNEURAMINATE',
+            'FRUCTURONATE',
+            'ALLANTOIN',  # CPLX0-8071 (also glyxoylate)
+        ]
+
+        UNIDENTIFIED_GENE = [
+            "TRANSENOYLCOARED-MONOMER",
+
+            "GLUTAMINA-MONOMER",
+            'GLUTAMINA-CPLX',
+
+            "GLUTAMINB-MONOMER",
+            'GLUTAMINB-CPLX',
+
+            'TRANSENOYLCOARED-MONOMER',
+            'TRANSENOYLCOARED-CPLX',
+
+            'NQOR-MONOMER',
+            'NQOR-CPLX',
+        ]
+
+        MISC_OR_UNEXPLAINED = [
+            "ACETYL-COA-CARBOXYLMULTI-CPLX",  # biotinylated, many subunits
+            'GCVMULTI-CPLX',  # many subunits
+            'CPLX0-7754',  # modified form for one subunit (phos'd)
+            'CPLX0-7849',  # proenzymes and modified forms, many forms
+            'EG10245-MONOMER',  # DNA poly III
+            'modified-charged-selC-tRNA',  #
+
+            # biotin carrier protein
+            'BCCP-BIOTIN',
+            'BCCP-CPLX'
+
+            # FadR plus CoA, met id not recognized
+            "MONOMER-51-CPD-18346",
+            'MONOMER-51-CPD-10269',
+
+            # enterobactin multicomplex (also see modified forms)
+            'ENTB-CPLX',
+            'HOL-ENTB',
+            'ENTMULTI-CPLX',
+
+            # no idea
+            'CPD-10269',
+            'CPD-18346',
+
+            # RcsB phosphorylated transcription factor, many forms
+            'PHOSPHO-RCSB',
+            'CPLX0-7884',
+            'CPLX0-7978',
+
+            # phos'd TF
+            'CPLX0-7795',
+            'PROTEIN-NRIP',
+            'PHOSPHO-UHPA',
+            'PHOSPHO-KDPE',
+            'CPLX0-7721',
+            'MONOMER0-4198',
+            'CPLX0-7748',
+            'PHOSPHO-CPXR',
+
+            # weird orphan metabolite, might actually be a protein
+            'CPD0-2342',
+
+            # modified form?
+            'LIPOYL-GCVH',
+        ]
+
+        DISABLED = [  # complexes we don't form for modeling reasons
+            "CPLX0-3964",  # full ribosome
+
+            # 50S subcomplex (can't procede to full complex)
+            "CPLX0-3956",
+            "CPLX0-3955",
+
+            # non-apo RNA polymerase complexes
+            "CPLX0-221",
+            "RNAP54-CPLX",
+            "RNAPS-CPLX",
+            "RNAP32-CPLX",
+            "RNAPE-CPLX",
+            "CPLX0-222",
+            "RNAP70-CPLX",
+        ]
+
+        SUBUNIT_PROENZYME = [
+            'CPLX0-7885',
+            # 'MONOMER0-4195': 'EG10374-MONOMER',
+            # 'MONOMER0-4196': 'EG10374-MONOMER',
+            #
+            # 'SAMDC-ALPHA-MONOMER': 'SPED-MONOMER',
+            # 'SAMDC-BETA-MONOMER': 'SPED-MONOMER',
+
+            'PHOSPHASERDECARB-DIMER',
+            'PHOSPHASERDECARB-CPLX',
+            # 'PHOSPHASERDECARB-ALPHA-MONOMER': 'PSD-MONOMER',
+            # 'PHOSPHASERDECARB-BETA-MONOMER': 'PSD-MONOMER',
+
+            'CPLX0-263',
+            # 'MONOMER0-2': 'EG12407-MONOMER',
+            # 'MONOMER0-3': 'EG12407-MONOMER',
+
+            'CPLX0-2901',
+            # 'MONOMER0-1842': 'ASPDECARBOX-MONOMER',
+            # 'MONOMER0-1843': 'ASPDECARBOX-MONOMER',
+        ]
+
+        DL_Addition = [
+            'PHOSPHO-OMPR-MONOMER',  # Unable to map
+            'SAMDECARB-CPLX',
+
+            # # Unimplemented metabolites in the system
+            # 'CU+',
+            # 'CPD-207',
+            # 'CPD0-881',
+            # 'PUTRESCINE',
+            # 'CPD-15818',
+            # 'CPD0-1110',
+            # 'CPD0-1108',
+            # 'CPD-10330',
+            # 'CPD-12537',
+            # 'HYPOXANTHINE',
+            # 'FUCULOSE-1P',
+            # 'ANTIMONITE',
+            # 'GLYCEROL',   # strangely not implemented
+            # '2-KETO-3-DEOXY-6-P-GLUCONATE',
+            # 'FRU1P',
+            # 'BIO-5-AMP',
+            # 'ALLOLACTOSE',
+            # 'CPD-622',
+            # 'CAMP',
+            # 'XANTHOSINE',
+            # 'NITRIC-OXIDE',   # strangely not implemented
+            # 'GALACTOSE',   # strangely not implemented
+            # 'NA+',   # strangely not implemented
+            # 'CPD-3',
+
+        ]
+
+        BlackList = NONSPECIFIC_METABOLITES + UNIDENTIFIED_GENE + MISC_OR_UNEXPLAINED + DISABLED + SUBUNIT_PROENZYME + DL_Addition
+
+        self.IDModification = {
+            'ENTF-PANT': 'ENTF-MONOMER',
+            'PHOSPHO-OMPR': 'OMPR-MONOMER',
+            'G7678-MONOMER': 'MONOMER0-2341',
+            'EG10245-MONOMER': 'MONOMER0-2383',   # DNA polymerase III, &gamma; subunit
+            # 'MONOMER0-4195': 'EG10374-MONOMER',   # CPLX0-7885
+            # 'MONOMER0-4196': 'EG10374-MONOMER',   # CPLX0-7885
+            # 'SAMDC-ALPHA-MONOMER': 'SPED-MONOMER',
+            # 'SAMDC-BETA-MONOMER': 'SPED-MONOMER',
+            # 'PHOSPHASERDECARB-ALPHA-MONOMER': 'PSD-MONOMER',   # PHOSPHASERDECARB-DIMER, PHOSPHASERDECARB-CPLX
+            # 'PHOSPHASERDECARB-BETA-MONOMER': 'PSD-MONOMER',   # PHOSPHASERDECARB-DIMER, PHOSPHASERDECARB-CPLX
+            # 'MONOMER0-2': 'EG12407-MONOMER',   # CPLX0-263
+            # 'MONOMER0-3': 'EG12407-MONOMER',   # CPLX0-263
+            # 'MONOMER0-1842': 'ASPDECARBOX-MONOMER',   # CPLX0-2901
+            # 'MONOMER0-1843': 'ASPDECARBOX-MONOMER',   # CPLX0-2901
+        }
+
+        CPLXs_Filtered = list()
+        CPLXs_Removed = list()
+        N_Filtered = 0
+        for Value in CPLXs:
+            Filter = True
+            for Mol in BlackList:
+                if Value[1].find(Mol) >= 0:
+                    Filter = False
+                    N_Filtered += 1
+                    CPLXs_Removed.append(Value)
+                    break
+            if Filter:
+                CPLXs_Filtered.append(Value)
+        assert len(CPLXs) == (len(CPLXs_Filtered) + len(CPLXs_Removed))
+
+        CPLXs = CPLXs_Filtered
+
+        self.NUniq_CPLXs = len(CPLXs)
+        self.Dir_RevCPLXs = np.zeros(self.NUniq_CPLXs)
+
+        # Build indices for stoichiometry matrix
+        N_Mol_Total = 0
+        N_Mol_Repeated = 0
+        for Value in CPLXs:
+            CPLXProcess, CPLXStoichiometry, CPLXID, CPLXDirection = Value
+            for MoleculeInfo in CPLXStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for LabelDataPair in MoleculeInfo.split(','):
+                    Label, Data = LabelDataPair.strip().split(': ')
+                    if Label == '"molecule"':
+                        N_Mol_Total += 1
+                        Data = self.CheckIDForModification(Data.strip('"'))
+                        if Data not in self.ID_MolsInCPLXs:
+                            self.ID2Idx_MolsInCPLXs[Data] = len(self.ID_MolsInCPLXs)
+                            self.ID_MolsInCPLXs.append(Data)
+                        else:
+                            N_Mol_Repeated += 1
+
+                        if Data not in MasterDataset.ID_Master:
+                            if Data not in self.ID_UnregisteredFromComplexation:
+                                self.ID_UnregisteredFromComplexation.append(Data)
+
+        self.Count_UnregisteredFromComplexation = np.zeros(len(self.ID_UnregisteredFromComplexation))
+        self.MW_UnregisteredFromComplexation = np.zeros(len(self.ID_UnregisteredFromComplexation))   # TODO: get values from database
+
+        self.NMax_CPLXMolParts = len(self.ID_MolsInCPLXs)
+
+        for i, Value in enumerate(CPLXs):
+            CPLXProcess, CPLXStoichiometry, CPLXID, CPLXDirection = Value
+            assert CPLXID not in self.ID_CPLXs, '%s' % CPLXID
+            self.ID_CPLXs.append(CPLXID)
+            self.ID2Idx_CPLXs[CPLXID] = len(self.ID_CPLXs) # = i
+            self.Dir_RevCPLXs[i] = CPLXDirection
+
+            CoeffArray = np.zeros(self.NMax_CPLXMolParts)
+            for MoleculeInfo in CPLXStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                Coeff = None
+                Idx = None
+                for LabelDataPair in MoleculeInfo.split(','):
+                    Label, Data = LabelDataPair.strip().split(': ')
+                    if Label == '"coeff"':
+                        Coeff = Data
+                    elif Label == '"molecule"':
+                        MolID = self.CheckIDForModification(Data.strip('"'))
+                        Idx = self.ID2Idx_MolsInCPLXs[MolID]
+
+                CoeffArray[Idx] = Coeff
+
+            self.Coeff_MolsInCPLXs.append(CoeffArray)
+
+        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromComplexation, self.MolType_UnregisteredFromComplexation, self.Count_UnregisteredFromComplexation, self.MW_UnregisteredFromComplexation)
+
+    def CheckIDForModification(self, ID):
+        if ID in self.IDModification:
+            return self.IDModification[ID]
+        else:
+            # if ID.find('+2') >= 0:
+            #     ID += '[c]'
+            if ID in self.ID_Metabolites:
+                ID += '[c]'
+
+            return ID
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():
@@ -1027,7 +1320,10 @@ class FMaster():
         self.Idx_Master_Metabolites = list()
 
     def SetUpData(self, Comp):
-        # Master Indices
+        self.SetUpMasterIndices(Comp)
+        self.SetUpIdx2IdxMappingDict()
+
+    def SetUpMasterIndices(self, Comp):
         self.Idx_Master_Chromosomes = self.GetMolIdx(Comp.Chromosome.ID_Chromosomes, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Chromosomes) == Comp.Chromosome.NMax_Chromosomes
 
@@ -1068,6 +1364,7 @@ class FMaster():
         assert len(self.Idx_Master_Genes) == len(self.Idx_Master_RNAs)
         assert len(self.Idx_Master_mRNAs) == len(self.Idx_Master_Proteins)
 
+    def SetUpIdx2IdxMappingDict(self):
         # Index to Index mapping dictionaries
         for i, ID in enumerate(self.ID_Master):
             if self.ID2Type_Master[ID] == 'Gene':
@@ -1085,6 +1382,8 @@ class FMaster():
                     RNAIdx = self.ID2Idx_Master[RNAID]
                     ProteinIdx = self.ID2Idx_Master[ProteinID]
                     self.Idx2Idx_mRNA2ProteinMonomer_Master['%s' % str(RNAIdx)] = ProteinIdx
+
+
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():

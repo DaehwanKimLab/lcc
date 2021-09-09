@@ -30,7 +30,7 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def GetCounts(self, MolIdxs):"):
-            Writer.Gather___("Counts", "self.Cel.Counts", "self.Cel.Idx_Master_mRNAs")
+            Writer.Gather___("Counts", "self.Cel.Counts", "MolIdxs")
             Writer.ReturnVar("Counts")
             Writer.BlankLine()
 
@@ -205,48 +205,35 @@ def Write_CellProcess(Writer):
             Writer.ReturnVar("Idx_Random")
             Writer.BlankLine()
 
-        with Writer.Statement("def PickRandomIndexFromPool_Weighted(self, N_MoleculesToDistribute, Indices, Weights):"):
+        with Writer.Statement("def PickRandomIndexFromPool_Weighted_Local(self, N_MoleculesToDistribute, Indices, Weights):"):
             Writer.Reshape__("Weights", "Weights", -1)
             Writer.Reshape__("Indices", "Indices", -1)
 
-            # Generate a scalar value for the shape of Weights
+            Writer.Comment__("Generate a scalar value for the shape of Weights")
             Writer.Statement("N_RandomValues = tf.shape(Indices)[0]")
 
-            # Cumsum on Counts
+            Writer.Comment__("Cumsum on Counts")
             Writer.CumSum___("WeightCumSum", "Weights", 0)
 
-            # Generate random number ranging between first and last elements of cumsum int values
+            Writer.Comment__("Generate random number ranging between first and last elements of cumsum int values")
             Writer.RndNumUni("RandomValues", Shape="N_MoleculesToDistribute", MinVal="WeightCumSum[0]", MaxVal="WeightCumSum[-1]", Type='int32')
 
-            # Repeat random number array then reshape to generate matrix shaped with [Count shape, -1]
+            Writer.Comment__("Repeat random number array then reshape to generate matrix shaped with [Count shape, -1]")
             Writer.VarRepeat("RandomValues_RepeatArray", "RandomValues", "N_RandomValues")
             Writer.Reshape__("RandomValues_Matrix", "RandomValues_RepeatArray", "[-1, N_RandomValues]")
 
-            # # Boolean operation on (repeated random number array < Cumsum (2D matrix)) for which count range it falls
-            # Writer.Less_____("Bool_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "WeightCumSum")
-            #
-            # # Boolean operation on (Counts > 0) for idxs with counts
-            # Writer.Greater__("Bool_RandomValuesGreaterThanZero", "RandomValues_Matrix", 0)
-            #
-            # # Logical_and on (repeated random number array < Cumsum, Counts > 0) then convert to binary
-            # Writer.LogicAnd_("Bool_RandomValuesSelected", "Bool_RandomValuesLessThanWeightCumSum", "Bool_RandomValuesGreaterThanZero")
-            # Writer.BoolToBin("Bin_RandomValuesSelected", "Bool_RandomValuesSelected")
-
-            # # Argmax on the binary to get the first indices of 1's in each random number generated.
-            # Writer.ArgMax___("Idx_Random", "Bin_RandomValuesSelected", Axis=1)
-
-            # Boolean operation on (repeated random number array < Cumsum (2D matrix)) for which count range it falls
             Writer.ConvToBin("Bin_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "<", "WeightCumSum")
 
-            # Argmax on the binary to get the first indices of 1's in each random number generated.
+            Writer.Comment__("Argmax on the binary to get the first indices of 1's in each random number generated.")
             Writer.ArgMax___("Idx_Random", "Bin_RandomValuesLessThanWeightCumSum", Axis=1)
 
-            # # Argmax on the binary to get the first indices of 1's in each random number generated.
-            # Writer.ArgMax___("Idx_Random_Local", "Bin_RandomValuesLessThanWeightCumSum", Axis=1)
-            #
-            # # Map back to the original indices
-            # Writer.Gather___("Idx_Random", "Indices", "Idx_Random_Local")
+            Writer.ReturnVar("Idx_Random")
+            Writer.BlankLine()
 
+        with Writer.Statement("def PickRandomIndexFromPool_Weighted_Global(self, N_MoleculesToDistribute, Indices, Weights):"):
+            Writer.Statement("Idx_Random_Local = self.PickRandomIndexFromPool_Weighted_Local(N_MoleculesToDistribute, Indices, Weights)")
+            Writer.Statement("Idx_Random = self.IdxFromLocalToReference(Idx_Random_Local, Indices)")
+            # Writer.Gather___("Idx_Random", "Indices", "Idx_Random_Local")
             Writer.ReturnVar("Idx_Random")
             Writer.BlankLine()
 
@@ -257,10 +244,10 @@ def Write_CellProcess(Writer):
 
         with Writer.Statement("def DetermineAmountOfElongation(self, Len_Matrix, Rate_Elongation, MaxLen_Matrix):"):
             Writer.Comment__("Elongate Length Matrix")
-            # Get a binary matrix to elongate
+            Writer.Comment__("Get a binary matrix to elongate")
             Writer.ConvToBin("Bin_LengthElongating", "Len_Matrix", ">=", 0)
 
-            # Apply elongation rate to the elongating elements (overelongated not counted yet)
+            Writer.Comment__("Apply elongation rate to the elongating elements (overelongated not counted yet)")
             Writer.Multiply_("Rate_Elongation_Matrix", "Bin_LengthElongating",
                              "Rate_Elongation")
             Writer.Add______("Len_Matrix_Elongated", "Len_Matrix",
@@ -268,29 +255,30 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
             Writer.Comment__("Correct Over-elongated Elements")
-            # Compare to len MAX to determine overelongated (> MAX)
+            Writer.Comment__("Compare to len MAX to determine overelongated (> MAX)")
             Writer.Reshape__("MaxLen_2D", "MaxLen_Matrix", [-1, 1])
             Writer.ConvToBin("Bin_GreaterThanZero", "Len_Matrix_Elongated", ">", "MaxLen_2D")
             Writer.Subtract_("Len_Matrix_Elongated_MaxSubtracted", "Len_Matrix_Elongated", "MaxLen_2D")
             Writer.Multiply_("Len_Matrix_OverElongated", "Len_Matrix_Elongated_MaxSubtracted", "Bin_GreaterThanZero")
 
-            # Update nascent Protein length by removing over elongated length
+            Writer.Comment__("Update nascent Protein length by removing over elongated length")
             Writer.Subtract_("Len_Matrix_Elongated_Corrected", "Len_Matrix_Elongated",
                              "Len_Matrix_OverElongated")
-            # now all completed elongation has its max value
+
+            Writer.Comment__("now all completed elongation has its max value")
             Writer.BlankLine()
 
             Writer.ReturnVar("Len_Matrix_Elongated_Corrected")
             Writer.BlankLine()
 
         with Writer.Statement("def ResetLengthOfCompletedElongation(self, Len_Matrix, MaxLen_Matrix):"):
-            # Reset all NMAX lengths to -1 by subtracting max length from completed
+            Writer.Comment__("Reset all NMAX lengths to -1 by subtracting max length from completed")
             Writer.ConvToBin("Bin_Len_MatrixMax", "Len_Matrix", "==", "MaxLen_Matrix")
             Writer.Multiply_("MaxLen_Matrix_MaxElementsOnly", "MaxLen_Matrix", "Bin_Len_MatrixMax")
             Writer.Subtract_("Len_Matrix_MaxToZero", "Len_Matrix", "MaxLen_Matrix_MaxElementsOnly")
             Writer.BlankLine()
 
-            # Check len matrix integrity
+            Writer.Comment__("Check len matrix integrity")
             Writer.AsrtGrEq_("Len_Matrix_MaxToZero", -1)
             Writer.BlankLine()
 
@@ -305,12 +293,10 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def ResetZerosToNegOnes(self, Len_Matrix):"):
-            # Replace 0's with -1 to indicate no RNAP binding
-            Writer.ConvToBin("Ones", "Len_Matrix", "==", 0)
-            Writer.Subtract_("Len_Matrix_ZeroToNegOne", "Len_Matrix", "Ones")
-            Writer.BlankLine()
+            Writer.Comment__("Replace 0's with -1 to indicate no processor binding")
+            Writer.Statement("Len_Matrix_ZeroToNegOne = self.ResetZerosToSpecificValue(Len_Matrix, -1)")
 
-            # Check len matrix integrity
+            Writer.Comment__("Check len matrix integrity")
             Writer.AsrtNoEq_("Len_Matrix_ZeroToNegOne", 0)
             Writer.AsrtGrEq_("Len_Matrix_ZeroToNegOne", -1)
             Writer.BlankLine()
@@ -318,35 +304,60 @@ def Write_CellProcess(Writer):
             Writer.ReturnVar("Len_Matrix_ZeroToNegOne")
             Writer.BlankLine()
 
-        # with Writer.Statement("def UpdateCounts(self, MatrixToUpdate, "):
+        with Writer.Statement("def ResetZerosToSpecificValue(self, Matrix, Value):"):
+            Writer.ConvToBin("Ones_ForZeros", "Matrix", "==", 0)
+            Writer.Multiply_("Values_ForZeros", "Ones_ForZeros", "Value")
+            Writer.Add______("Matrix_ZeroToValue", "Matrix", "Values_ForZeros")
+            Writer.ReturnVar("Matrix_ZeroToValue")
+            Writer.BlankLine()
 
-        # Writer.AbsMethod()
-        # with Writer.Statement("def AddToStoichiometryMatrix(self):"):
-        #     Writer.Pass_____()
+        with Writer.Statement("def ResetZerosToSpecificValue_Float(self, Matrix, Value):"):
+            Writer.ConvToBin("Ones_ForZeros", "Matrix", "==", 0)
+            Writer.Multiply_("Values_ForZeros", "Ones_ForZeros", "Value")
+            Writer.Cast_____("Matrix", "Matrix", 'float32')
+            Writer.Cast_____("Values_ForZeros", "Values_ForZeros", 'float32')
+            Writer.Add______("Matrix_ZeroToValue", "Matrix", "Values_ForZeros")
+            Writer.ReturnVar("Matrix_ZeroToValue")
+            Writer.BlankLine()
+
+        with Writer.Statement("def RemoveZeroElements(self, Matrix):"):
+            Writer.NotEqual_("Bool_NonZeros", "Matrix", 0)
+            Writer.BoolMask_("Matrix_ZerosRemoved", "Matrix", "Bool_NonZeros")
+            Writer.ReturnVar("Matrix_ZerosRemoved")
+            Writer.BlankLine()
+
+        with Writer.Statement("def GenerateCountMatrixForSelectedIndices(self, Indices, NUniq_Indices):"):
+            Writer.InitZeros("Zeros", "NUniq_Indices", 'int32')
+            Writer.OnesLike_("Ones_Indices", "Indices", 'int32')
+            Writer.ScatNdAdd("Count_Indices", "Zeros", "Indices", "Ones_Indices")
+            Writer.ReturnVar("Count_Indices")
+            Writer.BlankLine()
+
+        with Writer.Statement("def SqueezeDistributionRangeZeroAndOne(self, Input):"):
+            Writer.AsrtGrEq_("Input", 0, "tf.where(Input < 0)")
+            Writer.ReduceMax("Max", "Input")
+            Writer.Divide___("Input_Squeezed", "Input", "Max")
+            Writer.ReturnVar("Input_Squeezed")
+            Writer.BlankLine()
+
+        # with Writer.Statement("def SqueezeDistributionRangeNegAndPosOne(self, Input):"):
+        #     Writer.ReduceMax("Max", "Input")
+        #     Writer.ReduceMin("Min", "Input")
+        #     Writer.Add______("MaxMinAdded", "Max", "Min")
+        #     Writer.Cast_____("MaxMinAdded", "MaxMinAdded", 'float32')
+        #     Writer.Divide___("Median", "MaxMinAdded", 2)
+        #     Writer.Subtract_("Input_ZeroCentered", "Input", "Median")
+        #     Writer.ReduceMax("Max_ZeroCentered", "Input_ZeroCentered")
+        #     Writer.Divide___("Input_ZeroCenteredNormalizedToOne", "Input_ZeroCentered", "Max_ZeroCentered")
+        #     Writer.ReturnVar("Input_ZeroCenteredNormalizedToOne")
         #     Writer.BlankLine()
         #
-        # Writer.AbsMethod()
-        # with Writer.Statement("def CalculateRate(self):"):
-        #     Writer.Pass_____()
+        # with Writer.Statement("def StretchDistributionRangeToNegAndPosValue(self, Input, Value):"):
+        #     Writer.Statement("Input_NormalizedToOne = self.SqueezeDistributionRangeNegAndPosOne(Input)")
+        #     Writer.Multiply_("Input_Stretched", "Input_NormalizedToOne", "Value")
+        #     Writer.ReturnVar("Input_Stretched")
         #     Writer.BlankLine()
-        #
-        # Writer.AbsMethod()
-        # with Writer.Statement("def AddToRateMatrix(self):"):
-        #     Writer.Pass_____()
-        #     Writer.BlankLine()
-        #
-        # Writer.AbsMethod()
-        # with Writer.Statement("def PrintMolCounts(self):"):
-        #     Writer.Pass_____()
-        #     Writer.BlankLine()
-        #
-        # Writer.TF_Graph_()
-        # with Writer.Statement("def SetUpStoichiometryMatrix(self):"):
-        #     Writer.Statement("self.AddToStoichiometryMatrix()")
-        #     Writer.BlankLine()
-        #
-        # Writer.TF_Graph_()
-        # with Writer.Statement("def UpdateRates(self):"):
-        #     Writer.Statement("self.CalculateRate()")
-        #     Writer.Statement("self.AddToRateMatrix()")
-        #     Writer.BlankLine()
+
+
+
+

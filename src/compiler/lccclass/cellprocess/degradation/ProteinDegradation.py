@@ -255,7 +255,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Gather___("Count_Proteins", "self.Cel.Counts", "self.Cel.Idx_Master_Proteins")
             Writer.ReduceSum("Count_ProteinsTotal", "Count_Proteins", 0)
             Writer.Statement("N_ProteinsToBeDegraded = self.DetermineAmountFromRate(Count_ProteinsTotal, self.Rate_ProteinDegradation)")
-            Writer.Statement("self.Idx_RndProteinsDegraded = self.PickRandomIndexFromPool_Weighted(N_ProteinsToBeDegraded, self.Idx_Proteins, Count_Proteins)")
+            Writer.Statement("self.Idx_RndProteinsDegraded = self.PickRandomIndexFromPool_Weighted_Local(N_ProteinsToBeDegraded, self.Idx_Proteins, Count_Proteins)")
             Writer.BlankLine()
 
         with Writer.Statement("def GetCountOfDegradedProteins(self):"):

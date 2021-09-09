@@ -33,6 +33,7 @@ from lccclass import CellProcess
 # from lccvariable.cellstate.genomestate import PromoterState
 from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
+from lccclass.cellprocess.conversion import Complexation, Equilibrium
 from lccclass.cellprocess.metabolism import Metabolism
 from lccclass.cellprocess.division import CellDivision
 from lccclass.simulation import ReactionExecution
@@ -347,6 +348,7 @@ def Compile(CodeFileNames,
         Translation,
         RNADegradation,
         ProteinDegradation,
+        Complexation,
         Metabolism,
         CellDivision
     ]

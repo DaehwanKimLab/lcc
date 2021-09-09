@@ -114,9 +114,12 @@ class CodeWriter():
         Line = 'self.%s = %s' % (VariableName, VariableName)
         self.Statement(Line)
 
-    def ReturnVar(self, VariableName):
-        Line = 'return %s' % VariableName
-        self.Statement(Line)
+    def ReturnVar(self, *args):
+        line = 'return'
+        for VariableName in args:
+            line += (' ' + str(VariableName) + ',')
+        line = line[:-1]
+        self.Statement(line)
 
     def Overwrite(self, DestinationVariable, SourceVariable):
         Line = '%s = %s' % (DestinationVariable, SourceVariable)
@@ -354,7 +357,7 @@ class TFCodeWriter(CodeWriter):
         Line = '%s = tf.transpose(%s)' % (DestVar, SrcVar)
         self.Statement(Line)
 
-    def NegValue_(self, DestVar, SrcVar):
+    def Negative_(self, DestVar, SrcVar):
         self.Statement('%s = tf.math.negative(%s)' % (DestVar, SrcVar))
         self.DebugPVar(DestVar)
 
@@ -484,12 +487,22 @@ class TFCodeWriter(CodeWriter):
     def ReduceSum(self, DestVar, MX, Axis=None):
         self.Statement("%s = tf.math.reduce_sum(%s, axis=%s)" % (DestVar, MX, Axis))
 
+    def ReduceMul(self, DestVar, MX, Axis=None):
+        self.Statement("%s = tf.math.reduce_prod(%s, axis=%s)" % (DestVar, MX, Axis))
+
     def ReduceMax(self, DestVar, MX, Axis=None):
         self.Statement("%s = tf.math.reduce_max(%s, axis=%s)" % (DestVar, MX, Axis))
 
+    def ReduceMin(self, DestVar, MX, Axis=None):
+        self.Statement("%s = tf.math.reduce_min(%s, axis=%s)" % (DestVar, MX, Axis))
+
     def ReduceAll(self, DestVar, MX, Axis=None):
-        # Reduction operation for the elementwise tf.math.logical_and op.
+        # For boolean only
         self.Statement("%s = tf.math.reduce_all(%s, axis=%s)" % (DestVar, MX, Axis))
+
+    def ReduceAny(self, DestVar, MX, Axis=None):
+        # For boolean only
+        self.Statement("%s = tf.math.reduce_any(%s, axis=%s)" % (DestVar, MX, Axis))
 
     def CumSum___(self, DestVar, MX, Axis=0, Exclusive=False, Reverse=False):
         # Cumulative sum
@@ -509,6 +522,13 @@ class TFCodeWriter(CodeWriter):
     def BoolToBin(self, BinMX, BoolMX):
         self.Cast_____(BinMX, BoolMX)
 
+    def BoolMask_(self, DestVar, TargetMX, BoolMX, Axis=None):
+        self.Statement("%s = tf.boolean_mask(%s, %s, axis=%s)" % (DestVar, TargetMX, BoolMX, Axis))
+
+    def ToSparse_(self, DestVar, MX):
+        pass
+        # self.Statement("%s = tf.sparse.from_dense(%s)" % (DestVar, MX))
+
     def CondVal__(self, DestVar, MX, Equality, Value, IfTrue=None, IfFalse=None):
         self.Statement("%s = tf.where(%s %s %s, x=%s, y=%s)" % (DestVar, MX, str(Equality), Value, IfTrue, IfFalse))
 
@@ -518,7 +538,7 @@ class TFCodeWriter(CodeWriter):
     def GenIdx___(self, DestVar, MX):
         self.Statement("%s = tf.where(%s)" % (DestVar, MX))
 
-    def GetIdx___(self, DestVar, MX, Equality, Value):
+    def GenIdxCnd(self, DestVar, MX, Equality, Value):
         self.Statement("%s = tf.where(%s %s %s)" % (DestVar, MX, str(Equality), Value))
 
     def ArgMax___(self, DestVar, MX, Axis=None, Type='int32'):
@@ -533,6 +553,9 @@ class TFCodeWriter(CodeWriter):
 
     def RoundInt_(self, DestVar, MX, Type='int32'):
         self.Statement("%s = tf.cast(tf.math.round(%s), dtype=tf.%s)" % (DestVar, MX, Type))
+
+    def Sigmoid__(self, DestVar, MX):
+        self.Statement("%s = tf.math.sigmoid(%s))" % (DestVar, MX))
 
     def AsrtGrEq_(self, MX1, MX2, Message=None):
         self.Statement("tf.debugging.assert_greater_equal(%s, %s, message=%s)" % (MX1, MX2, Message))

@@ -122,9 +122,6 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Statement("def SIM_SetUpCellStateMatrices(self):"):
-            # Initialize reaction stoichiometry and rate matrices
-            Writer.Statement("self.Cel.InitializeMatrices()")
-
             # # Set up reaction stoichiometry matrix
             # for ProcessID, Module in ProGen.Dict_CellProcesses.items():
             #     Writer.Statement("self.SetUpStoichiometryMatrix(self.%s)" % ProcessID)

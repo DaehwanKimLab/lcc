@@ -108,7 +108,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def SelectRNAsToTranscribe(self, Count_RNAPWillBind):"):
             # Weighted random distribution later
             Writer.Gather___("Count_Genes", "self.Cel.Counts", "self.Cel.Idx_Master_Genes")
-            Writer.Statement("Idx_RndRNAsNascent = self.PickRandomIndexFromPool_Weighted(Count_RNAPWillBind, self.Idx_RNAs, Count_Genes)")
+            Writer.Statement("Idx_RndRNAsNascent = self.PickRandomIndexFromPool_Weighted_Local(Count_RNAPWillBind, self.Idx_RNAs, Count_Genes)")
             Writer.ReturnVar("Idx_RndRNAsNascent")
             Writer.BlankLine()
 
