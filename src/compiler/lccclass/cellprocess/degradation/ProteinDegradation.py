@@ -275,6 +275,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def ReduceCountOfDegradedProteins(self):"):
+            Writer.Statement("self.Count_ProteinsDegraded = self.CorrectCountGettingBelowZeroAfterRemoval(self.Cel.Idx_Master_Proteins, self.Count_ProteinsDegraded)")
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_Master_Proteins, -self.Count_ProteinsDegraded)")
             Writer.BlankLine()
 
@@ -329,7 +330,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Statement("def ViewProcessSummary(self):"):
             Writer.PrintStrg("===== Protein Degradation ===== ")
             Writer.PrintStVa("# of Proteins Degraded",
-                             "tf.shape(self.Idx_RndProteinsDegraded)[0]")
+                             "tf.math.reduce_sum(self.Count_ProteinsDegraded)")
             Writer.PrintStVa("# of AA release",
                              "self.Count_AAsToBeReleasedTotal")
             Writer.BlankLine()

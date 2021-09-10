@@ -126,11 +126,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Idx_MolsParticipatingInComplexation", "Count_MolsParticipatingInComplexation_ZerosRemoved")
             Writer.BlankLine()
 
-            # Writer.Gather___("Coeff_ComplexationToRun", "self.Cel.Coeff_Complexation", "Idx_RXNs")
-            #
-            # Writer.GetIdx___("Idx_MolsInComplexationToRun", "Coeff_ComplexationToRun")
-            #
-            # Writer.Gather___("", "self.Cel.Coeff_Complexation", "Idx_MolsInComplexationToRun")
-            #
-            # Writer.Statement("Count_MolsInComplexationToRun", )
-            # Writer.BlankLine()
+        with Writer.Statement("def ViewProcessSummary(self):"):
+            Writer.PrintStrg("===== Complexation ===== ")
+            Writer.PrintStVa("# of Complexation Reactions Occurred",
+                             "self.N_ComplexationRXNsToRun[0]")
+            Writer.BlankLine()

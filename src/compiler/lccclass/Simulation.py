@@ -1,6 +1,6 @@
 # Simulation time request in seconds
 SimWallTimeRequested = 45 * 60
-SimStepsPrintResolution = 50
+SimStepsPrintResolution = 100
 
 # Comp is a short hand for CompilerData
 def Write_Simulation(Writer, Comp, ProGen):

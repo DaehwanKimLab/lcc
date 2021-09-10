@@ -31,7 +31,14 @@ def Write_CellProcess(Writer):
 
         with Writer.Statement("def GetCounts(self, MolIdxs):"):
             Writer.Gather___("Counts", "self.Cel.Counts", "MolIdxs")
+            Writer.Reshape__("Counts", "Counts", -1)
             Writer.ReturnVar("Counts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def GetDeltaCounts(self, MolIdxs):"):
+            Writer.Gather___("DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs")
+            Writer.Reshape__("DeltaCounts", "DeltaCounts", -1)
+            Writer.ReturnVar("DeltaCounts")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
@@ -78,8 +85,6 @@ def Write_CellProcess(Writer):
         with Writer.Statement("def AddToDeltaCounts_PPiRelease(self, MolCounts):"):
             Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "MolCounts")
             Writer.BlankLine()
-
-
 
         # with Writer.Statement("def AddToDeltaCounts_Hydrolysis(self, MolCounts):"):
         #     Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "MolCounts")
@@ -332,6 +337,37 @@ def Write_CellProcess(Writer):
             Writer.ScatNdAdd("Count_Indices", "Zeros", "Indices", "Ones_Indices")
             Writer.ReturnVar("Count_Indices")
             Writer.BlankLine()
+
+        with Writer.Statement("def GetCountAfterApplyingDeltaCount(self, Idx_Master):"):
+            Writer.Statement("Count = self.GetCounts(Idx_Master)")
+            Writer.Statement("DeltaCount = self.GetDeltaCounts(Idx_Master)")
+            Writer.Add______("Count_AfterApplyingDeltaCount", "Count", "DeltaCount")
+            Writer.ReturnVar("Count_AfterApplyingDeltaCount")
+            Writer.BlankLine()
+
+        with Writer.Statement("def IdentifyCountBelowZeroAfterRemoval(self, Idx_Master, Count_ToRemove):"):
+            Writer.Statement("Count_Current = self.GetCountAfterApplyingDeltaCount(Idx_Master)")
+            Writer.Subtract_("Count_AfterRemoval", "Count_Current", "Count_ToRemove")
+            Writer.ConvToBin("Bin_BelowZeroAfterRemoval", "Count_AfterRemoval", "<", 0)
+            Writer.Multiply_("Count_BelowZeroAfterRemoval", "Count_AfterRemoval", "Bin_BelowZeroAfterRemoval")
+            Writer.ReturnVar("-Count_BelowZeroAfterRemoval")
+            Writer.BlankLine()
+
+        with Writer.Statement("def CorrectCountGettingBelowZeroAfterRemoval(self, Idx_Master, Count_ToRemove):"):
+            Writer.Statement("Count_ToRescue = self.IdentifyCountBelowZeroAfterRemoval(Idx_Master, Count_ToRemove)")
+            Writer.Subtract_("Count_ToRemove_Corrected", "Count_ToRemove", "Count_ToRescue")
+            Writer.ReturnVar("Count_ToRemove_Corrected")
+            Writer.BlankLine()
+
+        # CorrectCountGettingBelowZeroAfterRemoval Version 1
+        # with Writer.Statement("def CorrectCountGettingBelowZeroAfterRemoval(self, Idx_Master, Idx_Removal, Count_Removal):"):
+        #     Writer.Statement("Count_ToRescue = self.IdentifyCountBelowZeroAfterRemoval(Idx_Master, Count_Removal)")
+        #     Writer.Subtract_("Count_Removal", "Count_Removal", "Count_ToRescue")
+        #     Writer.Greater__("Bool_Count_Removal", "Count_Removal", 0)
+        #     Writer.BoolMask_("Count_Removal_Adjusted", "Count_Removal", "Bool_Count_Removal")
+        #     Writer.BoolMask_("Idx_RemovalAdjusted", "Idx_Removal", "Bool_Count_Removal")
+        #     Writer.ReturnVar("Idx_RemovalAdjusted", "Count_Removal_Adjusted")
+        #     Writer.BlankLine()
 
         with Writer.Statement("def SqueezeDistributionRangeZeroAndOne(self, Input):"):
             Writer.AsrtGrEq_("Input", 0, "tf.where(Input < 0)")
