@@ -256,6 +256,8 @@ def Write_CellState(Writer, Comp, ProGen):
             # Metabolism
             Writer.Comment__("Metabolism")
             Writer.BlankLine()
+            Writer.Variable_("self.Idx_NADH", 0)
+            Writer.Variable_("self.Idx_NADPH", 0)
             Writer.Variable_("self.Count_MetabolitesInitial", 0)
             Writer.BlankLine()
 

@@ -1256,6 +1256,8 @@ class FBuildingBlock(FDataset):
         self.NUniq_NTPs = 0
         self.NUniq_AAs = 0
 
+        self.Name2Key_BuildingBlocks = dict()
+
         super().__init__()
 
     def SetUpData(self, Dataset, MasterDataset = None):
@@ -1265,6 +1267,7 @@ class FBuildingBlock(FDataset):
             self.Name_dNTPs.append(BuildingBlock)
         self.Key_dNTPs = ['A', 'C', 'G', 'T']
         self.NUniq_dNTPs = len(self.Name_dNTPs)
+        self.Name2Key_BuildingBlocks['dNTPs'] = self.Key_dNTPs
 
         NTPs = Dataset['ntps.txt']
         for BuildingBlock in NTPs:
@@ -1272,6 +1275,7 @@ class FBuildingBlock(FDataset):
             self.Name_NTPs.append(BuildingBlock)
         self.Key_NTPs = ['A', 'C', 'G', 'U']
         self.NUniq_NTPs = len(self.Name_NTPs)
+        self.Name2Key_BuildingBlocks['NTPs'] = self.Key_NTPs
 
         AAs = Dataset['amino_acids.txt']
         for BuildingBlock in AAs:
@@ -1282,6 +1286,7 @@ class FBuildingBlock(FDataset):
         AAKeys = Dataset['amino_acid_keys.txt']
         for BuildingBlock in AAKeys:
             self.Key_AAs.append(BuildingBlock)
+        self.Name2Key_BuildingBlocks['AAs'] = self.Key_AAs
 
     def SaveData(self, SavePath):
         for Key, Value in self.__dict__.items():

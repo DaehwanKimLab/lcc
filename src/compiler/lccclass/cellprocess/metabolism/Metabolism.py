@@ -3,11 +3,21 @@
 def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # ProGen.GenerateCellProcess(Writer, ProcessID)
 
+    Idx_NADH = Comp.Master.ID2Idx_Master['NADH[c]']
+    Idx_NADPH = Comp.Master.ID2Idx_Master['NADPH[c]']
+
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
             Writer.Variable_("self.Count_MetabolitesInitial", 0)
+            Writer.BlankLine()
+
+        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+            Writer.Variable_("self.Cel.Idx_NADH", Idx_NADH)
+            Writer.Variable_("self.Cel.Idx_NADPH", Idx_NADPH)
+            Writer.BlankLine()
+
             Writer.Statement("self.GetMetaboliteCounts()")
             Writer.BlankLine()
 

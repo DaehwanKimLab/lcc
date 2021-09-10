@@ -1,6 +1,6 @@
 # Simulation time request in seconds
-SimWallTimeRequested = 45 * 60
-SimStepsPrintResolution = 100
+SimWallTimeRequested = 35 * 60
+SimStepsPrintResolution = 1
 
 # Comp is a short hand for CompilerData
 def Write_Simulation(Writer, Comp, ProGen):
@@ -69,11 +69,11 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.Statement("self.EndSimTimer()")
             Writer.Statement("self.CalculateSimTimeImprovement()")
             Writer.PrintLine()
-            Writer.PrintStrg("Simulation Time Summary (seconds):")
-            Writer.Statement('print("Simulation Steps Executed: %s" % self.SimStepsExecuted)')
-            Writer.Statement('print("     Simulation Wall Time: %s" % self.SimWallTimeExecuted)')
-            Writer.Statement('print("      Simulation Run Time: %s" % self.SimRunTimeExecuted)')
-            Writer.Statement('print("           X times faster: %s" % self.SimTimesSpeed)')
+            Writer.PrintStrg("Simulation Time Summary:")
+            Writer.Statement('print("Simulation Steps Executed (s): %s" % self.SimStepsExecuted[0])')
+            Writer.Statement('print("     Simulation Wall Time (s): %s" % self.SimWallTimeExecuted[0])')
+            Writer.Statement('print("      Simulation Run Time (s): %s" % self.SimRunTimeExecuted[0])')
+            Writer.Statement('print("           X times faster    : %s" % self.SimTimesSpeed[0])')
             Writer.BlankLine()
 
         with Writer.Statement("def SetUpSimClock(self):"):
@@ -230,6 +230,46 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.Statement("self.CellDivision.PrintMessage()")
                 Writer.BlankLine()
 
+        with Writer.Statement("def ViewReplicationCompletion(self):"):
+            Writer.PrintStVa("% Replication completion",
+                             "self.Replication.DeterminePercentReplicationCompletion()")
+
+        with Writer.Statement("def ViewMacromoleculeCounts(self):"):
+            TotalCountQueriesUsingCelMasterIdx = ['Genes', 'RNAs', 'Proteins', 'Complexes']
+            for Query in TotalCountQueriesUsingCelMasterIdx:
+                Writer.Statement("Counts = self.Metabolism.GetCounts(self.Cel.Idx_Master_%s)" % Query)
+                Writer.ReduceSum("TotalCount", "Counts")
+                Writer.PrintStVa("Total # of %s" % Query, "TotalCount")
+
+        with Writer.Statement("def ViewBuildingBlockCounts(self):"):
+            TotalCountQueriesUsingCelIdx = ['dNTPs', 'NTPs', 'AAs']
+            for Query in TotalCountQueriesUsingCelIdx:
+                BuildingBlock_Str = ""
+                for BuildingBlock in Comp.BuildingBlock.Name2Key_BuildingBlocks[Query]:
+                    BuildingBlock_Str += BuildingBlock
+                Writer.PrintStVa("Total # of %s (%s)" % (Query, BuildingBlock_Str),
+                                 "self.Metabolism.GetCounts(self.Cel.Idx_%s)" % Query)
+
+        with Writer.Statement("def ViewEnergyMoleculeCounts(self):"):
+            SingleCountQueries = ['ATP', 'NADH', 'NADPH']
+            for Query in SingleCountQueries:
+                Writer.PrintStVa("Total # of %s" % Query, "self.Metabolism.GetCounts(self.Cel.Idx_%s)[0]" % Query)
+
+        # TODO: TotalMass
+        with Writer.Statement("def ViewCellMass(self):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        with Writer.Statement("def SIM_ViewCellStateSummary(self):"):
+            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                Writer.PrintStrg("### Simulation Step Current Status ###")
+                Writer.Statement("self.ViewReplicationCompletion()")
+                Writer.Statement("self.ViewMacromoleculeCounts()")
+                Writer.Statement("self.ViewBuildingBlockCounts()")
+                Writer.Statement("self.ViewEnergyMoleculeCounts()")
+                Writer.Statement("self.ViewCellMass()")
+                Writer.BlankLine()
+
         with Writer.Statement("def SIM_CellDivision(self):"):
             Writer.Statement("self.CellDivision.ExecuteCellDivision()")
             if Writer.Switch4TestCellDivision:
@@ -259,6 +299,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             # Writer.Statement("self.SIM_ViewProcessSummaries()")
             # Writer.BlankLine()
 
+        # TODO: Replace the python while loop to tf.while loop
         with Writer.Statement("def Run(self):"):
             Writer.PrintStrg("Simulation Run Begins...")
             with Writer.Statement("while self.SimStepsExecuted < self.SimStepsRequested:"):
@@ -285,6 +326,7 @@ def Write_Simulation(Writer, Comp, ProGen):
                 # Display the molecular counts of molecules involved in reactions
                 if Writer.Switch4ProcessSummary:
                     Writer.Statement("self.SIM_ViewProcessSummaries()")
+                    Writer.Statement("self.SIM_ViewCellStateSummary()")
 
                 # Overwrite delta value for the applicable molecular counts
                 Writer.Statement("self.SIM_UpdateCounts()")
