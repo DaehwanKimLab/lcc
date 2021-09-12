@@ -734,19 +734,20 @@ class FComplex(FDataset):
 
 class FComplexation(FDataset):
     def __init__(self):
-        self.MolType_CPLXs = 'CPLX'
+        self.MolType_Complexations = 'Complexation'
 
-        self.ID_CPLXs = list()
-        self.ID2Idx_CPLXs = dict()
-        self.Rate_CPLXs = list()
-        self.Dir_RevCPLXs = 0  # Rev for Reversibility
+        self.ID_Complexations = list()
+        self.ID2Idx_Complexations = dict()
+        self.Rate_Complexations = list()
+        self.Dir_RevComplexations = 0  # Rev for Reversibility
 
 
-        self.ID_MolsInCPLXs = list()
-        self.ID2Idx_MolsInCPLXs = dict()
-        self.Coeff_MolsInCPLXs = list()
+        self.ID_MolsInComplexations = list()
+        self.ID2Idx_MolsInComplexations = dict()
+        self.Coeff_MolsInComplexations = list()
+        self.NUniq_MolsInComplexations = 0
 
-        self.NUniq_CPLXs = 0
+        self.NUniq_Complexations = 0
 
         self.IDModification = dict()
 
@@ -757,6 +758,7 @@ class FComplexation(FDataset):
         self.MolType_UnregisteredFromComplexation = 'MetabolitesUnregisteredFromComplexation'
         self.Count_UnregisteredFromComplexation = 0
         self.MW_UnregisteredFromComplexation = 0
+        self.NUniq_UnregisteredFromComplexation = 0
 
         super().__init__()
 
@@ -767,7 +769,7 @@ class FComplexation(FDataset):
         for Metabolite in Metabolites:
             self.ID_Metabolites.append(Metabolite[0][:-3])
 
-        CPLXs = Dataset['complexationReactions_large.tsv']
+        Complexations = Dataset['complexationReactions_large.tsv']
 
         # Remove molecules not listed in other flat data (mostly copied and pasted from wcs)
 
@@ -934,40 +936,40 @@ class FComplexation(FDataset):
             # 'MONOMER0-1843': 'ASPDECARBOX-MONOMER',   # CPLX0-2901
         }
 
-        CPLXs_Filtered = list()
-        CPLXs_Removed = list()
+        Complexations_Filtered = list()
+        Complexations_Removed = list()
         N_Filtered = 0
-        for Value in CPLXs:
+        for Value in Complexations:
             Filter = True
             for Mol in BlackList:
                 if Value[1].find(Mol) >= 0:
                     Filter = False
                     N_Filtered += 1
-                    CPLXs_Removed.append(Value)
+                    Complexations_Removed.append(Value)
                     break
             if Filter:
-                CPLXs_Filtered.append(Value)
-        assert len(CPLXs) == (len(CPLXs_Filtered) + len(CPLXs_Removed))
+                Complexations_Filtered.append(Value)
+        assert len(Complexations) == (len(Complexations_Filtered) + len(Complexations_Removed))
 
-        CPLXs = CPLXs_Filtered
+        Complexations = Complexations_Filtered
 
-        self.NUniq_CPLXs = len(CPLXs)
-        self.Dir_RevCPLXs = np.zeros(self.NUniq_CPLXs)
+        self.NUniq_Complexations = len(Complexations)
+        self.Dir_RevComplexations = np.zeros(self.NUniq_Complexations)
 
         # Build indices for stoichiometry matrix
         N_Mol_Total = 0
         N_Mol_Repeated = 0
-        for Value in CPLXs:
-            CPLXProcess, CPLXStoichiometry, CPLXID, CPLXDirection = Value
-            for MoleculeInfo in CPLXStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+        for Value in Complexations:
+            ComplexationProcess, ComplexationStoichiometry, ComplexationID, ComplexationDirection = Value
+            for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
                 for LabelDataPair in MoleculeInfo.split(','):
                     Label, Data = LabelDataPair.strip().split(': ')
                     if Label == '"molecule"':
                         N_Mol_Total += 1
                         Data = self.CheckIDForModification(Data.strip('"'))
-                        if Data not in self.ID_MolsInCPLXs:
-                            self.ID2Idx_MolsInCPLXs[Data] = len(self.ID_MolsInCPLXs)
-                            self.ID_MolsInCPLXs.append(Data)
+                        if Data not in self.ID_MolsInComplexations:
+                            self.ID2Idx_MolsInComplexations[Data] = len(self.ID_MolsInComplexations)
+                            self.ID_MolsInComplexations.append(Data)
                         else:
                             N_Mol_Repeated += 1
 
@@ -975,20 +977,21 @@ class FComplexation(FDataset):
                             if Data not in self.ID_UnregisteredFromComplexation:
                                 self.ID_UnregisteredFromComplexation.append(Data)
 
-        self.Count_UnregisteredFromComplexation = np.zeros(len(self.ID_UnregisteredFromComplexation))
-        self.MW_UnregisteredFromComplexation = np.zeros(len(self.ID_UnregisteredFromComplexation))   # TODO: get values from database
+        self.NUniq_UnregisteredFromComplexation = len(self.ID_UnregisteredFromComplexation)
+        self.Count_UnregisteredFromComplexation = np.zeros(self.NUniq_UnregisteredFromComplexation)
+        self.MW_UnregisteredFromComplexation = np.zeros(self.NUniq_UnregisteredFromComplexation)   # TODO: get values from database
 
-        self.NMax_CPLXMolParts = len(self.ID_MolsInCPLXs)
+        self.NMax_ComplexationMolParts = len(self.ID_MolsInComplexations)
 
-        for i, Value in enumerate(CPLXs):
-            CPLXProcess, CPLXStoichiometry, CPLXID, CPLXDirection = Value
-            assert CPLXID not in self.ID_CPLXs, '%s' % CPLXID
-            self.ID_CPLXs.append(CPLXID)
-            self.ID2Idx_CPLXs[CPLXID] = len(self.ID_CPLXs) # = i
-            self.Dir_RevCPLXs[i] = CPLXDirection
+        for i, Value in enumerate(Complexations):
+            ComplexationProcess, ComplexationStoichiometry, ComplexationID, ComplexationDirection = Value
+            assert ComplexationID not in self.ID_Complexations, '%s' % ComplexationID
+            self.ID_Complexations.append(ComplexationID)
+            self.ID2Idx_Complexations[ComplexationID] = len(self.ID_Complexations) # = i
+            self.Dir_RevComplexations[i] = ComplexationDirection
 
-            CoeffArray = np.zeros(self.NMax_CPLXMolParts)
-            for MoleculeInfo in CPLXStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+            CoeffArray = np.zeros(self.NMax_ComplexationMolParts)
+            for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
                 Coeff = None
                 Idx = None
                 for LabelDataPair in MoleculeInfo.split(','):
@@ -997,11 +1000,12 @@ class FComplexation(FDataset):
                         Coeff = Data
                     elif Label == '"molecule"':
                         MolID = self.CheckIDForModification(Data.strip('"'))
-                        Idx = self.ID2Idx_MolsInCPLXs[MolID]
+                        Idx = self.ID2Idx_MolsInComplexations[MolID]
 
                 CoeffArray[Idx] = Coeff
 
-            self.Coeff_MolsInCPLXs.append(CoeffArray)
+            self.Coeff_MolsInComplexations.append(CoeffArray)
+        self.NUniq_MolsInComplexations = len(self.ID_MolsInComplexations)
 
         self.AddToMaster(MasterDataset, self.ID_UnregisteredFromComplexation, self.MolType_UnregisteredFromComplexation, self.Count_UnregisteredFromComplexation, self.MW_UnregisteredFromComplexation)
 
@@ -1323,6 +1327,9 @@ class FMaster():
         self.Idx_Master_Proteins = list()
         self.Idx_Master_Complexes = list()
         self.Idx_Master_Metabolites = list()
+        self.Idx_Master_UnregisteredFromComplexation = list()
+
+        self.Idx_Master_MolsInComplexation = list()
 
     def SetUpData(self, Comp):
         self.SetUpMasterIndices(Comp)
@@ -1348,6 +1355,12 @@ class FMaster():
 
         self.Idx_Master_Metabolites = self.GetMolIdx(Comp.Metabolite.ID_Metabolites, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Metabolites) == Comp.Metabolite.NUniq_Metabolites
+
+        self.Idx_Master_UnregisteredFromComplexation = self.GetMolIdx(Comp.Complexation.ID_UnregisteredFromComplexation, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_UnregisteredFromComplexation) == Comp.Complexation.NUniq_UnregisteredFromComplexation
+
+        self.Idx_Master_MolsInComplexation = self.GetMolIdx(Comp.Complexation.ID_MolsInComplexations, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_MolsInComplexation) == Comp.Complexation.NUniq_MolsInComplexations
 
         for i, Idx_Master in enumerate(self.Idx_Master_RNAs):
             if i in Comp.RNA.Idx_mRNA:

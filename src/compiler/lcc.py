@@ -72,7 +72,7 @@ def WriteImport(Writer):
     Writer.Statement("from os import listdir")
     Writer.Statement("from argparse import ArgumentParser, FileType")
     Writer.Statement("import abc")
-
+    Writer.Statement("import csv")
     Writer.SetIndentLevel(tmpLevel)
     Writer.BlankLine()
 
@@ -96,6 +96,11 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4ShowDeltaCounts = False
     Writer.Switch4ProcessDebuggingMessages = False
     Writer.Switch4TestCellDivision = False
+
+    Writer.Switch4SaveAllCounts = False
+    Writer.Switch4SaveIndividualCounts = False
+    if Writer.Switch4SaveAllCounts or Writer.Switch4SaveSpecificCounts:
+        Writer.Switch4Save = True
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()

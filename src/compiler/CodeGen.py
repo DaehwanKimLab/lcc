@@ -53,6 +53,10 @@ class CodeWriter():
         self.Switch4ShowDeltaCounts = False
         self.Switch4TestCellDivision = False
 
+        self.Switch4Save = False
+        self.Switch4SaveAllCounts = False
+        self.Switch4SaveSpecificCounts = False
+
 
     def __enter__(self):
         self.IncreaseIndent()

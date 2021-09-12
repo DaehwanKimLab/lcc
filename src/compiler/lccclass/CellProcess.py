@@ -30,60 +30,56 @@ def Write_CellProcess(Writer):
             Writer.BlankLine()
 
         with Writer.Statement("def GetCounts(self, MolIdxs):"):
-            Writer.Gather___("Counts", "self.Cel.Counts", "MolIdxs")
-            Writer.Reshape__("Counts", "Counts", -1)
-            Writer.ReturnVar("Counts")
+            Writer.ReturnVar("self.Cel.GetCounts(MolIdxs)")
             Writer.BlankLine()
 
         with Writer.Statement("def GetDeltaCounts(self, MolIdxs):"):
-            Writer.Gather___("DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs")
-            Writer.Reshape__("DeltaCounts", "DeltaCounts", -1)
-            Writer.ReturnVar("DeltaCounts")
+            Writer.ReturnVar("self.Cel.GetDeltaCounts(MolIdxs)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs", "MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(MolIdxs, MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_RndIdx(self, MolIdxs):"):
-            Writer.OnesLike_("MolCounts_Ones", "MolIdxs", 'int32')
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "MolIdxs", "MolCounts_Ones")
+            Writer.OnesLike_("MolCounts", "MolIdxs", 'int32')
+            Writer.Statement("self.Cel.AddToDeltaCounts(MolIdxs, MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_dNTPs(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_dNTPs", "MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_dNTPs, MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_NTPs(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_NTPs", "MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_NTPs, MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_AAs(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_AAs", "MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_AAs, MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_DehydrationSynthesis(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_H2O, MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_Hydrolysis(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "-MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_H2O, -MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_PiRelease(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "-MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_Pi, -MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_Phosphorolysis(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "-MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_Pi, -MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_ATPConsumption(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_ATP", "-MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_ATP, -MolCounts)")
             Writer.BlankLine()
 
         with Writer.Statement("def AddToDeltaCounts_PPiRelease(self, MolCounts):"):
-            Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_Pi", "MolCounts")
+            Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_PPi, MolCounts)")
             Writer.BlankLine()
 
         # with Writer.Statement("def AddToDeltaCounts_Hydrolysis(self, MolCounts):"):

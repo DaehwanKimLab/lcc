@@ -309,3 +309,19 @@ def Write_CellState(Writer, Comp, ProGen):
         # with Writer.Statement("def AddToRateMatrix(self, Rate):"):
         #     Writer.Concat___("self.MX_Rates", "self.MX_Rates", "Rate")
         #     Writer.BlankLine()
+
+        with Writer.Statement("def GetCounts(self, MolIdxs):"):
+            Writer.Gather___("Counts", "self.Counts", "MolIdxs")
+            Writer.Reshape__("Counts", "Counts", -1)
+            Writer.ReturnVar("Counts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def GetDeltaCounts(self, MolIdxs):"):
+            Writer.Gather___("DeltaCounts", "self.DeltaCounts", "MolIdxs")
+            Writer.Reshape__("DeltaCounts", "DeltaCounts", -1)
+            Writer.ReturnVar("DeltaCounts")
+            Writer.BlankLine()
+
+        with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
+            Writer.ScatNdAdd("self.DeltaCounts", "self.DeltaCounts", "MolIdxs", "MolCounts")
+            Writer.BlankLine()

@@ -1,10 +1,43 @@
-# Simulation time request in seconds
-SimWallTimeRequested = 35 * 60
-SimStepsPrintResolution = 1
+import os
+import datetime
 
 # Comp is a short hand for CompilerData
 def Write_Simulation(Writer, Comp, ProGen):
+
+    # Simulation time request in seconds
+    SimWallTimeRequested = 35 * 60
+    SimStepsPrintResolution = 1
+
+    # Save File Configuration
+    if Writer.Switch4Save:
+        SavePath = os.path.realpath(Comp.SavePath)
+        ID = ''
+        Label = ''
+        Idx = ''
+        Type = ''
+
+        if Writer.Switch4SaveAllCounts:
+            Label = 'All'
+            ID = 'ID_Master.npy'
+            Type = 'Type_Master.npy'
+
+        elif Writer.Switch4SaveSpecificCounts:
+            Label = 'Specific'  # Change according to the object to save
+            ID = ''
+            Idx = ''
+            Type = ''
+
+        Path_ID = os.path.join(SavePath, ID)
+        Path_Idx = os.path.join(SavePath, Idx)
+        Path_Type = os.path.join(SavePath, Type)
+
+        DateTime = datetime.datetime.now().strftime('%Y%m%d-%H%M')
+        SaveFileName = SavePath + '/DL_EcoliSimulation_%s_%sCounts' % (DateTime, Label)
+        SaveFileName_Count = SaveFileName + '_Data.csv'
+        SaveFileName_Supplement = SaveFileName + '_Supplement.csv'
+
     Writer.BlankLine()
+
     with Writer.Statement("class FSimulation():"):
         with Writer.Statement("def __init__(self, Cel, Cst, Env, Exe, Dict_CellProcesses):"):
             Writer.Statement("# Define simulation parameters")
@@ -27,7 +60,6 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.Variable_("self.SimTimesSpeed", 0)
 
             Writer.Variable_("self.SimStepsPrintResolution", 0)
-
             Writer.BlankLine()
 
             Writer.LinkClObj('Cel')
@@ -217,10 +249,12 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def SIM_ViewProcessDebuggingMessages(self):"):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintStrg("# Simulation Step Process Debugging Message:")
-                for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                        Writer.PrintStrg("[%s]:" % ProcessID)
-                        Writer.Statement("self.%s.ViewProcessDebuggingMessages()" % ProcessID)
                 Writer.BlankLine()
+
+                for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                    Writer.PrintStrg("[%s]:" % ProcessID)
+                    Writer.Statement("self.%s.ViewProcessDebuggingMessages()" % ProcessID)
+                    Writer.BlankLine()
 
         with Writer.Statement("def SIM_ViewProcessSummaries(self):"):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
@@ -233,13 +267,16 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def ViewReplicationCompletion(self):"):
             Writer.PrintStVa("% Replication completion",
                              "self.Replication.DeterminePercentReplicationCompletion()")
+            Writer.BlankLine()
 
         with Writer.Statement("def ViewMacromoleculeCounts(self):"):
             TotalCountQueriesUsingCelMasterIdx = ['Genes', 'RNAs', 'Proteins', 'Complexes']
             for Query in TotalCountQueriesUsingCelMasterIdx:
-                Writer.Statement("Counts = self.Metabolism.GetCounts(self.Cel.Idx_Master_%s)" % Query)
+                Writer.Statement("Counts = self.Cel.GetCounts(self.Cel.Idx_Master_%s)" % Query)
                 Writer.ReduceSum("TotalCount", "Counts")
                 Writer.PrintStVa("Total # of %s" % Query, "TotalCount")
+                Writer.BlankLine()
+
 
         with Writer.Statement("def ViewBuildingBlockCounts(self):"):
             TotalCountQueriesUsingCelIdx = ['dNTPs', 'NTPs', 'AAs']
@@ -248,12 +285,14 @@ def Write_Simulation(Writer, Comp, ProGen):
                 for BuildingBlock in Comp.BuildingBlock.Name2Key_BuildingBlocks[Query]:
                     BuildingBlock_Str += BuildingBlock
                 Writer.PrintStVa("Total # of %s (%s)" % (Query, BuildingBlock_Str),
-                                 "self.Metabolism.GetCounts(self.Cel.Idx_%s)" % Query)
+                                 "self.Cel.GetCounts(self.Cel.Idx_%s)" % Query)
+                Writer.BlankLine()
 
         with Writer.Statement("def ViewEnergyMoleculeCounts(self):"):
             SingleCountQueries = ['ATP', 'NADH', 'NADPH']
             for Query in SingleCountQueries:
-                Writer.PrintStVa("Total # of %s" % Query, "self.Metabolism.GetCounts(self.Cel.Idx_%s)[0]" % Query)
+                Writer.PrintStVa("Total # of %s" % Query, "self.Cel.GetCounts(self.Cel.Idx_%s)[0]" % Query)
+                Writer.BlankLine()
 
         # TODO: TotalMass
         with Writer.Statement("def ViewCellMass(self):"):
@@ -276,6 +315,50 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.Statement("self.CellDivision.TestCellDivision()")
             Writer.BlankLine()
 
+        if Writer.Switch4Save:
+            with Writer.Statement("def GenerateSupplementaryInfoSaveFile(self):"):
+                with Writer.Statement("with open('%s', 'w', newline='') as SaveFile:" % SaveFileName_Supplement):
+                    Writer.Statement("ID = np.load(r'%s')" % Path_ID)
+                    Writer.Statement("Type = np.load(r'%s')" % Path_Type)
+                    Writer.Statement("Idx = np.arange(len(ID))")
+                    Writer.Statement("Writer_Save = csv.writer(SaveFile)")
+                    Writer.Statement("Writer_Save.writerow(list(np.array(ID)))")
+                    Writer.Statement("Writer_Save.writerow(list(np.array(Type)))")
+                    Writer.Statement("Writer_Save.writerow(list(np.array(Idx)))")
+                Writer.BlankLine()
+
+            with Writer.Statement("def GenerateHeaderRowInSaveFile(self):"):
+                with Writer.Statement("with open('%s', 'w', newline='') as SaveFile:" % SaveFileName_Count):
+                    Writer.Statement("Header = np.load(r'%s')" % Path_ID)
+                    Writer.Statement("Writer_Save = csv.writer(SaveFile)")
+                    Writer.Statement("Writer_Save.writerow(list(np.array(Header)))")
+                Writer.BlankLine()
+
+            with Writer.Statement("def AppendListAsRowInSaveFile(self, Matrix):"):
+                with Writer.Statement("with open('%s', 'a+', newline='') as SaveFile:" % SaveFileName_Count):
+                    Writer.Statement("Writer_Save = csv.writer(SaveFile)")
+                    Writer.Statement("Writer_Save.writerow(list(np.array(Matrix)))")
+                Writer.BlankLine()
+
+            with Writer.Statement("def SetUpIdxSave(self):"):
+                Writer.Pass_____()
+                Writer.BlankLine()
+
+            with Writer.Statement("def SIM_SaveCounts(self):"):
+                if Writer.Switch4SaveAllCounts:
+                    Writer.Statement("Count_Save = self.Cel.Counts")
+                    Writer.BlankLine()
+
+                elif Writer.Switch4SaveSpecificCounts:
+                    Writer.Statement("Idx_Save = self.SetUpIdxSave()")
+                    Writer.Statement("Count_Save = self.Cel.GetCounts(Idx_Save)")
+                    Writer.BlankLine()
+
+                # Save code
+                Writer.Statement("self.AppendListAsRowInSaveFile(Count_Save)")
+                Writer.PrintStrg("### Simulation Step Current Count Saved ###")
+                Writer.BlankLine()
+
         with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
             Writer.ScatNdUpd("FinalCount", "FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
             Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
@@ -293,6 +376,9 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.PrintStrg("Simulation Initialization Begins...")
             Writer.Statement("self.SetUpSimClock()")
             Writer.Statement("self.SIM_SetUpCellStateMatrices()")
+            if Writer.Switch4Save:
+                Writer.Statement("self.GenerateHeaderRowInSaveFile()")
+                Writer.Statement("self.GenerateSupplementaryInfoSaveFile()")
             Writer.PrintStrg("Simulation Initialization Completed.")
             Writer.BlankLine()
 
@@ -337,6 +423,9 @@ def Write_Simulation(Writer, Comp, ProGen):
 
                 # Writer.Statement("self.SIM_CellFusion()")
                 # Writer.BlankLine()
+
+                if Writer.Switch4Save:
+                    Writer.Statement("self.SIM_SaveCounts()")
 
                 # Apply post-simulation step corrections for selected reaction models:
                 if Writer.Switch4PostSimulationStepCorrection:
