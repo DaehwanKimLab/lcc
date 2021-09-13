@@ -1,7 +1,10 @@
-protein GltA(oxaloacetate + acetyl-CoA --> citrate);
+/* Define proteins */
+protein GltA(oxaloacetate + acetyl-CoA --> citrate); // GltA
 protein AcnA(citrate --> isocitrate);
 protein AcnB(citrate --> isocitrate);
 protein Icd(isocitrate --> keto-glutarate);
 protein SucA();
 protein SucB();
+
+// TCA
 pathway TCA = GltA --> AcnA | AcnB --> SucA + SucB --> GltA;

@@ -6,7 +6,7 @@ LLVM_BIN := $(shell ${LLVM_CONFIG} --bindir)
 #LLVM_LDFLAGS := $(shell ${LLVM_CONFIG} --ldflags)
 #LLVM_LIBS := $(shell ${LLVM_CONFIG} --libs core orcjit native)
 
-CXX=${LLVM_BIN}/clang++
+#CXX=${LLVM_BIN}/clang++
 
 CXXFLAGS = -std=c++11
 
