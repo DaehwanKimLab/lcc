@@ -53,3 +53,12 @@ protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
 
 uncharacterized FUM = FumA | FumB | FumC | FumD | FumE;
 pathway TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh -->;
+
+
+#-------------------------------------------------------
+
+pathway TCA {
+	description "TCA";
+	reaction_id r101013;
+	reaction GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh --> GltA;
+};

@@ -29,6 +29,9 @@
 "pathway"                     { return TOKEN(T_PATHWAY); }
 "experiment"                  { return TOKEN(T_EXPERIMENT); }
 "organism"                    { return TOKEN(T_ORGANISM); }
+"description"                 { return TOKEN(T_DESCRIPTION); }
+"reaction_id"                 { return TOKEN(T_REACTION_ID); }
+"reaction"                    { return TOKEN(T_REACTION); }
 "atp"                         { SAVE_TOKEN; return (T_ATP); }
 "co2"                         { SAVE_TOKEN; return (T_CO2); }
 "CoA"                         { SAVE_TOKEN; return (T_COA); }

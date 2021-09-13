@@ -155,16 +155,58 @@ class NPathwayDeclaration : public NStatement {
 public:
     const NIdentifier& Id;
 
-    NPathwayExpression& PathwayExpression;
+    NPathwayExpression* PathwayExpression;
+    NBlock* Block;
 
-    NPathwayDeclaration(const NIdentifier& InId, NPathwayExpression& InPathwayExpression) 
-        : Id(InId), PathwayExpression(InPathwayExpression) {}
+    NPathwayDeclaration(const NIdentifier& InId, NPathwayExpression* InPathwayExpression)
+        : Id(InId), PathwayExpression(InPathwayExpression), Block(nullptr) {}
+
+    /* New */
+    NPathwayDeclaration(const NIdentifier& InId, NBlock* InBlock)
+        : Id(InId), Block(InBlock), PathwayExpression(nullptr) {}
 
 
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayDeclaration("; Id.Print(os); os << std::endl;
-        PathwayExpression.Print(os);
+        if (PathwayExpression) PathwayExpression->Print(os);
+        if (Block) Block->Print(os);
         os << ")" << std::endl;
+    }
+};
+
+class NPathwayDescriptionStatement : public NStatement {
+public:
+    const std::string Description;
+
+    NPathwayDescriptionStatement(const std::string& InDescription)
+        : Description(InDescription) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NPathwayDescriptionStatement(" << Description << ")" << std::endl;
+    }
+};
+
+class NPathwayReactionIDStatement : public NStatement {
+public:
+    const NIdentifier& Id;
+
+    NPathwayReactionIDStatement(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NPathwayReactionIDStatement("; Id.Print(os); os << ")" << std::endl;
+    }
+};
+
+class NPathwayReactionStatement : public NStatement {
+public:
+    NPathwayExpression& PathwayExpression;
+
+    NPathwayReactionStatement(NPathwayExpression& InPathwayExpression)
+        : PathwayExpression(InPathwayExpression) {}
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NPathwayExpression("; PathwayExpression.Print(os); os << ")" << std::endl;
     }
 };
 
