@@ -168,3 +168,48 @@ public:
     }
 };
 
+class NOrganismDeclaration : public NStatement {
+public:
+    const NIdentifier& Id;
+    const std::string Description;
+
+    NOrganismDeclaration(const NIdentifier& InId, const std::string& InDescription)
+        : Id(InId), Description(InDescription) {}
+    NOrganismDeclaration(const NIdentifier& InId)
+        : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NOrganismDeclaration(";
+        Id.Print(os); os << ", " << Description << ")" << std::endl;
+    }
+
+};
+
+class NExperimentDeclaration : public NStatement {
+public:
+    const NIdentifier& Id;
+    const std::string Description;
+
+    NExperimentDeclaration(const NIdentifier& InId, const std::string& InDescription)
+        : Id(InId), Description(InDescription) {}
+    NExperimentDeclaration(const NIdentifier& InId)
+        : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NExperimentDeclaration(";
+        Id.Print(os); os << ", " << Description << ")" << std::endl;
+    }
+};
+
+class NDummyDeclaration : public NStatement {
+public:
+    const std::string& StringLiteral;
+
+    NDummyDeclaration(const std::string& InStringLiteral) : StringLiteral(InStringLiteral) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NDummyDeclaration(" << StringLiteral << ")" << std::endl;
+    }
+
+};
+

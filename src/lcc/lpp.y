@@ -27,7 +27,9 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	int Token;
 }
 
-%token <Token> T_PROTEIN T_PATHWAY
+%token <Token> T_PROTEIN T_PATHWAY T_EXPERIMENT T_ORGANISM
+
+%token <String> T_STRING_LITERAL
 
 %token <String> T_ATP T_CO2 T_OXALOACETATE T_ACETYL_COA T_COA
 %token <String> T_CITRATE T_ISOCITRATE T_KETO_GLUTARATE
@@ -46,6 +48,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <MolIdent> mol_ident
 %type <Reaction> protein_decl_args
 %type <PathwayExpr> pathway_expr pathway_decl_args
+%type <Stmt> organism_decl experiment_decl
 
 %right T_ARROW T_BIARROW
 %left T_PLUS
@@ -63,7 +66,15 @@ stmts          : stmt { $$ = new NBlock(); $$->Statements.push_back($<Stmt>1); }
 
 stmt           : protein_decl T_SEMIC
                | pathway_decl T_SEMIC
+			   | organism_decl T_SEMIC
+			   | experiment_decl T_SEMIC
                ;
+
+organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = new NOrganismDeclaration(*$2, *$3); delete $3; }
+               ;
+
+experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL { $$ = new NExperimentDeclaration(*$2, *$3); delete $3; }
+                ;
 
 protein_decl   : T_PROTEIN ident T_LPAREN protein_decl_args T_RPAREN 
                  { $$ = new NProteinDeclaration(*$2, *$4); }

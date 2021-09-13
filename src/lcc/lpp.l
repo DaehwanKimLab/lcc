@@ -18,7 +18,8 @@
 %%
 
 [ \t\n]                       { } /* White space */
-\"([^\\\"]|\\.)*\"            { } /* String literal */
+\"([^\\\"]|\\.)*\"            { yylval.String = new std::string(yytext + 1, yyleng - 2);  // remove first and last \", TODO: remove escape character
+                                return (T_STRING_LITERAL); } /* String literal */
 "//".*$                       { } /* Single line comment */
 "/*"                          { BEGIN(C_COMMENT); }
 <C_COMMENT>"*/"               { BEGIN(INITIAL); }
@@ -26,6 +27,8 @@
 <C_COMMENT>\n                 { }
 "protein"                     { return TOKEN(T_PROTEIN); }
 "pathway"                     { return TOKEN(T_PATHWAY); }
+"experiment"                  { return TOKEN(T_EXPERIMENT); }
+"organism"                    { return TOKEN(T_ORGANISM); }
 "atp"                         { SAVE_TOKEN; return (T_ATP); }
 "co2"                         { SAVE_TOKEN; return (T_CO2); }
 "CoA"                         { SAVE_TOKEN; return (T_COA); }
@@ -48,6 +51,8 @@
 "="                           { return TOKEN(T_EQUAL); }
 "|"                           { return TOKEN(T_OR); }
 ";"                           { return TOKEN(T_SEMIC); }
+"{"                           { return TOKEN(T_LBRACE); }
+"}"                           { return TOKEN(T_RBRACE); }
 .                             { printf("Unknown token!\n"); yyterminate(); }
 
 %%

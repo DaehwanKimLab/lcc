@@ -1,3 +1,10 @@
+
+/* Define template organism */
+organism ecoli "E-coli \"K-12 MG1655\"";
+
+/* Define experiment environment */
+experiment my_expr "TCA Cycle";
+
 /* Define proteins */
 protein GltA(oxaloacetate + acetyl-CoA --> citrate); // GltA
 protein AcnA(citrate --> isocitrate);
