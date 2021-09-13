@@ -356,7 +356,7 @@ def Write_Simulation(Writer, Comp, ProGen):
 
                 # Save code
                 Writer.Statement("self.AppendListAsRowInSaveFile(Count_Save)")
-                Writer.PrintStrg("### Simulation Step Current Count Saved ###")
+                # Writer.PrintStrg("### Simulation Step Current Count Saved ###")
                 Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
@@ -367,9 +367,10 @@ def Write_Simulation(Writer, Comp, ProGen):
 
         with Writer.Statement("def PostSimulationStepCorrection(self):"):
             Writer.Statement("self.Metabolism.ReplenishMetabolites()")
-            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("===== Post simulation step correction =====")
-                Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
+            if Writer.Switch4ProcessSummary:
+                with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                    Writer.PrintStrg("===== Post simulation step correction =====")
+                    Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
             Writer.BlankLine()
 
         with Writer.Statement("def Initialize(self):"):

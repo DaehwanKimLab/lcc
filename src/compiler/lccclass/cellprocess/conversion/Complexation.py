@@ -9,7 +9,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # Molecule indices for Molecular IDs
     # Idx_ClpP_SerineProtease = Comp.Master.ID2Idx_Master['EG10158-MONOMER']
 
-    ID_Mols = Comp.Complexation.ID_MolsInComplexations
+    ID_Mols = Comp.Complexation.ID_MolsInCPLXRXN
     Idx_Mols = list()
 
     for ID_Mol in ID_Mols:
@@ -31,7 +31,14 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
             Writer.Variable_("self.N_CPLXRXNsToRun", 0)
-            Writer.Variable_("self.Idx_MolsInComplexation_Local", 0)
+            Writer.Variable_("self.Idx_MolsInCPLXRXN_Local", 0)
+
+            Writer.Variable_("self.Bool_AllMolsInCPLXRXN", 0)
+            Writer.Variable_("self.Bool_ReactantsInComplexation", 0)
+            Writer.Variable_("self.Bin_ReactantsInComplexation", 0)
+            Writer.Variable_("self.Count_ReactantsPerReaction", 0)
+            Writer.Variable_("self.N_CoeffTotalPerReactant", 0)
+
             Writer.Variable_("self.Coeff_Complexation_Transposed", 0)
             Writer.BlankLine()
 
@@ -42,12 +49,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             # Local indices
             Writer.Variable_("self.N_CPLXRXNsToRun", N_CPLXRXNsToRun)
-            Writer.VarRange_("self.Idx_MolsInComplexation_Local", 0, NUniq_Mols)
+            Writer.VarRange_("self.Idx_MolsInCPLXRXN_Local", 0, NUniq_Mols)
             Writer.BlankLine()
 
             # Boolean and binary matrices for coefficient matrices
             # For all reactants and products
-            Writer.NotEqual_("self.Bool_MolsInComplexation", "self.Cel.Coeff_Complexation", 0)
+            Writer.NotEqual_("self.Bool_AllMolsInCPLXRXN", "self.Cel.Coeff_Complexation", 0)
 
             # For reactants only
             Writer.Less_____("self.Bool_ReactantsInComplexation", "self.Cel.Coeff_Complexation", 0)
@@ -61,14 +68,14 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.Transpose("self.Coeff_Complexation_Transposed", "self.Cel.Coeff_Complexation")
             Writer.Multiply_("Coeff_Reactants", "self.Bin_ReactantsInComplexation", "self.Cel.Coeff_Complexation")
-            Writer.ReduceSum("self.N_CoeffTotalPerReactants", "Coeff_Reactants", 1)
+            Writer.ReduceSum("self.N_CoeffTotalPerReactant", "Coeff_Reactants", 1)
 
             Writer.BlankLine()
 
         with Writer.Statement("def ExecuteProcess(self):"):
             Writer.Statement("self.ResetVariables()")
-            Writer.Statement("Count_MolsInComplexation = self.GetCounts(self.Cel.Idx_Master_MolsInComplexation)")
-            Writer.Statement("Idx_CPLXRXNAvailable, Weight_CPLXRXNAvailable = self.DetermineAvailableCPLXRXN(Count_MolsInComplexation)")
+            Writer.Statement("Count_MolsInCPLXRXN = self.GetCounts(self.Cel.Idx_Master_MolsInCPLXRXN)")
+            Writer.Statement("Idx_CPLXRXNAvailable, Weight_CPLXRXNAvailable = self.DetermineAvailableCPLXRXN(Count_MolsInCPLXRXN)")
             Writer.Statement("Idx_RndCPLXRXNToRun = self.PickRandomIndexFromPool_Weighted_Global(self.N_CPLXRXNsToRun, Idx_CPLXRXNAvailable, Weight_CPLXRXNAvailable)")
             Writer.Statement("Idx_MolsParticipatingInComplexation, Count_MolsParticipatingInComplexation = self.DetermineAmountOfMoleculesParticipatingInComplexation(Idx_RndCPLXRXNToRun)")
             Writer.Statement("self.AddToDeltaCounts(Idx_MolsParticipatingInComplexation, Count_MolsParticipatingInComplexation)")
@@ -78,28 +85,28 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineAvailableCPLXRXN(self, Count_MolsInComplexation):"):
-            Writer.Transpose("Count_MolsInComplexation", "Count_MolsInComplexation")
-            Writer.Statement("Bool_ReactionsAvailable = self.DetermineIdxOfAvailableCPLXRXN(Count_MolsInComplexation)")
+        with Writer.Statement("def DetermineAvailableCPLXRXN(self, Count_MolsInCPLXRXN):"):
+            Writer.Transpose("Count_MolsInCPLXRXN", "Count_MolsInCPLXRXN")
+            Writer.Statement("Bool_ReactionsAvailable = self.DetermineIdxOfAvailableCPLXRXN(Count_MolsInCPLXRXN)")
             Writer.GenIdx___("Idx_CPLXRXNAvailable", "Bool_ReactionsAvailable")
-            Writer.Statement("Weight_CPLXRXN = self.DetermineWeightOfAvailableCPLXRXN(Count_MolsInComplexation)")
+            Writer.Statement("Weight_CPLXRXN = self.DetermineWeightOfAvailableCPLXRXN(Count_MolsInCPLXRXN)")
             Writer.BoolMask_("Weight_CPLXRXNAvailable", "Weight_CPLXRXN", "Bool_ReactionsAvailable")
             Writer.ReturnVar("Idx_CPLXRXNAvailable", "Weight_CPLXRXNAvailable")
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineIdxOfAvailableCPLXRXN(self, Count_MolsInComplexation):"):
+        with Writer.Statement("def DetermineIdxOfAvailableCPLXRXN(self, Count_MolsInCPLXRXN):"):
             Writer.Comment__("Determine reactions with sufficient reactant count")
-            Writer.Greater__("Bool_CountsSufficient", "Count_MolsInComplexation", "-self.Cel.Coeff_Complexation")
+            Writer.Greater__("Bool_CountsSufficient", "Count_MolsInCPLXRXN", "-self.Cel.Coeff_Complexation")
             Writer.LogicAnd_("Bool_ReactantsWithSufficientCount", "self.Bool_ReactantsInComplexation", "Bool_CountsSufficient")
             Writer.NonZeros_("Count_ReactantsSufficientPerReaction", "Bool_ReactantsWithSufficientCount", 1)
             Writer.Equal____("Bool_ReactionsAvailable", "Count_ReactantsSufficientPerReaction", "self.Count_ReactantsPerReaction")
             Writer.ReturnVar("Bool_ReactionsAvailable")
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineWeightOfAvailableCPLXRXN(self, Count_MolsInComplexation):"):
+        with Writer.Statement("def DetermineWeightOfAvailableCPLXRXN(self, Count_MolsInCPLXRXN):"):
             Writer.Comment__("Determine counts of reactions with sufficient reactants")
             Writer.Negative_("Coeff_Complexation_ReactantsWithPositiveValues", "self.Cel.Coeff_Complexation")
-            Writer.Divide___("Count_ReactionsPossiblePerMolecule", "Count_MolsInComplexation", "Coeff_Complexation_ReactantsWithPositiveValues")
+            Writer.Divide___("Count_ReactionsPossiblePerMolecule", "Count_MolsInCPLXRXN", "Coeff_Complexation_ReactantsWithPositiveValues")
             Writer.RoundInt_("Count_ReactionsPossiblePerMolecule_Rounded", "Count_ReactionsPossiblePerMolecule")
             Writer.Multiply_("Count_ReactionsPossiblePerReactant", "self.Bin_ReactantsInComplexation", "Count_ReactionsPossiblePerMolecule_Rounded")
 
@@ -121,7 +128,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.MatrixMul("Count_MolsParticipatingInComplexation", "self.Coeff_Complexation_Transposed", "Count_Idx_CPLXRXNs")
             Writer.Statement("Count_MolsParticipatingInComplexation_ZerosRemoved = self.RemoveZeroElements(Count_MolsParticipatingInComplexation)")
             Writer.GenIdx___("Idx_MolsParticipatingInComplexation_Local", "Count_MolsParticipatingInComplexation")
-            Writer.Statement("Idx_MolsParticipatingInComplexation = self.IdxFromLocalToReference(Idx_MolsParticipatingInComplexation_Local, self.Cel.Idx_Master_MolsInComplexation)")
+            Writer.Statement("Idx_MolsParticipatingInComplexation = self.IdxFromLocalToReference(Idx_MolsParticipatingInComplexation_Local, self.Cel.Idx_Master_MolsInCPLXRXN)")
             Writer.ReturnVar("Idx_MolsParticipatingInComplexation", "Count_MolsParticipatingInComplexation_ZerosRemoved")
             Writer.BlankLine()
 

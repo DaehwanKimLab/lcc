@@ -258,14 +258,18 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
             Writer.Variable_("self.Idx_NADH", 0)
             Writer.Variable_("self.Idx_NADPH", 0)
-            Writer.Variable_("self.Count_MetabolitesInitial", 0)
             Writer.BlankLine()
 
             # Complexation
             Writer.Comment__("Complexation")
             Writer.BlankLine()
-            Writer.Variable_("self.Idx_MolsInComplexation", 0)
-            Writer.Variable_("self.Bool_ReactantsInComplexation", 0)
+            Writer.Variable_("self.Idx_MolsInCPLXRXN", 0)
+            Writer.BlankLine()
+
+            # Complexation
+            Writer.Comment__("Complexation")
+            Writer.BlankLine()
+            Writer.Variable_("self.Idx_MolsInEQM", 0)
             Writer.BlankLine()
 
         #     Writer.Statement("self.InitializeStoichiometryMatrix()")

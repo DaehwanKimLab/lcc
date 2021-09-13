@@ -357,6 +357,7 @@ def Compile(CodeFileNames,
 
         # Conversion
         Complexation,
+        # Equilibrium,
 
         # Modification
 

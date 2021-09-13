@@ -132,8 +132,11 @@ class FCompilerData:
         self.Complexation = FComplexation()
         self.Dict_DataClass['Complexation'] = self.Complexation
 
-        self.RXN = FReaction()
-        self.Dict_DataClass['RXN'] = self.RXN
+        self.Equilibrium = FEquilibrium()
+        self.Dict_DataClass['Equilibrium'] = self.Equilibrium
+
+        self.Metabolism = FMetabolism()
+        self.Dict_DataClass['Metabolism'] = self.Metabolism
 
         self.Master = FMaster()
         self.Dict_DataClass['Master'] = self.Master
