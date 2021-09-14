@@ -20,10 +20,10 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NStatement *Stmt;
 	NIdentifier *Ident;
 	NReaction *Reaction;
-	NMoleculeIdentifer *MolIdent;
+	NMoleculeIdentifier *MolIdent;
 	NPathwayExpression *PathwayExpr;
 
-	std::vector<std::shared_ptr<NMoleculeIdentifer>> *MolVec;
+	std::vector<std::shared_ptr<NMoleculeIdentifier>> *MolVec;
 	std::string *String;
 	int Token;
 }
@@ -105,9 +105,9 @@ pathway_decl_args : /* blank */ { $<Ident>$ = new NIdentifier(); }
                   ;
 
 pathway_expr   : ident { $<Ident>$ = new NIdentifier(*$1); delete $1; }
-               | pathway_expr T_PLUS pathway_expr  { $$ = new NPathwayExpression(*$1, *$3, $2); delete $1; delete $3; }
-               | pathway_expr T_OR pathway_expr    { $$ = new NPathwayExpression(*$1, *$3, $2); delete $1; delete $3; }
-               | pathway_expr T_ARROW pathway_expr { $$ = new NPathwayExpression(*$1, *$3, $2); delete $1; delete $3; }
+               | pathway_expr T_PLUS pathway_expr  { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
+               | pathway_expr T_OR pathway_expr    { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
+               | pathway_expr T_ARROW pathway_expr { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
                ;
 
 pathway_block  : T_LBRACE pathway_stmts T_RBRACE { $$ = $2; }
@@ -136,17 +136,17 @@ mol_expr       : mol_ident { $$ = new MoleculeList(); $$->emplace_back($<MolIden
                | mol_expr T_PLUS mol_ident { $1->emplace_back($<MolIdent>3); }
                ;
 	
-mol_ident      : T_ATP                  { $$ = new NMoleculeIdentifer(T_ATP, *$1); delete $1; }
-               | T_CO2                  { $$ = new NMoleculeIdentifer(T_CO2, *$1); delete $1; } 
-               | T_COA                  { $$ = new NMoleculeIdentifer(T_COA, *$1); delete $1; }
-               | T_OXALOACETATE         { $$ = new NMoleculeIdentifer(T_OXALOACETATE, *$1); delete $1; }
-               | T_ACETYL_COA           { $$ = new NMoleculeIdentifer(T_ACETYL_COA, *$1); delete $1; }
-               | T_CITRATE              { $$ = new NMoleculeIdentifer(T_CITRATE, *$1); delete $1; }
-               | T_ISOCITRATE           { $$ = new NMoleculeIdentifer(T_ISOCITRATE, *$1); delete $1; }
-               | T_KETO_GLUTARATE       { $$ = new NMoleculeIdentifer(T_KETO_GLUTARATE, *$1); delete $1; }
-               | T_SUCCINATE            { $$ = new NMoleculeIdentifer(T_SUCCINATE, *$1); delete $1; }
-               | T_FUMARATE             { $$ = new NMoleculeIdentifer(T_FUMARATE, *$1); delete $1; }
-               | T_MALATE               { $$ = new NMoleculeIdentifer(T_MALATE, *$1); delete $1; }
+mol_ident      : T_ATP                  { $$ = new NMoleculeIdentifier(T_ATP, *$1); delete $1; }
+               | T_CO2                  { $$ = new NMoleculeIdentifier(T_CO2, *$1); delete $1; }
+               | T_COA                  { $$ = new NMoleculeIdentifier(T_COA, *$1); delete $1; }
+               | T_OXALOACETATE         { $$ = new NMoleculeIdentifier(T_OXALOACETATE, *$1); delete $1; }
+               | T_ACETYL_COA           { $$ = new NMoleculeIdentifier(T_ACETYL_COA, *$1); delete $1; }
+               | T_CITRATE              { $$ = new NMoleculeIdentifier(T_CITRATE, *$1); delete $1; }
+               | T_ISOCITRATE           { $$ = new NMoleculeIdentifier(T_ISOCITRATE, *$1); delete $1; }
+               | T_KETO_GLUTARATE       { $$ = new NMoleculeIdentifier(T_KETO_GLUTARATE, *$1); delete $1; }
+               | T_SUCCINATE            { $$ = new NMoleculeIdentifier(T_SUCCINATE, *$1); delete $1; }
+               | T_FUMARATE             { $$ = new NMoleculeIdentifier(T_FUMARATE, *$1); delete $1; }
+               | T_MALATE               { $$ = new NMoleculeIdentifier(T_MALATE, *$1); delete $1; }
                ;
 
 ident          : T_IDENTIFIER { $$ = new NIdentifier(*$1); delete $1; } 

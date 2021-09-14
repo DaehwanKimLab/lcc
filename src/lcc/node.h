@@ -1,20 +1,29 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <memory>
 
 //#include <llvm/IR/Value.h>
 
 
 class NStatement;
-class NMoleculeIdentifer;
+class NMoleculeIdentifier;
 class NIdentifier;
 class NPathwayExpression;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
-typedef std::vector<std::shared_ptr<NMoleculeIdentifer>> MoleculeList;
+typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
 typedef std::vector<std::shared_ptr<NIdentifier>> IdentifierList;
 typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
 
+class NNode;
+class FTraversalContext {
+public:
+    std::queue<const NNode *> Queue;
+    std::ostream& OutStream;
+
+    FTraversalContext(std::ostream& InOutStream) : OutStream(InOutStream) {};
+};
 
 class NNode {
 public:
@@ -23,38 +32,49 @@ public:
 	virtual void Print(std::ostream& os) const {
 		os << "Node";
 	}
+
+    virtual void Visit(FTraversalContext& Context) const {
+        Context.OutStream << "Visit Node " << this << std::endl;
+    }
 };
 
 class NExpression : public NNode {
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NStatement : public NNode {
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 
 class NIdentifier : public NExpression {
 public:
     const std::string Name;
-    NIdentifier() {}
-    NIdentifier(const std::string& InName) : Name(InName) {}
 
-    virtual void Print(std::ostream& os) const override {
+    NIdentifier() {}
+
+    NIdentifier(const std::string &InName) : Name(InName) {}
+
+    virtual void Print(std::ostream &os) const override {
         os << "NIdentifier(" << Name << ")";
     }
+
+    virtual void Visit(FTraversalContext &Context) const override;
 };
 
-class NMoleculeIdentifer : public NExpression {
+class NMoleculeIdentifier : public NExpression {
 public:
     const int Id;
     const std::string Name;
 
-    NMoleculeIdentifer(int InId, const std::string& InName)
+    NMoleculeIdentifier(int InId, const std::string& InName)
         : Id(InId), Name(InName) {}
 
     virtual void Print(std::ostream& os) const override {
-        os << "NMoleculeIdentifer(" << Name << ", " << Id << ")";
+        os << "NMoleculeIdentifier(" << Name << ", " << Id << ")";
     }
 
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NBlock : public NExpression {
@@ -71,6 +91,7 @@ public:
         os << ")" << std::endl;
     }
 
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NReaction : public NExpression {
@@ -100,6 +121,7 @@ public:
 
     }
 
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 
@@ -109,33 +131,40 @@ public:
     const NIdentifier Id;
     NReaction Reaction;
 
-    NProteinDeclaration(const NIdentifier& InId, const NReaction& InReaction) 
-        : Id(InId), Reaction(InReaction) {}
-    NProteinDeclaration(const NIdentifier& InId)
-        : Id(InId) {}
+    NProteinDeclaration(const NIdentifier &InId, const NReaction &InReaction)
+            : Id(InId), Reaction(InReaction) {}
 
-    virtual void Print(std::ostream& os) const override {
-        os << "NProteinDeclaration: " ; Id.Print(os); os << ", ";
+    NProteinDeclaration(const NIdentifier &InId)
+            : Id(InId) {}
+
+    virtual void Print(std::ostream &os) const override {
+        os << "NProteinDeclaration: ";
+        Id.Print(os);
+        os << ", ";
         Reaction.Print(os);
         os << std::endl;
     }
+
+    virtual void Visit(FTraversalContext &Context) const override;
 };
 
 class NPathwayExpression : public NExpression {
 public:
     int Type;
-    NExpression Lhs;
-    NExpression Rhs;
+    std::shared_ptr<NExpression> Lhs;
+    std::shared_ptr<NExpression> Rhs;
 
-    NPathwayExpression(NPathwayExpression& InLhs, NPathwayExpression& InRhs, int InType) 
+    NPathwayExpression(NPathwayExpression* InLhs, NPathwayExpression* InRhs, int InType)
         : Lhs(InLhs), Rhs(InRhs), Type(InType) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayExpression(Type: " << Type << ", ";
-        Lhs.Print(os); os << ", ";
-        Rhs.Print(os); os << ")";
+        Lhs->Print(os); os << ", ";
+        Rhs->Print(os); os << ")";
         os << std::endl;
     }
+
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NPathwayDeclaration : public NStatement {
@@ -164,6 +193,8 @@ public:
         if (Block) Block->Print(os);
         os << ")" << std::endl;
     }
+
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NPathwayDescriptionStatement : public NStatement {
@@ -176,6 +207,8 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayDescriptionStatement(" << Description << ")" << std::endl;
     }
+
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NPathwayReactionIDStatement : public NStatement {
@@ -187,6 +220,8 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayReactionIDStatement("; Id.Print(os); os << ")" << std::endl;
     }
+
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 class NPathwayReactionStatement : public NStatement {
@@ -200,6 +235,8 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayExpression("; PathwayExpression.Print(os); os << ")" << std::endl;
     }
+    virtual void Visit(FTraversalContext& Context) const override;
+
 };
 
 class NOrganismDeclaration : public NStatement {
@@ -216,6 +253,7 @@ public:
         os << "NOrganismDeclaration(";
         Id.Print(os); os << ", " << Description << ")" << std::endl;
     }
+    virtual void Visit(FTraversalContext& Context) const override;
 
 };
 
@@ -233,6 +271,8 @@ public:
         os << "NExperimentDeclaration(";
         Id.Print(os); os << ", " << Description << ")" << std::endl;
     }
+    virtual void Visit(FTraversalContext& Context) const override;
+
 };
 
 class NDummyDeclaration : public NStatement {
@@ -244,6 +284,7 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "NDummyDeclaration(" << StringLiteral << ")" << std::endl;
     }
+    virtual void Visit(FTraversalContext& Context) const override;
 
 };
 

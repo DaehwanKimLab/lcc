@@ -12,8 +12,9 @@ CXXFLAGS = -std=c++14 -g
 
 
 SRCS = main.cpp \
-	   lpp.y.cpp \
-	   lpp.l.cpp
+       node.cpp \
+       lpp.y.cpp \
+       lpp.l.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 TARGET = parser
@@ -32,7 +33,7 @@ ${TARGET}: $(OBJS) node.h
 	${CXX} -o $@ $(OBJS)
 
 test: ${TARGET} sample.lpp
-	./${TARGET} < sample.lpp
+	./${TARGET} sample.lpp
 
 clean:
 	rm -f $(OBJS) lpp.y.cpp lpp.l.cpp lpp.y.hpp ${TARGET}
