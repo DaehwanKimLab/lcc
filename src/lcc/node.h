@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <memory>
 
 //#include <llvm/IR/Value.h>
 
@@ -9,10 +10,10 @@ class NMoleculeIdentifer;
 class NIdentifier;
 class NPathwayExpression;
 
-typedef std::vector<NStatement*> StatementList;
-typedef std::vector<NMoleculeIdentifer*> MoleculeList;
-typedef std::vector<NIdentifier*> IdentifierList;
-typedef std::vector<NPathwayExpression*> PathwayExprList;
+typedef std::vector<std::shared_ptr<NStatement>> StatementList;
+typedef std::vector<std::shared_ptr<NMoleculeIdentifer>> MoleculeList;
+typedef std::vector<std::shared_ptr<NIdentifier>> IdentifierList;
+typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
 
 
 class NNode {
@@ -33,7 +34,7 @@ class NStatement : public NNode {
 
 class NIdentifier : public NExpression {
 public:
-    std::string Name;
+    const std::string Name;
     NIdentifier() {}
     NIdentifier(const std::string& InName) : Name(InName) {}
 
@@ -61,11 +62,6 @@ public:
     StatementList Statements;
 
     NBlock() {}
-    virtual ~NBlock() {
-        for (auto& stmt : Statements) {
-            delete stmt;
-        }
-    }
 
     virtual void Print(std::ostream& os) const override {
         os << "NBlock(" << std::endl;
@@ -86,15 +82,6 @@ public:
     NReaction() : bBiDirection(false) {}
     NReaction(const MoleculeList& InReactants, const MoleculeList& InProducts, bool bInBiDirection)
         : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
-
-    virtual ~NReaction() {
-        for(auto& mol : Reactants) {
-            delete mol;
-        }
-        for(auto& mol : Products) {
-            delete mol;
-        }
-    }
 
     virtual void Print(std::ostream& os) const override {
         os << "NReaction(" << std::endl;
@@ -119,7 +106,7 @@ public:
 
 class NProteinDeclaration : public NStatement {
 public:
-    const NIdentifier& Id;
+    const NIdentifier Id;
     NReaction Reaction;
 
     NProteinDeclaration(const NIdentifier& InId, const NReaction& InReaction) 
@@ -137,8 +124,8 @@ public:
 class NPathwayExpression : public NExpression {
 public:
     int Type;
-    NExpression& Lhs;
-    NExpression& Rhs;
+    NExpression Lhs;
+    NExpression Rhs;
 
     NPathwayExpression(NPathwayExpression& InLhs, NPathwayExpression& InRhs, int InType) 
         : Lhs(InLhs), Rhs(InRhs), Type(InType) {}
@@ -153,7 +140,7 @@ public:
 
 class NPathwayDeclaration : public NStatement {
 public:
-    const NIdentifier& Id;
+    const NIdentifier Id;
 
     NPathwayExpression* PathwayExpression;
     NBlock* Block;
@@ -164,6 +151,11 @@ public:
     /* New */
     NPathwayDeclaration(const NIdentifier& InId, NBlock* InBlock)
         : Id(InId), Block(InBlock), PathwayExpression(nullptr) {}
+
+    virtual ~NPathwayDeclaration() {
+        if (Block) delete Block;
+        if (PathwayExpression) delete PathwayExpression;
+    }
 
 
     virtual void Print(std::ostream& os) const override {
@@ -188,7 +180,7 @@ public:
 
 class NPathwayReactionIDStatement : public NStatement {
 public:
-    const NIdentifier& Id;
+    const NIdentifier Id;
 
     NPathwayReactionIDStatement(const NIdentifier& InId) : Id(InId) {}
 
@@ -199,7 +191,7 @@ public:
 
 class NPathwayReactionStatement : public NStatement {
 public:
-    NPathwayExpression& PathwayExpression;
+    NPathwayExpression PathwayExpression;
 
     NPathwayReactionStatement(NPathwayExpression& InPathwayExpression)
         : PathwayExpression(InPathwayExpression) {}
@@ -212,7 +204,7 @@ public:
 
 class NOrganismDeclaration : public NStatement {
 public:
-    const NIdentifier& Id;
+    const NIdentifier Id;
     const std::string Description;
 
     NOrganismDeclaration(const NIdentifier& InId, const std::string& InDescription)
@@ -229,7 +221,7 @@ public:
 
 class NExperimentDeclaration : public NStatement {
 public:
-    const NIdentifier& Id;
+    const NIdentifier Id;
     const std::string Description;
 
     NExperimentDeclaration(const NIdentifier& InId, const std::string& InDescription)
@@ -245,7 +237,7 @@ public:
 
 class NDummyDeclaration : public NStatement {
 public:
-    const std::string& StringLiteral;
+    const std::string StringLiteral;
 
     NDummyDeclaration(const std::string& InStringLiteral) : StringLiteral(InStringLiteral) {}
 

@@ -8,7 +8,7 @@ LLVM_BIN := $(shell ${LLVM_CONFIG} --bindir)
 
 #CXX=${LLVM_BIN}/clang++
 
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=c++14 -g
 
 
 SRCS = main.cpp \
@@ -20,15 +20,15 @@ TARGET = parser
 
 all: ${TARGET}
 
-lpp.y.cpp: lpp.y
-	bison -d -o $@ $^
+lpp.y.cpp: lpp.y node.h
+	bison -d -o $@ $<
 
-lpp.y.hpp: lpp.y.cpp
+lpp.y.hpp: lpp.y.cpp node.h
 
 lpp.l.cpp: lpp.l lpp.y.hpp
 	flex -o $@ $<
 
-${TARGET}: $(OBJS)
+${TARGET}: $(OBJS) node.h
 	${CXX} -o $@ $(OBJS)
 
 test: ${TARGET} sample.lpp

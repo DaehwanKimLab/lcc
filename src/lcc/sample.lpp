@@ -16,6 +16,8 @@ protein SucB();
 // TCA
 pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh --> GltA;
 // New pathway format
+//
+
 pathway TCA {
 	description "TCA";
 	reaction_id r101013;
