@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <memory>
 
 NBlock *ProgramBlock;
 
@@ -20,9 +21,9 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NIdentifier *Ident;
 	NReaction *Reaction;
 	NMoleculeIdentifer *MolIdent;
-    NPathwayExpression *PathwayExpr;
+	NPathwayExpression *PathwayExpr;
 
-	std::vector<NMoleculeIdentifer*> *MolVec;
+	std::vector<std::shared_ptr<NMoleculeIdentifer>> *MolVec;
 	std::string *String;
 	int Token;
 }
@@ -63,8 +64,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 program        : stmts { ProgramBlock = $1; }
                ;
 
-stmts          : stmt { $$ = new NBlock(); $$->Statements.push_back($<Stmt>1); }
-               | stmts stmt { $1->Statements.push_back($<Stmt>2); } 
+stmts          : stmt { $$ = new NBlock(); $$->Statements.emplace_back($<Stmt>1); }
+               | stmts stmt { $1->Statements.emplace_back($<Stmt>2); }
                ;
 
 stmt           : protein_decl T_SEMIC
@@ -78,25 +79,25 @@ block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
                | T_LBRACE T_RBRACE { $$ = new NBlock(); }
 			   ;
 
-organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = new NOrganismDeclaration(*$2, *$3); delete $3; }
+organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = new NOrganismDeclaration(*$2, *$3); delete $2; delete $3; }
                ;
 
-experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL { $$ = new NExperimentDeclaration(*$2, *$3); delete $3; }
+experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL { $$ = new NExperimentDeclaration(*$2, *$3); delete $2; delete $3; }
                 ;
 
 protein_decl   : T_PROTEIN ident T_LPAREN protein_decl_args T_RPAREN 
-                 { $$ = new NProteinDeclaration(*$2, *$4); }
+                 { $$ = new NProteinDeclaration(*$2, *$4); delete $2; delete $4; }
                ;
 
 protein_decl_args : /* blank */ { $$ = new NReaction(); }
-                  | mol_expr T_ARROW mol_expr { $$ = new NReaction(*$1, *$3, false); }
-                  | mol_expr T_BIARROW mol_expr { $$ = new NReaction(*$1, *$3, true); }
+                  | mol_expr T_ARROW mol_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
+                  | mol_expr T_BIARROW mol_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
                   ;
 
-pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = new NPathwayDeclaration(*$2, $4); }
+pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = new NPathwayDeclaration(*$2, $4); delete $2; }
                ;
 
-new_pathway_decl : T_PATHWAY ident pathway_block { $$ = new NPathwayDeclaration(*$2, $3); }
+new_pathway_decl : T_PATHWAY ident pathway_block { $$ = new NPathwayDeclaration(*$2, $3); delete $2; }
                ;
 
 pathway_decl_args : /* blank */ { $<Ident>$ = new NIdentifier(); }
@@ -104,17 +105,17 @@ pathway_decl_args : /* blank */ { $<Ident>$ = new NIdentifier(); }
                   ;
 
 pathway_expr   : ident { $<Ident>$ = new NIdentifier(*$1); delete $1; }
-               | pathway_expr T_PLUS pathway_expr  { $$ = new NPathwayExpression(*$1, *$3, $2); }
-               | pathway_expr T_OR pathway_expr    { $$ = new NPathwayExpression(*$1, *$3, $2); }
-               | pathway_expr T_ARROW pathway_expr { $$ = new NPathwayExpression(*$1, *$3, $2); }
+               | pathway_expr T_PLUS pathway_expr  { $$ = new NPathwayExpression(*$1, *$3, $2); delete $1; delete $3; }
+               | pathway_expr T_OR pathway_expr    { $$ = new NPathwayExpression(*$1, *$3, $2); delete $1; delete $3; }
+               | pathway_expr T_ARROW pathway_expr { $$ = new NPathwayExpression(*$1, *$3, $2); delete $1; delete $3; }
                ;
 
 pathway_block  : T_LBRACE pathway_stmts T_RBRACE { $$ = $2; }
                | T_LBRACE T_RBRACE { $$ = new NBlock(); }
                ;
 
-pathway_stmts  : pathway_stmt { $$ = new NBlock(); $$->Statements.push_back($<Stmt>1); }
-               | pathway_stmts pathway_stmt { $1->Statements.push_back($<Stmt>2); }
+pathway_stmts  : pathway_stmt { $$ = new NBlock(); $$->Statements.emplace_back($<Stmt>1); }
+               | pathway_stmts pathway_stmt { $1->Statements.emplace_back($<Stmt>2); }
 			   ;
 
 pathway_stmt   : pathway_description_stmt T_SEMIC
@@ -125,14 +126,14 @@ pathway_stmt   : pathway_description_stmt T_SEMIC
 pathway_description_stmt : T_DESCRIPTION T_STRING_LITERAL { $$ = new NPathwayDescriptionStatement(*$2); delete $2; }
                          ;
 
-pathway_reaction_id_stmt : T_REACTION_ID ident { $$ = new NPathwayReactionIDStatement(*$2); }
+pathway_reaction_id_stmt : T_REACTION_ID ident { $$ = new NPathwayReactionIDStatement(*$2); delete $2; }
                          ;
 
-pathway_reaction_stmt    : T_REACTION pathway_decl_args { $$ = new NPathwayReactionStatement(*$2); }
+pathway_reaction_stmt    : T_REACTION pathway_decl_args { $$ = new NPathwayReactionStatement(*$2); delete $2; }
                          ;
 
-mol_expr       : mol_ident { $$ = new MoleculeList(); $$->push_back($<MolIdent>1); }
-               | mol_expr T_PLUS mol_ident { $1->push_back($<MolIdent>3); }
+mol_expr       : mol_ident { $$ = new MoleculeList(); $$->emplace_back($<MolIdent>1); }
+               | mol_expr T_PLUS mol_ident { $1->emplace_back($<MolIdent>3); }
                ;
 	
 mol_ident      : T_ATP                  { $$ = new NMoleculeIdentifer(T_ATP, *$1); delete $1; }
