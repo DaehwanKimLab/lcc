@@ -9,14 +9,14 @@ class FDataset():
     def __init__(self):
         self.Switch4DebugDataset = False
 
-
     @abstractmethod
     def SetUpData(self, Dataset, MasterDataset = None):
         pass
 
-    @abstractmethod
     def SaveData(self, SavePath):
-        pass
+        for Key, Value in self.__dict__.items():
+            SaveFileName = "%s/%s" % (SavePath, Key)
+            np.save('%s.npy' % SaveFileName, Value)
 
     def AddLocalizationToMolName(self, VariableName, Localization):
         assert VariableName[-3] != '[' and VariableName[-1] != ']', 'Variable already has a localization info to be added'
@@ -66,6 +66,24 @@ class FDataset():
             ListStr.append(i)
         return ListStr
 
+    def SetUpMetaboliteIDRef(self, Dataset):
+        # To handle unregistered metabolites
+        self.ID_MetabolitesRef = list()
+
+        Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
+        for Metabolite in Metabolites:
+            self.ID_MetabolitesRef.append(Metabolite[0][:-3])
+
+    def CheckIDForModification(self, ID, IDModificationRef):
+        if ID in IDModificationRef:
+            return IDModificationRef[ID]
+        else:
+            # if ID.find('+2') >= 0:
+            #     ID += '[c]'
+            if ID in self.ID_MetabolitesRef:
+                ID += '[c]'
+            return ID
+
 class FMetabolite(FDataset):
     def __init__(self):
         self.MolType_Metabolites = 'Metabolite'
@@ -112,11 +130,6 @@ class FMetabolite(FDataset):
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 
 class FChromosome(FDataset):
@@ -214,11 +227,6 @@ class FChromosome(FDataset):
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_Chromosomes, self.MW_DNABasePairs)
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 
 class FGene(FDataset):
@@ -323,11 +331,6 @@ class FGene(FDataset):
 
         assert max(self.Coord_Genes_Reindexed_Leftward) < Len_Genome, 'Reindexing failed'
         assert max(self.Coord_Genes_Reindexed_Rightward) < Len_Genome, 'Reindexing failed'
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 
 class FPromoter(FDataset):
@@ -440,11 +443,6 @@ class FPromoter(FDataset):
         #             TargetGeneSymbol = Name[:-2]
         #             print("Promoter '%s' contains an irregular naming style: %s" % (PromoterID, Name))
 
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
-
 
 class FRNA(FDataset):
     def __init__(self):
@@ -548,11 +546,6 @@ class FRNA(FDataset):
         # Add a single variable to the Master Dataset
         MasterDataset.ID2ID_Gene2RNA_Master = self.ID2ID_Gene2RNA
 
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
-
 
 class FProtein(FDataset):
     def __init__(self):
@@ -644,11 +637,6 @@ class FProtein(FDataset):
         #     if 'EG10844-MONOMER' in ProtMonomerID:
         #         print('GeneID: ',GeneID,'\tProtID: ',ProtMonomerID, '\tName: ', Name)
 
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
-
 
 class FComplex(FDataset):
     def __init__(self):
@@ -726,11 +714,6 @@ class FComplex(FDataset):
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
 
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
-
 
 class FComplexation(FDataset):
     def __init__(self):
@@ -741,7 +724,6 @@ class FComplexation(FDataset):
         self.Rate_Complexations = list()
         self.Dir_RevComplexations = 0  # Rev for Reversibility
 
-
         self.ID_MolsInCPLXRXN = list()
         self.ID2Idx_MolsInCPLXRXN = dict()
         self.Coeff_MolsInCPLXRXN = list()
@@ -750,9 +732,6 @@ class FComplexation(FDataset):
         self.NUniq_Complexations = 0
 
         self.IDModification = dict()
-
-        # To handle unregistered metabolites
-        self.ID_Metabolites = list()
 
         self.ID_UnregisteredFromCPLXRXN = list()   # Mostly additional metabolites
         self.MolType_UnregisteredFromCPLXRXN = 'MetabolitesUnregisteredFromCPLXRXN'
@@ -764,10 +743,7 @@ class FComplexation(FDataset):
 
     # Reactions and kinetic parameters (K values)
     def SetUpData(self, Dataset, MasterDataset=None):
-
-        Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
-        for Metabolite in Metabolites:
-            self.ID_Metabolites.append(Metabolite[0][:-3])
+        self.SetUpMetaboliteIDRef(Dataset)
 
         Complexations = Dataset['complexationReactions_large.tsv']
 
@@ -959,6 +935,7 @@ class FComplexation(FDataset):
         # Build indices for stoichiometry matrix
         N_Mol_Total = 0
         N_Mol_Repeated = 0
+        Data_NotInMasterDataset_NotAddedToUnregistered_Temp = list()
         for Value in Complexations:
             ComplexationProcess, ComplexationStoichiometry, ComplexationID, ComplexationDirection = Value
             for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
@@ -966,16 +943,26 @@ class FComplexation(FDataset):
                     Label, Data = LabelDataPair.strip().split(': ')
                     if Label == '"molecule"':
                         N_Mol_Total += 1
-                        Data = self.CheckIDForModification(Data.strip('"'))
+                        Data = self.CheckIDForModification(Data.strip('"'), self.IDModification)
+
+                        # Check for unregistered molecules
+                        if Data not in MasterDataset.ID_Master:
+                            Data = self.AddLocalizationToMolName(Data, '[c]')
+                            if Data not in MasterDataset.ID_Master:
+                                if Data not in self.ID_UnregisteredFromCPLXRXN:
+                                    self.ID_UnregisteredFromCPLXRXN.append(Data)
+                                else:
+                                    # Accumulate the original data without localization tag
+                                    Data_NotInMasterDataset_NotAddedToUnregistered_Temp.append(Data)
+
+                        # Data at this point has localization tag
                         if Data not in self.ID_MolsInCPLXRXN:
                             self.ID2Idx_MolsInCPLXRXN[Data] = len(self.ID_MolsInCPLXRXN)
                             self.ID_MolsInCPLXRXN.append(Data)
                         else:
                             N_Mol_Repeated += 1
 
-                        if Data not in MasterDataset.ID_Master:
-                            if Data not in self.ID_UnregisteredFromCPLXRXN:
-                                self.ID_UnregisteredFromCPLXRXN.append(Data)
+
 
         self.NUniq_UnregisteredFromCPLXRXN = len(self.ID_UnregisteredFromCPLXRXN)
         self.Count_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)
@@ -999,31 +986,18 @@ class FComplexation(FDataset):
                     if Label == '"coeff"':
                         Coeff = Data
                     elif Label == '"molecule"':
-                        MolID = self.CheckIDForModification(Data.strip('"'))
+                        MolID = self.CheckIDForModification(Data.strip('"'), self.IDModification)
+                        if MolID in self.ID_MetabolitesRef:
+                            MolID = self.AddLocalizationToMolName(MolID, '[c]')
+                        if MolID not in self.ID2Idx_MolsInCPLXRXN:
+                            MolID = self.AddLocalizationToMolName(MolID, '[c]')
                         Idx = self.ID2Idx_MolsInCPLXRXN[MolID]
-
                 CoeffArray[Idx] = Coeff
 
             self.Coeff_MolsInCPLXRXN.append(CoeffArray)
         self.NUniq_MolsInCPLXRXN = len(self.ID_MolsInCPLXRXN)
 
         self.AddToMaster(MasterDataset, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN, self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
-
-    def CheckIDForModification(self, ID):
-        if ID in self.IDModification:
-            return self.IDModification[ID]
-        else:
-            # if ID.find('+2') >= 0:
-            #     ID += '[c]'
-            if ID in self.ID_Metabolites:
-                ID += '[c]'
-
-            return ID
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 
 class FEquilibrium(FDataset):
@@ -1059,7 +1033,7 @@ class FEquilibrium(FDataset):
 
     # Reactions and kinetic parameters (K values)
     def SetUpData(self, Dataset, MasterDataset=None):
-
+        self.SetUpMetaboliteIDRef(Dataset)
         # Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
         # for Metabolite in Metabolites:
         #     self.ID_Metabolites.append(Metabolite[0][:-3])
@@ -1113,6 +1087,7 @@ class FEquilibrium(FDataset):
         # Build indices for stoichiometry matrix
         N_Mol_Total = 0
         N_Mol_Repeated = 0
+        Data_NotInMasterDataset_NotAddedToUnregistered_Temp = list()
         for Value in EQMRXNs:
             Process, Stoichiometry, EQMRXNID, EQMRXNDirection, ForwardRate, ReverseRate, OriginalReverseRate = Value
             for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
@@ -1120,16 +1095,25 @@ class FEquilibrium(FDataset):
                     Label, Data = LabelDataPair.strip().split(': ')
                     if Label == '"molecule"':
                         N_Mol_Total += 1
-                        Data = self.CheckIDForModification(Data.strip('"'))
+                        Data = self.CheckIDForModification(Data.strip('"'), self.IDModification)
+
+                        # Check for unregistered molecules
+                        if Data not in MasterDataset.ID_Master:
+                            Data = self.AddLocalizationToMolName(Data, '[c]')
+                            if Data not in MasterDataset.ID_Master:
+                                if Data not in self.ID_UnregisteredFromEQMXRXN:
+                                    self.ID_UnregisteredFromEQMRXN.append(Data)
+                                else:
+                                    # Accumulate the original data without localization tag
+                                    Data_NotInMasterDataset_NotAddedToUnregistered_Temp.append(Data)
+
+                        # Data at this point has localization tag
                         if Data not in self.ID_MolsInEQMRXN:
                             self.ID2Idx_MolsInEQMRXN[Data] = len(self.ID_MolsInEQMRXN)
                             self.ID_MolsInEQMRXN.append(Data)
                         else:
                             N_Mol_Repeated += 1
 
-                        if Data not in MasterDataset.ID_Master:
-                            if Data not in self.ID_UnregisteredFromEQMRXN:
-                                self.ID_UnregisteredFromEQMRXN.append(Data)
 
         self.NUniq_UnregisteredFromEQMRXN = len(self.ID_UnregisteredFromEQMRXN)
         self.Count_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)
@@ -1155,7 +1139,7 @@ class FEquilibrium(FDataset):
                     if Label == '"coeff"':
                         Coeff = Data
                     elif Label == '"molecule"':
-                        MolID = self.CheckIDForModification(Data.strip('"'))
+                        MolID = self.CheckIDForModification(Data.strip('"'), self.IDModification)
                         Idx = self.ID2Idx_MolsInEQMRXN[MolID]
 
                 CoeffArray[Idx] = Coeff
@@ -1165,21 +1149,6 @@ class FEquilibrium(FDataset):
 
         self.AddToMaster(MasterDataset, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN, self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
 
-    def CheckIDForModification(self, ID):
-        if ID in self.IDModification:
-            return self.IDModification[ID]
-        else:
-            # if ID.find('+2') >= 0:
-            #     ID += '[c]'
-            if ID in self.ID_Metabolites:
-                ID += '[c]'
-
-            return ID
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 class FMetabolism(FDataset):
     def __init__(self):
@@ -1187,22 +1156,30 @@ class FMetabolism(FDataset):
 
         self.ID_METRXNs = list()
         self.ID2Idx_METRXNs = dict()
-        self.Stoich_MolStoichDictInMETRXN = list()
-        self.ID_MolsInMETRXNs = list()
-        self.Stoich_MolsInMETRXNs = list() # Stoich for Stoichiometry
         self.Dir_RevMETRXNs = 0 # Rev for Reversibility
         self.ID_Enzs4METRXNs = list()
-        # self.ID_SubstratesInMETRXNs = list()
-        # self.Stoich_SubstratesInMETRXNs = list()
-        # self.ID_ProductsInMETRXNs = list()
-        # self.Stoich_ProductsInMETRXNs = list()
+
+        self.ID_MolsInMETRXN = list()
+        self.ID2Idx_MolsInMETRXN = dict()
+        self.Coeff_MolsInMETRXN = list()
+        self.NUniq_MolsInMETRXN = 0
 
         self.NUniq_METRXNs = 0
+
+        self.IDModification = dict()
+
+        self.ID_UnregisteredFromMETRXN = list()   # Mostly additional metabolites
+        self.MolType_UnregisteredFromMETRXN = 'MetabolitesUnregisteredFromMETRXN'
+        self.Count_UnregisteredFromMETRXN = 0
+        self.MW_UnregisteredFromMETRXN = 0
+        self.NUniq_UnregisteredFromMETRXN = 0
 
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
     def SetUpData(self, Dataset, MasterDataset = None):
+        self.SetUpMetaboliteIDRef(Dataset)
+
         METRXNs = Dataset['reactions.tsv']
 
         self.NUniq_METRXNs = len(METRXNs)
@@ -1212,53 +1189,66 @@ class FMetabolism(FDataset):
         ReversibilityBinaryDict['true'] = 1
         ReversibilityBinaryDict['false'] = 0
 
+        # Build indices for stoichiometry matrix
+        N_Mol_Total = 0
+        N_Mol_Repeated = 0
+        MolID_NotInMasterDataset_NotAddedToUnregistered_Temp = list()
+        for Value in METRXNs:
+            RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = Value
+            for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for MolIDCoeffPair in MoleculeInfo.strip().split(','):
+                    MolID, Coeff = MolIDCoeffPair.strip().split(': ')
+                    MolID = MolID[1:-1]
+                    N_Mol_Total += 1
+                    if MolID not in self.ID_MolsInMETRXN:
+                        self.ID2Idx_MolsInMETRXN[MolID] = len(self.ID_MolsInMETRXN)
+                        self.ID_MolsInMETRXN.append(MolID)
+                    else:
+                        N_Mol_Repeated += 1
+
+                    if MolID not in MasterDataset.ID_Master:
+                        if MolID not in self.ID_UnregisteredFromMETRXN:
+                            self.ID_UnregisteredFromMETRXN.append(MolID)
+                        else:
+                            MolID_NotInMasterDataset_NotAddedToUnregistered_Temp.append(MolID)
+
+        self.NUniq_UnregisteredFromMETRXN = len(self.ID_UnregisteredFromMETRXN)
+        self.Count_UnregisteredFromMETRXN = np.zeros(self.NUniq_UnregisteredFromMETRXN)
+        self.MW_UnregisteredFromMETRXN = np.zeros(self.NUniq_UnregisteredFromMETRXN)   # TODO: get values from database
+
+        self.NMax_METRXNMolParts = len(self.ID_MolsInMETRXN)
+
         for i, Value in enumerate(METRXNs):
-            METRXNID, METRXNStoichiometry, METRXNReversibility, METRXNEnzymeID = Value
-            assert METRXNID not in self.ID2Idx_METRXNs
-            self.ID2Idx_METRXNs[METRXNID] = len(self.ID_METRXNs) # = i
-            self.ID_METRXNs.append(METRXNID)
-            METRXNReversibilityBinary = ReversibilityBinaryDict[METRXNReversibility]
-            self.Dir_RevMETRXNs[i] = METRXNReversibilityBinary
-            if METRXNEnzymeID.strip('[').strip(']'):
-                METRXNEnzymeID = ast.literal_eval(METRXNEnzymeID.strip('[').strip(']'))
-                if type(METRXNEnzymeID) == tuple:
-                    for ID in METRXNEnzymeID:
+            RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = Value
+            assert RXNID not in self.ID2Idx_METRXNs
+            self.ID2Idx_METRXNs[RXNID] = len(self.ID_METRXNs) # = i
+            self.ID_METRXNs.append(RXNID)
+            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
+            self.Dir_RevMETRXNs[i] = RXNReversibilityBinary
+            if RXNEnzymeID.strip('[').strip(']'):
+                RXNEnzymeID = ast.literal_eval(RXNEnzymeID.strip('[').strip(']'))
+                if type(RXNEnzymeID) == tuple:
+                    for ID in RXNEnzymeID:
                         self.ID_Enzs4METRXNs.append(ID)
                 else:
-                    self.ID_Enzs4METRXNs.append(METRXNEnzymeID)
-            MolsInMETRXN = list()
-            StoichInMETRXN = list()
-            # Substrates = list()
-            # SubstrateStoichs = list()
-            # Products = list()
-            # ProductStoichs = list()
-            METRXNStoichiometry = ast.literal_eval(METRXNStoichiometry)
-            for Mol, Stoich in METRXNStoichiometry.items(): # METRXNStoichiometry is a string dictionary
-                MolsInMETRXN.append(Mol)
-                StoichInMETRXN.append(Stoich)
-            #     Mol = self.RemoveLocalizationFromMolName(Mol)
-            #     if Stoich < 0:
-            #         Substrates.append(Mol)
-            #         SubstrateStoichs.append(-Stoich)
-            #     if Stoich > 0:
-            #         Products.append(Mol)
-            #         ProductStoichs.append(Stoich)
-            # assert SubstrateStoichs or ProductStoichs > 0, '%s: The exported Stoich value has to be greater than 0' % METRXNID
-            self.Stoich_MolStoichDictInMETRXN.append(METRXNStoichiometry)
-            self.ID_MolsInMETRXNs.append(MolsInMETRXN)
-            self.Stoich_MolsInMETRXNs.append(StoichInMETRXN)
-            # self.ID_SubstratesInMETRXNs.append([Substrates])
-            # self.Stoich_SubstratesInMETRXNs.append([SubstrateStoichs])
-            # self.ID_ProductsInMETRXNs.append([Products])
-            # self.Stoich_ProductsInMETRXNs.append([ProductStoichs])
+                    self.ID_Enzs4METRXNs.append(RXNEnzymeID)
+            
+            CoeffArray = np.zeros(self.NMax_METRXNMolParts)
+            for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for MolIDCoeffPair in MoleculeInfo.split(','):
+                    MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
+                    MolID = MolID[1:-1]
+                    N_Mol_Total += 1
+                    Idx = self.ID2Idx_MolsInMETRXN[MolID]
+                    CoeffArray[Idx] = Coeff
 
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
+            self.Coeff_MolsInMETRXN.append(CoeffArray)
+        self.NUniq_MolsInMETRXN = len(self.ID_MolsInMETRXN)
+
+        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromMETRXN, self.MolType_UnregisteredFromMETRXN, self.Count_UnregisteredFromMETRXN, self.MW_UnregisteredFromMETRXN)
 
 
-class FEnzyme(FDataset):
+class FKinetic(FDataset):
     def __init__(self): # MasterLocalizations
         self.MolType_Kinetics = 'Kinetics'
 
@@ -1273,6 +1263,10 @@ class FEnzyme(FDataset):
 
         self.NUniq_EnzKinetics = 0
 
+        self.Kin_EnzID2Subs2KVals = dict()
+
+
+
         super().__init__() # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset = None):
@@ -1282,6 +1276,7 @@ class FEnzyme(FDataset):
         self.Temp_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
         self.Kcat_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
         self.Ki_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
+
         N_TempAbscent = 0
         N_KcatValueAbscent = 0
         N_KmValueAbscent = 0
@@ -1349,7 +1344,9 @@ class FEnzyme(FDataset):
                 if self.Switch4DebugDataset:
                     print('KiValueAbscent:', ReactionID)
         Km_ExportShort = self.NUniq_EnzKinetics - len(self.Km_EnzKinetics)
+
         assert len(self.Km_EnzKinetics) == self.NUniq_EnzKinetics, '%s Km exporting fell short' % Km_ExportShort
+
         if self.Switch4DebugDataset:
             print('N_Total:', self.NUniq_EnzKinetics)
             print('N_TempAbscent:', N_TempAbscent)
@@ -1365,11 +1362,6 @@ class FEnzyme(FDataset):
         # if type(temperature) == str:
         #     temperature = 25
         # constraint["kcatAdjusted"] = 2 ** ((37. - temperature) / 10.) * constraint["kcat"]
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 
 class FCompartment(FDataset):
@@ -1395,11 +1387,6 @@ class FCompartment(FDataset):
             self.Key_Compartments.append(Abbrev)
             self.ID_Compartments.append(ID)
             self.ID2Key_Compartments[ID] = Abbrev
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 
 class FBuildingBlock(FDataset):
@@ -1447,10 +1434,6 @@ class FBuildingBlock(FDataset):
             self.Key_AAs.append(BuildingBlock)
         self.Name2Key_BuildingBlocks['AAs'] = self.Key_AAs
 
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
 
 # Master Dataset is an exception to the SetUpData method
 class FMaster():
@@ -1483,9 +1466,12 @@ class FMaster():
         self.Idx_Master_Complexes = list()
         self.Idx_Master_Metabolites = list()
         self.Idx_Master_UnregisteredFromCPLXRXN = list()
+        self.Idx_Master_UnregisteredFromEQMRXN = list()
+        self.Idx_Master_UnregisteredFromMETRXN = list()
 
         self.Idx_Master_MolsInCPLXRXN = list()
         self.Idx_Master_MolsInEQMRXN = list()
+        self.Idx_Master_MolsInMETRXN = list()
 
     def SetUpData(self, Comp):
         self.SetUpMasterIndices(Comp)
@@ -1515,14 +1501,20 @@ class FMaster():
         self.Idx_Master_UnregisteredFromCPLXRXN = self.GetMolIdx(Comp.Complexation.ID_UnregisteredFromCPLXRXN, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_UnregisteredFromCPLXRXN) == Comp.Complexation.NUniq_UnregisteredFromCPLXRXN
 
+        self.Idx_Master_UnregisteredFromEQMRXN = self.GetMolIdx(Comp.Equilibrium.ID_UnregisteredFromEQMRXN, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_UnregisteredFromEQMRXN) == Comp.Equilibrium.NUniq_UnregisteredFromEQMRXN
+
+        self.Idx_Master_UnregisteredFromMETRXN = self.GetMolIdx(Comp.Metabolism.ID_UnregisteredFromMETRXN, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_UnregisteredFromMETRXN) == Comp.Metabolism.NUniq_UnregisteredFromMETRXN
+
         self.Idx_Master_MolsInCPLXRXN = self.GetMolIdx(Comp.Complexation.ID_MolsInCPLXRXN, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_MolsInCPLXRXN) == Comp.Complexation.NUniq_MolsInCPLXRXN
 
         self.Idx_Master_MolsInEQMRXN = self.GetMolIdx(Comp.Equilibrium.ID_MolsInEQMRXN, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_MolsInEQMRXN) == Comp.Equilibrium.NUniq_MolsInEQMRXN
 
-        # self.Idx_Master_MolsInMETRXN = self.GetMolIdx(Comp.Metabolism.ID_MolsInMETRXN, Comp.Master.ID2Idx_Master)
-        # assert len(self.Idx_Master_MolsInMETRXN) == Comp.Metabolism.NUniq_MolsInMETRXN
+        self.Idx_Master_MolsInMETRXN = self.GetMolIdx(Comp.Metabolism.ID_MolsInMETRXN, Comp.Master.ID2Idx_Master)
+        assert len(self.Idx_Master_MolsInMETRXN) == Comp.Metabolism.NUniq_MolsInMETRXN
 
         for i, Idx_Master in enumerate(self.Idx_Master_RNAs):
             if i in Comp.RNA.Idx_mRNA:
@@ -1563,16 +1555,14 @@ class FMaster():
                     ProteinIdx = self.ID2Idx_Master[ProteinID]
                     self.Idx2Idx_mRNA2ProteinMonomer_Master['%s' % str(RNAIdx)] = ProteinIdx
 
-
-
-    def SaveData(self, SavePath):
-        for Key, Value in self.__dict__.items():
-            SaveFileName = "%s/%s" % (SavePath, Key)
-            np.save('%s.npy' % SaveFileName, Value)
-
     def GetMolIdx(self, Molecules, MolIdxRef):
         MolIdxList = list()
         for Molecule in Molecules:
             MolIdx = MolIdxRef[Molecule]
             MolIdxList.append(MolIdx)
         return MolIdxList
+
+    def SaveData(self, SavePath):
+        for Key, Value in self.__dict__.items():
+            SaveFileName = "%s/%s" % (SavePath, Key)
+            np.save('%s.npy' % SaveFileName, Value)
