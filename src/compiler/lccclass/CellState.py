@@ -52,7 +52,7 @@ def Write_CellState(Writer, Comp, ProGen):
             SaveFiles = listdir(SavePath)
             FileTypes = ['npy']
 
-            SavedDataType4Int = ['Coeff', 'Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev']
+            SavedDataType4Int = ['Coeff', 'Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev', 'Const']
             SavedDataType4Float = ['Freq', 'MW']
             SavedDataTypeDict = dict()
             for SavedDataType in SavedDataType4Int:

@@ -138,6 +138,9 @@ class FCompilerData:
         self.Metabolism = FMetabolism()
         self.Dict_DataClass['Metabolism'] = self.Metabolism
 
+        self.Kinetics = FKinetics()
+        self.Dict_DataClass['Kinetics'] = self.Kinetics
+
         self.Master = FMaster()
         self.Dict_DataClass['Master'] = self.Master
 

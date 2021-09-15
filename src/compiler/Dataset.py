@@ -48,11 +48,11 @@ class FDataset():
         if MasterDataset.Switch4DebugMasterDataset:
             for Key, Value in self.__dict__.items():
                 if (Value == IDs) and (Key[:6] != 'Master'):
-                    print('MasterDataset addition completed: Class "%s"' % Key[3:])
+                    print('Master Dataset | ', 'addition completed: Class "%s"' % Key[3:])
 
                 if Key[:6] == 'Master':
                     LengthOfValue = len(Value)
-                    print('The length of "%s": %d' % (Key, LengthOfValue))
+                    print('Master Dataset | ', 'The length of "%s": %d' % (Key, LengthOfValue))
 
         MasterDataset.NUniq_Master = len(MasterDataset.ID_Master)
 
@@ -126,7 +126,7 @@ class FMetabolite(FDataset):
             if (int(Count) < 0) or (int(Count) > 2147483647):
                 Count_Temporary_Int32 = int(1e7)
                 self.Count_Metabolites[i] = Count_Temporary_Int32
-                print("Metabolite Dataset: The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s" % (Name, Count, Count_Temporary_Int32))
+                print("Metabolites | The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s" % (Name, Count, Count_Temporary_Int32))
 
         # Add to the Master Dataset
         self.AddToMaster(MasterDataset, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
@@ -174,7 +174,7 @@ class FChromosome(FDataset):
             # ChromosomeNTFreq
             NTCounts = np.array([ChromosomeSeq.count("A"), ChromosomeSeq.count("C"), ChromosomeSeq.count("G"), ChromosomeSeq.count("T")])
             if np.sum(NTCounts) != self.Len_ChromosomesInGenome[i]:
-                print("WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
+                print("Genome Dataset | ', 'WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
             NTFreq = NTCounts / self.Len_ChromosomesInGenome[i]
             self.Count_NTsInChromosomesInGenome.append(NTCounts)
             self.Freq_NTsInChromosomesInGenome.append(NTFreq)
@@ -312,7 +312,7 @@ class FGene(FDataset):
             elif (Coord >= 0) and (Coord <= Coord_Ori):
                 self.Coord_Genes_Reindexed[i] = Coord + (Len_Genome - Coord_Ori)
             else:
-                print("WARNING: Unidentifiable coordinate range", file=sys.stderr)
+                print("Genome Dataset | ', 'WARNING: Unidentifiable coordinate range", file=sys.stderr)
         assert max(self.Coord_Genes_Reindexed) < Len_Genome, 'Reindexing failed'
 
         # Buffering and organizing coordinates for bidirectional scanning during replication
@@ -378,9 +378,9 @@ class FPromoter(FDataset):
                 if 'ins' in Name:
                     print(Name)
                 if len(Name.split('-')) > 1 and not Name[:5] == 'p_WC_':
-                    print("Promoter '%s' contains '-' in XXXp promoter name format: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | ', 'Promoter '%s' contains '-' in XXXp promoter name format: %s" % (PromoterID, Name))
                 if len(Name.split('-')) > 2:
-                    print("Promoter '%s' contains more than two '-' in the promoter name: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | ', 'Promoter '%s' contains more than two '-' in the promoter name: %s" % (PromoterID, Name))
 
             TargetGeneSymbol = None
             TargetGeneSymbolsOnly = list()
@@ -423,16 +423,16 @@ class FPromoter(FDataset):
 
             if not TargetGeneSymbol:
                 if self.Switch4DebugDataset:
-                    print("Promoter %s contains an irregular name format to parse: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | ', 'Promoter %s contains an irregular name format to parse: %s" % (PromoterID, Name))
                 IrregularNames += 1
                 TargetGeneSymbol = Name
             # Check if the gene is expressed by multiple promoters
             if self.Switch4DebugDataset:
                 if TargetGeneSymbol in self.Sym_PromoterTargetGenes:
-                    print('The gene symbol %s is expressed by multiple promoters' % TargetGeneSymbol)
+                    print('Promoter Dataset | ', 'The gene symbol %s is expressed by multiple promoters' % TargetGeneSymbol)
             self.Sym_PromoterTargetGenes.append(TargetGeneSymbol)
         if self.Switch4DebugDataset:
-            print("# of Irregular Names: ", IrregularNames)
+            print("Promoter Dataset | ', '# of Irregular Names: ", IrregularNames)
             # print("Names containing '-#' pattern:", NamesWithDashDigit)
         # elif Name[-1] == ('p' or 'P'):
         #         assert len(Name) <= 7, Name
@@ -528,14 +528,14 @@ class FRNA(FDataset):
                 self.NUniq_miscRNAs += 1
                 self.Idx_miscRNA.append(i)
             else:
-                print('Warning: Unaccounted RNA type detected: ', Type)
+                print('RNA Dataset | ', 'Warning: Unaccounted RNA type detected: ', Type)
             self.ID2Type_RNA[RNAID] = Type
 
             # RNANTFreq
             NTTotalCount = len(Seq)
             NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
             if np.sum(NTCounts) != NTTotalCount:
-                print("WARNING: RNA seq may contain non-ACGU text.", file=sys.stderr)
+                print("RNA Dataset | ', 'WARNING: RNA seq may contain non-ACGU text.", file=sys.stderr)
             NTFreq = NTCounts / NTTotalCount
             self.Count_NTsInRNAs[i] = NTCounts
             self.Freq_NTsInRNAs.append(NTFreq)
@@ -616,7 +616,7 @@ class FProtein(FDataset):
             # ProteinAAFreq
             AATotalCount = len(Seq)
             if AATotalCount != self.Len_Proteins[i]:
-                print("WARNING: Protein length data may contain error.", file=sys.stderr)
+                print("Protein Dataset | ', 'WARNING: Protein length data may contain error.", file=sys.stderr)
             AACounts = np.array(AACount)
             AAFreq = AACounts / AATotalCount
             self.Freq_AAsInProteins.append(AAFreq)
@@ -708,7 +708,8 @@ class FComplex(FDataset):
                     # print('%s is not found in either Protein or Complex IDs' % ComplexID)
                     self.Count_Complexes.append(0)
 
-        print('# of Complexes missing Count info from wcm:', NoCountInfo)
+        if self.Switch4DebugDataset:
+            print('Complexes Dataset | ', '# of Complexes missing Count info from wcm:', NoCountInfo)
         self.NUniq_Complexes = len(self.ID_Complexes)
 
         # Add to the Master Dataset
@@ -962,11 +963,11 @@ class FComplexation(FDataset):
                         else:
                             N_Mol_Repeated += 1
 
-
-
         self.NUniq_UnregisteredFromCPLXRXN = len(self.ID_UnregisteredFromCPLXRXN)
         self.Count_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)
         self.MW_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)   # TODO: get values from database
+
+        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN, self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
 
         self.NMax_ComplexationMolParts = len(self.ID_MolsInCPLXRXN)
 
@@ -996,8 +997,6 @@ class FComplexation(FDataset):
 
             self.Coeff_MolsInCPLXRXN.append(CoeffArray)
         self.NUniq_MolsInCPLXRXN = len(self.ID_MolsInCPLXRXN)
-
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN, self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
 
 
 class FEquilibrium(FDataset):
@@ -1119,6 +1118,8 @@ class FEquilibrium(FDataset):
         self.Count_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)
         self.MW_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)   # TODO: get values from database
 
+        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN, self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
+
         self.NMax_EQMRXNMolParts = len(self.ID_MolsInEQMRXN)
 
         for i, Value in enumerate(EQMRXNs):
@@ -1146,8 +1147,6 @@ class FEquilibrium(FDataset):
 
             self.Coeff_MolsInEQMRXN.append(CoeffArray)
         self.NUniq_MolsInEQMRXN = len(self.ID_MolsInEQMRXN)
-
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN, self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
 
 
 class FMetabolism(FDataset):
@@ -1215,6 +1214,9 @@ class FMetabolism(FDataset):
         self.NUniq_UnregisteredFromMETRXN = len(self.ID_UnregisteredFromMETRXN)
         self.Count_UnregisteredFromMETRXN = np.zeros(self.NUniq_UnregisteredFromMETRXN)
         self.MW_UnregisteredFromMETRXN = np.zeros(self.NUniq_UnregisteredFromMETRXN)   # TODO: get values from database
+        
+        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromMETRXN, self.MolType_UnregisteredFromMETRXN, self.Count_UnregisteredFromMETRXN, self.MW_UnregisteredFromMETRXN)
+
 
         self.NMax_METRXNMolParts = len(self.ID_MolsInMETRXN)
 
@@ -1245,124 +1247,239 @@ class FMetabolism(FDataset):
             self.Coeff_MolsInMETRXN.append(CoeffArray)
         self.NUniq_MolsInMETRXN = len(self.ID_MolsInMETRXN)
 
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromMETRXN, self.MolType_UnregisteredFromMETRXN, self.Count_UnregisteredFromMETRXN, self.MW_UnregisteredFromMETRXN)
 
-
-class FKinetic(FDataset):
+class FKinetics(FDataset):
     def __init__(self): # MasterLocalizations
         self.MolType_Kinetics = 'Kinetics'
 
-        self.KinMETRXNID2KineticData = dict()
-        self.KinMETRXNClassIDs = list()
-        self.KinEnzymeIDs = list()
-        self.KinSubstrateIDs = list()
-        self.Temp_EnzKinetics = 0
-        self.Kcat_EnzKinetics = 0
-        self.Km_EnzKinetics = list()
-        self.Ki_EnzKinetics = 0
+        self.ID_KINRXN = list()
+        self.ID2Idx_RXNID2KIN = dict()
+        self.ID_Enzymes = list()
+        self.ID_Substrates = list()
+        self.Const_Temp = 0
+        self.Const_Kcat = 0
+        self.Const_Km = 0
+        self.Const_Ki = 0
+        # self.Type_RateEqn4KINRXN = 0
+        
+        self.ID_UnregisteredFromKINRXN = list()   # Mostly additional metabolites
+        self.MolType_UnregisteredFromKINRXN = 'MetabolitesUnregisteredFromKINRXN'
+        self.Count_UnregisteredFromKINRXN = 0
+        self.MW_UnregisteredFromKINRXN = 0
+        self.NUniq_UnregisteredFromKINRXN = 0
 
-        self.NUniq_EnzKinetics = 0
-
-        self.Kin_EnzID2Subs2KVals = dict()
-
-
+        self.NUniq_KINRXNs = 0
 
         super().__init__() # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset = None):
         # This kinetic table has no info on pH condition
-        EnzymeKinetics = Dataset['enzymeKinetics.tsv']
-        self.NUniq_EnzKinetics = len(EnzymeKinetics)
-        self.Temp_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
-        self.Kcat_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
-        self.Ki_EnzKinetics = np.zeros(self.NUniq_EnzKinetics)
+        Kinetics = Dataset['enzymeKinetics_Sorted_DL.tsv']
 
-        N_TempAbscent = 0
-        N_KcatValueAbscent = 0
-        N_KmValueAbscent = 0
-        N_KiValueAbscent = 0
-        N_KmValueUnmatched = 0
+        METRXNs = Dataset['reactions.tsv']
+        ID_METRXNs = list()
+        for METRXN in METRXNs:
+            ID_METRXNs.append(METRXN[0])   # METRXNID
 
-        for i, Value in enumerate(EnzymeKinetics):
+        Kinetics_Filtered = list()
+
+        N_RXNsNotInMETRXNID = 0
+        N_RXNsWithMoreThanOneSubstrate = 0
+        N_SubstratesNotInMasterID = 0
+
+        # Flatdata quality check for unregistered data 
+        for Value in Kinetics:
             PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs,\
             SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters,\
             CustomParameterConstants, CustomParameterConstantValues, CustomParameterVariables, CheckedBy = Value
-            self.KinMETRXNID2KineticData[ReactionID] = len(self.KinEnzymeIDs)
-            self.KinMETRXNClassIDs.append(ReactionClassID)
-            self.KinEnzymeIDs.append(EnzymeIDs)
-            # Exception handling: Substrates may be more than one. Same applies to Km values
-            SubstrateIDs_Rebuilt = list()
-            for Substrate in SubstrateIDs.split(','):
-                SubstrateIDs_Rebuilt.append(Substrate)
-            self.KinSubstrateIDs.append(SubstrateIDs_Rebuilt)
 
-            # Exception handling: Temp and K values are missing
-            Temp = Temp.replace('[', '').replace(']', '')
-            if Temp:
-                self.Temp_EnzKinetics[i] = float(Temp)
-            else:
-                N_TempAbscent += 1
-                if self.Switch4DebugDataset:
-                    print('TempAbscent:', ReactionID)
+            SubstrateIDs = ast.literal_eval(SubstrateIDs)
 
-            kcat = kcat.replace(',', '').replace('[', '').replace(']', '')
-            if kcat:
-                self.Kcat_EnzKinetics[i] = float(kcat)
-            else:
-                N_KcatValueAbscent += 1
-                if self.Switch4DebugDataset:
-                    print('KcatValueAbscent:', ReactionID)
+            # Check unregistered RXN ID
+            if ReactionID not in ID_METRXNs:
+                N_RXNsNotInMETRXNID += 1
+                print('Kinetics Dataset | ', 'ReactionID not in ID_METRXNs: ', ReactionID)
 
-            # In case there were more than one substrate
-            kM = kM.replace('[', '').replace(']', '')
-            N_SubstrateIDs = len(SubstrateIDs_Rebuilt)
-            if N_SubstrateIDs > 1:
-                if kM.count(',') >= 1:
-                    kM_Rebuilt = np.zeros(N_SubstrateIDs)
-                    for j, kM_value in enumerate(kM.split(',')):
-                        kM_Rebuilt[j] = float(kM_value)
-                    self.Km_EnzKinetics.append(kM_Rebuilt)
-                else:
-                    N_KmValueUnmatched += 1
+            # Check and add unregistered molecule IDs
+            if EnzymeIDs not in MasterDataset.ID_Master:   # All EnzymeIDs contain only one EnzymeID
+                self.ID_UnregisteredFromKINRXN.append(EnzymeIDs)
+                print('Kinetics Dataset | ', 'EnzymeID not in ID_Master: ', EnzymeIDs)
+
+            for i, SubstrateID in enumerate(SubstrateIDs):
+                SubstrateID += '[c]'
+                if SubstrateID not in MasterDataset.ID_Master:
+                    self.ID_UnregisteredFromKINRXN.append(SubstrateID)
+                    N_SubstratesNotInMasterID += 1
                     if self.Switch4DebugDataset:
-                        print(ReactionID, ': The number of kM values do not match the number of substrates')
-                    self.Km_EnzKinetics.append(0.0)
-            else:
-                if kM:
-                    self.Km_EnzKinetics.append(float(kM))
-                else:
-                    self.Km_EnzKinetics.append(0.0)
-                    N_KmValueAbscent += 1
-                    if self.Switch4DebugDataset:
-                        print('KmValueAbscent:', ReactionID)
+                        print('Kinetics Dataset | ', 'SubstrateID not in ID_Master: ', SubstrateID)
+                if i == 1:
+                    N_RXNsWithMoreThanOneSubstrate += 1
 
-            kI = kI.replace(',', '').replace('[', '').replace(']', '')
-            if kI:
-                self.Ki_EnzKinetics[i] = float(kI)
-            else:
-                N_KiValueAbscent += 1
-                if self.Switch4DebugDataset:
-                    print('KiValueAbscent:', ReactionID)
-        Km_ExportShort = self.NUniq_EnzKinetics - len(self.Km_EnzKinetics)
+            # Load data with the filters below
+            # Exclude for repeated Reaction ID
+            if ReactionID in self.ID2Idx_RXNID2KIN:
+                continue
 
-        assert len(self.Km_EnzKinetics) == self.NUniq_EnzKinetics, '%s Km exporting fell short' % Km_ExportShort
+            # Exclude the data requiring custom rate equations
+            elif RateEquationType != 'standard':
+                continue
+
+            Kinetics_Filtered.append(Value)
 
         if self.Switch4DebugDataset:
-            print('N_Total:', self.NUniq_EnzKinetics)
-            print('N_TempAbscent:', N_TempAbscent)
-            print('N_KcatValueAbscent:', N_KcatValueAbscent)
-            print('N_KmValueAbscent:', N_KmValueAbscent)
-            print('N_KiValueAbscent:', N_KiValueAbscent)
-            print('N_KmValueUnmatched:', N_KmValueUnmatched)
+            print('Kinetics Dataset | ', '# of RXNs not found in ID_METRXNIDs', N_RXNsNotInMETRXNID)
+            print('Kinetics Dataset | ', '# of RXNs with multiple substrate IDs: ', N_RXNsWithMoreThanOneSubstrate)
+            print('Kinetics Dataset | ', '# of Substrate IDs not found in ID_Master', N_SubstratesNotInMasterID)
 
-      # # Adjust kcat for temperature
-        # temperature = constraint["Temp"]
+        self.NUniq_UnregisteredFromKINRXN = len(self.ID_UnregisteredFromKINRXN)
+        self.Count_UnregisteredFromKINRXN = np.zeros(self.NUniq_UnregisteredFromKINRXN)
+        self.MW_UnregisteredFromKINRXN = np.zeros(self.NUniq_UnregisteredFromKINRXN)  # TODO: get values from database
+
+        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromKINRXN, self.MolType_UnregisteredFromKINRXN,
+                         self.Count_UnregisteredFromKINRXN, self.MW_UnregisteredFromKINRXN)
+
+        # Data extracting
+        Kinetics = Kinetics_Filtered
+
+        self.NUniq_KINRXNs = len(Kinetics)
+        self.Const_Temp = np.zeros(self.NUniq_KINRXNs)
+        self.Const_Kcat = np.zeros(self.NUniq_KINRXNs)
+        self.Const_Km = np.zeros(self.NUniq_KINRXNs)
+        self.Const_Ki = np.zeros(self.NUniq_KINRXNs)
+
+        # TODO: Reactions with multiple entries and multiple substrate IDs need to be fully compiled. Currently only one adjusted values have been filtered and loaded.
+        for i, Value in enumerate(Kinetics):
+            PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs, \
+            SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters, \
+            CustomParameterConstants, CustomParameterConstantValues, CustomParameterVariables, CheckedBy = Value
+
+            # TODO: Currently only accepting a single substrate from the flatdata
+            SubstrateIDs = ast.literal_eval(SubstrateIDs)
+            SubstrateID_Single = str(SubstrateIDs[0]) + '[c]'
+
+            if Temp == '':
+                Temp = 25
+            else:
+                Temp = int(Temp)
+
+            # TODO: Currently only accepting a single kM from the flatdata
+            kcat_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(self.ReplaceEmptyListWithValue(ast.literal_eval(kcat), 0))
+            kM_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(self.ReplaceEmptyListWithValue(ast.literal_eval(kM), 0))
+            kI_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(self.ReplaceEmptyListWithValue(ast.literal_eval(kI), 0))
+
+            # Adjust kcat based on temperature
+            if Temp != 37:
+                kcat_Adjusted = (2 ** ((37 - Temp) / 10)) * kcat_Adjusted
+
+            if self.Switch4DebugDataset:
+                print('Kinetics Dataset | ', '', 'Temp:', Temp)
+                print('Kinetics Dataset | ', '', 'kcat:', kcat, '|', 'kcat_Adjusted', kcat_Adjusted)
+                print('Kinetics Dataset | ', '', 'kM:', kM, '|', 'kM_Adjusted', kM_Adjusted)
+                print('Kinetics Dataset | ', '', 'kI:', kI, '|', 'kI_Adjusted', kI_Adjusted)
+
+            self.ID2Idx_RXNID2KIN[ReactionID] = len(self.ID_KINRXN)
+            self.ID_Enzymes.append(EnzymeIDs)
+            self.ID_Substrates.append(SubstrateID_Single)
+            self.Const_Temp[i] = 37
+            self.Const_Kcat[i] = kcat_Adjusted
+            self.Const_Km[i] = kM_Adjusted
+            self.Const_Ki[i] = kI_Adjusted
+
+        # N_TempAbscent = 0
+        # N_KcatValueAbscent = 0
+        # N_KmValueAbscent = 0
+        # N_KiValueAbscent = 0
+        # N_KmValueUnmatched = 0
         #
-        # # If temperature not reported, assume 25 C
-        # if type(temperature) == str:
-        #     temperature = 25
-        # constraint["kcatAdjusted"] = 2 ** ((37. - temperature) / 10.) * constraint["kcat"]
+        # for i, Value in enumerate(Kinetics):
+        #     PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs,\
+        #     SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters,\
+        #     CustomParameterConstants, CustomParameterConstantValues, CustomParameterVariables, CheckedBy = Value
+        #
+        #     self.Kin_METRXNID2KineticData[ReactionID] = len(self.KinEnzymeIDs)
+        #     self.Kin_METRXNClassIDs.append(ReactionClassID)
+        #     self.Kin_METRXNID
+        #     self.Kin_EnzymeIDs.append(EnzymeIDs)
+        #     # Exception handling: Substrates may be more than one. Same applies to Km values
+        #     SubstrateIDs_Rebuilt = list()
+        #     for Substrate in SubstrateIDs.split(','):
+        #         SubstrateIDs_Rebuilt.append(Substrate)
+        #     self.Kin_SubstrateIDs.append(SubstrateIDs_Rebuilt)
+        #
+        #     # Exception handling: Temp and K values are missing
+        #     Temp = Temp.replace('[', '').replace(']', '')
+        #     if Temp:
+        #         self.Temp_EnzKinetics[i] = float(Temp)
+        #     else:
+        #         N_TempAbscent += 1
+        #         if self.Switch4DebugDataset:
+        #             print('Kinetics Dataset | ', 'TempAbscent:', ReactionID)
+        #
+        #     kcat = kcat.replace(',', '').replace('[', '').replace(']', '')
+        #     if kcat:
+        #         self.Kcat_EnzKinetics[i] = float(kcat)
+        #     else:
+        #         N_KcatValueAbscent += 1
+        #         if self.Switch4DebugDataset:
+        #             print('Kinetics Dataset | ', 'KcatValueAbscent:', ReactionID)
+        #
+        #     # TODO:In case there were more than one substrate
+        #     kM = kM.replace('[', '').replace(']', '')
+        #     N_SubstrateIDs = len(SubstrateIDs_Rebuilt)
+        #     if N_SubstrateIDs > 1:
+        #         if kM.count(',') >= 1:
+        #             kM_Rebuilt = np.zeros(N_SubstrateIDs)
+        #             for j, kM_value in enumerate(kM.split(',')):
+        #                 kM_Rebuilt[j] = float(kM_value)
+        #             self.Km_EnzKinetics.append(kM_Rebuilt)
+        #         else:
+        #             N_KmValueUnmatched += 1
+        #             if self.Switch4DebugDataset:
+        #                 print('Kinetics Dataset | ', '', ReactionID, ': The number of kM values do not match the number of substrates')
+        #             self.Km_EnzKinetics.append(0.0)
+        #     else:
+        #         if kM:
+        #             self.Km_EnzKinetics.append(float(kM))
+        #         else:
+        #             self.Km_EnzKinetics.append(0.0)
+        #             N_KmValueAbscent += 1
+        #             if self.Switch4DebugDataset:
+        #                 print('Kinetics Dataset | ', 'KmValueAbscent:', ReactionID)
+        #
+        #     self.Km_EnzKineticsTemp = self.Km_EnzKinetics[-1]
+        #
+        #     # TODO: Ki calculations and custom equations have not been implemented
+        #     kI = kI.replace(',', '').replace('[', '').replace(']', '')
+        #     if kI:
+        #         self.Ki_EnzKinetics[i] = float(kI)
+        #     else:
+        #         N_KiValueAbscent += 1
+        #         if self.Switch4DebugDataset:
+        #             print('Kinetics Dataset | ', 'KiValueAbscent:', ReactionID)
+        #
+        # Km_ExportShort = self.NUniq_EnzKinetics - len(self.Km_EnzKinetics)
+        #
+        # assert len(self.Km_EnzKinetics) == self.NUniq_EnzKinetics, '%s Km exporting fell short' % Km_ExportShort
+        #
+        # if self.Switch4DebugDataset:
+        #     print('Kinetics Dataset | ', 'N_Total:', self.NUniq_EnzKinetics)
+        #     print('Kinetics Dataset | ', 'N_TempAbscent:', N_TempAbscent)
+        #     print('Kinetics Dataset | ', 'N_KcatValueAbscent:', N_KcatValueAbscent)
+        #     print('Kinetics Dataset | ', 'N_KmValueAbscent:', N_KmValueAbscent)
+        #     print('Kinetics Dataset | ', 'N_KiValueAbscent:', N_KiValueAbscent)
+        #     print('Kinetics Dataset | ', 'N_KmValueUnmatched:', N_KmValueUnmatched)
 
+    def ReplaceEmptyListWithValue(self, Variable, Value):
+        if Variable == list():
+            Variable = Value
+        elif Variable == str():
+            Variable = Value
+        return Variable
+
+    def ReduceListWithMoreThanTwoElementsToOne(self, Variable):
+        if isinstance(Variable, list):
+            Variable = Variable[0]
+        return Variable
 
 class FCompartment(FDataset):
     def __init__(self): # MasterLocalizations
@@ -1438,7 +1555,7 @@ class FBuildingBlock(FDataset):
 # Master Dataset is an exception to the SetUpData method
 class FMaster():
     def __init__(self):
-        self.Switch4DebugMasterDataset = True
+        self.Switch4DebugMasterDataset = False
 
         self.ID2Idx_Master = dict()
         self.Type_Master = list()
@@ -1526,7 +1643,7 @@ class FMaster():
             elif i in Comp.RNA.Idx_miscRNA:
                 self.Idx_Master_miscRNAs.append(Idx_Master)
             else:
-                print("Unmapped RNA type found in 'self.Idx_Master_RNA'")
+                print("Master Dataset | ', 'Unmapped RNA type found in 'self.Idx_Master_RNA'")
 
         assert len(self.Idx_Master_mRNAs) == Comp.RNA.NUniq_mRNAs
         assert len(self.Idx_Master_rRNAs) == Comp.RNA.NUniq_rRNAs
