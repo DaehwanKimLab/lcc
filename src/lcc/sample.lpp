@@ -1,11 +1,12 @@
-
 /* Define template organism */
 organism ecoli "E-coli \"K-12 MG1655\"";
 
 /* Define experiment environment */
+/* TODO */
 experiment my_expr "TCA Cycle";
 
 /* Define proteins */
+// FIXME:
 protein GltA(oxaloacetate + acetyl-CoA --> citrate); // GltA
 protein AcnA(citrate --> isocitrate);
 protein AcnB(citrate --> isocitrate);
