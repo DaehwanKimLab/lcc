@@ -17,7 +17,7 @@ SRCS = main.cpp \
        lpp.l.cpp
 
 OBJS = $(SRCS:.cpp=.o)
-TARGET = parser
+TARGET = lcc
 
 all: ${TARGET}
 
