@@ -13,14 +13,15 @@ protein AcnB(citrate --> isocitrate);
 protein Icd(isocitrate --> keto-glutarate);
 protein SucA();
 protein SucB();
+protein Fume();
 
 // TCA
-pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh --> GltA;
+pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
 // New pathway format
 //
 
 pathway TCA {
 	description "TCA";
 	reaction_id r101013;
-	reaction GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh --> GltA;
+	reaction GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
 };

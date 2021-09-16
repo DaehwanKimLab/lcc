@@ -18,6 +18,8 @@ syn match lppOperators display "+"
 syn match lppOperators display "-->"
 syn match lppOperators display "|"
 
+"<!-- LPP -->
+
 syn region lppString start='"' skip='\\"' end='"'
 
 syn region lppComment start="//" end="$" contains=lppTodo

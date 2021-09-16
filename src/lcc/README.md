@@ -19,3 +19,18 @@ Installing llvm development environment:
     make -j5
     make install 
     (or) DESTDIR=/home/somewhere make install
+
+
+
+## make token list from the metabolites.tsv
+
+	./generate_mol_keyword.py -m ../../data/metabolites.tsv -o etc/mol_list
+	
+    # make vim syntax file
+	./generate_mol_keyword.py -k etc/mol_list -v etc/lpp.vim -o ~/.vim/syntax/lpp.vim
+
+	./generate_mol_keyword.py -k etc/mol_list -l lpp.l.template -o lpp.l
+	./generate_mol_keyword.py -k etc/mol_list -y lpp.y.template -o lpp.y
+	make
+
+
