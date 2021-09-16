@@ -13,6 +13,7 @@ CXXFLAGS = -std=c++14 -g
 
 SRCS = main.cpp \
        node.cpp \
+       option.cpp \
        lpp.y.cpp \
        lpp.l.cpp
 
@@ -28,6 +29,11 @@ lpp.y.hpp: lpp.y.cpp node.h
 
 lpp.l.cpp: lpp.l lpp.y.hpp
 	flex -o $@ $<
+
+node.o: node.cpp node.h
+main.o: main.cpp node.h option.h
+option.o: option.cpp option.h
+
 
 ${TARGET}: $(OBJS) node.h
 	${CXX} -o $@ $(OBJS)
