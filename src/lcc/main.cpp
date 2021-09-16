@@ -51,7 +51,7 @@ public:
 };
 
 const char *VersionString = "1.0.0";
-
+using namespace std;
 void DumpNBlock(const NBlock* InProgramBlock) {
     if (!InProgramBlock) {
         return;
@@ -64,6 +64,13 @@ void DumpNBlock(const NBlock* InProgramBlock) {
     }
 }
 
+
+template <typename Derived>
+static bool is_class_of(const NNode *Node) {
+    Derived* DerivedNode = dynamic_cast<Derived *>(const_cast<NNode *>(Node));
+    return DerivedNode != nullptr;
+}
+
 void TraversalNode(NBlock* InProgramBlock)
 {
     FTraversalContext Context(std::cerr);
@@ -71,6 +78,24 @@ void TraversalNode(NBlock* InProgramBlock)
 
     while(!Context.Queue.empty()) {
         const NNode* node = Context.Queue.front(); Context.Queue.pop();
+
+        if (is_class_of<NProteinDeclaration>(node)) {
+            auto* Protein = dynamic_cast<const NProteinDeclaration *>(node);
+            cerr << "Protein: " << Protein->Id.Name << endl;
+
+        } else if (is_class_of<NPathwayDeclaration>(node)) {
+            auto* Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
+            cerr << "Pathway: " << Pathway->Id.Name << endl;
+
+        } else if (is_class_of<NOrganismDeclaration>(node)) {
+            auto* Organism = dynamic_cast<const NOrganismDeclaration *>(node);
+            cerr << "Organism: " << Organism->Id.Name << endl;
+            cerr << "  " << Organism->Description << endl;
+        } else if (is_class_of<NExperimentDeclaration>(node)) {
+            auto* Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
+            cerr << "Experiment: " << Experiment->Id.Name << endl;
+            cerr << "  " << Experiment->Description << endl;
+        }
 
         node->Visit(Context);
     }

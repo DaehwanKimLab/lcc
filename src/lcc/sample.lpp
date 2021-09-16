@@ -1,5 +1,5 @@
 /* Define template organism */
-organism ecoli "E-coli \"K-12 MG1655\"";
+organism ecoli "E-coli K-12 MG1655";
 
 /* Define experiment environment */
 /* TODO */
