@@ -30,6 +30,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 
 %token <Token> T_PROTEIN T_PATHWAY T_EXPERIMENT T_ORGANISM
 %token <Token> T_DESCRIPTION T_REACTION T_REACTION_ID
+%token <Token> T_PROPERTY
 
 %token <String> T_STRING_LITERAL
 
@@ -37,7 +38,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <String> T_CITRATE T_ISOCITRATE T_KETO_GLUTARATE
 %token <String> T_SUCCINATE T_FUMARATE T_MALATE
 
-%token <String> T_INTEGER T_DOUBLE T_IDENTIFIER
+%token <String> T_NUMBER T_INTEGER T_DOUBLE T_IDENTIFIER
 
 %token <Token> T_LPAREN T_RPAREN T_LBRACE T_RBRACE T_COMMA T_DOT
 %token <Token> T_PLUS T_MINUS T_ARROW T_BIARROW
@@ -53,6 +54,9 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <PathwayExpr> pathway_expr pathway_decl_args
 %type <Stmt> organism_decl experiment_decl pathway_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
+
+%type <Block> experiment_block experiment_stmts
+%type <Stmt> experiment_stmt property_stmt
 
 %right T_ARROW T_BIARROW
 %left T_PLUS
@@ -83,6 +87,7 @@ organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = new NOrganismDeclarati
                ;
 
 experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL { $$ = new NExperimentDeclaration(*$2, *$3); delete $2; delete $3; }
+                | T_EXPERIMENT ident experiment_block  { $$ = new NExperimentDeclaration(*$2, $3); delete $2; }
                 ;
 
 protein_decl   : T_PROTEIN ident T_LPAREN protein_decl_args T_RPAREN 
@@ -118,12 +123,12 @@ pathway_stmts  : pathway_stmt { $$ = new NBlock(); $$->Statements.emplace_back($
                | pathway_stmts pathway_stmt { $1->Statements.emplace_back($<Stmt>2); }
 			   ;
 
-pathway_stmt   : pathway_description_stmt T_SEMIC
-               | pathway_reaction_id_stmt T_SEMIC
-               | pathway_reaction_stmt T_SEMIC
+pathway_stmt   : pathway_description_stmt T_SEMIC { $$ = $1; }
+               | pathway_reaction_id_stmt T_SEMIC { $$ = $1; }
+               | pathway_reaction_stmt T_SEMIC { $$ = $1; }
                ;
 
-pathway_description_stmt : T_DESCRIPTION T_STRING_LITERAL { $$ = new NPathwayDescriptionStatement(*$2); delete $2; }
+pathway_description_stmt : T_DESCRIPTION T_STRING_LITERAL { $$ = new NDescriptionStatement(*$2); delete $2; }
                          ;
 
 pathway_reaction_id_stmt : T_REACTION_ID ident { $$ = new NPathwayReactionIDStatement(*$2); delete $2; }
@@ -131,6 +136,24 @@ pathway_reaction_id_stmt : T_REACTION_ID ident { $$ = new NPathwayReactionIDStat
 
 pathway_reaction_stmt    : T_REACTION pathway_decl_args { $$ = new NPathwayReactionStatement(*$2); delete $2; }
                          ;
+
+experiment_block : T_LBRACE experiment_stmts T_RBRACE { $$ = $2; }
+                 | T_LBRACE T_RBRACE { $$ = new NBlock(); }
+				 ;
+
+experiment_stmts : experiment_stmt { $$ = new NBlock(); $$->Statements.emplace_back($1); }
+                 | experiment_stmts experiment_stmt { $1->Statements.emplace_back($2); }
+				 ;
+
+experiment_stmt : T_DESCRIPTION T_STRING_LITERAL T_SEMIC { $$ = new NDescriptionStatement(*$2); delete $2; }
+                | property_stmt T_SEMIC { $$ = $1; }
+				;
+
+property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
+               | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
+               | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, $3->Name); delete $2, delete $3; }
+               ;
+
 
 mol_expr       : mol_ident { $$ = new MoleculeList(); $$->emplace_back($<MolIdent>1); }
                | mol_expr T_PLUS mol_ident { $1->emplace_back($<MolIdent>3); }

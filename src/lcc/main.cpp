@@ -98,6 +98,11 @@ void TraversalNode(NBlock* InProgramBlock)
             auto* Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
             cerr << "Experiment: " << Experiment->Id.Name << endl;
             cerr << "  " << Experiment->Description << endl;
+            if (Experiment->Block) {
+                for(const auto& stmt : Experiment->Block->Statements) {
+                    cerr << "  "; stmt->Print(cerr); cerr << endl;
+                }
+            }
         }
 
         node->Visit(Context);

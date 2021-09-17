@@ -33,6 +33,7 @@
 "description"                 { return TOKEN(T_DESCRIPTION); }
 "reaction_id"                 { return TOKEN(T_REACTION_ID); }
 "reaction"                    { return TOKEN(T_REACTION); }
+"property"                    { return TOKEN(T_PROPERTY); }
 "atp"                         { SAVE_TOKEN; return T_ATP; }
 "co2"                         { SAVE_TOKEN; return T_CO2; }
 "CoA"                         { SAVE_TOKEN; return T_COA; }
@@ -46,6 +47,7 @@
 "malate"                      { SAVE_TOKEN; return T_MALATE; }
 [a-zA-Z_][a-zA-Z0-9_-]*       { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
+("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }
 ")"                           { return TOKEN(T_RPAREN); }
 "+"                           { return TOKEN(T_PLUS); }

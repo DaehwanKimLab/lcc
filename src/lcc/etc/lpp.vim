@@ -10,6 +10,7 @@
 syn keyword lppTodo contained TODO FIXME XXX NOTE
 syn keyword lppTopKeyword organism experiment protein pathway
 syn keyword lppTopKeyword description reaction_id reaction
+syn keyword lppTopKeyword property
 syn keyword lppMolecule oxaloacetate citrate
 syn keyword lppMolecule isocitrate
 syn match lppMolecule display "keto-glutarate"

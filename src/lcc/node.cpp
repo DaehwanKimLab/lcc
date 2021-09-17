@@ -57,8 +57,8 @@ void NPathwayDeclaration::Visit(FTraversalContext &Context) const {
 }
 
 
-void NPathwayDescriptionStatement::Visit(FTraversalContext &Context) const {
-//    Context.OutStream << "PathwayDescription(" << Description << ")" << std::endl;
+void NDescriptionStatement::Visit(FTraversalContext &Context) const {
+//    Context.OutStream << "Description(" << Description << ")" << std::endl;
 }
 
 void NPathwayReactionIDStatement::Visit(FTraversalContext &Context) const {
@@ -75,6 +75,10 @@ void NOrganismDeclaration::Visit(FTraversalContext &Context) const {
 
 void NExperimentDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Experiment(" << Id.Name << ", " << Description << ")" << std::endl;
+    if (Block) Context.Queue.push(Block.get());
+}
+
+void NPropertyStatement::Visit(FTraversalContext& Context) const {
 }
 
 void NDummyDeclaration::Visit(FTraversalContext &Context) const {

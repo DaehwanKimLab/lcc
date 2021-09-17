@@ -197,15 +197,15 @@ public:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
-class NPathwayDescriptionStatement : public NStatement {
+class NDescriptionStatement : public NStatement {
 public:
     const std::string Description;
 
-    NPathwayDescriptionStatement(const std::string& InDescription)
+    NDescriptionStatement(const std::string& InDescription)
         : Description(InDescription) {}
 
     virtual void Print(std::ostream& os) const override {
-        os << "NPathwayDescriptionStatement(" << Description << ")" << std::endl;
+        os << "Description: " << Description;
     }
 
     virtual void Visit(FTraversalContext& Context) const override;
@@ -260,16 +260,37 @@ public:
 class NExperimentDeclaration : public NStatement {
 public:
     const NIdentifier Id;
+
     const std::string Description;
+    std::shared_ptr<NBlock> Block;
 
     NExperimentDeclaration(const NIdentifier& InId, const std::string& InDescription)
-        : Id(InId), Description(InDescription) {}
+        : Id(InId), Description(InDescription), Block(nullptr) {}
     NExperimentDeclaration(const NIdentifier& InId)
-        : Id(InId) {}
+        : Id(InId), Block(nullptr) {}
+    /* New */
+    NExperimentDeclaration(const NIdentifier& InId, NBlock* InBlock)
+        : Id(InId), Block(InBlock) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "NExperimentDeclaration(";
         Id.Print(os); os << ", " << Description << ")" << std::endl;
+    }
+    virtual void Visit(FTraversalContext& Context) const override;
+
+};
+
+class NPropertyStatement : public NStatement {
+public:
+    const std::string Key;
+    const std::string Value;
+
+    NPropertyStatement(const std::string& InKey, const std::string& InValue)
+        : Key(InKey), Value(InValue) {}
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Property(" << Key << "): " << Value;
     }
     virtual void Visit(FTraversalContext& Context) const override;
 

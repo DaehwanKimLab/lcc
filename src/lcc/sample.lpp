@@ -3,7 +3,11 @@ organism ecoli "E-coli K-12 MG1655";
 
 /* Define experiment environment */
 /* TODO */
-experiment my_expr "TCA Cycle";
+experiment my_expr {
+	description "TCA Cycle";
+	property temperature 37.0;
+	property medium LB;
+};
 
 /* Define proteins */
 // FIXME:
