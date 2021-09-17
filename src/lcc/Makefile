@@ -15,6 +15,7 @@ SRCS = main.cpp \
        node.cpp \
        option.cpp \
        lpp.y.cpp \
+       context.cpp \
        lpp.l.cpp
 
 OBJS = $(SRCS:.cpp=.o)
@@ -33,6 +34,7 @@ lpp.l.cpp: lpp.l lpp.y.hpp
 node.o: node.cpp node.h
 main.o: main.cpp node.h option.h
 option.o: option.cpp option.h
+context.o: context.cpp
 
 
 ${TARGET}: $(OBJS) node.h

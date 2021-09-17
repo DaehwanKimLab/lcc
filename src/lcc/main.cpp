@@ -7,12 +7,14 @@
 
 #include "node.h"
 #include "option.h"
+#include "context.h"
 
 extern NBlock* ProgramBlock;
 extern int yyparse();
 extern int yylex_destroy();
 extern FILE* yyin;
 
+FOption Option;
 
 class FExperiment {
 public:
@@ -115,7 +117,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    FOption Option;
     if (Option.Parse(argc, argv)) {
         Option.Usage(argv[0]);
         return -1;
@@ -153,6 +154,19 @@ int main(int argc, char *argv[])
 
         delete ProgramBlock;
     }
+
+	// Load genes.tsv
+	{
+		FTable GeneTable;
+
+		GeneTable.LoadFromTSV((Option.DataPaths[0] + "/genes.tsv").c_str());
+
+
+		GeneTable.Dump();
+
+
+
+	}
 
     return 0;
 }
