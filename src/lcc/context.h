@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 
+#include "option.h"
 
 typedef std::map<std::string, std::string> FTableRecord;
 
@@ -21,9 +22,9 @@ public:
 class FCompilerContext {
 public:
 
+    void Init(const FOption& InOption);
 
-
-
+    FTable GeneTable;
 };
 
 #endif /* LCC_CONTEXT_H */

@@ -15,6 +15,7 @@ extern int yylex_destroy();
 extern FILE* yyin;
 
 FOption Option;
+FCompilerContext Context;
 
 class FExperiment {
 public:
@@ -157,15 +158,8 @@ int main(int argc, char *argv[])
 
 	// Load genes.tsv
 	{
-		FTable GeneTable;
-
-		GeneTable.LoadFromTSV((Option.DataPaths[0] + "/genes.tsv").c_str());
-
-
-		GeneTable.Dump();
-
-
-
+        Context.Init(Option);
+		Context.GeneTable.Dump();
 	}
 
     return 0;

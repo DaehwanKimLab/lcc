@@ -66,13 +66,18 @@ void FTable::Dump()
 {
 	int index = 0;
 	for(const auto& Record: Records) {
-		cerr << index++ << endl;
+		cout << index++ << endl;
 		for(const auto& it : Record) {
-			cerr << "  " << it.first << " ==> " << it.second << endl;
+			cout << "  " << it.first << " ==> " << it.second << endl;
 		}
-
-
 	}
+}
 
 
+
+void FCompilerContext::Init(const FOption& InOption)
+{
+    if (InOption.DataPaths.size() > 0) {
+        GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/genes.tsv").c_str());
+    }
 }
