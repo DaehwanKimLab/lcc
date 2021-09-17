@@ -15,6 +15,7 @@ public:
 
 	void LoadFromTSV(const char *Filename);
 	void Dump();
+	void Dump(const std::vector<std::string>& InKeys);
 
 };
 
@@ -25,6 +26,7 @@ public:
     void Init(const FOption& InOption);
 
     FTable GeneTable;
+    FTable ReactionTable;
 };
 
 #endif /* LCC_CONTEXT_H */

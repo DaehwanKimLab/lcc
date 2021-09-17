@@ -73,11 +73,24 @@ void FTable::Dump()
 	}
 }
 
+void FTable::Dump(const vector<string>& InKeys)
+{
+	int index = 0;
+	for(auto& Record: Records) {
+		cout << index++;
+		for(const auto& key: InKeys) {
+			cout << "\t" << "[" << key << ", " << Record[key] << "]";
+		}
+		cout << endl;
+	}
+}
+
 
 
 void FCompilerContext::Init(const FOption& InOption)
 {
     if (InOption.DataPaths.size() > 0) {
         GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/genes.tsv").c_str());
+		ReactionTable.LoadFromTSV((InOption.DataPaths[0] + "/reactions.tsv").c_str());
     }
 }

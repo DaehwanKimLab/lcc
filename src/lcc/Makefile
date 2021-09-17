@@ -8,8 +8,7 @@ LLVM_BIN := $(shell ${LLVM_CONFIG} --bindir)
 
 #CXX=${LLVM_BIN}/clang++
 
-CXXFLAGS = -std=c++14 -g
-
+CXXFLAGS = -std=c++14 -g -Wno-deprecated-register
 
 SRCS = main.cpp \
        node.cpp \
@@ -19,7 +18,7 @@ SRCS = main.cpp \
        lpp.l.cpp
 
 OBJS = $(SRCS:.cpp=.o)
-TARGET = lcc
+TARGET = lcc-prep
 
 all: ${TARGET}
 
