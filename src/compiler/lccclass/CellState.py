@@ -52,8 +52,8 @@ def Write_CellState(Writer, Comp, ProGen):
             SaveFiles = listdir(SavePath)
             FileTypes = ['npy']
 
-            SavedDataType4Int = ['Coeff', 'Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev', 'Const']
-            SavedDataType4Float = ['Freq', 'MW']
+            SavedDataType4Int = ['Coeff', 'Coord', 'Count', 'Dir', 'Idx', 'Len', 'NUniq', 'Rev']
+            SavedDataType4Float = ['Const', 'Freq', 'MW']
             SavedDataTypeDict = dict()
             for SavedDataType in SavedDataType4Int:
                 SavedDataTypeDict[SavedDataType] = 'int32'
@@ -121,9 +121,9 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Statement("self.MWs = self.MW_Master")
             Writer.BlankLine()
 
-            Writer.Statement("self.Coeff_Complexation = self.Coeff_MolsInCPLXs")
-            # Writer.Statement("self.Coeff_Equilibrium = self.Coeff_MolsInEQMs")
-            # Writer.Statement("self.Coeff_Reaction = self.Coeff_MolsInRXNs")
+            Writer.Statement("self.Coeff_Complexation = self.Coeff_MolsInCPLXRXN")
+            Writer.Statement("self.Coeff_Equilibrium = self.Coeff_MolsInEQMRXN")
+            Writer.Statement("self.Coeff_Metabolism = self.Coeff_MolsInMETRXN")
             Writer.BlankLine()
 
             # Temporary code
@@ -152,7 +152,6 @@ def Write_CellState(Writer, Comp, ProGen):
                 "self.Freq_NTsInChromosomesInGenome",
                 "self.Freq_NTsInRNAs",
                 "self.Freq_AAsInProteins",
-                "self.Count_BasePairsInChromosomes",
                 "self.Count_NTsInChromosomesInGenome",
                 "self.Count_NTsInRNAs",
                 "self.Count_AAsInProteins",
@@ -253,23 +252,24 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.BlankLine()
             Writer.BlankLine()
 
-            # Metabolism
-            Writer.Comment__("Metabolism")
-            Writer.BlankLine()
-            Writer.Variable_("self.Idx_NADH", 0)
-            Writer.Variable_("self.Idx_NADPH", 0)
-            Writer.BlankLine()
-
             # Complexation
             Writer.Comment__("Complexation")
             Writer.BlankLine()
             Writer.Variable_("self.Idx_MolsInCPLXRXN", 0)
             Writer.BlankLine()
 
-            # Complexation
-            Writer.Comment__("Complexation")
+            # Equilibrium
+            Writer.Comment__("Equilibrium")
             Writer.BlankLine()
             Writer.Variable_("self.Idx_MolsInEQM", 0)
+            Writer.BlankLine()
+
+            # Metabolism
+            Writer.Comment__("Metabolism")
+            Writer.BlankLine()
+            Writer.Variable_("self.Idx_NADH", 0)
+            Writer.Variable_("self.Idx_NADPH", 0)
+            Writer.Variable_("self.Idx_FADH2", 0)
             Writer.BlankLine()
 
         #     Writer.Statement("self.InitializeStoichiometryMatrix()")

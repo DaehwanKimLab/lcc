@@ -41,18 +41,32 @@ class CodeWriter():
 
         self.Switch4Comment = False
         self.Switch4PrintString = False
+        self.Switch4Graph = False
+
+        # Metabolism
+        self.Switch4PostSimulationStepCorrection = False
+        self.Switch4Kinetics = False
+
+        # Cell Division Test
+        self.Switch4TestCellDivision = False
+
+        # Print switches
+        self.Switch4SimStepsExecuted = False
+        self.Switch4ProcessSummary = False
+        self.Switch4CellStateSummary = False
+        self.Switch4PostSimulationStepCorrectionMessage = False
+
+        # Debugging
         self.Switch4DebugSimulationPrint = False
         self.Switch4DebugSimulationAssert = False
-        self.Switch4Graph = False
-        self.Switch4ProcessSummary = False
-        self.Switch4SimStepsExecuted = False
-        self.Switch4PostSimulationStepCorrection = False
+        self.Switch4ProcessDebuggingMessages = False
+        self.Switch4TFAssert = False
         self.Switch4SoftCheckCounts = False
         self.Switch4HardCheckCounts = False
         self.Switch4CheckDeltaCountsNeg = False
         self.Switch4ShowDeltaCounts = False
-        self.Switch4TestCellDivision = False
 
+        # Save Data
         self.Switch4Save = False
         self.Switch4SaveAllCounts = False
         self.Switch4SaveSpecificCounts = False
@@ -425,22 +439,22 @@ class TFCodeWriter(CodeWriter):
         # self.Statement("Index = tf.reshape(%s, [-1, 1])   # Reshape index matrix for gather function" % Index)
         self.Statement("%s = tf.gather(%s, %s)" % (VariableName, "Source", "Index"))
 
-    def PrepScNds(self, Target, Index, Values):
+    def PrepScNds(self, Target, Index, Values, Type):
         self.Comment__("Reshape matrices for a scatter operation")
-        self.ReshType_("Target", Target, -1, 'int32')
+        self.ReshType_("Target", Target, -1, Type)
         self.ReshType_("Index", Index, [-1, 1], 'int32')
-        self.ReshType_("Values", Values, -1, 'int32')
+        self.ReshType_("Values", Values, -1, Type)
 
-    def ScatNdAdd(self, DestVar, Target, Index, Values):
-        self.PrepScNds(Target, Index, Values)
+    def ScatNdAdd(self, DestVar, Target, Index, Values, Type='int32'):
+        self.PrepScNds(Target, Index, Values, Type)
         self.Statement("%s = tf.tensor_scatter_nd_add(%s, %s, %s)" % (DestVar, "Target", "Index", "Values"))
 
-    def ScatNdSub(self, DestVar, Target, Index, Values):
-        self.PrepScNds(Target, Index, Values)
+    def ScatNdSub(self, DestVar, Target, Index, Values, Type='int32'):
+        self.PrepScNds(Target, Index, Values, Type)
         self.Statement("%s = tf.tensor_scatter_nd_sub(%s, %s, %s)" % (DestVar, "Target", "Index", "Values"))
 
-    def ScatNdUpd(self, DestVar, Target, Index, Values):
-        self.PrepScNds(Target, Index, Values)
+    def ScatNdUpd(self, DestVar, Target, Index, Values, Type='int32'):
+        self.PrepScNds(Target, Index, Values, Type)
         self.Statement("%s = tf.tensor_scatter_nd_update(%s, %s, %s)" % (DestVar, "Target", "Index", "Values"))
 
     def LogicAnd_(self, DestVar, MX1, MX2):
@@ -499,6 +513,9 @@ class TFCodeWriter(CodeWriter):
 
     def ReduceMin(self, DestVar, MX, Axis=None):
         self.Statement("%s = tf.math.reduce_min(%s, axis=%s)" % (DestVar, MX, Axis))
+
+    def ReduceAvg(self, DestVar, MX, Axis=None):
+        self.Statement("%s = tf.math.reduce_mean(%s, axis=%s)" % (DestVar, MX, Axis))
 
     def ReduceAll(self, DestVar, MX, Axis=None):
         # For boolean only
@@ -562,34 +579,44 @@ class TFCodeWriter(CodeWriter):
         self.Statement("%s = tf.math.sigmoid(%s))" % (DestVar, MX))
 
     def AsrtGrEq_(self, MX1, MX2, Message=None):
-        self.Statement("tf.debugging.assert_greater_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_greater_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     def AsrtGr___(self, MX1, MX2, Message=None):
-        self.Statement("tf.debugging.assert_greater(%s, %s, message=%s)" % (MX1, MX2, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_greater(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     def AsrtLeEq_(self, MX1, MX2, Message=None):
-        self.Statement("tf.debugging.assert_less_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_less_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     def AsrtLe___(self, MX1, MX2, Message=None):
-        self.Statement("tf.debugging.assert_less(%s, %s, message=%s)" % (MX1, MX2, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_less(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     def AsrtEq___(self, MX1, MX2, Message=None):
-        self.Statement("tf.debugging.assert_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     def AsrtNeg__(self, MX, Message=None):
-        self.Statement("tf.debugging.assert_negative(%s, message=%s)" % (MX, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_negative(%s, message=%s)" % (MX, Message))
 
     def AsrtNoNeg(self, MX, Message=None):
-        self.Statement("tf.debugging.assert_non_negative(%s, message=%s)" % (MX, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_non_negative(%s, message=%s)" % (MX, Message))
 
     def AsrtPos__(self, MX, Message=None):
-        self.Statement("tf.debugging.assert_positive(%s, message=%s)" % (MX, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_positive(%s, message=%s)" % (MX, Message))
 
     def AsrtNoPos(self, MX, Message=None):
-        self.Statement("tf.debugging.assert_non_positive(%s, message=%s)" % (MX, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_non_positive(%s, message=%s)" % (MX, Message))
 
     def AsrtNoEq_(self, MX1, MX2, Message=None):
-        self.Statement("tf.debugging.assert_none_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
+        if self.Switch4TFAssert:
+            self.Statement("tf.debugging.assert_none_equal(%s, %s, message=%s)" % (MX1, MX2, Message))
 
     # Routines
     def RndIdxUni(self, VariableName, N_MoleculesToDistribute, Indices):

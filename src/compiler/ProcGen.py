@@ -44,7 +44,7 @@ class FProcessGenerator():
         self.CellProcesses = CellProcesses
 
     def PrintProcessID(self, ProcessID):
-        print("Cell process module to run: %s" % ProcessID)
+        print("Cellular process written in simulation code: %s" % ProcessID)
 
     # def PrintCompletion(self, ProcessID):
     #     print("Reactions are successfully set up. Process: %s" % ProcessID)
@@ -228,6 +228,9 @@ class FProcessGenerator():
             return MolIdxList
         else:
             print("Inappropriate reference type used in GetMolIdx function parameter: %s" % MolIdxRef)
+
+    def GetMolIdx_Master(self, Molecules):
+        return self.GetMolIdx(Molecules, self.Comp.Master.ID2Idx_Master)
 
     def ReverseNumberSign(self, ListOfNumbers):
         NewListOfNumbers = [-Number for Number in ListOfNumbers]

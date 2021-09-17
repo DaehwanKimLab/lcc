@@ -33,6 +33,12 @@ def Write_CellProcess(Writer):
             Writer.ReturnVar("self.Cel.GetCounts(MolIdxs)")
             Writer.BlankLine()
 
+        with Writer.Statement("def GetCounts_Float(self, MolIdxs):"):
+            Writer.Statement("Count = self.Cel.GetCounts(MolIdxs)")
+            Writer.Cast_____("Count_Float", "Count", 'float32')
+            Writer.ReturnVar("Count_Float")
+            Writer.BlankLine()
+
         with Writer.Statement("def GetDeltaCounts(self, MolIdxs):"):
             Writer.ReturnVar("self.Cel.GetDeltaCounts(MolIdxs)")
             Writer.BlankLine()
