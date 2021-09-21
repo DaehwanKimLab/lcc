@@ -31,11 +31,7 @@ from lccclass import CellProcess
 # from lccvariable.cellstate import LipidState
 # from lccvariable.cellstate.genomestate import GeneState
 # from lccvariable.cellstate.genomestate import PromoterState
-from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
-from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
-from lccclass.cellprocess.conversion import Complexation, Equilibrium
-from lccclass.cellprocess.metabolism import Metabolism
-from lccclass.cellprocess.division import CellDivision
+
 from lccclass.simulation import ReactionExecution
 from lccclass.simulation.reactionexecution import RateGaugeModelOnly
 from lccclass.simulation.reactionexecution import RGM_MetaboliteReplenish
@@ -367,31 +363,7 @@ def Compile(CodeFileNames,
     ProGen = ProcGen.FProcessGenerator()
     ProGen.LinkCompilerObj(CompilerData)
     # To be passing user inputs in the future: List cell processes to incorporate in the simulation code
-    CellProcesses = [
-        # Signaling
-
-        # Biosynthesis
-        Replication,
-        Transcription,
-        Translation,
-
-        # Conversion
-        Complexation,
-        # Equilibrium,
-
-        # Modification
-
-        # Degradation
-        RNADegradation,
-        ProteinDegradation,
-
-        # Metabolism
-        Metabolism,
-
-        # Cell division
-        CellDivision
-    ]
-    ProGen.SetProcessList(CellProcesses)
+    ProGen.SetProcessList()
     ProGen.SetUpProcesses()
     # ProGen.SaveProcesses()
 

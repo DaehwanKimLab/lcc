@@ -15,9 +15,11 @@ import numpy as np
 import os
 import abc
 import CodeGen
-from lccclass.cellprocess.synthesis import Replication, Transcription, Translation
-from lccclass.cellprocess.degradation import DNADegradation, RNADegradation, ProteinDegradation
+from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
+from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
+from lccclass.cellprocess.conversion import Complexation, Equilibrium
 from lccclass.cellprocess.metabolism import Metabolism
+from lccclass.cellprocess.division import CellDivision
 
 class FProcessGenerator():
     def __init__(self):
@@ -40,8 +42,38 @@ class FProcessGenerator():
         self.Switch4SaveAllData = self.Comp.Switch4SaveAllData
         self.SavePath = self.Comp.SavePath
 
-    def SetProcessList(self, CellProcesses):
-        self.CellProcesses = CellProcesses
+    def SetProcessList(self):
+        CellProcessesAvailable = [
+            # Signaling
+
+            # Biosynthesis
+            Replication,
+            Transcription,
+            Translation,
+
+            # Conversion
+            Complexation,
+            # Equilibrium,
+
+            # Modification
+
+            # Degradation
+            RNADegradation,
+            ProteinDegradation,
+
+            # Metabolism
+            Metabolism,
+
+            # Cell division
+            CellDivision
+        ]
+
+        for CellProcess in CellProcessesAvailable:
+            if self.Comp.UserInput.CellProcesses == list() or ['All']:
+                self.CellProcesses = CellProcessesAvailable
+                continue
+            elif CellProcess in self.Comp.UserInput.CellProcesses:
+                self.CellProcesses.append(CellProcess)
 
     def PrintProcessID(self, ProcessID):
         print("Cellular process written in simulation code: %s" % ProcessID)

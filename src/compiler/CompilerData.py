@@ -141,6 +141,9 @@ class FCompilerData:
         self.Kinetics = FKinetics()
         self.Dict_DataClass['Kinetics'] = self.Kinetics
 
+        self.UserInput = FUserInput()
+        self.Dict_DataClass['UserInput'] = self.UserInput
+
         self.Master = FMaster()
         self.Dict_DataClass['Master'] = self.Master
 

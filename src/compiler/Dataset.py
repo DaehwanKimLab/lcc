@@ -1658,6 +1658,18 @@ class FBuildingBlock(FDataset):
         self.Name2Key_BuildingBlocks['AAs'] = self.Key_AAs
 
 
+class FUserInput(FDataset):
+    def __init__(self):
+        self.CellProcesses = list()
+
+        super().__init__()  # MasterLocalizations
+
+    def SetUpData(self, Dataset, MasterDataset=None):
+        CellProcesses = Dataset['XX.tsv']
+        for CellProcess in CellProcesses:
+            self.CellProcesses.append(CellProcess)
+
+
 # Master Dataset is an exception to the SetUpData method
 class FMaster():
     def __init__(self):
