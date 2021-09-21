@@ -259,7 +259,8 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.PrintStrg("### Simulation Step Process Summary ###")
                 for ProcessID, Module in ProGen.Dict_CellProcesses.items():
                         Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
-                Writer.Statement("self.CellDivision.PrintMessage()")
+                if 'CellDivision' in ProGen.Dict_CellProcesses:
+                    Writer.Statement("self.CellDivision.PrintMessage()")
                 Writer.BlankLine()
 
         with Writer.Statement("def ViewReplicationCompletion(self):"):
@@ -299,7 +300,8 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Statement("def SIM_ViewCellStateSummary(self):"):
             with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                 Writer.PrintStrg("### Simulation Step Current Status ###")
-                Writer.Statement("self.ViewReplicationCompletion()")
+                if 'Replication' in ProGen.Dict_CellProcesses:
+                    Writer.Statement("self.ViewReplicationCompletion()")
                 Writer.Statement("self.ViewMacromoleculeCounts()")
                 # Writer.Statement("self.ViewBuildingBlockCounts()")
                 # Writer.Statement("self.ViewEnergyMoleculeCounts()")
@@ -363,11 +365,12 @@ def Write_Simulation(Writer, Comp, ProGen):
         #     Writer.BlankLine()
 
         with Writer.Statement("def PostSimulationStepCorrection(self):"):
-            Writer.Statement("self.Metabolism.ReplenishMetabolites()")
-            if Writer.Switch4ProcessSummary and Writer.Switch4PostSimulationStepCorrectionMessage:
-                with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                    Writer.PrintStrg("===== Post simulation step correction =====")
-                    Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
+            if 'Metabolism' in ProGen.Dict_CellProcesses:
+                Writer.Statement("self.Metabolism.ReplenishMetabolites()")
+                if Writer.Switch4ProcessSummary and Writer.Switch4PostSimulationStepCorrectionMessage:
+                    with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                        Writer.PrintStrg("===== Post simulation step correction =====")
+                        Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
             Writer.Pass_____()
             Writer.BlankLine()
 
