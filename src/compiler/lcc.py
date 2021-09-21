@@ -83,21 +83,33 @@ def WriteBody(Writer, CompilerData, ProGen):
 
     Writer.Switch4Comment = True
     Writer.Switch4PrintString = True
-    Writer.Switch4DebugSimulationPrint = False
-    Writer.Switch4DebugSimulationAssert = False
     Writer.Switch4Graph = False
 
-    Writer.Switch4ProcessSummary = True
-    Writer.Switch4SimStepsExecuted = True
+    # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True
-    Writer.Switch4SoftCheckCounts = False
-    Writer.Switch4HardCheckCounts = True
-    Writer.Switch4CheckDeltaCountsNeg = False
-    Writer.Switch4ShowDeltaCounts = False
-    Writer.Switch4ProcessDebuggingMessages = False
+    Writer.Switch4Kinetics = False
+
+    # Cell Division Test
     Writer.Switch4TestCellDivision = False
 
-    Writer.Switch4SaveAllCounts = False
+    # Print switches
+    Writer.Switch4SimStepsExecuted = True
+    Writer.Switch4ProcessSummary = True
+    Writer.Switch4CellStateSummary = True
+    Writer.Switch4PostSimulationStepCorrectionMessage = False
+
+    # Debugging
+    Writer.Switch4DebugSimulationPrint = False
+    Writer.Switch4DebugSimulationAssert = False
+    Writer.Switch4ProcessDebuggingMessages = False
+    Writer.Switch4TFAssert = False
+    Writer.Switch4SoftCheckCounts = False
+    Writer.Switch4HardCheckCounts = False
+    Writer.Switch4CheckDeltaCountsNeg = False
+    Writer.Switch4ShowDeltaCounts = False
+
+    # Save Data
+    Writer.Switch4SaveAllCounts = True
     Writer.Switch4SaveIndividualCounts = False
     if Writer.Switch4SaveAllCounts or Writer.Switch4SaveSpecificCounts:
         Writer.Switch4Save = True
@@ -317,12 +329,20 @@ def CompileToGenome(GenomeFileName,
     return Seq
 
 
+def PrintVersion(Version):
+    Version_Str = 'lcc version {version}'.format(version=Version)
+    print(Version_Str)
+
+
 def Compile(CodeFileNames,
             PrefixName,
             DataDir,
             SaveDir,
             TargetCodeModel,
             Verbose):
+
+
+    PrintVersion(LCC_VERSION)
 
     OutputCodeName = PrefixName + ".py"
 
@@ -388,7 +408,7 @@ def Compile(CodeFileNames,
     WriteMain(Writer)
 
     OutputFile.close()
-    print('"%s" has been successfully generated.' % OutputCodeName)
+    print('** Simulation code "%s" has been generated. **' % OutputCodeName)
 
 """
 """

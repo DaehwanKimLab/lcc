@@ -114,8 +114,8 @@ class FCompilerData:
         self.Gene = FGene()
         self.Dict_DataClass['Gene'] = self.Gene
 
-        self.Promoter = FPromoter()
-        self.Dict_DataClass['Promoter'] = self.Promoter
+        # self.Promoter = FPromoter()
+        # self.Dict_DataClass['Promoter'] = self.Promoter
 
         self.RNA = FRNA()
         self.Dict_DataClass['RNA'] = self.RNA
@@ -144,28 +144,27 @@ class FCompilerData:
         self.Master = FMaster()
         self.Dict_DataClass['Master'] = self.Master
 
-        print('Compiler data have been successfully initialized. # of Classes: %s' % len(self.Dict_DataClass))
+        print('lcc compiler data have been initialized. [# of data classes: %s]' % len(self.Dict_DataClass))
 
 
     def SetUpCompilerData(self, Dataset):
         for DataClassName, DataClassDataset in self.Dict_DataClass.items():
             if DataClassDataset == self.Master:
                 DataClassDataset.SetUpData(self)
-                print('Compiler data have been successfully set up. Class: "%s"' % DataClassName)
             else:
                 DataClassDataset.SetUpData(Dataset, self.Master)
-                print('Compiler data have been successfully set up. Class: "%s"' % DataClassName)
+            print('lcc compiler data have been set up. Class: "%s"' % DataClassName)
 
     def SaveCompilerData(self):
         # Save all compiler data
         if self.Switch4SaveAllData:
             for DataClassName, DataClassDataset in self.Dict_DataClass.items():
                 DataClassDataset.SaveData(self.SavePath)
-                print('Compiler data have been successfully saved. Class: "%s"' % DataClassName)
+                print('lcc compiler data have been saved. Class: "%s"' % DataClassName)
         # Save processed compiler data only used in simulation (not implemented yet)
         # elif self.Switch4SaveProcessedData:
         #     for DataClassName, DataClassDataset in self.Dict_DataClass.items():
         #         DataClassDataset.SaveData(self.SavePath)
-        #         print('Processed compiler data have been successfully saved. Class: "%s"' % DataClassName)
+        #         print('Processed compiler data have been saved. Class: "%s"' % DataClassName)
         else:
-            print('Compiler data save option is off')
+            print('lcc compiler data save option is off')

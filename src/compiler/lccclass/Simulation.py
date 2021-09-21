@@ -5,7 +5,7 @@ import datetime
 def Write_Simulation(Writer, Comp, ProGen):
 
     # Simulation time request in seconds
-    SimWallTimeRequested = 35 * 60
+    SimWallTimeRequested = 1 * 60
     SimStepsPrintResolution = 1
 
     # Save File Configuration
@@ -104,7 +104,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.PrintStrg("Simulation Time Summary:")
             Writer.Statement('print("Simulation Steps Executed (s): %s" % self.SimStepsExecuted[0])')
             Writer.Statement('print("     Simulation Wall Time (s): %s" % self.SimWallTimeExecuted[0])')
-            Writer.Statement('print("      Simulation Run Time (s): %s" % self.SimRunTimeExecuted[0])')
+            Writer.Statement('print("      Simulation Run Time (s): %s" % self.SimRunTimeExecuted)')
             Writer.Statement('print("           X times faster    : %s" % self.SimTimesSpeed[0])')
             Writer.BlankLine()
 
@@ -230,9 +230,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             if Writer.Switch4CheckDeltaCountsNeg:
                 Writer.Statement("self.Cel.CheckDeltaCountsNeg()")
 
-
             # Update Counts
-
             Writer.Add______("self.Cel.Counts", "self.Cel.Counts", "self.Cel.DeltaCounts")
 
             if Writer.Switch4SoftCheckCounts or Writer.Switch4HardCheckCounts:
@@ -277,7 +275,6 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.PrintStVa("Total # of %s" % Query, "TotalCount")
                 Writer.BlankLine()
 
-
         with Writer.Statement("def ViewBuildingBlockCounts(self):"):
             TotalCountQueriesUsingCelIdx = ['dNTPs', 'NTPs', 'AAs']
             for Query in TotalCountQueriesUsingCelIdx:
@@ -289,7 +286,7 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.BlankLine()
 
         with Writer.Statement("def ViewEnergyMoleculeCounts(self):"):
-            SingleCountQueries = ['ATP', 'NADH', 'NADPH']
+            SingleCountQueries = ['ATP', 'NADH', 'NADPH', 'FADH2']
             for Query in SingleCountQueries:
                 Writer.PrintStVa("Total # of %s" % Query, "self.Cel.GetCounts(self.Cel.Idx_%s)[0]" % Query)
                 Writer.BlankLine()
@@ -304,9 +301,9 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.PrintStrg("### Simulation Step Current Status ###")
                 Writer.Statement("self.ViewReplicationCompletion()")
                 Writer.Statement("self.ViewMacromoleculeCounts()")
-                Writer.Statement("self.ViewBuildingBlockCounts()")
-                Writer.Statement("self.ViewEnergyMoleculeCounts()")
-                Writer.Statement("self.ViewCellMass()")
+                # Writer.Statement("self.ViewBuildingBlockCounts()")
+                # Writer.Statement("self.ViewEnergyMoleculeCounts()")
+                # Writer.Statement("self.ViewCellMass()")
                 Writer.BlankLine()
 
         with Writer.Statement("def SIM_CellDivision(self):"):
@@ -359,18 +356,19 @@ def Write_Simulation(Writer, Comp, ProGen):
                 # Writer.PrintStrg("### Simulation Step Current Count Saved ###")
                 Writer.BlankLine()
 
-        with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
-            Writer.ScatNdUpd("FinalCount", "FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
-            Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
-            Writer.ReturnVar("FinalCount_Replenished")
-            Writer.BlankLine()
+        # with Writer.Statement("def ReplenishMetabolites(self, FinalCount):"):
+        #     Writer.ScatNdUpd("FinalCount", "FinalCount", "self.MetaboliteIdxs", "self.MetaboliteCountsInitial")
+        #     Writer.Reshape__("FinalCount_Replenished", "FinalCount", [-1, 1])
+        #     Writer.ReturnVar("FinalCount_Replenished")
+        #     Writer.BlankLine()
 
         with Writer.Statement("def PostSimulationStepCorrection(self):"):
             Writer.Statement("self.Metabolism.ReplenishMetabolites()")
-            if Writer.Switch4ProcessSummary:
+            if Writer.Switch4ProcessSummary and Writer.Switch4PostSimulationStepCorrectionMessage:
                 with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
                     Writer.PrintStrg("===== Post simulation step correction =====")
                     Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
+            Writer.Pass_____()
             Writer.BlankLine()
 
         with Writer.Statement("def Initialize(self):"):
@@ -413,6 +411,8 @@ def Write_Simulation(Writer, Comp, ProGen):
                 # Display the molecular counts of molecules involved in reactions
                 if Writer.Switch4ProcessSummary:
                     Writer.Statement("self.SIM_ViewProcessSummaries()")
+
+                if Writer.Switch4CellStateSummary:
                     Writer.Statement("self.SIM_ViewCellStateSummary()")
 
                 # Overwrite delta value for the applicable molecular counts
@@ -427,6 +427,11 @@ def Write_Simulation(Writer, Comp, ProGen):
 
                 if Writer.Switch4Save:
                     Writer.Statement("self.SIM_SaveCounts()")
+                if Writer.Switch4Save and Writer.Switch4Save:
+                    with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
+                        Writer.PrintLine()
+                        Writer.PrintStrg("Simulation Data Saved.")
+                        Writer.BlankLine()
 
                 # Apply post-simulation step corrections for selected reaction models:
                 if Writer.Switch4PostSimulationStepCorrection:
