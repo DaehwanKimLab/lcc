@@ -47,8 +47,8 @@ class FProcessGenerator():
             # Signaling
 
             # Biosynthesis
-            [Replication, "DNA_Replication"],
-            [Transcription, "RNA_Transcription"],
+            [Replication, "Replication"],
+            [Transcription, "Transcription"],
             [Translation, "Translation"],
 
             # Conversion
@@ -69,7 +69,7 @@ class FProcessGenerator():
         ]
 
         if not self.Comp.UserInput.CellProcesses or "All" in self.Comp.UserInput.CellProcesses:
-            self.CellProcesses = list([CellProcess[0] for CellProcess in self.Comp.UserInput.CellProcesses])
+            self.CellProcesses = list([CellProcess[0] for CellProcess in CellProcessesAvailable])
 
         else:
             for CellProcess in CellProcessesAvailable:

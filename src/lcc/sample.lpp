@@ -9,8 +9,8 @@ experiment my_expr {
 	property medium LB;
 };
 
-using module RNA_Transcription;
-//using module DNA_Replication;
+using module Transcription;
+using module Replication;
 
 /* Define proteins */
 // FIXME:
