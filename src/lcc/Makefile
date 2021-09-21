@@ -7,14 +7,19 @@ LLVM_BIN := $(shell ${LLVM_CONFIG} --bindir)
 #LLVM_LIBS := $(shell ${LLVM_CONFIG} --libs core orcjit native)
 
 #CXX=${LLVM_BIN}/clang++
+#CXX=clang++
 
-CXXFLAGS = -std=c++14 -g -Wno-deprecated-register
+CXXFLAGS = -std=c++14 -g
+#CXXFLAGS = -std=c++14 -g -Wno-deprecated-register -fsanitize=address -fno-omit-frame-pointer
+#LDFLAGS = -fsanitize=address -g
+#LDFLAGS = -fsanitize=address -g
 
 SRCS = main.cpp \
        node.cpp \
        option.cpp \
        lpp.y.cpp \
        context.cpp \
+	   util.cpp \
        lpp.l.cpp
 
 OBJS = $(SRCS:.cpp=.o)
@@ -37,7 +42,7 @@ context.o: context.cpp
 
 
 ${TARGET}: $(OBJS) node.h
-	${CXX} -o $@ $(OBJS)
+	${CXX} ${LDFLAGS}  -o $@ $(OBJS)
 
 test: ${TARGET} sample.lpp
 	./${TARGET} sample.lpp

@@ -97,6 +97,10 @@ class FCompilerData:
             if fname.endswith('.tsv'):
                 parse_tsv(data_dir + '/wcs_simdata', fname)
 
+        for fname in os.listdir(data_dir + '/intermediate'):
+            if fname.endswith('.tsv'):
+                parse_tsv(data_dir + '/intermediate', fname)
+
         if self.Switch4DebugCompilerData:
             dump_dataset()
         return dataset
@@ -146,6 +150,9 @@ class FCompilerData:
 
         self.Master = FMaster()
         self.Dict_DataClass['Master'] = self.Master
+
+        self.ProcessList = FUsingModule()
+        self.Dict_DataClass['ProcessList'] = self.ProcessList
 
         print('lcc compiler data have been initialized. [# of data classes: %s]' % len(self.Dict_DataClass))
 

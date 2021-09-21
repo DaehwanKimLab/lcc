@@ -6,8 +6,56 @@
 #include <map>
 
 #include "option.h"
+#include "node.h"
 
 typedef std::map<std::string, std::string> FTableRecord;
+
+class FExperiment {
+public:
+    std::string Name;
+    std::string Description;
+
+};
+
+class FOrganism {
+public:
+    std::string Name;
+    std::string Description;
+
+};
+
+class FMolecule {
+public:
+    std::string Name;
+    std::string Id;
+
+};
+
+class FPathway {
+public:
+
+};
+
+class FProtein {
+public:
+    FProtein(const NProteinDeclaration& InProteinDecl) : ProteinDecl(InProteinDecl) {};
+
+    const std::string& GetName() const {
+        return ProteinDecl.Id.Name;
+    }
+
+private:
+    const NProteinDeclaration ProteinDecl;
+};
+
+class FReaction {
+public:
+
+};
+
+class FModule {
+public:
+};
 
 class FTable {
 public:
@@ -27,6 +75,15 @@ public:
 
     FTable GeneTable;
     FTable ReactionTable;
+
+
+    std::vector<std::string> UsingModuleList;
+    std::vector<FProtein> ProteinList;
+    std::vector<std::string> PathwayList;
+
+
+
+    void SaveUsingModuleList(const char *Filename);
 };
 
 #endif /* LCC_CONTEXT_H */

@@ -1,8 +1,12 @@
+#ifndef LCC_UTIL_H
+#define LCC_UTIL_H
 /**
  * Copied from Bowtie2's implementation
  * Split string s according to given delimiters.  Mostly borrowed
  * from C++ Programming HOWTO 7.3.
  */
+
+namespace Utils {
 template<typename T>
 static inline void tokenize(
         const std::string& s,
@@ -35,3 +39,8 @@ static inline std::string strip(const std::string& OrgString, const char *Delims
 
 	return OrgString.substr(begin_pos, end_pos - begin_pos + 1);
 }
+
+bool CreatePath(const char *Path);
+bool CreatePaths(const char *Path);
+} // Namespace Utils
+#endif /* LCC_UTIL_H */

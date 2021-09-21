@@ -26,10 +26,10 @@ void FTable::LoadFromTSV(const char *Filename)
 		cerr << "Can't read header" << endl;
 		return;
 	}
-	tokenize(buf, "\t", Headers);
+    Utils::tokenize(buf, "\t", Headers);
 
 	for(int i = 0; i < Headers.size(); i++) {
-		Headers[i] = strip(Headers[i], "\"");
+		Headers[i] = Utils::strip(Headers[i], "\"");
 
 		if (Option.bDebug) {
 			cerr << Headers[i] << endl;
@@ -39,7 +39,7 @@ void FTable::LoadFromTSV(const char *Filename)
 
 	while(getline(fp, buf)) {
 		Fields.clear();
-		tokenize(buf, "\t", Fields);
+        Utils::tokenize(buf, "\t", Fields);
 
 		if (Fields.size() != Headers.size()) {
 			cerr << "Wrong line: " << buf << endl;
@@ -50,7 +50,7 @@ void FTable::LoadFromTSV(const char *Filename)
 		FTableRecord Record;
 
 		for (int i = 0; i < Fields.size(); i++) {
-			Record[Headers[i]] = strip(Fields[i], "\"");
+			Record[Headers[i]] = Utils::strip(Fields[i], "\"");
 		}
 		Records.push_back(Record);
 	}
@@ -93,4 +93,31 @@ void FCompilerContext::Init(const FOption& InOption)
         GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/genes.tsv").c_str());
 		ReactionTable.LoadFromTSV((InOption.DataPaths[0] + "/reactions.tsv").c_str());
     }
+}
+
+
+void FCompilerContext::SaveUsingModuleList(const char* Filename)
+{
+    ofstream fp(Filename);
+
+    if (!fp) {
+        cerr << "Can't open file: " << Filename << endl;
+        return;
+    }
+    
+    vector<string> Headers;
+    Headers.push_back("ProcessName");
+
+    // Print Headers
+    for(int i = 0; i < Headers.size() - 1; i++) {
+        const auto& header = Headers[i];
+        fp << "\"" << header << "\"" << "\t";
+    }
+    fp << "\"" << Headers.back() << "\"" << endl;
+
+    // Items
+    for(const auto& ModuleName: UsingModuleList) {
+        fp << "\"" << ModuleName << "\"" << endl;
+    }
+
 }

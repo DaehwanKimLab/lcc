@@ -1,3 +1,5 @@
+#ifndef LCC_NODE_H
+#define LCC_NODE_H
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -296,6 +298,20 @@ public:
 
 };
 
+class NUsingStatement : public NStatement {
+public:
+    int Type;
+    const NIdentifier Id;
+
+    NUsingStatement(int InType, const NIdentifier& InId) : Type(InType), Id(InId) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Using(" << Type << "): "; Id.Print(os); os << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
 class NDummyDeclaration : public NStatement {
 public:
     const std::string StringLiteral;
@@ -309,3 +325,4 @@ public:
 
 };
 
+#endif /* LCC_NODE_H */

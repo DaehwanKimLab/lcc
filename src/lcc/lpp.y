@@ -30,7 +30,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 
 %token <Token> T_PROTEIN T_PATHWAY T_EXPERIMENT T_ORGANISM
 %token <Token> T_DESCRIPTION T_REACTION T_REACTION_ID
-%token <Token> T_PROPERTY
+%token <Token> T_PROPERTY T_USING T_MODULE
 
 %token <String> T_STRING_LITERAL
 
@@ -54,6 +54,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <PathwayExpr> pathway_expr pathway_decl_args
 %type <Stmt> organism_decl experiment_decl pathway_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
+%type <Stmt> using_stmt
 
 %type <Block> experiment_block experiment_stmts
 %type <Stmt> experiment_stmt property_stmt
@@ -77,6 +78,7 @@ stmt           : protein_decl T_SEMIC
                | new_pathway_decl T_SEMIC
 			   | organism_decl T_SEMIC
 			   | experiment_decl T_SEMIC
+			   | using_stmt T_SEMIC
                ;
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
@@ -152,6 +154,9 @@ experiment_stmt : T_DESCRIPTION T_STRING_LITERAL T_SEMIC { $$ = new NDescription
 property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
                | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
                | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, $3->Name); delete $2, delete $3; }
+               ;
+
+using_stmt     : T_USING T_MODULE ident { $$ = new NUsingStatement($2, *$3); delete $3; }
                ;
 
 

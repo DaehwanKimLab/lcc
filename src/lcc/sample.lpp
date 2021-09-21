@@ -9,6 +9,9 @@ experiment my_expr {
 	property medium LB;
 };
 
+using module RNA_Transcription;
+//using module DNA_Replication;
+
 /* Define proteins */
 // FIXME:
 protein GltA(oxaloacetate + acetyl-CoA --> citrate); // GltA

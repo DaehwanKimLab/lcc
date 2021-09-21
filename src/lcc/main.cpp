@@ -8,6 +8,7 @@
 #include "node.h"
 #include "option.h"
 #include "context.h"
+#include "util.h"
 
 extern NBlock* ProgramBlock;
 extern int yyparse();
@@ -19,42 +20,6 @@ using namespace std;
 FOption Option;
 FCompilerContext Context;
 
-
-class FExperiment {
-public:
-    std::string Name;
-    std::string Description;
-
-};
-
-class FOrganism {
-public:
-    std::string Name;
-    std::string Description;
-
-};
-
-class FMolecule {
-public:
-    std::string Name;
-    std::string Id;
-
-};
-
-class FPathway {
-public:
-
-};
-
-class FProtein {
-public:
-
-};
-
-class FReaction {
-public:
-
-};
 
 const char *VersionString = "1.0.0";
 using namespace std;
@@ -80,26 +45,30 @@ static bool is_class_of(const NNode *Node) {
 void TraversalNode(NBlock* InProgramBlock)
 {
     ostream& os = std::cout;
-    FTraversalContext Context(std::cerr);
-    Context.Queue.push(InProgramBlock);
+    FTraversalContext tc(std::cerr);
+    tc.Queue.push(InProgramBlock);
 
-    while(!Context.Queue.empty()) {
-        const NNode* node = Context.Queue.front(); Context.Queue.pop();
+    while(!tc.Queue.empty()) {
+        const NNode* node = tc.Queue.front(); tc.Queue.pop();
 
         if (is_class_of<NProteinDeclaration>(node)) {
-            auto* Protein = dynamic_cast<const NProteinDeclaration *>(node);
+            auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
             os << "Protein: " << Protein->Id.Name << endl;
 
+            Context.ProteinList.emplace_back(*Protein);
+
         } else if (is_class_of<NPathwayDeclaration>(node)) {
-            auto* Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
+            auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
             os << "Pathway: " << Pathway->Id.Name << endl;
 
+            Context.PathwayList.emplace_back(Pathway->Id.Name);
+
         } else if (is_class_of<NOrganismDeclaration>(node)) {
-            auto* Organism = dynamic_cast<const NOrganismDeclaration *>(node);
+            auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
             os << "Organism: " << Organism->Id.Name << endl;
             os << "  " << Organism->Description << endl;
         } else if (is_class_of<NExperimentDeclaration>(node)) {
-            auto* Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
+            auto Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
             os << "Experiment: " << Experiment->Id.Name << endl;
             os << "  " << Experiment->Description << endl;
             if (Experiment->Block) {
@@ -107,9 +76,13 @@ void TraversalNode(NBlock* InProgramBlock)
                     os << "  "; stmt->Print(os); os << endl;
                 }
             }
+        } else if (is_class_of<NUsingStatement>(node)) {
+            auto UsingStmt = dynamic_cast<const NUsingStatement *>(node);
+            os << "Using(" << UsingStmt->Type << "): " << UsingStmt->Id.Name << endl;
+            Context.UsingModuleList.emplace_back(UsingStmt->Id.Name);
         }
 
-        node->Visit(Context);
+        node->Visit(tc);
     }
 }
 
@@ -182,6 +155,26 @@ int main(int argc, char *argv[])
     }
 
 
+    if (Option.bDebug) {
+        for(const auto& protein : Context.ProteinList) {
+            cout << protein.GetName() << endl;
+        }
+        for(const auto& name : Context.UsingModuleList) {
+            cout << name << endl;
+        }
+    }
 
+
+    string UsingModuleFilename;
+    if (!Option.OutputPrefix.empty()) {
+        UsingModuleFilename = Option.OutputPrefix + "/";
+        if (!Utils::CreatePaths(UsingModuleFilename.c_str())) {
+            cerr << "Can't create directory" << endl;
+        }
+    }
+    UsingModuleFilename += "process_module.tsv";
+
+
+    Context.SaveUsingModuleList(UsingModuleFilename.c_str());
     return 0;
 }

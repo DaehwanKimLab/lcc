@@ -81,6 +81,9 @@ void NExperimentDeclaration::Visit(FTraversalContext &Context) const {
 void NPropertyStatement::Visit(FTraversalContext& Context) const {
 }
 
+void NUsingStatement::Visit(FTraversalContext& Context) const {
+}
+
 void NDummyDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Dummy(" << StringLiteral << ")" << std::endl;
 }

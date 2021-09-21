@@ -34,6 +34,8 @@
 "reaction_id"                 { return TOKEN(T_REACTION_ID); }
 "reaction"                    { return TOKEN(T_REACTION); }
 "property"                    { return TOKEN(T_PROPERTY); }
+"using"                       { return TOKEN(T_USING); }
+"module"                      { return TOKEN(T_MODULE); }
 "atp"                         { SAVE_TOKEN; return T_ATP; }
 "co2"                         { SAVE_TOKEN; return T_CO2; }
 "CoA"                         { SAVE_TOKEN; return T_COA; }
