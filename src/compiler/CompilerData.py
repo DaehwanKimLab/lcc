@@ -151,9 +151,6 @@ class FCompilerData:
         self.Master = FMaster()
         self.Dict_DataClass['Master'] = self.Master
 
-        self.ProcessList = FUsingModule()
-        self.Dict_DataClass['ProcessList'] = self.ProcessList
-
         print('lcc compiler data have been initialized. [# of data classes: %s]' % len(self.Dict_DataClass))
 
 

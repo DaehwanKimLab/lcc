@@ -1370,8 +1370,7 @@ class FKinetics(FDataset):
 
     def SetUpData(self, Dataset, MasterDataset = None):
         # This kinetic table has no info on pH condition
-        # Kinetics = Dataset['enzymeKinetics_Sorted_DL.tsv']
-        Kinetics = list()
+        Kinetics = Dataset['enzymeKinetics_Sorted_DL.tsv']
 
         METRXNs = Dataset['reactions.tsv']
         ID_METRXNs = list()
@@ -1658,15 +1657,6 @@ class FBuildingBlock(FDataset):
             self.Key_AAs.append(BuildingBlock)
         self.Name2Key_BuildingBlocks['AAs'] = self.Key_AAs
 
-class FUsingModule(FDataset):
-    def __init__(self):
-        self.Modules = list()
-        super().__init__()
-
-    def SetUpData(self, Dataset, MasterDataset = None):
-        ProcessedModule = Dataset['process_module.tsv']
-        for m in ProcessedModule:
-            self.Modules.append(m[0])
 
 class FUserInput(FDataset):
     def __init__(self):
@@ -1675,9 +1665,9 @@ class FUserInput(FDataset):
         super().__init__()  # MasterLocalizations
 
     def SetUpData(self, Dataset, MasterDataset=None):
-        CellProcesses = Dataset['XX.tsv']
+        CellProcesses = Dataset['process_module.tsv']
         for CellProcess in CellProcesses:
-            self.CellProcesses.append(CellProcess)
+            self.CellProcesses.append(CellProcess[0])
 
 
 # Master Dataset is an exception to the SetUpData method

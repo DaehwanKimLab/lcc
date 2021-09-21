@@ -47,33 +47,35 @@ class FProcessGenerator():
             # Signaling
 
             # Biosynthesis
-            Replication,
-            Transcription,
-            Translation,
+            [Replication, "DNA_Replication"],
+            [Transcription, "RNA_Transcription"],
+            [Translation, "Translation"],
 
             # Conversion
-            Complexation,
+            [Complexation, "Complexation"],
             # Equilibrium,
 
             # Modification
 
             # Degradation
-            RNADegradation,
-            ProteinDegradation,
+            [RNADegradation, "RNADegradation"],
+            [ProteinDegradation, "ProteinDegradation"],
 
             # Metabolism
-            Metabolism,
+            [Metabolism, "Metabolism"],
 
             # Cell division
-            CellDivision
+            [CellDivision, "CellDivision"],
         ]
 
-        for CellProcess in CellProcessesAvailable:
-            if self.Comp.UserInput.CellProcesses == list() or ['All']:
-                self.CellProcesses = CellProcessesAvailable
-                continue
-            elif CellProcess in self.Comp.UserInput.CellProcesses:
-                self.CellProcesses.append(CellProcess)
+        if not self.Comp.UserInput.CellProcesses or "All" in self.Comp.UserInput.CellProcesses:
+            self.CellProcesses = list([CellProcess[0] for CellProcess in self.Comp.UserInput.CellProcesses])
+
+        else:
+            for CellProcess in CellProcessesAvailable:
+                if CellProcess[1] in self.Comp.UserInput.CellProcesses:
+                    self.CellProcesses.append(CellProcess[0])
+
 
     def PrintProcessID(self, ProcessID):
         print("Cellular process written in simulation code: %s" % ProcessID)
