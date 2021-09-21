@@ -21,8 +21,8 @@ protein Fume();
 
 // TCA
 pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
+
 // New pathway format
-//
 
 pathway TCA {
 	description "TCA";
