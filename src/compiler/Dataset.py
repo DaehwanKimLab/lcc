@@ -10,7 +10,7 @@ class FDataset():
         self.Switch4DebugDataset = False
 
     @abstractmethod
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         pass
 
     def SaveData(self, SavePath):
@@ -97,7 +97,7 @@ class FMetabolite(FDataset):
 
         super().__init__() # MasterLocalizations
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         MW_Metabolites = Dataset['metabolites.tsv']
         WaterMW = Dataset['water.tsv'][0]
         MW_Metabolites.append(WaterMW)
@@ -130,7 +130,7 @@ class FMetabolite(FDataset):
                     print("Metabolites | The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s" % (Name, Count, Count_Temporary_Int32))
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
+        self.AddToMaster(Comp.Master, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
 
 
 class FChromosome(FDataset):
@@ -161,7 +161,7 @@ class FChromosome(FDataset):
 
         super().__init__()
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         Genome = Dataset['EscherichiaColi.fasta']
         # Genome is a dictionary where its key is 'Ch#' and its value is its corresponding DNA seq.
 
@@ -227,7 +227,7 @@ class FChromosome(FDataset):
                 #     ChromosomeCount += 1
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_Chromosomes, self.MW_DNABasePairs)
+        self.AddToMaster(Comp.Master, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_Chromosomes, self.MW_DNABasePairs)
 
 
 class FGene(FDataset):
@@ -257,7 +257,7 @@ class FGene(FDataset):
 
         super().__init__()
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         Genes = Dataset['genes.tsv']
         self.NUniq_Genes = len(Genes)
         self.Len_Genes = np.zeros(self.NUniq_Genes)
@@ -296,7 +296,7 @@ class FGene(FDataset):
             self.Type_Genes.append(Type)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Genes, self.MolType_Genes, self.Count_Genes, self.MW_Genes)
+        self.AddToMaster(Comp.Master, self.ID_Genes, self.MolType_Genes, self.Count_Genes, self.MW_Genes)
 
         # Reindexing coordinates according to the center of OriC as 0
         Genome = Dataset['EscherichiaColi.fasta']
@@ -346,7 +346,7 @@ class FPromoter(FDataset):
 
         super().__init__()
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         Promoters = Dataset['promoters.tsv']
 
         self.NUniq_Promoters = len(Promoters)
@@ -481,7 +481,7 @@ class FRNA(FDataset):
 
         super().__init__()
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         RNACounts = Dataset['Counts4AllRNAs_DL_19_totalIs_17_3_TranscriptElongation_BulkMolecules.tsv']
         for Value in RNACounts:
             ID, Count, Request = Value
@@ -542,10 +542,10 @@ class FRNA(FDataset):
             self.Freq_NTsInRNAs.append(NTFreq)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_RNAs, self.MolType_RNAs, self.Count_RNAs, self.MW_RNAs)
+        self.AddToMaster(Comp.Master, self.ID_RNAs, self.MolType_RNAs, self.Count_RNAs, self.MW_RNAs)
 
         # Add a single variable to the Master Dataset
-        MasterDataset.ID2ID_Gene2RNA_Master = self.ID2ID_Gene2RNA
+        Comp.Master.ID2ID_Gene2RNA_Master = self.ID2ID_Gene2RNA
 
 
 class FProtein(FDataset):
@@ -579,7 +579,7 @@ class FProtein(FDataset):
         return
 
     # Protein Monomers
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         ProteinCounts = Dataset['Counts4AllProteinMonomers_DL_28_totalIs_26_5_PolypeptideElongation_BulkMolecules.tsv']
         for Value in ProteinCounts:
             ID, Count, Request = Value
@@ -623,10 +623,10 @@ class FProtein(FDataset):
             self.Freq_AAsInProteins.append(AAFreq)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Proteins, self.MolType_Proteins, self.Count_Proteins, self.MW_Proteins)
+        self.AddToMaster(Comp.Master, self.ID_Proteins, self.MolType_Proteins, self.Count_Proteins, self.MW_Proteins)
 
         # Add a single variable to the Master Dataset
-        MasterDataset.ID2ID_mRNA2Protein_Master = self.ID2ID_mRNA2Protein
+        Comp.Master.ID2ID_mRNA2Protein_Master = self.ID2ID_mRNA2Protein
 
         # # Search for protein names containing 'protease' or 'peptidase'
         # for i, Value in enumerate(Proteins):
@@ -660,7 +660,7 @@ class FComplex(FDataset):
 
         super().__init__() # MasterLocalizations
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         Proteins = Dataset['proteins.tsv']
         for Value in Proteins:
             AACount, Name, Seq, Comments, CodingRNASeq, MW, Location, RNAID, ProtMonomerID, GeneID = Value
@@ -714,7 +714,7 @@ class FComplex(FDataset):
         self.NUniq_Complexes = len(self.ID_Complexes)
 
         # Add to the Master Dataset
-        self.AddToMaster(MasterDataset, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
+        self.AddToMaster(Comp.Master, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
 
 
 class FComplexation(FDataset):
@@ -744,7 +744,7 @@ class FComplexation(FDataset):
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
-    def SetUpData(self, Dataset, MasterDataset=None):
+    def setupdata(self, Dataset, Comp):
         self.SetUpMetaboliteIDRef(Dataset)
 
         Complexations = Dataset['complexationReactions_large.tsv']
@@ -948,9 +948,9 @@ class FComplexation(FDataset):
                         Data = self.CheckIDForModification(Data.strip('"'), self.IDModification)
 
                         # Check for unregistered molecules
-                        if Data not in MasterDataset.ID_Master:
+                        if Data not in Comp.Master.ID_Master:
                             Data = self.AddLocalizationToMolName(Data, '[c]')
-                            if Data not in MasterDataset.ID_Master:
+                            if Data not in Comp.Master.ID_Master:
                                 if Data not in self.ID_UnregisteredFromCPLXRXN:
                                     self.ID_UnregisteredFromCPLXRXN.append(Data)
                                 else:
@@ -968,7 +968,7 @@ class FComplexation(FDataset):
         self.Count_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)
         self.MW_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)   # TODO: get values from database
 
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN, self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN, self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
 
         self.NMax_ComplexationMolParts = len(self.ID_MolsInCPLXRXN)
 
@@ -1032,7 +1032,7 @@ class FEquilibrium(FDataset):
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
-    def SetUpData(self, Dataset, MasterDataset=None):
+    def setupdata(self, Dataset, Comp):
         self.SetUpMetaboliteIDRef(Dataset)
         # Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
         # for Metabolite in Metabolites:
@@ -1098,9 +1098,9 @@ class FEquilibrium(FDataset):
                         Data = self.CheckIDForModification(Data.strip('"'), self.IDModification)
 
                         # Check for unregistered molecules
-                        if Data not in MasterDataset.ID_Master:
+                        if Data not in Comp.Master.ID_Master:
                             Data = self.AddLocalizationToMolName(Data, '[c]')
-                            if Data not in MasterDataset.ID_Master:
+                            if Data not in Comp.Master.ID_Master:
                                 if Data not in self.ID_UnregisteredFromEQMXRXN:
                                     self.ID_UnregisteredFromEQMRXN.append(Data)
                                 else:
@@ -1119,7 +1119,7 @@ class FEquilibrium(FDataset):
         self.Count_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)
         self.MW_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)   # TODO: get values from database
 
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN, self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN, self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
 
         self.NMax_EQMRXNMolParts = len(self.ID_MolsInEQMRXN)
 
@@ -1156,7 +1156,7 @@ class FMetabolism(FDataset):
 
         self.ID_METRXNs = list()
         self.ID2Idx_METRXNs = dict()
-        self.Dir_RevMETRXNs = 0 # Rev for Reversibility
+        self.Dir_RevMETRXNs = list()   # Rev for Reversibility
         self.ID_Enzymes4METRXN = list()
         self.ID_Substrates4METRXN = list()
         self.ID2Idx_Enzymes4METRXN = dict()
@@ -1184,10 +1184,17 @@ class FMetabolism(FDataset):
         self.MW_UnregisteredFromMETRXN_Enzymes = 0
         self.NUniq_UnregisteredFromMETRXN_Enzymes = 0
 
+        # TCA Cycle
+        self.ID_RXNsInTCACycle = list()
+        self.ID_Substrates4TCACycle = list()
+        self.ID_Enzymes4TCACycle = list()
+        self.NUniq_RXNsInTCACycle = 0
+        self.Dir_RevMETRXNs = list()  # Rev for Reversibility
+
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         self.SetUpMetaboliteIDRef(Dataset)
 
         METRXNs = Dataset['reactions.tsv']
@@ -1227,7 +1234,6 @@ class FMetabolism(FDataset):
         ]
 
         self.NUniq_METRXNs = len(METRXNs)
-        self.Dir_RevMETRXNs = np.zeros(self.NUniq_METRXNs)
 
         ReversibilityBinaryDict = dict()
         ReversibilityBinaryDict['true'] = 1
@@ -1249,13 +1255,13 @@ class FMetabolism(FDataset):
                     else:
                         N_Mol_Repeated += 1
 
-                    if MolID not in MasterDataset.ID_Master:
+                    if MolID not in Comp.Master.ID_Master:
                         if MolID not in self.ID_UnregisteredFromMETRXN_Metabolites:
                             self.ID_UnregisteredFromMETRXN_Metabolites.append(MolID)
 
             RXNEnzymeIDs = ast.literal_eval(RXNEnzymeID)
             for EnzymeID in RXNEnzymeIDs:
-                if EnzymeID not in MasterDataset.ID_Master:
+                if EnzymeID not in Comp.Master.ID_Master:
                     if EnzymeID not in self.ID_UnregisteredFromMETRXN_Enzymes:
                         self.ID_UnregisteredFromMETRXN_Enzymes.append(EnzymeID)
 
@@ -1263,13 +1269,13 @@ class FMetabolism(FDataset):
         self.Count_UnregisteredFromMETRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromMETRXN_Metabolites)
         self.MW_UnregisteredFromMETRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromMETRXN_Metabolites)   # TODO: get values from database
         
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromMETRXN_Metabolites, self.MolType_UnregisteredFromMETRXN_Metabolites, self.Count_UnregisteredFromMETRXN_Metabolites, self.MW_UnregisteredFromMETRXN_Metabolites)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMETRXN_Metabolites, self.MolType_UnregisteredFromMETRXN_Metabolites, self.Count_UnregisteredFromMETRXN_Metabolites, self.MW_UnregisteredFromMETRXN_Metabolites)
 
         self.NUniq_UnregisteredFromMETRXN_Enzymes = len(self.ID_UnregisteredFromMETRXN_Enzymes)
         self.Count_UnregisteredFromMETRXN_Enzymes = np.zeros(self.NUniq_UnregisteredFromMETRXN_Enzymes)
         self.MW_UnregisteredFromMETRXN_Enzymes = np.zeros(self.NUniq_UnregisteredFromMETRXN_Enzymes)   # TODO: get values from database
         
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromMETRXN_Enzymes, self.MolType_UnregisteredFromMETRXN_Enzymes, self.Count_UnregisteredFromMETRXN_Enzymes, self.MW_UnregisteredFromMETRXN_Enzymes)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMETRXN_Enzymes, self.MolType_UnregisteredFromMETRXN_Enzymes, self.Count_UnregisteredFromMETRXN_Enzymes, self.MW_UnregisteredFromMETRXN_Enzymes)
 
         self.NMax_METRXNMolParts = len(self.ID_MolsInMETRXN)
 
@@ -1301,7 +1307,7 @@ class FMetabolism(FDataset):
             self.ID2Idx_METRXNs[RXNID] = len(self.ID_METRXNs) # = i
             self.ID_METRXNs.append(RXNID)
             RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
-            self.Dir_RevMETRXNs[i] = RXNReversibilityBinary
+            self.Dir_RevMETRXNs.append(RXNReversibilityBinary)
 
             if RXNEnzymeID.strip('[').strip(']'):
                 RXNEnzymeID = ast.literal_eval(RXNEnzymeID.strip('[').strip(']'))
@@ -1313,9 +1319,9 @@ class FMetabolism(FDataset):
                     #     self.ID_Enzymes4METRXN.append(ID)
                 else:
                     EnzymeID = RXNEnzymeID
-                if EnzymeID not in MasterDataset.ID_Master:
-                    print('Kinetics Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID)
-                assert EnzymeID in MasterDataset.ID_Master, 'Kinetics Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID
+                if EnzymeID not in Comp.Master.ID_Master:
+                    print('Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID)
+                assert EnzymeID in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID
                 self.ID2Idx_Enzymes4METRXN[EnzymeID] = len(self.ID_METRXNs)
                 self.ID_Enzymes4METRXN.append(EnzymeID)
 
@@ -1343,6 +1349,20 @@ class FMetabolism(FDataset):
         self.NUniq_MolsInMETRXN = len(self.ID_MolsInMETRXN)
 
 
+        TCACycle = Dataset['DL_TCAcycleI_prokaryotic.tsv']
+
+        for i, RXN in enumerate(TCACycle):
+            ID_RXN, ID_Substrates, ID_Enzymes = RXN
+            assert ID_RXN in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % ID_RXN
+            self.ID_RXNsInTCACycle.append(ID_RXN)
+            for ID_Substrate in ID_Substrates.split('//'):
+                assert ID_Substrate in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'Substrate ID not found in ID_Master: %s' % ID_Substrate
+            for ID_Enzyme in ID_Enzymes.split('//'):
+                assert ID_Enzyme in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'Enzyme ID not found in ID_Master: %s' % ID_Enzyme
+
+        self.NUniq_RXNsInTCACycle = len(self.ID_RXNsInTCACycle)
+
+
 class FKinetics(FDataset):
     def __init__(self): # MasterLocalizations
         self.MolType_Kinetics = 'Kinetics'
@@ -1368,7 +1388,7 @@ class FKinetics(FDataset):
 
         super().__init__() # MasterLocalizations
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         # This kinetic table has no info on pH condition
         Kinetics = Dataset['enzymeKinetics_Sorted_DL.tsv']
 
@@ -1398,13 +1418,13 @@ class FKinetics(FDataset):
                 print('Kinetics Dataset | ', 'ReactionID not in ID_METRXNs: ', ReactionID)
 
             # Check and add unregistered molecule IDs
-            if EnzymeIDs not in MasterDataset.ID_Master:   # All EnzymeIDs contain only one EnzymeID
+            if EnzymeIDs not in Comp.Master.ID_Master:   # All EnzymeIDs contain only one EnzymeID
                 self.ID_UnregisteredFromKINRXN.append(EnzymeIDs)
                 print('Kinetics Dataset | ', 'EnzymeID not in ID_Master: ', EnzymeIDs)
 
             for i, SubstrateID in enumerate(SubstrateIDs):
                 SubstrateID += '[c]'
-                if SubstrateID not in MasterDataset.ID_Master:
+                if SubstrateID not in Comp.Master.ID_Master:
                     self.ID_UnregisteredFromKINRXN.append(SubstrateID)
                     N_SubstratesNotInMasterID += 1
                     if self.Switch4DebugDataset:
@@ -1436,7 +1456,7 @@ class FKinetics(FDataset):
         self.Count_UnregisteredFromKINRXN = np.zeros(self.NUniq_UnregisteredFromKINRXN)
         self.MW_UnregisteredFromKINRXN = np.zeros(self.NUniq_UnregisteredFromKINRXN)  # TODO: get values from database
 
-        self.AddToMaster(MasterDataset, self.ID_UnregisteredFromKINRXN, self.MolType_UnregisteredFromKINRXN,
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromKINRXN, self.MolType_UnregisteredFromKINRXN,
                          self.Count_UnregisteredFromKINRXN, self.MW_UnregisteredFromKINRXN)
 
         # Data extracting
@@ -1491,89 +1511,6 @@ class FKinetics(FDataset):
             self.Const_Km[i] = kM_Adjusted
             self.Const_Ki[i] = kI_Adjusted
 
-        # N_TempAbscent = 0
-        # N_KcatValueAbscent = 0
-        # N_KmValueAbscent = 0
-        # N_KiValueAbscent = 0
-        # N_KmValueUnmatched = 0
-        #
-        # for i, Value in enumerate(Kinetics):
-        #     PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs,\
-        #     SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters,\
-        #     CustomParameterConstants, CustomParameterConstantValues, CustomParameterVariables, CheckedBy = Value
-        #
-        #     self.Kin_METRXNID2KineticData[ReactionID] = len(self.KinEnzymeIDs)
-        #     self.Kin_METRXNClassIDs.append(ReactionClassID)
-        #     self.Kin_METRXNID
-        #     self.Kin_EnzymeIDs.append(EnzymeIDs)
-        #     # Exception handling: Substrates may be more than one. Same applies to Km values
-        #     SubstrateIDs_Rebuilt = list()
-        #     for Substrate in SubstrateIDs.split(','):
-        #         SubstrateIDs_Rebuilt.append(Substrate)
-        #     self.Kin_SubstrateIDs.append(SubstrateIDs_Rebuilt)
-        #
-        #     # Exception handling: Temp and K values are missing
-        #     Temp = Temp.replace('[', '').replace(']', '')
-        #     if Temp:
-        #         self.Temp_EnzKinetics[i] = float(Temp)
-        #     else:
-        #         N_TempAbscent += 1
-        #         if self.Switch4DebugDataset:
-        #             print('Kinetics Dataset | ', 'TempAbscent:', ReactionID)
-        #
-        #     kcat = kcat.replace(',', '').replace('[', '').replace(']', '')
-        #     if kcat:
-        #         self.Kcat_EnzKinetics[i] = float(kcat)
-        #     else:
-        #         N_KcatValueAbscent += 1
-        #         if self.Switch4DebugDataset:
-        #             print('Kinetics Dataset | ', 'KcatValueAbscent:', ReactionID)
-        #
-        #     # TODO:In case there were more than one substrate
-        #     kM = kM.replace('[', '').replace(']', '')
-        #     N_SubstrateIDs = len(SubstrateIDs_Rebuilt)
-        #     if N_SubstrateIDs > 1:
-        #         if kM.count(',') >= 1:
-        #             kM_Rebuilt = np.zeros(N_SubstrateIDs)
-        #             for j, kM_value in enumerate(kM.split(',')):
-        #                 kM_Rebuilt[j] = float(kM_value)
-        #             self.Km_EnzKinetics.append(kM_Rebuilt)
-        #         else:
-        #             N_KmValueUnmatched += 1
-        #             if self.Switch4DebugDataset:
-        #                 print('Kinetics Dataset | ', '', ReactionID, ': The number of kM values do not match the number of substrates')
-        #             self.Km_EnzKinetics.append(0.0)
-        #     else:
-        #         if kM:
-        #             self.Km_EnzKinetics.append(float(kM))
-        #         else:
-        #             self.Km_EnzKinetics.append(0.0)
-        #             N_KmValueAbscent += 1
-        #             if self.Switch4DebugDataset:
-        #                 print('Kinetics Dataset | ', 'KmValueAbscent:', ReactionID)
-        #
-        #     self.Km_EnzKineticsTemp = self.Km_EnzKinetics[-1]
-        #
-        #     # TODO: Ki calculations and custom equations have not been implemented
-        #     kI = kI.replace(',', '').replace('[', '').replace(']', '')
-        #     if kI:
-        #         self.Ki_EnzKinetics[i] = float(kI)
-        #     else:
-        #         N_KiValueAbscent += 1
-        #         if self.Switch4DebugDataset:
-        #             print('Kinetics Dataset | ', 'KiValueAbscent:', ReactionID)
-        #
-        # Km_ExportShort = self.NUniq_EnzKinetics - len(self.Km_EnzKinetics)
-        #
-        # assert len(self.Km_EnzKinetics) == self.NUniq_EnzKinetics, '%s Km exporting fell short' % Km_ExportShort
-        #
-        # if self.Switch4DebugDataset:
-        #     print('Kinetics Dataset | ', 'N_Total:', self.NUniq_EnzKinetics)
-        #     print('Kinetics Dataset | ', 'N_TempAbscent:', N_TempAbscent)
-        #     print('Kinetics Dataset | ', 'N_KcatValueAbscent:', N_KcatValueAbscent)
-        #     print('Kinetics Dataset | ', 'N_KmValueAbscent:', N_KmValueAbscent)
-        #     print('Kinetics Dataset | ', 'N_KiValueAbscent:', N_KiValueAbscent)
-        #     print('Kinetics Dataset | ', 'N_KmValueUnmatched:', N_KmValueUnmatched)
 
     def ReplaceEmptyListWithValue(self, Variable, Value):
         if Variable == list():
@@ -1598,7 +1535,7 @@ class FCompartment(FDataset):
 
         super().__init__() # MasterLocalizations
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         Compartments = Dataset['compartments.tsv']
         self.NUniq_Compartments = len(Compartments)
         self.Idx_Compartments = np.zeros(self.NUniq_Compartments)
@@ -1629,7 +1566,7 @@ class FBuildingBlock(FDataset):
 
         super().__init__()
 
-    def SetUpData(self, Dataset, MasterDataset = None):
+    def SetUpData(self, Dataset, Comp):
         dNTPs = Dataset['dntps.txt']
         for BuildingBlock in dNTPs:
             BuildingBlock = self.AddLocalizationToMolName(BuildingBlock, '[c]')
@@ -1664,10 +1601,96 @@ class FUserInput(FDataset):
 
         super().__init__()  # MasterLocalizations
 
-    def SetUpData(self, Dataset, MasterDataset=None):
+    def SetUpData(self, Dataset, Comp):
         CellProcesses = Dataset['process_module.tsv']
+        InputReactions = Dataset['reaction_data.tsv']
+        # MoleculeData = Dataset['molecule_data.tsv']
+
         for CellProcess in CellProcesses:
             self.CellProcesses.append(CellProcess[0])
+
+        ReversibilityBinaryDict = dict()
+        ReversibilityBinaryDict['true'] = 1
+        ReversibilityBinaryDict['false'] = 0
+
+        SubstratesToSkip = [
+            "WATER",
+            "CARBON-DIOXIDE",
+            "PROTON",
+            "FAD",
+            "NAD",
+            "NADP",
+            "NADH",
+            "NADPH",
+            "FADH2",
+            "CO-A",
+            "ATP",
+        ]
+
+        LocalizationTags = ['[c]', '[p]']
+
+        SubstratesToSkipWithTags = list()
+        for Substrate in SubstratesToSkip:
+            for Tag in LocalizationTags:
+                SubstrateWithTag = Substrate + Tag
+                SubstratesToSkipWithTags.append(SubstrateWithTag)
+
+        # TODO: Allow unregistered molecules in the future
+        # Overwrite reaction information
+        if InputReactions:
+            for InputReaction in InputReactions:
+                RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = InputReaction
+
+                EnzymeID = None
+
+                if RXNEnzymeID.strip('[').strip(']'):
+                    RXNEnzymeID = ast.literal_eval(RXNEnzymeID.strip('[').strip(']'))
+                    # TODO: Only one enzyme is taken for now
+                    if isinstance(RXNEnzymeID, tuple):
+                        EnzymeID = RXNEnzymeID[0]
+                        # for ID in RXNEnzymeID:
+                        #     self.ID_Enzymes4METRXN.append(ID)
+                    else:
+                        EnzymeID = RXNEnzymeID
+                    if EnzymeID not in Comp.Master.ID_Master:
+                        print('Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID)
+                    assert EnzymeID in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID
+
+                CoeffArray = np.zeros(Comp.Metabolism.NMax_METRXNMolParts)
+                Substrate = None
+
+                for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                    for MolIDCoeffPair in MoleculeInfo.split(','):
+                        MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
+                        MolID = MolID[1:-1]
+                        Idx = Comp.Metabolism.ID2Idx_MolsInMETRXN[MolID]
+                        CoeffArray[Idx] = Coeff
+
+                        # Substrate
+                        if int(Coeff) < 0:
+                            if Substrate == None:
+                                Substrate = MolID
+                            elif Substrate in SubstratesToSkipWithTags:
+                                Substrate = MolID
+                            elif Substrate.__contains__('+'):
+                                Substrate = MolID
+
+                if RXNID in Comp.Metabolism.ID_METRXNs:
+                    Idx_RXN = Comp.Metabolism.ID2Idx_METRXNs[RXNID]
+                    Comp.Metabolism.Dir_RevMETRXNs[Idx_RXN] = ReversibilityBinaryDict[RXNReversibility]
+
+                    Comp.Metabolism.ID_Enzymes4METRXN[Idx_RXN] = EnzymeID
+                    Comp.Metabolism.ID_Substrates4METRXN[Idx_RXN] = Substrate
+                    Comp.Metabolism.Coeff_MolsInMETRXN[Idx_RXN] = CoeffArray
+
+                else:
+                    Comp.Metabolism.ID2Idx_METRXNs[RXNID] = len(Comp.Metabolism.ID_METRXNs)
+                    Comp.Metabolism.ID_METRXNs.append(RXNID)
+                    Comp.Metabolism.Dir_RevMETRXNs.append(ReversibilityBinaryDict[RXNReversibility])
+
+                    Comp.Metabolism.ID_Enzymes4METRXN.append(EnzymeID)
+                    Comp.Metabolism.ID_Substrates4METRXN.append(Substrate)
+                    Comp.Metabolism.Coeff_MolsInMETRXN.append(CoeffArray)
 
 
 # Master Dataset is an exception to the SetUpData method

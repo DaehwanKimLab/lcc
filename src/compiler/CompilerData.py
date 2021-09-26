@@ -156,10 +156,7 @@ class FCompilerData:
 
     def SetUpCompilerData(self, Dataset):
         for DataClassName, DataClassDataset in self.Dict_DataClass.items():
-            if DataClassDataset == self.Master:
-                DataClassDataset.SetUpData(self)
-            else:
-                DataClassDataset.SetUpData(Dataset, self.Master)
+            DataClassDataset.SetUpData(Dataset, self)
             print('lcc compiler data have been set up. Class: "%s"' % DataClassName)
 
     def SaveCompilerData(self):
