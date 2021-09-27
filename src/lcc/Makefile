@@ -9,7 +9,7 @@ LLVM_BIN := $(shell ${LLVM_CONFIG} --bindir)
 #CXX=${LLVM_BIN}/clang++
 #CXX=clang++
 
-CXXFLAGS = -std=c++14 -g
+CXXFLAGS = -std=c++14 -g -Wno-deprecated-register
 #CXXFLAGS = -std=c++14 -g -Wno-deprecated-register -fsanitize=address -fno-omit-frame-pointer
 #LDFLAGS = -fsanitize=address -g
 #LDFLAGS = -fsanitize=address -g
@@ -46,6 +46,15 @@ ${TARGET}: $(OBJS) node.h
 
 test: ${TARGET} sample.lpp
 	./${TARGET} sample.lpp
+
+lcc:
+	python ../compiler/lcc.py -L ../../data -S output sample.lpp
+
+lcc-run:
+	python cell.py
+
+lcc-clean:
+	rm -f output/* cell.py cell.*.fa
 
 clean:
 	rm -f $(OBJS) lpp.y.cpp lpp.l.cpp lpp.y.hpp ${TARGET}

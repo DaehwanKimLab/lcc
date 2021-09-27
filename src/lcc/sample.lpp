@@ -10,7 +10,7 @@ experiment my_expr {
 };
 
 using module Transcription;
-using module Replication;
+//using module Replication;
 
 /* Define proteins */
 // FIXME:

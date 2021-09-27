@@ -33,4 +33,18 @@ Installing llvm development environment:
 	./generate_mol_keyword.py -k etc/mol_list -y lpp.y.template -o lpp.y
 	make
 
+## build lcc-prep and run
+
+    make clean
+    make
+    # run with all modules
+    ./lcc-prep -i ../../data -o ../../data/intermediate sample.lpp
+    
+    #./lcc-prep -i ../../data -o ../../data/intermediate sample2.lpp
+    
+    make lcc
+    #python ../compiler/lcc.py -L ../../data -S output sample.lpp
+    
+    make lcc-run
+    #python cell.py
 
