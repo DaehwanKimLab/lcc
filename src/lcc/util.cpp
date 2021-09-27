@@ -4,8 +4,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-
-
 #include "util.h"
 
 using namespace std;

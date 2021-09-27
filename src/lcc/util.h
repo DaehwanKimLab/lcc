@@ -40,6 +40,12 @@ static inline std::string strip(const std::string& OrgString, const char *Delims
 	return OrgString.substr(begin_pos, end_pos - begin_pos + 1);
 }
 
+template <typename Derived, typename Base>
+static bool is_class_of(const Base*Node) {
+    Derived* DerivedNode = dynamic_cast<Derived *>(const_cast<Base *>(Node));
+    return DerivedNode != nullptr;
+}
+
 bool CreatePath(const char *Path);
 bool CreatePaths(const char *Path);
 } // Namespace Utils

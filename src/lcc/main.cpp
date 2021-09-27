@@ -35,13 +35,6 @@ void DumpNBlock(const NBlock* InProgramBlock) {
     }
 }
 
-
-template <typename Derived>
-static bool is_class_of(const NNode *Node) {
-    Derived* DerivedNode = dynamic_cast<Derived *>(const_cast<NNode *>(Node));
-    return DerivedNode != nullptr;
-}
-
 void TraversalNode(NBlock* InProgramBlock)
 {
     ostream& os = std::cout;
@@ -51,23 +44,23 @@ void TraversalNode(NBlock* InProgramBlock)
     while(!tc.Queue.empty()) {
         const NNode* node = tc.Queue.front(); tc.Queue.pop();
 
-        if (is_class_of<NProteinDeclaration>(node)) {
+        if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
             auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
             os << "Protein: " << Protein->Id.Name << endl;
 
             Context.ProteinList.emplace_back(*Protein);
 
-        } else if (is_class_of<NPathwayDeclaration>(node)) {
+        } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
             os << "Pathway: " << Pathway->Id.Name << endl;
 
             Context.PathwayList.emplace_back(Pathway->Id.Name);
 
-        } else if (is_class_of<NOrganismDeclaration>(node)) {
+        } else if (Utils::is_class_of<NOrganismDeclaration, NNode>(node)) {
             auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
             os << "Organism: " << Organism->Id.Name << endl;
             os << "  " << Organism->Description << endl;
-        } else if (is_class_of<NExperimentDeclaration>(node)) {
+        } else if (Utils::is_class_of<NExperimentDeclaration, NNode>(node)) {
             auto Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
             os << "Experiment: " << Experiment->Id.Name << endl;
             os << "  " << Experiment->Description << endl;
@@ -76,7 +69,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     os << "  "; stmt->Print(os); os << endl;
                 }
             }
-        } else if (is_class_of<NUsingStatement>(node)) {
+        } else if (Utils::is_class_of<NUsingStatement, NNode>(node)) {
             auto UsingStmt = dynamic_cast<const NUsingStatement *>(node);
             os << "Using(" << UsingStmt->Type << "): " << UsingStmt->Id.Name << endl;
             Context.UsingModuleList.emplace_back(UsingStmt->Id.Name);
