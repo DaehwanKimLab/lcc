@@ -744,7 +744,7 @@ class FComplexation(FDataset):
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
-    def setupdata(self, Dataset, Comp):
+    def SetUpData(self, Dataset, Comp):
         self.SetUpMetaboliteIDRef(Dataset)
 
         Complexations = Dataset['complexationReactions_large.tsv']
@@ -1032,7 +1032,7 @@ class FEquilibrium(FDataset):
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
-    def setupdata(self, Dataset, Comp):
+    def SetUpData(self, Dataset, Comp):
         self.SetUpMetaboliteIDRef(Dataset)
         # Metabolites = Dataset['Counts4AllMetabolites_DL_2_totalIs_0_0_Metabolism_BulkMolecules.tsv']
         # for Metabolite in Metabolites:
@@ -1189,6 +1189,18 @@ class FMetabolism(FDataset):
         # self.ID_Substrates4TCACycle = list()
         # self.ID_Enzymes4TCACycle = list()
         self.NUniq_RXNsInTCACycle = 0
+        
+        self.ID_TCARXNs = list()
+        self.ID2Idx_TCARXNs = dict()
+        self.Dir_RevTCARXNs = list()
+        self.ID_Enzymes4TCARXN = list()
+        self.ID_Substrates4TCARXN = list()
+        self.ID2Idx_Enzymes4TCARXN = dict()
+
+        self.ID_MolsInTCARXN = list()
+        self.ID2Idx_MolsInTCARXN = dict()
+        self.Coeff_MolsInTCARXN = list()
+        self.NUniq_MolsInTCARXN = 0
 
         super().__init__()
 
@@ -1354,6 +1366,7 @@ class FMetabolism(FDataset):
         self.NUniq_MolsInMETRXN = len(self.ID_MolsInMETRXN)
 
 
+        # TCA CYCLE RXN IDs ONLY
         TCACycle = Dataset['DL_TCAcycleI_prokaryotic.tsv']
 
         RXNIDChange = {
@@ -1368,6 +1381,63 @@ class FMetabolism(FDataset):
             self.ID_RXNsInTCACycle.append(ID_RXN)
 
         self.NUniq_RXNsInTCACycle = len(self.ID_RXNsInTCACycle)
+
+
+        # TCA CYCLE INDEPENDENT
+        TCARXNs = Dataset['reactions_TCA.tsv']
+
+        RXNIDChange = {
+            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN':   'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
+        }
+
+        for Value in TCARXNs:
+            for MoleculeInfo in Value[1].strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for MolIDCoeffPair in MoleculeInfo.strip().split(','):
+                    MolID, Coeff = MolIDCoeffPair.strip().split(': ')
+                    MolID = MolID[1:-1]
+                    N_Mol_Total += 1
+                    if MolID not in self.ID_MolsInTCARXN:
+                        self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
+                        self.ID_MolsInTCARXN.append(MolID)
+        self.NMax_TCARXNMolParts = len(self.ID_MolsInTCARXN)
+
+        for i, Value in enumerate(TCARXNs):
+            RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = Value
+            assert RXNID not in self.ID2Idx_TCARXNs
+            if RXNID in RXNIDChange:
+                RXNID = RXNIDChange[RXNID]
+            assert RXNID in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % RXNID
+            self.ID2Idx_TCARXNs[RXNID] = len(self.ID_TCARXNs) # = i
+            self.ID_TCARXNs.append(RXNID)
+            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
+            self.Dir_RevTCARXNs.append(RXNReversibilityBinary)
+
+            CoeffArray = np.zeros(self.NMax_TCARXNMolParts)
+            Substrate = None
+            for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for MolIDCoeffPair in MoleculeInfo.split(','):
+                    MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
+                    MolID = MolID[1:-1]
+                    N_Mol_Total += 1
+                    if MolID not in self.ID_MolsInTCARXN:
+                        self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
+                        self.ID_MolsInTCARXN.append(MolID)
+                        
+                    Idx = self.ID2Idx_MolsInTCARXN[MolID]
+                    CoeffArray[Idx] = int(Coeff)
+
+                    # Substrate
+                    if int(Coeff) < 0:
+                        if Substrate == None:
+                            Substrate = MolID
+                        elif Substrate in SubstratesToSkipWithTags:
+                            Substrate = MolID
+                        elif Substrate.__contains__('+'):
+                            Substrate = MolID
+
+            self.ID_Substrates4TCARXN.append(Substrate)   # Only one substrate taken from one reaction
+            self.Coeff_MolsInTCARXN.append(CoeffArray)
+        self.NUniq_MolsInTCARXN = len(self.ID_MolsInTCARXN)
 
 
 class FKinetics(FDataset):

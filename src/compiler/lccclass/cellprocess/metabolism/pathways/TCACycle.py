@@ -53,18 +53,11 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     Idx_TCACycleMetabolitesToReplenish = ProGen.GetMolIdx_Master(ID_TCACycleMetabolitesToReplenish)
 
-    ID_SubstratesInTCACycle4Display = [
-        'CIS-ACONITATE[c]', 'MAL[c]', '2-KETOGLUTARATE[c]',
-
-        'SUC[c]',
-        'OXALACETIC_ACID[c]', 'FUM[c]', 'SUC-COA[c]'
-    ]
-
+    ID_SubstratesInTCACycle4Display = Comp.Metabolism.ID_Substrates4TCARXN
     Idx_SubstratesInTCACycle4Display = ProGen.GetMolIdx_Master(ID_SubstratesInTCACycle4Display)
 
     ID_EnergyProductsInTCACycle = [
         'CO-A[c]',
-        'FADH2[p]',
         'NADH[c]',
         'ATP[c]',
         'GTP[c]',
@@ -245,9 +238,9 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                 Writer.PrintStrg("===== TCA Cycle ===== ")
                 Writer.PrintStrg("Substrates:")
                 Writer.PrintStrg(str(ID_SubstratesInTCACycle[:5]))
-                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_SubstratesInTCACycle4Count)[:5]")
+                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_SubstratesInTCACycle4Count)[0][:5]")
                 Writer.PrintStrg(str(ID_SubstratesInTCACycle[5:]))
-                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_SubstratesInTCACycle4Count)[5:]")
+                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_SubstratesInTCACycle4Count)[0][5:]")
                 Writer.BlankLine()
                 Writer.PrintStrg("Energy Products:")
                 Writer.PrintStrg(str(ID_EnergyProductsInTCACycle))

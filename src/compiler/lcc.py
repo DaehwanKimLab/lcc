@@ -86,7 +86,7 @@ def WriteBody(Writer, CompilerData, ProGen):
 
     # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True
-    Writer.Switch4Kinetics = True
+    Writer.Switch4Kinetics = False
 
     # Cell Division Test
     Writer.Switch4TestCellDivision = False
@@ -108,7 +108,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4ShowDeltaCounts = False
 
     # Save Data
-    Writer.Switch4SaveAllCounts = True
+    Writer.Switch4SaveAllCounts = False
     Writer.Switch4SaveIndividualCounts = False
     if Writer.Switch4SaveAllCounts or Writer.Switch4SaveSpecificCounts:
         Writer.Switch4Save = True

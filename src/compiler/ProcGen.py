@@ -54,7 +54,7 @@ class FProcessGenerator():
 
             # Conversion
             [Complexation, "Complexation"],
-            # Equilibrium,
+            # [Equilibrium, "Equilibrium"],
 
             # Modification
 
@@ -64,7 +64,7 @@ class FProcessGenerator():
 
             # Metabolism
             [Metabolism, "Metabolism"],
-            [TCACycle, "TCACycle"],
+            # [TCACycle, "TCACycle"],
 
             # Cell division
             [CellDivision, "CellDivision"],
