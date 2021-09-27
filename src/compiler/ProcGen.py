@@ -19,6 +19,7 @@ from lccclass.cellprocess.synthesis import Replication, Translation, Transcripti
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
 from lccclass.cellprocess.conversion import Complexation, Equilibrium
 from lccclass.cellprocess.metabolism import Metabolism
+from lccclass.cellprocess.metabolism.pathways import TCACycle
 from lccclass.cellprocess.division import CellDivision
 
 class FProcessGenerator():
@@ -63,6 +64,7 @@ class FProcessGenerator():
 
             # Metabolism
             [Metabolism, "Metabolism"],
+            [TCACycle, "TCACycle"],
 
             # Cell division
             [CellDivision, "CellDivision"],

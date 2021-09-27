@@ -32,7 +32,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     GeneNames4mRNAsToTrack_Random10 = [
         'alaS',  # Amino acyl tRNA synthesis
-        'rplC',  # Ribosome
+        # 'rplC',  # Ribosome
         'def',   # Translation
         'groS',  # Protein folding
         'dnaA',  # Replication

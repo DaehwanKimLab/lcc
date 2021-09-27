@@ -77,13 +77,16 @@ def WriteBody(Writer, CompilerData, ProGen):
 
     Model = 1
 
+    # Writer Switches
+
+    # Output
     Writer.Switch4Comment = True
     Writer.Switch4PrintString = True
     Writer.Switch4Graph = False
 
     # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True
-    Writer.Switch4Kinetics = False
+    Writer.Switch4Kinetics = True
 
     # Cell Division Test
     Writer.Switch4TestCellDivision = False
@@ -91,7 +94,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Print switches
     Writer.Switch4SimStepsExecuted = True
     Writer.Switch4ProcessSummary = True
-    Writer.Switch4CellStateSummary = True
+    Writer.Switch4CellStateSummary = False
     Writer.Switch4PostSimulationStepCorrectionMessage = False
 
     # Debugging

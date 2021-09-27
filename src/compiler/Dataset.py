@@ -1186,10 +1186,9 @@ class FMetabolism(FDataset):
 
         # TCA Cycle
         self.ID_RXNsInTCACycle = list()
-        self.ID_Substrates4TCACycle = list()
-        self.ID_Enzymes4TCACycle = list()
+        # self.ID_Substrates4TCACycle = list()
+        # self.ID_Enzymes4TCACycle = list()
         self.NUniq_RXNsInTCACycle = 0
-        self.Dir_RevMETRXNs = list()  # Rev for Reversibility
 
         super().__init__()
 
@@ -1291,6 +1290,12 @@ class FMetabolism(FDataset):
             "FADH2",
             "CO-A",
             "ATP",
+            "ADP",
+            "GTP",
+            "GDP",
+            "Ubiquinones",
+            "PI",
+            "PPI",
         ]
 
         LocalizationTags = ['[c]', '[p]']
@@ -1333,7 +1338,7 @@ class FMetabolism(FDataset):
                     MolID = MolID[1:-1]
                     N_Mol_Total += 1
                     Idx = self.ID2Idx_MolsInMETRXN[MolID]
-                    CoeffArray[Idx] = Coeff
+                    CoeffArray[Idx] = int(Coeff)
 
                     # Substrate
                     if int(Coeff) < 0:
@@ -1351,14 +1356,16 @@ class FMetabolism(FDataset):
 
         TCACycle = Dataset['DL_TCAcycleI_prokaryotic.tsv']
 
+        RXNIDChange = {
+            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN':   'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
+        }
+
         for i, RXN in enumerate(TCACycle):
             ID_RXN, ID_Substrates, ID_Enzymes = RXN
+            if ID_RXN in RXNIDChange:
+                ID_RXN = RXNIDChange[ID_RXN]
             assert ID_RXN in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % ID_RXN
             self.ID_RXNsInTCACycle.append(ID_RXN)
-            for ID_Substrate in ID_Substrates.split('//'):
-                assert ID_Substrate in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'Substrate ID not found in ID_Master: %s' % ID_Substrate
-            for ID_Enzyme in ID_Enzymes.split('//'):
-                assert ID_Enzyme in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'Enzyme ID not found in ID_Master: %s' % ID_Enzyme
 
         self.NUniq_RXNsInTCACycle = len(self.ID_RXNsInTCACycle)
 
@@ -1368,9 +1375,10 @@ class FKinetics(FDataset):
         self.MolType_Kinetics = 'Kinetics'
 
         self.ID_KINRXNs = list()
-        self.ID2Idx_RXNID2KIN = dict()
+        self.ID2Idx_RXNID2KINRXN = dict()
         self.ID_Enzymes4KINRXN = list()
         self.ID_Substrates4KINRXN = list()
+        self.ID2Idx_Enzyme2KINRXN = dict()
         self.Const_Temp = 0
         self.Const_Kcat = 0
         self.Const_Km = 0
@@ -1503,9 +1511,11 @@ class FKinetics(FDataset):
                 print('Kinetics Dataset | ', '', 'kI:', kI, '|', 'kI_Adjusted', kI_Adjusted)
 
             assert ReactionID in self.ID_KINRXNs
-            self.ID2Idx_RXNID2KIN[ReactionID] = len(self.ID2Idx_RXNID2KIN)
+            self.ID2Idx_RXNID2KINRXN[ReactionID] = len(self.ID2Idx_RXNID2KINRXN)
             self.ID_Enzymes4KINRXN.append(EnzymeIDs)
             self.ID_Substrates4KINRXN.append(SubstrateID_Single)
+            # self.ID2Idx_Enzyme2KINRXN[EnzymeIDs] = len(self.ID2Idx_Enzyme2KINRXN)
+            # assert len(self.ID2Idx_RXNID2KINRXN) == len(self.ID2Idx_Enzyme2KINRXN)   # There are reactions using redundant enzymes
             self.Const_Temp[i] = 37
             self.Const_Kcat[i] = kcat_Adjusted
             self.Const_Km[i] = kM_Adjusted
@@ -1603,94 +1613,95 @@ class FUserInput(FDataset):
 
     def SetUpData(self, Dataset, Comp):
         CellProcesses = Dataset['process_module.tsv']
-        InputReactions = Dataset['reaction_data.tsv']
+        # InputReactions = Dataset['reaction_data.tsv']
         # MoleculeData = Dataset['molecule_data.tsv']
 
         for CellProcess in CellProcesses:
             self.CellProcesses.append(CellProcess[0])
 
-        ReversibilityBinaryDict = dict()
-        ReversibilityBinaryDict['true'] = 1
-        ReversibilityBinaryDict['false'] = 0
-
-        SubstratesToSkip = [
-            "WATER",
-            "CARBON-DIOXIDE",
-            "PROTON",
-            "FAD",
-            "NAD",
-            "NADP",
-            "NADH",
-            "NADPH",
-            "FADH2",
-            "CO-A",
-            "ATP",
-        ]
-
-        LocalizationTags = ['[c]', '[p]']
-
-        SubstratesToSkipWithTags = list()
-        for Substrate in SubstratesToSkip:
-            for Tag in LocalizationTags:
-                SubstrateWithTag = Substrate + Tag
-                SubstratesToSkipWithTags.append(SubstrateWithTag)
-
-        # TODO: Allow unregistered molecules in the future
-        # Overwrite reaction information
-        if InputReactions:
-            for InputReaction in InputReactions:
-                RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = InputReaction
-
-                EnzymeID = None
-
-                if RXNEnzymeID.strip('[').strip(']'):
-                    RXNEnzymeID = ast.literal_eval(RXNEnzymeID.strip('[').strip(']'))
-                    # TODO: Only one enzyme is taken for now
-                    if isinstance(RXNEnzymeID, tuple):
-                        EnzymeID = RXNEnzymeID[0]
-                        # for ID in RXNEnzymeID:
-                        #     self.ID_Enzymes4METRXN.append(ID)
-                    else:
-                        EnzymeID = RXNEnzymeID
-                    if EnzymeID not in Comp.Master.ID_Master:
-                        print('Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID)
-                    assert EnzymeID in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID
-
-                CoeffArray = np.zeros(Comp.Metabolism.NMax_METRXNMolParts)
-                Substrate = None
-
-                for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
-                    for MolIDCoeffPair in MoleculeInfo.split(','):
-                        MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
-                        MolID = MolID[1:-1]
-                        Idx = Comp.Metabolism.ID2Idx_MolsInMETRXN[MolID]
-                        CoeffArray[Idx] = Coeff
-
-                        # Substrate
-                        if int(Coeff) < 0:
-                            if Substrate == None:
-                                Substrate = MolID
-                            elif Substrate in SubstratesToSkipWithTags:
-                                Substrate = MolID
-                            elif Substrate.__contains__('+'):
-                                Substrate = MolID
-
-                if RXNID in Comp.Metabolism.ID_METRXNs:
-                    Idx_RXN = Comp.Metabolism.ID2Idx_METRXNs[RXNID]
-                    Comp.Metabolism.Dir_RevMETRXNs[Idx_RXN] = ReversibilityBinaryDict[RXNReversibility]
-
-                    Comp.Metabolism.ID_Enzymes4METRXN[Idx_RXN] = EnzymeID
-                    Comp.Metabolism.ID_Substrates4METRXN[Idx_RXN] = Substrate
-                    Comp.Metabolism.Coeff_MolsInMETRXN[Idx_RXN] = CoeffArray
-
-                else:
-                    Comp.Metabolism.ID2Idx_METRXNs[RXNID] = len(Comp.Metabolism.ID_METRXNs)
-                    Comp.Metabolism.ID_METRXNs.append(RXNID)
-                    Comp.Metabolism.Dir_RevMETRXNs.append(ReversibilityBinaryDict[RXNReversibility])
-
-                    Comp.Metabolism.ID_Enzymes4METRXN.append(EnzymeID)
-                    Comp.Metabolism.ID_Substrates4METRXN.append(Substrate)
-                    Comp.Metabolism.Coeff_MolsInMETRXN.append(CoeffArray)
+        # ReversibilityBinaryDict = dict()
+        # ReversibilityBinaryDict['true'] = 1
+        # ReversibilityBinaryDict['false'] = 0
+        #
+        # SubstratesToSkip = [
+        #     "WATER",
+        #     "CARBON-DIOXIDE",
+        #     "PROTON",
+        #     "FAD",
+        #     "NAD",
+        #     "NADP",
+        #     "NADH",
+        #     "NADPH",
+        #     "FADH2",
+        #     "CO-A",
+        #     "ATP",
+        #     "Ubiquinones",
+        # ]
+        #
+        # LocalizationTags = ['[c]', '[p]']
+        #
+        # SubstratesToSkipWithTags = list()
+        # for Substrate in SubstratesToSkip:
+        #     for Tag in LocalizationTags:
+        #         SubstrateWithTag = Substrate + Tag
+        #         SubstratesToSkipWithTags.append(SubstrateWithTag)
+        #
+        # # TODO: Allow unregistered molecules in the future
+        # # Overwrite reaction information
+        # if InputReactions:
+        #     for InputReaction in InputReactions:
+        #         RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = InputReaction
+        #
+        #         EnzymeID = None
+        #
+        #         if RXNEnzymeID.strip('[').strip(']'):
+        #             RXNEnzymeID = ast.literal_eval(RXNEnzymeID.strip('[').strip(']'))
+        #             # TODO: Only one enzyme is taken for now
+        #             if isinstance(RXNEnzymeID, tuple):
+        #                 EnzymeID = RXNEnzymeID[0]
+        #                 # for ID in RXNEnzymeID:
+        #                 #     self.ID_Enzymes4METRXN.append(ID)
+        #             else:
+        #                 EnzymeID = RXNEnzymeID
+        #             if EnzymeID not in Comp.Master.ID_Master:
+        #                 print('Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID)
+        #             assert EnzymeID in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID
+        #
+        #         CoeffArray = np.zeros(Comp.Metabolism.NMax_METRXNMolParts)
+        #         Substrate = None
+        #
+        #         for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+        #             for MolIDCoeffPair in MoleculeInfo.split(','):
+        #                 MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
+        #                 MolID = MolID[1:-1]
+        #                 Idx = Comp.Metabolism.ID2Idx_MolsInMETRXN[MolID]
+        #                 CoeffArray[Idx] = Coeff
+        #
+        #                 # Substrate
+        #                 if int(Coeff) < 0:
+        #                     if Substrate == None:
+        #                         Substrate = MolID
+        #                     elif Substrate in SubstratesToSkipWithTags:
+        #                         Substrate = MolID
+        #                     elif Substrate.__contains__('+'):
+        #                         Substrate = MolID
+        #
+        #         if RXNID in Comp.Metabolism.ID_METRXNs:
+        #             Idx_RXN = Comp.Metabolism.ID2Idx_METRXNs[RXNID]
+        #             Comp.Metabolism.Dir_RevMETRXNs[Idx_RXN] = ReversibilityBinaryDict[RXNReversibility]
+        #
+        #             Comp.Metabolism.ID_Enzymes4METRXN[Idx_RXN] = EnzymeID
+        #             Comp.Metabolism.ID_Substrates4METRXN[Idx_RXN] = Substrate
+        #             Comp.Metabolism.Coeff_MolsInMETRXN[Idx_RXN] = CoeffArray
+        #
+        #         else:
+        #             Comp.Metabolism.ID2Idx_METRXNs[RXNID] = len(Comp.Metabolism.ID_METRXNs)
+        #             Comp.Metabolism.ID_METRXNs.append(RXNID)
+        #             Comp.Metabolism.Dir_RevMETRXNs.append(ReversibilityBinaryDict[RXNReversibility])
+        #
+        #             Comp.Metabolism.ID_Enzymes4METRXN.append(EnzymeID)
+        #             Comp.Metabolism.ID_Substrates4METRXN.append(Substrate)
+        #             Comp.Metabolism.Coeff_MolsInMETRXN.append(CoeffArray)
 
 
 # Master Dataset is an exception to the SetUpData method
@@ -1732,7 +1743,7 @@ class FMaster():
         self.Idx_Master_MolsInEQMRXN = list()
         self.Idx_Master_MolsInMETRXN = list()
 
-    def SetUpData(self, Comp):
+    def SetUpData(self, Dataset, Comp):
         self.SetUpMasterIndices(Comp)
         self.SetUpIdx2IdxMappingDict()
 

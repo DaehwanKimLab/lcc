@@ -1,20 +1,8 @@
-# Metabolism
+# TCA Cycle
 
 import numpy as np
 
 '''
-https://bionumbers.hms.harvard.edu/bionumber.aspx?s=n&v=3&id=105085
-For most enzymes, KM lies between 10^-1 and 10^-7 M. The KM value for an enzyme depends on the particular substrate and on environmental conditions such as pH, temperature, and ionic strength. 
-Reference: Stryer et al, Biochemistry, 5th edition 2002, Chapter 8 Enzymes: Basic Concepts and Kinetics, Table 8.5
-
-
-https://bionumbers.hms.harvard.edu/bionumber.aspx?s=n&v=3&id=112945
-kcat/Km 10^3 to 10^4M^−1×s^−1: half-time for enzyme inactivation 20min
-Review Reference: Imlay JA. The molecular mechanisms and physiological consequences of oxidative stress: lessons from a model bacterium. Nat Rev Microbiol. 2013 Jul11(7):443-54. doi: 10.1038/nrmicro3032. p.446 Box 2 top paragraphPubMed ID23712352
-Primary Reference: Anjem, A. & Imlay, J. A. Mononuclear iron enzymes are primary targets of hydrogen peroxide stress. J. Biol. Chem. 287, 15544–15556 (2012). doi: 10.1074/jbc.M111.330365. [92] Jang, S. & Imlay, J. A. Micromolar intracellular hydrogen peroxide disrupts metabolism by damaging iron-sulfur enzymes. J. Biol. Chem. 282, 929–937 (2007). DOI: 10.1074/jbc.M607646200PubMed ID22411989, 17102132
-
-assume kcat/km = 10 ** 3, where km_default = 10 ** -4.
-kcat_default = 10 ** -1
 '''
 
 def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
@@ -22,11 +10,69 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     :type Comp: object
     """
-    # ProGen.GenerateCellProcess(Writer, ProcessID)
+    # Parse flat data
 
-    Idx_NADH = Comp.Master.ID2Idx_Master['NADH[c]']
-    Idx_NADPH = Comp.Master.ID2Idx_Master['NADPH[c]']
-    Idx_FADH2 = Comp.Master.ID2Idx_Master['FADH2[p]']
+    Idx_RXNsInTCACycle = list()
+    Idx_SubstratesInTCACycle4Count = list()
+    Idx_EnzymesInTCACycle4Count = list()
+
+    ID_SubstratesInTCACycle = list()
+    ID_EnzymesInTCACycle = list()
+
+    Idx_RXNsInTCACycle_WithEnzymeWithoutKineticData = list()   # Partial list with kinetic data
+    Idx_EnzymesInTCACycle4Kinetics = list()
+
+    for ID_RXN in Comp.Metabolism.ID_RXNsInTCACycle:
+        Idx = Comp.Metabolism.ID2Idx_METRXNs[ID_RXN]
+        Idx_RXNsInTCACycle.append(Idx)
+
+        SubstrateID = Comp.Metabolism.ID_Substrates4METRXN[Idx]
+        ID_SubstratesInTCACycle.append(SubstrateID)
+        Idx_SubstratesInTCACycle4Count.append(Comp.Master.ID2Idx_Master[SubstrateID])
+
+        EnzymeID = Comp.Metabolism.ID_Enzymes4METRXN[Idx]
+        ID_EnzymesInTCACycle.append(EnzymeID)
+        Idx_EnzymesInTCACycle4Count.append(Comp.Master.ID2Idx_Master[EnzymeID])
+
+        if ID_RXN in Comp.Kinetics.ID2Idx_RXNID2KINRXN:
+            Idx_RXNsInTCACycle_WithEnzymeWithoutKineticData.append(Comp.Metabolism.ID2Idx_METRXNs[ID_RXN])
+            Idx_EnzymesInTCACycle4Kinetics.append(Comp.Kinetics.ID2Idx_RXNID2KINRXN[ID_RXN])
+        else:
+            print('No kinetic data available for TCA Cycle ReactionID: %s' % ID_RXN)
+
+    NUniq_RXNsInTCACycle = Comp.Metabolism.NUniq_RXNsInTCACycle
+
+    ID_TCACycleMetabolitesToReplenish = [
+        'ACETYL-COA[c]',
+        'NAD[c]',
+        'FAD[c]',
+        'WATER[c]',
+        'GDP[c]',
+        'ADP[c]',
+    ]
+
+    Idx_TCACycleMetabolitesToReplenish = ProGen.GetMolIdx_Master(ID_TCACycleMetabolitesToReplenish)
+
+    ID_SubstratesInTCACycle4Display = [
+        'CIS-ACONITATE[c]', 'MAL[c]', '2-KETOGLUTARATE[c]',
+
+        'SUC[c]',
+        'OXALACETIC_ACID[c]', 'FUM[c]', 'SUC-COA[c]'
+    ]
+
+    Idx_SubstratesInTCACycle4Display = ProGen.GetMolIdx_Master(ID_SubstratesInTCACycle4Display)
+
+    ID_EnergyProductsInTCACycle = [
+        'CO-A[c]',
+        'FADH2[p]',
+        'NADH[c]',
+        'ATP[c]',
+        'GTP[c]',
+    ]
+
+    Idx_EnergyProductsInTCACycle = ProGen.GetMolIdx_Master(ID_EnergyProductsInTCACycle)
+
+    # FROM METABOLISM
 
     # For the reactions with kinetic data
     Idx_SubstratesKINRXN = ProGen.GetMolIdx_Master(Comp.Kinetics.ID_Substrates4KINRXN)
@@ -50,26 +96,30 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Kcat_Default = Comp.Kinetics.Const_Kcat_Default
     Km_Default = Comp.Kinetics.Const_Km_Default
 
-    NUniq_METRXN = Comp.Metabolism.NUniq_METRXNs
-
-    # DEBUG COUNTS:
-    IdxsToDebug = [[14766], [14771], [14785], [14806], [14813], [14814], [14821], [14839], [14842], [14856], [14857], [14859], [14865], [14866], [14869], [14880], [14881], [14887], [14889], [14892], [14923], [14962], [14985], [15012], [15030], [15031], [15051], [15053], [15057], [15060], [15066], [15077], [15081], [15083], [15085], [15105], [15125], [15148], [15162], [15178], [15179], [15183], [15188], [15211], [15246], [15254], [15290], [15360], [15363], [15369], [15384], [15389], [15390], [15399], [15401], [15419], [15426], [15430], [15433], [15435], [15436], [15438], [15439], [15440], [15441], [15445], [15448], [15452], [15457], [15468], [15479], [15481], [15483], [15485], [15503], [15508], [15523], [15524], [15545], [15572], [15574], [15579], [15600], [15606], [15613], [15621], [15623], [15637], [15651], [15674], [15679], [15729], [15745], [15746], [15748], [15755], [15763], [15768], [15820], [15829], [15841], [15844], [15848], [15854], [15878], [15891], [15898], [15903], [15914], [15919], [15922], [15993], [16019], [16069], [16080], [16133], [16303], [16304], [16311]]
-    IDsToDebug = list()
-    for Idx in IdxsToDebug:
-        IDsToDebug.append(Comp.Master.ID_Master[Idx[0]])
-
-    MolsToAnalyze = ['dNTPs', 'NTPs', 'AAs', 'NADH', 'NADPH', 'FADH2']
-
-    # TCA cycle I
-    # ID2ID_BCID2EC_TCACycle =
-
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
         with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
-            Writer.Variable_("self.Count_MetabolitesInitial", 0)
+            Writer.Variable_("self.Idx_TCACycleMetabolitesToReplenish", 0)
+            Writer.Variable_("self.Count_TCACycleMetabolitesToReplenish", 0)
 
+            Writer.Variable_("self.Idx_RXNsInTCACycle", 0)
+            Writer.Variable_("self.Idx_SubstratesInTCACycle4Count", 0)
+            Writer.Variable_("self.Idx_EnzymesInTCACycle4Count", 0)
+            Writer.Variable_("self.Idx_RXNsInTCACycle_WithEnzymeWithoutKineticData", 0)
+            Writer.Variable_("self.Idx_EnzymesInTCACycle4Kinetics", 0)
+            Writer.Variable_("self.Idx_EnergyProductsInTCACycle", 0)
+            Writer.BlankLine()
+
+            Writer.Variable_("self.Const_Kcat_Default", Kcat_Default)
+            Writer.Variable_("self.Const_Km_Default", Km_Default)
+            Writer.BlankLine()
+
+            Writer.Variable_("self.Coeff_TCACycle_Transposed", 0)
+            Writer.BlankLine()
+
+            # FROM METABOLISM
             Writer.Variable_("self.Idx_Enzymes", 0)
             Writer.Variable_("self.Idx_Substrates", 0)
             Writer.Variable_("self.Idx_EnzymesMETRXN", 0)
@@ -78,22 +128,35 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Idx_METRXNs_WithEnzymeWithoutKineticData", 0)
             Writer.BlankLine()
 
-            Writer.Variable_("self.Const_Kcat_Default", Kcat_Default)
-            Writer.Variable_("self.Const_Km_Default", Km_Default)
-            Writer.BlankLine()
-
-            Writer.Variable_("self.Coeff_Metabolism_Transposed", 0)
-            Writer.BlankLine()
-
-            Writer.Variable_("self.IdxsToDebug", 0)
-            Writer.BlankLine()
-
         with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
-            Writer.Variable_("self.Cel.Idx_NADH", Idx_NADH)
-            Writer.Variable_("self.Cel.Idx_NADPH", Idx_NADPH)
-            Writer.Variable_("self.Cel.Idx_NADPH", Idx_FADH2)
+            Writer.Variable_("self.Idx_TCACycleMetabolitesToReplenish", Idx_TCACycleMetabolitesToReplenish)
+
+            Writer.Variable_("self.Idx_RXNsInTCACycle", Idx_RXNsInTCACycle)
+            Writer.Variable_("self.Idx_SubstratesInTCACycle4Count", Idx_SubstratesInTCACycle4Count)
+            Writer.Variable_("self.Idx_EnzymesInTCACycle4Count", Idx_EnzymesInTCACycle4Count)
+            Writer.Variable_("self.Idx_RXNsInTCACycle_WithEnzymeWithoutKineticData", Idx_RXNsInTCACycle_WithEnzymeWithoutKineticData)
+            Writer.Variable_("self.Idx_EnzymesInTCACycle4Kinetics", Idx_EnzymesInTCACycle4Kinetics)
+            Writer.Variable_("self.Idx_EnergyProductsInTCACycle", Idx_EnergyProductsInTCACycle)
             Writer.BlankLine()
 
+            # Transform metabolism coeff matrix to TCA cycle only with the rest zeros
+            Writer.Variable_("NUniq_MolsInMETRXN", Comp.Metabolism.NUniq_MolsInMETRXN)
+            Writer.Statement("Coeff_TCACycle = tf.reshape(tf.gather(self.Cel.Coeff_Metabolism, self.Idx_RXNsInTCACycle), [-1, NUniq_MolsInMETRXN[0]])")
+            Writer.ZerosLike("Zeros_Coeff_Metabolism", "self.Cel.Coeff_Metabolism", 'int32')
+            Writer.Statement("Coeff_TCACycleWithZeros = tf.tensor_scatter_nd_update(Zeros_Coeff_Metabolism, tf.reshape(self.Idx_RXNsInTCACycle, [-1, 1]), Coeff_TCACycle)")
+
+            # # Get indices of molecules involved in TCA cycle for count update (may not be necessary)
+            # Writer.ConvToBin("Bin_MolsInTCACycle", "Coeff_TCACycle", "!=", 0)
+            # Writer.ReduceSum("Bin_MolsInTCACyclePerMol", "Bin_MolsInTCACycle", 1)
+            # Writer.Reshape__("Bin_MolsInTCACyclePerMol", "Bin_MolsInTCACyclePerMol", -1)
+            # Writer.GenIdx___("Idx_MolsInTCACycle", "Bin_MolsInTCACyclePerMol")
+
+            Writer.Comment__("Replacing the metabolism coefficient matrix with only TCA reactions with values")
+            Writer.Transpose("self.Coeff_Metabolism_Transposed", "Coeff_TCACycleWithZeros")
+            Writer.Cast_____("self.Coeff_Metabolism_Transposed", "self.Coeff_Metabolism_Transposed", 'float32')
+            Writer.BlankLine()
+
+            # FROM METABOLISM
             Writer.Variable_("self.Idx_EnzymesKINRXN", Idx_EnzymesKINRXN)
             Writer.Variable_("self.Idx_SubstratesKINRXN", Idx_SubstratesKINRXN)
             Writer.BlankLine()
@@ -101,13 +164,10 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Idx_SubstratesMETRXN", Idx_SubstratesMETRXN)
             Writer.Variable_("self.Idx_METRXNsWithKineticData", Idx_METRXNsWithKineticData)
             Writer.Variable_("self.Idx_METRXNs_WithEnzymeWithoutKineticData", Idx_METRXNs_WithEnzymeWithoutKineticData)
+
             Writer.BlankLine()
             Writer.Transpose("self.Coeff_Metabolism_Transposed", "self.Cel.Coeff_Metabolism")
             Writer.Cast_____("self.Coeff_Metabolism_Transposed", "self.Coeff_Metabolism_Transposed", 'float32')
-            Writer.BlankLine()
-
-            Writer.Comment__("For Analysis Only")
-            Writer.Variable_("self.IdxsToDebug", IdxsToDebug)
             Writer.BlankLine()
 
             Writer.Comment__("For Replenishing Metabolites")
@@ -116,15 +176,15 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
 
         with Writer.Statement("def GetMetaboliteCounts(self):"):
-            Writer.Gather___("self.Count_MetabolitesInitial", "self.Cel.Count_Master", "self.Cel.Idx_Master_Metabolites")
+            Writer.Gather___("self.Count_TCACycleMetabolitesToReplenish", "self.Cel.Count_Master", "self.Idx_TCACycleMetabolitesToReplenish")
             Writer.BlankLine()
 
         with Writer.Statement("def ReplenishMetabolites(self):"):
-            Writer.ScatNdUpd("self.Cel.Counts", "self.Cel.Counts", "self.Cel.Idx_Master_Metabolites", "self.Count_MetabolitesInitial")
+            Writer.ScatNdUpd("self.Cel.Counts", "self.Cel.Counts", "self.Idx_TCACycleMetabolitesToReplenish", "self.Count_TCACycleMetabolitesToReplenish")
             Writer.BlankLine()
 
         with Writer.Statement("def Message_ReplenishMetabolites(self):"):
-            Writer.PrintStrg("\t- Metabolites have been replenished.")
+            Writer.PrintStrg("\t- TCA Cycle Input Metabolites have been replenished.")
             Writer.BlankLine()
 
 
@@ -141,10 +201,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                 Writer.BlankLine()
                 Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_Master_MolsInMETRXN, Count_MolsInMETRXN)")
                 Writer.BlankLine()
-                Writer.Comment__("For Analysis Only")
-                Writer.Statement("self.ForAnalysis(Count_MolsInMETRXN)")
-                Writer.BlankLine()
-
             else:
                 Writer.Pass_____()
                 Writer.BlankLine()
@@ -184,33 +240,19 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Rate_RXN")
             Writer.BlankLine()
 
-        with Writer.Statement("def ForAnalysis(self, Count_MolsInMETRXN):"):
-            Writer.ZerosLike("DeltaCountFromMetabolism", "self.Cel.Counts", 'int32')
-            Writer.ScatNdAdd("DeltaCountFromMetabolism", "DeltaCountFromMetabolism", "self.Cel.Idx_Master_MolsInMETRXN", "Count_MolsInMETRXN")
-            for Mol in MolsToAnalyze:
-                Writer.Gather___("self.DeltaCounts_%s" % Mol, "DeltaCountFromMetabolism", "self.Cel.Idx_%s" % Mol)
-            Writer.Gather___("self.DeltaCounts_IDsToDebug", "DeltaCountFromMetabolism", "self.IdxsToDebug")
-            Writer.BlankLine()
-
         with Writer.Statement("def ViewProcessSummary(self):"):
             if Writer.Switch4Kinetics:
-                Writer.PrintStrg("===== Metabolism ===== ")
-                for Mol in MolsToAnalyze:
-                    Writer.PrintStVa("deltaCount of %s" % Mol, "self.DeltaCounts_%s" % Mol)
-                Writer.PrintStVa("deltaCount of IDsToDebug", "self.DeltaCounts_IDsToDebug")
+                Writer.PrintStrg("===== TCA Cycle ===== ")
+                Writer.PrintStrg("Substrates:")
+                Writer.PrintStrg(str(ID_SubstratesInTCACycle[:5]))
+                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_SubstratesInTCACycle4Count)[:5]")
+                Writer.PrintStrg(str(ID_SubstratesInTCACycle[5:]))
+                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_SubstratesInTCACycle4Count)[5:]")
+                Writer.BlankLine()
+                Writer.PrintStrg("Energy Products:")
+                Writer.PrintStrg(str(ID_EnergyProductsInTCACycle))
+                Writer.PrintVar_("tf.gather(self.Cel.Counts, self.Idx_EnergyProductsInTCACycle)")
                 Writer.BlankLine()
             else:
                 Writer.Pass_____()
                 Writer.BlankLine()
-
-# def SetUpReactions(ProGen):
-#     Reactions = list()
-#
-#     Reaction = None
-#
-#     Reaction_SetUp = Reaction
-#     Reactions.append(Reaction_SetUp)
-#
-#     return Reactions
-#
-
