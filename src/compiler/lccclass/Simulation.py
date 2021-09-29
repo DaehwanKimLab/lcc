@@ -4,10 +4,6 @@ import datetime
 # Comp is a short hand for CompilerData
 def Write_Simulation(Writer, Comp, ProGen):
 
-    # Simulation time request in seconds
-    SimWallTimeRequested = 1 * 60
-    SimStepsPrintResolution = 1
-
     # Save File Configuration
     if Writer.Switch4Save:
         SavePath = os.path.realpath(Comp.SavePath)
@@ -108,13 +104,13 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.Statement('print("           X times faster    : %s" % self.SimTimesSpeed[0])')
             Writer.BlankLine()
 
-        with Writer.Statement("def SetUpSimClock(self):"):
+        with Writer.Statement("def SetUpSimClock(self, SimWallTimeRequested, SimStepsPrintResolution):"):
             # Implement user input for delta t value
             Writer.Statement("self.StartSimTimer()")
-            Writer.Variable_("self.SimWallTimeRequested", SimWallTimeRequested)  # Simulation time request in seconds
+            Writer.Variable_("self.SimWallTimeRequested", "SimWallTimeRequested")  # Simulation time request in seconds
             Writer.Variable_("self.SimStepsPerSecond", 1)  # Simulation time resolution per second
             Writer.Statement("self.ConvertSimTimeToSimStep(self.SimWallTimeRequested, self.SimStepsRequested)")
-            Writer.Variable_("self.SimStepsPrintResolution", SimStepsPrintResolution)
+            Writer.Variable_("self.SimStepsPrintResolution", "SimStepsPrintResolution")
             Writer.BlankLine()
 
         with Writer.Statement("def UpdateSimTime(self):"):
@@ -376,9 +372,9 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def Initialize(self):"):
+        with Writer.Statement("def Initialize(self, SimWallTimeRequested, SimStepsPrintResolution):"):
             Writer.PrintStrg("Simulation Initialization Begins...")
-            Writer.Statement("self.SetUpSimClock()")
+            Writer.Statement("self.SetUpSimClock(SimWallTimeRequested, SimStepsPrintResolution)")
             Writer.Statement("self.SIM_SetUpCellStateMatrices()")
             if Writer.Switch4Save:
                 Writer.Statement("self.GenerateHeaderRowInSaveFile()")
@@ -450,4 +446,13 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
             Writer.Statement("self.ShowSimulationTime()")
+            Writer.BlankLine()
+
+        with Writer.Statement("def Visualize(self, RequestedData):"):
+            if Writer.Switch4Visualization2D:
+                Writer.PrintLine()
+                Writer.PrintStrg("Displaying Requested Simulation Data in 2D plots.")
+                Writer.Statement("Visualization2D.VisualizeData('%s', RequestedData)" % SaveFileName_Count)    # RequestedData is a dictionary
+            else:
+                Writer.Pass_____()
             Writer.BlankLine()

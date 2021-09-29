@@ -41,7 +41,7 @@ class CodeWriter():
 
         self.Switch4Comment = False
         self.Switch4PrintString = False
-        self.Switch4Graph = False
+        self.Switch4TFGraph = False
 
         # Metabolism
         self.Switch4PostSimulationStepCorrection = False
@@ -55,6 +55,7 @@ class CodeWriter():
         self.Switch4ProcessSummary = False
         self.Switch4CellStateSummary = False
         self.Switch4PostSimulationStepCorrectionMessage = False
+        self.Switch4Visualization2D = False
 
         # Debugging
         self.Switch4DebugSimulationPrint = False

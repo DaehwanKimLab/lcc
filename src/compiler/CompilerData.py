@@ -14,6 +14,7 @@ class FCompilerData:
         self.Switch4SaveProcessedData = False
 
         self.Dict_DataClass = dict()
+        self.Dict_Names2ID = dict()
 
         # Data classes
         self.Genome = None
@@ -159,6 +160,9 @@ class FCompilerData:
             DataClassDataset.SetUpData(Dataset, self)
             print('lcc compiler data have been set up. Class: "%s"' % DataClassName)
 
+        self.SetUpDict4IDFind()
+
+
     def SaveCompilerData(self):
         # Save all compiler data
         if self.Switch4SaveAllData:
@@ -172,3 +176,38 @@ class FCompilerData:
         #         print('Processed compiler data have been saved. Class: "%s"' % DataClassName)
         else:
             print('lcc compiler data save option is off')
+
+    def SetUpDict4IDFind(self):
+        self.List_Dict4Names2ID = [
+            self.Gene.Name2ID_Genes,
+            self.RNA.Name2ID_RNAs,
+            self.Protein.Name2ID_Proteins,
+        ]
+
+        self.List_Dict4ID2ID = [
+            self.Protein.ID2ID_Protein2Gene,
+            self.Protein.ID2ID_Gene2Protein,
+            self.Protein.ID2ID_Protein2RNA,
+            self.Protein.ID2ID_RNA2Protein,
+        ]
+
+        # for MolName in SimDataToDisplay_MolNames:
+        #     if MolName in self.Master.ID_Master:
+        #         continue
+        #     elif MolName in self.Gene.Name2ID_Genes:
+        #         MolName
+
+    def FindID(self, TargetNames):
+        Dict_Names2ID = [
+            self.Gene.Name2ID_Genes,
+            self.RNA.Name2ID_RNAs,
+            self.Protein.Name2ID_Proteins,
+        ]
+
+        # Dict_Names2
+        #
+        # for MolName in SimDataToDisplay_MolNames:
+        #     if MolName in self.Master.ID_Master:
+        #         continue
+        #     elif MolName in self.Gene.Name2ID_Genes:
+        #         CMolName

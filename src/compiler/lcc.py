@@ -64,11 +64,13 @@ def WriteImport(Writer):
     Writer.Statement("import numpy as np")
     Writer.Statement("import tensorflow as tf")
     Writer.Statement("import matplotlib.pyplot as plt")
+    Writer.Statement("from matplotlib.animation import FuncAnimation")
     Writer.Statement("from datetime import datetime")
     Writer.Statement("from os import listdir")
     Writer.Statement("from argparse import ArgumentParser, FileType")
     Writer.Statement("import abc")
     Writer.Statement("import csv")
+    Writer.Statement("import Visualization2D")
     Writer.SetIndentLevel(tmpLevel)
     Writer.BlankLine()
 
@@ -82,7 +84,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Output
     Writer.Switch4Comment = True
     Writer.Switch4PrintString = True
-    Writer.Switch4Graph = False
+    Writer.Switch4TFGraph = False
 
     # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True
@@ -91,11 +93,12 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Cell Division Test
     Writer.Switch4TestCellDivision = False
 
-    # Print switches
+    # Print
     Writer.Switch4SimStepsExecuted = True
     Writer.Switch4ProcessSummary = True
     Writer.Switch4CellStateSummary = False
     Writer.Switch4PostSimulationStepCorrectionMessage = False
+    Writer.Switch4Visualization2D = True
 
     # Debugging
     Writer.Switch4DebugSimulationPrint = False
@@ -110,8 +113,54 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Save Data
     Writer.Switch4SaveAllCounts = False
     Writer.Switch4SaveIndividualCounts = False
+    if Writer.Switch4Visualization2D:
+        Writer.Switch4SaveAllCounts = True
     if Writer.Switch4SaveAllCounts or Writer.Switch4SaveSpecificCounts:
         Writer.Switch4Save = True
+
+
+    # Simulation Controls
+    SimWallTimeRequested = 1 * 60   # Simulation time request in seconds
+    SimStepsPrintResolution = 1
+
+    # Simulation Data Display Controls
+    ID_Molecules = [
+        '2-3-DIHYDROXYBENZOATE[c]',
+        '2-KETOGLUTARATE[c]',
+        '4-hydroxybenzoate[c]',
+        'ACETOACETYL-COA[c]',
+        'ACETYL-COA[c]',
+        'ACETYL-P[c]',
+        'ADENINE[c]',
+        'ADENOSINE[c]',
+        'ADP-D-GLUCOSE[c]',
+        'ADP[c]',
+        'AMP[c]',
+        'ANTHRANILATE[c]',
+        'APS[c]',
+        'ARG[c]',
+        'ASN[c]',
+        # 'ATP[c]',
+        'BIOTIN[c]',
+        'CA+2[c]',
+        'CA+2[p]',
+    ]
+    Name_Variables = [
+
+    ]
+
+    SimDataToVisualize = {
+        'ID_Molecules'      : ID_Molecules,
+        'Name_Variables'    : Name_Variables,
+    }
+
+    SimDataToDisplay_MolNames = []
+    SimDataToDisplay_MolIDs = CompilerData.FindID(SimDataToDisplay_MolNames)
+
+    SimDataToDisplay_Variables = [
+
+    ]
+
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
     Writer.BlankLine()
@@ -217,8 +266,9 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         # Run simulation
         Writer.Comment__("Run Simulation.")
-        Writer.Statement("Sim.Initialize()")
+        Writer.Statement("Sim.Initialize(%s, %s)" % (str(SimWallTimeRequested), str(SimStepsPrintResolution)))
         Writer.Statement("Sim.Run()")
+        Writer.Statement("Sim.Visualize(%s)" % SimDataToVisualize)
         Writer.BlankLine()
 
         # End of simulation.
