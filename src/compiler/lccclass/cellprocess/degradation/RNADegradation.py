@@ -127,8 +127,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_Degradosome = Comp.Master.ID2Idx_Master['CPLX0-2381']   # Degradosome
     Idx_Ppk = Comp.Master.ID2Idx_Master[Comp.Protein.Name2ID_Proteins['Ppk']]   # polyphosphate Kinase
 
-    Idx_Pi = Comp.Master.ID2Idx_Master['PI[c]']
-
     # Set up Idx to Idx system in cell.py
 
     # Temporary parameters
@@ -221,14 +219,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.VarRange_("self.Idx_rRNAs", 0, NUniq_rRNAs)
             Writer.VarRange_("self.Idx_tRNAs", 0, NUniq_tRNAs)
             Writer.VarRange_("self.Idx_miscRNAs", 0, NUniq_miscRNAs)
-
-            # Master indices
-            Writer.Variable_("self.Cel.Idx_Pi", Idx_Pi)
-
-            # Writer.Variable_("self.Cel.Idx_H2O", Idx_H2O)
-            # Writer.Variable_("self.Cel.Idx_ATP", Idx_ATP)
-            # Writer.Variable_("self.Cel.Idx_ADP", Idx_ADP)
-            # Writer.Variable_("self.Cel.Idx_Proton", Idx_Proton)
             Writer.BlankLine()
 
             Writer.Variable_("self.Rate_mRNACleavage_RNaseE", Rate_mRNACleavage_RNaseE)

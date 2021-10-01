@@ -168,19 +168,41 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Zero", 0)
             Writer.BlankLine()
 
-            Writer.Variable_("self.Idx_PPi", 0)
-            Writer.Variable_("self.Idx_Pi", 0)
-            Writer.Variable_("self.Idx_ADP", 0)
-            Writer.Variable_("self.Idx_ATP", 0)
-            Writer.Variable_("self.Idx_H2O", 0)
-            Writer.Variable_("self.Idx_Proton", 0)
+            Idx_H2O = Comp.Master.ID2Idx_Master['WATER[c]']
+            Idx_Proton = Comp.Master.ID2Idx_Master['PROTON[c]']
+            Idx_ATP = Comp.Master.ID2Idx_Master['ATP[c]']
+            Idx_ADP = Comp.Master.ID2Idx_Master['ADP[c]']
+            Idx_Pi = Comp.Master.ID2Idx_Master['PI[c]']
+            Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
+
+            Writer.Variable_("self.Idx_H2O", Idx_H2O)
+            Writer.Variable_("self.Idx_Proton", Idx_Proton)
+            Writer.Variable_("self.Idx_ATP", Idx_ATP)
+            Writer.Variable_("self.Idx_ADP", Idx_ADP)
+            Writer.Variable_("self.Idx_Pi", Idx_Pi)
+            Writer.Variable_("self.Idx_PPi", Idx_PPi)
+            Writer.BlankLine()
+
+            Idx_dNTPs = ProGen.BuildingBlockIdxs('dNTPs')
+            Idx_NTPs = ProGen.BuildingBlockIdxs('NTPs')
+            Idx_AAs = ProGen.BuildingBlockIdxs('AAs')
+
+            Writer.Variable_("self.Idx_dNTPs", Idx_dNTPs)
+            Writer.Variable_("self.Idx_NTPs", Idx_NTPs)
+            Writer.Variable_("self.Idx_AAs", Idx_AAs)
             Writer.BlankLine()
 
             Writer.Comment__("Replication")
             Writer.BlankLine()
+
+            Writer.Variable_("self.Idx_DnaA", 0)
+            Writer.Variable_("self.Idx_DnaB", 0)
+            Writer.Variable_("self.Idx_DnaC", 0)
+
             Writer.Variable_("self.Idx_Ch_Original", 0)
             Writer.Variable_("self.Idx_Ch_Replicating", 0)
-            Writer.Variable_("self.Idx_dNTPs", 0)
+
+
             Writer.BlankLine()
             Writer.Variable_("self.Rate_DNAReplication", 0)
             Writer.Variable_("self.Rate_DNAReplication_Matrix", 0)
@@ -222,7 +244,6 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Comment__("Transcription")
             Writer.BlankLine()
             Writer.Variable_("self.Idx_RNAP", 0)
-            Writer.Variable_("self.Idx_NTPs", 0)
             Writer.BlankLine()
             Writer.Variable_("self.Len_RNAsNascent", 0)
             Writer.BlankLine()
@@ -233,7 +254,6 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Idx_Ribosome30S", 0)
             Writer.Variable_("self.Idx_Ribosome50S", 0)
             Writer.Variable_("self.Idx_Ribosome70S", 0)
-            Writer.Variable_("self.Idx_AAs", 0)
             Writer.Variable_("self.Idx_SelenoCysteineInAAs", 0)
             Writer.Variable_("self.Idx_AAsLocalAssignmentNoSelenoCysteine", 0)
             Writer.BlankLine()
@@ -267,9 +287,14 @@ def Write_CellState(Writer, Comp, ProGen):
             # Metabolism
             Writer.Comment__("Metabolism")
             Writer.BlankLine()
-            Writer.Variable_("self.Idx_NADH", 0)
-            Writer.Variable_("self.Idx_NADPH", 0)
-            Writer.Variable_("self.Idx_FADH2", 0)
+
+            Idx_NADH = Comp.Master.ID2Idx_Master['NADH[c]']
+            Idx_NADPH = Comp.Master.ID2Idx_Master['NADPH[c]']
+            Idx_FADH2 = Comp.Master.ID2Idx_Master['FADH2[p]']
+
+            Writer.Variable_("self.Idx_NADH", Idx_NADH)
+            Writer.Variable_("self.Idx_NADPH", Idx_NADPH)
+            Writer.Variable_("self.Idx_FADH2", Idx_FADH2)
             Writer.BlankLine()
 
         #     Writer.Statement("self.InitializeStoichiometryMatrix()")

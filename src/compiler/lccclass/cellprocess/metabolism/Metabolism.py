@@ -22,12 +22,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     :type Comp: object
     """
-    # ProGen.GenerateCellProcess(Writer, ProcessID)
-
-    Idx_NADH = Comp.Master.ID2Idx_Master['NADH[c]']
-    Idx_NADPH = Comp.Master.ID2Idx_Master['NADPH[c]']
-    Idx_FADH2 = Comp.Master.ID2Idx_Master['FADH2[p]']
-
     # For the reactions with kinetic data
     Idx_SubstratesKINRXN = ProGen.GetMolIdx_Master(Comp.Kinetics.ID_Substrates4KINRXN)
     Idx_EnzymesKINRXN = ProGen.GetMolIdx_Master(Comp.Kinetics.ID_Enzymes4KINRXN)
@@ -89,10 +83,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
-            Writer.Variable_("self.Cel.Idx_NADH", Idx_NADH)
-            Writer.Variable_("self.Cel.Idx_NADPH", Idx_NADPH)
-            Writer.Variable_("self.Cel.Idx_NADPH", Idx_FADH2)
-            Writer.BlankLine()
 
             Writer.Variable_("self.Idx_EnzymesKINRXN", Idx_EnzymesKINRXN)
             Writer.Variable_("self.Idx_SubstratesKINRXN", Idx_SubstratesKINRXN)

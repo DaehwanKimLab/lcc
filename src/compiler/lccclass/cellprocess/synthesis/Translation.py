@@ -7,7 +7,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_Ribosome50S = Comp.Master.ID2Idx_Master['CPLX0-3956']
 
     Idx_AAs = ProGen.BuildingBlockIdxs('AAs')
-    Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
 
     Idx_SelenoCysteineInAAs = 19
     Idx_AAsLocalAssignmentNoSelenoCysteine = list()
@@ -56,8 +55,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Cel.Idx_Ribosome30S", Idx_Ribosome30S)
             Writer.Variable_("self.Cel.Idx_Ribosome50S", Idx_Ribosome50S)
 
-            Writer.Variable_("self.Cel.Idx_AAs", Idx_AAs)
-            Writer.Variable_("self.Cel.Idx_PPi", Idx_PPi)
             Writer.Variable_("self.Cel.Idx_SelenoCysteineInAAs", Idx_SelenoCysteineInAAs)
             Writer.Variable_("self.Cel.Idx_AAsLocalAssignmentNoSelenoCysteine", Idx_AAsLocalAssignmentNoSelenoCysteine)
             Writer.BlankLine()

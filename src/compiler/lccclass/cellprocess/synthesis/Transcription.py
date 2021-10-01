@@ -8,9 +8,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # Molecule indices for Molecular IDs
     Idx_RNAP = Comp.Master.ID2Idx_Master[Comp.Complex.Name2ID_Complexes['RNA polymerase, core enzyme']]
 
-    Idx_NTPs = ProGen.BuildingBlockIdxs('NTPs')
-    Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
-
     # Set up Idx to Idx system in cell.py
 
     # Temporary parameters
@@ -52,9 +49,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.VarRange_("self.Idx_RNAs", 0, NUniq_RNAs)
             
             Writer.Variable_("self.Cel.Idx_RNAP", Idx_RNAP)
-
-            Writer.Variable_("self.Cel.Idx_NTPs", Idx_NTPs)
-            Writer.Variable_("self.Cel.Idx_PPi", Idx_PPi)
             Writer.BlankLine()
 
             Writer.Variable_("self.Rate_RNAPActive", Rate_RNAPActive)

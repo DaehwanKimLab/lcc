@@ -157,14 +157,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # Idx_ClpB = Comp.Master.ID2Idx_Master['EG10157-MONOMER']
     # Idx_ClpS = Comp.Master.ID2Idx_Master['G6463-MONOMER']
 
-
-    Idx_H2O = Comp.Master.ID2Idx_Master['WATER[c]']
-    Idx_ATP = Comp.Master.ID2Idx_Master['ATP[c]']
-
-    Idx_ADP = Comp.Master.ID2Idx_Master['ADP[c]']
-    Idx_Pi = Comp.Master.ID2Idx_Master['PI[c]']
-    Idx_Proton = Comp.Master.ID2Idx_Master['PROTON[c]']
-
     # Set up Idx to Idx system in cell.py
 
     # Temporary parameters
@@ -195,15 +187,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             # Local indices
             Writer.VarRange_("self.Idx_Proteins", 0, NUniq_Proteins)
-
-            # Master indices
-            Writer.Variable_("self.Cel.Idx_H2O", Idx_H2O)
-            Writer.Variable_("self.Cel.Idx_ATP", Idx_ATP)
-            Writer.Variable_("self.Cel.Idx_ADP", Idx_ADP)
-            Writer.Variable_("self.Cel.Idx_Pi", Idx_Pi)
-            Writer.Variable_("self.Cel.Idx_Proton", Idx_Proton)
-            Writer.BlankLine()
-
             Writer.Variable_("self.Rate_ProteinDegradation", Rate_ProteinDegradation)
             # Writer.Variable_("self.Cel.Rate_ProteinDegradation_Matrix", Rate_ProteinDegradation, Shape=[NUniq_mRNAs, NMax_ProteasesPermRNA])
             Writer.BlankLine()

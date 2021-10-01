@@ -56,8 +56,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_DnaC = Comp.Master.ID2Idx_Master[Comp.Protein.ID2ID_Gene2Protein[Comp.Gene.Sym2ID_Genes['dnaC']]]
 
     # Molecule indices for Molecular IDs
-    Idx_dNTPs = ProGen.BuildingBlockIdxs('dNTPs')
-    Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
 
     # Chromosome indices
     Idx_Ch_Original = [0]
@@ -113,14 +111,15 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         # Override the abstract method
         with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+            Writer.Variable_("self.Cel.Idx_DnaA", Idx_DnaA)
+            Writer.Variable_("self.Cel.Idx_DnaB", Idx_DnaB)
+            Writer.Variable_("self.Cel.Idx_DnaC", Idx_DnaC)
+
             Writer.Variable_("self.Cel.Idx_Ch_Original", Idx_Ch_Original)
             Writer.Variable_("self.Cel.Idx_Ch_Replicating", Idx_Ch_Replicating)
 
             Writer.Variable_("self.Idx_DNAStrand_Proxy_Left", Idx_DNAStrand_Proxy_Left)
             Writer.Variable_("self.Idx_DNAStrand_Proxy_Right", Idx_DNAStrand_Proxy_Right)
-
-            Writer.Variable_("self.Cel.Idx_dNTPs", Idx_dNTPs)
-            Writer.Variable_("self.Cel.Idx_PPi", Idx_PPi)
 
             Writer.Variable_("self.Cel.Rate_DNAReplication", Rate_DNAReplication)  # Not implemented yet
             Writer.Variable_("self.Cel.Rate_DNAReplication_Matrix", Rate_DNAReplication, Shape=[N_ChromosomesReplicating, N_ReplicatingStrands])
