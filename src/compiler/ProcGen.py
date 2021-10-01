@@ -12,7 +12,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 import numpy as np
-import os
+import os, sys
 import abc
 import CodeGen
 from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
@@ -128,17 +128,17 @@ class FProcessGenerator():
                 print('Process data have been successfully saved. Process: "%s"' % ProcessName)
 
     def BuildingBlockIDs(self, BuildingBlocks):
-        if BuildingBlocks == 'dNTP':
+        BuildingBlocksExpanded = None
+        if BuildingBlocks == 'dNTPs':
             BuildingBlocksExpanded = self.Comp.BuildingBlock.Name_dNTPs
-            return BuildingBlocksExpanded
-        elif BuildingBlocks == 'NTP':
+        elif BuildingBlocks == 'NTPs':
             BuildingBlocksExpanded = self.Comp.BuildingBlock.Name_NTPs
-            return BuildingBlocksExpanded
-        elif BuildingBlocks == 'AA':
+        elif BuildingBlocks == 'AAs':
             BuildingBlocksExpanded = self.Comp.BuildingBlock.Name_AAs
-            return BuildingBlocksExpanded
         else:
-            print("BuildingBlocks do not exist: %s" % BuildingBlocks)
+            BuildingBlocksExpanded = BuildingBlocks
+            # print("BuildingBlocks do not exist: %s" % BuildingBlocks)
+        return BuildingBlocksExpanded
 
     def BuildingBlockIdxs(self, BuildingBlocks):
         BuildingBlocksExpanded = self.BuildingBlockIDs(BuildingBlocks)
@@ -272,8 +272,34 @@ class FProcessGenerator():
         NewListOfNumbers = [-Number for Number in ListOfNumbers]
         return NewListOfNumbers
 
-
-
+    def FindMolID(self, MolName, Type=None, Localization='[c]'):
+        # Type can be 'Gene' or 'RNA' or 'Protein' or 'Complex' or 'Metabolite'
+        MolID = None
+        if Type:
+            if MolName in self.Comp.Metabolite.ID_Metabolites:
+                MolID = MolName
+            elif MolName in self.Comp.BuildingBlock.Name2Key_BuildingBlocks.keys():
+                MolID = MolName
+            elif Type == 'Gene':
+                MolID = self.Comp.Dict4ID_Gene[MolName]
+            elif Type == 'RNA':
+                MolID = self.Comp.Dict4ID_RNA[MolName]
+            elif Type == 'Protein':
+                MolID = self.Comp.Dict4ID_Protein[MolName]
+            else:
+                # print('MolName %s does not match any MolID in Compiler Data' % MolName, sys.exc_info()[0])
+                MolID = MolName
+        else:
+            if MolName in self.Comp.Dict4ID_Gene:
+                MolID = self.Comp.Dict4ID_Gene[MolName]
+            elif MolName in self.Comp.Dict4ID_RNA:
+                MolID = self.Comp.Dict4ID_RNA[MolName]
+            elif MolName in self.Comp.Dict4ID_Protein:
+                MolID = self.Comp.Dict4ID_Protein[MolName]
+            else:
+                # print('MolName %s does not match any MolID in Compiler Data' % MolName, sys.exc_info()[0])
+                MolID = MolName
+        return MolID
 
 
     # Generate Cell Process Methods

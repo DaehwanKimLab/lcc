@@ -396,5 +396,8 @@ def Write_CellProcess(Writer):
         #     Writer.ReturnVar("Input_Stretched")
         #     Writer.BlankLine()
 
+        with Writer.Statement("def SaveData(self):"):
+            Writer.Pass_____()
+            Writer.BlankLine()
 
 

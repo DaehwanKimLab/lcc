@@ -14,7 +14,10 @@ class FCompilerData:
         self.Switch4SaveProcessedData = False
 
         self.Dict_DataClass = dict()
-        self.Dict_Names2ID = dict()
+
+        self.Dict4ID_Gene = dict()
+        self.Dict4ID_RNA = dict()
+        self.Dict4ID_Protein = dict()
 
         # Data classes
         self.Genome = None
@@ -160,7 +163,7 @@ class FCompilerData:
             DataClassDataset.SetUpData(Dataset, self)
             print('lcc compiler data have been set up. Class: "%s"' % DataClassName)
 
-        self.SetUpDict4IDFind()
+        self.SetUpDict4FindMolID()
 
 
     def SaveCompilerData(self):
@@ -177,37 +180,43 @@ class FCompilerData:
         else:
             print('lcc compiler data save option is off')
 
-    def SetUpDict4IDFind(self):
-        self.List_Dict4Names2ID = [
-            self.Gene.Name2ID_Genes,
-            self.RNA.Name2ID_RNAs,
-            self.Protein.Name2ID_Proteins,
+    def SetUpDict4FindMolID(self):
+
+        ListOfDictsToMerge = [
+            self.Dict4ID_Gene,
+            self.Dict4ID_RNA,
+            self.Dict4ID_Protein,
         ]
 
-        self.List_Dict4ID2ID = [
+        ListOfDicts4Gene = [
+            self.Gene.Name2ID_Genes,
+            self.Gene.Sym2ID_Genes,
             self.Protein.ID2ID_Protein2Gene,
-            self.Protein.ID2ID_Gene2Protein,
-            self.Protein.ID2ID_Protein2RNA,
-            self.Protein.ID2ID_RNA2Protein,
+            self.RNA.ID2ID_RNA2Gene,
         ]
 
-        # for MolName in SimDataToDisplay_MolNames:
-        #     if MolName in self.Master.ID_Master:
-        #         continue
-        #     elif MolName in self.Gene.Name2ID_Genes:
-        #         MolName
-
-    def FindID(self, TargetNames):
-        Dict_Names2ID = [
-            self.Gene.Name2ID_Genes,
+        ListOfDicts4RNA = [
             self.RNA.Name2ID_RNAs,
-            self.Protein.Name2ID_Proteins,
+            self.RNA.ID2ID_Gene2RNA,
+            self.Protein.ID2ID_Protein2RNA,
+            self.Master.Name2ID_Gene2RNA_Master,
+            self.Master.Sym2ID_Gene2RNA_Master,
         ]
 
-        # Dict_Names2
-        #
-        # for MolName in SimDataToDisplay_MolNames:
-        #     if MolName in self.Master.ID_Master:
-        #         continue
-        #     elif MolName in self.Gene.Name2ID_Genes:
-        #         CMolName
+        ListOfDicts4Protein = [
+            self.Protein.Name2ID_Proteins,
+            self.Protein.ID2ID_Gene2Protein,
+            self.Protein.ID2ID_RNA2Protein,
+            self.Master.Name2ID_Gene2Protein_Master,
+            self.Master.Sym2ID_Gene2Protein_Master,
+        ]
+
+        ListOfDicts4Type = [
+            ListOfDicts4Gene,
+            ListOfDicts4RNA,
+            ListOfDicts4Protein,
+        ]
+
+        for DictToMerge, Dicts4Type in zip(ListOfDictsToMerge, ListOfDicts4Type):
+            for Dict4Type in Dicts4Type:
+                DictToMerge.update(Dict4Type)

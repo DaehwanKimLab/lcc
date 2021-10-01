@@ -30,7 +30,10 @@ def Write_Simulation(Writer, Comp, ProGen):
         DateTime = datetime.datetime.now().strftime('%Y%m%d-%H%M')
         SaveFileName = SavePath + '/DL_EcoliSimulation_%s_%sCounts' % (DateTime, Label)
         SaveFileName_Count = SaveFileName + '_Data.csv'
-        SaveFileName_Supplement = SaveFileName + '_Supplement.csv'
+        SaveFileName_Process = SaveFileName + '_Process.csv'
+
+        SaveFileName_Supplement = None
+        # SaveFileName_Supplement = SaveFileName + '_Supplement.csv'
 
     Writer.BlankLine()
 
@@ -314,14 +317,17 @@ def Write_Simulation(Writer, Comp, ProGen):
 
         if Writer.Switch4Save:
             with Writer.Statement("def GenerateSupplementaryInfoSaveFile(self):"):
-                with Writer.Statement("with open('%s', 'w', newline='') as SaveFile:" % SaveFileName_Supplement):
-                    Writer.Statement("ID = np.load(r'%s')" % Path_ID)
-                    Writer.Statement("Type = np.load(r'%s')" % Path_Type)
-                    Writer.Statement("Idx = np.arange(len(ID))")
-                    Writer.Statement("Writer_Save = csv.writer(SaveFile)")
-                    Writer.Statement("Writer_Save.writerow(list(np.array(ID)))")
-                    Writer.Statement("Writer_Save.writerow(list(np.array(Type)))")
-                    Writer.Statement("Writer_Save.writerow(list(np.array(Idx)))")
+                if SaveFileName_Supplement:
+                    with Writer.Statement("with open('%s', 'w', newline='') as SaveFile:" % SaveFileName_Supplement):
+                        Writer.Statement("ID = np.load(r'%s')" % Path_ID)
+                        Writer.Statement("Type = np.load(r'%s')" % Path_Type)
+                        Writer.Statement("Idx = np.arange(len(ID))")
+                        Writer.Statement("Writer_Save = csv.writer(SaveFile)")
+                        Writer.Statement("Writer_Save.writerow(list(np.array(ID)))")
+                        Writer.Statement("Writer_Save.writerow(list(np.array(Type)))")
+                        Writer.Statement("Writer_Save.writerow(list(np.array(Idx)))")
+                else:
+                    Writer.Pass_____()
                 Writer.BlankLine()
 
             with Writer.Statement("def GenerateHeaderRowInSaveFile(self):"):
@@ -452,7 +458,9 @@ def Write_Simulation(Writer, Comp, ProGen):
             if Writer.Switch4Visualization2D:
                 Writer.PrintLine()
                 Writer.PrintStrg("Displaying Requested Simulation Data in 2D plots.")
-                Writer.Statement("Visualization2D.VisualizeData('%s', RequestedData)" % SaveFileName_Count)    # RequestedData is a dictionary
+                Writer.Statement("Visualization2D.VisualizeData('%s', SimDataToVisualize['Molecules'])" % SaveFileName_Count)
+                Writer.Statement("Visualization2D.VisualizeData('%s', SimDataToVisualize['ProcessAttributes'])" % SaveFileName_Process)
+                Writer.PrintLine()
             else:
                 Writer.Pass_____()
             Writer.BlankLine()

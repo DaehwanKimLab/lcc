@@ -8,7 +8,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # Molecule indices for Molecular IDs
     Idx_RNAP = Comp.Master.ID2Idx_Master[Comp.Complex.Name2ID_Complexes['RNA polymerase, core enzyme']]
 
-    Idx_NTPs = ProGen.BuildingBlockIdxs('NTP')
+    Idx_NTPs = ProGen.BuildingBlockIdxs('NTPs')
     Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
 
     # Set up Idx to Idx system in cell.py
@@ -24,27 +24,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     NUniq_Genes = Comp.Gene.NUniq_Genes
     NUniq_RNAs = Comp.RNA.NUniq_RNAs
     assert NUniq_Genes == NUniq_RNAs
-
-    # Temporary export
-    SavePath = os.path.realpath(Comp.SavePath)
-    DateTime = datetime.datetime.now().strftime('%Y%m%d-%H%M')
-    SaveFileName = SavePath + '/DL_EcoliSimulation_%s_Transcription.csv' % (DateTime)
-
-    GeneNames4mRNAsToTrack_Random10 = [
-        'alaS',  # Amino acyl tRNA synthesis
-        # 'rplC',  # Ribosome
-        'def',   # Translation
-        'groS',  # Protein folding
-        'dnaA',  # Replication
-        'ftsZ',  # Cell division
-        'nusB',  # Transcription factor
-        'pyrH',  # NTP biosynthesis
-        'nadE',  # NAD biosynthesis
-        'murC'   # Peptidoglycan biosynthesis
-    ]
-    Idx_Random10mRNAs = list()
-    for GeneName in GeneNames4mRNAsToTrack_Random10:
-        Idx_Random10mRNAs.append(Comp.Master.ID2Idx_Master[Comp.Master.ID2ID_Gene2RNA_Master[Comp.Gene.Sym2ID_Genes[GeneName]]])
 
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
@@ -86,16 +65,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.VarFill__("self.Cel.Len_RNAsNascent", [NUniq_RNAs, NMax_RNAPsPerGene], -1)
             Writer.Reshape__("self.Len_RNAsNascentMax", "self.Cel.Len_RNAs", [-1, 1])
             Writer.BlankLine()
-
-            # Temporary export code
-            with Writer.Statement("with open('%s', 'w', newline='') as SaveFile:" % SaveFileName):
-                Header = list(["# of active RNAPs", "# of RNAPs Newly Bound To Gene", "# of Nascent RNAs Elongated", "# of New RNAs Generated", "# of ATP consumption", "# of CTP consumption", "# of GTP consumption", "# of UTP consumption"])
-                Header += GeneNames4mRNAsToTrack_Random10
-                Writer.Statement("Header = %s" % str(Header))
-                Writer.Statement("Writer_Save = csv.writer(SaveFile)")
-                Writer.Statement("Writer_Save.writerow(list(np.array(Header)))")
-            Writer.BlankLine()
-
 
         # Override the abstract method
         with Writer.Statement("def ExecuteProcess(self):"):
@@ -257,11 +226,3 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                              "self.Count_NTPConsumptionTotal")
             Writer.BlankLine()
 
-            # Temporary export
-            Writer.Statement("Array = [self.Count_ElongatedTotal, tf.shape(self.Idx_RndRNAsNascent)[0], self.Count_ElongatedTotal, self.Count_ElongationCompletionTotal, self.Count_NTPConsumption[0], self.Count_NTPConsumption[1], self.Count_NTPConsumption[2], self.Count_NTPConsumption[3]]")
-            for Idx_RNA in Idx_Random10mRNAs:
-                Writer.Statement("Array.append(self.Cel.Counts[%s])" % Idx_RNA)
-            with Writer.Statement("with open('%s', 'a+', newline='') as SaveFile:" % SaveFileName):
-                Writer.Statement("Writer_Save = csv.writer(SaveFile)")
-                Writer.Statement("Writer_Save.writerow(np.array(Array))")
-            Writer.BlankLine()

@@ -478,6 +478,7 @@ class FRNA(FDataset):
         self.Idx_miscRNA = list()
 
         self.ID2ID_Gene2RNA = dict()
+        self.ID2ID_RNA2Gene = dict()
 
         super().__init__()
 
@@ -515,6 +516,7 @@ class FRNA(FDataset):
             self.Count_RNAs[i] = self.ID2Count_RNAs_Temp[self.Name2ID_RNAs[Name]]
             self.Idx_AllRNAs.append(i)
             self.ID2ID_Gene2RNA[GeneID] = RNAID
+            self.ID2ID_RNA2Gene[RNAID] = GeneID
 
             if Type == 'mRNA':
                 self.NUniq_mRNAs += 1
@@ -1654,6 +1656,7 @@ class FBuildingBlock(FDataset):
         self.Key_dNTPs = ['A', 'C', 'G', 'T']
         self.NUniq_dNTPs = len(self.Name_dNTPs)
         self.Name2Key_BuildingBlocks['dNTPs'] = self.Key_dNTPs
+        self.Name2Key_BuildingBlocks['dNTP'] = self.Key_dNTPs
 
         NTPs = Dataset['ntps.txt']
         for BuildingBlock in NTPs:
@@ -1662,6 +1665,7 @@ class FBuildingBlock(FDataset):
         self.Key_NTPs = ['A', 'C', 'G', 'U']
         self.NUniq_NTPs = len(self.Name_NTPs)
         self.Name2Key_BuildingBlocks['NTPs'] = self.Key_NTPs
+        self.Name2Key_BuildingBlocks['NTP'] = self.Key_NTPs
 
         AAs = Dataset['amino_acids.txt']
         for BuildingBlock in AAs:
@@ -1673,6 +1677,7 @@ class FBuildingBlock(FDataset):
         for BuildingBlock in AAKeys:
             self.Key_AAs.append(BuildingBlock)
         self.Name2Key_BuildingBlocks['AAs'] = self.Key_AAs
+        self.Name2Key_BuildingBlocks['AA'] = self.Key_AAs
 
 
 class FUserInput(FDataset):
@@ -1786,8 +1791,13 @@ class FMaster():
         self.Count_Master = list()
         self.MW_Master = list()
         self.NUniq_Master = 0
+
         self.ID2ID_Gene2RNA_Master = dict()
         self.ID2ID_mRNA2Protein_Master = dict()
+        self.Name2ID_Gene2RNA_Master = dict()
+        self.Name2ID_Gene2Protein_Master = dict()
+        self.Sym2ID_Gene2RNA_Master = dict()
+        self.Sym2ID_Gene2Protein_Master = dict()
 
         self.Idx2Idx_Gene2RNA_Master = dict()
         self.Idx2Idx_mRNA2ProteinMonomer_Master = dict()
@@ -1816,6 +1826,7 @@ class FMaster():
     def SetUpData(self, Dataset, Comp):
         self.SetUpMasterIndices(Comp)
         self.SetUpIdx2IdxMappingDict()
+        self.SetUpNameAndSym2IDMappingDict(Comp)
 
     def SetUpMasterIndices(self, Comp):
         self.Idx_Master_Chromosomes = self.GetMolIdx(Comp.Chromosome.ID_Chromosomes, Comp.Master.ID2Idx_Master)
@@ -1897,6 +1908,18 @@ class FMaster():
                     RNAIdx = self.ID2Idx_Master[RNAID]
                     ProteinIdx = self.ID2Idx_Master[ProteinID]
                     self.Idx2Idx_mRNA2ProteinMonomer_Master['%s' % str(RNAIdx)] = ProteinIdx
+
+    def SetUpNameAndSym2IDMappingDict(self, Comp):
+        for Sym_Gene in Comp.Gene.Sym_Genes:
+            # if Comp.Gene.Name2ID_Genes[Name_Gene] in Comp.RNA.ID2ID_Gene2RNA.keys():
+            #     self.Name2ID_Gene2RNA_Master[Name_Gene] = Comp.RNA.ID2ID_Gene2RNA[Comp.Gene.Name2ID_Genes[Name_Gene]]
+            # if Comp.Gene.Name2ID_Genes[Name_Gene] in Comp.Protein.ID2ID_Gene2Protein.keys():
+            #     self.Name2ID_Gene2Protein_Master[Name_Gene] = Comp.Protein.ID2ID_Gene2Protein[Comp.Gene.Name2ID_Genes[Name_Gene]]
+            if Comp.Gene.Sym2ID_Genes[Sym_Gene] in Comp.RNA.ID2ID_Gene2RNA.keys():
+                self.Sym2ID_Gene2RNA_Master[Sym_Gene] = Comp.RNA.ID2ID_Gene2RNA[Comp.Gene.Sym2ID_Genes[Sym_Gene]]
+            if Comp.Gene.Sym2ID_Genes[Sym_Gene] in Comp.Protein.ID2ID_Gene2Protein.keys():
+                self.Sym2ID_Gene2Protein_Master[Sym_Gene] = Comp.Protein.ID2ID_Gene2Protein[Comp.Gene.Sym2ID_Genes[Sym_Gene]]
+
 
     def GetMolIdx(self, Molecules, MolIdxRef):
         MolIdxList = list()

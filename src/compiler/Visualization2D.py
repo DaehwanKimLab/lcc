@@ -3,13 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def VisualizeData(Dataset, RequestedData):
-    if RequestedData['ID_Molecules']:
-        PlotData(Dataset, RequestedData['ID_Molecules'])
-    if RequestedData['Name_Variables']:
-        PlotData(Dataset, RequestedData['Name_Variables'])
+    if RequestedData[0]:   # Check the Molecule ID List
+        PlotData(Dataset, RequestedData[0], RequestedData[1])   # [0] for ID list, [1] for ID2UserInput Dictionary
+    else:
+        pass
 
-
-def PlotData(Dataset, TargetNames):
+def PlotData(Dataset, TargetNames, DictTargetName=None):
 
     X = list()
     Y = list()
@@ -19,8 +18,13 @@ def PlotData(Dataset, TargetNames):
 
         Name_Row = next(Reader)
         ColumnsForTargetNames = []
+        TargetNameToShow = []
         for TargetName in TargetNames:
             ColumnsForTargetNames.append(Name_Row.index(TargetName))
+            if TargetName in DictTargetName.keys():
+                TargetNameToShow.append(DictTargetName[TargetName])
+            else:
+                TargetNameToShow.append(TargetName)
             # print("found a column for %s" % TargetName)
 
         NumRows = 0
@@ -35,18 +39,17 @@ def PlotData(Dataset, TargetNames):
         X = list(range(NumRows))
         # print(len(X) == len(Y))
 
+
+
     Y = np.array(Y).transpose()
 
-    # ax = plt.axes(xlim=(0, len(X)), ylim=(0, Y.max() * 1.2))
-    ax = plt.axes()
+    ax = plt.axes(xlim=(0, len(X)), ylim=(0, Y.max() * 1.2))
 
-    ax.set_xbound(0, len(X))
-    ax.set_ybound(0, Y.max() * 1.2)
     ax.set_ylabel('Count')
-    ax.set_xlabel('Time (seconds) ')
-    ax.set_title(TargetNames)
+    ax.set_xlabel('Time (seconds)')
+    ax.set_title(TargetNameToShow)
 
-    for i, TargetName in enumerate(TargetNames):
+    for i, TargetName in enumerate(TargetNameToShow):
         ax.plot(X, Y[i], label=TargetName)
 
     ax.legend(loc='upper left')

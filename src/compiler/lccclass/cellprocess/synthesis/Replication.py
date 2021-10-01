@@ -56,7 +56,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_DnaC = Comp.Master.ID2Idx_Master[Comp.Protein.ID2ID_Gene2Protein[Comp.Gene.Sym2ID_Genes['dnaC']]]
 
     # Molecule indices for Molecular IDs
-    Idx_dNTPs = ProGen.BuildingBlockIdxs('dNTP')
+    Idx_dNTPs = ProGen.BuildingBlockIdxs('dNTPs')
     Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
 
     # Chromosome indices

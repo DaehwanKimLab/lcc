@@ -118,48 +118,66 @@ def WriteBody(Writer, CompilerData, ProGen):
     if Writer.Switch4SaveAllCounts or Writer.Switch4SaveSpecificCounts:
         Writer.Switch4Save = True
 
-
     # Simulation Controls
     SimWallTimeRequested = 1 * 60   # Simulation time request in seconds
     SimStepsPrintResolution = 1
 
     # Simulation Data Display Controls
-    ID_Molecules = [
-        '2-3-DIHYDROXYBENZOATE[c]',
-        '2-KETOGLUTARATE[c]',
-        '4-hydroxybenzoate[c]',
-        'ACETOACETYL-COA[c]',
+    MoleculesToDisplay = [
+        # 'NTPs',
+        'AAs',
         'ACETYL-COA[c]',
         'ACETYL-P[c]',
-        'ADENINE[c]',
-        'ADENOSINE[c]',
-        'ADP-D-GLUCOSE[c]',
-        'ADP[c]',
-        'AMP[c]',
-        'ANTHRANILATE[c]',
-        'APS[c]',
-        'ARG[c]',
-        'ASN[c]',
+        # 'ADENINE[c]',
+        # 'ADENOSINE[c]',
+        # 'ADP-D-GLUCOSE[c]',
+        # 'ADP[c]',
+        # 'AMP[c]',
+        # 'ANTHRANILATE[c]',
+        # 'APS[c]',
+        # 'ARG[c]',
+        # 'ASN[c]',
         # 'ATP[c]',
-        'BIOTIN[c]',
-        'CA+2[c]',
-        'CA+2[p]',
+        # 'BIOTIN[c]',
+        # 'alaS',  # Amino acyl tRNA synthesis
+        # 'rplC',  # Ribosome
+        # 'def',  # Translation
+        # 'groS',  # Protein folding
+        # 'dnaA',  # Replication
+        # 'ftsZ',  # Cell division
+        # 'nusB',  # Transcription factor
+        # 'pyrH',  # NTP biosynthesis
+        # 'nadE',  # NAD biosynthesis
+        # 'murC',  # Peptidoglycan biosynthesis
     ]
-    Name_Variables = [
+
+    # Type can be None (default) 'Gene' or 'RNA' or 'Protein' or 'Complex' or 'Metabolite'
+    MolType = 'Protein'
+
+    MoleculesToDisplay_Refined = list()
+    MoleculesToDisplay_OriginalNameDict = dict()
+    for Molecule in MoleculesToDisplay:
+        Molecule_IDMapped = ProGen.FindMolID(Molecule, MolType)
+        MoleculesToDisplay_OriginalNameDict[Molecule_IDMapped] = Molecule
+        Molecule_IDBBMapped = ProGen.BuildingBlockIDs(Molecule_IDMapped)
+        MoleculesToDisplay_Refined.append(Molecule_IDBBMapped)
+    MoleculesToDisplay_Refined = ProGen.FlatList(MoleculesToDisplay_Refined)
+
+    # TODO: visualize process attributes to monitor
+    ProcessAttributesToDisplay = [
 
     ]
+
+    ProcessAttributesToDisplay_Refined = list()
+    ProcessAttributesToDisplay_OriginalNameDict = dict()
+
 
     SimDataToVisualize = {
-        'ID_Molecules'      : ID_Molecules,
-        'Name_Variables'    : Name_Variables,
+        'Molecules'         : [MoleculesToDisplay_Refined, MoleculesToDisplay_OriginalNameDict],
+        'ProcessAttributes' : [ProcessAttributesToDisplay_Refined, ProcessAttributesToDisplay_OriginalNameDict],
     }
 
-    SimDataToDisplay_MolNames = []
-    SimDataToDisplay_MolIDs = CompilerData.FindID(SimDataToDisplay_MolNames)
 
-    SimDataToDisplay_Variables = [
-
-    ]
 
 
     Writer.Variable_('LCCDataPath', "\"" + CompilerData.GetDataPath() + "\"")
@@ -264,11 +282,16 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Writer.BlankLine()
 
+        # Set up molecules to display variable
+        Writer.Overwrite("SimDataToVisualize", SimDataToVisualize)
+        Writer.Overwrite("SimDataToVisualize", SimDataToVisualize)
+
+
         # Run simulation
         Writer.Comment__("Run Simulation.")
         Writer.Statement("Sim.Initialize(%s, %s)" % (str(SimWallTimeRequested), str(SimStepsPrintResolution)))
         Writer.Statement("Sim.Run()")
-        Writer.Statement("Sim.Visualize(%s)" % SimDataToVisualize)
+        Writer.Statement("Sim.Visualize(SimDataToVisualize)")
         Writer.BlankLine()
 
         # End of simulation.

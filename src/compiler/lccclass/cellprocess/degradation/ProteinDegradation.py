@@ -162,7 +162,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_ATP = Comp.Master.ID2Idx_Master['ATP[c]']
 
     Idx_ADP = Comp.Master.ID2Idx_Master['ADP[c]']
-    Idx_AAs = ProGen.BuildingBlockIdxs('AA')
     Idx_Pi = Comp.Master.ID2Idx_Master['PI[c]']
     Idx_Proton = Comp.Master.ID2Idx_Master['PROTON[c]']
 
@@ -176,7 +175,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     # Temporary references
     NUniq_Proteins = Comp.Protein.NUniq_Proteins
-    NUniq_AAs = len(Idx_AAs)
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
@@ -204,7 +202,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Cel.Idx_ADP", Idx_ADP)
             Writer.Variable_("self.Cel.Idx_Pi", Idx_Pi)
             Writer.Variable_("self.Cel.Idx_Proton", Idx_Proton)
-            Writer.Variable_("self.Cel.Idx_AAs", Idx_AAs)
             Writer.BlankLine()
 
             Writer.Variable_("self.Rate_ProteinDegradation", Rate_ProteinDegradation)

@@ -6,7 +6,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     Idx_Ribosome30S = Comp.Master.ID2Idx_Master['CPLX0-3953']
     Idx_Ribosome50S = Comp.Master.ID2Idx_Master['CPLX0-3956']
 
-    Idx_AAs = ProGen.BuildingBlockIdxs('AA')
+    Idx_AAs = ProGen.BuildingBlockIdxs('AAs')
     Idx_PPi = Comp.Master.ID2Idx_Master['PPI[c]']
 
     Idx_SelenoCysteineInAAs = 19
