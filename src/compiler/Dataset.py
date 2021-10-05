@@ -185,8 +185,8 @@ class FChromosome(FDataset):
         RepFactor = 2 ** self.N_PossibleRoundsOfConcurrentReplications
         self.NMax_Chromosomes = self.NUniq_ChromosomesInGenome * RepFactor
 
-        self.Count_Chromosomes = np.zeros(self.NMax_Chromosomes)
-        self.MW_DNABasePairs = np.zeros(self.NMax_Chromosomes)
+        self.Count_Chromosomes = np.zeros(self.NUniq_ChromosomesInGenome)
+        self.MW_DNABasePairs = np.zeros(self.NUniq_ChromosomesInGenome)
         DNABasePairMW = 650 # average molecular weight of one base pair: 650 Daltons, which is 650 g/mol
 
         ChromosomeCount = 0
@@ -204,9 +204,9 @@ class FChromosome(FDataset):
                     continue
 
                 else:
-                    ChromosomeID = 'Ch%d_Replicating_Round%d' % (ChromosomeNumber, ReplicationRoundID)
-                    self.ID_Chromosomes.append(ChromosomeID)
-                    self.MW_DNABasePairs[ChromosomeCount] = self.Len_ChromosomesInGenome[ChromosomeNumber] * DNABasePairMW / 2  # average length
+                    # ChromosomeID = 'Ch%d_Replicating_Round%d' % (ChromosomeNumber, ReplicationRoundID)
+                    # self.ID_Chromosomes.append(ChromosomeID)
+                    # self.MW_DNABasePairs[ChromosomeCount] = self.Len_ChromosomesInGenome[ChromosomeNumber] * DNABasePairMW / 2  # average length
                     self.Freq_NTsInChromosomes.append(self.Freq_NTsInChromosomesInGenome[ChromosomeNumber])
                     self.Freq_NTsInChromosomesReplicating.append(self.Freq_NTsInChromosomesInGenome[ChromosomeNumber])
 
@@ -1830,7 +1830,7 @@ class FMaster():
 
     def SetUpMasterIndices(self, Comp):
         self.Idx_Master_Chromosomes = self.GetMolIdx(Comp.Chromosome.ID_Chromosomes, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_Chromosomes) == Comp.Chromosome.NMax_Chromosomes
+        assert len(self.Idx_Master_Chromosomes) == Comp.Chromosome.NUniq_ChromosomesInGenome
 
         self.Idx_Master_Genes = self.GetMolIdx(Comp.Gene.ID_Genes, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Genes) == Comp.Gene.NUniq_Genes

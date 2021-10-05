@@ -88,6 +88,21 @@ def Write_CellProcess(Writer):
             Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_PPi, MolCounts)")
             Writer.BlankLine()
 
+        with Writer.Statement("def ConvertConcToCount(self, Conc):"):
+            Writer.Multiply_("Mole", "Conc", "self.Cel.Vol")
+            Writer.Multiply_("Count", "Mole", "self.Cst.NA")
+            Writer.Cast_____("Count", "Count", 'int32')
+            Writer.ReturnVar("Count")
+            Writer.BlankLine()
+
+        with Writer.Statement("def GetConc(self, MolIdxs):"):
+            Writer.Statement("Count = self.Cel.GetCounts(MolIdxs)")
+            Writer.Cast_____("Count", "Count", 'float32')
+            Writer.Divide___("Mole", "Count", "self.Cst.NA")
+            Writer.Divide___("Conc", "Mole", "self.Cel.Vol")
+            Writer.ReturnVar("Conc")
+            Writer.BlankLine()
+
         # with Writer.Statement("def AddToDeltaCounts_Hydrolysis(self, MolCounts):"):
         #     Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "MolCounts")
         #     Writer.BlankLine()
@@ -117,11 +132,12 @@ def Write_CellProcess(Writer):
 
         with Writer.Statement("def DetermineAmountOfBuildingBlocks(self, Len_Polymers, Freq_Monomers):"):
             Writer.Statement("NUniq_Monomers = tf.shape(Freq_Monomers, out_type='int32')[0]")
+            Writer.Statement("NUniq_Polymers = tf.shape(Len_Polymers, out_type='int32')[0]")
             Writer.BlankLine()
 
             Writer.Comment__("GetRawMonomerConsumption")
             # Prepare NT elongation length for each mRNA matrix for multiplication
-            Writer.ReshType_("Len_Polymers_Float", "Len_Polymers", [-1, 1], 'float32')
+            Writer.ReshType_("Len_Polymers_Float", "Len_Polymers", '[NUniq_Polymers, -1]', 'float32')
             # Monomer Frequency per mRNA * elongating Polypeptide (in NT count) per mRNA
             Writer.MatrixMul("MonomerConsumption_Raw", "Freq_Monomers",
                              "Len_Polymers_Float")
@@ -159,6 +175,13 @@ def Write_CellProcess(Writer):
             Writer.Add______("Count_Monomers", "MonomerConsumption_Rounded_MissingSet", "MonomerConsumption_MissingRemainder")
             Writer.ReturnVar("Count_Monomers")
             Writer.BlankLine()
+
+        with Writer.Statement("def GetBinToAddNewCountToLenMatrix(self, LengthMatrix, CountMatrixToAdd):"):
+            Writer.Comment__("Generate boolean and binary matrices for element availability in nascent proteins length matrix.")
+            Writer.Less_____("Bool_LenAvailable", "LengthMatrix", 0)
+            Writer.BoolToBin("Bin_LenAvailable", "Bool_LenAvailable")
+            Writer.BlankLine()
+
 
         with Writer.Statement("def GetBinToAddNewCountToLenMatrix(self, LengthMatrix, CountMatrixToAdd):"):
             Writer.Comment__("Generate boolean and binary matrices for element availability in nascent proteins length matrix.")
@@ -263,9 +286,9 @@ def Write_CellProcess(Writer):
 
             Writer.Comment__("Correct Over-elongated Elements")
             Writer.Comment__("Compare to len MAX to determine overelongated (> MAX)")
-            Writer.Reshape__("MaxLen_2D", "MaxLen_Matrix", [-1, 1])
-            Writer.ConvToBin("Bin_GreaterThanZero", "Len_Matrix_Elongated", ">", "MaxLen_2D")
-            Writer.Subtract_("Len_Matrix_Elongated_MaxSubtracted", "Len_Matrix_Elongated", "MaxLen_2D")
+            # Writer.Reshape__("MaxLen_2D", "MaxLen_Matrix", [-1, 1])
+            Writer.ConvToBin("Bin_GreaterThanZero", "Len_Matrix_Elongated", ">", "MaxLen_Matrix")
+            Writer.Subtract_("Len_Matrix_Elongated_MaxSubtracted", "Len_Matrix_Elongated", "MaxLen_Matrix")
             Writer.Multiply_("Len_Matrix_OverElongated", "Len_Matrix_Elongated_MaxSubtracted", "Bin_GreaterThanZero")
 
             Writer.Comment__("Update nascent Protein length by removing over elongated length")

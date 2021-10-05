@@ -20,7 +20,7 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Counts", 0)  # Counts matrix for all molecules
             Writer.Variable_("self.DeltaCounts", 0)
 
-            Writer.Variable_("self.Len_ChsReplicating", 0)
+            Writer.Variable_("self.Len_ChromosomesReplicating", 0)
             Writer.Variable_("self.Len_RNAsNascent", 0)
             Writer.Variable_("self.Len_ProteinsNascent", 0)
 
@@ -201,11 +201,8 @@ def Write_CellState(Writer, Comp, ProGen):
 
             Writer.Variable_("self.Idx_Ch_Original", 0)
             Writer.Variable_("self.Idx_Ch_Replicating", 0)
-
-
             Writer.BlankLine()
-            Writer.Variable_("self.Rate_DNAReplication", 0)
-            Writer.Variable_("self.Rate_DNAReplication_Matrix", 0)
+
             Writer.BlankLine()
             # Writer.Variable_("self.Count_Replisome", 0)
             # Writer.Variable_("self.Count_ReplisomeActive", 0)
@@ -214,31 +211,9 @@ def Write_CellState(Writer, Comp, ProGen):
             # Writer.Variable_("self.Count_ReplisomeBound", 0)
             # Writer.Variable_("self.Count_ReplisomeUnbound", 0)
             # Writer.Variable_("self.Count_ReplisomeReleased", 0)
-            Writer.Variable_("self.Count_ChromosomesReplicating_Matrix", 0)
-            Writer.Variable_("self.Count_ChromosomesReplicatingInitialTotal", 0)
-            Writer.Variable_("self.Count_ChromosomesReplicatingElongatingTotal", 0)
-            Writer.Variable_("self.Count_ChromosomesReplicatingOverElongatedTotal", 0)
-            Writer.Variable_("self.Count_ChromosomesReplicatingFinalTotal", 0)
             Writer.BlankLine()
-            Writer.Variable_("self.Count_DNAStrandElongationNTLengthFinalPerChromosome", 0)
-            Writer.Variable_("self.Count_DNAStrandElongationNTLengthFinalTotal", 0)
-            Writer.Variable_("self.Count_DNAStrandElongationdNTPConsumption", 0)
-            Writer.Variable_("self.Count_DNAStrandElongationPPiProduction", 0)
-            Writer.Variable_("self.Count_DNAStrandElongationCompletedPerChromosome", 0)
-            Writer.Variable_("self.Count_DNAStrandElongationCompletedTotal", 0)
-            Writer.BlankLine()
-            Writer.Variable_("self.Count_ChromosomeElongationLengthBPPerChromosome", 0)
-            Writer.BlankLine()
-            Writer.Variable_("self.Count_dNTPsOverElongated", 0)
-            Writer.BlankLine()
-            Writer.Variable_("self.Len_ChromosomesOriginal", 0)
-            Writer.Variable_("self.Len_ChromosomesReplicatingInitial", 0)
             Writer.Variable_("self.Len_ChromosomesReplicatingMax", 0)
-            Writer.Variable_("self.Len_ChromosomesReplicatingElongated", 0)
-            Writer.Variable_("self.Len_ChromosomesReplicatingOverElongated", 0)
-            Writer.Variable_("self.Len_ChromosomesReplicatingAdjusted", 0)
-            Writer.Variable_("self.Len_ChromosomesReplicatingCompleted", 0)
-            Writer.Variable_("self.Len_ChromosomesReplicatingFinal", 0)
+            Writer.BlankLine()
 
             # Transcription
             Writer.Comment__("Transcription")
