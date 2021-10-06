@@ -245,6 +245,18 @@ class TFCodeWriter(CodeWriter):
         self.Target = Target.TensorFlow
         super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
 
+    def Function_(self, FunctionName, Args = []):
+        self.Statement("@tf.function")
+        Line = "def {}".format(FunctionName)
+        Line += "("
+        if not Args:
+            Line += "self"
+        else:
+            Line += ",".join(Args)
+       
+        Line += "):"
+        return self.Statement(Line)
+        
     # tf.print
     def PrintStrg(self, Str):
         if self.Switch4PrintString:
