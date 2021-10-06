@@ -36,6 +36,10 @@
 "property"                    { return TOKEN(T_PROPERTY); }
 "using"                       { return TOKEN(T_USING); }
 "module"                      { return TOKEN(T_MODULE); }
+"cofactor"                    { return TOKEN(T_COFACTOR); }
+"domain"                      { return TOKEN(T_DOMAIN); }
+"step"                        { return TOKEN(T_STEP); }
+"sequence"                    { return TOKEN(T_SEQUENCE); }
 "atp"                         { SAVE_TOKEN; return T_ATP; }
 "co2"                         { SAVE_TOKEN; return T_CO2; }
 "CoA"                         { SAVE_TOKEN; return T_COA; }
@@ -47,7 +51,7 @@
 "succinate"                   { SAVE_TOKEN; return T_SUCCINATE; }
 "fumarate"                    { SAVE_TOKEN; return T_FUMARATE; }
 "malate"                      { SAVE_TOKEN; return T_MALATE; }
-[a-zA-Z_][a-zA-Z0-9_-]*       { SAVE_TOKEN; return T_IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_-+]*       { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
 ("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }

@@ -10,6 +10,7 @@ enum {
     ARG_VERSION,
     ARG_VERBOSE,
     ARG_DEBUG,
+    ARG_PARSEONLY,
     ARG_LIBRARY_PATH,
     ARG_DATA_PATH,
     ARG_OUTPUT_PREFIX,
@@ -25,6 +26,7 @@ int FOption::Parse(int argc, char *argv[])
             {"datadir", required_argument, NULL, 'i'},
             {"output", required_argument, NULL, 'o'},
             {"debug", no_argument, NULL, ARG_DEBUG},
+            {"parse-only", no_argument, NULL, ARG_PARSEONLY},
             {NULL, 0, NULL, 0},
     };
 
@@ -65,6 +67,10 @@ int FOption::Parse(int argc, char *argv[])
                 bDebug = true;
                 break;
 
+            case ARG_PARSEONLY:
+                bParseOnly = true;
+                break;
+
             case '?':
             default:
                 return -1;
@@ -91,6 +97,7 @@ void FOption::Reset() {
     bVersion = false;
     Verbose = 0;
     bShowHelp = false;
+    bParseOnly = false;
 }
 
 
@@ -125,6 +132,7 @@ void FOption::Usage(const char *argv0)
     os << "  " << "-o <name>, --output=<name>" << std::endl;
     os << "  " << "                    Use <name> as output file prefix" << std::endl;
     os << "  " << "--debug             Enable debug mode" << std::endl;
+    os << "  " << "--parse-only        Check syntax" << std::endl;
 }
 
 void FOption::Dump()
@@ -132,6 +140,7 @@ void FOption::Dump()
     std::cerr << "bDebug: " << bDebug << std::endl;
     std::cerr << "Verbose: " << Verbose << std::endl;
     std::cerr << "bShowHelp: " << bShowHelp << std::endl;
+    std::cerr << "bParseOnly: " << bParseOnly << std::endl;
     std::cerr << "OutputPrefix: " << OutputPrefix << std::endl;
 
     std::cerr << "DataPaths: " << std::endl;

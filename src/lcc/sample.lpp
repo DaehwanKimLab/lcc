@@ -22,6 +22,15 @@ protein SucA();
 protein SucB();
 protein Fume();
 
+protein CA2(CO2 + H2O --> H+ + OHCOO-) {
+	cofactor co1(Zn2+);
+	domain dom1(co1-his, co1-his, co1-his);
+	step step1(dom1 + H2O --> dom1-OH- + H+);
+	step step2(dom1-OH- + CO2 --> dom1-OHCOO-);
+	step step3(dom1-OHCOO- --> dom1 + OHCOO-);
+	sequence process(step1, step2, step3);
+};
+
 // TCA
 pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
 

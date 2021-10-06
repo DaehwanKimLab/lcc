@@ -31,6 +31,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_PROTEIN T_PATHWAY T_EXPERIMENT T_ORGANISM
 %token <Token> T_DESCRIPTION T_REACTION T_REACTION_ID
 %token <Token> T_PROPERTY T_USING T_MODULE
+%token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE
 
 %token <String> T_STRING_LITERAL
 
@@ -47,13 +48,15 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Ident> ident
 %type <Block> program stmts block
 %type <Block> pathway_block pathway_stmts
+%type <Block> protein_block protein_stmts
 %type <Stmt> stmt protein_decl pathway_decl new_pathway_decl
 %type <MolVec> mol_expr
 %type <MolIdent> mol_ident
 %type <Reaction> protein_decl_args
 %type <PathwayExpr> pathway_expr pathway_decl_args
-%type <Stmt> organism_decl experiment_decl pathway_stmt
+%type <Stmt> organism_decl experiment_decl pathway_stmt protein_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
+%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt
 %type <Stmt> using_stmt
 
 %type <Block> experiment_block experiment_stmts
@@ -94,12 +97,47 @@ experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL { $$ = new NExperimentDecl
 
 protein_decl   : T_PROTEIN ident T_LPAREN protein_decl_args T_RPAREN 
                  { $$ = new NProteinDeclaration(*$2, *$4); delete $2; delete $4; }
+               | T_PROTEIN ident T_LPAREN protein_decl_args T_RPAREN protein_block
+                 { $$ = new NProteinDeclaration(*$2, *$4); delete $2; delete $4; }
                ;
 
 protein_decl_args : /* blank */ { $$ = new NReaction(); }
                   | mol_expr T_ARROW mol_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
                   | mol_expr T_BIARROW mol_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
                   ;
+
+protein_blcok  : T_LBRACE protein_stmts T_RBRACE { $$ = $2; }
+               | T_LBRACE T_RBRACE { $$ = new NBlock(); }
+               ;
+
+protein_stmts  : protein_stmt { $$ = new NBlock(); $$->StatementList.emplace_back($<Stmt>1); }
+               | protein_stmts protein_stmt { $1->StatementList.emplace_back($<Stmt>2); }
+               ;
+
+protein_stmt   : protein_cofactor_stmt T_SEMIC { $$ = $1; }
+               | protein_domain_stmt T_SEMIC { $$ = $1; }
+               | protein_step_stmt T_SEMIC { $$ = $1; }
+               | protein_sequence_stmt T_SEMIC { $$ = $1 };
+               ;
+
+protein_cofactor_stmt : T_COFACTOR ident T_LPAREN protein_cofactor_decl_args T_RPAREN { $$ = new NProteinCofactorStatement(*$2, $4); delete $2; }
+                      ;
+
+protein_domain_stmt : T_DOMAIN ident T_LPAREN protein_domain_decl_args T_RPAREN { $$ = new NProteinDomainStatement(*$2, $4); delete $2; }
+                    ;
+
+protein_step_stmt : T_STEP ident T_LPAREN protein_step_decl_args T_RPAREN { $$ = new NProteinStepStatement(*$2, $4); delete $2; }
+                  ;
+
+protein_sequence_stmt : T_SEQUENCE ident T_LPAREN protein_sequence_decl_args T_RPAREN { $$ = new NProteinSequenceStatement(*$2, $4); delete $2; }
+                      ;
+
+protein_cofactor_decl_args : /* blank */ { $$ = new IdentifierList(); }
+                           | ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
+                           | protein_cofactor_decl_args T_COMMA ident { $1->emplace_back($<Ident>3); }
+                           ;
+
+
 
 pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = new NPathwayDeclaration(*$2, $4); delete $2; }
                ;

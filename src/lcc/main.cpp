@@ -88,13 +88,6 @@ void ScanNodes(const NBlock* InProgramBlock)
 
 int main(int argc, char *argv[])
 {
-#if 0
-    if (argc < 2) {
-        std::cerr << argv[0] << " LPPSourceFile" << std::endl;
-        return -1;
-    }
-#endif
-
     if (Option.Parse(argc, argv)) {
         Option.Usage(argv[0]);
         return -1;
@@ -110,7 +103,9 @@ int main(int argc, char *argv[])
     if (Option.Verbose) {
         Option.Dump();
     }
+
     // Load genes.tsv
+    if (!Option.bParseOnly)
     {
         Context.Init(Option);
         vector<string> Keys;
@@ -157,17 +152,18 @@ int main(int argc, char *argv[])
         }
     }
 
-
-    string UsingModuleFilename;
-    if (!Option.OutputPrefix.empty()) {
-        UsingModuleFilename = Option.OutputPrefix + "/";
-        if (!Utils::CreatePaths(UsingModuleFilename.c_str())) {
-            cerr << "Can't create directory" << endl;
+    if (!Option.bParseOnly) {
+        string UsingModuleFilename;
+        if (!Option.OutputPrefix.empty()) {
+            UsingModuleFilename = Option.OutputPrefix + "/";
+            if (!Utils::CreatePaths(UsingModuleFilename.c_str())) {
+                cerr << "Can't create directory" << endl;
+            }
         }
+        UsingModuleFilename += "process_module.tsv";
+
+        Context.SaveUsingModuleList(UsingModuleFilename.c_str());
     }
-    UsingModuleFilename += "process_module.tsv";
 
-
-    Context.SaveUsingModuleList(UsingModuleFilename.c_str());
     return 0;
 }
