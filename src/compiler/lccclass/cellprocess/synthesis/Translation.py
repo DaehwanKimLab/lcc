@@ -32,7 +32,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+        with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Variable_("self.Idx_Proteins", 0)
             Writer.Variable_("self.Idx_RndProteinsNascent", 0)
             Writer.BlankLine()
@@ -49,7 +49,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         # Override the abstract method
-        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+        with Writer.Function_("SetUp_ProcessSpecificVariables"):
             Writer.VarRange_("self.Idx_Proteins", 0, NUniq_Proteins)
 
             Writer.Variable_("self.Cel.Idx_Ribosome30S", Idx_Ribosome30S)
@@ -69,13 +69,13 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         # Override the abstract method
-        with Writer.Statement("def ExecuteProcess(self):"):
+        with Writer.Function_("ExecuteProcess"):
             Writer.Statement("self.Initiation()")
             Writer.Statement("self.Elongation()")
             Writer.Statement("self.Termination()")
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineRibosomeToBind(self):"):
+        with Writer.Function_("DetermineRibosomeToBind"):
 
             Writer.Comment__("RetrieveTotalRibosomeCount")
             Writer.Statement(
@@ -119,14 +119,14 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Count_RibosomeWillBind")
             Writer.BlankLine()
 
-        with Writer.Statement("def SelectProteinsToTranslate(self, Count_RibosomeWillBind):"):
+        with Writer.Function_("SelectProteinsToTranslate", "Count_RibosomeWillBind"):
             # Weighted random distribution later
             Writer.Gather___("Count_mRNAs", "self.Cel.Counts", "self.Cel.Idx_Master_mRNAs")
             Writer.Statement("Idx_RndProteinsNascent = self.PickRandomIndexFromPool_Weighted_Local(Count_RibosomeWillBind, self.Idx_Proteins, Count_mRNAs)")
             Writer.ReturnVar("Idx_RndProteinsNascent")
             Writer.BlankLine()
 
-        with Writer.Statement("def AddNewCountsToNascentProteinLengthMatrix(self, Len_Matrix, Idx_NewSelected):"):
+        with Writer.Function_("AddNewCountsToNascentProteinLengthMatrix", "Len_Matrix", "Idx_NewSelected"):
             # To turn -1 to 0 where nascent proteins are to be made in the nascent protein length table.
             Writer.InitZeros("Count_ProteinsNascentNew", NUniq_Proteins, 'int32')
             Writer.OnesLike_("Ones", "Idx_NewSelected", 'int32')
@@ -137,7 +137,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Len_Matrix_NewCountAdded")
             Writer.BlankLine()
 
-        with Writer.Statement("def DistributeRibosomesTomRNAs(self):"):
+        with Writer.Function_("DistributeRibosomesTomRNAs"):
             Writer.Statement("Count_RibosomeWillBind = self.DetermineRibosomeToBind()")
             Writer.Statement("Idx_RndProteinsNascent = self.SelectProteinsToTranslate(Count_RibosomeWillBind)")
             Writer.ReturnVar("Idx_RndProteinsNascent")
@@ -145,11 +145,11 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # TODO: RNAP-bound mRNAs are committed to translation, resistant to RNA degradation. Make a separate matrix?
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateNascentProteinLengths(self, Len_ProteinsNascent_Update):"):
+        with Writer.Function_("UpdateNascentProteinLengths", "Len_ProteinsNascent_Update"):
             Writer.Overwrite("self.Cel.Len_ProteinsNascent", "Len_ProteinsNascent_Update")
             Writer.BlankLine()
 
-        with Writer.Statement("def Initiation(self):"):
+        with Writer.Function_("Initiation"):
             Writer.Statement("self.Idx_RndProteinsNascent = self.DistributeRibosomesTomRNAs()")
 
             # Update the nascent protein length matrix
@@ -157,7 +157,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.UpdateNascentProteinLengths(Len_ProteinNascent_NewToZero)")
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineAAConsumption(self, Len_ToElongate):"):
+        with Writer.Function_("DetermineAAConsumption", "Len_ToElongate"):
             Writer.Statement("AAConsumption = self.DetermineAmountOfBuildingBlocks(Len_ToElongate, self.Cel.Freq_AAsInProteins)")
 
             # Correction for Seleno-cysteine when -1
@@ -179,24 +179,24 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("AAConsumption_Adjusted")
             Writer.BlankLine()
 
-        with Writer.Statement("def ConsumeAAs(self, Len_ToElongate):"):
+        with Writer.Function_("ConsumeAAs", "Len_ToElongate"):
             Writer.Statement("AAConsumption = self.DetermineAAConsumption(Len_ToElongate)")
             Writer.ReduceSum("self.Count_AAConsumptionTotal", "AAConsumption")
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_AAs, -AAConsumption)")
             Writer.BlankLine()
 
-        with Writer.Statement("def ReleasePPi(self, Count_TotalLengthOfElongation):"):
+        with Writer.Function_("ReleasePPi", "Count_TotalLengthOfElongation"):
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_PPi, Count_TotalLengthOfElongation)")
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateByproducts(self, Len_ToElongate):"):
+        with Writer.Function_("UpdateByproducts", "Len_ToElongate"):
             Writer.ReduceSum("Count_TotalLengthOfElongationPerProtein", "Len_ToElongate", 1)
             Writer.Statement("self.ConsumeAAs(Count_TotalLengthOfElongationPerProtein)")
             Writer.ReduceSum("Count_TotalLengthOfElongationTotal", "Len_ToElongate")
             Writer.Statement("self.ReleasePPi(Count_TotalLengthOfElongationTotal)")
             Writer.BlankLine()
 
-        with Writer.Statement("def Elongation(self):"):
+        with Writer.Function_("Elongation"):
             Writer.Statement("Len_ProteinsNascent_Elongated = self.DetermineAmountOfElongation(self.Cel.Len_ProteinsNascent, self.Rate_ProteinElongation, self.Len_ProteinsNascentMax)")
             Writer.Statement("Len_ToElongate = Len_ProteinsNascent_Elongated - self.Cel.Len_ProteinsNascent")
             Writer.ConvToBin("Bin_Elongated", "Len_ToElongate", ">", 0)
@@ -212,13 +212,13 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         #                      "Idx_ProteinElongationCompleted")
         #     Writer.BlankLine()
 
-        with Writer.Statement("def IncrementCountOfProteins(self, Count_ElongationCompletionPerProtein):"):
+        with Writer.Function_("IncrementCountOfProteins", "Count_ElongationCompletionPerProtein"):
             # Increment count of Proteins completed elongation
             Writer.Statement(
                 "self.AddToDeltaCounts(self.Cel.Idx_Master_Proteins, Count_ElongationCompletionPerProtein)")
             Writer.BlankLine()
 
-        with Writer.Statement("def Termination(self):"):
+        with Writer.Function_("Termination"):
             # Reset nascent protein length matrix
             Writer.Statement("Len_ProteinsNascent_ElongationCompletedToZero = self.ResetLengthOfCompletedElongation(self.Cel.Len_ProteinsNascent, self.Len_ProteinsNascentMax)")
             Writer.Statement("Len_ProteinsNascent_ElongationCompletedToNegOne = self.ResetZerosToNegOnes(Len_ProteinsNascent_ElongationCompletedToZero)")
@@ -232,7 +232,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.IncrementCountOfProteins(Count_ElongationCompletionPerProtein)")
             Writer.BlankLine()
 
-        with Writer.Statement("def ViewProcessSummary(self):"):
+        with Writer.Function_("ViewProcessSummary"):
             Writer.PrintStrg("===== Translation ===== ")
             Writer.PrintStVa("# of Ribosomes",
                              "self.Count_Ribosome")

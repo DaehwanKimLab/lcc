@@ -96,9 +96,9 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Print
     Writer.Switch4SimStepsExecuted = True
     Writer.Switch4ProcessSummary = True
-    Writer.Switch4CellStateSummary = False
+    Writer.Switch4CellStateSummary = True
     Writer.Switch4PostSimulationStepCorrectionMessage = False
-    Writer.Switch4Visualization2D = True
+    Writer.Switch4Visualization2D = False
 
     # Debugging
     Writer.Switch4DebugSimulationPrint = False
@@ -119,15 +119,15 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Switch4Save = True
 
     # Simulation Controls
-    SimWallTimeRequested = 1 * 60   # Simulation time request in seconds
+    SimWallTimeRequested = 45 * 60   # Simulation time request in seconds
     SimStepsPrintResolution = 1
 
     # Simulation Data Display Controls
     MoleculesToDisplay = [
         # 'NTPs',
-        'AAs',
-        'ACETYL-COA[c]',
-        'ACETYL-P[c]',
+        # 'AAs',
+        # 'ACETYL-COA[c]',
+        # 'ACETYL-P[c]',
         # 'ADENINE[c]',
         # 'ADENOSINE[c]',
         # 'ADP-D-GLUCOSE[c]',
@@ -267,8 +267,8 @@ def WriteBody(Writer, CompilerData, ProGen):
 
         Writer.BlankLine()
 
-        # Generate a string of a dictionary of cell process object names
-        Writer.Comment__("Generate a dictionary of cell process object names")
+        # Generate a string of a dictionary of cell process object names.
+        Writer.Comment__("Generate a dictionary of cell process object names.")
         Writer.Statement("Dict_CellProcesses = dict()")
         for ProcessID in ProGen.Dict_CellProcesses.keys():
             Writer.Statement("Dict_CellProcesses['%s'] = %s" % (ProcessID, ProcessID))
@@ -278,16 +278,16 @@ def WriteBody(Writer, CompilerData, ProGen):
         # Instantiate simulation object.
         Writer.Comment__("Instantiate simulation object.")
         Writer.Statement("Sim = FSimulation(Cel, Cst, Env, Exe, Dict_CellProcesses)")
-        Writer.Comment__("handles simulation structure and order, controls time")
-
+        Writer.Comment__("Sim handles simulation structure and order, controls time")
         Writer.BlankLine()
 
-        # Set up molecules to display variable
+        # Set up molecules to display variable.
+        Writer.Comment__("Set up molecules to display variable")
         Writer.Overwrite("SimDataToVisualize", SimDataToVisualize)
-        Writer.Overwrite("SimDataToVisualize", SimDataToVisualize)
+        Writer.BlankLine()
 
 
-        # Run simulation
+        # Run simulation.
         Writer.Comment__("Run Simulation.")
         Writer.Statement("Sim.Initialize(%s, %s)" % (str(SimWallTimeRequested), str(SimStepsPrintResolution)))
         Writer.Statement("Sim.Run()")
@@ -299,7 +299,7 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.BlankLine()
 
         # Print input genome.
-        Writer.Comment__("Print input genome")
+        Writer.Comment__("Print input genome.")
 
         with Writer.Statement("if GenomeFileName != \"\":"):
             Writer.Statement("GenomeFile = open(GenomeFileName, 'w')")

@@ -28,11 +28,11 @@ def Write_DataExport(Writer, Comp):
         Idx_Random10mRNAs.append(Comp.Master.ID2Idx_Master[Comp.Master.ID2ID_Gene2RNA_Master[Comp.Gene.Sym2ID_Genes[GeneName]]])
 
     with Writer.Statement("class FSimDataExport():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
             Writer.Statement("# Define temporary variables for visualization purposes")
             Writer.BlankLine()
 
-        with Writer.Statement("def ExportData(self, X, Y, XLabel, YLabel, Legends, Title)"):
+        with Writer.Function_("ExportData", "X", "Y", "XLabel", "YLabel", "Legends", "Title"):
             # Temporary export code
             with Writer.Statement("with open('%s', 'w', newline='') as SaveFile:" % SaveFileName):
                 Header = list(["# of active RNAPs", "# of RNAPs Newly Bound To Gene", "# of Nascent RNAs Elongated", "# of New RNAs Generated", "# of ATP consumption", "# of CTP consumption", "# of GTP consumption", "# of UTP consumption"])

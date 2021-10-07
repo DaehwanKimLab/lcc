@@ -40,11 +40,11 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+        with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Variable_("self.CellDivisionSwitch", 0)
             Writer.BlankLine()
 
-        with Writer.Statement("def ExecuteCellDivision(self):"):
+        with Writer.Function_("ExecuteCellDivision"):
             Writer.Statement("self.CellDivisionSwitch = self.EvaluateCellStateForCellDivision()")
             Writer.Statement("self.Cel.Len_ChromosomesReplicating = self.GenomeSegregation(self.Cel.Len_ChromosomesReplicating)")
 
@@ -64,7 +64,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
 
-        with Writer.Statement("def GenomeSegregation(self, Len_ChromosomesReplicating):"):
+        with Writer.Function_("GenomeSegregation", "Len_ChromosomesReplicating"):
             Writer.Overwrite("InheretedChromosomesReplicating", "Len_ChromosomesReplicating[1,:]")
             Writer.Reshape__("InheretedChromosomesReplicating", "InheretedChromosomesReplicating", [1, 4])
             Writer.VarFill__("NegOnes", [2, 4], -1)
@@ -79,7 +79,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Len_ChromosomesReplicating_Updated")
             Writer.BlankLine()
 
-        with Writer.Statement("def EvaluateCellStateForCellDivision(self):"):
+        with Writer.Function_("EvaluateCellStateForCellDivision"):
             Writer.Statement("DNAReplicationState = self.Cel.Len_ChromosomesReplicating[0, :]")
             Writer.Equal____("Bool_CellReplicationState", "DNAReplicationState", "self.Cel.Len_ChromosomesReplicatingMax")
             Writer.ReduceAll("Bool_CellDivisionSwitch", "Bool_CellReplicationState")
@@ -87,19 +87,19 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Bin_CellDivisionSwitch")
             Writer.BlankLine()
 
-        with Writer.Statement("def SplitMatrixInValues(self, Matrix):"):
+        with Writer.Function_("SplitMatrixInValues", "Matrix"):
             Writer.FloorDiv_("Matrix_Halved", "Matrix", 2)
             Writer.ReturnVar("Matrix_Halved")
             Writer.BlankLine()
 
-        with Writer.Statement("def SplitCountMatrix(self, CountMatrix):"):
+        with Writer.Function_("SplitCountMatrix", "CountMatrix"):
             Writer.Statement("Matrix_Halved = self.SplitMatrixInValues(CountMatrix)")
             Writer.Multiply_("Matrix_Halved_Switch", "Matrix_Halved", "self.CellDivisionSwitch")
             Writer.Subtract_("CountMatrix_Updated", "CountMatrix", "Matrix_Halved_Switch")
             Writer.ReturnVar("CountMatrix_Updated")
             Writer.BlankLine()
 
-        with Writer.Statement("def SplitMatrixInElements(self, Matrix):"):
+        with Writer.Function_("SplitMatrixInElements", "Matrix"):
             Writer.Shape____("Shape_Matrix", "Matrix")
             Writer.RndNumUni("RandomElements", Shape="Shape_Matrix", MinVal="0", MaxVal="2", Type='int32')
             Writer.Multiply_("Matrix_RandomElements", "Matrix", "RandomElements")
@@ -108,14 +108,14 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Matrix_RandomElements_Corrected")
             Writer.BlankLine()
 
-        with Writer.Statement("def SplitLengthMatrices(self, LenMatrix):"):
+        with Writer.Function_("SplitLengthMatrices", "LenMatrix"):
             Writer.Subtract_("CellDivisionCounterSwitch", 1, "self.CellDivisionSwitch")
             Writer.Statement("Matrix_RandElements = self.SplitMatrixInElements(LenMatrix)")
             Writer.Statement("LenMatrix_Updated = tf.math.add(tf.math.multiply(CellDivisionCounterSwitch, LenMatrix), tf.math.multiply(self.CellDivisionSwitch, Matrix_RandElements))")
             Writer.ReturnVar("LenMatrix_Updated")
             Writer.BlankLine()
 
-        with Writer.Statement("def TestCellDivision(self):"):
+        with Writer.Function_("TestCellDivision"):
             Writer.Comment__("Double all of the cell state counts.")
             Writer.Statement("self.Cel.Counts = tf.math.multiply(self.Cel.Counts, 2)")
             Writer.ScatNdUpd("self.Cel.Counts", "self.Cel.Counts", "[[0]]", "[1]")
@@ -127,7 +127,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Writer.Statement("self.CellDivisionSwitch = tf.constant(1)")
             Writer.BlankLine()
 
-        with Writer.Statement("def PrintMessage(self):"):
+        with Writer.Function_("PrintMessage"):
             Writer.PrintStrg("===== Cell Division ===== ")
             Writer.PrintStVa("Cell Division",
                              "self.CellDivisionSwitch")

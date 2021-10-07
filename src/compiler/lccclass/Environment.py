@@ -3,5 +3,5 @@
 def Write_Environment(Writer, Comp):
     Writer.BlankLine()
     with Writer.Statement("class FEnvironment():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
             Writer.Statement("pass")

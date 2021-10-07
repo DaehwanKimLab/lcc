@@ -3,7 +3,7 @@
 def Write_Visulization_2D(Writer, Comp):
     Writer.BlankLine()
     with Writer.Statement("class FVisualization_2D():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
             Writer.Statement("# Define temporary variables for visualization purposes")
             Writer.Variable_("self.dNTPs", 0)
             Writer.Variable_("self.NTPs", 0)

@@ -24,7 +24,7 @@ import abc
 def Write_PolymerizationRateFunction(Writer, CompilerData):
     Writer.BlankLine()
     with Writer.Statement("class FPolymerizationRateFunction():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
 
             Writer.Variable_("self.Mean", 0)
             # For normal distribution
@@ -36,12 +36,12 @@ def Write_PolymerizationRateFunction(Writer, CompilerData):
             Writer.Statement("super().__init__()")
             Writer.BlankLine()
 
-        with Writer.Statement("def LoadRateMean(self, Mean):"):
+        with Writer.Function_("LoadRateMean", "Mean"):
             Writer.Reshape__("self.Mean", "Mean", [])
             Writer.Cast_____("self.Mean", "self.Mean", 'float32')
             Writer.BlankLine()
 
-        with Writer.Statement("def LoadRateSD(self, SD):"):
+        with Writer.Function_("LoadRateSD", "SD"):
             Writer.Reshape__("self.SD", "SD", [])
             Writer.Cast_____("self.SD", "self.SD", 'float32')
             Writer.BlankLine()
@@ -57,7 +57,7 @@ def Write_PolymerizationRateFunction(Writer, CompilerData):
         #     Writer.ReturnVar("self.Rate")
         #     Writer.BlankLine()
 
-        with Writer.Statement("def DetermineRate(self):"):
+        with Writer.Function_("DetermineRate"):
             Writer.Statement("self.Rate = tf.random.normal(shape=[1], mean=self.Mean, stddev=self.SD)")
             Writer.Round____("self.Rate", "self.Rate")
             Writer.ReturnVar("self.Rate")

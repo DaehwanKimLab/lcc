@@ -171,7 +171,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+        with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Variable_("self.Idx_Proteins", 0)
             Writer.Variable_("self.Idx_RndProteinsDegraded", 0)
             Writer.BlankLine()
@@ -183,7 +183,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         # Override the abstract method
-        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+        with Writer.Function_("SetUp_ProcessSpecificVariables"):
 
             # Local indices
             Writer.VarRange_("self.Idx_Proteins", 0, NUniq_Proteins)
@@ -205,32 +205,32 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Writer.BlankLine()
 
         # Override the abstract method
-        with Writer.Statement("def ExecuteProcess(self):"):
+        with Writer.Function_("ExecuteProcess"):
             Writer.Statement("self.ResetVariables()")
             Writer.Statement("self.Initiation()")
             Writer.Statement("self.Degradation()")
             # Writer.Statement("self.Termination()   # Not Implemented")
             Writer.BlankLine()
 
-        with Writer.Statement("def ResetVariables(self):"):
+        with Writer.Function_("ResetVariables"):
             Writer.InitZeros("self.Count_ProteinsDegraded", NUniq_Proteins, 'int32')
             Writer.BlankLine()
 
         # TODO: Model Protease Specificity Interaction
-        with Writer.Statement("def ProteaseSubstrateBinding(self):"):
+        with Writer.Function_("ProteaseSubstrateBinding"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def Denaturation(self):"):
+        with Writer.Function_("Denaturation"):
 
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def Translocation(self):"):
+        with Writer.Function_("Translocation"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def SelectProteinsToDegrade(self):"):
+        with Writer.Function_("SelectProteinsToDegrade"):
             # Determine the number of proteins to degrade
             Writer.Gather___("Count_Proteins", "self.Cel.Counts", "self.Cel.Idx_Master_Proteins")
             Writer.ReduceSum("Count_ProteinsTotal", "Count_Proteins", 0)
@@ -238,12 +238,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.Idx_RndProteinsDegraded = self.PickRandomIndexFromPool_Weighted_Local(N_ProteinsToBeDegraded, self.Idx_Proteins, Count_Proteins)")
             Writer.BlankLine()
 
-        with Writer.Statement("def GetCountOfDegradedProteins(self):"):
+        with Writer.Function_("GetCountOfDegradedProteins"):
             Writer.OnesLike_("OnesForRndProteins", "self.Idx_RndProteinsDegraded", 'int32')
             Writer.ScatNdUpd("self.Count_ProteinsDegraded", "self.Count_ProteinsDegraded", "self.Idx_RndProteinsDegraded", "OnesForRndProteins")
             Writer.BlankLine()
 
-        with Writer.Statement("def Initiation(self):"):
+        with Writer.Function_("Initiation"):
             # Denaturation and translocation steps are the rate-limiting steps in protein degradation
             # These two steps are currently expressed as an average half life value in selecting proteins to degrade
             Writer.Statement("self.ProteaseSubstrateBinding()   # Not implemented yet")
@@ -254,22 +254,22 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.GetCountOfDegradedProteins()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ReduceCountOfDegradedProteins(self):"):
+        with Writer.Function_("ReduceCountOfDegradedProteins"):
             Writer.Statement("self.Count_ProteinsDegraded = self.CorrectCountGettingBelowZeroAfterRemoval(self.Cel.Idx_Master_Proteins, self.Count_ProteinsDegraded)")
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_Master_Proteins, -self.Count_ProteinsDegraded)")
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineAAsToBeReleased(self):"):
+        with Writer.Function_("DetermineAAsToBeReleased"):
             # AA Count per protein * count of proteins to be degraded
             Writer.Reshape__("Count_ProteinsDegraded", "self.Count_ProteinsDegraded", [-1, 1])
             Writer.MatrixMul("self.Count_AAsToBeReleased", "self.Cel.Count_AAsInProteins", "Count_ProteinsDegraded")
             Writer.BlankLine()
 
-        with Writer.Statement("def ReplenishAAs(self):"):
+        with Writer.Function_("ReplenishAAs"):
             Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_AAs, self.Count_AAsToBeReleased)")
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateByproducts(self):"):
+        with Writer.Function_("UpdateByproducts"):
             Writer.ReduceSum("Count_AAsToBeReleasedTotal", "self.Count_AAsToBeReleased", 0)
             Writer.Overwrite("self.Count_AAsToBeReleasedTotal", "Count_AAsToBeReleasedTotal")
             Writer.ReduceSum("Count_RndProteinsDegradedTotal", "self.Count_ProteinsDegraded", 0)
@@ -300,14 +300,14 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.BlankLine()
 
-        with Writer.Statement("def Degradation(self):"):
+        with Writer.Function_("Degradation"):
             Writer.Statement("self.ReduceCountOfDegradedProteins()")
             Writer.Statement("self.DetermineAAsToBeReleased()")
             Writer.Statement("self.ReplenishAAs()")
             Writer.Statement("self.UpdateByproducts()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ViewProcessSummary(self):"):
+        with Writer.Function_("ViewProcessSummary"):
             Writer.PrintStrg("===== Protein Degradation ===== ")
             Writer.PrintStVa("# of Proteins Degraded",
                              "tf.math.reduce_sum(self.Count_ProteinsDegraded)")

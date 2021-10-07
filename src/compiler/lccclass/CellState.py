@@ -7,7 +7,7 @@ from os import listdir
 def Write_CellState(Writer, Comp, ProGen):
     Writer.BlankLine()
     with Writer.Statement("class FCellState():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
 
             Writer.Variable_("self.Species", 0) # Index for Exact or closest species
             Writer.Variable_("self.ID", 0) # Not implemented yet
@@ -46,7 +46,7 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Statement("self.CheckCountsPos()")
             Writer.BlankLine()
 
-        with Writer.Statement("def LoadStaticCompilerData(self):"):
+        with Writer.Function_("LoadStaticCompilerData"):
             # Load CompilerData.
             SavePath = os.path.realpath(Comp.SavePath)
             SaveFiles = listdir(SavePath)
@@ -70,29 +70,29 @@ def Write_CellState(Writer, Comp, ProGen):
                     Writer.LoadSaved(SaveFilePath, VariableName, DataType)
             Writer.BlankLine()
 
-        with Writer.Statement("def InitializeDeltaCounts(self):"):
+        with Writer.Function_("InitializeDeltaCounts"):
             Writer.InitZeros("self.DeltaCounts", "self.N_Counts")
             Writer.BlankLine()
 
-        with Writer.Statement("def ClearDeltaCounts(self):"):
+        with Writer.Function_("ClearDeltaCounts"):
             Writer.Statement("self.InitializeDeltaCounts()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ShowDeltaCounts(self):"):
+        with Writer.Function_("ShowDeltaCounts"):
             Writer.NotEqual_("Bool_CheckPointNonZero", "self.DeltaCounts", "tf.constant(0)")
             Writer.PrintStrg("[DeltaCounts] Non-zeros:")
             Writer.PrintStVa("\tIndex", "tf.reshape(tf.where(Bool_CheckPointNonZero), -1)")
             Writer.PrintStVa("\tValue", "tf.reshape(tf.gather(self.DeltaCounts, tf.where(Bool_CheckPointNonZero)), -1)")
             Writer.BlankLine()
 
-        with Writer.Statement("def CheckDeltaCountsNeg(self):"):
+        with Writer.Function_("CheckDeltaCountsNeg"):
             Writer.Less_____("Bool_CheckPointLessThanZero", "self.DeltaCounts", "tf.constant(0)")
             Writer.PrintStrg("[DeltaCounts] Negatives:")
             Writer.PrintStVa("\tIndex", "tf.reshape(tf.where(Bool_CheckPointLessThanZero), -1)")
             Writer.PrintStVa("\tValue", "tf.reshape(tf.gather(self.DeltaCounts, tf.where(Bool_CheckPointLessThanZero)), -1)")
             Writer.BlankLine()
 
-        with Writer.Statement("def CheckCountsPos(self):"):
+        with Writer.Function_("CheckCountsPos"):
             if Writer.Switch4SoftCheckCounts:
                 Writer.Comment__("Soft Checkpoint")
                 Writer.Less_____("Bool_SoftCheckPoint", "self.Counts", "tf.constant(0)")
@@ -114,7 +114,7 @@ def Write_CellState(Writer, Comp, ProGen):
                 Writer.Pass_____()
                 Writer.BlankLine()
 
-        with Writer.Statement("def InitializeMatrices(self):"):
+        with Writer.Function_("InitializeMatrices"):
             Writer.Statement("self.Counts = self.Count_Master")
             Writer.Statement("self.N_Counts = len(self.Counts)")
             Writer.InitZeros("self.DeltaCounts", "self.N_Counts")
@@ -134,7 +134,7 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Statement("self.SwitchToSparseMatrices()")
             Writer.BlankLine()
 
-        with Writer.Statement("def SwitchToSparseMatrices(self):"):
+        with Writer.Function_("SwitchToSparseMatrices"):
             ListOfMatrixVariablesToSwitchToSparseTensorType = [
                 "self.Coeff_Complexation",
                 # "self.Coeff_Equilibrium",
@@ -145,7 +145,7 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def TransposeFreqNCountMatrices(self):"):
+        with Writer.Function_("TransposeFreqNCountMatrices"):
             ListOfMatrixVariablesToTranspose = [
                 "self.Freq_NTsInChromosomes",
                 "self.Freq_NTsInChromosomesReplicating",
@@ -160,7 +160,7 @@ def Write_CellState(Writer, Comp, ProGen):
                 Writer.Transpose(Variable, Variable)
             Writer.BlankLine()
 
-        with Writer.Statement("def InitializeVariablesForCellProcesses(self):"):
+        with Writer.Function_("InitializeVariablesForCellProcesses"):
 
             Writer.Comment__("Popular")
             Writer.BlankLine()
@@ -314,18 +314,18 @@ def Write_CellState(Writer, Comp, ProGen):
         #     Writer.Concat___("self.MX_Rates", "self.MX_Rates", "Rate")
         #     Writer.BlankLine()
 
-        with Writer.Statement("def GetCounts(self, MolIdxs):"):
+        with Writer.Function_("GetCounts", "MolIdxs"):
             Writer.Gather___("Counts", "self.Counts", "MolIdxs")
             Writer.Reshape__("Counts", "Counts", -1)
             Writer.ReturnVar("Counts")
             Writer.BlankLine()
 
-        with Writer.Statement("def GetDeltaCounts(self, MolIdxs):"):
+        with Writer.Function_("GetDeltaCounts", "MolIdxs"):
             Writer.Gather___("DeltaCounts", "self.DeltaCounts", "MolIdxs")
             Writer.Reshape__("DeltaCounts", "DeltaCounts", -1)
             Writer.ReturnVar("DeltaCounts")
             Writer.BlankLine()
 
-        with Writer.Statement("def AddToDeltaCounts(self, MolIdxs, MolCounts):"):
+        with Writer.Function_("AddToDeltaCounts", "MolIdxs", "MolCounts"):
             Writer.ScatNdAdd("self.DeltaCounts", "self.DeltaCounts", "MolIdxs", "MolCounts")
             Writer.BlankLine()

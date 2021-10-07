@@ -17,7 +17,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+        with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Variable_("self.N_EQMRXNsToRun", 0)
             Writer.Variable_("self.Idx_MolsInEQMRXN_Local", 0)
 
@@ -34,7 +34,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.Coeff_EQMRXN_Transposed", 0)
             Writer.BlankLine()
             
-        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+        with Writer.Function_("SetUp_ProcessSpecificVariables"):
 
             # Master indices
             Writer.BlankLine()
@@ -63,7 +63,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
             Writer.BlankLine()
 
-        with Writer.Statement("def ExecuteProcess(self):"):
+        with Writer.Function_("ExecuteProcess"):
             Writer.Statement("self.ResetVariables()")
             Writer.Statement("Count_MolsInEQMRXN = self.GetCounts(self.Cel.Idx_Master_MolsInEQMRXN)")
             Writer.Statement("Rate_EQMRXN = DetermineRateOfEQMRXNs(Count_MolsInEQMRXN)")
@@ -71,11 +71,11 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("self.AddToDeltaCounts(Idx_MolsParticipatingInEQMRXN, Count_MolsParticipatingInEQMRXN)")
             Writer.BlankLine()
 
-        with Writer.Statement("def ResetVariables(self):"):
+        with Writer.Function_("ResetVariables"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineRateOfEQMRXNs(self, Count_MolsInEQMRXN):"):
+        with Writer.Function_("DetermineRateOfEQMRXNs", "Count_MolsInEQMRXN"):
             # Rate is needed only if ODE is used
 
             # Kc must be known in the first place for the given condition
@@ -92,7 +92,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def DetermineAmountOfMoleculesParticipatingInEQMRXN(self, Rate_EQMRXN, Count_MolsInEQMRXN):"):
+        with Writer.Function_("DetermineAmountOfMoleculesParticipatingInEQMRXN", "Rate_EQMRXN", "Count_MolsInEQMRXN"):
             Writer.MatrixMul("Count_MolsParticipatingInEQMRXN", "self.Coeff_EQMRXN", "Rate_EQMRXN")
 
             # Get the number of reactions to run
@@ -103,7 +103,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Count_MolsParticipatingInEQMRXN_Adjusted")
             Writer.BlankLine()
 
-        with Writer.Statement("def ViewProcessSummary(self):"):
+        with Writer.Function_("ViewProcessSummary"):
             Writer.PrintStrg("===== Equilibrium Reactions ===== ")
             Writer.PrintStVa("",
                              "")

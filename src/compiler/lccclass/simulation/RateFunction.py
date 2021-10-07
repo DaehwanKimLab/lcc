@@ -24,11 +24,11 @@ import abc
 def Write_RateFunction(Writer, CompilerData):
     Writer.BlankLine()
     with Writer.Statement("class FRateFunction():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
             Writer.Variable_("self.Rate", 0)
             Writer.BlankLine()
 
         Writer.AbsMethod()
-        with Writer.Statement("def DetermineRate(self):"):
+        with Writer.Function_("DetermineRate"):
             Writer.Pass_____()
             Writer.BlankLine()

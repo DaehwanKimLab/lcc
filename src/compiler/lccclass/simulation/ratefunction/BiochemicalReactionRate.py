@@ -24,7 +24,7 @@ import abc
 def Write_BiochemicalReactionRateFunction(Writer, CompilerData):
     Writer.BlankLine()
     with Writer.Statement("class FBiochemicalReactionRateFunction():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
             # Writer.Variable_("self.Stoich", 0)
             # Writer.Variable_("self.Rate", 0)
             # Writer.Variable_("self.Count", 0)

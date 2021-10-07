@@ -3,7 +3,7 @@
 def Write_Constant(Writer, Comp):
     Writer.BlankLine()
     with Writer.Statement("class FConstant():"):
-        with Writer.Statement("def __init__(self):"):
+        with Writer.Function_("__init__"):
             Writer.Variable_("self.NA", 6.022141527E23) # Avogadro's Number
 
             # Define accessory variables - TF version

@@ -167,7 +167,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+        with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Variable_("self.Idx_Enolase_RppH", 0)
             Writer.Variable_("self.Idx_EndoRNase_RNaseE", 0)
             Writer.Variable_("self.Idx_ExoRNaseHydrolytic_RNaseII", 0)
@@ -203,7 +203,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         # Override the abstract method
-        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+        with Writer.Function_("SetUp_ProcessSpecificVariables"):
             # Local indices
             Writer.Variable_("self.Idx_Enolase_RppH", Idx_Enolase_RppH)
             Writer.Variable_("self.Idx_EndoRNase_RNaseE", Idx_EndoRNase_RNaseE)
@@ -232,20 +232,20 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         # Override the abstract method
-        with Writer.Statement("def ExecuteProcess(self):"):
+        with Writer.Function_("ExecuteProcess"):
             Writer.Statement("self.ResetVariables()")
             Writer.Statement("self.RNACleavage()")
             Writer.Statement("self.RNADigestion()")
             Writer.Statement("self.Degradosome()")
             Writer.BlankLine()
 
-        with Writer.Statement("def ResetVariables(self):"):
+        with Writer.Function_("ResetVariables"):
             Writer.Variable_("self.N_NTPsDigested", 0)
             # Writer.Variable_("self.Count_NTsInRNAsCleavedTotal", 0)
             Writer.Variable_("self.N_RNAsCleaved", 0)
             Writer.BlankLine()
 
-        with Writer.Statement("def RNACleavage(self):"):
+        with Writer.Function_("RNACleavage"):
             Writer.Statement("self.mRNACleavage()")
             Writer.Statement("self.rRNACleavage()")
             Writer.Statement("self.tRNACleavage()")
@@ -296,7 +296,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         #     Writer.ReturnVar("Count_RNaseEWillBind")
         #     Writer.BlankLine()
 
-        with Writer.Statement("def DetermineNTsInRNA(self, Idx_RNAsSelected):"):
+        with Writer.Function_("DetermineNTsInRNA", "Idx_RNAsSelected"):
             Writer.Transpose("Source", "self.Cel.Count_NTsInRNAs")
             Writer.Statement("Index = tf.reshape(Idx_RNAsSelected, [-1, 1, 1])")
             Writer.Statement("Count_NTsInRNAsSelected = tf.gather(Source, Index)")
@@ -309,17 +309,17 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         #     Writer.Add______("self.Count_NTPs_RNAsCleaved", "self.Count_NTPs_RNAsCleaved", "Count_NTsInRNAsCleaved")
         #     Writer.BlankLine()
 
-        with Writer.Statement("def AddToNTPsInRNAsCleaved(self, Count_NTsInRNAsCleaved):"):
+        with Writer.Function_("AddToNTPsInRNAsCleaved", "Count_NTsInRNAsCleaved"):
             Writer.Comment__("Add to NTP counts in cleaved RNAs in Cell State")
             Writer.Add______("self.Cel.Count_NTsInRNAsCleaved", "self.Cel.Count_NTsInRNAsCleaved", "Count_NTsInRNAsCleaved")
             Writer.BlankLine()
 
-        with Writer.Statement("def AddToNTPsInRNAsCleavedTotal(self, Count_NTsInRNAsCleavedTotal):"):
+        with Writer.Function_("AddToNTPsInRNAsCleavedTotal", "Count_NTsInRNAsCleavedTotal"):
             Writer.Comment__("Add to NTP counts total for summary")
             Writer.Add______("self.Count_NTsInRNAsCleavedTotal", "self.Count_NTsInRNAsCleavedTotal", "Count_NTsInRNAsCleavedTotal")
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateNTCountsForRNACleavage(self, Idx_RndRNAsToCleave, Count_NTsInRNAsCleaved):"):
+        with Writer.Function_("UpdateNTCountsForRNACleavage", "Idx_RndRNAsToCleave", "Count_NTsInRNAsCleaved"):
             Writer.Statement("self.AddToNTPsInRNAsCleaved(Count_NTsInRNAsCleaved)")
             Writer.BlankLine()
             Writer.Statement("Idx_RndRNAsToCleave_Master = self.IdxFromLocalToReference(Idx_RndRNAsToCleave, self.Cel.Idx_Master_mRNAs)")
@@ -332,12 +332,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Writer.Statement("self.AddToNTPsInRNAsCleavedTotal(Count_NTsInRNAsCleavedTotal)")
             # Writer.BlankLine()
 
-        with Writer.Statement("def UpdateByproductsOfRNACleavage(self):"):
+        with Writer.Function_("UpdateByproductsOfRNACleavage"):
             Writer.Comment__("Consume one water molecule per nucleotide cleaved")
             Writer.Statement("self.AddToDeltaCounts_Hydrolysis(self.N_RNAsCleaved)")
             Writer.BlankLine()
 
-        with Writer.Statement("def CleaveRNAs(self, Idx_Master_RNA, Rate_RNACleavage):"):
+        with Writer.Function_("CleaveRNAs", "Idx_Master_RNA", "Rate_RNACleavage"):
             # TODO: This function should be written more generally to be useful in all RNA cleavage events (i.e. degradosome)
             Writer.Statement("Count_RNAs = self.GetCounts(Idx_Master_RNA)")
             Writer.ReduceSum("Count_RNAsTotal", "Count_RNAs")
@@ -348,72 +348,72 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("return N_RNAsToCleave, Count_NTsInRNAsCleaved")
             Writer.BlankLine()
 
-        with Writer.Statement("def mRNACleavage(self):"):
+        with Writer.Function_("mRNACleavage"):
             Writer.Statement("N_RNAsCleaved, Count_NTsInRNAsCleaved = self.CleaveRNAs(self.Cel.Idx_Master_mRNAs, self.Rate_mRNACleavage_RNaseE)")
             Writer.BlankLine()
 
-        with Writer.Statement("def rRNACleavage(self):"):
+        with Writer.Function_("rRNACleavage"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def tRNACleavage(self):"):
+        with Writer.Function_("tRNACleavage"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def miscRNACleavage(self):"):
+        with Writer.Function_("miscRNACleavage"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateNTCountsForRNADigestion(self, Count_NTPsToReplenish):"):
+        with Writer.Function_("UpdateNTCountsForRNADigestion", "Count_NTPsToReplenish"):
             Writer.Subtract_("self.Cel.Count_NTsInRNAsCleaved", "self.Cel.Count_NTsInRNAsCleaved", "Count_NTPsToReplenish")
             Writer.Statement("self.AddToDeltaCounts_NTPs(Count_NTPsToReplenish)")
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateByproductsOfRNaseIIActivity(self, N_NTPsToRelease):"):
+        with Writer.Function_("UpdateByproductsOfRNaseIIActivity", "N_NTPsToRelease"):
             Writer.Statement("self.AddToDeltaCounts_Hydrolysis(N_NTPsToRelease)")
             Writer.BlankLine()
 
-        with Writer.Statement("def UpdateByproductsOfPNPaseActivity(self, N_NTPsToRelease):"):
+        with Writer.Function_("UpdateByproductsOfPNPaseActivity", "N_NTPsToRelease"):
             Writer.Statement("self.AddToDeltaCounts_Phosphorolysis(N_NTPsToRelease)")
             Writer.BlankLine()
 
-        with Writer.Statement("def DigestRNAs(self, N_NTsInRNAsCleaved, Rate_Digestion):"):
+        with Writer.Function_("DigestRNAs", "N_NTsInRNAsCleaved", "Rate_Digestion"):
             Writer.Statement("Count_NTsDigested = self.DetermineAmountFromRate(N_NTsInRNAsCleaved, Rate_Digestion)")
             Writer.ReduceSum("Count_NTsDigestedTotal", "Count_NTsDigested")
             Writer.Add______("self.N_NTPsDigested", "self.N_NTPsDigested", "Count_NTsDigestedTotal")
             Writer.ReturnVar("Count_NTsDigested")
             Writer.BlankLine()
 
-        with Writer.Statement("def RNADigestionByRNaseII(self, Count_NTsInRNAsCleaved):"):
+        with Writer.Function_("RNADigestionByRNaseII", "Count_NTsInRNAsCleaved"):
             Writer.Statement("Count_NTsDigested = self.DigestRNAs(Count_NTsInRNAsCleaved, self.Rate_ExoRNase_RNaseII)")
             Writer.Statement("self.UpdateNTCountsForRNADigestion(Count_NTsDigested)")
             Writer.ReduceSum("Count_NTsDigestedTotal", "Count_NTsDigested")
             Writer.Statement("self.UpdateByproductsOfRNaseIIActivity(Count_NTsDigestedTotal)")
             Writer.BlankLine()
 
-        with Writer.Statement("def RNADigestionByPNPase(self, Count_NTsInRNAsCleaved):"):
+        with Writer.Function_("RNADigestionByPNPase", "Count_NTsInRNAsCleaved"):
             Writer.Statement("Count_NTsDigested = self.DigestRNAs(Count_NTsInRNAsCleaved, self.Rate_ExoRNase_PNPase)")
             Writer.Statement("self.UpdateNTCountsForRNADigestion(Count_NTsDigested)")
             Writer.ReduceSum("Count_NTsDigestedTotal", "Count_NTsDigested")
             Writer.Statement("self.UpdateByproductsOfPNPaseActivity(Count_NTsDigestedTotal)")
             Writer.BlankLine()
 
-        with Writer.Statement("def RNADigestion(self):"):
+        with Writer.Function_("RNADigestion"):
             Writer.Statement("self.RNADigestionByRNaseII(self.Cel.Count_NTsInRNAsCleaved)")
             Writer.BlankLine()
 
-        with Writer.Statement("def PolyAdenylationByPAPI(self, N_RNAsToPolyAdenylate):"):
+        with Writer.Function_("PolyAdenylationByPAPI", "N_RNAsToPolyAdenylate"):
             Writer.Pass_____()
             Writer.BlankLine()
 
-        with Writer.Statement("def Degradosome(self):"):
+        with Writer.Function_("Degradosome"):
             # TODO: Check if degradosome should have more time resolved actions from RNA cleavage, polyadenylation and RNA digestion to expand
             Writer.Statement("N_RNAsToCleaved_Degradosome, Count_NTsInRNAsCleaved_Degradosome = self.CleaveRNAs(self.Cel.Idx_Master_mRNAs, self.Rate_mRNACleavage_Degradosome)")
             Writer.Statement("self.PolyAdenylationByPAPI(N_RNAsToCleaved_Degradosome)")
             Writer.Statement("self.RNADigestionByPNPase(Count_NTsInRNAsCleaved_Degradosome)")
             Writer.BlankLine()
 
-        with Writer.Statement("def ViewProcessSummary(self):"):
+        with Writer.Function_("ViewProcessSummary"):
             Writer.Add______("self.Idx_RndmRNAsToCleave", "self.Idx_RndmRNAsToCleave_RNaseE", "self.Idx_RndmRNAsToCleave_Degradosome")
 
             Writer.PrintStrg("===== RNA Degradation ===== ")

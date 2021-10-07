@@ -61,7 +61,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
 
-        with Writer.Statement("def Init_ProcessSpecificVariables(self):"):
+        with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Variable_("self.Count_MetabolitesInitial", 0)
 
             Writer.Variable_("self.Idx_Enzymes", 0)
@@ -82,7 +82,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Variable_("self.IdxsToDebug", 0)
             Writer.BlankLine()
 
-        with Writer.Statement("def SetUp_ProcessSpecificVariables(self):"):
+        with Writer.Function_("SetUp_ProcessSpecificVariables"):
 
             Writer.Variable_("self.Idx_EnzymesKINRXN", Idx_EnzymesKINRXN)
             Writer.Variable_("self.Idx_SubstratesKINRXN", Idx_SubstratesKINRXN)
@@ -105,20 +105,20 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
 
-        with Writer.Statement("def GetMetaboliteCounts(self):"):
+        with Writer.Function_("GetMetaboliteCounts"):
             Writer.Gather___("self.Count_MetabolitesInitial", "self.Cel.Count_Master", "self.Cel.Idx_Master_Metabolites")
             Writer.BlankLine()
 
-        with Writer.Statement("def ReplenishMetabolites(self):"):
+        with Writer.Function_("ReplenishMetabolites"):
             Writer.ScatNdUpd("self.Cel.Counts", "self.Cel.Counts", "self.Cel.Idx_Master_Metabolites", "self.Count_MetabolitesInitial")
             Writer.BlankLine()
 
-        with Writer.Statement("def Message_ReplenishMetabolites(self):"):
+        with Writer.Function_("Message_ReplenishMetabolites"):
             Writer.PrintStrg("\t- Metabolites have been replenished.")
             Writer.BlankLine()
 
 
-        with Writer.Statement("def ExecuteProcess(self):"):
+        with Writer.Function_("ExecuteProcess"):
             if Writer.Switch4Kinetics:
                 # Calculate reaction rate for the reactions with kinetic data
                 Writer.Statement("Rate_KINRXN = self.CalculateRateForReactionsWithKineticData()")
@@ -139,7 +139,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                 Writer.Pass_____()
                 Writer.BlankLine()
 
-        with Writer.Statement("def CalculateRateForReactionsWithKineticData(self):"):
+        with Writer.Function_("CalculateRateForReactionsWithKineticData"):
             Writer.Statement("Count_Enzymes = self.GetCounts_Float(self.Idx_EnzymesKINRXN)")
             Writer.Statement("Count_Substrates = self.GetCounts_Float(self.Idx_SubstratesKINRXN)")
             Writer.BlankLine()
@@ -148,7 +148,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         # TODO: the reactions without kinetic data need linear algebra
-        with Writer.Statement("def CalculateRateForReactionsWithoutKineticData(self):"):
+        with Writer.Function_("CalculateRateForReactionsWithoutKineticData"):
             # Currently: calculate reaction rate for the reactions without kinetic data using average values
             Writer.Statement("Count_Enzymes = self.GetCounts_Float(self.Idx_EnzymesMETRXN)")
             Writer.ReduceMin("Count_EnzymesAverage", "Count_Enzymes")
@@ -165,7 +165,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Rate_METRXN")
             Writer.BlankLine()
 
-        with Writer.Statement("def CalculateReactionRate(self, Count_Enzymes, Count_Substrates, Const_Kcat, Const_Km):"):
+        with Writer.Function_("CalculateReactionRate", "Count_Enzymes", "Count_Substrates", "Const_Kcat", "Const_Km"):
             # (kcat * E * S) / (S + kM)
             Writer.Multiply_("Numerator", "Const_Kcat", "Count_Enzymes")
             Writer.Multiply_("Numerator", "Numerator", "Count_Substrates")
@@ -174,7 +174,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.ReturnVar("Rate_RXN")
             Writer.BlankLine()
 
-        with Writer.Statement("def ForAnalysis(self, Count_MolsInMETRXN):"):
+        with Writer.Function_("ForAnalysis", "Count_MolsInMETRXN"):
             Writer.ZerosLike("DeltaCountFromMetabolism", "self.Cel.Counts", 'int32')
             Writer.ScatNdAdd("DeltaCountFromMetabolism", "DeltaCountFromMetabolism", "self.Cel.Idx_Master_MolsInMETRXN", "Count_MolsInMETRXN")
             for Mol in MolsToAnalyze:
@@ -182,7 +182,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Gather___("self.DeltaCounts_IDsToDebug", "DeltaCountFromMetabolism", "self.IdxsToDebug")
             Writer.BlankLine()
 
-        with Writer.Statement("def ViewProcessSummary(self):"):
+        with Writer.Function_("ViewProcessSummary"):
             if Writer.Switch4Kinetics:
                 Writer.PrintStrg("===== Metabolism ===== ")
                 for Mol in MolsToAnalyze:
