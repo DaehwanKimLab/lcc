@@ -121,11 +121,14 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Function_("PrintSimStepsExecuted"):
-            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintLine()
-                Writer.PrintStrg("Simulation Steps Executed:")
-                Writer.PrintVar_("self.SimStepsExecuted")
-                Writer.DebugPVar("self.SimWallTimeExecuted")
+            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.PrintSimStepsExecuted_Display", False_Function="self.Pass")
+            Writer.BlankLine()
+
+        with Writer.Function_("PrintSimStepsExecuted_Display"):
+            Writer.PrintLine()
+            Writer.PrintStrg("Simulation Steps Executed:")
+            Writer.PrintVar_("self.SimStepsExecuted")
+            Writer.DebugPVar("self.SimWallTimeExecuted")
             Writer.BlankLine()
 
         with Writer.Function_("IncrementSimClock"):
@@ -144,6 +147,10 @@ def Write_Simulation(Writer, Comp, ProGen):
 
         with Writer.Function_("SIM_ClearDeltaCounts"):
             Writer.Statement("self.Cel.ClearDeltaCounts()")
+            Writer.BlankLine()
+
+        with Writer.Function_("SIM_DisplayTrigger"):
+            Writer.ReturnVar("tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0")
             Writer.BlankLine()
 
         with Writer.Function_("SIM_SetUpProcessSpecificVariables", "ProcessID"):
@@ -244,30 +251,36 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewProcessDebuggingMessages"):
-            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("# Simulation Step Process Debugging Message:")
-                Writer.BlankLine()
+            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessDebuggingMessages_Display", False_Function="self.Pass")
+            Writer.BlankLine()
 
-                for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                    Writer.PrintStrg("[%s]:" % ProcessID)
-                    Writer.Statement("self.%s.ViewProcessDebuggingMessages()" % ProcessID)
-                    Writer.BlankLine()
+        with Writer.Function_("SIM_ViewProcessDebuggingMessages_Display"):
+            Writer.PrintStrg("# Simulation Step Process Debugging Message:")
+            Writer.BlankLine()
+
+            for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                Writer.PrintStrg("[%s]:" % ProcessID)
+                Writer.Statement("self.%s.ViewProcessDebuggingMessages()" % ProcessID)
+                Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewProcessSummaries"):
-            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("### Simulation Step Process Summary ###")
-                for ProcessID, Module in ProGen.Dict_CellProcesses.items():
-                        Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
-                if "CellDivision" in ProGen.Dict_CellProcesses:
-                    Writer.Statement("self.CellDivision.PrintMessage()")
-                Writer.BlankLine()
+            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessSummaries_Display", False_Function="self.Pass")
+            Writer.BlankLine()
+
+        with Writer.Function_("SIM_ViewProcessSummaries_Display"):
+            Writer.PrintStrg("### Simulation Step Process Summary ###")
+            for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                    Writer.Statement("self.%s.ViewProcessSummary()" % ProcessID)
+            if "CellDivision" in ProGen.Dict_CellProcesses:
+                Writer.Statement("self.CellDivision.PrintMessage()")
+            Writer.BlankLine()
 
         with Writer.Function_("ViewReplicationCompletion"):
             if "Replication" in ProGen.Dict_CellProcesses:
                 Writer.PrintStVa("% Replication completion",
                                  "self.Replication.DeterminePercentReplicationCompletion()")
             else:
-                Writer.Statement("pass")
+                Writer.Pass_____()
             Writer.BlankLine()
 
         with Writer.Function_("ViewMacromoleculeCounts"):
@@ -300,14 +313,17 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewCellStateSummary"):
-            with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                Writer.PrintStrg("### Simulation Step Current Status ###")
-                Writer.Statement("self.ViewReplicationCompletion()")
-                Writer.Statement("self.ViewMacromoleculeCounts()")
-                # Writer.Statement("self.ViewBuildingBlockCounts()")
-                # Writer.Statement("self.ViewEnergyMoleculeCounts()")
-                # Writer.Statement("self.ViewCellMass()")
-                Writer.BlankLine()
+            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessDebuggingMessages_Display", False_Function="self.Pass")
+
+
+        with Writer.Function_("SIM_ViewCellStateSummary"):
+            Writer.PrintStrg("### Simulation Step Current Status ###")
+            Writer.Statement("self.ViewReplicationCompletion()")
+            Writer.Statement("self.ViewMacromoleculeCounts()")
+            # Writer.Statement("self.ViewBuildingBlockCounts()")
+            # Writer.Statement("self.ViewEnergyMoleculeCounts()")
+            # Writer.Statement("self.ViewCellMass()")
+            Writer.BlankLine()
 
         with Writer.Function_("SIM_CellDivision"):
             Writer.Statement("self.CellDivision.ExecuteCellDivision()")
@@ -372,10 +388,13 @@ def Write_Simulation(Writer, Comp, ProGen):
             if "Metabolism" in ProGen.Dict_CellProcesses:
                 Writer.Statement("self.Metabolism.ReplenishMetabolites()")
             if Writer.Switch4ProcessSummary and Writer.Switch4PostSimulationStepCorrectionMessage:
-                with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                    Writer.PrintStrg("===== Post simulation step correction =====")
-                    Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
+                Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.PostSimulationStepCorrection_Display", False_Function="self.Pass")
             Writer.Pass_____()
+            Writer.BlankLine()
+
+        with Writer.Function_("PostSimulationStepCorrection_Display"):
+            Writer.PrintStrg("===== Post simulation step correction =====")
+            Writer.Statement("self.Metabolism.Message_ReplenishMetabolites()")
             Writer.BlankLine()
 
         with Writer.Function_("Initialize", "SimWallTimeRequested", "SimStepsPrintResolution"):
@@ -394,64 +413,81 @@ def Write_Simulation(Writer, Comp, ProGen):
         # TODO: Replace the python while loop to tf.while loop
         with Writer.Function_("Run"):
             Writer.PrintStrg("Simulation Run Begins...")
-            with Writer.Statement("while self.SimStepsExecuted < self.SimStepsRequested:"):
-                # Increment simulation steps.
-                Writer.Statement("self.IncrementSimClock()")
-
-                Writer.Statement("self.SIM_ClearDeltaCounts()")
-
-                if Writer.Switch4ProcessDebuggingMessages:
-                    Writer.PrintStrg(">>> Before running the processes <<<")
-                    Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
-
-                # Models:
-                # Rate Gauge Model (the current version)
-                # This will be a user input later
-
-                # Hook for plugging in cellular processes not based on matrix calculations
-                Writer.Statement("self.SIM_RunCellProcesses()")
-
-                if Writer.Switch4ProcessDebuggingMessages:
-                    Writer.PrintStrg(">>> After running the processes <<<")
-                    Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
-
-                # Display the molecular counts of molecules involved in reactions
-                if Writer.Switch4ProcessSummary:
-                    Writer.Statement("self.SIM_ViewProcessSummaries()")
-
-                if Writer.Switch4CellStateSummary:
-                    Writer.Statement("self.SIM_ViewCellStateSummary()")
-
-                # Overwrite delta value for the applicable molecular counts
-                Writer.Statement("self.SIM_UpdateCounts()")
-
-                if 'CellDivision' in ProGen.Dict_CellProcesses:
-                    Writer.Statement("self.SIM_CellDivision()")
-                    Writer.BlankLine()
-
-                # Writer.Statement("self.SIM_CellFusion()")
-                # Writer.BlankLine()
-
-                if Writer.Switch4Save:
-                    Writer.Statement("self.SIM_SaveCounts()")
-                if Writer.Switch4Save and Writer.Switch4Save:
-                    with Writer.Statement("if tf.math.floormod(self.SimStepsExecuted, self.SimStepsPrintResolution) == 0:"):
-                        Writer.PrintLine()
-                        Writer.PrintStrg("Simulation Data Saved.")
-                        Writer.BlankLine()
-
-                # Apply post-simulation step corrections for selected reaction models:
-                if Writer.Switch4PostSimulationStepCorrection:
-                    Writer.Statement("self.PostSimulationStepCorrection()")
-
-                Writer.BlankLine()
+            Writer.WhileLoop("self.Run_Condition", "self.Run_Body")
+            Writer.BlankLine()
 
             Writer.PrintLine()
-
             Writer.PrintStrg("Simulation Run Completed.")
             Writer.BlankLine()
 
             Writer.Statement("self.ShowSimulationTime()")
+            Writer.BlankLine()
+
+        with Writer.Function_("Run_Condition", "Placeholder"):
+            Writer.Less_____("SimulationCondition", "self.SimStepsExecuted", "self.SimStepsRequested")
+            Writer.ReturnVar("SimulationCondition")
+            Writer.BlankLine()
+
+        with Writer.Function_("Run_Body", "Placeholder"):
+            # Increment simulation steps.
+            Writer.Statement("self.IncrementSimClock()")
+
+            Writer.Statement("self.SIM_ClearDeltaCounts()")
+
+            if Writer.Switch4ProcessDebuggingMessages:
+                Writer.PrintStrg(">>> Before running the processes <<<")
+                Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
+
+            # Models:
+            # Rate Gauge Model (the current version)
+            # This will be a user input later
+
+            # Hook for plugging in cellular processes not based on matrix calculations
+            Writer.Statement("self.SIM_RunCellProcesses()")
+
+            if Writer.Switch4ProcessDebuggingMessages:
+                Writer.PrintStrg(">>> After running the processes <<<")
+                Writer.Statement("self.SIM_ViewProcessDebuggingMessages()")
+
+            # Display the molecular counts of molecules involved in reactions
+            if Writer.Switch4ProcessSummary:
+                Writer.Statement("self.SIM_ViewProcessSummaries()")
+
+            if Writer.Switch4CellStateSummary:
+                Writer.Statement("self.SIM_ViewCellStateSummary()")
+
+            # Overwrite delta value for the applicable molecular counts
+            Writer.Statement("self.SIM_UpdateCounts()")
+
+            if 'CellDivision' in ProGen.Dict_CellProcesses:
+                Writer.Statement("self.SIM_CellDivision()")
+                Writer.BlankLine()
+
+            # Writer.Statement("self.SIM_CellFusion()")
+            # Writer.BlankLine()
+
+            if Writer.Switch4Save:
+                Writer.Statement("self.SIM_SaveCounts()")
+            if Writer.Switch4Save and Writer.Switch4Save:
+                Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_SaveCounts_Display", False_Function="self.Pass")
+                Writer.BlankLine()
+
+            # Apply post-simulation step corrections for selected reaction models:
+            if Writer.Switch4PostSimulationStepCorrection:
+                Writer.Statement("self.PostSimulationStepCorrection()")
+
+            Writer.BlankLine()
+
+            Writer.ReturnVar("[tf.constant(0)]")
+            Writer.BlankLine()
+
+        with Writer.Function_("SIM_SaveCounts_Display"):
+            Writer.PrintLine()
+            Writer.PrintStrg("Simulation Data Saved.")
+            Writer.BlankLine()
+
+        with Writer.Function_("Pass"):
+            Writer.Pass_____()
             Writer.BlankLine()
 
         with Writer.Function_("Visualize", "RequestedData"):

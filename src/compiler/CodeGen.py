@@ -258,8 +258,26 @@ class TFCodeWriter(CodeWriter):
 
         Line += "):"
         return self.Statement(Line)
-        
+
+    DefaultTensor = "[tf.constant(0)]"
+
+    def WhileLoop(self, Condition, Body, LoopVariable=DefaultTensor):
+        Line = 'tf.while_loop(%s, %s, %s)' % (Condition, Body, LoopVariable)
+        self.Statement(Line)
+
+    def WhileRtrn(self, ReturnVariable=DefaultTensor):
+        self.ReturnVar(ReturnVariable)
+
+    def IfElse___(self, Predicate, True_Function, False_Function):
+        Line = 'tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
+        self.Statement(Line)
+
     # tf.print
+    def PrintLine(self, Length=100):
+        Unit = '-'
+        Line = 'tf.print("%s", output_stream=sys.stdout)' % (Unit * Length)
+        self.Statement(Line)
+
     def PrintStrg(self, Str):
         if self.Switch4PrintString:
             Line = 'tf.print("%s", output_stream=sys.stdout)' % Str
