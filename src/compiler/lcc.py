@@ -84,7 +84,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Output
     Writer.Switch4Comment = True
     Writer.Switch4PrintString = True
-    Writer.Switch4TFGraph = False
+    Writer.Switch4TFGraph = True
 
     # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True
@@ -95,8 +95,8 @@ def WriteBody(Writer, CompilerData, ProGen):
 
     # Print
     Writer.Switch4SimStepsExecuted = True
-    Writer.Switch4ProcessSummary = True
-    Writer.Switch4CellStateSummary = True
+    Writer.Switch4ProcessSummary = False
+    Writer.Switch4CellStateSummary = False
     Writer.Switch4PostSimulationStepCorrectionMessage = False
     Writer.Switch4Visualization2D = False
 
@@ -109,6 +109,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4HardCheckCounts = False
     Writer.Switch4CheckDeltaCountsNeg = False
     Writer.Switch4ShowDeltaCounts = False
+    Writer.Switch4ProcessTimer = True
 
     # Save Data
     Writer.Switch4SaveAllCounts = False
@@ -119,7 +120,7 @@ def WriteBody(Writer, CompilerData, ProGen):
         Writer.Switch4Save = True
 
     # Simulation Controls
-    SimWallTimeRequested = 45 * 60   # Simulation time request in seconds
+    SimWallTimeRequested = 2 * 60   # Simulation time request in seconds
     SimStepsPrintResolution = 1
 
     # Simulation Data Display Controls

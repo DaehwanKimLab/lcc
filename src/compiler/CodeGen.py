@@ -66,6 +66,7 @@ class CodeWriter():
         self.Switch4HardCheckCounts = False
         self.Switch4CheckDeltaCountsNeg = False
         self.Switch4ShowDeltaCounts = False
+        self.Switch4ProcessTimer = False
 
         # Save Data
         self.Switch4Save = False
@@ -246,7 +247,8 @@ class TFCodeWriter(CodeWriter):
         super(TFCodeWriter, self).__init__(CodeFile, IndentLevel)
 
     def Function_(self, FunctionName, *Args):
-        self.Statement("@tf.function")
+        if self.Switch4TFGraph:
+            self.Statement("@tf.function")
         Line = "def {}".format(FunctionName)
         Line += "("
         Line += "self"

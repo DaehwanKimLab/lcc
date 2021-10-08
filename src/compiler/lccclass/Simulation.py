@@ -213,7 +213,13 @@ def Write_Simulation(Writer, Comp, ProGen):
         with Writer.Function_("SIM_ExecuteProcesses"):
             # Run all matrix operation codes
             for ProcessID, Module in ProGen.Dict_CellProcesses.items():
+                if Writer.Switch4ProcessTimer:
+                    Writer.Statement("Timer = tf.timestamp()")
                 Writer.Statement("self.%s.ExecuteProcess()" % ProcessID)
+                if Writer.Switch4ProcessTimer:
+                    Writer.PrintStVa("@@ Run Time for %s" % ProcessID, "tf.timestamp() - Timer")
+                    Writer.BlankLine()
+
             Writer.BlankLine()
 
         with Writer.Function_("SIM_RunCellProcesses"):
