@@ -272,6 +272,76 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Variable_("self.Idx_FADH2", Idx_FADH2)
             Writer.BlankLine()
 
+            # Sigma Factor
+            Writer.Comment__("Sigma Factor")
+            Writer.BlankLine()
+
+            Idx_Sigma19 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['fecI']]
+            Idx_Sigma24 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['rpoE']]
+            Idx_Sigma28 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['fliA']]
+            Idx_Sigma32 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['rpoH']]
+            Idx_Sigma38 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['rpoS']]
+            Idx_Sigma54 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['rpoN']]
+            Idx_Sigma70 = Comp.Master.ID2Idx_Master[Comp.Master.Sym2ID_Gene2Protein_Master['rpoD']]
+
+            Writer.Variable_("self.Idx_Sigma19", Idx_Sigma19)
+            Writer.Variable_("self.Idx_Sigma24", Idx_Sigma24)
+            Writer.Variable_("self.Idx_Sigma28", Idx_Sigma28)
+            Writer.Variable_("self.Idx_Sigma32", Idx_Sigma32)
+            Writer.Variable_("self.Idx_Sigma38", Idx_Sigma38)
+            Writer.Variable_("self.Idx_Sigma54", Idx_Sigma54)
+            Writer.Variable_("self.Idx_Sigma70", Idx_Sigma70)
+            Writer.BlankLine()
+
+            Idx_SigmaFactors = [
+                Idx_Sigma19,
+                Idx_Sigma24,
+                Idx_Sigma28,
+                Idx_Sigma32,
+                Idx_Sigma38,
+                Idx_Sigma54,
+                Idx_Sigma70,
+            ]
+
+            Writer.Variable_("self.Idx_SigmaFactors", Idx_SigmaFactors)
+            Writer.BlankLine()
+
+            Idx_RNAP_CoreEnzyme = Comp.Master.ID2Idx_Master[Comp.Complex.Name2ID_Complexes['RNA polymerase, core enzyme']]
+            Writer.Variable_("self.Idx_RNAP_CoreEnzyme", Idx_RNAP_CoreEnzyme)
+            Writer.BlankLine()
+
+            Idx_RNAP_Sigma19 = Comp.Master.ID2Idx_Master['CPLX0-221']
+            Idx_RNAP_Sigma24 = Comp.Master.ID2Idx_Master['RNAPE-CPLX']
+            Idx_RNAP_Sigma28 = Comp.Master.ID2Idx_Master['CPLX0-222']
+            Idx_RNAP_Sigma32 = Comp.Master.ID2Idx_Master['RNAP32-CPLX']
+            Idx_RNAP_Sigma38 = Comp.Master.ID2Idx_Master['RNAPS-CPLX']
+            Idx_RNAP_Sigma54 = Comp.Master.ID2Idx_Master['RNAP54-CPLX']
+            Idx_RNAP_Sigma70 = Comp.Master.ID2Idx_Master['RNAP70-CPLX']
+
+            Writer.Variable_("self.Idx_RNAP_Sigma19", Idx_RNAP_Sigma19)
+            Writer.Variable_("self.Idx_RNAP_Sigma24", Idx_RNAP_Sigma24)
+            Writer.Variable_("self.Idx_RNAP_Sigma28", Idx_RNAP_Sigma28)
+            Writer.Variable_("self.Idx_RNAP_Sigma32", Idx_RNAP_Sigma32)
+            Writer.Variable_("self.Idx_RNAP_Sigma38", Idx_RNAP_Sigma38)
+            Writer.Variable_("self.Idx_RNAP_Sigma54", Idx_RNAP_Sigma54)
+            Writer.Variable_("self.Idx_RNAP_Sigma70", Idx_RNAP_Sigma70)
+            Writer.BlankLine()
+
+            Idx_RNAP_HoloEnzymes = [
+                Idx_RNAP_Sigma19,
+                Idx_RNAP_Sigma24,
+                Idx_RNAP_Sigma28,
+                Idx_RNAP_Sigma32,
+                Idx_RNAP_Sigma38,
+                Idx_RNAP_Sigma54,
+                Idx_RNAP_Sigma70,
+            ]
+
+            Writer.Variable_("self.Idx_RNAP_HoloEnzymes", Idx_RNAP_HoloEnzymes)
+            Writer.BlankLine()
+
+            assert len(Idx_SigmaFactors) == len(Idx_RNAP_HoloEnzymes)
+
         #     Writer.Statement("self.InitializeStoichiometryMatrix()")
         #     Writer.Statement("self.InitializeRateMatrix()")
         #     Writer.BlankLine()

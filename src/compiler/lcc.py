@@ -95,7 +95,7 @@ def WriteBody(Writer, CompilerData, ProGen):
 
     # Print
     Writer.Switch4SimStepsExecuted = True
-    Writer.Switch4ProcessSummary = False
+    Writer.Switch4ProcessSummary = True
     Writer.Switch4CellStateSummary = False
     Writer.Switch4PostSimulationStepCorrectionMessage = False
     Writer.Switch4Visualization2D = False
@@ -109,7 +109,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4HardCheckCounts = False
     Writer.Switch4CheckDeltaCountsNeg = False
     Writer.Switch4ShowDeltaCounts = False
-    Writer.Switch4ProcessTimer = True
+    Writer.Switch4ProcessTimer = False
 
     # Save Data
     Writer.Switch4SaveAllCounts = False

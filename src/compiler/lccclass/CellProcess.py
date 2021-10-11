@@ -39,6 +39,19 @@ def Write_CellProcess(Writer):
             Writer.ReturnVar("Count_Float")
             Writer.BlankLine()
 
+        with Writer.Function_("GetCounts_Rate", "MolIdxs", "Rate"):
+            Writer.Statement("Count = self.Cel.GetCounts(MolIdxs)")
+            Writer.Statement("Count_RateApplied = self.DetermineAmountFromRate(Count, Rate)")
+            Writer.ReturnVar("Count_RateApplied")
+            Writer.BlankLine()
+
+        with Writer.Function_("DetermineAmountFromRate", "Count", "Rate"):
+            Writer.Cast_____("Count_Float", "Count", 'float32')
+            Writer.Multiply_("Count_RateApplied", "Count_Float", "Rate")
+            Writer.RoundInt_("Count_RateApplied_Rounded", "Count_RateApplied")
+            Writer.ReturnVar("Count_RateApplied_Rounded")
+            Writer.BlankLine()
+
         with Writer.Function_("GetDeltaCounts", "MolIdxs"):
             Writer.ReturnVar("self.Cel.GetDeltaCounts(MolIdxs)")
             Writer.BlankLine()
@@ -315,13 +328,6 @@ def Write_CellProcess(Writer):
             Writer.ReturnVar("Len_Matrix_MaxToZero")
             Writer.BlankLine()
 
-        with Writer.Function_("DetermineAmountFromRate", "Count", "Rate"):
-            Writer.Cast_____("Count_Float", "Count", 'float32')
-            Writer.Multiply_("Count_ToCleave", "Count_Float", "Rate")
-            Writer.RoundInt_("Count_ToCleave", "Count_ToCleave")
-            Writer.ReturnVar("Count_ToCleave")
-            Writer.BlankLine()
-
         with Writer.Function_("ResetZerosToNegOnes", "Len_Matrix"):
             Writer.Comment__("Replace 0's with -1 to indicate no processor binding")
             Writer.Statement("Len_Matrix_ZeroToNegOne = self.ResetZerosToSpecificValue(Len_Matrix, -1)")
@@ -399,6 +405,29 @@ def Write_CellProcess(Writer):
             Writer.ReduceMax("Max", "Input")
             Writer.Divide___("Input_Squeezed", "Input", "Max")
             Writer.ReturnVar("Input_Squeezed")
+            Writer.BlankLine()
+
+        with Writer.Function_("DistributeCountsInRatio", "Counts_ToDistribute", "Count_TotalToAdjustTo"):
+            Writer.Comment__("Prepare variables for float calculations")
+            Writer.ReduceSum("Counts_ToDistribute_Total", "Counts_ToDistribute")
+
+            Writer.Cast_____("Counts_ToDistribute_Total_Float", "Counts_ToDistribute_Total", 'float32')
+            Writer.Cast_____("Count_TotalToAdjustTo_Float", "Count_TotalToAdjustTo", 'float32')
+            Writer.Cast_____("Counts_ToDistribute_Float", "Counts_ToDistribute", 'float32')
+            Writer.BlankLine()
+
+            Writer.Comment__("Apply Ratio to counts")
+            Writer.Divide___("RateToAdjust", "Count_TotalToAdjustTo_Float", "Counts_ToDistribute_Total_Float")
+            Writer.Multiply_("Counts_Distributed_Float", "Counts_ToDistribute_Float", "RateToAdjust")
+            Writer.RoundInt_("Counts_Distributed", "Counts_Distributed_Float")
+            Writer.BlankLine()
+
+            Writer.Comment__("Reality Check")
+            Writer.ReduceSum("Counts_Distributed_Total", "Counts_Distributed")
+            Writer.AsrtGrEq_("Count_TotalToAdjustTo", "Counts_Distributed_Total")
+            Writer.BlankLine()
+
+            Writer.ReturnVar("Counts_Distributed")
             Writer.BlankLine()
 
         # with Writer.Statement("def SqueezeDistributionRangeNegAndPosOne(self, Input):"):

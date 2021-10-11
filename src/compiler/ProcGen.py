@@ -15,12 +15,14 @@ import numpy as np
 import os, sys
 import abc
 import CodeGen
+from lccclass.cellprocess.signaling import SigmaFactor
 from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
 from lccclass.cellprocess.conversion import Complexation, Equilibrium
 from lccclass.cellprocess.metabolism import Metabolism
 from lccclass.cellprocess.metabolism.pathways import TCACycle
 from lccclass.cellprocess.division import CellDivision
+
 
 class FProcessGenerator():
     def __init__(self):
@@ -46,6 +48,7 @@ class FProcessGenerator():
     def SetProcessList(self):
         CellProcessesAvailable = [
             # Signaling
+            [SigmaFactor, "SigmaFactor"],
 
             # Biosynthesis
             [Replication, "Replication"],
