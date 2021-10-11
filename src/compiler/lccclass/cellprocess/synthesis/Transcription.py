@@ -73,9 +73,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Function_("DetermineRNAPToBind"):
             Writer.Comment__("RetrieveTotalRNAPCount")
-            Writer.Statement(
-                "Count_RNAP = tf.constant(self.Cel.Counts[%s])  # %s: Index for RNAP" % (
-                Idx_RNAP, Idx_RNAP))
+            Writer.Statement("Count_RNAP = self.Cel.Counts[self.Cel.Idx_RNAP[0]]")
             Writer.Overwrite("self.Count_RNAP", "Count_RNAP")
             Writer.BlankLine()
 
@@ -140,6 +138,13 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Update the nascent RNA length matrix
             Writer.Statement("Len_RNANascent_NewToZero = self.AddNewCountsToNascentRNALengthMatrix(self.Cel.Len_RNAsNascent, self.Idx_RndRNAsNascent)")
             Writer.Statement("self.UpdateNascentRNALengths(Len_RNANascent_NewToZero)")
+
+            # Writer.Comment__("Update sigma factor and RNAP counts")
+            # # Get count of genes with a specific sigma factor from Idx_RndRNAsNascent
+            # Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_RNAP_SigmaFactors, Count_SigmaFactors)")
+            # Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_RNAP_CoreEnzyme, Count_RNAP_CoreEnzyme)")
+            # Writer.Statement("self.AddToDeltaCounts(self.Cel.Idx_RNAP_HoloEnzymes, Count_RNAP_HoloEnzymes_ToForm)")
+
             Writer.BlankLine()
 
         with Writer.Function_("DetermineNTPConsumption", "Len_ToElongate"):

@@ -46,7 +46,7 @@ def RefineBuildingBlocks(IDs, Stoichiometries, Comp, ReactionOrder=None):
 
 def PrepareReactionForMatrix(Stoichiometry, Comp):
     Idx, Stoich = None, None
-    for MolIDs, Stoichiometries in Stoi:
+    for MolIDs, Stoichiometries in Stoichiometry:
         Idx, Stoich = RefineBuildingBlocks(MolIDs, Stoichiometries, Comp)
     return Idx, Stoich
 

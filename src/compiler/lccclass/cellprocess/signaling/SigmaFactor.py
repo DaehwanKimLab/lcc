@@ -140,10 +140,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.BlankLine()
 
         with Writer.Function_("ViewProcessSummary"):
-            Writer.PrintStrg("===== %s ===== " % ProcessID)
+            Writer.PrintStrg("===== Sigma Factor ===== ")
 
             SigmaFactorGenes_Str = ''
             for SigmaFactorGene in ListOfSigmaFactorGenes:
+                if SigmaFactorGenes_Str:
+                    SigmaFactorGenes_Str += ', '
                 SigmaFactorGenes_Str += SigmaFactorGene
 
             Writer.Statement("Count_SigmaFactors = self.GetCounts(self.Cel.Idx_SigmaFactors)")
