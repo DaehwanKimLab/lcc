@@ -41,7 +41,7 @@
 "step"                        { return TOKEN(T_STEP); }
 "sequence"                    { return TOKEN(T_SEQUENCE); }
 "atp"                         { SAVE_TOKEN; return T_ATP; }
-"co2"                         { SAVE_TOKEN; return T_CO2; }
+"CO2"                         { SAVE_TOKEN; return T_CO2; }
 "CoA"                         { SAVE_TOKEN; return T_COA; }
 "oxaloacetate"                { SAVE_TOKEN; return T_OXALOACETATE; }
 "acetyl-CoA"                  { SAVE_TOKEN; return T_ACETYL_COA; }
@@ -51,7 +51,7 @@
 "succinate"                   { SAVE_TOKEN; return T_SUCCINATE; }
 "fumarate"                    { SAVE_TOKEN; return T_FUMARATE; }
 "malate"                      { SAVE_TOKEN; return T_MALATE; }
-[a-zA-Z_][a-zA-Z0-9_-+]*       { SAVE_TOKEN; return T_IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_\-+]*      { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
 ("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }

@@ -18,11 +18,15 @@ protein GltA(oxaloacetate + acetyl-CoA --> citrate); // GltA
 protein AcnA(citrate --> isocitrate);
 protein AcnB(citrate --> isocitrate);
 protein Icd(isocitrate --> keto-glutarate);
+//protein AceK(Icd <--> Icd@phosphate);
+//protein SucA, SucB, SucD, SucC;
 protein SucA();
 protein SucB();
 protein Fume();
-
-protein CA2(CO2 + H2O --> H+ + OHCOO-) {
+protein Mdh(malate --> oxaloacetate);
+//protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
+//CO2 + H2O --> H+ + OHCOO-
+protein CA2() {
 	cofactor co1(Zn2+);
 	domain dom1(co1-his, co1-his, co1-his);
 	step step1(dom1 + H2O --> dom1-OH- + H+);

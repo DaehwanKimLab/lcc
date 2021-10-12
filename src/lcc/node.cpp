@@ -34,6 +34,10 @@ void NReaction::Visit(FTraversalContext &Context) const {
     }
 }
 
+void NGeneralReaction::Visit(FTraversalContext &Context) const {
+
+}
+
 void NProteinDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Protein Declaration(" << Id.Name << ")" << std::endl;
 
@@ -79,6 +83,12 @@ void NExperimentDeclaration::Visit(FTraversalContext &Context) const {
 }
 
 void NPropertyStatement::Visit(FTraversalContext& Context) const {
+}
+
+void NProteinCofactorStatement::Visit(FTraversalContext& Context) const {
+}
+
+void NProteinDomainStatement::Visit(FTraversalContext &Context) const {
 }
 
 void NUsingStatement::Visit(FTraversalContext& Context) const {

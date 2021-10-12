@@ -48,6 +48,13 @@ void TraversalNode(NBlock* InProgramBlock)
             auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
             os << "Protein: " << Protein->Id.Name << endl;
 
+            if (Protein->Block) {
+                auto& Block = Protein->Block;
+                for (auto& stmt: Block->Statements) {
+                    os << "  "; stmt->Print(os);
+                }
+
+            }
             Context.ProteinList.emplace_back(*Protein);
 
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
@@ -74,6 +81,13 @@ void TraversalNode(NBlock* InProgramBlock)
             os << "Using(" << UsingStmt->Type << "): " << UsingStmt->Id.Name << endl;
             Context.UsingModuleList.emplace_back(UsingStmt->Id.Name);
         }
+#if 0
+else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
+            auto Identifier = dynamic_cast<const NIdentifier *>(node);
+            os << "Identifier: " << Identifier->Name  << endl;
+            Context.IdentifierList.emplace_back(Identifier->Name);
+        }
+#endif
 
         node->Visit(tc);
     }
