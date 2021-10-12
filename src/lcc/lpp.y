@@ -23,6 +23,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NReaction *Reaction;
 	NMoleculeIdentifier *MolIdent;
 	NPathwayExpression *PathwayExpr;
+	NChainReaction *ChainReaction;
+	NChainReactionExpression *ChainReactionExpr;
 
 	std::vector<std::shared_ptr<NMoleculeIdentifier>> *MolVec;
 	std::vector<std::shared_ptr<NIdentifier>> *IdentVec;
@@ -56,13 +58,15 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <MolIdent> mol_ident
 %type <Reaction> protein_decl_args
 %type <Reaction> gen_reaction_decl_args protein_step_decl_args
-%type <PathwayExpr> pathway_expr pathway_decl_args
+%type <ChainReaction> pathway_expr pathway_decl_args
 %type <Stmt> organism_decl experiment_decl pathway_stmt protein_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
 %type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt
 %type <IdentVec> ident_list protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
 %type <IdentVec> protein_complex_decl_args
 %type <Stmt> using_stmt
+%type <ChainReaction> chain_reaction_decl_args
+%type <ChainReactionExpr> chain_expr
 
 %type <Block> experiment_block experiment_stmts
 %type <Stmt> experiment_stmt property_stmt
@@ -157,8 +161,8 @@ pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = new NPathwayDe
                | T_PATHWAY ident pathway_block { $$ = new NPathwayDeclaration(*$2, $3); delete $2; }
                ;
 
-pathway_decl_args : /* blank */ { $<Ident>$ = new NIdentifier(); }
-                  | pathway_expr 
+
+pathway_decl_args : chain_reaction_decl_args { $$ = $1; }
                   ;
 
 pathway_expr   : ident { $<Ident>$ = new NIdentifier(*$1); delete $1; }
@@ -213,6 +217,17 @@ ident_list     : /* blank */ { $$ = new IdentifierList(); }
                | ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
                | ident_list T_COMMA ident { $1->emplace_back($<Ident>3); }
                ;
+
+chain_reaction_decl_args : /* blank */ { $$ = new NChainReaction(); }
+                         | chain_expr { $$ = new NChainReaction(); $$->Add($1); }
+                         | chain_reaction_decl_args T_ARROW chain_expr { $1->Add($3, 1); }
+                         | chain_reaction_decl_args T_BIARROW chain_expr { $1->Add($3, 2); }
+                         ;
+
+chain_expr : gen_ident { $$ = new NChainReactionExpression(); $$->Add(*$1); delete $1; }
+           | chain_expr T_PLUS gen_ident { $1->Add(*$3, 1); delete $3; }
+           | chain_expr T_OR gen_ident { $1->Add(*$3, 2); delete $3; }
+           ;
 
 gen_reaction_decl_args : /* blank */ { $$ = new NReaction(); }
                        | gen_expr T_ARROW gen_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }

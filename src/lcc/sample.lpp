@@ -35,7 +35,7 @@ protein CA2(CO2 + H2O --> H+ + OHCOO-) {
 };
 
 // TCA
-pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
+pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume <--> Mdh --> GltA;
 
 // New pathway format
 

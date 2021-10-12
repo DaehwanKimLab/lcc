@@ -56,8 +56,8 @@ void NPathwayExpression::Visit(FTraversalContext &Context) const {
 void NPathwayDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "PathwayDeclaration(" << Id.Name << ")" << std::endl;
 
-    if (PathwayExpression) Context.Queue.push(PathwayExpression);
-    if (Block) Context.Queue.push(Block);
+    if (PathwayExpression) Context.Queue.push(PathwayExpression.get());
+    if (Block) Context.Queue.push(Block.get());
 }
 
 

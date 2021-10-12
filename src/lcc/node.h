@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <cassert>
 
 //#include <llvm/IR/Value.h>
 
@@ -200,6 +201,51 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
+
+class NChainReactionExpression : public NExpression {
+public:
+    std::vector<NIdentifier> Identifiers;
+    std::vector<int> Operations;
+
+    void Add(const NIdentifier& InIdentifier, int Operation = 0) {
+        Identifiers.emplace_back(InIdentifier);
+        Operations.emplace_back(Operation);
+
+        assert(Identifiers.size() == Operations.size());
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        assert(Identifiers.size() == Operations.size());
+        os << "NChainReactionExpression(" << Identifiers.size() << ")" << std::endl;
+        for(int i = 0; i < Operations.size(); i++) {
+            os << "  " << Identifiers[i].Name << ", Op(" << Operations[i] << ")" << std::endl;
+        }
+    }
+};
+
+class NChainReaction : public NExpression {
+public:
+    std::vector<std::shared_ptr<NChainReactionExpression>> Exprs;
+    std::vector<int> Operators;
+
+    void Add(NChainReactionExpression *InExpr, int InOperator = 0) {
+        Exprs.emplace_back(InExpr);
+        Operators.emplace_back(InOperator);
+        assert(Exprs.size() == Operators.size());
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        assert(Exprs.size() == Operators.size());
+
+        os << "NChainReaction(" << Exprs.size() << ")" << std::endl;
+        for(int i = 0; i < Exprs.size(); i++) {
+            Exprs[i]->Print(os);
+            os << "Op(" << Operators[i] << ")" << std::endl;
+        }
+    }
+
+};
+
 class NPathwayExpression : public NExpression {
 public:
     int Type;
@@ -223,26 +269,25 @@ class NPathwayDeclaration : public NStatement {
 public:
     const NIdentifier Id;
 
-    NPathwayExpression* PathwayExpression;
-    NBlock* Block;
+    std::shared_ptr<NPathwayExpression> PathwayExpression;
+    std::shared_ptr<NBlock> Block;
+    std::shared_ptr<NChainReaction> PathwayChainReaction;
 
     NPathwayDeclaration(const NIdentifier& InId, NPathwayExpression* InPathwayExpression)
-        : Id(InId), PathwayExpression(InPathwayExpression), Block(nullptr) {}
+        : Id(InId), PathwayExpression(InPathwayExpression) {}
 
     /* New */
     NPathwayDeclaration(const NIdentifier& InId, NBlock* InBlock)
-        : Id(InId), Block(InBlock), PathwayExpression(nullptr) {}
+        : Id(InId), Block(InBlock) {};
 
-    virtual ~NPathwayDeclaration() {
-        if (Block) delete Block;
-        if (PathwayExpression) delete PathwayExpression;
-    }
-
+    NPathwayDeclaration(const NIdentifier& InId, NChainReaction* InChainReaction)
+    : Id(InId), PathwayChainReaction(InChainReaction) {};
 
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayDeclaration("; Id.Print(os); os << std::endl;
         if (PathwayExpression) PathwayExpression->Print(os);
         if (Block) Block->Print(os);
+        if (PathwayChainReaction) PathwayChainReaction->Print(os);
         os << ")" << std::endl;
     }
 
@@ -278,9 +323,9 @@ public:
 
 class NPathwayReactionStatement : public NStatement {
 public:
-    NPathwayExpression PathwayExpression;
+    NChainReaction PathwayExpression;
 
-    NPathwayReactionStatement(NPathwayExpression& InPathwayExpression)
+    NPathwayReactionStatement(NChainReaction& InPathwayExpression)
         : PathwayExpression(InPathwayExpression) {}
 
 
