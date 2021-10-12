@@ -22,7 +22,7 @@ void NBlock::Visit(FTraversalContext& Context) const {
     }
 }
 
-void NReaction::Visit(FTraversalContext &Context) const {
+void NMoleculeReaction::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Reaction(" << bBiDirection << ")" << std::endl;
 
     for (auto& reactant: Reactants) {
@@ -34,14 +34,14 @@ void NReaction::Visit(FTraversalContext &Context) const {
     }
 }
 
-void NGeneralReaction::Visit(FTraversalContext &Context) const {
+void NReaction::Visit(FTraversalContext &Context) const {
 
 }
 
 void NProteinDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Protein Declaration(" << Id.Name << ")" << std::endl;
 
-    Context.Queue.push(&Reaction);
+    Context.Queue.push(&OverallReaction);
 }
 
 

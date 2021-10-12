@@ -19,8 +19,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NExpression *Expr;
 	NStatement *Stmt;
 	NIdentifier *Ident;
+	NMoleculeReaction *MolReaction;
 	NReaction *Reaction;
-	NGeneralReaction *GenReaction;
 	NMoleculeIdentifier *MolIdent;
 	NPathwayExpression *PathwayExpr;
 
@@ -51,16 +51,16 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Block> program stmts block
 %type <Block> pathway_block pathway_stmts
 %type <Block> protein_block protein_stmts
-%type <Stmt> stmt protein_decl pathway_decl new_pathway_decl
+%type <Stmt> stmt protein_decl pathway_decl
 %type <MolVec> mol_expr
 %type <MolIdent> mol_ident
 %type <Reaction> protein_decl_args
+%type <Reaction> gen_reaction_decl_args protein_step_decl_args
 %type <PathwayExpr> pathway_expr pathway_decl_args
 %type <Stmt> organism_decl experiment_decl pathway_stmt protein_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
 %type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt
-%type <IdentVec> protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
-%type <GenReaction> protein_step_decl_args
+%type <IdentVec> ident_list protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
 %type <Stmt> using_stmt
 
 %type <Block> experiment_block experiment_stmts
@@ -82,7 +82,6 @@ stmts          : stmt { $$ = new NBlock(); $$->Statements.emplace_back($<Stmt>1)
 
 stmt           : protein_decl T_SEMIC
                | pathway_decl T_SEMIC
-               | new_pathway_decl T_SEMIC
                | organism_decl T_SEMIC
                | experiment_decl T_SEMIC
                | using_stmt T_SEMIC
@@ -90,7 +89,7 @@ stmt           : protein_decl T_SEMIC
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
                | T_LBRACE T_RBRACE { $$ = new NBlock(); }
-			   ;
+               ;
 
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = new NOrganismDeclaration(*$2, *$3); delete $2; delete $3; }
                ;
@@ -105,9 +104,7 @@ protein_decl   : T_PROTEIN ident T_LPAREN protein_decl_args T_RPAREN
                  { $$ = new NProteinDeclaration(*$2, *$4, $6); delete $2; delete $4; }
                ;
 
-protein_decl_args : /* blank */ { $$ = new NReaction(); }
-                  | mol_expr T_ARROW mol_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
-                  | mol_expr T_BIARROW mol_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
+protein_decl_args : gen_reaction_decl_args { $$ = $1; }
                   ;
 
 protein_block  : T_LBRACE protein_stmts T_RBRACE { $$ = $2; }
@@ -136,30 +133,20 @@ protein_step_stmt : T_STEP ident T_LPAREN protein_step_decl_args T_RPAREN { $$ =
 protein_sequence_stmt : T_SEQUENCE ident T_LPAREN protein_sequence_decl_args T_RPAREN { $$ = new NProteinSequenceStatement(*$2, *$4); delete $2; delete $4; }
                       ;
 
-protein_cofactor_decl_args : /* blank */ { $$ = new IdentifierList(); }
-                           | ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
-                           | protein_cofactor_decl_args T_COMMA ident { $1->emplace_back($<Ident>3); }
+protein_cofactor_decl_args : ident_list { $$ = $1; }
                            ;
 
-protein_domain_decl_args : /* blank */ { $$ = new IdentifierList(); }
-                         | ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
-                         | protein_domain_decl_args T_COMMA ident { $1->emplace_back($<Ident>3); }
+protein_domain_decl_args : ident_list { $$ = $1; }
                          ;
 
-protein_step_decl_args : /* blank */ { $$ = new NGeneralReaction(); }
-                       | gen_expr T_ARROW gen_expr { $$ = new NGeneralReaction(*$1, *$3, false); delete $1; delete $3; }
-                       | gen_expr T_BIARROW gen_expr { $$ = new NGeneralReaction(*$1, *$3, true); delete $1; delete $3; }
+protein_step_decl_args : gen_reaction_decl_args { $$ = $1; }
                        ;
 
-protein_sequence_decl_args : /* blank */ { $$ = new IdentifierList(); }
-                           | ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
-                           | protein_sequence_decl_args T_COMMA ident { $1->emplace_back($<Ident>3); }
+protein_sequence_decl_args : ident_list { $$ = $1; }
                            ;
 
 pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = new NPathwayDeclaration(*$2, $4); delete $2; }
-               ;
-
-new_pathway_decl : T_PATHWAY ident pathway_block { $$ = new NPathwayDeclaration(*$2, $3); delete $2; }
+               | T_PATHWAY ident pathway_block { $$ = new NPathwayDeclaration(*$2, $3); delete $2; }
                ;
 
 pathway_decl_args : /* blank */ { $<Ident>$ = new NIdentifier(); }
@@ -178,7 +165,7 @@ pathway_block  : T_LBRACE pathway_stmts T_RBRACE { $$ = $2; }
 
 pathway_stmts  : pathway_stmt { $$ = new NBlock(); $$->Statements.emplace_back($<Stmt>1); }
                | pathway_stmts pathway_stmt { $1->Statements.emplace_back($<Stmt>2); }
-			   ;
+               ;
 
 pathway_stmt   : pathway_description_stmt T_SEMIC { $$ = $1; }
                | pathway_reaction_id_stmt T_SEMIC { $$ = $1; }
@@ -196,15 +183,15 @@ pathway_reaction_stmt    : T_REACTION pathway_decl_args { $$ = new NPathwayReact
 
 experiment_block : T_LBRACE experiment_stmts T_RBRACE { $$ = $2; }
                  | T_LBRACE T_RBRACE { $$ = new NBlock(); }
-				 ;
+                 ;
 
 experiment_stmts : experiment_stmt { $$ = new NBlock(); $$->Statements.emplace_back($1); }
                  | experiment_stmts experiment_stmt { $1->Statements.emplace_back($2); }
-				 ;
+                 ;
 
 experiment_stmt : T_DESCRIPTION T_STRING_LITERAL T_SEMIC { $$ = new NDescriptionStatement(*$2); delete $2; }
                 | property_stmt T_SEMIC { $$ = $1; }
-				;
+                ;
 
 property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
                | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
@@ -213,6 +200,16 @@ property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Nam
 
 using_stmt     : T_USING T_MODULE ident { $$ = new NUsingStatement($2, *$3); delete $3; }
                ;
+
+ident_list     : /* blank */ { $$ = new IdentifierList(); }
+               | ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
+               | ident_list T_COMMA ident { $1->emplace_back($<Ident>3); }
+               ;
+
+gen_reaction_decl_args : /* blank */ { $$ = new NReaction(); }
+                       | gen_expr T_ARROW gen_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
+                       | gen_expr T_BIARROW gen_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
+                       ;
 
 gen_expr       : gen_ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
                | gen_expr T_PLUS gen_ident { $1->emplace_back($<Ident>3); }

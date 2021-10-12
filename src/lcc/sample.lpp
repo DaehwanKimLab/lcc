@@ -25,8 +25,7 @@ protein SucB();
 protein Fume();
 protein Mdh(malate --> oxaloacetate);
 //protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
-//CO2 + H2O --> H+ + OHCOO-
-protein CA2() {
+protein CA2(CO2 + H2O --> H+ + OHCOO-) {
 	cofactor co1(Zn2+);
 	domain dom1(co1-his, co1-his, co1-his);
 	step step1(dom1 + H2O --> dom1-OH- + H+);
