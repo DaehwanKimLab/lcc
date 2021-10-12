@@ -30,7 +30,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	int Token;
 }
 
-%token <Token> T_PROTEIN T_PATHWAY T_EXPERIMENT T_ORGANISM
+%token <Token> T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_ORGANISM
 %token <Token> T_DESCRIPTION T_REACTION T_REACTION_ID
 %token <Token> T_PROPERTY T_USING T_MODULE
 %token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE
@@ -51,7 +51,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Block> program stmts block
 %type <Block> pathway_block pathway_stmts
 %type <Block> protein_block protein_stmts
-%type <Stmt> stmt protein_decl pathway_decl
+%type <Stmt> stmt protein_decl protein_complex_decl pathway_decl
 %type <MolVec> mol_expr
 %type <MolIdent> mol_ident
 %type <Reaction> protein_decl_args
@@ -61,6 +61,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
 %type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt
 %type <IdentVec> ident_list protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
+%type <IdentVec> protein_complex_decl_args
 %type <Stmt> using_stmt
 
 %type <Block> experiment_block experiment_stmts
@@ -81,6 +82,7 @@ stmts          : stmt { $$ = new NBlock(); $$->Statements.emplace_back($<Stmt>1)
                ;
 
 stmt           : protein_decl T_SEMIC
+               | protein_complex_decl T_SEMIC
                | pathway_decl T_SEMIC
                | organism_decl T_SEMIC
                | experiment_decl T_SEMIC
@@ -144,6 +146,12 @@ protein_step_decl_args : gen_reaction_decl_args { $$ = $1; }
 
 protein_sequence_decl_args : ident_list { $$ = $1; }
                            ;
+
+protein_complex_decl : T_PROTEIN_COMPLEX ident T_EQUAL protein_complex_decl_args { $$ = new NProteinComplexDeclaration(*$2, *$4); delete $2; delete $4; }
+                     ;
+
+protein_complex_decl_args : gen_expr { $$ = $1; }
+                          ;
 
 pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = new NPathwayDeclaration(*$2, $4); delete $2; }
                | T_PATHWAY ident pathway_block { $$ = new NPathwayDeclaration(*$2, $3); delete $2; }

@@ -27,6 +27,7 @@
 <C_COMMENT>.                  { }
 <C_COMMENT>\n                 { }
 "protein"                     { return TOKEN(T_PROTEIN); }
+"protein_complex"             { return TOKEN(T_PROTEIN_COMPLEX); }
 "pathway"                     { return TOKEN(T_PATHWAY); }
 "experiment"                  { return TOKEN(T_EXPERIMENT); }
 "organism"                    { return TOKEN(T_ORGANISM); }

@@ -180,6 +180,26 @@ public:
     virtual void Visit(FTraversalContext &Context) const override;
 };
 
+class NProteinComplexDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+    IdentifierList Components;
+
+    NProteinComplexDeclaration(const NIdentifier& InId, const IdentifierList& InComponents)
+    : Id(InId), Components(InComponents) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NProteinComplexDeclaration: " << Id.Name << std::endl;
+        for(const auto& item: Components) {
+            os << item->Name << ", ";
+        }
+        if (Components.size()) {
+            os << std::endl;
+        }
+    }
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
 class NPathwayExpression : public NExpression {
 public:
     int Type;
