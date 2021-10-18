@@ -31,7 +31,8 @@ protein CA2(CO2 + H2O --> H+ + OHCOO-) {
 	step step1(dom1 + H2O --> dom1-OH- + H+);
 	step step2(dom1-OH- + CO2 --> dom1-OHCOO-);
 	step step3(dom1-OHCOO- --> dom1 + OHCOO-);
-	sequence process(step1, step2, step3);
+	sequence steps(step1, step2, step3);
+	// property PDBID xxxx;
 };
 
 // TCA
@@ -43,4 +44,7 @@ pathway TCA {
 	description "TCA";
 	reaction_id r101013;
 	reaction GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
+	// reaction CA2.dom1 + CA2.dom2;
+	// property XXX YYY;
 };
+
