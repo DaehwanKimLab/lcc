@@ -48,6 +48,13 @@ void TraversalNode(NBlock* InProgramBlock)
             auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
             os << "Protein: " << Protein->Id.Name << endl;
 
+            if (Protein->Block) {
+                auto& Block = Protein->Block;
+                for (auto& stmt: Block->Statements) {
+                    os << "  "; stmt->Print(os);
+                }
+
+            }
             Context.ProteinList.emplace_back(*Protein);
 
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
@@ -74,6 +81,13 @@ void TraversalNode(NBlock* InProgramBlock)
             os << "Using(" << UsingStmt->Type << "): " << UsingStmt->Id.Name << endl;
             Context.UsingModuleList.emplace_back(UsingStmt->Id.Name);
         }
+#if 0
+else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
+            auto Identifier = dynamic_cast<const NIdentifier *>(node);
+            os << "Identifier: " << Identifier->Name  << endl;
+            Context.IdentifierList.emplace_back(Identifier->Name);
+        }
+#endif
 
         node->Visit(tc);
     }
@@ -88,13 +102,6 @@ void ScanNodes(const NBlock* InProgramBlock)
 
 int main(int argc, char *argv[])
 {
-#if 0
-    if (argc < 2) {
-        std::cerr << argv[0] << " LPPSourceFile" << std::endl;
-        return -1;
-    }
-#endif
-
     if (Option.Parse(argc, argv)) {
         Option.Usage(argv[0]);
         return -1;
@@ -110,7 +117,9 @@ int main(int argc, char *argv[])
     if (Option.Verbose) {
         Option.Dump();
     }
+
     // Load genes.tsv
+    if (!Option.bParseOnly)
     {
         Context.Init(Option);
         vector<string> Keys;
@@ -157,17 +166,18 @@ int main(int argc, char *argv[])
         }
     }
 
-
-    string UsingModuleFilename;
-    if (!Option.OutputPrefix.empty()) {
-        UsingModuleFilename = Option.OutputPrefix + "/";
-        if (!Utils::CreatePaths(UsingModuleFilename.c_str())) {
-            cerr << "Can't create directory" << endl;
+    if (!Option.bParseOnly) {
+        string UsingModuleFilename;
+        if (!Option.OutputPrefix.empty()) {
+            UsingModuleFilename = Option.OutputPrefix + "/";
+            if (!Utils::CreatePaths(UsingModuleFilename.c_str())) {
+                cerr << "Can't create directory" << endl;
+            }
         }
+        UsingModuleFilename += "process_module.tsv";
+
+        Context.SaveUsingModuleList(UsingModuleFilename.c_str());
     }
-    UsingModuleFilename += "process_module.tsv";
 
-
-    Context.SaveUsingModuleList(UsingModuleFilename.c_str());
     return 0;
 }

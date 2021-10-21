@@ -22,7 +22,7 @@ void NBlock::Visit(FTraversalContext& Context) const {
     }
 }
 
-void NReaction::Visit(FTraversalContext &Context) const {
+void NMoleculeReaction::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Reaction(" << bBiDirection << ")" << std::endl;
 
     for (auto& reactant: Reactants) {
@@ -34,10 +34,14 @@ void NReaction::Visit(FTraversalContext &Context) const {
     }
 }
 
+void NReaction::Visit(FTraversalContext &Context) const {
+
+}
+
 void NProteinDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Protein Declaration(" << Id.Name << ")" << std::endl;
 
-    Context.Queue.push(&Reaction);
+    Context.Queue.push(&OverallReaction);
 }
 
 
@@ -52,8 +56,8 @@ void NPathwayExpression::Visit(FTraversalContext &Context) const {
 void NPathwayDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "PathwayDeclaration(" << Id.Name << ")" << std::endl;
 
-    if (PathwayExpression) Context.Queue.push(PathwayExpression);
-    if (Block) Context.Queue.push(Block);
+    if (PathwayExpression) Context.Queue.push(PathwayExpression.get());
+    if (Block) Context.Queue.push(Block.get());
 }
 
 
@@ -79,6 +83,12 @@ void NExperimentDeclaration::Visit(FTraversalContext &Context) const {
 }
 
 void NPropertyStatement::Visit(FTraversalContext& Context) const {
+}
+
+void NProteinCofactorStatement::Visit(FTraversalContext& Context) const {
+}
+
+void NProteinDomainStatement::Visit(FTraversalContext &Context) const {
 }
 
 void NUsingStatement::Visit(FTraversalContext& Context) const {

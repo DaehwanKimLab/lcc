@@ -80,6 +80,7 @@ public:
     std::vector<std::string> UsingModuleList;
     std::vector<FProtein> ProteinList;
     std::vector<std::string> PathwayList;
+    std::vector<std::string> IdentifierList;
 
 
 

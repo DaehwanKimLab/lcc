@@ -27,14 +27,22 @@
 <C_COMMENT>.                  { }
 <C_COMMENT>\n                 { }
 "protein"                     { return TOKEN(T_PROTEIN); }
+"protein_complex"             { return TOKEN(T_PROTEIN_COMPLEX); }
 "pathway"                     { return TOKEN(T_PATHWAY); }
 "experiment"                  { return TOKEN(T_EXPERIMENT); }
 "organism"                    { return TOKEN(T_ORGANISM); }
 "description"                 { return TOKEN(T_DESCRIPTION); }
 "reaction_id"                 { return TOKEN(T_REACTION_ID); }
 "reaction"                    { return TOKEN(T_REACTION); }
+"property"                    { return TOKEN(T_PROPERTY); }
+"using"                       { return TOKEN(T_USING); }
+"module"                      { return TOKEN(T_MODULE); }
+"cofactor"                    { return TOKEN(T_COFACTOR); }
+"domain"                      { return TOKEN(T_DOMAIN); }
+"step"                        { return TOKEN(T_STEP); }
+"sequence"                    { return TOKEN(T_SEQUENCE); }
 "atp"                         { SAVE_TOKEN; return T_ATP; }
-"co2"                         { SAVE_TOKEN; return T_CO2; }
+"CO2"                         { SAVE_TOKEN; return T_CO2; }
 "CoA"                         { SAVE_TOKEN; return T_COA; }
 "oxaloacetate"                { SAVE_TOKEN; return T_OXALOACETATE; }
 "acetyl-CoA"                  { SAVE_TOKEN; return T_ACETYL_COA; }
@@ -45,13 +53,15 @@
 "fumarate"                    { SAVE_TOKEN; return T_FUMARATE; }
 "malate"                      { SAVE_TOKEN; return T_MALATE; }
     /* <!-- LPP --> */
-[a-zA-Z_][a-zA-Z0-9_-]*       { SAVE_TOKEN; return T_IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_\-+]*      { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
+("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }
 ")"                           { return TOKEN(T_RPAREN); }
 "+"                           { return TOKEN(T_PLUS); }
 "-->"                         { return TOKEN(T_ARROW); }
 ","                           { return TOKEN(T_COMMA); }
+"."                           { return TOKEN(T_DOT); }
 "<-->"                        { return TOKEN(T_BIARROW); }
 "="                           { return TOKEN(T_EQUAL); }
 "|"                           { return TOKEN(T_OR); }

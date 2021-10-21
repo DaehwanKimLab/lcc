@@ -28,6 +28,7 @@ public:
     bool bVersion;
     int Verbose;
     bool bShowHelp;
+    bool bParseOnly;
 };
 
 #endif //LCC_OPTION_H

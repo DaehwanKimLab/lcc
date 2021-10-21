@@ -18,12 +18,25 @@ protein GltA(oxaloacetate + acetyl-CoA --> citrate); // GltA
 protein AcnA(citrate --> isocitrate);
 protein AcnB(citrate --> isocitrate);
 protein Icd(isocitrate --> keto-glutarate);
+//protein AceK(Icd <--> Icd@phosphate);
+//protein SucA, SucB, SucD, SucC;
 protein SucA();
 protein SucB();
 protein Fume();
+protein Mdh(malate --> oxaloacetate);
+protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
+protein CA2(CO2 + H2O --> H+ + OHCOO-) {
+	cofactor co1(Zn2+);
+	domain dom1(co1-his, co1-his, co1-his);
+	step step1(dom1 + H2O --> dom1-OH- + H+);
+	step step2(dom1-OH- + CO2 --> dom1-OHCOO-);
+	step step3(dom1-OHCOO- --> dom1 + OHCOO-);
+	sequence steps(step1, step2, step3);
+	// property PDBID xxxx;
+};
 
 // TCA
-pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
+pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume <--> Mdh --> GltA;
 
 // New pathway format
 
@@ -31,4 +44,7 @@ pathway TCA {
 	description "TCA";
 	reaction_id r101013;
 	reaction GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume --> Mdh --> GltA;
+	// reaction CA2.dom1 + CA2.dom2;
+	// property XXX YYY;
 };
+

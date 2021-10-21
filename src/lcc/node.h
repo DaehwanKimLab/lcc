@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <cassert>
 
 //#include <llvm/IR/Value.h>
 
@@ -64,13 +65,12 @@ public:
     virtual void Visit(FTraversalContext &Context) const override;
 };
 
-class NMoleculeIdentifier : public NExpression {
+class NMoleculeIdentifier : public NIdentifier {
 public:
     const int Id;
-    const std::string Name;
 
     NMoleculeIdentifier(int InId, const std::string& InName)
-        : Id(InId), Name(InName) {}
+        : Id(InId), NIdentifier(InName) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "NMoleculeIdentifier(" << Name << ", " << Id << ")";
@@ -96,18 +96,18 @@ public:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
-class NReaction : public NExpression {
+class NMoleculeReaction : public NExpression {
 public:
     MoleculeList Reactants;
     MoleculeList Products;
     bool bBiDirection;
 
-    NReaction() : bBiDirection(false) {}
-    NReaction(const MoleculeList& InReactants, const MoleculeList& InProducts, bool bInBiDirection)
+    NMoleculeReaction() : bBiDirection(false) {}
+    NMoleculeReaction(const MoleculeList& InReactants, const MoleculeList& InProducts, bool bInBiDirection)
         : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
 
     virtual void Print(std::ostream& os) const override {
-        os << "NReaction(" << std::endl;
+        os << "NMoleculeReaction(" << std::endl;
 
         for (const auto& reactant : Reactants) {
             reactant->Print(os); os << ", ";
@@ -126,15 +126,46 @@ public:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
+class NReaction : public NExpression {
+public:
+    IdentifierList Reactants;
+    IdentifierList Products;
+    bool bBiDirection;
+
+    NReaction() : bBiDirection(false) {}
+    NReaction(const IdentifierList& InReactants, const IdentifierList& InProducts, bool bInBiDirection)
+    : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NGeneralReaction(" << std::endl;
+        os << "  ";
+        for (const auto& item: Reactants) {
+             os << item->Name << ", ";
+        }
+        os << std::endl;
+        os << "  ";
+        for (const auto& item: Products) {
+            os << item->Name << ", ";
+        }
+        os << std::endl;
+        os << "), " << "BiDirection: " << bBiDirection << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
 
 
 class NProteinDeclaration : public NStatement {
 public:
     const NIdentifier Id;
-    NReaction Reaction;
+    NReaction OverallReaction;
+    std::shared_ptr<NBlock> Block;
 
-    NProteinDeclaration(const NIdentifier &InId, const NReaction &InReaction)
-            : Id(InId), Reaction(InReaction) {}
+    NProteinDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction, NBlock* InBlock)
+        : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
+
+    NProteinDeclaration(const NIdentifier &InId, const NReaction& InOverallReaction)
+            : Id(InId), OverallReaction(InOverallReaction) {}
 
     NProteinDeclaration(const NIdentifier &InId)
             : Id(InId) {}
@@ -143,11 +174,76 @@ public:
         os << "NProteinDeclaration: ";
         Id.Print(os);
         os << ", ";
-        Reaction.Print(os);
+        OverallReaction.Print(os);
         os << std::endl;
     }
 
     virtual void Visit(FTraversalContext &Context) const override;
+};
+
+class NProteinComplexDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+    IdentifierList Components;
+
+    NProteinComplexDeclaration(const NIdentifier& InId, const IdentifierList& InComponents)
+    : Id(InId), Components(InComponents) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NProteinComplexDeclaration: " << Id.Name << std::endl;
+        for(const auto& item: Components) {
+            os << item->Name << ", ";
+        }
+        if (Components.size()) {
+            os << std::endl;
+        }
+    }
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+
+class NChainReactionExpression : public NExpression {
+public:
+    std::vector<NIdentifier> Identifiers;
+    std::vector<int> Operations;
+
+    void Add(const NIdentifier& InIdentifier, int Operation = 0) {
+        Identifiers.emplace_back(InIdentifier);
+        Operations.emplace_back(Operation);
+
+        assert(Identifiers.size() == Operations.size());
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        assert(Identifiers.size() == Operations.size());
+        os << "NChainReactionExpression(" << Identifiers.size() << ")" << std::endl;
+        for(int i = 0; i < Operations.size(); i++) {
+            os << "  " << Identifiers[i].Name << ", Op(" << Operations[i] << ")" << std::endl;
+        }
+    }
+};
+
+class NChainReaction : public NExpression {
+public:
+    std::vector<std::shared_ptr<NChainReactionExpression>> Exprs;
+    std::vector<int> Operators;
+
+    void Add(NChainReactionExpression *InExpr, int InOperator = 0) {
+        Exprs.emplace_back(InExpr);
+        Operators.emplace_back(InOperator);
+        assert(Exprs.size() == Operators.size());
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        assert(Exprs.size() == Operators.size());
+
+        os << "NChainReaction(" << Exprs.size() << ")" << std::endl;
+        for(int i = 0; i < Exprs.size(); i++) {
+            Exprs[i]->Print(os);
+            os << "Op(" << Operators[i] << ")" << std::endl;
+        }
+    }
+
 };
 
 class NPathwayExpression : public NExpression {
@@ -173,26 +269,25 @@ class NPathwayDeclaration : public NStatement {
 public:
     const NIdentifier Id;
 
-    NPathwayExpression* PathwayExpression;
-    NBlock* Block;
+    std::shared_ptr<NPathwayExpression> PathwayExpression;
+    std::shared_ptr<NBlock> Block;
+    std::shared_ptr<NChainReaction> PathwayChainReaction;
 
     NPathwayDeclaration(const NIdentifier& InId, NPathwayExpression* InPathwayExpression)
-        : Id(InId), PathwayExpression(InPathwayExpression), Block(nullptr) {}
+        : Id(InId), PathwayExpression(InPathwayExpression) {}
 
     /* New */
     NPathwayDeclaration(const NIdentifier& InId, NBlock* InBlock)
-        : Id(InId), Block(InBlock), PathwayExpression(nullptr) {}
+        : Id(InId), Block(InBlock) {};
 
-    virtual ~NPathwayDeclaration() {
-        if (Block) delete Block;
-        if (PathwayExpression) delete PathwayExpression;
-    }
-
+    NPathwayDeclaration(const NIdentifier& InId, NChainReaction* InChainReaction)
+    : Id(InId), PathwayChainReaction(InChainReaction) {};
 
     virtual void Print(std::ostream& os) const override {
         os << "NPathwayDeclaration("; Id.Print(os); os << std::endl;
         if (PathwayExpression) PathwayExpression->Print(os);
         if (Block) Block->Print(os);
+        if (PathwayChainReaction) PathwayChainReaction->Print(os);
         os << ")" << std::endl;
     }
 
@@ -228,9 +323,9 @@ public:
 
 class NPathwayReactionStatement : public NStatement {
 public:
-    NPathwayExpression PathwayExpression;
+    NChainReaction PathwayExpression;
 
-    NPathwayReactionStatement(NPathwayExpression& InPathwayExpression)
+    NPathwayReactionStatement(NChainReaction& InPathwayExpression)
         : PathwayExpression(InPathwayExpression) {}
 
 
@@ -296,6 +391,77 @@ public:
     }
     virtual void Visit(FTraversalContext& Context) const override;
 
+};
+
+class NProteinCofactorStatement : public NStatement {
+public:
+    const NIdentifier Id;
+    IdentifierList CofactorList;
+
+    NProteinCofactorStatement(const NIdentifier& InId, const IdentifierList& InCofactorList) : Id(InId), CofactorList(InCofactorList) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Cofactor(" << Id.Name << "): ";
+        for (const auto& arg: CofactorList) {
+            os << arg->Name << ", ";
+        }
+        os << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NProteinDomainStatement : public NStatement {
+public:
+    const NIdentifier Id;
+    IdentifierList DomainList;
+
+    NProteinDomainStatement(const NIdentifier& InId, const IdentifierList& InDomainList) : Id(InId), DomainList(InDomainList) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Domain(" << Id.Name << "): ";
+        for (const auto& domain: DomainList) {
+            os << domain->Name << ", ";
+        }
+        os << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NProteinStepStatement : public NStatement {
+public:
+    const NIdentifier Id;
+    NReaction Reaction;
+
+    NProteinStepStatement(const NIdentifier& InId, const NReaction& InReaction)
+    : Id(InId), Reaction(InReaction) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NProteinStepStatement(" << Id.Name << "): ";
+        Reaction.Print(os);
+    }
+
+    virtual void Visit(FTraversalContext &Context) const override {};
+};
+
+class NProteinSequenceStatement : public NStatement {
+public:
+    const NIdentifier Id;
+    IdentifierList StepList;
+
+    NProteinSequenceStatement(const NIdentifier& InId, const IdentifierList& InStepList)
+    : Id(InId), StepList(InStepList) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Protein Process Sequence(" << Id.Name << "): ";
+        for (const auto& step: StepList) {
+            os << step->Name << ", ";
+        }
+        os << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
 };
 
 class NUsingStatement : public NStatement {

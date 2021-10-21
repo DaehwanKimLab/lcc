@@ -8,9 +8,10 @@
 "
 
 syn keyword lppTodo contained TODO FIXME XXX NOTE
-syn keyword lppTopKeyword organism experiment protein pathway
+syn keyword lppTopKeyword organism experiment protein pathway protein_complex
 syn keyword lppTopKeyword description reaction_id reaction
 syn keyword lppTopKeyword property using module 
+syn keyword lppTopKeyword cofactor domain step sequence
 syn keyword lppMolecule oxaloacetate citrate
 syn keyword lppMolecule isocitrate
 syn match lppMolecule display "keto-glutarate"
