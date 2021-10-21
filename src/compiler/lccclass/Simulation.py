@@ -121,7 +121,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Function_("PrintSimStepsExecuted"):
-            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.PrintSimStepsExecuted_Display", False_Function="self.Pass")
+            Writer.IfEl_Func("self.SIM_DisplayTrigger", True_Function="self.PrintSimStepsExecuted_Display", False_Function="self.Pass")
             Writer.BlankLine()
 
         with Writer.Function_("PrintSimStepsExecuted_Display"):
@@ -257,7 +257,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewProcessDebuggingMessages"):
-            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessDebuggingMessages_Display", False_Function="self.Pass")
+            Writer.IfEl_Func("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessDebuggingMessages_Display", False_Function="self.Pass")
             Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewProcessDebuggingMessages_Display"):
@@ -270,7 +270,7 @@ def Write_Simulation(Writer, Comp, ProGen):
                 Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewProcessSummaries"):
-            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessSummaries_Display", False_Function="self.Pass")
+            Writer.IfEl_Func("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessSummaries_Display", False_Function="self.Pass")
             Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewProcessSummaries_Display"):
@@ -319,7 +319,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             Writer.BlankLine()
 
         with Writer.Function_("SIM_ViewCellStateSummary"):
-            Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessDebuggingMessages_Display", False_Function="self.Pass")
+            Writer.IfEl_Func("self.SIM_DisplayTrigger", True_Function="self.SIM_ViewProcessDebuggingMessages_Display", False_Function="self.Pass")
 
 
         with Writer.Function_("SIM_ViewCellStateSummary"):
@@ -394,7 +394,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             if "Metabolism" in ProGen.Dict_CellProcesses:
                 Writer.Statement("self.Metabolism.ReplenishMetabolites()")
             if Writer.Switch4ProcessSummary and Writer.Switch4PostSimulationStepCorrectionMessage:
-                Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.PostSimulationStepCorrection_Display", False_Function="self.Pass")
+                Writer.IfEl_Func("self.SIM_DisplayTrigger", True_Function="self.PostSimulationStepCorrection_Display", False_Function="self.Pass")
             Writer.Pass_____()
             Writer.BlankLine()
 
@@ -475,7 +475,7 @@ def Write_Simulation(Writer, Comp, ProGen):
             if Writer.Switch4Save:
                 Writer.Statement("self.SIM_SaveCounts()")
             if Writer.Switch4Save and Writer.Switch4Save:
-                Writer.IfElse___("self.SIM_DisplayTrigger", True_Function="self.SIM_SaveCounts_Display", False_Function="self.Pass")
+                Writer.IfEl_Func("self.SIM_DisplayTrigger", True_Function="self.SIM_SaveCounts_Display", False_Function="self.Pass")
                 Writer.BlankLine()
 
             # Apply post-simulation step corrections for selected reaction models:

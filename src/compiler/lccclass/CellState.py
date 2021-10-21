@@ -155,18 +155,14 @@ def Write_CellState(Writer, Comp, ProGen):
                 "self.Count_NTsInChromosomesInGenome",
                 "self.Count_NTsInRNAs",
                 "self.Count_AAsInProteins",
+
+                "self.Freq_SigmaFactorBindingInGenePromoter",
             ]
             for Variable in ListOfMatrixVariablesToTranspose:
                 Writer.Transpose(Variable, Variable)
             Writer.BlankLine()
 
         with Writer.Function_("InitializeVariablesForCellProcesses"):
-
-            Writer.Comment__("Popular")
-            Writer.BlankLine()
-            Writer.Variable_("self.One", 1)
-            Writer.Variable_("self.Zero", 0)
-            Writer.BlankLine()
 
             Idx_H2O = Comp.Master.ID2Idx_Master['WATER[c]']
             Idx_Proton = Comp.Master.ID2Idx_Master['PROTON[c]']
@@ -218,7 +214,9 @@ def Write_CellState(Writer, Comp, ProGen):
             # Transcription
             Writer.Comment__("Transcription")
             Writer.BlankLine()
-            Writer.Variable_("self.Idx_RNAP", 0)
+            # Writer.Variable_("self.Idx_GeneralTranscriptionFactors", 0)
+            # Writer.Variable_("self.Idx_RNAP_PreInitiationComplexes", 0)
+            Writer.Variable_("self.Freq_TranscriptionPerGene", 1.0)
             Writer.BlankLine()
             Writer.Variable_("self.Len_RNAsNascent", 0)
             Writer.BlankLine()

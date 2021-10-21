@@ -163,7 +163,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             # Correction for Seleno-cysteine when -1
             Writer.Gather___("Count_SelenoCysteine", "AAConsumption", "self.Cel.Idx_SelenoCysteineInAAs")
             Writer.ConvToBin("Bin_SelenoCysteine", "Count_SelenoCysteine", "<", 0)
-            Writer.Multiply_("CountToAdjust", "Bin_SelenoCysteine", "self.Cel.One")
+            Writer.Multiply_("CountToAdjust", "Bin_SelenoCysteine", "self.One")
             Writer.ScatNdAdd("AAConsumption_Adjusted", "AAConsumption", "self.Cel.Idx_SelenoCysteineInAAs", "CountToAdjust")
 
             Writer.RndIdxUni("Idx_RndAA", [1],

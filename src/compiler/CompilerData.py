@@ -122,8 +122,8 @@ class FCompilerData:
         self.Gene = FGene()
         self.Dict_DataClass['Gene'] = self.Gene
 
-        # self.Promoter = FPromoter()
-        # self.Dict_DataClass['Promoter'] = self.Promoter
+        self.Promoter = FPromoter()
+        self.Dict_DataClass['Promoter'] = self.Promoter
 
         self.RNA = FRNA()
         self.Dict_DataClass['RNA'] = self.RNA

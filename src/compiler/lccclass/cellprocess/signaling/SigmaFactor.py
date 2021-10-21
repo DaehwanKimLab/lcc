@@ -91,7 +91,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     # Idx_RNAP_CoreEnzyme = Comp.Master.ID2Idx_Master[Comp.Complex.Name2ID_Complexes['RNA polymerase, core enzyme']]
 
     Rate_SigmaFactorBindingToRNAP = 0.8
-    Rate_RNAPCoreAvailableForBinding = 0.8
+    Rate_RNAPCoreAvailableForBinding = 0.22
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
@@ -108,6 +108,12 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         with Writer.Function_("SetUp_ProcessSpecificVariables"):
             Writer.Variable_("self.Rate_SigmaFactorBindingToRNAP", Rate_SigmaFactorBindingToRNAP)
             Writer.Variable_("self.Rate_RNAPCoreAvailableForBinding", Rate_RNAPCoreAvailableForBinding)
+            Writer.BlankLine()
+
+            Writer.Comment__("Modifying RNAP preinitiation complex related indices in cell state")
+            # Writer.Overwrite("self.Cel.Idx_GeneralTranscriptionFactors", "self.Cel.Idx_SigmaFactors")
+            # Writer.Overwrite("self.Cel.Idx_RNAP_PreInitiationComplexes", "self.Cel.Idx_RNAP_HoloEnzymes")
+            Writer.Overwrite("self.Cel.Freq_TranscriptionPerGene", "self.Cel.Freq_SigmaFactorBindingInGenePromoter")
             Writer.BlankLine()
 
         # Override the abstract method
@@ -132,10 +138,15 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
         with Writer.Function_("DetermineCountForRNAPCoreToComplex"):
             Writer.Statement("Count_RNAP_CoreEnzyme = self.GetCounts(self.Cel.Idx_RNAP_CoreEnzyme)")
-            Writer.ConvToBin("Bin_RNAP_CoreEnzyme_Bound", "self.Cel.Len_RNAsNascent", ">", 0)
-            Writer.ReduceSum("Count_RNAP_CoreEnzyme_Bound", "Bin_RNAP_CoreEnzyme_Bound")
-            Writer.Subtract_("Count_RNAP_CoreEnzymeAvailable", "Count_RNAP_CoreEnzyme", "Count_RNAP_CoreEnzyme_Bound")
-            Writer.Statement("Count_RNAP_CoreEnzymeToComplex = self.DetermineAmountFromRate(Count_RNAP_CoreEnzymeAvailable, self.Rate_RNAPCoreAvailableForBinding)")
+            Writer.Statement("Count_RNAP_ToBindPromoter_Total = self.DetermineAmountFromRate(Count_RNAP_CoreEnzyme, self.Rate_RNAPCoreAvailableForBinding)")
+
+            Writer.Comment__("Subtract DNA-bound RNAP to bind")
+            Writer.ConvToBin("Bin_Len_RNAsNascent", "self.Cel.Len_RNAsNascent", ">=", 0)
+            Writer.ReduceSum("Count_RNAP_BoundToDNA", "Bin_Len_RNAsNascent")
+            Writer.Subtract_("Count_RNAP_CoreEnzymeToComplex", "Count_RNAP_ToBindPromoter_Total", "Count_RNAP_BoundToDNA")
+            Writer.ConvToBin("Bin_Count_RNAP_CoreEnzymeToComplex", "Count_RNAP_CoreEnzymeToComplex", ">=", 0)
+            Writer.Multiply_("Count_RNAP_CoreEnzymeToComplex", "Bin_Count_RNAP_CoreEnzymeToComplex", "Count_RNAP_CoreEnzymeToComplex")
+
             Writer.ReturnVar("Count_RNAP_CoreEnzymeToComplex")
             Writer.BlankLine()
 
@@ -148,10 +159,8 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
                     SigmaFactorGenes_Str += ', '
                 SigmaFactorGenes_Str += SigmaFactorGene
 
-            Writer.Statement("Count_SigmaFactors = self.GetCounts(self.Cel.Idx_SigmaFactors)")
             Writer.PrintStVa("# of SigmaFactors (encoding genes: %s)" % SigmaFactorGenes_Str,
-                             "Count_SigmaFactors")
-
+                             "self.GetCounts(self.Cel.Idx_SigmaFactors)")
             Writer.PrintStVa("# of RNAP core enzymes available",
                              "self.Count_RNAP_CoreEnzymesAvailable[0]")
             Writer.PrintStVa("# of newly formed RNAs holo enzymes",

@@ -3,7 +3,7 @@
 # Ribosome assembly and disassembly
 # check for sigma factor regulation in place?
 
-
+# TODO: Instead of random selection of which complexation reaction occur, change to running all processes with sufficient molecules at a low rate. Include RNAP HoloEnzymes here.
 def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     # Molecule indices for Molecular IDs
@@ -22,9 +22,6 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
 
     # Arbitrarily set number of complexation reactions to run each simulation step
     N_CPLXRXNsToRun = 2
-
-    # Resolution for weight in selecting a complexation reaction
-    WeightResolution = 2 ** 30
 
     with Writer.Statement("class F%s(FCellProcess):" % ProcessID):
         ProGen.Init_Common(Writer)
@@ -114,7 +111,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
             Writer.Statement("Weight_ReactionsPossiblePerReactant_Squeezed = self.SqueezeDistributionRangeZeroAndOne(Count_ReactionsPossiblePerReactant)")
             Writer.Statement("Weight_ReactionsPossiblePerReactant_SqueezedWithZerosToOnes = self.ResetZerosToSpecificValue_Float(Weight_ReactionsPossiblePerReactant_Squeezed, 1)")
             Writer.ReduceMul("Weight_CPLXRXNsPossible", "Weight_ReactionsPossiblePerReactant_SqueezedWithZerosToOnes", 1)
-            Writer.Multiply_("Weight_CPLXRXNsPossible_Stretched", "Weight_CPLXRXNsPossible", WeightResolution)
+            Writer.Multiply_("Weight_CPLXRXNsPossible_Stretched", "Weight_CPLXRXNsPossible", "self.WeightResolution")
             # Writer.Statement("Weight_CPLXRXNsPossible_Stretched = self.StretchDistributionRangeToNegAndPosValue(Weight_CPLXRXNsPossible, %s)" % WeightResolution)
             Writer.RoundInt_("Weight_CPLXRXNsPossible_StretchedInt", "Weight_CPLXRXNsPossible_Stretched")
             Writer.Comment__("Give a minimum weight to the reactions rounded to 0 by adding 1 to all")

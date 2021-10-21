@@ -12,6 +12,11 @@ def Write_CellProcess(Writer):
             Writer.LinkClObj('Exe')
             Writer.BlankLine()
 
+            Writer.InitOnes_("self.One", 1, 'int32')
+            Writer.InitOnes_("self.One_Float", 1, 'float32')
+            Writer.InitZeros("self.Zero", 1, 'int32')
+            Writer.InitZeros("self.Zero_Float", 1, 'float32')
+            Writer.Variable_("self.WeightResolution", 2 ** 10, 'tf.float32')   # For random number generator
             Writer.BlankLine()
 
         Writer.AbsMethod()
@@ -402,8 +407,10 @@ def Write_CellProcess(Writer):
 
         with Writer.Function_("SqueezeDistributionRangeZeroAndOne", "Input"):
             Writer.AsrtGrEq_("Input", 0, "tf.where(Input < 0)")
-            Writer.ReduceMax("Max", "Input")
-            Writer.Divide___("Input_Squeezed", "Input", "Max")
+            Writer.Cast_____("Input_Float", "Input", 'float32')
+            Writer.ReduceMax("Max", "Input_Float")
+            Writer.DivNoNan_("Input_Squeezed", "Input_Float", "Max")
+            # Writer.Reshape__("Input_Squeezed", "Input_Squeezed", [1, -1])
             Writer.ReturnVar("Input_Squeezed")
             Writer.BlankLine()
 
@@ -451,5 +458,11 @@ def Write_CellProcess(Writer):
         with Writer.Function_("SaveData"):
             Writer.Pass_____()
             Writer.BlankLine()
+
+        with Writer.Function_("Pass"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+
 
 

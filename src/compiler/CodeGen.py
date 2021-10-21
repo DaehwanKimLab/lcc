@@ -140,6 +140,10 @@ class CodeWriter():
         line = line[:-1]
         self.Statement(line)
 
+    def ReturnOne(self):
+        line = 'return tf.constant([1])'
+        self.Statement(line)
+
     def Overwrite(self, DestinationVariable, SourceVariable):
         Line = '%s = %s' % (DestinationVariable, SourceVariable)
         self.Statement(Line)
@@ -270,8 +274,8 @@ class TFCodeWriter(CodeWriter):
     def WhileRtrn(self, ReturnVariable=DefaultTensor):
         self.ReturnVar(ReturnVariable)
 
-    def IfElse___(self, Predicate, True_Function, False_Function):
-        Line = 'tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
+    def IfEl_Func(self, Predicate, True_Function, False_Function):
+        Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
         self.Statement(Line)
 
     # tf.print
@@ -458,6 +462,9 @@ class TFCodeWriter(CodeWriter):
     def NotEqual_(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.not_equal(%s, %s)" % (DestVar, MX1, MX2))
 
+    def IsNan____(self, DestVar, MX):
+        self.Statement("%s = tf.math.is_nan(%s)" % (DestVar, MX))
+
     def Concat___(self, DestVar, SrcVar1, SrcVar2, Axis=0):
         # self.PrepCncat(DestVar, SrcVar1, SrcVar2)
         self.Statement("%s = tf.concat([%s, %s], %s)" % (DestVar, SrcVar1, SrcVar2, Axis))
@@ -510,6 +517,9 @@ class TFCodeWriter(CodeWriter):
 
     def Divide___(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.divide(%s, %s)" % (DestVar, MX1, MX2))
+
+    def DivNoNan_(self, DestVar, MX1, MX2):
+        self.Statement("%s = tf.math.divide_no_nan(%s, %s)" % (DestVar, MX1, MX2))
 
     def FloorDiv_(self, DestVar, MX1, MX2):
         self.Statement("%s = tf.math.floordiv(%s, %s)" % (DestVar, MX1, MX2))
@@ -584,7 +594,7 @@ class TFCodeWriter(CodeWriter):
         pass
         # self.Statement("%s = tf.sparse.from_dense(%s)" % (DestVar, MX))
 
-    def CondVal__(self, DestVar, MX, Equality, Value, IfTrue=None, IfFalse=None):
+    def IfEl_Val_(self, DestVar, MX, Equality, Value, IfTrue=None, IfFalse=None):
         self.Statement("%s = tf.where(%s %s %s, x=%s, y=%s)" % (DestVar, MX, str(Equality), Value, IfTrue, IfFalse))
 
     def ConvToBin(self, DestVar, MX, Equality, Value):

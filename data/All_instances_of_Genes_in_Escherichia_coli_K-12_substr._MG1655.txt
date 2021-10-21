@@ -1,0 +1,4524 @@
+Genes	Synonyms	Object ID
+3'ETS-leuZ		G0-16636
+aaeA	yhcQ	G7686
+aaeB	yhcP	G7685
+aaeR	yhcS // qseA	G7688
+aaeX	yhcR	G7687
+aas		EG11679
+aat	ycaA	EG11112
+abgA	ydaJ	G6670
+abgB	ydaI	G6669
+abgR		G6671
+abgT	ydaH	EG12853
+abpA	yfjL	G7363
+abpB	yfjK	G7362
+abrB	ybgN	G6384
+accA		EG11647
+accB	fabE	EG10275
+accC	fabG	EG10276
+accD	dedB // usg	EG10217
+aceA	icl	EG10022
+aceB	mas	EG10023
+aceE		EG10024
+aceF		EG10025
+aceK		EG10026
+ackA		EG10027
+acnA	acn	EG11325
+acnB	yacJ // yacI	EG12316
+acpH	yajB	EG11095
+acpP		EG50003
+acpS	dpj	EG10247
+acpT	yhhU	EG12221
+acrA	sipB // Mb // lir // mbl // mtcA // nbsA	EG11703
+acrB	acrE	EG11704
+acrD	yffA	EG10014
+acrE	envC	EG10266
+acrF	envD	EG10267
+acrR	ybaH	EG12116
+acrZ	ybhT	G6396
+acs	yfaC // acsA	EG11448
+actP	yjcG	EG11942
+actS	ygeR	G7484
+ada		EG10029
+add		EG10030
+adeD	adeC(B.s.) // adu // yicP // ade	EG11692
+adeP	yieG // purP	EG11724
+adeQ	yicO	EG11691
+adhE	adhC // ana	EG10031
+adhP	yddN	G6775
+adiA	adi	EG11501
+adiC	yjdD // yjdE	EG12462
+adiY		EG11966
+adk	dnaW // plsA	EG10032
+aegA	yffG	EG12409
+aer	yqjJ // air	G7595
+aes	ybaC	EG11101
+afuC	fbpC // yagC	EG12340
+agaB	yraD	EG12769
+agaC	yraE	EG12770
+agaD	yraF	G7635
+agaI	yraG	G7636
+agaR	yhaW	G7630
+agaS	yraB	G7634
+agaV	yhaY	G7632
+agaW	yhaZ	G7633
+agp		EG10033
+agrA		G0-10751
+agrB		G0-10752
+ahpC	tpx // ssi8	EG11384
+ahpF		EG11385
+ahr	yjgB	EG11436
+aidB		EG11811
+ais	pagH // pmrG	G7165
+alaA	yfbQ	G7184
+alaB		G0-9281
+alaC	yfdZ	G7242
+alaE	ygaW	G7399
+alaS	act // ala-act // lovB	EG10034
+alaT	talA	EG30008
+alaU	talD	EG30009
+alaV		EG30010
+alaW	alaWalpha	EG30011
+alaX	alaWbeta	EG30012
+aldA	ald	EG10035
+aldB	yiaX	EG12292
+alkA	aidA	EG11222
+alkB	aidD	EG10037
+allA	glxA2 // ybbT	G6275
+allB	glxB3 // ybbX	G6281
+allC	glxB7 // ylbB	G6285
+allD	glxB8 // ylbC	G6286
+allE	glxB6 // ylbA // ughY	G6284
+allR	glxA3 // ybbU	G6276
+allS	ybbS // glxA1	G6274
+alpA		EG12112
+alr	alr5	EG10001
+alsA	yjcW	EG11959
+alsB	yjcX	EG12458
+alsC	yjcV	EG11958
+alsE	yjcU	EG11957
+alsK	yjcT	EG11956
+alsR	yjcY // rpiR	G7821
+alx	ygjT	G7607
+amiA	yfeE	EG11823
+amiB	yjeD	EG11363
+amiC	ygdN	G7458
+amiD	ybjR	G6452
+amn		EG10039
+ampC	ampA	EG10040
+ampD		EG10041
+ampE		EG10042
+ampG		EG12183
+ampH	yaiH	EG12867
+amtB	ybaG	EG11821
+amyA	yedC	EG11387
+anmK	ydhH	G6880
+ansA		EG10045
+ansB		EG10046
+ansP	yncF	G6764
+apaG		EG10047
+apaH	cfcB	EG10048
+aphA	yjbP // hobH	EG11934
+appA		EG10049
+appB	cbdB // cyxB	EG11379
+appC	cbdA // cyxA	EG11380
+appX	yccB // cbdX	G0-10588
+appY		EG10050
+apt		EG10051
+aqpZ	bniP	EG13270
+araA		EG10052
+araB		EG10053
+araC		EG10054
+araD		EG10055
+araE		EG10056
+araF		EG10057
+araG		EG10058
+araH	b1898 // b1899	EG10059
+araJ	araT	EG10060
+arcA	sfrA // cpxC // dye // fexA // msp // seg	EG10061
+arcB		EG10062
+arcZ	psrA16 // sraH // ryhA	G0-8871
+arfA	yhdL	G0-10465
+arfB	yaeJ	EG12354
+argA	Arg2 // Arg1	EG10063
+argB		EG10064
+argC	Arg2	EG10065
+argD	Arg1 // dapC // dtu	EG10066
+argE		EG11286
+argF		EG10067
+argG		EG10068
+argH		EG11223
+argI		EG10069
+argK	ygfD	EG11445
+argL		G0-17012
+argO	yggA	EG11159
+argP	iciA	EG10490
+argQ	argVdelta	EG30013
+argR	Rarg // xerA	EG10070
+argS	lov // lov-1	EG10071
+argT		EG10072
+argU	dnaY // pin	EG30014
+argV	argValpha	EG30015
+argW		EG30016
+argX		EG30017
+argY	argVbeta	EG30018
+argZ	argVgamma	EG30019
+ariR	ymgB	G6606
+arnA	SAF // yfbG // pmrI	G7168
+arnB	pmrH // yfbE	G7166
+arnC	pmrF // yfbF	G7167
+arnD	pmrJ // yfbH	G7169
+arnE	yfbW	G0-10460
+arnF	yfbJ	G7171
+arnT	yfbI // pmrK	G7170
+aroA		EG10073
+aroB		EG10074
+aroC		EG10075
+aroD		EG10076
+aroE		EG10077
+aroF		EG10078
+aroG		EG10079
+aroH		EG10080
+aroK		EG10081
+aroL		EG10082
+aroM		EG10083
+aroP	aroR	EG10084
+arpA	arp // yjaC	EG11208
+arrS		G0-10694
+arsB	arsF	EG12236
+arsC	arsG	EG12237
+arsR	arsE	EG12235
+artI		EG11625
+artJ		EG11628
+artM		EG11627
+artP		EG11624
+artQ		EG11626
+ascB	sac	EG10085
+ascF	sac	EG10086
+ascG	sac	EG10087
+asd	dap // hom	EG10088
+aslA	gppB // atsA	EG10089
+aslB	gppB // atsB	EG10090
+asmA	yegA	EG11361
+asnA		EG10091
+asnB		EG10092
+asnC		EG10093
+asnS	lcs // tss	EG10094
+asnT		EG30020
+asnU		EG30021
+asnV		EG30022
+asnW		G7069
+aspA		EG10095
+aspC		EG10096
+aspS	tls	EG10097
+aspT	tasC	EG30023
+aspU		EG30024
+aspV		EG30025
+asr		G6855
+astA	ydjV	G6943
+astB	ydjT	G6941
+astC	ydjW // argM // cstC	G6944
+astD	ydjU	G6942
+astE	ydjS	G6940
+atoA		EG11670
+atoB		EG11672
+atoC		EG11668
+atoD		EG11669
+atoE		EG11671
+atoS		EG11667
+atpA	papA // uncA	EG10098
+atpB	papD // uncB	EG10099
+atpC	papG // uncC	EG10100
+atpD	papB // uncD	EG10101
+atpE	papH // uncE	EG10102
+atpF	papF // uncF	EG10103
+atpG	papC // uncG	EG10104
+atpH	papE // uncH	EG10105
+atpI	uncI	EG10106
+avtA		EG10107
+azoR	acpD	G6731
+azuC		G0-10653
+bacA	uppP	EG11665
+baeR		EG11618
+baeS		EG11617
+bamA	yzzY // yzzN // ecfK // yaeT	G6093
+bamB	yfgL	G7320
+bamC	dapX // nlpB	EG10658
+bamD	ecfD // yfiO	G7352
+bamE	smpA // smqA	EG10952
+barA	airS	EG11367
+basR	pmrA	EG11615
+basS	pmrB // dgkR	EG11614
+bax		EG11360
+baxL		G0-17040
+bcp		EG10108
+bcr	bicA // bicR // sur // suxA	EG11419
+bcsA	yhjP // yhjO	EG12260
+bcsB	yhjN	EG12259
+bcsC	yhjL	EG12257
+bcsE	yhjS	EG12263
+bcsF	yhjT	EG12264
+bcsG	yhjU	EG12265
+bcsZ	bcsC // yhjM	EG12258
+bdcA	yjgI	G7880
+bdcR	yjgJ	G7882
+bdm	yddX	G6776
+beeE	ymfO	G6595
+bepA	yfgC	G7311
+betA		EG10109
+betB		EG10110
+betI		EG10111
+betT		EG10112
+bfd	yheA	EG11181
+bfr		EG10113
+bglA	yqfC // bglD	G495
+bglB	blgA	EG10114
+bglF	bglS	EG10115
+bglG	bglC	EG10116
+bglH	yieC	EG11364
+bglJ	yjjR	G7948
+bglX	glh // yohA	EG12013
+bhsA	ycfR // comC	G6570
+bioA		EG10117
+bioB		EG10118
+bioC		EG10119
+bioD		EG10120
+bioF		EG10121
+bioH	bioB	EG10122
+bioP	yigM	EG11471
+bipA	typA // yihK	EG11837
+birA	bioR // dhbB	EG10123
+bisC		EG10124
+blc	yjeL	G7837
+blr		G0-9561
+bluF	ycgF	G6603
+bluR	ycgE	G6602
+bolA		EG10125
+borD	iss // vboR // bor // ybcU	G6312
+brnQ	hrbA	EG12168
+bsmA	yjfO	G7852
+bssR	yliH	G6436
+bssS	yceP	G6557
+btsR	yehT	EG12006
+btsS	yehU	EG12007
+btsT	yjiY	G7942
+btuB	bfe // cer	EG10126
+btuC		EG10127
+btuD		EG10128
+btuE		EG10129
+btuF	yadT	EG12334
+btuR	cobA	EG10130
+C0293		G0-8897
+cadA	ldcI	EG10131
+cadB		EG10132
+cadC		EG10133
+caiA	yaaO	EG11560
+caiB	yaaN	EG11559
+caiC	yaaM	EG11558
+caiD	yaaL	EG11557
+caiE		EG12608
+caiF		G6088
+caiT	yaaP	EG11561
+can	yadF	EG12319
+carA	arg // cap // pyrA	EG10134
+carB	cap // pyrA	EG10135
+cas1	ygbT	G7425
+cas2	ygbF	EG12845
+cas3	ygcB	EG12634
+casA	ygcL // cse1	G7430
+casB	ygcK // cse2	G7429
+casC	ygcJ // cse4 // cas7	G7428
+casD	ygcI // cas5e	G7427
+casE	ygcH // cse3 // cas6e	G7426
+cbeA	yeeU	G7084
+cbl		G7071
+cbpA		EG12193
+cbpM	yccD	EG12194
+cbrA	yidS	EG11714
+cbrB	yieI	EG11726
+cbrC	yieJ	EG11727
+cbtA	yeeV	G7085
+cca		EG10136
+ccmA	yejW	EG12059
+ccmB	yejV	EG12058
+ccmC	yejT // yejU	EG12057
+ccmD	yojM	EG12169
+ccmE	yejS	EG12055
+ccmF	yejR	EG12054
+ccmG	yejQ // dsbE	EG12053
+ccmH	yejP	EG12052
+ccp	yhjA	EG12244
+cdaR	sdaR // yaeG	EG12335
+cdd		EG10137
+cdgI	yeaI	G6971
+cdh		EG10138
+cdsA	cds	EG10139
+cecR	ybiH	EG12406
+cedA	ydjP	G6936
+cfa	cdfA	EG11531
+chaA		EG11753
+chaB		EG12402
+chaC		EG12403
+chbA	celC	EG10142
+chbB	celA	EG10140
+chbC	celB // hic	EG10141
+chbF	ydjD // celF	EG10144
+chbG	celG // ydjC	EG12198
+chbR	celD	EG10143
+cheA		EG10146
+cheB		EG10147
+cheR	cheX	EG10148
+cheW		EG10149
+cheY		EG10150
+cheZ		EG10151
+chiA	yheB	EG11237
+chiP	ybfM	G6370
+chiQ	ybfN	G6371
+chiX	sroB // rybC // micM	G0-9382
+chiZ		G0-17083
+cho	ydjQ	G6937
+chpB	yjfE // chpBK	EG12096
+chpS	chpBI // yjfB	EG11250
+cirA	cir // feuA	EG10155
+citC	ybeO	G6344
+citD	ybdX	G6343
+citE	ybdW	G6342
+citF	ybdV	G6341
+citG	ybdT	G6339
+citT	ybdS	G6338
+citX	ybdU	G6340
+clcA	eriC // yadQ	EG12331
+clcB	ynfJ // mriT	G6850
+clpA	lopD	EG10156
+clpB	htpM	EG10157
+clpP	lopP	EG10158
+clpS	yljA	G6463
+clpX	lopC	EG10159
+clsA	yciJ // nov // cls	EG11608
+clsB	ybhO	G6406
+clsC	ymdC	G6551
+cmk	ycaF // mssA // ycaG	EG11265
+cmoA	yecO	G7020
+cmoB	yecP	G7021
+cmoM	ycbD // smtA	EG12167
+cmtA		EG11792
+cmtB	tolM	EG11791
+cnoX	ybbN	G6268
+cnu	ydgT	G6869
+coaA	panK // rts // ts-9	EG10922
+coaD	yicA // kdtB	EG11190
+coaE	yacE	EG12312
+cobB	ycfY	G6577
+cobC	phpB	G6349
+cobS		EG12150
+cobT		EG12151
+cobU		EG13238
+codA		EG11326
+codB		EG11327
+cof		G6246
+comR	ycfQ	G6569
+copA	ybaR	G6260
+corA		EG11463
+cpdA	icc	G7579
+cpdB		EG10160
+cpoB	ybgF	EG12854
+cpsB	rfbM // manC // mni	EG10161
+cpsG	rfbK // manB	EG10162
+cpxA	rssE // ecfB // eup // ssd // ecf	EG10163
+cpxP	yiiO // b3913	G7816
+cpxQ		G0-16649
+cpxR	yiiA	EG10020
+cra	fruR // fruC // shl	EG10338
+crcB	ybeI	EG12209
+creA	yjjD	EG11217
+creB	yjjE // ORF2	EG11218
+creC	phoM	EG10730
+creD	refII // cet	EG10145
+crl		EG11092
+crp	cap // csm // gurB	EG10164
+crr	treD // gsr // iex // tgs	EG10165
+csdA	ygdJ	G7454
+csdE	ygdK	G7455
+csgA		EG11489
+csgB		G6547
+csgC	ycdE	G6548
+csgD		G6546
+csgE		G6545
+csgF		G6544
+csgG		G6543
+csiE	csi-16	G7329
+cspA		EG10166
+cspB		EG12203
+cspC	msmB	EG12204
+cspD	ybjA // cspH	EG11111
+cspE	gicA // msmC	EG12179
+cspF		EG12205
+cspG		G6511
+cspH	cspK	G6510
+cspI	cspJ	G6825
+csqR	yihW	EG11849
+csrA	zfiA	EG11447
+csrB		G0-8785
+csrC	sraK // psrA21 // ryiB // tpk2 // IS198	G0-8874
+csrD	yhdA	EG10018
+cstA	ybdC	EG10167
+cueO	yacK	EG12318
+cueR	copR // ybbI	G6263
+curA	yncB	G6760
+cusA	ybdE	EG12367
+cusB	ylcD	G6322
+cusC	ibeB // ylcB	G6320
+cusF	cusX // ylcC	G6321
+cusR	ylcA	G6319
+cusS	ybcZ	G6318
+cutA	cutA1	EG12177
+cutC		G7024
+cvpA	dedE	EG10169
+cvrA	ycgO	G6620
+cyaA	cya	EG10170
+cyaR	ryeE	G0-8878
+cyaY		EG11653
+cybB		EG10172
+cycA	ytfD // dagA	EG12504
+cydA	cyd-1	EG10173
+cydB	cyd-2	EG10174
+cydC	mdrA // mdrH // surB // ycaB	EG10012
+cydD	htrD	EG11405
+cydH	ynhF	G0-10594
+cydX	ybgT	G0-10441
+cynR		EG11421
+cynS	cnt // cyaN	EG10175
+cynT		EG10176
+cynX		EG10177
+cyoA		EG10178
+cyoB		EG10179
+cyoC		EG10180
+cyoD		EG10181
+cyoE		EG10182
+cysA		EG10183
+cysB		EG10184
+cysC		EG10185
+cysD		EG10186
+cysE		EG10187
+cysG		EG10188
+cysH		EG10189
+cysI		EG10190
+cysJ		EG10191
+cysK	ssi5	EG10192
+cysM		EG10193
+cysN		EG10194
+cysP		EG10195
+cysQ	amt // amtA	EG10043
+cysS	syc	EG10196
+cysT		G7991
+cysU	cysT	EG10197
+cysW		EG10198
+cysZ		EG10003
+cytR		EG10200
+cyuA	b3109 // yhaN // b3108 // yhaM	G7622
+cyuP	dlsT // yhaO	EG12754
+dacA	pfv	EG10201
+dacB		EG10202
+dacC		EG10203
+dacD	phsE // yeeC	EG11893
+dadA	dadR	EG11407
+dadX	alnA // alnB // dadB	EG11408
+dam		EG10204
+damX	yhfB	EG11183
+dapA		EG10205
+dapB		EG10206
+dapD	ssa	EG10207
+dapE	msgB	EG10208
+dapF		EG10209
+dauA	ychM	EG12392
+dbpA	rhlC	EG10210
+dcd	dus // paxA	EG11418
+dcm	mec	EG10211
+dcp		EG10212
+dcrB	yhhR	G7767
+dctA		EG20044
+dctR	yhiF	EG11889
+dcuA	genA	EG11225
+dcuB	genF	EG10006
+dcuC		G6347
+dcuD	yhcL	G7679
+dcuR	yjdG	G7826
+dcuS	yjdH	G7827
+dcyD	yedO	G7038
+ddlA		EG10213
+ddlB	ddl	EG10214
+ddpA	yddS	G6781
+ddpB	yddR	G6780
+ddpC	yddQ	G6779
+ddpD	yddP	G6778
+ddpF	yddO	G6777
+ddpX	vanX // yddT	G6782
+deaD	csdA // mssB // rhlD	EG10215
+decR	ybaO // cyuR	G6247
+dedA		EG10216
+dedD		EG10218
+def	fms	EG11440
+degP	htrA // ptd	EG10463
+degQ	hhoA	G7682
+degS	hhoB // htrH	EG11652
+deoA	TP // tpp // ttg	EG10219
+deoB	tlr // drm // thyR	EG10220
+deoC	tlr // dra // thyR	EG10221
+deoD	pup	EG10222
+deoR	nucR	EG10223
+der	engA // yfgK	G7319
+dfp	coaBC	EG10004
+dgcC	yaiC // adrA	EG11257
+dgcE	yegE	EG12396
+dgcF	yneF	G6808
+dgcI	yliF	G6434
+dgcJ	yeaJ	G6972
+dgcM	ydaM	G6673
+dgcN	yfiN	EG12880
+dgcP	yeaP	G6980
+dgcQ	yedQ	G7049
+dgcT	ycdT	G6532
+dgcZ	ydeG // ydeH	EG11643
+dgd		G26
+dgkA		EG10224
+dgoA	b3692 // yidU	EG20049
+dgoD	b3692 // yidU	GB4478
+dgoK	yidV	EG20051
+dgoR	yidW // b3695 // b3694	G7789
+dgoT	yidT	EG20053
+dgt	optA	EG10225
+dhaK	ycgT // dhaK1	G6627
+dhaL	ysgS // ycgS // dhaK2	G6626
+dhaM	ycgC // dhaH // ptsD	EG12399
+dhaR	ycgU	G6628
+diaA	yraO	EG12780
+dicA	ftsT	EG10226
+dicB	ftsT	EG10227
+dicC	ftsT	EG10228
+dicF		EG31115
+digH	yddW	G6785
+dinB	dinP	G6115
+dinD	pcsA // yicD	EG11193
+dinF		EG11491
+dinG	rarB	EG11357
+dinI		G6558
+dinJ	sosA	G6110
+dinQ		G0-9981
+djlA	yabH	EG11570
+djlB	ybeS	G6353
+djlC	hscD // ybeV // hsc56	G6356
+dkgA	yqhE	G7565
+dkgB	yafB	EG11648
+dksA	msmA	EG10230
+dld	ldh	EG10231
+dmlA	ttuC // yeaU	G6986
+dmlR	yeaT	G6985
+dmsA		EG10232
+dmsB		EG10233
+dmsC		EG10234
+dmsD	ynfI	G6849
+dnaA		EG10235
+dnaB	groP // grpA // grpD	EG10236
+dnaC	dnaD	EG10237
+dnaE	sdgC // polC	EG10238
+dnaG	dnaP // parB // sdgA	EG10239
+dnaJ	groP // grpC	EG10240
+dnaK	groPF // groPC // seg // grpF // grpC // groPAB	EG10241
+dnaN		EG10242
+dnaQ	mutD	EG10243
+dnaT		EG10244
+dnaX	dnaZ	EG10245
+dolP	ecfH // yraP	G7644
+dosC	yddV // dgcO	G6784
+dosP	yddU // dos // pdeO	G6783
+dpaA	yafK // ldtF	G6108
+dpiA	citB // criR // mpdA	G6346
+dpiB	ybeP // mpdB // citA	G6345
+dppA	alu // dpp // fpp	EG10248
+dppB		EG12625
+dppC		EG12626
+dppD		EG12627
+dppF	dppE	EG12628
+dps	pexB // vtm	EG11415
+drpB	yedR	G7051
+dsbA	dsf // iarA // ppfA	EG11297
+dsbB	ycgA // roxB // dsbX // iarB // rosB	EG11393
+dsbC	xprA	EG11070
+dsbD	htrI // cutA2 // cycZ // dipZ	EG12178
+dsbG	ybdP	G6333
+dsdA		EG10249
+dsdC		EG13161
+dsdX	yfdD // yfdA // dsdC	EG10250
+dsrA		G7047
+dsrB		G7045
+dtd	yihZ	EG11852
+dtpA	ydgR // tppB	G6877
+dtpB	yhiP	EG12232
+dtpC	yjdL	EG12469
+dtpD	ybgH	G6378
+dusA	yjbN	EG11932
+dusB	yhdG	EG11311
+dusC	yohI	EG12022
+dut	dnaS // sof	EG10251
+dxr	yaeM // ispC	EG12715
+dxs	yajP	G6237
+eamA	ydeD	EG11639
+eamB	yfiK	EG12445
+ebgA		EG10252
+ebgC		EG10253
+ebgR		EG10254
+ecnA		G0-41
+ecnB	yjeU	G0-9562
+eco	eti	EG10255
+ecpA	yagZ // matB	G6164
+ecpB	yagY // matC	G6163
+ecpC	yagX // matD	G6162
+ecpD	yagW // matE	G6161
+ecpE	yagV // matF	G6160
+eda	hga // kdgA // kga	EG10256
+edd		EG10257
+efeB	ycdB	EG11735
+efeO	ycdO	G6527
+efp		EG12099
+elaA	yfbC	G7174
+elaB	yfbD	G7173
+elaD		G7176
+elbB	yzzB // elb2 // s27a // yhbL	EG11383
+elfA	ycbQ	G6480
+elfC	ycbS	G6482
+elfD	ycbR	G6481
+elfG	ycbT	G6483
+elyC	ycbC	EG12166
+emrA		EG11354
+emrB		EG11439
+emrD	yicQ	EG11693
+emrE	eb // mvrC	EG10629
+emrK		G7233
+emrY		EG13283
+emtA	ycgP // mltE // sltZ	G6622
+endA		EG11336
+eno		EG10258
+entA		EG10259
+entB	entG	EG10260
+entC	fepF	EG10261
+entD		EG10262
+entE		EG10263
+entF		EG10264
+entH	ybdB	EG11105
+entS	ybdA	EG11104
+envC	yibP // slm11	EG12297
+envR	acrS // yhdK	EG11741
+envY		EG10268
+envZ	tpo // perA // ompB	EG10269
+epd	gapB // gap2	EG10368
+epmA	genX // poxA // yjeA	EG11211
+epmB	yjeK	G7836
+epmC	yfcM	G7201
+eptA	yjdB	EG11613
+eptB	yhjW	EG12267
+eptC	yijP	EG11914
+era	rbaA // sdgE	EG10270
+erpA	yadR	EG12332
+esrE		G0-10737
+essD	vlyS // ybcR	G6309
+essQ	ydfS	G6829
+etk	yccC	EG11826
+etp	yccY	G6503
+ettA	yjjK	EG12343
+eutA	yffT	G7281
+eutB		EG50006
+eutC		EG50007
+eutD	ypfA // eutI	G7288
+eutE	yffX	G7285
+eutG	yffV	G7283
+eutH	yffU	G7282
+eutJ	yffW	G7284
+eutK	yffI	G7270
+eutL	yffJ	G7271
+eutM	yffZ // cchA	G7287
+eutN	yffY // cchB	G7286
+eutP	ypfD	G7291
+eutQ	ypfC	G7290
+eutR	yfeG	EG12190
+eutS	ypfE	G7292
+eutT	ypfB	G7289
+evgA		EG11609
+evgL		G0-17027
+evgS		EG11610
+exbB		EG10271
+exbD		EG10272
+exoX	yobC	G7016
+exuR		EG12739
+exuT		EG12738
+eyeA		G0-10696
+fabA		EG10273
+fabB	fabC	EG10274
+fabD	tfpA	EG11317
+fabF	vtr // cvc // fabJ // vtrB	EG12606
+fabG		EG11318
+fabH		EG10277
+fabI	envM // gts // qmeA	EG11528
+fabR	yijC	EG11394
+fabY	yiiD	EG11853
+fabZ	sfhC21 // sabA1 // sefA // yaeA	EG11284
+fadA	oldA	EG10278
+fadB	oldB	EG10279
+fadD	oldD	EG11530
+fadE	yafH	G6105
+fadH	ygjL	G36
+fadI	yfcY	G7213
+fadJ	yfcX	G7212
+fadK	ydiD	EG12357
+fadL	ttr	EG10280
+fadM	ybaW // tesC	G6244
+fadR	dec // ole // oleR // thdB	EG10281
+fau	ygfA	EG11158
+fbaA	ald // fba // fda	EG10282
+fbaB	dhnA	G7129
+fbp	fdp	EG10283
+fcl	wcaG // yefB	EG11788
+fdhD		EG11859
+fdhE		EG10284
+fdhF	chlF	EG10285
+fdnG		EG11227
+fdnH		EG11228
+fdnI		EG11229
+fdoG		EG11858
+fdoH		EG11857
+fdoI		EG11856
+fdrA	ylbD	G6287
+fdx		EG11328
+feaB	ydbG // padA	G7961
+feaR	ydbM // maoX // maoB	G6706
+fecA		EG10286
+fecB		EG10287
+fecC		EG10288
+fecD		EG10289
+fecE		EG10290
+fecI		EG10291
+fecR		EG10292
+feoA		EG12101
+feoB		EG12102
+feoC	yhgG	EG12933
+fepA	cbr // cbt // fep // feuB	EG10293
+fepB		EG10294
+fepC		EG10295
+fepD		EG10296
+fepE		EG10297
+fepG		EG10298
+fes		EG10299
+fetA	ybbL	G6266
+fetB	ybbM	G6267
+ffh		EG10300
+ffs		EG30027
+fhlA	fhl	EG10301
+fhuA	T1 // T5rec // tonA	EG10302
+fhuB		EG10303
+fhuC		EG10304
+fhuD		EG10305
+fhuE		EG10306
+fhuF	yjjS	G7949
+fic	ficT	EG10307
+fieF	yiiP	EG11873
+fimA	fimD // pilA	EG10308
+fimB	pil	EG10309
+fimC	pilB	EG10310
+fimD	fimD_1 // fimD_2	EG10311
+fimE	hyp // pilH	EG10312
+fimF		EG10313
+fimG		EG10314
+fimH	pilE	EG10315
+fimI		EG11974
+fimZ	ybcA	EG11103
+fis	nbp	EG10317
+fiu	ybiL	G6414
+fixA	yaaQ	EG11562
+fixB	yaaR	EG11563
+fixC	yaaS	EG11564
+fixX	yaaT	EG11565
+fklB	ytfC	G7865
+fkpA	yzzS	G7716
+fkpB	slpA // yaaD	EG11080
+fldA		EG10318
+fldB		EG12697
+flgA	flaU	G357
+flgB	flbA	G358
+flgC	flaW	G359
+flgD	flaV	G360
+flgE	flaK	G361
+flgF	flaX	G362
+flgG	flaL	G363
+flgH	flaY	G364
+flgI	flaM	G365
+flgJ	flaZ	G366
+flgK	flaS	EG11967
+flgL	flaT	EG11545
+flgM		G369
+flgN		G6562
+flhA	flaH	G370
+flhB	yecQ // flaG	G7028
+flhC	flaI	EG10319
+flhD	flbB	EG10320
+flhE		G7027
+fliA	rpoF // flaD	EG11355
+fliC	H // flaF // hag	EG10321
+fliD	flbC // rfs	EG10841
+fliE	fla // flaAI // flaN	EG11346
+fliF	flaAII.1 // flaBI	EG11347
+fliG	flaAII.2 // flaBII	EG11654
+fliH	flaAII.3 // flaBIII	EG11656
+fliI	fla // flaAIII // flaC	G377
+fliJ	flaO	G378
+fliK	flaE	G379
+fliL	flaQI // flaAI // cheC1	EG10322
+fliM	flaQ // fla // flaQII // flaAII // flaA // cheC2	EG10323
+fliN	motD	EG10324
+fliO	flbD	EG11224
+fliP	flaR	EG11975
+fliQ	flaQ	EG11976
+fliR	flaP	EG11977
+fliS		EG11388
+fliT		EG11389
+fliZ	yedH	EG11356
+flk	div	EG10229
+flu	agn43 // yzzX // yeeQ // agn	G7080
+flxA		G6833
+fmt	ftm // yhdD	EG11268
+fnr	nirA // nirR // ossA // oxrA	EG10325
+fnrS	rydA	G0-10677
+focA	ycaE	EG11258
+focB		G7309
+folA	tmr // tmrA	EG10326
+folB	ygiG	EG11673
+folC	dedC	EG10327
+folD	ads	EG10328
+folE		EG11375
+folK		EG11374
+folM	ydgB	G6862
+folP	dhpS	EG50011
+folX		G7195
+fpr	flxR // mvrA	EG10628
+frc	yfdW	G7237
+frdA		EG10330
+frdB		EG10331
+frdC		EG10332
+frdD		EG10333
+fre	fadI // flrD // fsrC	EG10334
+frlA	yhfM	EG12908
+frlB	yhfN	G7723
+frlC	b3373 // yhfP // yhfO // b3372	G7724
+frlD	yhfQ	G7726
+frlR	yhfR	G7727
+frmA	adhC	EG50010
+frmB	yaiM	G6208
+frmR	yaiN	G6209
+frr	rrf	EG10335
+frsA	yafA	EG11091
+fruA	ptsF	EG10336
+fruB	fpr // fruF	G7990
+fruK	fpk	EG10337
+frvA	yiiK	EG11864
+frvB	yiiJ	EG11863
+frvR	yiiH	EG11861
+frvX	yiiI	EG11862
+frwB	yijK	EG11909
+frwC	yijJ	EG11908
+frwD	yijN	EG11912
+fryA	ypdD	G7246
+fryB	ypdH	G7250
+fryC	ypdG	G7249
+fsaA	ybiZ // fsa // mipB	G6428
+fsaB	yijG // talC	EG11905
+fsr		G6256
+ftnA	ftn // gen-165 // rsgA	EG10921
+ftnB	yecI	G7033
+ftp	yojK // yojL // apbE	EG12073
+ftsA	divA	EG10339
+ftsB	ygbQ	G7424
+ftsE		EG10340
+ftsH	std // hflB // mrsC // tolZ	EG11506
+ftsI	pbpB // sep	EG10341
+ftsK	dinH	G6464
+ftsL	mraR // yabD	EG11086
+ftsN	msgA	EG11529
+ftsO		G0-17085
+ftsP	sui // sufI	EG11376
+ftsQ		EG10342
+ftsW		EG10344
+ftsX	ftsS	EG10345
+ftsY		EG10346
+ftsZ	sfiB // sulB	EG10347
+fucA	fucC // prd	EG10348
+fucI		EG10349
+fucK		EG10350
+fucO		EG10351
+fucP		EG10352
+fucR		EG10353
+fucU		EG10355
+fumA		EG10356
+fumB		EG10357
+fumC		EG10358
+fumD	ydhZ	G6903
+fumE	yggD	EG11162
+fur		EG10359
+fusA	far // fus	EG10360
+fxsA	yjeG	G7832
+G0-10706		G0-10706
+gabD		EG11329
+gabP		EG11330
+gabT		EG10361
+gadA	gadS	EG50009
+gadB		EG11490
+gadC	acsA // xasA	G6786
+gadE	yhiE // yhiT	EG11544
+gadF		G0-16680
+gadW	yhiW	EG12242
+gadX	yhiX	EG12243
+gadY	IS183	G0-8914
+galE	galD	EG10362
+galF	wcaN // yefG	G7093
+galK	galA	EG10363
+galM		EG11698
+galP	Pgal	EG12148
+galR	Rgal	EG10364
+galS	mglD	EG10365
+galT	galB	EG10366
+galU	ychD	EG11319
+gapA	gad // gap1	EG10367
+garD	yhaG	EG12522
+garK	yhaD	EG11175
+garL	yhaF	EG10016
+garP	yhaU	EG12760
+garR	yhaE	EG11176
+gatA		EG12414
+gatB		EG12415
+gatC		EG12416
+gatD		EG12417
+gatR	b2090 // b2087	EG12162
+gatY	yegF	EG12419
+gatZ		G7128
+gcd		EG10369
+gcl		EG11583
+gcvA		EG11795
+gcvB	psrA11 // IS145	G0-8867
+gcvH	gcv	EG10371
+gcvP		EG11810
+gcvR	yffD	EG11149
+gcvT		EG11442
+gdhA		EG10372
+gdx	sugE	EG11616
+gfcA	ymcD	G6508
+gfcB	ymcC	G6507
+gfcC	ymcB	G6506
+gfcD	ymcA	G6505
+gfcE	yccZ	G6504
+ggt		EG10374
+ghoS	yjdK	G7830
+ghoT	yjdO	G0-10472
+ghrA	ycdW	G6539
+ghrB	tkrA // yiaE	EG12272
+ghxP	yjcD	EG11939
+ghxQ	b2885 // ygfR // b2884 // ygfQ	G7503
+glaH	csi-12 // ygaT // csiD	G7394
+glaR	ygaE // gabC // csiR	EG12386
+glcA	yghK	G7542
+glcB	glc	EG20080
+glcC	yghN	G7546
+glcD	yghM // gox	G7545
+glcE	yghL // gox // b2978	G7544
+glcF	gox // yghL // b2978	G0-8601
+glcG	yghC	G7543
+gldA		EG11904
+glf	yefE	EG11981
+glgA		EG10377
+glgB		EG10378
+glgC		EG10379
+glgP	glgY	EG10380
+glgS	scoR	EG11381
+glgX		EG10381
+glk		EG12957
+glmM	yhbF // mrsA	EG11553
+glmS		EG10382
+glmU	yieA	EG11198
+glmY	tke1 // sroF	G0-8910
+glmZ	psrA20 // sraJ // k19 // ryiA	G0-8873
+glnA		EG10383
+glnB		EG10384
+glnD	glnD5	EG11411
+glnE		EG11602
+glnG	glnT // ntrC	EG10385
+glnH		EG10386
+glnK	ybaI	EG12191
+glnL	glnR // ntrB	EG10387
+glnP		EG10388
+glnQ		EG10389
+glnS		EG10390
+glnU	glnUalpha // supB // trnA	EG30028
+glnV	Su2 // glnValpha // suII // supE	EG30029
+glnW	glnU-beta // glnUbeta	EG30030
+glnX	supE // glnV-beta // glnVbeta	EG30031
+gloA		G6891
+gloB	yafR	G6099
+gloC	ycbL	G6475
+glpA		EG10391
+glpB	psi-51	EG10392
+glpC		EG10393
+glpD	glyD	EG10394
+glpE		EG10395
+glpF		EG10396
+glpG		EG10397
+glpK		EG10398
+glpQ		EG10399
+glpR		EG10400
+glpT		EG10401
+glpX		EG11517
+glrK	yfhZ // yfhK // qseE	G7345
+glrR	yfhA // qseF	EG11285
+glsA	ybaS	G6261
+glsB	yneH	G6810
+gltA	gluT // icdB	EG10402
+gltB	psiQ // ossB // aspB	EG10403
+gltD	psiQ // ossB // aspB	EG10404
+gltF	ossB	EG11514
+gltI	yzzK // ybeJ	G6359
+gltJ		EG12661
+gltK		EG12662
+gltL		EG12663
+gltP		EG10405
+gltS	gltC	EG10406
+gltT	tgtB	EG30032
+gltU	tgtC	EG30033
+gltV	tgtE	EG30034
+gltW		EG30035
+gltX	gltM // gluRS	EG10407
+gluQ	yadB	EG11362
+glvB	yidN // yidO	EG11709
+glvC	ptiC	EG11710
+glxK	glxB5 // ybbZ	G6283
+glxR	glxB1 // ybbQ	G6278
+glyA		EG10408
+glyQ	cfcA // glyS(A)	EG10409
+glyS	glyS(B) // gly // gly-act	EG10410
+glyT	sumA // sup15B // supA36	EG30036
+glyU	supT // suA36 // sufD // sumA // sumB	EG30037
+glyV	glyValpha // ins // mutA // suA58 // suA78	EG30038
+glyW	ins // mutC // suA58 // suA78	EG30039
+glyX	glyVbeta	EG30040
+glyY	glyVgamma	EG30041
+gmd	yefN // yefA	EG11787
+gmhA	yafI // lpcA // tfrA	G6106
+gmhB	yaeD	EG11736
+gmk	spoR	EG10965
+gmm	nudD // wcaH // yefC	EG11789
+gnd		EG10411
+gndA		G0-16693
+gnsA	yccL // sfa	G0-9662
+gnsB	ydfY	G6823
+gntK		EG12629
+gntP	yjiB	EG12563
+gntR		EG12630
+gntT	gntTalpha // yhgC // gntM // usgA	EG12380
+gntU	b3435 // b3436	EG12631
+gor	gorA	EG10412
+gph	yhfE	EG11871
+gpmA	gpm	EG11699
+gpmM	gpmC // pgmI // gpmI // yibO	EG12296
+gpp	gppA	EG10413
+gpr	mgrA // yghZ	G7558
+gpsA		EG20091
+gpt	glyD // gpp // gxu	EG10414
+grcA	yfiD	EG11784
+greA		EG10415
+greB		EG11578
+groL	groEL // mopA	EG10599
+groS	groES // mopB	EG10600
+grpE		EG10416
+grxA	grx	EG10417
+grxB		EG12688
+grxC	yibM	EG12294
+grxD	ydhD	EG12181
+gshA	gsh-I	EG10418
+gshB	gsh-II	EG10419
+gsiA	yliA	G6429
+gsiB	yliB	G6430
+gsiC	yliC	G6431
+gsiD	yliD	G6432
+gsk		EG11102
+gspA	yheD	G7701
+gspB	pioO // pinO	EG11263
+gspC	yheE	G7702
+gspD	yheF	G7703
+gspE	yheG	G7704
+gspF	hofF // hopF	G7705
+gspG	hofG // hopG	G7706
+gspH	hofH // hopH	G7707
+gspI	yheH	G7708
+gspJ	yheI	G7709
+gspK	yheJ	G7710
+gspL	yheK	G7711
+gspM	hopZ // pshM	EG12173
+gspO	hofD // hopD // hopO // yheC	EG11359
+gss	gsp	EG12882
+gstA	gst	G6878
+gstB	yliJ	G6438
+guaA		EG10420
+guaB	guaR	EG10421
+guaC		EG10422
+guaD	ygfP	G7502
+gudD	ygcX	G7445
+gudP	gudT // ygcZ	G7447
+gudX	ygcY	G7446
+gutM	gut // srlM	EG10972
+gutQ	srlQ	EG10973
+gyrA	hisW // nalA // nfxA // norA // parD	EG10423
+gyrB	cou // hopA // pcpA // pcbA // parA // nalC // Cou // acrB // himB // hisU	EG10424
+hcaB	yfhX // phdD	G7335
+hcaC	yfhW // hcaa3 // phdB	G7334
+hcaD	hcaa4 // phdA // yfhY	G7336
+hcaE	yfhU // digA // phdC1 // hcaA // hcaA1	M009
+hcaF	yfhV // hcaA // phdC2 // digB // hcaB // hcaA2	M015
+hcaR	phdR // yfhT	G7331
+hcaT	yfhS	G7330
+hchA	yzzC // yedU	G7055
+hcp	priS // ybjW	G6457
+hcr	ybjV	G6456
+hcxA	ybdH	EG12692
+hcxB	ybiC	EG11581
+hda	idaB // yfgE	G7313
+hdeA	yhiB // yhhC	EG11398
+hdeB	yhiC // yhhD	EG11399
+hdeD	yhiA	EG11495
+hdfR	b3762 // yifA // yifD // b3763	EG11449
+hdhA	hsd // hsdH	EG10425
+helD	srjB	EG10426
+hemA	gtrA	EG10427
+hemB	ncf	EG10428
+hemC	popE	EG10429
+hemD		EG10430
+hemE		EG11543
+hemF	popB // sec	EG12189
+hemG	yihB	EG11485
+hemH	popA // visA	EG10431
+hemL	gsa // popC	EG10432
+hemN	yihJ	EG11836
+hemW	yggW	G7531
+hemX		EG10433
+hemY		EG10434
+hflC	hflA	EG10435
+hflD	hslZ // ycfC	EG11345
+hflK	hslY // hflA	EG10436
+hflX	hslX // hflA	EG10437
+hfq		EG10438
+hha		EG10439
+hicA	yncN	G0-10451
+hicB	ydcQ	G6749
+higA	ygjM	G7601
+higB	ygjN	G7602
+hinT	ycfF	EG12172
+hipA		EG10443
+hipB		EG10442
+hisA		EG10444
+hisB		EG10445
+hisC		EG10446
+hisD		EG10447
+hisF		EG10448
+hisG		EG10449
+hisH		EG10450
+hisI	hisE // hisIE	EG10451
+hisJ		EG12124
+hisL		EG11269
+hisM		EG10007
+hisP		EG10452
+hisQ		EG12125
+hisR	hisT	EG30042
+hisS		EG10453
+hiuH	yedX	G7058
+hldE	yqiF // rfaE // gmhC // waaE	G7590
+hlyE	ycgD // clyA // hpr // sheA	G6619
+hmp	fsrB // hmpA	EG10456
+hns	B1 // H1 // virR // topX // topS // pilG // osmZ // msyA // irk // hnsA // bglY // cur // drc // drdX // drs // fimG	EG10457
+hofB	hopB	EG12106
+hofC	yacD // hopC	EG11798
+hofM	yrfD	G7739
+hofN	yrfC	G7738
+hofO	yrfB	G7737
+hofP	yrfA	G7736
+hofQ	hopQ	EG12113
+hokA	yiaZ	G0-9613
+hokB	ydcB	G0-9610
+hokC	gef	G0-9563
+hokD	relF	EG11130
+hokE	ybdY	G0-9582
+holA		EG11412
+holB		EG11500
+holC		EG11413
+holD		EG11414
+holE		EG11505
+hpf	yhbH	EG11681
+hprR	yedW	G7057
+hprS	yedV	G7056
+hpt		EG20098
+hrpA		G6732
+hrpB	yadO	EG12329
+hscA	hsc	EG12130
+hscB	yfhE	EG12131
+hscC	ybeW	G6357
+hsdM	hsm // hsp	EG10458
+hsdR	hsp // hsr	EG10459
+hsdS	hsp // hss // rm	EG10460
+hslJ	ydbI	G6702
+hslO	yrfI	G7744
+hslR	hsp15 // yrfH	G7743
+hslU	clpY // htpI	EG11881
+hslV	yiiC // clpQ // htpO	EG11676
+hspQ	yccV	G6500
+hsrA	yieO	EG11732
+htpG		EG10461
+htpX		EG10462
+htrE		EG11972
+htrL	yibB	EG11188
+hupA		EG10466
+hupB	dpeA // dbhB // hopD	EG10467
+hxpA	yfbT	G7187
+hxpB	yniC	G6932
+hyaA		EG10468
+hyaB		EG10469
+hyaC	cybH	EG10470
+hyaD		EG10471
+hyaE		EG10472
+hyaF		EG10473
+hybA	hydL	EG11799
+hybB		EG11800
+hybC		EG11801
+hybD		EG11802
+hybE		EG11803
+hybF		EG11804
+hybG		EG11805
+hybO	yghV	G7554
+hycA	hevA	EG10474
+hycB	hevB	EG10475
+hycC	hevC	EG10476
+hycD	hevD	EG10477
+hycE	hevE	EG10478
+hycF	hevF	EG10479
+hycG	hevG	EG10480
+hycH	hevH	EG10481
+hycI		G7414
+hydN		EG11552
+hyfA	yffE	EG11150
+hyfB	yffF	EG11282
+hyfC		G7300
+hyfD		G7301
+hyfE		G7302
+hyfF		G7303
+hyfG		G7304
+hyfH		G7305
+hyfI		G7306
+hyfJ		G7307
+hyfR		G7308
+hyi	ybbG // gip	G6277
+hypA		EG10483
+hypB	hydB	EG10484
+hypC		EG10485
+hypD	hydF	EG10486
+hypE	hydB	EG10487
+hypF	hydA	EG11551
+hypT	qseD // yjiE	G7924
+hyuA	ygeZ	G7492
+iaaA	spt // ybiK	EG12407
+iadA	yjiF	G7925
+iap		EG10488
+ibaG	yrbA	G7657
+ibpA	hslT // htpN	EG11534
+ibpB	hslS // htpE	EG11535
+ibsA		G0-10633
+ibsB		G0-10632
+ibsC		G0-10631
+ibsD		G0-10630
+ibsE		G0-10629
+icd	icdE // icdA	EG10489
+iclR		EG10491
+idi	ygfV	G7508
+idlP		G0-16685
+idnD	yjgV	G7893
+idnK	gntV	EG12152
+idnO	yjgU	G7892
+idnR	gntS? // gntH // yjgS	G7891
+idnT	gntW // yjgT	EG12539
+igaA	yrfF	G7741
+ihfA	hid // himA	EG10440
+ihfB	hip // himD	EG10441
+ileS	ilvS	EG10492
+ileT	tilA	EG30043
+ileU	tilD	EG30044
+ileV		EG30045
+ileX		EG30046
+ileY		G7387
+ilvA	ile	EG10493
+ilvB		EG10494
+ilvC		EG10495
+ilvD		EG10496
+ilvE		EG10497
+ilvH	brnP	EG10499
+ilvI		EG10500
+ilvL		EG11270
+ilvM		EG10501
+ilvN		EG10502
+ilvX		G0-10641
+ilvY		EG10503
+inaA	yfaG	EG11422
+infA	bypA1	EG10504
+infB	ssyG	EG10505
+infC	fit // srjA	EG10506
+insA1		G6086
+insA2		G6139
+insA3		G6146
+insA4		G0-10430
+insA5		G7030
+insA6		G7761
+insA7		G7908
+insA9		G0-16638
+insAB1		G0-10535
+insAB2		G0-10537
+insAB3		G0-10538
+insAB4		G0-10536
+insAB5		G0-10539
+insAB6		G0-10540
+insB1		G6085
+insB2		G6138
+insB3		G6145
+insB4		G6509
+insB5		G7029
+insB6		G7762
+insB9		G0-16637
+insC1	yi21-1	G6212
+insC2	yi21-2	G6724
+insC3	yi21-3	G7077
+insC4	yi21-4	G7481
+insC5	yi21-5	G7583
+insC6	yi21-6	G7894
+insCD1		G0-10541
+insCD2		G0-10542
+insCD3		G0-10543
+insCD4		G0-10544
+insCD5		G0-10545
+insCD6		G0-10546
+insD1	yi22-1	G6213
+insD2	yi22-2	G6723
+insD3	yi22-3	G7076
+insD4	yi22-4	G7480
+insD5	yi22-5	G7584
+insD6	yi22-6	G7895
+insD7	insD	G6836
+insE1		G6168
+insE2		G6224
+insE3		G6296
+insE4		G6534
+insE5		G7125
+insEF1		G0-10525
+insEF2		G0-10529
+insEF3		G0-10530
+insEF4		G0-10531
+insEF5		G0-10528
+insF1	tra5-5	G6169
+insF2	tra5-1	G6223
+insF3	tra5-2	G6297
+insF4	tra5-3	G6533
+insF5	tra5-4	G7126
+insG	yi41	G7900
+insH1	trs5 // trs5-1 // yi52_1	G6134
+insH10	trs5-10 // yi52_10	G7672
+insH11	yi52_11 // trs5-11	G7769
+insH2	trs5-2 // yi52_2	G6308
+insH21		G0-16639
+insH3	trs5-3 // yi52_3	G6360
+insH4	trs5-4 // yi52_4	G6667
+insH5	yi52_5 // trs5-5	G6693
+insH6	yi52_6 // trs5-6	G7074
+insH7	yi52_7 // trs5-7	G7092
+insH8	trs5-8 // yi52_8	G7150
+insH9	trs5-9 // yi52_9	G7548
+insI1	tra8-1	G6131
+insI2	tra8-2	G6725
+insI3	tra8-3	G7905
+insJ	yi5A	G7776
+insJK		G0-10624
+insK	dinS // yi5B // t150	G7777
+insL1	yi81-1	G6083
+insL2	yi81-2	G6327
+insL3	yi81-3	G7255
+insN	yi91a // b0255 // b0257	G6130
+insO	yi91 // yi91b // b4283 // ECK0257 // insN2 // insO2 // b4285 // ECK4274 // b4562 // ECK4275 // yjhW	G7904
+insQ	ydcM	G6743
+intA	intX // slpA	EG11783
+intB	int(P4) // yjgC	EG12364
+intD	int	EG10507
+intE	int(Lambda) // ycfI	EG12370
+intF	yagO	G6152
+intQ		G6837
+intR	ydaP	G6676
+intS	intC // yfdB	G7218
+intZ		G7272
+ipeX		G0-17079
+iprA	yaiV	G6226
+iraD	yjiD	G7923
+iraM	elb1 // ycgW // elbA	G6600
+iraP	yaiB	EG11256
+iroK		G0-10716
+iscA	yfhF	EG12132
+iscR	yfhP	G7326
+iscS	nuvC // yzzO // yfhO	G7325
+iscU	yfhN // nifU	G7324
+iscX	yfhJ	EG12311
+ispA		EG10508
+ispB	cel // yhbD	EG10017
+ispD	ygbP	G7423
+ispE	ipk // ychB	EG11294
+ispF	ygbB	EG11816
+ispG	gcpE	EG10370
+ispH	yaaE // lytB	EG11081
+ispU	uppS // rth // yaeS	G6092
+ispZ		G0-17084
+isrC	IS102	G0-8905
+istR	psrA19 // istR-1 // istR-2	G0-10201
+ivbL		EG11275
+ivy	ykfE	G6104
+katE		EG10509
+katG		EG10511
+kbaY	yraC // kba // agaY	EG12768
+kbaZ	yhaX // agaZ	G7631
+kbl		EG10512
+kbp	yzzM // ygaU	G7395
+kch		EG11606
+kdgK	yhjI	EG12253
+kdgR	yebP	G7003
+kdgT		EG11869
+kdpA	kac	EG10513
+kdpB	kac	EG10514
+kdpC	kac	EG10515
+kdpD	kac	EG10516
+kdpE		EG10517
+kdpF		G0-10439
+kdsA		EG10518
+kdsB		EG10519
+kdsC	yrbJ // yrbI	G7663
+kdsD	yrbH	G7662
+kduD	yqeD // ygeC	EG12361
+kduI	yqeE	G7463
+kefB	trkB	EG20110
+kefC	trkC	EG10521
+kefF	yabF	EG11568
+kefG	yheR	G7717
+kgtP	witA	EG10522
+kilR	ydaD // kil	EG12155
+kptA	yjiI	G7928
+kup	trkD	EG11541
+lacA		EG10524
+lacI		EG10525
+lacY		EG10526
+lacZ		EG10527
+lamB	malL // malB	EG10528
+lapA	yciS	G6637
+lapB	yciM	EG12691
+lapC	yejN // pbgA // yejM	EG12049
+ldcA	ycgQ	G6621
+ldcC	ldc // ldcH	G6094
+ldhA	htpH // hslF // hslI	G592
+ldrA		G0-9602
+ldrB		G0-9605
+ldrC		G0-9607
+ldrD		G0-9041
+ldtA	yzzT // yeeG // erfK	G7073
+ldtB	ybiS	G6422
+ldtC	ycfS	G6571
+ldtD	ycbB	EG11253
+ldtE	ynhG	G6904
+lepA		EG10529
+lepB	lep	EG10530
+letA	yebS	G7006
+letB	yebT	G7007
+leuA		EG11226
+leuB		EG11577
+leuC		EG11576
+leuD		EG11575
+leuE	yeaS	G6984
+leuL	leuLP // leulL // leulLP // leuIP	EG11280
+leuO		EG10531
+leuP	leuV-beta // leuVbeta	EG30047
+leuQ	leuVgamma	EG30048
+leuS	syl	EG10532
+leuT		EG30049
+leuU		EG30050
+leuV	leuValpha	EG30051
+leuW	feeB	EG30052
+leuX	Su-6 // supP	EG30053
+leuZ		EG30054
+lexA	exrA // spr // tsl // umuA	EG10533
+lgoD	yjjN	G7945
+lgoR	yjjM	G7944
+lgoT	yjiZ // yjjL	EG12587
+lgt	umpA	EG12128
+lhgD	ygaF // lhgO	EG12387
+lhr	rhlF	EG11548
+ligA	dnaL // lig // lop // pdeC	EG10534
+ligB	yicF	EG11334
+lipA	lip	EG11306
+lipB	cde // lip	EG11591
+lit		EG10535
+livF		EG10536
+livG	hrbD // hrbC // hrbB	EG10537
+livH	hrbD // hrbC // hrbB	EG10538
+livJ	hrbD // hrbC // hrbB	EG10539
+livK	hrbD // hrbC // hrbB	EG10540
+livM		EG10541
+lldD	lct // lctD	EG11963
+lldP	lct // lctP	EG11961
+lldR	lct // lctR	EG11962
+lnt	cutE	EG10168
+loiP	yggG	EG11291
+lolA	yzzV // lplA	G6465
+lolB	hemM // ychC	EG11293
+lolC	ycfU	G6573
+lolD	ycfV	G6574
+lolE	ycfW	G6575
+lon	capR // deg // dir // lopA // muc	EG10542
+lpd	dhl // lpdA	EG10543
+lplA	yjjF // slr	EG11796
+lplT	ygeD	EG12455
+lpoA	yraM	G7642
+lpoB	ycfM	G6565
+lpp	mlpA	EG10544
+lptA	yhbN	G7665
+lptB	yhbG	EG11680
+lptC	yrbK	G7664
+lptD	yabG // ostA // imp	EG11569
+lptE	rlpB	EG10855
+lptF	yjgP	G7888
+lptG	yjgQ	G7889
+lpxA		EG10545
+lpxB	pgsB	EG10546
+lpxC	asmB // envA	EG10265
+lpxD	omsA // firA	EG10316
+lpxH	ybbF	EG12666
+lpxK	ycaH	EG11409
+lpxL	htrB // waaM	EG10464
+lpxM	mlt // waaN // msbB	EG10614
+lpxP	ddg	G7241
+lpxT	yeiU	G7146
+lrhA	genR	EG12123
+lrp	rblA // oppI // mbf // lstR // alsB // ihb // livR // lrs // lss	EG10547
+lspA	lsp	EG10548
+lsrA	ego // ydeX	G6800
+lsrB	yneA	G6803
+lsrC	ydeY	G6801
+lsrD	ydeZ	G6802
+lsrF	yneB	G6804
+lsrG	yneC	G6805
+lsrK	ydeV	G6798
+lsrR	ydeW	G6799
+ltaE	ltaA // ybjU	G6455
+luxS	ygaG	EG12712
+lysA		EG10549
+lysC	apk	EG10550
+lysO	ybjE	G6458
+lysP	cadR	EG11337
+lysQ		G6392
+lysR		EG10551
+lysS	asuD // herC	EG10552
+lysT	supL // supG // sua // lysTalpha // Su[beta]	EG30055
+lysU		EG10553
+lysV	supN	EG30056
+lysW	lysT-beta // lysTbeta // su	EG30057
+lysY	lysTg // lysTgamma	G6390
+lysZ		G6391
+lyxK	lyx // xylK // sgbK // yiaP	EG12284
+maa	ylaD	G58
+macA	ybjY	G6461
+macB	ybjZ	G6462
+maeA	sfcA	EG10948
+maeB	ypfF	G7293
+mak	yajF	EG11288
+malE		EG10554
+malF		EG10555
+malG		EG10556
+malH		G0-17082
+malI		EG10557
+malK	malB	EG10558
+malM	molA	EG10559
+malP	malA // blu	EG10560
+malQ	malA	EG10561
+malS		EG11316
+malT	malA	EG10562
+malX		EG10563
+malY		EG10564
+malZ		EG10565
+manA	pmi	EG10566
+manX	gptB // mpt // ptsL // ptsX	EG10567
+manY	pel // ptsP // ptsX	EG10568
+manZ	gptB // mpt // ptsM // ptsX	EG10569
+maoP	yifE	EG11450
+map		EG10570
+marA	norB // inaR // cfxB // nfxC // soxQ	EG11434
+marB		EG11599
+marC	ydeC // ydeB	EG11637
+marR	cfxB // inaR // soxQ	EG11435
+matA	ykgK // ecpR	G6165
+matP	ycbG	EG12855
+mazE	chpAI // chpR	EG10571
+mazF	chpAK // chpA	EG11249
+mazG		EG10572
+mbiA	htpY // htgA	EG11509
+mcaS	IS061 // isrA	G0-8899
+mcbA	ybiM	G6415
+mcbR	yncC	G6761
+mcrA	rglA	EG10573
+mcrB	rglB	EG10574
+mcrC		EG10575
+mdaB	mda66	EG12656
+mdfA	cmlA // cmr	G6440
+mdh		EG10576
+mdlA	mdl	G6248
+mdlB	mdl	EG11622
+mdtA	yegM	G7113
+mdtB	yegN	G7114
+mdtC	yegO	G7115
+mdtD	yegB // iceT	EG12136
+mdtE	yhiU	EG12240
+mdtF	yhiV	EG12241
+mdtG	yceE	EG11343
+mdtH	yceL	G6559
+mdtI	ydgE	G6857
+mdtJ	ydgF	G6858
+mdtK	norE // norM // ydhE	EG12400
+mdtL	yidY	EG11720
+mdtM	yjiO	EG12576
+mdtN	yjcR // sdsR	EG11954
+mdtO	yjcQ // sdsQ	EG11953
+mdtP	yjcP // sdsP	EG11952
+mdtU	ydgV	G0-17023
+melA	mel-7	EG10577
+melB	mel-4	EG10578
+melR		EG11230
+menA	yiiW	EG11880
+menB		EG11368
+menC		EG11532
+menD		EG10579
+menE		EG12437
+menF	yfbA	EG12362
+menH	yfbB	EG12438
+menI	ydiI	G6912
+mepA		EG10580
+mepH	ydhO	G6892
+mepK	ycbK	G6474
+mepM	yebA	EG10013
+mepS	yeiV // spr	G7147
+metA		EG10581
+metB	met-1	EG10582
+metC		EG10583
+metE	metB12	EG10584
+metF		EG10585
+metG		EG10586
+metH		EG10587
+metI	metD // yaeE	EG11737
+metJ		EG10588
+metK	metX	EG10589
+metL	metM	EG10590
+metN	metD // abc	EG11621
+metQ	metD // yaeC	EG11504
+metR		EG10591
+metT	metTalpha	EG30058
+metU	metT-beta // metTbeta	EG30059
+metV	metZbeta // metX // metZ-beta // metZb	EG30060
+metW		EG31117
+metY		EG30061
+metZ	metZalpha	EG30062
+mfd		EG11619
+mglA	mglP // mgl	EG10592
+mglB		EG10593
+mglC	mglP	EG10594
+mgrB	yobG	G7002
+mgrR		G0-10671
+mgsA	mgs // yccG	G6497
+mgtA	atmA // corB // mgt // mtg	EG12525
+mgtL		G0-10689
+mgtS	yneM	G0-8892
+mgtT		G0-17021
+mhpA		M010
+mhpB		M011
+mhpC		M012
+mhpD	mhpS	M013
+mhpE		G6205
+mhpF		M014
+mhpR		G6201
+mhpT	yaiK	G6206
+miaA	trpX	EG10595
+miaB	yleA	G6364
+micA	sraD // psrA10	G0-8866
+micC	IS063 // tke8	G0-8901
+micF	stc	EG30063
+micL	slrA // ryeF	G0-16601
+minC	minB	EG10596
+minD	minB	EG10597
+minE	minB	EG10598
+mioC	yieB	EG11199
+mipA	yeaF	G6968
+mlaA	vacJ	G7216
+mlaB	yrbB	G7658
+mlaC	yrbC	G7659
+mlaD	yrbD	EG12799
+mlaE	yrbE	EG12800
+mlaF	yrbF	EG12801
+mlc	dgsA	G6852
+mliC	ydhA	EG11488
+mlrA	yehV	EG12008
+mltA	ygdM // mlt	G7457
+mltB	slt	G7410
+mltC	yggZ	G7533
+mltD	yafG // dniR	EG10246
+mltF	yfhD	EG11373
+mltG	yceG	EG11494
+mmuM	yagD	G6136
+mmuP	ykfD	G6135
+mnaT	yncA	G6759
+mngA	frx // hrsA	EG13235
+mngB	ybgG	EG13236
+mngR	ybgB // farR	EG11109
+mnmA	asuE // ycfB // trmU	EG11344
+mnmC	yfcK // trmC	G7199
+mnmE	trmE // thdF	EG10997
+mnmG	gidA // trmF	EG10375
+mntH	mntA // yfeP	G7254
+mntP	yebN	G6999
+mntR	ybiQ	G6420
+mntS	G0-8881	G0-10715
+moaA	bisA // chlA // chlA1 // narA	EG11595
+moaB	chlA2	EG11596
+moaC	chlA3	EG11666
+moaD	chlA4 // chlM	EG11597
+moaE	chlA5	EG11598
+mobA	chlB // mob // narB	EG11829
+mobB	yihC	EG11828
+mocA	ygfJ	G7496
+modA		EG12427
+modB	chlJ // tslJ	EG10002
+modC	chlD // narD	EG10152
+modE	chlD // modR	G6395
+modF	chlD // phrA	EG11677
+moeA	bisB // chlE // narE	EG10153
+moeB	chlN	EG10154
+mog	yaaG // bisD // chlG // mogA	EG11511
+mokB		G6736
+mokC	gefL	EG10373
+motA	flaJ	EG10601
+motB	flaJ	EG10602
+mpaA	ycjI	G6662
+mpl	tpl // yjfG	EG12440
+mppA	ynaH	G6665
+mprA	emrR	EG10603
+mqo	yojH	EG12069
+mqsA	ygiT	G7571
+mqsR	ygiU	G7572
+mraY	murX	EG10604
+mraZ	yabB	EG11084
+mrcA	ponA	EG10748
+mrcB	pbpF // ponB	EG10605
+mrdA	pbpA	EG10606
+mrdB	rodA	EG10607
+mreB	rodY // envB // mon // mreB_1	EG10608
+mreC		EG10609
+mreD		EG10610
+mrp		EG10611
+mrr		EG10612
+msbA		EG10613
+mscK	aefA // kefA	G6255
+mscL	yhdC	EG11180
+mscM	yjeP	G7840
+mscS	yggB	EG11160
+msrA	pms // pmsR	EG11433
+msrB	yeaA	EG12394
+msrC	yebR	G7005
+msrP	yedY	G7059
+msrQ	yedZ	G7060
+msyB		EG11338
+mtfA	yeeI	G7063
+mtgA	mgt // yrbM	G7668
+mtlA	mtlC	EG10615
+mtlD		EG10616
+mtlR		EG11965
+mtn	pfs // yadA // mtnN	EG11090
+mtr		EG10617
+mug	ygjF	EG12717
+mukB		EG10618
+mukE	kicA // ycbA	EG11252
+mukF	kicB	EG12165
+murA	mrbA // murZ	EG11358
+murB	yijB	EG11205
+murC		EG10619
+murD		EG10620
+murE		EG10621
+murF	mra	EG10622
+murG		EG10623
+murI	yijA // dga // glr	EG11204
+murJ	mviN // yceN	G6561
+murP	yfeV	G7264
+murQ	yfeU	G7263
+murR	yfeT	G7262
+mutH	mutR // prv	EG10624
+mutL		EG11281
+mutM	fpg	EG10329
+mutS	ant // plm // fdv	EG10625
+mutT	nudA	EG10626
+mutY	micA	EG10627
+mzrA	ecfM // yqjB	G7610
+nac		G7072
+nadA	nicA	EG10630
+nadB	nic // nicB	EG10631
+nadC		EG11546
+nadD	ybeN // fusB	G6350
+nadE	efg // ntrL	EG10663
+nadK	yfjE // yfjB	EG12192
+nadR	nadI	EG11335
+nagA		EG10632
+nagB	glmD	EG10633
+nagC	nagR	EG10636
+nagE	pstN // ptsN	EG10635
+nagK	ycfX	G6576
+nagZ	ycfO	G6567
+nanA		EG10637
+nanC	yjhA	G7921
+nanE	yhcJ	G7677
+nanK	yhcI	G7676
+nanM	yjhT	G7920
+nanQ	yhcH	G7675
+nanR	yhcK	G7678
+nanS	yjhS	G7919
+nanT		G436
+nanX	yjhB	EG12544
+nanY	yjhC	G7901
+napA	yojD // yojC // yojE	EG12067
+napB	yejY	EG12061
+napC	yejX	EG12060
+napD	yojF	EG12143
+napF	yojG	EG12068
+napG	yojA // yojB	EG12064
+napH	yejZ	EG12062
+narG	chlC // narC	EG10638
+narH	chlC	EG10639
+narI	chlI	EG10640
+narJ		EG10641
+narK		EG10642
+narL	frdR // narR	EG10643
+naRNA1		G0-16694
+naRNA2		G0-16695
+naRNA3		G0-16696
+naRNA4		G0-16697
+naRNA5		G0-16698
+naRNA6		G0-16699
+narP		EG11527
+narQ		EG11460
+narU	yddF	EG12153
+narV	chlZ	EG10644
+narW	chlZ	EG10645
+narX	frdR // narR // frd1	EG10646
+narY	chlZ	EG10647
+narZ	chlZ	EG10648
+nc1		G0-10738
+ndh		EG10649
+ndk		EG10650
+nei		G6383
+nemA	ydhN	G6890
+nemR	ydhM	G6889
+nepI	yicM	EG11689
+nfeF	yqjH	G7593
+nfeR	yqjI	G7594
+nfi	yjaF	EG11915
+nfo		EG10651
+nfrA		EG11740
+nfrB		EG11739
+nfsA	mda18 // mdaA // ybjB	EG11261
+nfsB	ntr // dprA // nfnB	EG50005
+nfuA	yhgI // gntY	G7748
+nhaA	ant // antA	EG10652
+nhaB		EG11392
+nhaR	antO // yaaB	EG11078
+nhoA	yddI	G6770
+nikA	hydD // hydC	EG12075
+nikB	hydC // hydD	EG12076
+nikC	hydD // hydC	EG12077
+nikD	hydD // hydC	EG12078
+nikE	hydD // hydC	EG12079
+nikR	yhhG	EG11519
+nimR	yeaM	G6976
+nimT	yeaN	G6977
+ninE		G6304
+nirB		EG10653
+nirC		EG10654
+nirD		EG10655
+nlpA		EG10657
+nlpC		EG11133
+nlpD		EG12111
+nlpE	cutF	EG12137
+nlpI	yhbM	EG12371
+nnr	yjeF	EG11758
+nohA	nohQ	EG11634
+nohD	nohB	EG11635
+norR	ygaA	EG12108
+norV	ygaJ // ygaI // ygaK	G7413
+norW	ygaL // ygbD	EG12450
+npr	yhbK // ptsO // rpoR	EG12147
+nrdA	dnaF	EG10660
+nrdB	ftsB	EG10661
+nrdD		EG11417
+nrdE		EG20257
+nrdF	ygaD	EG12381
+nrdG	yjgE	G812
+nrdH	ygaN	G7401
+nrdI	ygaO	G7402
+nrdR	ybaD	EG11320
+nrfA		EG11781
+nrfB	yjcI	EG11945
+nrfC	yjcJ	EG11946
+nrfD	yjcK	EG11947
+nrfE	yjcL	EG11948
+nrfF	yjcM	EG11949
+nrfG	yjcN // aidC	EG11950
+nsrR	yjeB	EG11212
+nth		EG10662
+nudB	yebD // ntpA	EG11138
+nudC	yjaD	EG11702
+nudE	yrfE	G7740
+nudF	trgB // aspP // yqiE	EG12633
+nudG	ynjG // orf135	G6954
+nudI	yfaO	G7164
+nudJ	ymfB	G6580
+nudK	yffH	EG12410
+nudL	yeaB	EG12693
+nuoA		EG12082
+nuoB		EG12083
+nuoC	nuoD	EG12084
+nuoE		EG12086
+nuoF		EG11774
+nuoG		EG12087
+nuoH		EG12088
+nuoI		EG12089
+nuoJ		EG12090
+nuoK		EG12091
+nuoL		EG12092
+nuoM	nuoA	EG11773
+nuoN		EG12093
+nupC	cru	EG11971
+nupG	gru	EG10664
+nupX	yeiJ	EG12029
+nusA		EG10665
+nusB	groNB // ssaD // ssyB	EG10666
+nusG		EG10667
+obgE	yhbZ // cgtA // obg	G7656
+och5		G0-10701
+ogrK		G7119
+ogt		EG10668
+ohsC	ryfC	G0-10598
+ompA	con // tolG // tut	EG10669
+ompC	meoA // par	EG10670
+ompF	nfxB // tolF // cmlB // cry	EG10671
+ompG		G6657
+ompL	yshA	G7814
+ompN	ynaG	G6700
+ompR	cry // kmt // ompB	EG10672
+ompT		EG10673
+ompW	yciD	EG11124
+ompX	ybiG // ompP	EG12117
+omrA	psrA12 // rygA // PAIR2a // t59 // sraE	G0-8868
+omrB	PAIR2b // t59 // rygB	G0-8882
+opgB	yjjO // mdoB	EG12591
+opgC	ymdD // mdoC	G6552
+opgD	yzzZ // ydcG // mdoD	EG12859
+opgE	ybiP	G6418
+opgG	mdoA // mdoG	EG11885
+opgH	mdoA // mdoH	EG11886
+oppA		EG10674
+oppB		EG10675
+oppC		EG10676
+oppD		EG10677
+oppF		EG10678
+orn	yjeR	G7842
+ortT	ydcX	G6756
+orzP		G0-17076
+osmB		EG10679
+osmC		EG10680
+osmE	anr	EG10044
+osmF	yehZ	EG12012
+osmY	csi-5	EG11391
+otsA		EG11751
+otsB	otsP	EG11752
+oxc	yfdU	G7236
+oxyR	momR // mor	EG10681
+oxyS		EG31116
+paaA	ydbO	G6709
+paaB	ynbF	G6710
+paaC	ydbP	G6711
+paaD	ydbQ	G6712
+paaE	ydbR	G6713
+paaF	ydbR // ydbS	G6714
+paaG	ydbT	G6715
+paaH	hbdH // ydbU	G6716
+paaI	ydbV	G6717
+paaJ	ydbW	G6718
+paaK		G6719
+paaX	ydbY	G6720
+paaY	ydbZ	G6721
+paaZ	ydbN // maoC	G6708
+pabA		EG10682
+pabB		EG10683
+pabC		EG11493
+paeA	ytfL	G7873
+pagP	ybeG // crcA	EG12180
+pal	excC	EG10684
+panB		EG11675
+panC		EG11746
+panD		EG11747
+panE	apbA	G6239
+panF		EG10685
+panZ	livL // panM // yhhK	EG12211
+paoA	yagT	G6157
+paoB	yagS	G6156
+paoC	yagR	G6155
+paoD	yagQ	G6154
+parC		EG10686
+parE	nfxD	EG10687
+patA	oat // pat // ygjG	G7596
+patD	prr // ydcW	G6755
+patZ	yfiQ // pka	G7350
+pbpC	yfgN	G7322
+pbpG	yohB	EG12015
+pck	pckA	EG10688
+pcm		EG10689
+pcnB		EG10690
+pdeA	yfeA	EG11145
+pdeB	ylaB	G6252
+pdeC	yjcC	EG11938
+pdeD	yoaD	G6996
+pdeF	yfgF	G7314
+pdeG	ycgG	G6608
+pdeH	yhjH	EG12252
+pdeI	yliE	G6433
+pdeK	yhjK	EG12256
+pdeL	yahA	EG11236
+pdeN	rtn	G7148
+pdeR	yciR // gmr	G6639
+pdhR	aceC // genA // yacB	EG11088
+pdxA		EG10691
+pdxB	usg-2	G0-9461
+pdxH		EG11487
+pdxI	ydbC	EG11309
+pdxJ		EG10693
+pdxK	yfeI // thiJ // pdxL	G7259
+pdxY	ydgS	G6879
+pepA	carP // xerB	EG10694
+pepB	yfhI	EG12310
+pepD	pepH	EG10695
+pepE		EG11920
+pepN		EG10696
+pepP		EG10697
+pepQ		EG10698
+pepT		EG11549
+perR		G6129
+pfkA		EG10699
+pfkB		EG10700
+pflA	act	EG10028
+pflB	pfl	EG10701
+pflC	yijM	EG11911
+pflD	yijL	EG11910
+pgaA	hmsH // ycdS	G6531
+pgaB	hmsF // ycdR	G6530
+pgaC	hmsR // ycdQ	G6529
+pgaD	hmsS // ycdP	G6528
+pgeF	yfiH	EG12097
+pgi		EG10702
+pgk		EG10703
+pgl	ybhE	G6397
+pgm	blu	EG12144
+pgpA	yajN	EG10704
+pgpB		EG10705
+pgpC	yfhB	EG11371
+pgrR	ycjZ	G6664
+pgsA		EG10706
+pheA		EG10707
+pheL	pheAE	EG11271
+pheM	phtL	EG11272
+pheP		EG10708
+pheS	phe-act	EG10709
+pheT		EG10710
+pheU	pheR // pheW	EG30064
+pheV	pheC	EG30065
+phnC		EG10713
+phnD	phn // psiD	EG10714
+phnF		EG10715
+phnG		EG10716
+phnH		EG10717
+phnI		EG10718
+phnJ		EG10719
+phnK		EG10720
+phnL		EG10721
+phnM		EG10722
+phnN		EG10723
+phnO		EG10724
+phnP		EG10725
+phoA	psiA	EG10727
+phoB	phoRc // phoT	EG10728
+phoE	ompE	EG10729
+phoH	psiH	EG11734
+phoP		EG10731
+phoQ		EG10732
+phoR	R1pho // phoR1 // nmpB	EG10733
+phoU	phoT // pst	EG10735
+php	yhfV	G7731
+phr	phrB	EG10736
+pinE	pin	EG10737
+pinQ	ydfL	G6819
+pinR	ynaD	G6697
+pitA	pit	EG12230
+pitB		EG12883
+plaP	yeeF	EG11896
+plaR	yiaJ	EG12278
+pldA		EG10738
+pldB		EG10739
+pliG	ycgK	G6615
+plsB		EG10740
+plsC	parF	EG11377
+plsX		EG11437
+plsY	ygiH	EG11674
+pmrD		G7172
+pmrR		G0-10707
+pncA	nam // ydjB	EG11135
+pncB		EG10742
+pncC	ygaD	G7409
+pnp	bfl	EG10743
+pntA		EG10744
+pntB		EG10745
+pnuC		EG11700
+polA	resA	EG10746
+polB	dinA	EG10747
+potA		EG10749
+potB		EG10750
+potC		EG10751
+potD		EG10752
+potE		EG10753
+potF		EG11629
+potG		EG11630
+potH		EG11631
+potI		EG11632
+poxB		EG10754
+ppa		EG10755
+ppc	asp // glu	EG10756
+ppdA		EG12081
+ppdB	ygdC	EG11156
+ppdC	ygdA	EG11154
+ppdD		EG12107
+pphA	yebX // prpA	G7011
+pphB	ygbH // prpB	G7415
+pphC	yegK	G7111
+ppiA	rot // rotA	EG10757
+ppiB		EG10758
+ppiC	parvA	EG12352
+ppiD	ybaU	G6242
+ppk		EG11510
+ppnN	ygdH	EG12373
+ppnP	yaiE	EG12159
+pppA	yghH	G7539
+ppsA	pps	EG10759
+ppsR	ydiA	EG11132
+pptA	ydcE	EG11761
+ppx		EG11403
+pqiA	pqi5 // pqi5A	G6490
+pqiB	pqi5 // pqi5B	G6491
+pqiC	ymbA	G6492
+pqqL	pqqM // pqqE // yddC	EG11744
+prc	tsp	EG10760
+preA	yeiA	EG11289
+preT	yeiT	G7145
+prfA	ups? // sueB // uar	EG10761
+prfB	supK	EG10762
+prfC	miaD // tos	EG12114
+priA	srgA	EG10763
+priB		EG10764
+priC		EG10765
+prkB	yhfF	EG12365
+prlC	opdA	EG11441
+prlF	sohA // prlFA	EG10955
+prmA	yhdI // prm-1	EG11497
+prmB	yfcB	EG12449
+prmC	hemK	EG12424
+proA	pro(1) // pro1	EG10767
+proB	pro(2) // pro2	EG10768
+proC	pro(3) // Pro2 // pro3	EG10769
+proK	proV	EG30066
+proL	proW	EG30067
+proM	proU	EG30068
+proP		EG11612
+proQ	yoeC // yobE // yebJ	EG12866
+proS	drp // drpA	EG10770
+proV	osrA // proU	EG10771
+proW	osrA // proU	EG10772
+proX	osrA // proU	EG10773
+proY	yajM	G6233
+prpB	yahQ	G6196
+prpC	yzzD // yahS	G6198
+prpD	yahT // acnC	G6199
+prpE	yahU	G6200
+prpR	yahP	G6195
+prs	dnaR // prsA	EG10774
+psd		EG10775
+psiE	yjbA	EG11209
+psiF		EG11401
+pspA	cog	EG10776
+pspB		EG10777
+pspC		EG10778
+pspD		EG10779
+pspE		EG10780
+pspF	ycjB	EG12344
+pspG	yjbO	EG11933
+pspH		G0-16700
+pssA	pss	EG10781
+pssL		G0-17028
+pstA	R2pho // phoR2 // phoR2b // phoT	EG10782
+pstB	phoT	EG10783
+pstC	phoW	EG10784
+pstS	R2pho // T // nmpA // phoR2a // phoS	EG10734
+psuG	yeiN // pscG	EG12033
+psuK	yeiC // pscK	EG11646
+psuT	pscT // yeiM	EG12032
+pta		EG20173
+pth	rap	EG10785
+ptrA	ptr	EG10786
+ptrB	tlp	EG11004
+ptsA	yijH // frwA // pt1A	EG11906
+ptsG	umgC // umg // tgl // Cr // car // cat // catB2 // glcA // gptA	EG10787
+ptsH	ctr // hpr	EG10788
+ptsI	ctr	EG10789
+ptsN	yhbI // rpoP	EG11682
+ptsP	ygdO // ygdF	EG12188
+purA	adeK	EG10790
+purB	ade(h) // ade	EG11314
+purC	ade(g) // ade	EG10791
+purD	adth(a) // adth	EG10792
+purE	ade(f) // Pur2 // ade3 // ade	EG10793
+purF	ade // purC	EG10794
+purH		EG10795
+purK	purE2	EG10796
+purL	purI	EG10797
+purM	purG // purI	EG10798
+purN	ade(c) // ade	EG10799
+purR		EG10800
+purT		EG11809
+purU	ychI // tgs	EG11819
+putA	putC // poaA	EG10801
+putP	putC	EG10802
+puuA	ycjK	G6644
+puuB	ycjA // ordL	EG11822
+puuC	aldH	EG10036
+puuD	ycjL	G6645
+puuE	goaG	G6646
+puuP	ycjJ	G6643
+puuR	ycjC	EG12431
+pxpA	ybgL	G6382
+pxpB	ybgJ	G6380
+pxpC	ybgK	G6381
+pykA		EG10803
+pykF		EG10804
+pyrB		EG10805
+pyrC		EG10806
+pyrD		EG10807
+pyrE		EG10808
+pyrF		EG10809
+pyrG		EG10810
+pyrH	umk // smbA	EG11539
+pyrI		EG10811
+pyrL	pyrE- // pyrE-LP	EG11279
+pyrR	ypdB	G7244
+pyrS	ypdA	G7243
+qmcA	ybbK	G6265
+qorA	hzc // hcz // qor	EG11492
+qorB	ytfG	G7868
+qseB	ygiX	G7575
+qseC	ygiY	EG12658
+qseG	yfhG	EG12139
+queA	tsaA	EG10812
+queC	ybaX	G6245
+queD	ygcM // sscR	G7431
+queE	ygcF	G7443
+queF	yqcD	G7452
+queG	yjeS	G7843
+quuD	ybcQ	G6307
+racC	sbcA	EG10813
+racR	rarC // ydaR	G6680
+radA	sms	EG11296
+radD	yejJ // yejI // yejH	EG12045
+raiA	urf1 // yfiA // pY	EG11151
+raiZ		G0-17078
+ralA		G0-16600
+ralR	ydaB // lar	EG11900
+rapA	yabA // hepA	EG11083
+rapZ	yhbJ	EG12146
+rarA	ycaJ // mgsA	EG12690
+rarD	yigH	EG11466
+ratA	yfjG	G7358
+ravA	yieN	EG11731
+rayT	yafM	G6112
+rbbA	yhiG // yhiH	EG12223
+rbfA	sdr-43 // yhbB	EG11178
+rbn	zipD // ecoZ // rnz // elaC	G7175
+rbsA	rbsT // rbsP	EG10814
+rbsB	prlB // rbsP	EG10815
+rbsC	rbsP // rbsT	EG10816
+rbsD	rbsP	EG10817
+rbsK		EG10818
+rbsR		EG10819
+rbsZ		G0-17077
+rcbA	ydaC	EG11901
+rcdA	ybjK	G6444
+rcdB	yhjC	EG12247
+rclA	ykgC	G6174
+rclB	ykgI	G6173
+rclC	ykgB	G6171
+rclR	ykgD	G6175
+rcnA	yohM	G7138
+rcnB	yohN	G7139
+rcnR	yohL	G7137
+rcsA	cpsR	EG10820
+rcsB		EG10821
+rcsC		EG10822
+rcsD	yojP // yojQ // yojN	EG12385
+rcsF		EG11502
+rdcA	yjdA // crfC	EG11210
+rdcB	yjcZ	G7823
+rdgB	yggV	G7530
+rdgC	yaiD	EG12158
+rdlA		G0-9603
+rdlB		G0-9606
+rdlC		G0-9608
+rdlD		G0-9042
+recA	zab // umuB // tif // lexB // recH // rnmB // srf	EG10823
+recB	ior // rorA	EG10824
+recC		EG10825
+recD	hopE	EG10826
+recE	rmuB // rac // sbcA	EG10827
+recF	uvrF	EG10828
+recG	radC // spoV	EG10829
+recJ		EG10830
+recN	radB	EG10831
+recO		EG10832
+recQ		EG10833
+recR		EG10834
+recT		EG11899
+recX	oraA	EG12080
+relA	RC	EG10835
+relB	RC	EG10836
+relE		EG11131
+rem		EG11129
+rep	dasC // mbrA // mmrA	EG10837
+rfaD	waaD // hldD // htrM // nbsB	EG10838
+rfaH	hlyT // sfrB	EG10839
+rfbA	rmlA // som	EG11978
+rfbB	som // rmlB	EG12412
+rfbC	rfbD // rmlC	EG11979
+rfbD	rmlD	EG12411
+rfbX	wzx // wzxB	EG11980
+rfe	wecA	EG10840
+rffC	rff // wecD // yifH	EG11455
+rffG	rff	EG11453
+rffH	yifG	EG11454
+rffM	rff // wecG	EG11458
+rflP	ydiV	G6925
+rhaA		EG11867
+rhaB		EG11868
+rhaD		EG11866
+rhaM	yiiL	EG11865
+rhaR	rhaC1	EG10842
+rhaS	rhaC2	EG10843
+rhaT		EG11313
+rhlB	mmrA	EG10844
+rhlE		EG11235
+rhmD	yfaW	G7160
+rho	nusD // sun // tsu // rnsC // nitA // psu // psuA // sbaA	EG10845
+rhoL		EG12428
+rhsA		EG10846
+rhsB		EG10847
+rhsC		EG10848
+rhsD		EG10849
+rhtA	ybiF	EG12134
+rhtB	yigK	EG11469
+rhtC	yigJ	EG11468
+ribA		EG11331
+ribB	luxH // htrP // luxH-l	EG10465
+ribC	ribE	EG11406
+ribD	nusII // ribG // ybaE	EG11321
+ribE	nusIII // ribH // ybaF	EG11322
+ribF	yaaC	EG11079
+ridA	yjgF	G7877
+rihA	ybeK	G6358
+rihB	yeiK	EG12030
+rihC	yaaF	EG11082
+rimI		EG10850
+rimJ	tcp	EG10851
+rimK	nek	EG10852
+rimL		EG10853
+rimM	yfjA	EG11153
+rimO	yliG	G6435
+rimP	yhbC	EG11179
+rirA		G0-16662
+rlhA	ydcP	G6746
+rlmA	rrmA // yebH	EG12207
+rlmB	yjfH	G7845
+rlmC	ybjF // rumB	G6449
+rlmD	ygcA // rumA	EG11247
+rlmE	ftsJ // mrsF // rrmJ	EG11507
+rlmF	ybiN	G6416
+rlmG	ygjO	G7603
+rlmH	ybeA	EG11254
+rlmI	yccW	G6501
+rlmJ	yhiR	EG12234
+rlmL	ycbY // rlmK // rlmKL	G6488
+rlmM	ygdE	EG11794
+rlmN	yfgB	EG12401
+rlpA		EG10854
+rluA	yabO	EG12609
+rluB	yciL	EG12433
+rluC	yceC	EG11118
+rluD	yfiI // sfhB // yfil	EG12098
+rluE	ymfC	G6581
+rluF	yjbC	EG11921
+rmf	res // rimF	EG50004
+rmuC	yigN	EG11472
+rna	rnsA	EG10856
+rnb		EG11620
+rnc	ranA	EG10857
+rnd		EG10858
+rne	smbB // ams // hmp1	EG10859
+rng	adhR // cafA // yhdF	EG11299
+rnhA	cer // sin // dasF // herA // rnh // sdrA	EG10860
+rnhB		EG10861
+rnk		G6337
+rnlA	yfjN // std	G7365
+rnlB	yfjO	G7366
+rnpA		EG10862
+rnpB		EG30069
+rnr	vacB // yjeC	EG11259
+rnt		EG11547
+rob	cbpB // robA	EG11366
+rodZ	yfgA	EG10015
+rof	yaeO	G6097
+roxA	ycfD	EG11430
+rpe	dod // yhfD	M004
+rph		EG10863
+rpiA	ygfC	EG11443
+rpiB	yjcA // alsI	EG11827
+rplA	rpy	EG10864
+rplB		EG10865
+rplC		EG10866
+rplD	eryA	EG10867
+rplE		EG10868
+rplF		EG10869
+rplI		EG10870
+rplJ		EG10871
+rplK	relC	EG10872
+rplL		EG10873
+rplM		EG10874
+rplN		EG10875
+rplO		EG10876
+rplP		EG10877
+rplQ		EG10878
+rplR		EG10879
+rplS		EG10880
+rplT	pdzA	EG10881
+rplU		EG50001
+rplV	eryB	EG10882
+rplW		EG10883
+rplX		EG10884
+rplY		EG10885
+rpmA	rpz	EG50002
+rpmB		EG10886
+rpmC		EG10887
+rpmD		EG10888
+rpmE		EG10889
+rpmF		EG10890
+rpmG		EG10891
+rpmH	rimA // ssaF	EG10892
+rpmI		EG11231
+rpmJ	secX	EG11232
+rpnA	yhgA	EG11750
+rpnB	yfcI	G7197
+rpnC	yadD	EG11748
+rpnD	yjiP // b4338 // ECK4330 // yjiQ // b4339	G7934
+rpnE	yfaD	EG12323
+rpoA	pez // phs // sez	EG10893
+rpoB	sdgB // tabD // stv // stl // ftsR // groN // nitB // rif // ron	EG10894
+rpoC	tabB	EG10895
+rpoD	alt	EG10896
+rpoE	sigE	EG11897
+rpoH	fam // hin // htpR	EG10897
+rpoN	glnF // ntrA	EG10898
+rpoS	sigS // otsX // abrD // appR // csi2 // dpeB // katF // nur	EG10510
+rpoZ	spoS	EG10899
+rppH	ygdP // nudH	G7459
+rprA	psrA5 // IS083	G0-8863
+rpsA	ssyF	EG10900
+rpsB		EG10901
+rpsC		EG10902
+rpsD	ramA // sud(2) // sud2	EG10903
+rpsE	spc // eps // spcA	EG10904
+rpsF	sdgH	EG10905
+rpsG		EG10906
+rpsH		EG10907
+rpsI		EG10908
+rpsJ	nusE	EG10909
+rpsK		EG10910
+rpsL	asuB // strA	EG10911
+rpsM		EG10912
+rpsN		EG10913
+rpsO	secC	EG10914
+rpsP		EG10915
+rpsQ	neaA	EG10916
+rpsR		EG10917
+rpsS		EG10918
+rpsT	supS // sup(s20) // supS20	EG10919
+rpsU		EG10920
+rraA	menG // yiiV	EG11879
+rraB	yjgD	G7885
+rrfA		EG30070
+rrfB		EG30071
+rrfC		EG30072
+rrfD		EG30073
+rrfE		EG30074
+rrfF	rrfDbeta // rrvD	EG30091
+rrfG		EG30075
+rrfH		EG30076
+rrlA		EG30077
+rrlB		EG30078
+rrlC		EG30079
+rrlD		EG30080
+rrlE		EG30081
+rrlG		EG30082
+rrlH		EG30083
+rrrD	lycV // ybcS	G6310
+rrrQ	ydfQ	G6827
+rrsA		EG30084
+rrsB		EG30085
+rrsC		EG30086
+rrsD		EG30087
+rrsE		EG30088
+rrsG		EG30089
+rrsH		EG30090
+rsd	yjaE	EG11738
+rseA	yfiJ // mclA	EG12341
+rseB		G7348
+rseC		G7347
+rseD		G0-16690
+rseP	ecfE // yaeL	EG12436
+rseX	IS096	G0-10574
+rsfS	ybeB // rsfA	EG11255
+rsgA	yjeQ	G7841
+rsmA	ksgA	EG10523
+rsmB	yhdB // rrmB // fmu // fmv // sun	EG12163
+rsmC	yjjT	G7950
+rsmD	yhhF	EG10343
+rsmE	yggJ	EG12366
+rsmF	yebU	G7008
+rsmG	gidB	EG10376
+rsmH	yabC // mraW	EG11085
+rsmI	yraL	G7641
+rsmJ	yhiQ	EG12233
+rspA		G6839
+rspB		G6838
+rssA	ychK	EG12120
+rssB	ychL // sprE // hnr	EG12121
+rstA	urpT	G6864
+rstB	uspT	EG11233
+rsuA	yejD	EG12044
+rsxA	ydgL	G6871
+rsxB	ydgM	G6872
+rsxC	ydgN	G6873
+rsxD	ydgO	G6874
+rsxE	ydgQ	G6876
+rsxG	ydgP	G6875
+rtcA	yhgJ // yhgK // b3420 // b3419	G7750
+rtcB	yhgL	G7751
+rtcR	yhgB	EG12356
+rttR	rtT	G0-9609
+rusA	ybcP // rus	G6306
+rutA	ycdM	G6523
+rutB	ycdL	G6522
+rutC	ycdK	G6521
+rutD	ycdJ	G6520
+rutE	ycdI	G6519
+rutF	ycdH	G6518
+rutG	ycdG	G6517
+rutR	ycdC	EG12301
+ruvA		RUVA
+ruvB		RUVB
+ruvC		EG10925
+rybA		G0-8881
+rybB	p25	G0-8880
+rydB	tpe7 // IS082	G0-8876
+rydC		G0-10592
+ryeA	sraC // psrA8 // tkpe79 // IS091	G0-8865
+ryeG	IS118	G0-16635
+ryfA	PAIR3b // tp1	G0-8879
+ryfD		G0-10600
+ryhB	psrA18 // IS176 // sraI	G0-8872
+ryjA	psrA24 // sraL	G0-8875
+ryjB		G0-10609
+rzoD		G0-10436
+rzoQ		G0-16675
+rzoR		G0-10449
+rzpD	ybcT	G6311
+rzpQ	ydfP	G6826
+sad	yneI	G6811
+safA	yneN	G6790
+sanA	sfiXSt // yeiF	EG12025
+sapA		G2002
+sapB		G2001
+sapC		G2000
+sapD	trkE	EG12304
+sapF		EG12305
+satP	yaaH	EG11512
+sbcB	exoI // rmuA // cpeA // xonA	EG10926
+sbcC		EG10927
+sbcD	yajA	EG11094
+sbmA		EG10928
+sbmC	dgi // gyrI // yeeB	EG11892
+sbp		EG10929
+scpA	yliK // sbm	EG11444
+scpB	ygfG	G7516
+scpC	ygfH	G7517
+sdaA		EG10930
+sdaB		EG11623
+sdaC	dcrA	EG12142
+sdhA	dhsA	EG10931
+sdhB	dhsB	EG10932
+sdhC	cybL // cybA // dhsC	EG10933
+sdhD	cybS // dhsD	EG10934
+sdhE	ygfY // cptB	G7510
+sdhX	rybD	G0-17009
+sdiA		EG10935
+sdsN		G0-10699
+sdsR	tkpe79 // ryeB	G0-8883
+secA	azi // pea // prlD	EG10936
+secB		EG10937
+secD		EG10938
+secE	mbrC // prlG	EG10939
+secF		EG10940
+secG	prlH	EG12095
+secM	srrA // yacA	EG11087
+secY	prlA	EG10766
+selA	fdhA	EG10941
+selB	fdhA	EG10942
+selC	fdhC	EG30092
+selD	fdhB	EG10943
+selO	ydiU	G6924
+selU	ybbB // mnmH	EG11768
+seqA	hsm-1	EG12197
+serA		EG10944
+serB		EG10945
+serC	pdxC // pdxF	EG10946
+serS		EG10947
+serT	divE	EG30093
+serU	supH // Su-1 // ftsM // su1 // supD	EG30094
+serV	supD	EG30095
+serW		EG30096
+serX		EG30097
+setA	yabM	EG11754
+setB	yeiO	EG12034
+setC	yicK	EG11687
+sfmA		G6290
+sfmC		G6291
+sfmD		G6292
+sfmF	ybcG	EG12388
+sfmH		G6293
+sfsA	sfs // sfs1	EG10949
+sfsB	nlp // sfs7	EG10656
+sgbE	yiaS	EG12287
+sgbH	yiaQ	EG12285
+sgbU	yiaR	EG12286
+sgcA	yjhL	EG12554
+sgcB		G0-10241
+sgcC	yjhN	EG12556
+sgcE	yjhK	G7914
+sgcQ	yjhM	G7915
+sgcR	yjhJ	G7913
+sgcX	yjhO	EG12557
+sgrR	yabN	EG12094
+sgrS	ryaA	G0-9941
+sgrT		G0-10617
+shiA	yeeM	G7067
+shoB	yphI // ryfB // b4681	G0-10634
+sibA	QUAD1a // tp11 // ryeC	G0-8884
+sibB	QUAD1b // tpe60 // ryeD	G0-8885
+sibC	QUAD1c // t27 // rygC	G0-8886
+sibD	tp8 // C0730 // IS156 // QUAD1d // rygD	G0-8913
+sibE	QUAD1e // rygE	G0-10602
+sieB		EG12154
+sixA	yfcW	G7211
+skp	ompH // hlpA // firA	EG10455
+slmA	yicB // ttk	EG11191
+slp		EG11890
+slt	sltY	EG10950
+slyA		G6882
+slyB		G6881
+slyD		EG11663
+slyX		EG11664
+smf	b3286 // b3285 // smf1 // smf2	EG11604
+smg		EG11605
+smpB	smqB	EG11782
+smrA	ydaL	G6672
+smrB	yfcN	G7202
+sodA		EG10953
+sodB		EG10954
+sodC		G6886
+sohB		EG10956
+sokB		G0-9611
+sokC	sof	G0-9581
+sokE		G0-16677
+sokX		G0-10695
+solA		G6556
+soxR	marC	EG10957
+soxS		EG10958
+speA		EG10959
+speB		EG10960
+speC		EG10961
+speD		EG10962
+speE		EG10963
+speF		EG10964
+speFL		G0-17074
+speG		G6842
+spf		EG30098
+spoT		EG10966
+sppA		EG10968
+spy		G6939
+sra	rpsV	EG11508
+sraA	psrA3 // t15	G0-8861
+sraB	psrA4 // pke20 // psrD	G0-8862
+sraG	psrA15 // p3 // psrO	G0-8870
+srkA	orfA // yihE	EG11831
+srlA	gutA // sbl // srlA-1	G8210
+srlB	gutB	EG10970
+srlD	gutD	EG10971
+srlE	sbl // gutA // gutE // srlA // srlA-2	EG10969
+srlR	gutR	EG10974
+srmB	rbaB // rhlA	EG10975
+sroA	tpe79	G0-9381
+sroC	HB_314	G0-9383
+sroE	k20	G0-9385
+sroH		G0-9388
+ssb	exrB // lexC	EG10976
+sseA	mstA	EG11600
+sseB		EG11601
+ssnA	ygfL	G7498
+sspA	ssp // pog	EG10977
+sspB		EG10978
+ssrA	sipB	EG30100
+ssrS	ssr	EG30099
+sstT	ygjU	EG12732
+ssuA	ycbO	G6478
+ssuB	ycbE	EG12358
+ssuC	ycbM	G6476
+ssuD	ssi6 // ycbN	G6477
+ssuE	ssi4 // ycbP	G6479
+stfE	ycfE	G6599
+stfQ	ydfN	G6821
+stfR	ynaB	G6695
+sthA	sth // udhA	EG11428
+stpA	hnsB	EG11554
+sucA	lys+met	EG10979
+sucB		EG10980
+sucC		EG10981
+sucD		EG10982
+sufA	ydiC	EG11378
+sufB	ynhE	G6909
+sufC	ynhD	G6908
+sufD	ynhC	G6907
+sufE	ynhA	G6905
+sufS	csdB // ynhB	G6906
+suhB	ssyA	EG10983
+sulA	sfiA // suf	EG10984
+surA		EG10985
+sutR	ydcN	G6745
+sxy	yccR	G6494
+syd	ydr	G7451
+symE	yjiW // dinL // sosC	G7940
+symR	ryjC	G0-10610
+tabA	yjgK	G7883
+tadA	yfhC	EG11372
+tag	tagA	EG10986
+talA		EG11797
+talB	yaaK	EG11556
+tam	yneD // lsrE	G6806
+tamA	ytfM	G7874
+tamB	ytfO // ytfN	G7875
+tap		EG10987
+tapT	yfiP // tuaA	G7349
+tar	cheM	EG10988
+tas	ygdS	G7462
+tatA	yigT // mttA1	G7806
+tatB	ysgB // mttA2	G7808
+tatC	mttB // yigU // yigV	EG11479
+tatD	b3841 // yigX // b3840 // mttC // yigW	EG11481
+tatE	ybeC	EG11305
+tauA	yaiR // ssiA	G6217
+tauB	yaiQ // ssiB	G6218
+tauC	yaiJ // ssiC	G6219
+tauD	ssiD // yaiG	EG12423
+tcdA	ygdL // csdL	G7456
+tcyJ	yzzR // ssi7 // fliY	G7039
+tcyL	yecS	G7037
+tcyN	yecC	EG12347
+tcyP	ydjN	G6934
+tdcA		EG10989
+tdcB	tdc	EG10990
+tdcC		EG10991
+tdcD	yhaA	EG11172
+tdcE	yhaS	G7627
+tdcF	yhaR	G7626
+tdcG	b3111 // yhaQ // b3112 // tdcGa // yhaP // sdhY	G7624
+tdcR		EG10992
+tdh		EG10993
+tdk		EG10994
+tehA		EG11883
+tehB		EG11884
+tesA	apeA // pldC	EG11542
+tesB		EG10995
+tfaD	ybcX	G6315
+tfaE	ycfA	EG11120
+tfaP	ymfS	G6598
+tfaQ	ydfM	G6820
+tfaR	ynaC	G6696
+tfaX	ylcE	G6317
+tff	t44	G0-8895
+tgt	vacC(S.f.)	EG10996
+thiB	yabL // sfuA // tbpA	EG11574
+thiC		EG11585
+thiD	thiN // thiA // thiJ	G7135
+thiE	thiA	EG11586
+thiF	thiA	EG11587
+thiG	thiB	EG11589
+thiH	thiB	EG11590
+thiI	nuvA // yajK	G6238
+thiK	ycfN	G6566
+thiL	thiJ	G6234
+thiM		M007
+thiP	sfuB // yabK	EG11573
+thiQ	sfuC // yabJ	EG11572
+thiS	thiG1	G1
+thpR	yadP // ligT	EG12330
+thrA	thrA2 // Hs // thrA1 // thrD	EG10998
+thrB		EG10999
+thrC		EG11000
+thrL		EG11277
+thrS		EG11001
+thrT		EG30101
+thrU		EG30102
+thrV		EG30103
+thrW		EG30104
+thyA		EG11002
+tig		EG11003
+tilS	yaeN // mesJ	G6096
+timP		G0-17087
+timR		G0-17086
+tisB	ysdB	G0-9962
+tktA	tkt	EG11427
+tktB		EG12100
+tldD	yhdO	G7689
+tldE	mcb // pmbA	EG10741
+tmaR	yeeX	G7087
+tmcA	ypfI	G7297
+tmk	ycfG	EG12302
+tnaA	ind // tnaR	EG11005
+tnaB	tnaP // trpP	EG11006
+tnaC	tnaL	EG11276
+tolA	cim // excC // lky // tol-2	EG11007
+tolB	lky // lkyA // tol-3	EG11008
+tolC	weeA // colE1-i // mtcB // mukA // refI // toc	EG11009
+tolQ	fii // tolP	EG11010
+tolR		EG11011
+tomB	ybaJ	EG12429
+tonB	T1rec // exbA	EG11012
+topA	supX	EG11013
+topAI	yjhX	G0-10473
+topB	mutR	EG11014
+torA		EG11814
+torC		EG11815
+torD		EG12195
+torI		G0-9621
+torR		EG12615
+torS	yccI	G6514
+torT	yccH	G6515
+torY	yecK	G7023
+torZ	bisZ	G7022
+tpiA	tpi	EG11015
+tpr		EG11016
+tpx	yzzJ	G6660
+tqsA	ydgG	G6859
+treA	osmA // tre	EG11017
+treB		EG12127
+treC	treE // olgH	EG11402
+treF		EG12245
+treR		EG12202
+trg		EG11018
+trhO	yceA	EG11116
+trhP	yegQ	G7118
+trkA		EG11019
+trkG		EG11020
+trkH		EG11021
+trmA	rT // rumT	EG11022
+trmB	trmI // yggH	EG11779
+trmD		EG11023
+trmH	spoU	EG10967
+trmJ	yfhQ	G7327
+trmL	yibK	EG11888
+trmO	tsaA // yaeB	EG11503
+trpA	try // tryp	EG11024
+trpB		EG11025
+trpC	trpF // trpCF	EG11026
+trpD	trpGD	EG11027
+trpE	anth // tryD // tryp-4	EG11028
+trpL	trpEE	EG11274
+trpR	rtrY	EG11029
+trpS		EG11030
+trpT	su7 // su8 // su9 // supU // supV	EG30105
+truA	asuC // hisT // leuK	EG10454
+truB	yhbA	EG11177
+truC	yqcB	G7449
+truD	ygbO	G7422
+trxA	dasC // fipA // tsnC	EG11031
+trxB	trxR	EG11032
+trxC	yfiG	EG11887
+tsaB	yeaZ	G6991
+tsaC	yrdC // rimN	G7698
+tsaD	gcp // ygjD	EG11171
+tsaE	yjeE	EG11757
+tsf		EG11033
+tsgA	yhfH // gutS // yhfC	EG11262
+tsr	cheD	EG11034
+tsx	T6rec // nupA	EG11035
+ttcA	ydaO	G6675
+ttdA	ygjA	EG11168
+ttdB	ygjB	EG11169
+ttdR	dan // ygiP	EG12694
+ttdT	ygjC // ygjE	EG12393
+tufA	pulT // kirT	EG11036
+tufB	pulT // kirT	EG11037
+tus	tau	EG11038
+tusA	yhhP // sirA	EG12216
+tusB	yheL	G7712
+tusC	yheM	G7713
+tusD	yheN	G7714
+tusE	yccK	EG12876
+tynA	feaA // maoA	EG13139
+tyrA		EG11039
+tyrB		EG11040
+tyrP		EG11041
+tyrR		EG11042
+tyrS		EG11043
+tyrT	tyrTalpha // supFsupO // Su-3 // Su-4 // su(c) // suIII // supC	EG30106
+tyrU	sup15B // supM // supZ	EG30107
+tyrV	tyrTbeta	EG30108
+uacT	ygfU	G7507
+ubiA	cyr	EG11370
+ubiB	yigS // yigQ // yigR // aarF	EG11476
+ubiC		EG11369
+ubiD	yigY // yigC	EG11396
+ubiE	yigO	EG11473
+ubiF	yleB	G6365
+ubiG	pufX // yfaB	EG11143
+ubiH	acd // visB	EG11324
+ubiI	visC	EG11333
+ubiJ	yigP	EG11474
+ubiK	yqiC	G7582
+ubiT	yhbT	G7651
+ubiU	yhbU	G7652
+ubiV	yhbV	G7653
+ubiX	dedF	EG11044
+ucpA	yfeF	EG12133
+udk		EG11701
+udp		EG11045
+ugd	yefA // udg // UDG8 // pmrE	G7091
+ugpA	psiB // psiC // ugp	EG11046
+ugpB	psiB // psiC	EG11047
+ugpC		EG11048
+ugpE		EG11049
+ugpQ		EG11050
+uhpA		EG11051
+uhpB		EG11052
+uhpC		EG11053
+uhpT		EG11054
+uidA	gurA // gusA	EG11055
+uidB	gusB // uidP	EG11658
+uidC	gusC	G6866
+uidR	gusR	G6867
+ulaA	yjfS // sgaT	G7856
+ulaB	yjfT // sgaB	EG12494
+ulaC	ptxA // yjfU // sgaA	EG12495
+ulaD	yjfV // sgaH	G7858
+ulaE	sgaU // yjfW	G7859
+ulaF	yjfX // sgaE	G7860
+ulaG	yjfR	G7855
+ulaR	yjfQ	G7854
+umpG	ygbC // surE	EG11817
+umpH	nagD	EG10634
+umuC	uvm	EG11056
+umuD		EG11057
+ung		EG11058
+uof		G0-10580
+upp	uraP	EG11332
+uraA		EG12129
+usg	usg-1	EG11059
+ushA		EG11060
+uspA		EG11390
+uspB	yhiO	EG12231
+uspC	yecG	G7031
+uspD	yiiT	EG11877
+uspE	ydaA	EG11246
+uspF	yzzL // ynaF // UP03	G6699
+uspG	UP12 // yzzU // ybdQ	G6334
+uup	ycbI // ycbH	G6489
+uvrA	dar // dinE	EG11061
+uvrB	dar-1 // dar-6	EG11062
+uvrC		EG11063
+uvrD	uvr502 // srjC // uvrE // dar-2 // dda // mutU // pdeB // rad // recL	EG11064
+uvrY	yecB	EG11140
+uxaA	ygjW	EG12734
+uxaB		EG11065
+uxaC	ygjY // ygjX // ygjZ	G81
+uxuA		EG11066
+uxuB		EG20248
+uxuR		EG20249
+valS	val-act	EG11067
+valT	valTa // valTalpha	EG30109
+valU	valUalpha	EG30110
+valV		EG30111
+valW		EG30112
+valX	valU-beta // valUbeta	EG30113
+valY	valUgamma	EG30114
+valZ	valTb // valTbeta	G6389
+ves	ydjR	G6938
+viaA	yieD // yieD_1 // yieD_2 // yieM	EG11730
+vsr		EG11068
+waaA	kdtA	EG10520
+waaB	lps // syn // rfaB	EG11351
+waaC	rfa-2 // rfaC // yibC	EG11189
+waaF	rfaF	EG12210
+waaG	rfaG	EG11339
+waaH	yibD	EG11266
+waaJ	rfaJ // waaR	EG11353
+waaL	rfaL	EG11424
+waaO	waaI // rfaI	EG11352
+waaP	rfaP	EG11340
+waaQ	rfaQ	EG11341
+waaS	rfaS	EG11350
+waaU	rfaK	EG11423
+waaY	rfaY	EG11425
+waaZ	rfaZ	EG11426
+wbbH	yefF // rfc	EG11982
+wbbI	yefG	EG11983
+wbbJ	yefH	EG11984
+wbbK	yefI	EG11985
+wcaA		G7104
+wcaB		G7103
+wcaC		G7102
+wcaD		G7101
+wcaE		G7100
+wcaF		G7099
+wcaI	yefD	EG11790
+wcaJ		G7098
+wcaK		G7096
+wcaL	yefL	G7095
+wcaM	yefK	G7094
+wecB	yifF // nfrC // rffE // mnaA	EG11451
+wecC	rff // rffD // mnaB	EG11452
+wecE	rff // fcnA // rffA // yifI	EG11456
+wecF	yifM // b4404 // rff // rffT // b4405	G7800
+wecH	yiaH	EG12274
+wrbA		EG11540
+wza		G7107
+wzb		G7106
+wzc		G7105
+wzxC	wzx	G7097
+wzxE	wzx // yifJ	EG11486
+wzyE	rffT	EG11457
+wzzB	wzz // rol // cld	G7090
+wzzE	wzz // yifC	EG11295
+xanP	yicE	EG11194
+xanQ	ygfO	G7501
+xapA	pndA	G85
+xapB		EG13159
+xapR	pRndR // pndR // yfeB	EG11146
+xdhA	ygeS	G7485
+xdhB	ygeT	G7486
+xdhC	ygeU	G7487
+xdhD	ygfN	G7500
+xerC		EG11069
+xerD	xprB	EG11071
+xisE	ymfG	G6585
+xisR	ydaQ	G6677
+xseA	xse	EG11072
+xseB	yajE	EG11098
+xthA	xth	EG11073
+xylA		EG11074
+xylB		EG11075
+xylE		EG11076
+xylF	xylT	EG20252
+xylG		EG12275
+xylH		EG12276
+xylR		EG20253
+xynR	yagI	G6144
+yaaA		EG10011
+yaaI		G8202
+yaaJ		EG11555
+yaaU	yabE	EG11566
+yaaW		G6082
+yaaX		G6081
+yaaY		G6087
+yabI		EG11571
+yabP	b4659	EG12610
+yabQ	b4659	EG12611
+yabR		G0-16721
+yacC		EG11089
+yacG		EG12314
+yacH		EG12315
+yacL		EG12605
+yacM		G0-16722
+yadC		EG11678
+yadE		EG11749
+yadG		EG12320
+yadH		EG12321
+yadI	agaX	EG12322
+yadK		EG12325
+yadL		EG12326
+yadM		EG12327
+yadN		EG12328
+yadS		EG12333
+yadV	ecpD	EG11973
+yadW		G0-16723
+yadX		G0-17011
+yaeF	yaeK	EG12138
+yaeH		EG12336
+yaeI		EG12337
+yaeP		G372
+yaeQ		G6098
+yaeR		G6095
+yafC		EG11649
+yafD		EG11650
+yafE		EG11651
+yafJ		G6107
+yafL		G6111
+yafN		G6116
+yafO		G6117
+yafP		G6118
+yafQ		G6109
+yafS		G6100
+yafT		G6101
+yafV		G6103
+yafW		G6121
+yafX		G6123
+yafY		G6126
+yafZ		G6127
+yagA		EG12338
+yagB		EG12339
+yagE		G6140
+yagF		G6141
+yagG		G6142
+yagH		G6143
+yagJ		G6147
+yagK		G6148
+yagL		G6149
+yagM		G6150
+yagN		G6151
+yagP	ykgT // b4695	G6153
+yagU		G6158
+yahB		G6181
+yahC		G6182
+yahD		G6183
+yahE		G6184
+yahF		G6185
+yahG		G6186
+yahH		G0-10550
+yahI		G6188
+yahJ		G6189
+yahK		G6190
+yahL		G6191
+yahM		G6192
+yahN		G6193
+yahO		G6194
+yahV		G0-16725
+yaiA		EG11093
+yaiI		G6230
+yaiL		G6207
+yaiO		G6210
+yaiP		G6215
+yaiS		G6216
+yaiW		G6227
+yaiY		G6228
+yaiZ		G6229
+yajC		EG11096
+yajD		EG11097
+yajG		EG12182
+yajI		EG12874
+yajL	thiJ	G198
+yajO		G6236
+yajQ		G6240
+yajR		G6241
+ybaA		EG11099
+ybaB		EG11100
+ybaE		EG13217
+ybaK		EG12454
+ybaL	ylaA	EG12623
+ybaM		EG12830
+ybaN		EG12843
+ybaP		G6258
+ybaQ		G6259
+ybaT		G6262
+ybaV	comEA	G6243
+ybaY		G6250
+ybaZ	atl	G6251
+ybbA		EG11657
+ybbC		EG11769
+ybbJ		G6264
+ybbO		G6269
+ybbP		G6270
+ybbW	allP // glxB2	G6280
+ybbY	glxB4	G6282
+ybcF	arcC	EG12384
+ybcH		EG12448
+ybcI		EG12708
+ybcJ		EG12879
+ybcK		G6300
+ybcL		G6301
+ybcM		G6302
+ybcN		G6303
+ybcO		G6305
+ybcV		G6313
+ybcW		G6314
+ybdD		G0-10438
+ybdF		G6324
+ybdG		G6323
+ybdJ		G6325
+ybdK		G6326
+ybdL		G6329
+ybdM		G6330
+ybdN		G6331
+ybdO		G6332
+ybdR		G6335
+ybdZ		G0-10437
+ybeD		EG11592
+ybeF		EG11594
+ybeL		EG12851
+ybeQ		G6351
+ybeR		G6352
+ybeT		G6354
+ybeU		G6355
+ybeX		G6361
+ybeY		G6362
+ybeZ	phoL	G6363
+ybfA		EG11521
+ybfB		EG11522
+ybfC		EG11523
+ybfD		EG11524
+ybfE		EG11775
+ybfF		EG11776
+ybfL		G6377
+ybfP		G6374
+ybfQ		G0-10440
+ybgA	tkp	EG11108
+ybgC		EG11110
+ybgD		EG12359
+ybgE		EG12395
+ybgI		G6379
+ybgO		G6385
+ybgP		G6386
+ybgQ		G6387
+ybgS		G6394
+ybgU		G0-16730
+ybgV		G0-17014
+ybhA		EG11239
+ybhB		EG11238
+ybhC		EG12875
+ybhD		G6398
+ybhF		G6411
+ybhG		G6412
+ybhH		G6399
+ybhI		G6400
+ybhJ		G6401
+ybhK		G6402
+ybhL		G6403
+ybhM		G6404
+ybhN		G6405
+ybhP		G6407
+ybhQ		G6408
+ybhR		G6409
+ybhS		G6410
+ybiA		EG11579
+ybiB		EG11580
+ybiE		G0-17015
+ybiI		EG12421
+ybiJ		EG12422
+ybiO		G6417
+ybiR		G6421
+ybiT		G6423
+ybiU		G6424
+ybiV	supH	G6425
+ybiW	pflF	G6426
+ybiX		G6413
+ybiY	pflE	G6427
+ybjC		EG12842
+ybjD		G6459
+ybjG		G6439
+ybjH		G6441
+ybjI		G6442
+ybjJ		G6443
+ybjL		G6445
+ybjM		G6446
+ybjN		G6447
+ybjO		G6448
+ybjP		G6450
+ybjQ		G6451
+ybjS		G6453
+ybjT		G6454
+ybjX		G6460
+ycaC		EG11241
+ycaD		EG11242
+ycaI		EG12375
+ycaK		EG12702
+ycaL		G6470
+ycaM		G6466
+ycaN		G6467
+ycaO		G6468
+ycaP		G6469
+ycaQ	alkZ	G6471
+ycaR		G6472
+ycbF		EG12397
+ycbJ		G6473
+ycbU		G6484
+ycbV		G6485
+ycbX		G6487
+ycbZ		G6493
+yccA		EG11113
+yccE		EG12196
+yccF		G6496
+yccJ		EG12703
+yccM		G6513
+yccS		G6495
+yccT		G6498
+yccU		G6499
+yccX		G6502
+ycdU		G6536
+ycdX		G6540
+ycdY		G6541
+ycdZ	nupT	G6542
+yceB		EG11117
+yceD		EG11119
+yceF		EG11438
+yceH		EG11537
+yceI		EG11820
+yceJ		G6554
+yceK		EG12689
+yceM	mviM	G6560
+yceO		G6555
+yceQ		G6563
+ycfH		EG12303
+ycfJ		EG12444
+ycfK	stfP	EG12877
+ycfL		G6564
+ycfP		G6568
+ycfT		G6572
+ycfZ		G6578
+ycgB		EG11516
+ycgJ		G6614
+ycgL		G6616
+ycgM		G6617
+ycgN		G6618
+ycgR		G6623
+ycgV		G6629
+ycgX		G6601
+ycgY		G6625
+ycgZ		G6604
+ychA	sirB1	EG11251
+ychE		EG11342
+ychF	gtp1	EG11404
+ychH		EG11533
+ychJ		EG12119
+ychN		EG12404
+ychO	ychP	EG12405
+ychQ	sirB2	G6630
+ychS		G6631
+ychT		G0-17017
+yciA		EG11121
+yciB		EG11122
+yciC		EG11123
+yciE		EG11125
+yciF		EG11126
+yciG		EG11127
+yciH		EG11128
+yciI		EG11607
+yciK		EG11759
+yciN		EG12868
+yciO		G6635
+yciQ	yciP	G6636
+yciT	deoT	G6638
+yciU		G6633
+yciV	trpH	G6634
+yciW		G6640
+yciX	yciX_2	G0-10513
+yciY		G0-8891
+yciZ	deoL	G0-10591
+ycjD		G6641
+ycjF		EG12870
+ycjG	ycjH	G6661
+ycjM	ggaP	G6647
+ycjN		G6648
+ycjO		G6649
+ycjP		G6650
+ycjQ		G6651
+ycjR	dte	G6652
+ycjS		G6653
+ycjT		G6654
+ycjU	pgmB	G6655
+ycjV		G6656
+ycjW		G6658
+ycjX		G6659
+ycjY		G6663
+ydaE		G0-9081
+ydaF		G0-10448
+ydaG	gatA	G6679
+ydaS		G6681
+ydaT		G6682
+ydaU		G6683
+ydaV		G6684
+ydaW		G6685
+ydaY		G6689
+ydbD		EG11310
+ydbH		G6703
+ydbJ		G0-10450
+ydbK	pfo	G6701
+ydbL		G6705
+ydcA		EG11219
+ydcC		EG11526
+ydcD		EG11760
+ydcF		EG12110
+ydcH		EG12865
+ydcI		G6737
+ydcJ		G6738
+ydcK		G6741
+ydcL		G6742
+ydcO		G6744
+ydcR		G6750
+ydcS		G6751
+ydcT		G6752
+ydcU		G6753
+ydcV		G6754
+ydcY		G6757
+ydcZ		G6758
+yddA		EG11742
+yddB		EG11743
+yddE		EG11825
+yddG		EG12713
+yddH		G6769
+yddK		G6772
+yddL		G6773
+yddM		G6774
+yddY		G0-16740
+ydeA		EG11636
+ydeE	ydeF	EG11640
+ydeI		EG11644
+ydeJ		EG11645
+ydeM		G6787
+ydeN		G6788
+ydeO		G6789
+ydeP		G6791
+ydeQ		G6792
+ydeR		G6793
+ydeS		G6794
+ydeT	fmlC	G6795
+ydfA		EG11300
+ydfB		EG11301
+ydfC		EG11302
+ydfD		EG11303
+ydfG		EG12345
+ydfH		G6814
+ydfI		G6816
+ydfJ	ydfJ_2	G6817
+ydfK		G6818
+ydfO		G6822
+ydfR		G6828
+ydfT	quuQ	G6830
+ydfU		G6831
+ydfV		G6832
+ydfW	intK	G6834
+ydfX		G6835
+ydfZ		G6815
+ydgA		G6865
+ydgC		G6863
+ydgD		G6856
+ydgH		G6860
+ydgI	arcD	G6861
+ydgJ		G6868
+ydgK	rsxP	G6870
+ydgU		G0-10593
+ydhB		EG12140
+ydhC		EG12141
+ydhF		G6887
+ydhI		G6883
+ydhJ		G6884
+ydhK		G6885
+ydhL		G6888
+ydhP		G6893
+ydhQ		G6894
+ydhR		G6895
+ydhS		G6896
+ydhT		G6897
+ydhU		G6898
+ydhV		G6901
+ydhW		G6900
+ydhX		G6899
+ydhY		G6902
+ydiB		EG11234
+ydiE		EG12391
+ydiF		EG12432
+ydiH		G6911
+ydiJ		G6913
+ydiK		G6914
+ydiL		G6915
+ydiM		G6916
+ydiN		G6917
+ydiO		G6918
+ydiP		G6919
+ydiQ		G6920
+ydiR		G6921
+ydiS		G6922
+ydiT		G6923
+ydiY		G6928
+ydiZ		G6929
+ydjA		EG11134
+ydjE		EG12369
+ydjF		G6957
+ydjG		G6958
+ydjH		G6959
+ydjI		G6960
+ydjJ		G6961
+ydjK		G6962
+ydjL		G6963
+ydjM		G6933
+ydjO		G6935
+ydjX		G6945
+ydjY		G6946
+ydjZ		G6947
+yeaC		G6964
+yeaD	yzzQ	G6966
+yeaE		G6967
+yeaG		G6969
+yeaH		G6970
+yeaK		G6973
+yeaL		G6975
+yeaO		G6978
+yeaQ		G6981
+yeaR		G6983
+yeaV		G6987
+yeaW		G6988
+yeaX		G6989
+yeaY		G6990
+yebB		EG11136
+yebC		EG11137
+yebE		EG11806
+yebF		EG11807
+yebG		EG11808
+yebK	hexR(P.a.)	EG12860
+yebO		G7001
+yebQ		G7004
+yebV		G7009
+yebW		G7010
+yebY		G7012
+yebZ		G7013
+yecA		EG11139
+yecD		EG12378
+yecE		EG12379
+yecF		EG12861
+yecH		G7036
+yecJ		G0-10455
+yecM	yecL	G7025
+yecN		G7019
+yecR		G7035
+yecT		G7026
+yecU		G0-16746
+yecV		G0-17024
+yedA		EG11141
+yedD		EG11659
+yedE		EG11660
+yedF		EG11661
+yedI		EG12709
+yedJ		EG12710
+yedK	yedG	EG11662
+yedL		G7040
+yedP		G7048
+yeeA		EG11891
+yeeD		EG11894
+yeeE		EG11895
+yeeJ		G7064
+yeeN		G7068
+yeeO		G7070
+yeeR		G7081
+yeeS		G7082
+yeeT		G7083
+yeeW		G7086
+yeeY		G7088
+yeeZ		G7089
+yefM		EG12844
+yegD		EG12200
+yegH		G7108
+yegI		G7109
+yegJ		G7110
+yegL		G7112
+yegP		G7117
+yegR		G7122
+yegS		G7123
+yegT		G7130
+yegU		G7131
+yegV		G7132
+yegW		G7133
+yegX		G7134
+yehA		EG11987
+yehB		EG11988
+yehC		EG11989
+yehD		EG11990
+yehE		EG11991
+yehF	molR_1 // sosF // dinO	EG11992
+yehI		EG11995
+yehK		G0-10458
+yehL		EG11998
+yehM	yehO // yehN	EG11999
+yehP		EG12002
+yehQ		EG12003
+yehR		EG12004
+yehS		EG12005
+yehW		EG12009
+yehX		EG12010
+yehY		EG12011
+yeiB		EG11290
+yeiE		EG12105
+yeiG		EG12026
+yeiH		EG12027
+yeiI		EG12028
+yeiL		EG12031
+yeiP		EG12035
+yeiQ		EG12036
+yeiR		EG12104
+yeiS		G7144
+yeiW		G0-10511
+yejA		EG12037
+yejB		EG12038
+yejE		EG12040
+yejF		EG12041
+yejG		EG12042
+yejK	ndpA	EG12048
+yejL		EG12043
+yfaA	pufY	EG11142
+yfaE		EG12360
+yfaL	yfaF // yfaK // yfaJ	EG12850
+yfaP		G7152
+yfaQ		G7153
+yfaT		G7156
+yfaU		G7158
+yfaV		G7159
+yfaX		G7161
+yfaY		G7162
+yfaZ		G7163
+yfbK		G7177
+yfbL		G7178
+yfbM		G7179
+yfbN		G7180
+yfbO		G7181
+yfbP		G7182
+yfbR		G7185
+yfbS		G7186
+yfbU		G7188
+yfbV		G7189
+yfcA		EG11144
+yfcC		G7190
+yfcD		G7191
+yfcE		G7192
+yfcF		G7193
+yfcG		G7194
+yfcH		G7196
+yfcJ		G7198
+yfcL		G7200
+yfcO		G7203
+yfcP		G7204
+yfcQ		G7205
+yfcR		G7206
+yfcS		G7207
+yfcV		G7210
+yfcZ		G7214
+yfdC		G7217
+yfdE		G7234
+yfdF		G7215
+yfdG	gtrA	G7219
+yfdH	gtrB	G7220
+yfdI	gtrS // gtrIV	G7221
+yfdK		G7223
+yfdM	yzyB	G7225
+yfdN	yzyA	G7226
+yfdO	oweS	G7227
+yfdP		G7228
+yfdQ		G7229
+yfdR		G7230
+yfdS		G7231
+yfdT		G7232
+yfdV		G7235
+yfdX		G7238
+yfdY		G7240
+yfeC		EG11431
+yfeD		EG11432
+yfeH		EG12376
+yfeK		G7260
+yfeN		G7256
+yfeO		G7251
+yfeR		G7257
+yfeS		G7261
+yfeW		G7265
+yfeX		G7266
+yfeY		G7267
+yfeZ		G7268
+yffB		EG11147
+yffL		G7273
+yffM		G7274
+yffN		G7275
+yffO		G7276
+yffP		G7277
+yffQ		G7278
+yffR		G7279
+yffS		G7280
+yfgD		G7312
+yfgG		G7315
+yfgH		G7316
+yfgI		G7317
+yfgJ		G7318
+yfgM		G7321
+yfgO	perM	G7310
+yfhH		EG12308
+yfhL		G7346
+yfhM		G7323
+yfhR		G7328
+yfiB		EG11152
+yfiC	trmM	EG11538
+yfiE		EG11785
+yfiF		EG11786
+yfiL		EG12446
+yfiM		EG12857
+yfiR		G7354
+yfiS		G0-17029
+yfjD	b2612 // ypjE // b2613	EG12442
+yfjF	ratB	G7357
+yfjH		G7359
+yfjI		G7360
+yfjJ		G7361
+yfjM		G7364
+yfjP		G7367
+yfjQ		G7368
+yfjR		G7369
+yfjS		G7371
+yfjT		G7372
+yfjU		G7373
+yfjW		G7377
+yfjX		G7378
+yfjY		G7379
+yfjZ		G7380
+ygaC		EG12201
+ygaH		G7406
+ygaM		G7400
+ygaP		G7398
+ygaV		G7397
+ygaZ		G7405
+ygbA		EG11287
+ygbE		EG12707
+ygbI		G7416
+ygbJ		G7417
+ygbK		G7418
+ygbL		G7419
+ygbM		G7420
+ygbN		G7421
+ygcE		G7442
+ygcG		G7444
+ygcN		G7432
+ygcO		G7433
+ygcP		G7434
+ygcQ		G7435
+ygcR		G7436
+ygcS		G7437
+ygcU	ygcT // b2772 // ygcV // b2773	G7439
+ygcW		G7440
+ygdB		EG11155
+ygdD		EG11793
+ygdG	xni // exo	EG12372
+ygdI		G7453
+ygdQ		G7460
+ygdR		G7461
+ygdT		G0-10601
+ygeA		EG11157
+ygeG		G7471
+ygeH		G7472
+ygeI		G7473
+ygeQ		G7483
+ygeV		G7488
+ygeW		G7489
+ygeX		G7490
+ygeY		G7491
+ygfB		EG11323
+ygfF	yqfD	G7514
+ygfI		G7518
+ygfK		G7497
+ygfM		G7499
+ygfS		G7505
+ygfT		G7506
+ygfX	cptA	G7509
+ygfZ	yzzW	G7511
+yggC		EG11161
+yggE		EG11244
+yggF	yggK	EG11245
+yggI	sprT	EG12122
+yggL		EG12443
+yggM		EG12704
+yggN	ecfF	EG12705
+yggP	b2931 // b2932	G7520
+yggR		G7526
+yggS		G7527
+yggT		G7528
+yggU		G7529
+yggX		G7532
+yghA		EG11292
+yghB		EG11824
+yghD	ecfC	G7535
+yghE	ecfB	G7536
+yghF	ecfA	G7537
+yghG		G7538
+yghJ	b2974 // b2973 // sslE	G7541
+yghO		G7547
+yghQ		G7549
+yghR		G7550
+yghS		G7551
+yghT		G7552
+yghU		G7553
+yghW		G7555
+ygiB		EG11164
+ygiC		EG11165
+ygiD		EG11166
+ygiF		EG11603
+ygiL		EG12363
+ygiM	ecfG // htrG	EG12434
+ygiN		EG12657
+ygiQ	ygiR // b3016 // b3015	G7568
+ygiS		G7570
+ygiV		G7573
+ygiW	visP	G7574
+ygiZ		G7577
+ygjH		G7597
+ygjI		EG12720
+ygjJ		G7598
+ygjK		G7599
+ygjP		G7604
+ygjQ		G7605
+ygjR		G7606
+ygjV		G7608
+yhaB		EG11173
+yhaC		EG11174
+yhaH		G7617
+yhaI		G7618
+yhaJ		G7619
+yhaK		G7620
+yhaL		G7621
+yhaV		G7629
+yhbE		EG11499
+yhbO		G7647
+yhbP		G7648
+yhbQ		G7649
+yhbS		G7650
+yhbW		G7654
+yhbX		G7655
+yhbY		EG12794
+yhcA		EG11515
+yhcC		G7669
+yhcD		G7670
+yhcF		G7673
+yhcG		G7674
+yhcN		G7683
+yhcO		G7684
+yhdE		EG11298
+yhdH	acuI	EG11315
+yhdJ	ccrM	EG11498
+yhdN		EG11970
+yhdP	b3246 // yhdR // yhdQ // b3245	G7690
+yhdT		G7693
+yhdU		G7694
+yhdV		G7695
+yhdX		EG12835
+yhdY		EG12836
+yhdZ		EG12837
+yheO		G7715
+yheS		EG12903
+yheT		G7718
+yheU		G7719
+yheV		G0-10466
+yhfA		EG11182
+yhfG	ficA	EG12374
+yhfK		G7721
+yhfL		G7722
+yhfS		G7728
+yhfT		G7729
+yhfU		G7730
+yhfW		G7732
+yhfX		G7733
+yhfY		G7734
+yhfZ		G7735
+yhgE		G7745
+yhgF		G7746
+yhgH	gntX	G7747
+yhgN		G7753
+yhgO		G0-17034
+yhgP		G0-17035
+yhhA		EG11184
+yhhH		EG11520
+yhhI		EG11525
+yhhJ		EG11767
+yhhL		EG12212
+yhhM		EG12213
+yhhN		EG12214
+yhhQ		EG12217
+yhhS		EG12219
+yhhT		EG12220
+yhhW		G7756
+yhhX		G7757
+yhhY		G7758
+yhhZ		G7759
+yhiD	yhhE	EG11400
+yhiI		EG12224
+yhiJ		EG12225
+yhiM		EG12228
+yhiN		EG12229
+yhiY		G0-17036
+yhjB		EG12246
+yhjD		EG12248
+yhjE		EG12249
+yhjG	yhjF	EG12251
+yhjJ		EG12254
+yhjR	bcsR	EG12262
+yhjV		EG12266
+yhjX		EG12268
+yhjY		EG12269
+yiaA		EG11186
+yiaB		EG11267
+yiaC		EG12270
+yiaD		EG12271
+yiaF		EG12273
+yiaG		EG12624
+yiaK		EG12279
+yiaL		EG12280
+yiaM		EG12281
+yiaN		EG12282
+yiaO		EG12283
+yiaT		EG12288
+yiaU		EG12289
+yiaV		EG12290
+yiaW		EG12291
+yiaY		EG12293
+yibA		EG11187
+yibF		EG11762
+yibG		EG11763
+yibH		EG11764
+yibI		EG11765
+yibL		EG11964
+yibN		EG12295
+yibQ		EG12298
+yibT		G0-10468
+yibV		G0-10605
+yibX		G0-17041
+yibY		G0-17042
+yicC		EG11192
+yicG		EG11683
+yicH		EG11684
+yicI		EG11685
+yicJ		EG11686
+yicL		EG11688
+yicN		EG11690
+yicR	radC	EG11312
+yicS		G0-10469
+yicU		G0-17043
+yidA		EG11195
+yidB		EG11196
+yidC		EG11197
+yidD		G0-10470
+yidE	yibE	EG11536
+yidF		EG11694
+yidG		EG11695
+yidH		EG11696
+yidI		EG11697
+yidJ		EG11705
+yidK		EG11706
+yidL		EG11707
+yidP		EG11711
+yidQ	ecfI	EG11712
+yidR		EG11713
+yidX		EG11719
+yidZ		EG11721
+yieE		EG11722
+yieF	chrR	EG11723
+yieH		EG11725
+yieK		EG11728
+yieL		EG11729
+yieP		EG11733
+yifB		EG11260
+yifK		EG11459
+yifL		G0-10471
+yigA		EG11201
+yigB		EG11202
+yigE	b3815 // b3814	EG11462
+yigF		EG11464
+yigG		EG11465
+yigI		EG11467
+yigL		EG11470
+yigZ		EG11484
+yihA	engB	EG11203
+yihD		EG11830
+yihF		EG11832
+yihG		EG11833
+yihI		EG11835
+yihL		EG11838
+yihM		EG11839
+yihN		EG11840
+yihO	squO	EG11841
+yihP		EG11842
+yihQ	squQ	EG11843
+yihR	squR	EG11844
+yihS	squS	EG11845
+yihT	squT	EG11846
+yihU	squU	EG11847
+yihV	squV	EG11848
+yihX		EG11850
+yihY	rbn	EG11851
+yiiE		EG11854
+yiiF		EG11855
+yiiG		EG11860
+yiiM		EG11870
+yiiQ		EG11874
+yiiR		EG11875
+yiiS		EG11876
+yiiX		EG11882
+yijD		EG11395
+yijE		EG11902
+yijF		EG11903
+yijO		EG11913
+yjaA		EG11206
+yjaB		EG11207
+yjaG		EG11916
+yjaH		EG11917
+yjaZ	htrC	EG11429
+yjbB		EG11919
+yjbD		EG11922
+yjbE		EG11923
+yjbF		EG11924
+yjbG		EG11925
+yjbH		EG11926
+yjbJ		EG11928
+yjbL		EG11930
+yjbM		EG11931
+yjbQ		EG11935
+yjbR		EG11936
+yjbS		G0-10607
+yjbT		G0-10606
+yjcB		EG11937
+yjcE		EG11940
+yjcF		EG11941
+yjcH		EG11943
+yjcO		EG11951
+yjcS		EG11955
+yjdC	cutA3	EG12176
+yjdF		G7825
+yjdI		G7828
+yjdJ		G7829
+yjdM	phnA	EG10711
+yjdN	phnB	EG10712
+yjdP		G0-9541
+yjeH		G7833
+yjeI		G7834
+yjeJ		G7835
+yjeM		EG12475
+yjeN		G7838
+yjeO		G7839
+yjeT		G7844
+yjeV		G0-10642
+yjfC		EG11812
+yjfF		EG12439
+yjfI		G7846
+yjfJ		G7847
+yjfK		G7848
+yjfL		G7849
+yjfM		G7850
+yjfN		G7851
+yjfP		G7853
+yjfY		G7861
+yjfZ		G7862
+yjgA		EG11410
+yjgH		G7879
+yjgL		G7884
+yjgM		G7886
+yjgN		G7887
+yjgR		G7890
+yjgZ		G7899
+yjhD		G7902
+yjhF		EG12548
+yjhG		G7910
+yjhH		G7911
+yjhI		G7912
+yjhP		G7916
+yjhQ		G7917
+yjhU		G7909
+yjiA		EG10021
+yjiC		G7922
+yjiG		G7926
+yjiH		G7927
+yjiJ		G7929
+yjiK		G7930
+yjiL		G7931
+yjiM		G7932
+yjiN		G7933
+yjiR		G7936
+yjiS		G7937
+yjiT		G7938
+yjiX		G7941
+yjjA		EG11214
+yjjB		EG11215
+yjjG		EG12115
+yjjI	yjjH	EG12171
+yjjJ		EG12342
+yjjP		G7946
+yjjQ		G7947
+yjjU		G7951
+yjjV		G7952
+yjjW		G7953
+yjjX		EG12600
+yjjY		G7954
+yjjZ		G0-10474
+yjtD	lasT	EG12309
+ykfA		G6128
+ykfB		G6125
+ykfC		G6133
+ykfF		G6124
+ykfG		G6122
+ykfH		G0-10432
+ykfI		G6120
+ykfM		G0-10583
+ykgA		G6170
+ykgE		G6176
+ykgF		G6177
+ykgG		G6178
+ykgH		G6180
+ykgJ		G6159
+ykgL		G6166
+ykgM		G6167
+ykgO		G0-10434
+ykgR		G0-10654
+ykgS		G0-16674
+ykgV		G0-16724
+ykiC		G0-16726
+ykiD		G0-16727
+ykiE		G0-17047
+ylaC		G6253
+ylbE	b0519 // G0-10554 // b4507	G6288
+ylbF		G6289
+ylbG		G6273
+ylcG		G0-10435
+ylcH		G0-10584
+ylcI		G0-10585
+ylcJ		G0-16728
+yldA		G0-16729
+yliI		G6437
+yliM		G0-16731
+yljB		G0-17016
+ymcE		G6512
+ymcF		G0-16688
+ymdA		G6549
+ymdB		G6550
+ymdF		G0-10443
+ymdG		G0-16732
+ymfA		G6579
+ymfD		G6582
+ymfE		G6583
+ymfH		G6586
+ymfI		G6587
+ymfJ		G6588
+ymfK	cohE	G6589
+ymfL		G6591
+ymfM	sfiC	G6592
+ymfN		G6593
+ymfQ		G6597
+ymfR		G6594
+ymfT	croE	G6590
+ymgA		G6605
+ymgC		G6607
+ymgD		G6611
+ymgE	tag	G6624
+ymgF		G0-10261
+ymgG		G6612
+ymgI		G0-10589
+ymgJ		G0-10590
+ymgK		G0-16733
+ymgL		G0-16734
+ymgM		G0-16735
+ymiA	yciX_1	G0-10512
+ymiB		G0-16673
+ymiC		G0-16736
+ymiD		G0-17018
+ymjA		G6642
+ymjC		G0-10446
+ymjD		G0-10645
+ymjE		G0-16737
+ynaA	tmpR	G6691
+ynaE		G6698
+ynaI		G6666
+ynaJ		G6668
+ynaK		G6688
+ynaL	C0343	G0-8900
+ynaM		G0-16738
+ynaN		G0-17019
+ynbA		G6727
+ynbB		G6728
+ynbC		G6729
+ynbD		G6730
+ynbE		G6704
+ynbG		G0-10646
+yncD		G6762
+yncE		G6763
+yncG		G6765
+yncH		G6766
+yncJ		G6747
+yncL		G0-8887
+yncO		G0-16739
+yncP		G0-17020
+yneE		G6807
+yneG		G6809
+yneJ		G6812
+yneK		G6813
+yneP		G0-16741
+ynfA		G6840
+ynfB		G6841
+ynfC		G6843
+ynfD		G6844
+ynfE		G6845
+ynfF		G6846
+ynfG		G6847
+ynfH		G6848
+ynfK		G6851
+ynfL		G6853
+ynfM	yzyC	G6854
+ynfN		G6824
+ynfO		G0-10452
+ynfP	ydfJ_1	G0-10559
+ynfQ		G0-16689
+ynfR		G0-16743
+ynfS		G0-16744
+ynfT		G0-16742
+ynfU		G0-17022
+yniA		G6930
+yniB		G6931
+yniD		G0-10453
+ynjA		G6948
+ynjB		G6949
+ynjC		G6950
+ynjD		G6951
+ynjE		G6952
+ynjF		G6953
+ynjH		G6955
+ynjI		G6956
+yoaA		G6992
+yoaB		G6993
+yoaC		G6994
+yoaE	borG	G6997
+yoaF		G6979
+yoaG		G6982
+yoaH		G6995
+yoaI		G6974
+yoaJ		G0-10648
+yoaK		G0-10649
+yoaL		G0-16745
+yoaM		G0-17025
+yobA		G7014
+yobB		G7015
+yobD		G6998
+yobF		G7000
+yobH		G0-10454
+yobI		G0-10644
+yodB		G7062
+yodC		G7050
+yodD		G7046
+yodE		G0-17026
+yoeB		G0-9121
+yoeF		G0-10456
+yoeI		G0-10643
+yohC		EG12016
+yohD		EG12017
+yohF	yohE	EG12019
+yohJ		EG12023
+yohK		EG12024
+yohO		G0-10459
+yohP		G0-10652
+yojI	yojJ	EG12070
+yojO		G0-10595
+ypaB		G0-10596
+ypdC		G7245
+ypdE		G7247
+ypdF		G7248
+ypdI		G7239
+ypdJ		G0-10461
+ypdK		G0-10647
+ypeA		G7269
+ypeB		G0-10462
+ypeC		G7252
+ypfG		G7295
+ypfH		G7296
+ypfJ		G7298
+ypfM		G0-8888
+ypfN		G0-10463
+yphA		G7337
+yphB		G7338
+yphC		G7339
+yphD		G7340
+yphE		G7341
+yphF		G7342
+yphG		G7343
+yphH		G7344
+ypjA		G7382
+ypjB		G7384
+ypjC		G7385
+ypjD		G7355
+ypjF		G7381
+ypjJ		G0-10464
+ypjK		G7370
+yqaA		G7407
+yqaB		G7408
+yqaE		G7396
+yqcA		G7448
+yqcC		G7450
+yqcE	yqcF	EG13174
+yqcG		G0-10655
+yqeA		G7493
+yqeB		G7494
+yqeC		G7495
+yqeF		G7464
+yqeG		G7465
+yqeH		G7466
+yqeI		G7467
+yqeJ		G7468
+yqeK		G7469
+yqeL		G0-10650
+yqfA		G7512
+yqfB		G7513
+yqfG		G0-10656
+yqfH		G0-16747
+yqfI		G0-16748
+yqgA		G7534
+yqgB		G7521
+yqgC		G7522
+yqgD		G7523
+yqgE		G7524
+yqgF		G7525
+yqgG		G0-17030
+yqgH		G0-17031
+yqhA		G7559
+yqhC		G7563
+yqhD		G7564
+yqhG	yqhF	G7566
+yqhH		G7567
+yqhI		G0-16749
+yqhJ		G0-17032
+yqiA	yzzI	G7578
+yqiB	yzzH	G7580
+yqiD		G0-16750
+yqiH		G7586
+yqiI		G7587
+yqiJ		G7588
+yqiK		G7589
+yqiM		G0-17033
+yqjA	ecfL	G7609
+yqjC		G7611
+yqjD		G7612
+yqjE		G7613
+yqjF		G7615
+yqjG		G7616
+yqjK		G7614
+yraH		G7637
+yraI		G7638
+yraJ		G7639
+yraK		G7640
+yraN		G7643
+yraQ		G7645
+yraR		G7646
+yrbG		EG12802
+yrbL		G7667
+yrbN		G0-10651
+yrdA		G7696
+yrdB		G7697
+yrdD		G7699
+yrfG		G7742
+yrhB		G7763
+yrhD		G0-10603
+yriA		G0-17037
+yriB		G0-17038
+ysaA	yiaI	EG12277
+ysaB		G0-10467
+ysaE		G0-17039
+ysdD		G0-16751
+ysdE		G0-17044
+ysgA		G7804
+ysgD		G0-17045
+yshB		G0-10657
+ytcA		G0-10608
+ytfA		G7863
+ytfB		G7864
+ytfE	dnrN	G7866
+ytfF		G7867
+ytfH		G7869
+ytfI		G7870
+ytfJ	ecfJ	G7871
+ytfK		G7872
+ytfP		G7876
+ytfQ		EG12517
+ytfR	ytfS // b4228 // b4229	EG12518
+ytfT		EG12520
+ytgA		G0-17046
+ythA		G0-10616
+ythB		G0-17048
+ytiA		G0-16640
+ytiB		G0-17013
+ytiC		G0-16686
+ytiD		G0-16687
+ytjA		G0-10475
+ytjB	smp	EG10951
+ytjC	gpmB	EG12164
+yzcX		G7802
+yzgL		G7752
+zapA	ygfE	EG12878
+zapB	yiiU	EG11878
+zapC	ycbW	G6486
+zapD	yacF	EG12313
+zapE	yhcM	G7680
+zapG	yhcB	G7681
+zinT	yodA	G7061
+zipA		G7258
+zitB	ybgR	G6393
+zntA	yhhO	EG12215
+zntB	ydaN	G6674
+zntR	yhdM	EG11969
+znuA	yzzP // yebL	G7017
+znuB	yebI	EG12368
+znuC	yebM	G7018
+zraP	yjaI // zra	EG11918
+zraR	hydG	EG10482
+zraS	hydH	EG10008
+zupT	ygiE	EG11167
+zur	yjbK // znuR	EG11929
+zwf		EG11221

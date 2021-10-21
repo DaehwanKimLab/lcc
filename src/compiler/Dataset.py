@@ -127,7 +127,7 @@ class FMetabolite(FDataset):
                 Count_Temporary_Int32 = int(1e7)
                 self.Count_Metabolites[i] = Count_Temporary_Int32
                 if self.Switch4DebugDataset:
-                    print("Metabolites | The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s" % (Name, Count, Count_Temporary_Int32))
+                    print('Metabolites | The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s' % (Name, Count, Count_Temporary_Int32))
 
         # Add to the Master Dataset
         self.AddToMaster(Comp.Master, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
@@ -175,7 +175,7 @@ class FChromosome(FDataset):
             # ChromosomeNTFreq
             NTCounts = np.array([ChromosomeSeq.count("A"), ChromosomeSeq.count("C"), ChromosomeSeq.count("G"), ChromosomeSeq.count("T")])
             if np.sum(NTCounts) != self.Len_ChromosomesInGenome[i]:
-                print("Genome Dataset | ', 'WARNING: RNA seq may contain non-ACGT text.", file=sys.stderr)
+                print('Genome Dataset | ', 'WARNING: RNA seq may contain non-ACGT text.', file=sys.stderr)
             NTFreq = NTCounts / self.Len_ChromosomesInGenome[i]
             self.Count_NTsInChromosomesInGenome.append(NTCounts)
             self.Freq_NTsInChromosomesInGenome.append(NTFreq)
@@ -250,6 +250,8 @@ class FGene(FDataset):
         self.Count_Genes = 0
         self.NUniq_Genes = 0
 
+        self.Dict_GeneSynonyms = dict()
+
         self.Coord_Genes_Reindexed = 0
         self.Coord_Genes_Reindexed_Leftward = 0
         self.Coord_Genes_Reindexed_Rightward = 0
@@ -259,19 +261,13 @@ class FGene(FDataset):
 
     def SetUpData(self, Dataset, Comp):
         Genes = Dataset['genes.tsv']
+
         self.NUniq_Genes = len(Genes)
         self.Len_Genes = np.zeros(self.NUniq_Genes)
         self.Coord_Genes = np.zeros(self.NUniq_Genes)
         self.MW_Genes = np.zeros(self.NUniq_Genes) # No molecular weights to be calculated
         self.Dir_Genes = np.zeros(self.NUniq_Genes)
         self.Count_Genes = np.ones(self.NUniq_Genes) # The count may be adjusted according to the starting replication state of the chromosomes.
-        self.Name_Genes = list()
-        self.Sym_Genes = list()
-        self.ID_Genes = list()
-        self.Type_Genes = list()
-        self.Name2ID_Genes = dict()
-        self.ID2Idx_Genes = dict()
-        self.Sym2Idx_Genes = dict()
 
         DirectionBinaryDict = dict()
         DirectionBinaryDict['+'] = 1
@@ -313,7 +309,7 @@ class FGene(FDataset):
             elif (Coord >= 0) and (Coord <= Coord_Ori):
                 self.Coord_Genes_Reindexed[i] = Coord + (Len_Genome - Coord_Ori)
             else:
-                print("Genome Dataset | ', 'WARNING: Unidentifiable coordinate range", file=sys.stderr)
+                print('Genome Dataset | ', 'WARNING: Unidentifiable coordinate range', file=sys.stderr)
         assert max(self.Coord_Genes_Reindexed) < Len_Genome, 'Reindexing failed'
 
         # Buffering and organizing coordinates for bidirectional scanning during replication
@@ -333,20 +329,148 @@ class FGene(FDataset):
         assert max(self.Coord_Genes_Reindexed_Leftward) < Len_Genome, 'Reindexing failed'
         assert max(self.Coord_Genes_Reindexed_Rightward) < Len_Genome, 'Reindexing failed'
 
+        # Gene synonyms
+        GeneSynonyms = Dataset['All_instances_of_Genes_in_Escherichia_coli_K-12_substr._MG1655.txt']
+
+        for i, Line in enumerate(GeneSynonyms):
+            if i == 0:
+                continue
+            Gene, Synonyms, ObjectID = Line.split('\t')
+            self.Dict_GeneSynonyms[Gene] = ObjectID
+            if Synonyms:
+                for Synonym in Synonyms.split(' // '):
+                    self.Dict_GeneSynonyms[Synonym] = ObjectID
+
+        # Extra additions for promoter data
+        Dict_GeneSynonyms_PromoterData = {
+            # 'yliL': 'G6419',   # Phantom gene
+            'yddJ': 'G6771',   # Pseudogene
+        }
+
+        self.Dict_GeneSynonyms.update(Dict_GeneSynonyms_PromoterData)
+
+        # print(len(self.Dict_GeneSynonyms))
+
 
 class FPromoter(FDataset):
     def __init__(self):
         self.MolType_Promoters = 'Promoter'
-        self.Coord_Promoters = 0
-        self.Dir_Promoters = 0
-        self.ID_Promoters = list()
         self.ID2Idx_Promoters = dict()
-        self.Sym_PromoterTargetGenes = list()
+        self.ID_Promoters = list()
+        self.Coord_Promoters_Left = list()
+        self.Coord_Promoters_Right = list()
+        self.Dir_Promoters = list()
         self.NUniq_Promoters = 0
 
+        self.ID2Idx_SigmaFactor = dict()
+        self.ID2ID_Promoter2GeneSym = dict()
+        self.NUniq_SigmaFactors = 0
+
+        self.Freq_SigmaFactorBindingInGenePromoter = list()
+
+        # self.Coord_Promoters = 0
+        # self.Sym_PromoterTargetGenes = 0
         super().__init__()
 
     def SetUpData(self, Dataset, Comp):
+        self.SetUpData_RDB(Dataset, Comp)
+        # self.SetUpData_WCS(Dataset, Comp)
+
+    def SetUpData_RDB(self, Dataset, Comp):
+
+        # Add one row of zeros for the missing Sigma19Set data
+        ScoreArray = np.zeros(Comp.Gene.NUniq_Genes)
+        self.Freq_SigmaFactorBindingInGenePromoter.append(ScoreArray)
+        self.ID2Idx_SigmaFactor['Sigma19'] = len(self.ID2Idx_SigmaFactor)
+
+        DirectionBinaryDict = dict()
+        DirectionBinaryDict['F'] = 0
+        DirectionBinaryDict['R'] = 1
+
+        # TODO: The current dataset is missing Sigma19.
+        SigmaFactorFiles = [
+            'PromoterPredictionSigma24Set.txt',
+            'PromoterPredictionSigma28Set.txt',
+            'PromoterPredictionSigma32Set.txt',
+            'PromoterPredictionSigma38Set.txt',
+            'PromoterPredictionSigma54Set.txt',
+            'PromoterPredictionSigma70Set.txt',
+        ]
+
+        for SigmaFactorFile in SigmaFactorFiles:
+            SigmaFactors = Dataset[SigmaFactorFile]
+
+            ScoreArray = np.zeros(Comp.Gene.NUniq_Genes)
+
+            self.ID2Idx_SigmaFactor[SigmaFactorFile[-14:-7]] = len(self.ID2Idx_SigmaFactor)
+
+            for Line in SigmaFactors:
+                if Line.startswith(';'):
+                    continue
+
+                Line = Line.split('\t')
+
+                GeneSymbols = Line[3]   # List
+                PromoterName = Line[4]
+                L_end = Line[0]
+                R_end = Line[1]
+                Strand = Line[2]
+
+                SigmaFactor = Line[5]
+                Score = Line[14]   # assign to the gene
+                HomologyLevel = Line[15]
+                PValue = Line[16]
+                Sequence = Line[20]
+                Sequence_Minus35Box = Line[7]
+                Sequence_Minus10Box = Line[12]
+
+                assert SigmaFactor in self.ID2Idx_SigmaFactor
+                if PromoterName not in self.ID_Promoters:
+                    PromoterName += '_Rep'
+                    # print('Genome Dataset | ', 'WARNING: Redundant promoter %s' % PromoterName, file=sys.stderr)
+
+                self.ID2Idx_Promoters[PromoterName] = len(self.ID_Promoters)
+                self.ID_Promoters.append(PromoterName)
+                self.Coord_Promoters_Left.append(L_end)
+                self.Coord_Promoters_Right.append(R_end)
+                self.Dir_Promoters.append(DirectionBinaryDict[Strand])
+
+                if float(Score) < 0:
+                    Score = 0.0
+
+                List_GeneSymbols = list()
+                List_GeneIDs = list()
+                GeneID = None
+                for GeneSymbol in GeneSymbols.split(' '):
+                    if GeneSymbol in Comp.Gene.Dict_GeneSynonyms:
+                        GeneID = Comp.Gene.Dict_GeneSynonyms[GeneSymbol]
+                    elif GeneSymbol + '1' in Comp.Gene.Dict_GeneSynonyms:   # for insX (insertion element repressor) family of genes
+                        GeneID = Comp.Gene.Dict_GeneSynonyms[GeneSymbol + '1']
+
+                    # elif GeneSymbol in Comp.Gene.Sym_Genes:
+                    #     GeneID = Comp.Gene.Sym2ID_Genes[GeneSymbol]
+                    # elif GeneSymbol in Comp.Gene.Name_Genes:
+                    #     GeneID = Comp.Gene.Name2ID_Genes[GeneSymbol]
+                    # elif GeneSymbol in Comp.Gene.ID_Genes:
+                    #     GeneID = Comp.Gene.ID_Genes[GeneSymbol]
+                    else:
+                        # print("Genome Dataset | Symbol '%s' cannot be matched to any GeneID" % GeneSymbol)
+                        break
+
+                    assert GeneID, "Genome Dataset | Symbol '%s' cannot be matched to any GeneID" % GeneSymbol
+
+                    List_GeneSymbols.append(GeneSymbol)
+                    List_GeneIDs.append(GeneID)
+                    ScoreArray[Comp.Gene.ID2Idx_Genes[GeneID]] = Score
+
+                # This info is no longer necessary. Use Freq_SigmaFactorBindingInGenePromoter to look up the effect of promoter on gene.
+                # self.ID2ID_Promoter2GeneSym[PromoterName] = List_GeneSymbols
+
+            self.Freq_SigmaFactorBindingInGenePromoter.append(ScoreArray)
+
+        self.NUniq_SigmaFactors = len(self.Freq_SigmaFactorBindingInGenePromoter)
+
+    def SetUpData_WCS(self, Dataset, Comp):
         Promoters = Dataset['promoters.tsv']
 
         self.NUniq_Promoters = len(Promoters)
@@ -379,9 +503,9 @@ class FPromoter(FDataset):
                 if 'ins' in Name:
                     print(Name)
                 if len(Name.split('-')) > 1 and not Name[:5] == 'p_WC_':
-                    print("Promoter Dataset | ', 'Promoter '%s' contains '-' in XXXp promoter name format: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | Promoter '%s' contains '-' in XXXp promoter name format: %s" % (PromoterID, Name))
                 if len(Name.split('-')) > 2:
-                    print("Promoter Dataset | ', 'Promoter '%s' contains more than two '-' in the promoter name: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | Promoter '%s' contains more than two '-' in the promoter name: %s" % (PromoterID, Name))
 
             TargetGeneSymbol = None
             TargetGeneSymbolsOnly = list()
@@ -424,7 +548,7 @@ class FPromoter(FDataset):
 
             if not TargetGeneSymbol:
                 if self.Switch4DebugDataset:
-                    print("Promoter Dataset | ', 'Promoter %s contains an irregular name format to parse: %s" % (PromoterID, Name))
+                    print('Promoter Dataset | ', 'Promoter %s contains an irregular name format to parse: %s' % (PromoterID, Name))
                 IrregularNames += 1
                 TargetGeneSymbol = Name
             # Check if the gene is expressed by multiple promoters
@@ -433,7 +557,7 @@ class FPromoter(FDataset):
                     print('Promoter Dataset | ', 'The gene symbol %s is expressed by multiple promoters' % TargetGeneSymbol)
             self.Sym_PromoterTargetGenes.append(TargetGeneSymbol)
         if self.Switch4DebugDataset:
-            print("Promoter Dataset | ', '# of Irregular Names: ", IrregularNames)
+            print('Promoter Dataset | ', '# of Irregular Names: ', IrregularNames)
             # print("Names containing '-#' pattern:", NamesWithDashDigit)
         # elif Name[-1] == ('p' or 'P'):
         #         assert len(Name) <= 7, Name
@@ -443,6 +567,13 @@ class FPromoter(FDataset):
         #         if Name[-1].isdigit():
         #             TargetGeneSymbol = Name[:-2]
         #             print("Promoter '%s' contains an irregular naming style: %s" % (PromoterID, Name))
+
+        # From Genes
+        NUniqGenes = len(Comp.Gene.ID_Genes)
+        # Comp.Gene.Sym2ID_Genes['']
+        # Comp.Gene.ID2Idx_Genes['']
+        # Comp.Gene.Sym2Idx_Genes['']
+
 
 
 class FRNA(FDataset):
@@ -538,7 +669,7 @@ class FRNA(FDataset):
             NTTotalCount = len(Seq)
             NTCounts = np.array([Seq.count("A"), Seq.count("C"), Seq.count("G"), Seq.count("U")])
             if np.sum(NTCounts) != NTTotalCount:
-                print("RNA Dataset | ', 'WARNING: RNA seq may contain non-ACGU text.", file=sys.stderr)
+                print('RNA Dataset | ', 'WARNING: RNA seq may contain non-ACGU text.', file=sys.stderr)
             NTFreq = NTCounts / NTTotalCount
             self.Count_NTsInRNAs[i] = NTCounts
             self.Freq_NTsInRNAs.append(NTFreq)
@@ -619,7 +750,7 @@ class FProtein(FDataset):
             # ProteinAAFreq
             AATotalCount = len(Seq)
             if AATotalCount != self.Len_Proteins[i]:
-                print("Protein Dataset | ', 'WARNING: Protein length data may contain error.", file=sys.stderr)
+                print('Protein Dataset | ', 'WARNING: Protein length data may contain error.', file=sys.stderr)
             AACounts = np.array(AACount)
             AAFreq = AACounts / AATotalCount
             self.Freq_AAsInProteins.append(AAFreq)
@@ -1339,7 +1470,7 @@ class FMetabolism(FDataset):
                 else:
                     EnzymeID = RXNEnzymeID
                 if EnzymeID not in Comp.Master.ID_Master:
-                    print('Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID)
+                    print('Metabolism Dataset | ', 'EnzymeID not found in ID_Master: %s' % EnzymeID)
                 assert EnzymeID in Comp.Master.ID_Master, 'Metabolism Dataset | ' + 'EnzymeID not found in ID_Master: %s' % EnzymeID
                 self.ID2Idx_Enzymes4METRXN[EnzymeID] = len(self.ID_METRXNs)
                 self.ID_Enzymes4METRXN.append(EnzymeID)
