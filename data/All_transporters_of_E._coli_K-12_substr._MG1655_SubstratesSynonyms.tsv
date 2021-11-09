@@ -1,0 +1,231 @@
+Substrates from Reactions from Copy of   All transporters of E. coli K-12 substr. MG1655	Synonyms	Object ID
+(2R,4S)-2-methyl-2,3,3,4-tetrahydroxytetrahydrofuran	(R)-THMF // AI-2 (salmonella) // autoinducer 2 (salmonella)	CPD-10774
+(<i>R</i>)-lactate	(R)-2-hydroxypropanate // D-lactate // (R)-lactic acid // D-lactic acid	D-LACTATE
+(R)-malate	D-malate // D-malic acid // D-(+)-malic acid	CPD-660
+(S)-2-hydroxybutanoate	L-2-hydroxybutyric acid // L-2-hydroxybutyrate // L-alpha-hydroxybutyrate // a-hydroxybutyric acid // (S)-2-hydroxybutyrate	CPD-3564
+(<i>S</i>)-malate	(S)-malic acid // L-apple acid // L-malic acid // L-hydroxysuccinic acid // L-hydroxybutanedioic acid // L-malate	MAL
+1,6-anhydro-<i>N</i>-acetyl-&beta;-muramate	1,6-anhMurNAc	CPD0-882
+1-(&beta;-D ribofuranosyl)nicotinamide	beta-nicotinamide D-ribonucleotide // N-ribosyl-nicotinamide // nicotinamide ribonucleoside // nicotinamide ribose // nicotinamide riboside // ribosylnicotinamide // nicotinamide-beta-riboside	NICOTINAMIDE_RIBOSE
+2'-deoxyguanosine	deoxyguanosine	DEOXYGUANOSINE
+2,7-anhydro-&alpha;-<i>N</i>-acetylneuraminate	2,7-AN	CPD-6182
+2-nitroimidazole	azomycin // 2-nitro-1H-imidazole	CPD-14545
+2-<i>O</i>-(&alpha;-D-mannosyl)-D-glycerate	2-O-(alpha-D-mannopyranosyl)-D-glycerate // mannosylglycerate	2-O-ALPHA-MANNOSYL-D-GLYCERATE
+3,6-diamino-10-methylacridinium	acriflavine // 10-methyl-3,6-diaminoacridinium chloride // Trypaflavin // acriflavin // euflavine	CPD-21070
+3-hydroxycinnamate	trans-3-hydroxycinnamate // m-coumarate // m-coumaric acid // trans-3-coumarate // 3-hydroxycinnamic acid // (2E)-3-(3-hydroxyphenyl)prop-2-enoate // 3-coumarate // 3-hydroxy-trans-cinnamate (incorrect)	CPD-10797
+3-phenylpropanoate	hydrocinnamate // 3-phenylpropionic acid // hydrocinnamic acid // HCA // phenylpropanoate // 3-phenylpropionate	3-PHENYLPROPIONATE
+4,6-pyr-&alpha;-D-Gal-(1&rarr;4)-&beta;-D-GlcA-(1&rarr;3)-2-<i>O</i>-Ac-&alpha;-D-Gal-(1&rarr;3)-&alpha;-L-Fuc-(1&rarr;4)-3-O-Ac-&alpha;-L-Fuc-(1&rarr;3)-&alpha;-D-Glc-PP-Und	4,6-pyruvoyl-alpha-D-galactosyl-(1->4)-beta-D-glucoronosyl-(1->3)-2-O-acetyl-alpha-D-galactosyl-(1->3)-alpha-L-fucosyl-(1->4)-3-O-acetyl-alpha-L-fucosyl-(1->3)-alpha-D-glucosyldiphospho-ditrans,octacis-undecaprenol	CPD-24196
+4-amino-4-deoxy-&alpha;-L-arabinopyranosyl <i>ditrans,octacis</i>-undecaprenyl phosphate	ditrans,octacis-undecaprenyl phosphate-alpha-L-Ara4N	CPD0-1189
+4-hydroxybenzoate	p-hydroxybenzoate // 4-hydroxybenzoic acid	4-hydroxybenzoate
+5-(methylsulfanyl)-D-ribose	5-methylthio-D-ribose // 5-methylthioribose // S-methyl-5-thio-D-ribofuranose // S-methyl-5-thio-D-ribose	CPD-560
+5-aminopentanoate	5-aminovalerate // delta-aminovalerate // delta-amino-valeric acid // 5-aminopentanoic acid // 5-aminovaleric acid // delta-aminovaleric acid // delta-amino-N-valeric acid // delta-amino-N-valerate	5-AMINOPENTANOATE
+5-dehydro-D-gluconate	5-keto-D-gluconic acid // 5-keto-D-gluconate // 5-ketogluconate // 5-dehydrogluconate	5-DEHYDROGLUCONATE
+6-sulfo-D-quinovose	sulphoquinovose // 6-deoxy-6-sulfoglucose // 6-deoxy-6-sulfo-D-glucopyranose // sulfoquinovose	CPD-10247
+a 2-acyl-1-lyso-phosphatidylethanolamine	2-acyl-GPE // O-(2-acyl-sn-glycero-3-phospho)-ethanolamine // a 2-acyl-1-lyso-sn-glycero-3-phosphoethanolamine // a 2-acyl-sn-glycero-3-phosphoethanolamine	2-ACYL-GPE
+a &beta;-lactam		Beta-Lactams
+a dicarboxylate		dicarboxylate
+a dipeptide	an aminoacyl-amino acid	DIPEPTIDES
+a disaccharide		Disaccharides
+a drug		Drugs
+a gentamicin	a gentamycin	Gentamycins
+a glycoside		Glycosides
+a hydroxylated carboxylate		Hydroxy-carboxylates
+a lactone		Lactones
+a LolA-lipoprotein complex		LolA-Lipoprotein-Complex
+a long-chain fatty acid	LCFA	Long-Chain-Fatty-Acids
+a lyso-cardiolipin	lyso-CL	a-lyso-cardiolipin
+a lyso-phosphatidylglycerol	lysoPG	Lysophosphatidylglycerols
+a medium chain fatty acid	MCFA	Medium-chain-fatty-acids
+a menaquinone	a vitamin K2	Menaquinones
+a monocarboxylate		Monocarboxylates
+a nucleobase	a nucleotide base // a nitrogenous base	Bases
+a nucleoside	nucleoside	Nucleosides
+a nucleotide	nucleotide // a nucleoside phosphate	Nucleotides
+a nucleotide sugar		NUCLEOTIDE-SUGARS
+a peptide antibiotic	Peptide Antibiotic	Peptide-Antibiotics
+a protein		General-Protein-Substrates
+a reduced unknown two electron carrier	a reduced unknown two electron donor // A(H2) // a reduced unknown two electron acceptor	Donor-H2
+a short-chain carboxylate	a short-chain acid anion	Short-Chain-Carboxylates
+a short-chain fatty alcohol		Short-Chain-Alcohols
+a sugar		Sugar
+a sugar alcohol	a glycitol // an alditol // a polyalcohol // a polyhydric alcohol // a polyol	Sugar-alcohols
+a sugar phosphate	a phospho sugar	Sugar-Phosphate
+a trisaccharide		Trisaccharides
+a ubiquinone	coenzyme-Qn // ubiquinone // Q	Ubiquinones
+acetate	ethanoic acid	ACET
+acetoacetate	3-ketobutyrate // 3-oxobutanate // oxobutyrate // acetoacetic acid // 3-oxobutyric acid // 3-oxobutanoic acid // diacetic acid // beta-ketobutyric acid	3-KETOBUTYRATE
+adenine	6-aminopurine // A	ADENINE
+ADP-&alpha;-D-glucose	adenosine diphosphate glucose // ADP-glucose // ADP-D-glucose	ADP-D-GLUCOSE
+agmatine		AGMATHINE
+&alpha;,&alpha;-trehalose	alpha-D-glucopyranosyl alpha-D-glucopyranoside // alpha-D-Glcp-(1<-->1)-alpha-D-Glcp // D-(+)-trehalose	TREHALOSE
+&alpha;-D-Fuc4NAc-(1&rarr;4)-&beta;-D-ManNAcA-(1&rarr;4)-GlcNAc-PP-Und	Fuc4NAc-ManNAcA-GlcNAc-C55-PP // Fuc4NAc--ManNAcA-GlcNAc-pyrophosphorylundecaprenol // Fuc4NAc-ManNAcA-GlcNAc-PP-lipid // alpha-D-fucosyl-(1->4)-N-acetyl-N-acetyl-beta-D-mannosaminouronyl-(1->4)-N-acetyl-alpha-D-glucosaminyl-diphospho-ditrans,octacis-undecaprenol // lipid III // ECA-lipid III // (enterobacterial common antigen monomer)-undecaprenyl diphosphate	C55-PP-GLCNAC-MANNACA-FUC4NAC
+ammonium	NH4+	AMMONIUM
+an aldehyde	aldehyde // RCHO	Aldehydes
+an aldonate	an aldonic acid	Aldonic-Acids
+an amide		Amides
+an amine		All-Amines
+an amino acid		Amino-Acids
+an <i>apo</i>-[<i>c</i>-type cytochrome] with reduced L-cysteine residues		Apocytochromes-c
+an aromatic compound		Aromatics
+an erythromycin		Erythromycins
+an inositol	1,2,3,4,5,6-cyclohexanehexol	Inositols
+an ion		Ions
+an oligopeptide		OLIGOPEPTIDES
+an organophosphorus compound		Organophosphorus-Compounds
+an organosulfur compound		ORGANOSULFUR
+an ubiquinol	a reduced ubiquinone // a dihydroubiquinone // a QH2	Ubiquinols
+antimonous acid	Sb(OH)3 // stiborous acid // trihydroxyantimonite // H3SbO3	CPD0-2039
+arsenous acid	As(OH)3 // trihydroxyarsenite(III) // trihydroxidoarsenic // trioxoarsenic acid	CPD0-2040
+ATP	adenylpyrophosphate // adenosine-triphosphate // adenosine-5'-triphosphate	ATP
+&beta;-D-cellobiose	4-O-beta-D-glucopyranosyl-beta-D-glucopyranose // beta-D-glucosyl-(1->4)-beta-D-glucose	CELLOBIOSE
+bicozamycin	bicyclomycin	CPD-20921
+biotin	vitamin H // coenzyme R // D-biotin // vitamin B7	BIOTIN
+cadaverine	pentane-1,5-diamine // diaminopentane // 1,5-diaminopentane // 1,5-pentanediamine // pentamethylenediamine // 1-BioDex	CADAVERINE
+calcium hydrogenphosphate	calcium phosphate dibasic	CPD-18500
+carbonylcyanide <i>m</i>-chlorophenylhydrazone	CCCP // (3-chlorophenyl)hydrazonomalononitrile // Carbonylcyanide-3-chlorophenylhydrazone	CPD-7970
+Cd<SUP>2+</SUP>	cadmium(II) // CdII // Cd++	CD+2
+cetylpyridinium	1-hexadecylpyridinium	CPD-20888
+chenodeoxycholate	3alpha, 7alpha-dihydroxy-5beta-cholanic acid // chenodexycholic acid // chenodiol // chenic acid // CDCA	CPD-15189
+chloramphenicol	chlornitromycin // levomycetin // levomicetina // laevomycetinum	CHLORAMPHENICOL
+chloride	chloride ion // Cl-	CL-
+choline	(2-hydroxyethyl)trimethylammonium	CHOLINE
+citrate	citr // cit // citric acid // 2-hydroxy-1,2,3-propanetricarboxylic acid	CIT
+Co<SUP>2+</SUP>	Co++ // cobalt(II) // CoII	CO+2
+cob(I)alamin	cobalamin // B12s	COB-I-ALAMIN
+cob(I)inamide	Cbi(I)	COBINAMIDE
+coenzyme A	CoA // Co-A-SH // HS-CoA	CO-A
+Cu<SUP>2+</SUP>	Cu++ // cupric ion // cupric copper // copper(II) // CuII	CU+2
+curlin, major subunit	CsgA	EG11489-MONOMER
+cyanate	cyanic acid // hydrogen cyanate	CPD-69
+cystine	3,3'-disulfanediylbis(2-aminopropanoic acid)	cystine
+D-arabinose		D-ARABINOSE
+D-cystine		CPD0-1564
+D-fructopyranose		D-Fructopyranose
+D-fructuronate		FRUCTURONATE
+D-galacturonate	galacturonate // D-galaturonate // galaturonate // D-galacturonic acid // D-galactopyranuronic acid	D-GALACTURONATE
+D-glucarate	glucarate // D-glucaric acid // L-gularic acid // D-saccharic acid // D-glucosaccharic acid // saccharate // (D)-glucarate // D-saccharate	D-GLUCARATE
+D-glucopyranose	6-(hydroxymethyl)tetrahydropyran-2,3,4,5-tetraol	Glucopyranose
+D-glucopyranose 6-phosphate	D-glucopyranose-6-P	D-glucopyranose-6-phosphate
+D-glucosamine	2-amino-2-deoxyglucose // chitosamine // glucosamine	GLUCOSAMINE
+D-glucuronate	glucuronate // glucuronic acid // D-glucuronic acid // GlcA // D-glucopyranuronic acid	GLUCURONATE
+D-glycerate	(R)-glycerate // glycerate // D-glyceric acid	GLYCERATE
+D-mannitol	D-mitobronitol // (2R,3R,4R,5R)-hexane-1,2,3,4,5,6-hexol	MANNITOL
+D-serine		D-SERINE
+D-sorbitol	L-gulitol // D-glucitol // meglumine // iso-sorbide // (2S,3R,4R,5R)-hexane-1,2,3,4,5,6-hexol	SORBITOL
+decanoate	caprate // decanoic acid // n-decanoate // n-capric acid // caprinic acid // caprinate // capric acid	CPD-3617
+deoxycholate	deoxycholic acid // 3alpha,12alpha-dihydroxy-5beta-cholanate	DEOXYCHOLATE
+dequalinium	DEQ	CPD-20894
+dioxygen	oxygen molecule // molecular oxygen // oxygen	OXYGEN-MOLECULE
+<i>ditrans,octacis</i>-undecaprenyldiphospho-[(<i>N</i>-acetyl-&beta;-D-glucosaminyl)-(1,4)-]-<i>N</i>-acetyl-&alpha;-D-muramoyl-L-alanyl-&gamma;-D-glutamyl-<I>meso</I>-2,6-diaminopimeloyl-D-alanyl-D-alanine	a peptidoglycan with (L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine) pentapeptide // diphosphoundecaprenyl-[GlcNAc-MurNAc-pentapeptide]n // lipid intermediate II // undecaprenyl-diphospho-N-acetylmuramoyl-(N-acetylglucosamine)-L-ala-gamma-D-glu-meso-2,6-diaminopimeloyl-D-ala-D-ala // lipid II	C6
+DL-glyceraldehyde		CPD0-1551
+dodecyl sulfate		CPD-8876
+enterobactin	(2,3-dihydroxybenzoylserine)3 // enterochelin // N-(2,3-dihydroxybenzoyl)-O-[N-(2,3-dihydroxybenzoyl)-O-[N-(2,3-dihydroxybenzoyl)-L-seryl]-L-seryl]-L-serine-(3->1(3))-lactone	ENTEROBACTIN
+ethidium	ethidium cation // homidium	CPD0-1938
+FAD	flavin adenine dinucleotide oxidized // flavin adenine dinucleotide // flavitan	FAD
+Fe<SUP>2+</SUP>	ferrous iron // ferrous ion // iron(II) // FeII	FE+2
+ferrichrome		CPD0-2241
+fluoride	fluoride ion // F-	F-
+FMN	flavin mononucleotide // riboflavin 5'-phosphate	FMN
+formate	formic acid	FORMATE
+fosfomycin	(1R,2S)-epoxypropylphosphonate // L-cis-1,2-epoxypropylphosphonic acid // phosphonomycin // L-cis-1,2-epoxypropylphosphonic acid // phosphonemycin // (1R,2S)-epoxypropylphosphonic acid // cis-(1R,2S)-epoxypropylphosphonic acid	CPD0-1113
+fosmidomycin		CPD0-441
+fumarate	fum // fumaric acid	FUM
+galactarate	D-galactarate // galactaric acid // mucic acid // meso-galactarate // mucate	D-GALACTARATE
+galactitol	dulcitol // dulcite // dulcose // (2R,3S,4R,5S)-hexane-1,2,3,4,5,6-hexol	GALACTITOL
+&gamma;-butyrobetaine	3-carboxypropyl-trimethyl-ammonium // 4-(trimethylamino)butanoate // 4-(trimethylammonio)butanoate // deoxycarnitine // actinine // 4-butyrobetaine	GAMMA-BUTYROBETAINE
+glycerol	1,2,3-trihydroxypropane // glycerin // 1,2,3-trihydroxypropanol	GLYCEROL
+glycerol 1-phosphate	D,L-alpha-glycerol-phosphate // DL-glycerol 1-phosphate	Glycerol-1-phosphate
+glycine	G // aminoacetic acid	GLY
+glycine betaine	oxyneurine // lycine // acidin-pepsin // betaine // trimethylammonioacetate // N,N,N-trimethylglycine	BETAINE
+glycolate	hydroxyacetic acid // glycolic acid // glycollate	GLYCOLLATE
+guanidinium	guanidine // diaminomethaniminium	CPD0-1470
+guanine	G	GUANINE
+guanosine	nucleoside Q	GUANOSINE
+H<SUP>+</SUP>	hydrogen ion // proton // H	PROTON
+H<SUB>2</SUB>	hydrogen // hydrogen molecule // dihydrogen	HYDROGEN-MOLECULE
+H<sub>2</sub>O	H2O // hydrogen oxide // water	WATER
+hexane	n-hexane	CPD-9288
+hydrogen peroxide	hydroperoxide // perhydrol // H2O2	HYDROGEN-PEROXIDE
+hydrophilic solute < 900 Da		CPD-18254
+hydrophilic solute or ion < 600 Da		Hydrophilic-Solute-Or-Ion-LT-600Da
+hypoxanthine		HYPOXANTHINE
+inosine	hypoxanthine-ribose // iso-prinosine // riboxine	INOSINE
+iron(III) dicitrate	Fe(III)dicitrate // ferric dicitrate complex // iron dicitrate // ferric dicitrate // Fe(Cit)2	FERRIC-CITRATE-COMPLEX
+iron(III)-coprogen	ferric coprogen	CPD0-621
+iron(III)-enterobactin complex	ferric enterobactin // ferric enterochelin // ferrienterochelin // ferrienterobactin // ferric-enterobactin complex // Fe3+-enterobactin complex	FERRIC-ENTEROBACTIN-COMPLEX
+iron(III)-[<i>N</i>-(2,3-dihydroxybenzoyl)-L-serine trimer] complex	hydrolyzed ferric enterobactin complex // ferric (2,3-dihydroxybenzoylserine)3 // ferric N-(2,3-dihydroxybenzoyl)-L-serine trimer // ferric-[N-(2,3-dihydroxybenzoyl)-L-serine trimer] complex	CPD0-2482
+K<SUP>+</SUP>	potassium(I) // potassium ion // KI	K+
+L,L-homocystine		HOMOCYSTINE
+L-alanine	alanine // L-alpha-alanine // ala	L-ALPHA-ALANINE
+L-arginine	2-amino-5-guanidinovaleric acid // R // arginine // L-arg	ARG
+L-ascorbate	L-ascorbic acid // vitamin C	ASCORBATE
+L-aspartate	L-aspartic acid // aspartic acid // D // aspartate // L-asp	L-ASPARTATE
+L-canavanine	canavanine // 2-amino-4-(guanidinooxy)butyrate // 2-amino-4-(guanidinooxy)butyric acid	CANAVANINE
+L-cystathionine	cystathionine	L-CYSTATHIONINE
+L-cysteine	C // carbocysteine // cysteine // Cys // L-cys	CYS
+L-cystine		CYSTINE
+L-fucose	L-galactomethylose // 6-deoxy-L-galactose	L-fucoses
+L-galactonate		CPD0-1083
+L-galactose		L-Galactose
+L-glutamate	1-amino-propane-1,3-dicarboxylic acid // glutacid // glutaminic acid // L-glutamic acid // alpha-aminoglutaric acid // E // glt // glut // L-glu // 2-aminopentanedioic acid	GLT
+L-glyceraldehyde 3-phosphate	L-glyceraldehyde-3-phosphate // L-GAP	L-GLYCERALDEHYDE-3-PHOSPHATE
+L-homoserine lactone		CPD-15554
+L-idonate	L-idonic acid // (R)-idonate	L-IDONATE
+L-isoleucine	I // iso-leucine // L-ile	ILE
+L-lysine	K // lysine // L-lys // 2,6-diaminohexanoic acid // lysine acid	LYS
+L-selenocysteine	selenocys // U	L-SELENOCYSTEINE
+L-tartrate	weinsaeure // (+)-tartrate // tartrate // tartaric acid // (R,R)-tartrate // L-tartaric acid // L(+)-tartaric acid // (2R,3R)-tartaric acid // (2R,3R)-tartrate // L-tartarate // L-threarate	TARTRATE
+L-valine	V // valine // L-val	VAL
+Li<sup>+</sup>	lithium(I) // LiI	LI+
+magnesium hydrogenphosphate	magnesium hydrogen orthophosphate // magnesium phosphate dibasic	CPD-18499
+maltose	alpha-D-glucopyranose-(1->4)-D-glucopyranose // maltose	MALTOSE
+methyl-&alpha;-D-galactopyranoside	1-Methyl-D-galactopyranoside // alpha-methylgalactoside // alpha-methyl-D-galactopyranoside // alpha-methyl-D-galactoside // methyl-alpha-D-galactoside // 1-O-methyl-alpha-D-galactopyranose // a-methyl-D-galactoside	CPD-3565
+methyl-&beta;-D-galactoside	1-O-methyl-beta-D-galactopyranose // beta-methyl-D-galactopyranoside // beta-methylgalactoside // 1-methyl-beta-D-galactopyranoside // methyl-beta-D-galactopyranoside // methyl beta-D-galactopyranoside // beta-methyl-D-galactoside // b-methyl-D-galactoside	METHYL-BETA-D-GALACTOSIDE
+Mg<SUP>2+</SUP>	magnesium // magnesium(II) // Mg++ // magnesium ion // MgII	MG+2
+Mn<SUP>2+</SUP>	Mn(II) (incorrect) // Mn++ // manganese(II) // MnII	MN+2
+<i>N,N',N''</i>-triacetylchitotriose	triacetylchitotriose	CPD-13227
+<i>N</i>,<i>N'</i>-diacetylchitobiose	diacetylchitobiose // N-[2-[5-acetylamino-4,6-dihydroxy-2-(hydroxymethyl)tetrahydropyran-3-yl]oxy-4,5-dihyrdoxy-6-(hydroxymethyl)tetrahydropyran-3-yl]acetamide // CBS // chitobiose // 2-(acetylamino)-4-O-[2-(acetylamino)-2-deoxy-beta-D-glucopyranosyl]-2-deoxy-beta-D-glucopyranose	CHITOBIOSE
+<i>N</i>-(4-aminobenzoyl)-L-glutamate	4-aminobenzoyl-glutamate // pABA-Glu // N-(para-aminobenzoyl)-L-glutamate // N-(4-aminobenzoyl)-L-glutamic acid // p-aminobenzoyl glutamate	CPD0-889
+<i>N</i>-acetyl-&beta;-neuraminate	beta-Neu5Ac // beta-N-acetylneuraminate	CPD0-1123
+<i>N</i>-acetyl-D-glucosamine	NAcGlc // N-acetylglucosamine // GlcNAc // 2-acetamido-2-deoxy-D-glucose	N-acetyl-D-glucosamine
+<i>N</i>-acetylneuraminate	sialic acid // NANA // O-sialic acid // sialate // N-acetylneuraminic acid // Neu5Ac // 5-acetamido-3,5-dideoxy-D-glycero-D-galacto-2-nonulosonic acid // 5-acetamido-3,5-dideoxy-D-glycero-D-galacto-non-2-ulopyranosonic acid	N-ACETYLNEURAMINATE
+N<sup>6</sup>-(D-fructosyl)-L-lysine	fructoselysine // fructosyllysine	FRUCTOSELYSINE
+N<sup>6</sup>-(D-psicosyl)-L-lysine	psicoselysine	PSICOSELYSINE
+Na<SUP>+</SUP>	sodium(I) // NaI	NA+
+NAD<sup>+</sup>	NAD+ // beta-nicotinamide adenine dinucleotide // coenzyme I // diphosphopyridine nucleotide // diphosphopyridine nucleotide oxidized // nicotinamide adenine dinucleotide // nicotinamide adenine dinucleotide oxidized // NAD-oxidized // NAD-ox // DPN+ // DPN-ox // DPN // beta-nicotinamide adenine dinucleotide // NAD<sup>+</sup> // beta-NAD+	NAD
+NADH	NADH2 // NADH2 // dihydrodiphosphopyridine nucleotide // diphosphopyridine nucleotide reduced // dihydronicotinamide adenine dinucleotide // nicotinamide adenine dinucleotide reduced // NAD-reduced // NADH+H+ // DPNH // beta-NADH	NADH
+nalidixate	nalidixic acid	CPD-21025
+Ni<SUP>2+</SUP>	nickel(II) // Ni++ // NiII	NI+2
+nitrate	NO3 // NO3-	NITRATE
+nitrite	NO2 // NO2-	NITRITE
+non-specific ion/solute		Unspecified-Ion-Or-Solute
+norfloxacin		CPD-21015
+novobiocin		CPD-15417
+<i>O</i>-acetyl-L-serine	O3-acetyl-L-serine // acetylserine // O-acetylserine // (2S)-3-acetyloxy-2-aminopropanoate	ACETYLSERINE
+partially deacetylated poly-&beta;-1,6-<i>N</i>-acetyl-D-glucosamine		CPD0-1193
+phosphate	inorganic phosphate // phosphate-inorganic // phosphate // orthophosphate // PO43- // HPO42- // HPO4-2 // hydrogenphosphate	Pi
+phosphinate	hypophosphite	CPD-27
+phosphocarrier HPr-<i>N</i><sup>&pi;</sup>-phospho-L-histidine	HPr-Phis15 // phospho-HPr // phosphorylated HPr	PTSH-PHOSPHORYLATED
+poly-&beta;-1,6-<i>N</i>-acetyl-D-glucosamine	PGA	CPD0-1192
+preQ<sub>0</sub>	7-cyano-7-deazaguanine // 7-cyano-7-carbaguanine	7-CYANO-7-DEAZAGUANINE
+propanoate	propionic acid // ethylformic acid // methylacetic acid // propionate	PROPIONATE
+pseudouridine		CPD-497
+PTS Enzyme I-<i>N</i><sup>&tau;</sup>-phospho-L-histidine	PtsI-Phis189 // phosphorylated PtsI // phospho-PtsI	PTSI-PHOSPHORYLATED
+putrescine	diaminobutane // 1,4-diaminobutane // 1,4-butanediamine // tetramethylenediamine	PUTRESCINE
+pyridoxal		PYRIDOXAL
+pyridoxamine	PM	PYRIDOXAMINE
+pyridoxine	vitamin B6 // 2-methyl-3-hydroxy-4,5-bis(hydroxy-methyl) pyridine // pyridoxol	PYRIDOXINE
+pyruvate	alpha-ketopropionic acid // BTS // alpha-ketopropionic acid // acetylformic acid // pyroracemic acid // 2-oxopropanoic acid // pyruvic acid // 2-oxopropanoate // 2-oxo-propionic acid	PYRUVATE
+<i>S</i>-methyl-L-methionine	S-methylmethionine	CPD-397
+<i>S</i>-sulfo-L-cysteine	S-sulfocysteine	SULFO-CYSTEINE
+salicin	salicoside // 2-(hydroxymethyl)-phenyl-beta-D-glucopyranoside // D(-)-salicin	CPD-1142
+succinate	succinic acid // suc // succ // butanedioic acid // ethylenesuccinic acid	SUC
+sulfadiazine		CPD-20940
+sulfate	sulfuric acid // H2SO4 // sulphate // SO4-2 // SO42- // SO4--	SULFATE
+tellurite	TeO2 // trioxotellurate(IV) // tellurite ion	CPD-4544
+tetraphenylphosphonium	TPP+	CPD-20890
+thymine	5-methyluracil // 5-methyl-2,4(1H,3H)-pyrimidinedione // T	THYMINE
+urate	2,6,8-trioxypurine // purine-2,6,8-(1H,3H,9H)-trione // 7,9-dihydro-1H-purine-2,6,8(3H)-trione	URATE
+urea	bromisovalum // carmol // basodexan // carbamide	UREA
+xanthine	2,6-dioxopurine	XANTHINE
+zinc hydrogenphosphate		CPD-18501
+Zn<SUP>2+</SUP>	zinc(II) // Zn(II) (incorrect) // ZnII	ZN+2
