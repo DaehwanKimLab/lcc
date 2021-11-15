@@ -1,0 +1,472 @@
+Reaction ID 	Reaction-Direction	Chemical Reaction
+TRANS-RXN0-453	REVERSIBLE	(2R,4S)-2-methyl-2,3,3,4-tetrahydroxytetrahydrofuran[cytosol] <--> (2R,4S)-2-methyl-2,3,3,4-tetrahydroxytetrahydrofuran[periplasm]
+TRANS-RXN0-454	PHYSIOL-LEFT-TO-RIGHT	(2R,4S)-2-methyl-2,3,3,4-tetrahydroxytetrahydrofuran[periplasm] + ATP + H2O -> (2R,4S)-2-methyl-2,3,3,4-tetrahydroxytetrahydrofuran[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-515	LEFT-TO-RIGHT	(R)-lactate[periplasm] + H+[periplasm] -> (R)-lactate[cytosol] + H+[cytosol]
+TRANS-RXN0-451	REVERSIBLE	(R)-malate[periplasm] + 2 H+[periplasm] <--> (R)-malate[cytosol] + 2 H+[cytosol]
+TRANS-RXN0-622	REVERSIBLE	(S)-2-hydroxybutanoate[periplasm] + H+[periplasm] <--> (S)-2-hydroxybutanoate[cytosol] + H+[cytosol]
+TRANS-RXN-104	LEFT-TO-RIGHT	(S)-lactate[periplasm] + H+[periplasm] -> (S)-lactate[cytosol] + H+[cytosol]
+TRANS-RXN-121A	REVERSIBLE	(S)-malate[periplasm] + 2 H+[periplasm] <--> (S)-malate[cytosol] + 2 H+[cytosol]
+TRANS-RXN0-587	LEFT-TO-RIGHT	1,6-anhydro-N-acetyl-beta-muramate[periplasm] -> 1,6-anhydro-N-acetyl-beta-muramate[cytosol]
+TRANS-RXN0-481	LEFT-TO-RIGHT	1-(beta-D ribofuranosyl)nicotinamide[periplasm] -> 1-(beta-D ribofuranosyl)nicotinamide[cytosol]
+RXN-21817	PHYSIOL-LEFT-TO-RIGHT	2 an ubiquinol[inner membrane] + 8 H+ + dioxygen -> 2 a ubiquinone[inner membrane] + 8 H+[periplasm] + 2 H2O
+RXN0-5266	PHYSIOL-LEFT-TO-RIGHT	2 an ubiquinol[inner membrane] + dioxygen + 4 H+ -> 2 a ubiquinone[inner membrane] + 2 H2O + 4 H+[periplasm]
+RXN0-2501	REVERSIBLE	2 chloride[periplasm] + H+[cytosol] <--> 2 chloride[cytosol] + H+[periplasm]
+RXN-16420	LEFT-TO-RIGHT	2 H2 + dioxygen -> 2 H2O
+TRANS-RXN-130	REVERSIBLE	2 Na+[cytosol] + 3 H+[periplasm] <--> 2 Na+[periplasm] + 3 H+[cytosol]
+TRANS-RXN-122	REVERSIBLE	2 Na+[periplasm] + L-glutamate[periplasm] <--> 2 Na+[cytosol] + L-glutamate[cytosol]
+TRANS-RXN-108C	REVERSIBLE	2'-deoxyadenosine[periplasm] + H+[periplasm] <--> 2'-deoxyadenosine[cytosol] + H+[cytosol]
+TRANS-RXN-108D	REVERSIBLE	2'-deoxycytidine[periplasm] + H+[periplasm] <--> 2'-deoxycytidine[cytosol] + H+[cytosol]
+TRANS-RXN-475	REVERSIBLE	2'-deoxyguanosine[periplasm] + H+[periplasm] <--> 2'-deoxyguanosine[cytosol] + H+[cytosol]
+TRANS-RXN-108E	REVERSIBLE	2'-deoxyinosine[periplasm] + H+[periplasm] <--> 2'-deoxyinosine[cytosol] + H+[cytosol]
+TRANS-RXN-108F	REVERSIBLE	2'-deoxyuridine[periplasm] + H+[periplasm] <--> 2'-deoxyuridine[cytosol] + H+[cytosol]
+TRANS-RXN-415	REVERSIBLE	2,7-anhydro-alpha-N-acetylneuraminate[periplasm] + H+[periplasm] <--> 2,7-anhydro-alpha-N-acetylneuraminate[cytosol] + H+[cytosol]
+TRANS-RXN-113	REVERSIBLE	2-dehydro-3-deoxy-D-gluconate[periplasm] + H+[periplasm] <--> 2-dehydro-3-deoxy-D-gluconate[cytosol] + H+[cytosol]
+TRANS-RXN0-540	PHYSIOL-LEFT-TO-RIGHT	2-deoxy-D-glucose[periplasm] + HPr-Phis15 -> 2-deoxy-D-glucose 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-273	LEFT-TO-RIGHT	2-nitroimidazole[cytosol] -> 2-nitroimidazole[periplasm]
+TRANS-RXN-23	REVERSIBLE	2-oxoglutarate[periplasm] + H+[periplasm] <--> 2-oxoglutarate[cytosol] + H+[cytosol]
+TRANS-RXN-354	PHYSIOL-LEFT-TO-RIGHT	3,6-diamino-10-methylacridinium[periplasm] + H+[periplasm] -> 3,6-diamino-10-methylacridinium[extracellular space] + H+[cytosol]
+TRANS-RXN-61	REVERSIBLE	3-(3-hydroxyphenyl)propanoate[periplasm] + H+[periplasm] <--> 3-(3-hydroxyphenyl)propanoate[cytosol] + H+[cytosol]
+TRANS-RXN0-457	REVERSIBLE	3-hydroxycinnamate[periplasm] + H+[periplasm] <--> 3-hydroxycinnamate[cytosol] + H+[cytosol]
+RXN0-7217	REVERSIBLE	3-O-beta-D-galactopyranosyl-D-arabinose[periplasm] + H+[periplasm] <--> 3-O-beta-D-galactopyranosyl-D-arabinose[cytosol] + H+[cytosol]
+TRANS-RXN0-282	LEFT-TO-RIGHT	3-phenylpropanoate[periplasm] -> 3-phenylpropanoate[cytosol]
+RXN-22217	PHYSIOL-LEFT-TO-RIGHT	4,6-pyr-alpha-D-Gal-(1->4)-beta-D-GlcA-(1->3)-2-O-Ac-alpha-D-Gal-(1->3)-alpha-L-Fuc-(1->4)-3-O-Ac-alpha-L-Fuc-(1->3)-alpha-D-Glc-PP-Und[cytosol] + H+[periplasm] -> 4,6-pyr-alpha-D-Gal-(1->4)-beta-D-GlcA-(1->3)-2-O-Ac-alpha-D-Gal-(1->3)-alpha-L-Fuc-(1->4)-3-O-Ac-alpha-L-Fuc-(1->3)-alpha-D-Glc-PP-Und[periplasm] + H+[cytosol]
+TRANS-RXN0-276	LEFT-TO-RIGHT	4-amino-4-deoxy-alpha-L-arabinopyranosyl ditrans,octacis-undecaprenyl phosphate[cytosol] -> 4-amino-4-deoxy-alpha-L-arabinopyranosyl ditrans,octacis-undecaprenyl phosphate[periplasm]
+TRANS-RXN-261	REVERSIBLE	4-aminobutanoate[cytosol] + L-glutamate[periplasm] <--> L-glutamate[cytosol] + 4-aminobutanoate[periplasm]
+TRANS-RXN-57	REVERSIBLE	4-aminobutanoate[periplasm] + H+[periplasm] <--> 4-aminobutanoate[cytosol] + H+[cytosol]
+TRANS-RXN0-233	REVERSIBLE	4-hydroxybenzoate[cytosol] + H+[periplasm] <--> 4-hydroxybenzoate[periplasm] + H+[cytosol]
+TRANS-RXN0-615	REVERSIBLE	5-(methylsulfanyl)-D-ribose[periplasm] <--> 5-(methylsulfanyl)-D-ribose[extracellular space]
+TRANS-RXN-384	REVERSIBLE	5-aminopentanoate[periplasm] + H+[periplasm] <--> 5-aminopentanoate[cytosol] + H+[cytosol]
+TRANS-RXN0-228	REVERSIBLE	5-dehydro-D-gluconate[periplasm] + H+[periplasm] <--> 5-dehydro-D-gluconate[cytosol] + H+[cytosol]
+RXN-19777	REVERSIBLE	6-decylubiquinol + hydrogen peroxide <--> 6-decylubiquinone + 2 H2O
+TRANS-RXN0-580	LEFT-TO-RIGHT	6-sulfo-D-quinovose[periplasm] -> 6-sulfo-D-quinovose[cytosol]
+ACYLCOASYN-RXN	PHYSIOL-LEFT-TO-RIGHT	a 2,3,4-saturated fatty acid + ATP + coenzyme A -> a 2,3,4-saturated fatty acyl CoA + AMP + diphosphate
+TRANS-RXN0-623	PHYSIOL-LEFT-TO-RIGHT	a 2,3,4-saturated fatty acid + ATP + coenzyme A + H+ -> a 2,3,4-saturated fatty acyl CoA + AMP + diphosphate + H+
+TRANS-RXN-294	REVERSIBLE	a 2-acyl-1-lyso-phosphatidylethanolamine[periplasm] <--> a 2-acyl-1-lyso-phosphatidylethanolamine[cytosol]
+TRANS-RXN-380	REVERSIBLE	a beta-lactam[extracellular space] <--> a beta-lactam[periplasm]
+TRANS-RXN0-517	REVERSIBLE	a C4-dicarboxylate[periplasm] + 2 H+[periplasm] <--> a C4-dicarboxylate[cytosol] + 2 H+[cytosol]
+TRANS-RXN-98	REVERSIBLE	a D-glucoronoside[periplasm] + H+[periplasm] <--> a D-glucoronoside[cytosol] + H+[cytosol]
+TRANS-RXN0-609	REVERSIBLE	a dicarboxylate[periplasm] <--> a dicarboxylate[extracellular space]
+TRANS-RXN0-288	REVERSIBLE	a dipeptide[periplasm] + H+[periplasm] <--> a dipeptide[cytosol] + H+[cytosol]
+RXN0-7203	REVERSIBLE	a disaccharide[periplasm] <--> a disaccharide[extracellular space]
+TRANS-RXN0-596	LEFT-TO-RIGHT	a drug[cytosol] -> a drug[periplasm]
+TRANS-RXN0-628	REVERSIBLE	a drug[cytosol] + 2 H+[cytosol] <--> a drug[periplasm] + 2 H+[periplasm]
+TRANS-RXN-44	REVERSIBLE	a drug[cytosol] + H+[periplasm] <--> a drug[periplasm] + H+[cytosol]
+RXN0-2561	REVERSIBLE	a drug[cytosol] + Na+[periplasm] <--> a drug[periplasm] + Na+[cytosol]
+TRANS-RXN-360	PHYSIOL-LEFT-TO-RIGHT	a gentamicin[periplasm] + H+[periplasm] -> a gentamicin[extracellular space] + H+[cytosol]
+TRANS-RXN0-573	PHYSIOL-LEFT-TO-RIGHT	a glycerophosphodiester[periplasm] + ATP + H2O -> a glycerophosphodiester[cytosol] + ADP + phosphate + H+
+RXN0-7210	REVERSIBLE	a glycoside[periplasm] <--> a glycoside[extracellular space]
+RXN0-7243	REVERSIBLE	a hydroxylated carboxylate[periplasm] <--> a hydroxylated carboxylate[extracellular space]
+RXN0-7246	REVERSIBLE	a lactone[periplasm] <--> a lactone[extracellular space]
+TRANS-RXN-236	PHYSIOL-LEFT-TO-RIGHT	a lipid A-core oligosaccharide[cytosol] + ATP + H2O -> a lipid A-core oligosaccharide[periplasm] + ADP + phosphate + H+
+TRANS-RXN-237	PHYSIOL-LEFT-TO-RIGHT	a lipopolysaccharide[periplasm] + ATP + H2O -> a lipopolysaccharide[extracellular space] + ADP + phosphate + H+
+RXN-22553	PHYSIOL-LEFT-TO-RIGHT	a LolA-lipoprotein complex[periplasm] -> an N-acyl-(S-diacyl-sn-glyceryl)-L-cysteinyl-[lipoprotein][outer membrane] + a LolA lipoprotein chaperone
+RXN0-1802	LEFT-TO-RIGHT	a long-chain fatty acid[extracellular space] -> a long-chain fatty acid[periplasm]
+TRANS-RXN-387	PHYSIOL-LEFT-TO-RIGHT	a lyso-cardiolipin[periplasm] -> a lyso-cardiolipin[cytosol]
+TRANS-RXN-295	REVERSIBLE	a lyso-phosphatidylglycerol[periplasm] <--> a lyso-phosphatidylglycerol[cytosol]
+TRANS-RXN0-224	PHYSIOL-LEFT-TO-RIGHT	a macrolide antibiotic[periplasm] + ATP + H2O -> a macrolide antibiotic[extracellular space] + ADP + phosphate + H+
+RXN0-7241	REVERSIBLE	a medium chain fatty acid[periplasm] <--> a medium chain fatty acid[extracellular space]
+RXN0-5256	REVERSIBLE	a menaquinone[inner membrane] + 2 H+ + H2[periplasm] <--> a menaquinol[inner membrane] + 2 H+[periplasm]
+RXN0-5388	LEFT-TO-RIGHT	a menaquinone[inner membrane] + NADH + 5 H+ -> a menaquinol[inner membrane] + NAD+ + 4 H+[periplasm]
+RXN0-7207	REVERSIBLE	a monocarboxylate[periplasm] <--> a monocarboxylate[extracellular space]
+TRANS-RXN0-611	REVERSIBLE	a nucleobase[periplasm] <--> a nucleobase[extracellular space]
+TRANS-RXN0-468	LEFT-TO-RIGHT	a nucleoside[extracellular space] -> a nucleoside[periplasm]
+RXN0-7199	REVERSIBLE	a nucleoside[periplasm] <--> a nucleoside[extracellular space]
+RXN0-7201	REVERSIBLE	a nucleotide sugar[periplasm] <--> a nucleotide sugar[extracellular space]
+RXN0-7200	REVERSIBLE	a nucleotide[periplasm] <--> a nucleotide[extracellular space]
+TRANS-RXN-205A	REVERSIBLE	a peptide antibiotic[periplasm] + H+[periplasm] <--> a peptide antibiotic[cytosol] + H+[cytosol]
+TRANS-RXN-378	PHYSIOL-LEFT-TO-RIGHT	a polymyxin[periplasm] + ATP + H2O -> a polymyxin[extracellular space] + ADP + phosphate + H+
+TRANS-RXN0-181	PHYSIOL-LEFT-TO-RIGHT	a protein[cytosol] -> a protein[periplasm]
+RXN-8638	PHYSIOL-LEFT-TO-RIGHT	a quaternary ammonium compound[periplasm] + ATP + H2O -> a quaternary ammonium compound[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-606	REVERSIBLE	a short-chain carboxylate[periplasm] <--> a short-chain carboxylate[extracellular space]
+TRANS-RXN0-607	REVERSIBLE	a short-chain fatty alcohol[periplasm] <--> a short-chain fatty alcohol[extracellular space]
+RXN0-7189	REVERSIBLE	a sugar alcohol[periplasm] <--> a sugar alcohol[cytosol]
+TRANS-RXN0-608	REVERSIBLE	a sugar alcohol[periplasm] <--> a sugar alcohol[extracellular space]
+RXN0-7208	REVERSIBLE	a sugar phosphate[periplasm] <--> a sugar phosphate[extracellular space]
+RXN0-7209	REVERSIBLE	a sugar[periplasm] <--> a sugar[extracellular space]
+TRANS-RXN0-267	REVERSIBLE	a tripeptide[periplasm] + H+[periplasm] <--> a tripeptide[cytosol] + H+[cytosol]
+RXN0-7204	REVERSIBLE	a trisaccharide[periplasm] <--> a trisaccharide[extracellular space]
+TRANS-RXN0-571	REVERSIBLE	acetate[periplasm] + H+[periplasm] <--> acetate[cytosol] + H+[cytosol]
+RXN0-1981	REVERSIBLE	acetate[periplasm] + Na+[periplasm] <--> acetate[cytosol] + Na+[cytosol]
+TRANS-RXN0-281	LEFT-TO-RIGHT	acetoacetate[periplasm] -> acetoacetate[cytosol]
+TRANS-RXN0-577	LEFT-TO-RIGHT	adenine[periplasm] -> adenine[cytosol]
+TRANS-RXN0-447	REVERSIBLE	adenine[periplasm] + H+[periplasm] <--> adenine[cytosol] + H+[cytosol]
+TRANS-RXN-108A	REVERSIBLE	adenosine[periplasm] + H+[periplasm] <--> adenosine[cytosol] + H+[cytosol]
+TRANS-RXN-476	REVERSIBLE	ADP-alpha-D-glucose[periplasm] + H+[periplasm] <--> ADP-alpha-D-glucose[cytosol] + H+[cytosol]
+TRANS-RXN-90	PHYSIOL-LEFT-TO-RIGHT	Ag+[cytosol] + H+[periplasm] -> Ag+[extracellular space] + H+[cytosol]
+RXN0-2162	REVERSIBLE	agmatine[cytosol] + L-arginine[periplasm] <--> agmatine[periplasm] + L-arginine[cytosol]
+TRANS-RXN0-279	PHYSIOL-LEFT-TO-RIGHT	alpha-D-Fuc4NAc-(1->4)-beta-D-ManNAcA-(1->4)-GlcNAc-PP-Und[cytosol] + H+[periplasm] -> alpha-D-Fuc4NAc-(1->4)-beta-D-ManNAcA-(1->4)-GlcNAc-PP-Und[periplasm] + H+[cytosol]
+TRANS-RXN0-491	PHYSIOL-LEFT-TO-RIGHT	alpha-D-galactofuranose[periplasm] + ATP + H2O -> alpha-D-galactofuranose[cytosol] + ADP + phosphate + H+
+TRANS-RXN-82	REVERSIBLE	alpha-lactose[cytosol] + H+[periplasm] <--> alpha-lactose[periplasm] + H+[cytosol]
+TRANS-RXN-24	REVERSIBLE	alpha-lactose[periplasm] + H+[periplasm] <--> alpha-lactose[cytosol] + H+[cytosol]
+RXN-9615	PHYSIOL-LEFT-TO-RIGHT	ammonium[periplasm] -> ammonium[cytosol]
+TRANS-RXN-238	PHYSIOL-LEFT-TO-RIGHT	an (aminoalkyl)phosphonate[periplasm] + ATP + H2O -> an (aminoalkyl)phosphonate[cytosol] + ADP + phosphate + H+
+RXN0-7247	REVERSIBLE	an aldehyde[periplasm] <--> an aldehyde[extracellular space]
+RXN0-7242	REVERSIBLE	an aldonate[periplasm] <--> an aldonate[extracellular space]
+RXN0-7245	REVERSIBLE	an amide[periplasm] <--> an amide[extracellular space]
+RXN0-7244	REVERSIBLE	an amine[periplasm] <--> an amine[extracellular space]
+TRANS-RXN0-265	PHYSIOL-LEFT-TO-RIGHT	an amino acid[cytosol] -> an amino acid[periplasm]
+TRANS-RXN0-612	REVERSIBLE	an amino acid[periplasm] <--> an amino acid[extracellular space]
+TRANS-RXN-403	PHYSIOL-LEFT-TO-RIGHT	an apo-[c-type cytochrome] with reduced L-cysteine residues[cytosol] -> an apo-[c-type cytochrome] with reduced L-cysteine residues[periplasm]
+RXN0-7206	REVERSIBLE	an aromatic compound[periplasm] <--> an aromatic compound[extracellular space]
+TRANS-RXN-367	PHYSIOL-LEFT-TO-RIGHT	an erythromycin[periplasm] + H+[periplasm] -> an erythromycin[extracellular space] + H+[cytosol]
+TRANS-RXN0-614	REVERSIBLE	an inositol[periplasm] <--> an inositol[extracellular space]
+TRANS-RXN0-601	REVERSIBLE	an ion[periplasm] <--> an ion[extracellular space]
+RXN-22427	PHYSIOL-LEFT-TO-RIGHT	an N-acyl-(S-diacyl-sn-glyceryl)-L-cysteinyl-[lipoprotein][inner membrane] + a LolA lipoprotein chaperone + ATP + H2O -> a LolA-lipoprotein complex[periplasm] + ADP + phosphate + H+
+RXN0-7202	REVERSIBLE	an oligopeptide[periplasm] <--> an oligopeptide[extracellular space]
+3.6.3.23-RXN	PHYSIOL-LEFT-TO-RIGHT	an oligopeptide[periplasm] + ATP + H2O -> an oligopeptide[cytosol] + ADP + phosphate + H+
+RXN0-7211	REVERSIBLE	an organophosphorus compound[periplasm] <--> an organophosphorus compound[extracellular space]
+TRANS-RXN0-604	REVERSIBLE	an organosulfur compound[periplasm] <--> an organosulfur compound[extracellular space]
+TRANS-RXN-161	PHYSIOL-LEFT-TO-RIGHT	an [HPr protein]-Npi-phospho-L-histidine + galactitol[periplasm] -> galactitol 1-phosphate[cytosol] + an [HPr]-L-histidine
+RXN3O-9786	LEFT-TO-RIGHT	antimonous acid[cytosol] + H+[periplasm] -> antimonous acid[periplasm] + H+[cytosol]
+RXN0-7191	REVERSIBLE	antimonous acid[periplasm] <--> antimonous acid[cytosol]
+TRANS-RXN-153	LEFT-TO-RIGHT	arbutin[periplasm] + HPr-Phis15 -> arbutin 6-phosphate[cytosol] + phosphocarrier protein HPr
+RXN-22326	PHYSIOL-LEFT-TO-RIGHT	arsenate[out] + ATP + H2O -> arsenate[in] + ADP + phosphate + H+
+TRANS-RXN0-550	PHYSIOL-LEFT-TO-RIGHT	arsenate[periplasm] + H+[periplasm] -> arsenate[cytosol] + H+[cytosol]
+RXN-22385	LEFT-TO-RIGHT	arsenous acid[cytosol] + H+[periplasm] -> arsenous acid[periplasm] + H+[cytosol]
+TRANS-RXN0-551	LEFT-TO-RIGHT	arsenous acid[periplasm] -> arsenous acid[cytosol]
+ABC-8-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + a dipeptide[periplasm] + H2O -> ADP + a dipeptide[cytosol] + phosphate + H+
+ABC-11-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + a ferric hydroxamate complex[periplasm] + H2O -> ADP + a ferric hydroxamate complex[cytosol] + phosphate + H+
+ABC-56-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + an aliphatic sulfonate[periplasm] + H2O -> an aliphatic sulfonate[cytosol] + ADP + phosphate + H+
+ABC-23-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + an alkylphosphonate[periplasm] + H2O -> ADP + an alkylphosphonate[cytosol] + phosphate + H+
+ABC-5-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + cob(I)alamin[periplasm] + H2O -> ADP + cob(I)alamin[cytosol] + phosphate + H+
+ABC-18-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + D-galactopyranose[periplasm] + H2O -> ADP + D-galactopyranose[cytosol] + phosphate + H+
+TRANS-RXN0-202	PHYSIOL-LEFT-TO-RIGHT	ATP + D-methionine[periplasm] + H2O -> ADP + D-methionine[cytosol] + phosphate + H+
+ABC-28-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + D-ribopyranose[periplasm] + H2O -> ADP + D-ribopyranose[cytosol] + phosphate + H+
+ABC-33-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + D-xylose[periplasm] + H2O -> ADP + D-xylose[cytosol] + phosphate + H+
+ATPSYN-RXN	REVERSIBLE	ATP + H2O + 3 H+[cytosol] <--> ADP + phosphate + 4 H+[periplasm]
+ABC-9-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + iron(III) dicitrate[periplasm] + H2O -> ADP + iron(III) dicitrate[cytosol] + phosphate + H+
+ABC-10-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + iron(III)-enterobactin complex[periplasm] + H2O -> ADP + iron(III)-enterobactin complex[cytosol] + phosphate + H+
+TRANS-RXN0-268	PHYSIOL-LEFT-TO-RIGHT	ATP + L-alanyl-gamma-D-glutamyl-meso-diaminopimelate[periplasm] + H2O -> L-alanyl-gamma-D-glutamyl-meso-diaminopimelate[cytosol] + ADP + phosphate + H+
+ABC-2-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-arabinose[periplasm] + H2O -> ADP + L-arabinose[cytosol] + phosphate + H+
+ABC-4-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-arginine[periplasm] + H2O -> ADP + L-arginine[cytosol] + phosphate + H+
+TRANS-RXN0-222	PHYSIOL-LEFT-TO-RIGHT	ATP + L-aspartate[periplasm] + H2O -> L-aspartate[cytosol] + ADP + phosphate + H+
+ABC-13-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-glutamate[periplasm] + H2O -> ADP + L-glutamate[cytosol] + phosphate + H+
+ABC-12-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-glutamine[periplasm] + H2O -> ADP + L-glutamine[cytosol] + phosphate + H+
+ABC-14-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-histidine[periplasm] + H2O -> ADP + L-histidine[cytosol] + phosphate + H+
+ABC-15-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-isoleucine[periplasm] + H2O -> ADP + L-isoleucine[cytosol] + phosphate + H+
+ABC-35-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-leucine[periplasm] + H2O -> ADP + L-leucine[cytosol] + phosphate + H+
+RXN0-4522	PHYSIOL-LEFT-TO-RIGHT	ATP + L-methionine[periplasm] + H2O -> ADP + L-methionine[cytosol] + phosphate + H+
+ABC-37-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-ornithine[periplasm] + H2O -> ADP + L-ornithine[cytosol] + phosphate + H+
+ABC-26-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-proline[periplasm] + H2O -> ADP + L-proline[cytosol] + phosphate + H+
+ABC-36-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + L-valine[periplasm] + H2O -> ADP + L-valine[cytosol] + phosphate + H+
+ABC-19-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + molybdate[periplasm] + H2O -> ADP + molybdate[cytosol] + phosphate + H+
+ABC-27-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + phosphate[periplasm] + H2O -> ADP + 2 phosphate[cytosol] + H+
+ABC-25-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + putrescine[periplasm] + H2O -> ADP + putrescine[cytosol] + phosphate + H+
+ABC-34-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + sn-glycerol 3-phosphate[periplasm] + H2O -> ADP + sn-glycerol 3-phosphate[cytosol] + phosphate + H+
+ABC-24-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + spermidine[periplasm] + H2O -> ADP + spermidine[cytosol] + phosphate + H+
+ABC-32-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + thiamine[periplasm] + H2O -> ADP + thiamine[cytosol] + phosphate + H+
+ABC-7-RXN	PHYSIOL-LEFT-TO-RIGHT	ATP + thiosulfate[periplasm] + H2O -> ADP + thiosulfate[cytosol] + phosphate + H+
+TRANS-RXN-377	PHYSIOL-LEFT-TO-RIGHT	bacitracin[periplasm] + ATP + H2O -> bacitracin[extracellular space] + ADP + phosphate + H+
+RXN0-5201	REVERSIBLE	beta-alanine[periplasm] + H+[periplasm] <--> beta-alanine[cytosol] + H+[cytosol]
+TRANS-RXN0-492	PHYSIOL-LEFT-TO-RIGHT	beta-D-galactofuranose[periplasm] + ATP + H2O -> beta-D-galactofuranose[cytosol] + ADP + phosphate + H+
+TRANS-RXN-340	REVERSIBLE	bicozamycin[cytosol] + H+[periplasm] <--> bicozamycin[periplasm] + H+[cytosol]
+TRANS-RXN0-240	LEFT-TO-RIGHT	biotin[periplasm] -> biotin[cytosol]
+TRANS-RXN-68	REVERSIBLE	cadaverine[cytosol] + L-lysine[periplasm] <--> cadaverine[periplasm] + L-lysine[cytosol]
+TRANS-RXN0-212	REVERSIBLE	cadaverine[periplasm] + H+[periplasm] <--> cadaverine[cytosol] + H+[cytosol]
+TRANS-RXN-278	REVERSIBLE	calcium hydrogenphosphate[periplasm] + H+[periplasm] <--> calcium hydrogenphosphate[cytosol] + H+[cytosol]
+TRANS-RXN-364	PHYSIOL-LEFT-TO-RIGHT	carbonylcyanide m-chlorophenylhydrazone[cytosol] + H+[periplasm] -> carbonylcyanide m-chlorophenylhydrazone[extracellular space] + H+[cytosol]
+TRANS-RXN-339	REVERSIBLE	carbonylcyanide m-chlorophenylhydrazone[cytosol] + H+[periplasm] <--> carbonylcyanide m-chlorophenylhydrazone[periplasm] + H+[cytosol]
+3.6.3.3-RXN	PHYSIOL-LEFT-TO-RIGHT	Cd2+[cytosol] + ATP + H2O -> Cd2+[periplasm] + ADP + phosphate + H+
+TRANS-RXN0-244	LEFT-TO-RIGHT	Cd2+[cytosol] + H+[periplasm] -> Cd2+[periplasm] + H+[cytosol]
+RXN0-10	LEFT-TO-RIGHT	Cd2+[periplasm] -> Cd2+[cytosol]
+TRANS-RXN-366	PHYSIOL-LEFT-TO-RIGHT	cefoperazone[cytosol] + ATP + H2O -> cefoperazone[periplasm] + ADP + phosphate + H+
+TRANS-RXN-368	REVERSIBLE	cetylpyridinium[cytosol] + H+[periplasm] <--> cetylpyridinium[periplasm] + H+[cytosol]
+TRANS-RXN0-592	PHYSIOL-LEFT-TO-RIGHT	chenodeoxycholate[periplasm] + H+[periplasm] -> chenodeoxycholate[extracellular space] + H+[cytosol]
+TRANS-RXN-341	REVERSIBLE	chloramphenicol[cytosol] + H+[periplasm] <--> chloramphenicol[periplasm] + H+[cytosol]
+TRANS-RXN0-588	REVERSIBLE	cholate[cytosol] + H+[periplasm] <--> cholate[periplasm] + H+[cytosol]
+TRANS-RXN0-533	REVERSIBLE	choline[cytosol] + H+[periplasm] <--> choline[periplasm] + H+[cytosol]
+TRANS-RXN-99	REVERSIBLE	choline[periplasm] + H+[periplasm] <--> choline[cytosol] + H+[cytosol]
+RXN0-7238	PHYSIOL-LEFT-TO-RIGHT	cis-vaccenate + ATP + coenzyme A + H+ -> cis-vaccenoyl-CoA + AMP + diphosphate + H+
+TRANS-RXN0-585	LEFT-TO-RIGHT	Co2+[cytosol] -> Co2+[periplasm]
+TRANS-RXN-141A	LEFT-TO-RIGHT	Co2+[periplasm] -> Co2+[cytosol]
+RXN0-1565	PHYSIOL-LEFT-TO-RIGHT	cob(I)alamin[extracellular space] + H+[periplasm] -> cob(I)alamin[periplasm] + H+[cytosol]
+TRANS-RXN0-283	PHYSIOL-LEFT-TO-RIGHT	cob(I)inamide[extracellular space] + H+[periplasm] -> cob(I)inamide[periplasm] + H+[cytosol]
+TRANS-RXN-296	PHYSIOL-LEFT-TO-RIGHT	cob(I)inamide[periplasm] + ATP + H2O -> cob(I)inamide[cytosol] + ADP + phosphate + H+
+RXN-14455	PHYSIOL-LEFT-TO-RIGHT	Cu+[cytosol] + ATP + H2O -> Cu+[periplasm] + ADP + phosphate + H+
+TRANS-RXN0-280	PHYSIOL-LEFT-TO-RIGHT	Cu+[cytosol] + H+[periplasm] -> Cu+[extracellular space] + H+[cytosol]
+RXN0-14	LEFT-TO-RIGHT	Cu2+[periplasm] -> Cu2+[cytosol]
+RXN-5068	LEFT-TO-RIGHT	curlin, major subunit[periplasm] -> curlin, major subunit[extracellular space]
+TRANS-RXN-14	LEFT-TO-RIGHT	cyanate[periplasm] -> cyanate[cytosol]
+TRANS-RXN-267	LEFT-TO-RIGHT	cystine[cytosol] -> cystine[periplasm]
+TRANS-RXN-108B	REVERSIBLE	cytidine[periplasm] + H+[periplasm] <--> cytidine[cytosol] + H+[cytosol]
+TRANS-RXN-116	LEFT-TO-RIGHT	cytosine[periplasm] + H+[periplasm] -> cytosine[cytosol] + H+[cytosol]
+TRANS-RXN-62A	REVERSIBLE	D-alanine[periplasm] + H+[periplasm] <--> D-alanine[cytosol] + H+[cytosol]
+ABC-42-RXN	PHYSIOL-LEFT-TO-RIGHT	D-allose[periplasm] + ATP + H2O -> D-allose[cytosol] + ADP + phosphate + H+
+RXN0-7221	REVERSIBLE	D-arabinose[periplasm] + H+[periplasm] <--> D-arabinose[cytosol] + H+[cytosol]
+RXN0-5203	REVERSIBLE	D-cycloserine[periplasm] + H+[periplasm] <--> D-cycloserine[cytosol] + H+[cytosol]
+TRANS-RXN0-514	PHYSIOL-LEFT-TO-RIGHT	D-cystine[cytosol] -> D-cystine[periplasm]
+TRANS-RXN-290	PHYSIOL-LEFT-TO-RIGHT	D-cystine[periplasm] + ATP + H2O -> D-cystine[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-616	REVERSIBLE	D-cystine[periplasm] + H+[periplasm] <--> D-cystine[cytosol] + H+[cytosol]
+TRANS-RXN0-501	REVERSIBLE	D-fructofuranose 6-phosphate[periplasm] + phosphate[cytosol] <--> D-fructofuranose 6-phosphate[cytosol] + phosphate[periplasm]
+TRANS-RXN-158A	LEFT-TO-RIGHT	D-fructofuranose[periplasm] + HPr-Phis15 -> D-fructofuranose 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-158	LEFT-TO-RIGHT	D-fructofuranose[periplasm] + PtsI-Phis189 -> D-fructofuranose 1-phosphate[cytosol] + PTS enzyme I
+TRANS-RXN0-582	PHYSIOL-LEFT-TO-RIGHT	D-fructose[periplasm] + PtsI-Phis189 -> D-fructose 1-phosphate[cytosol] + PTS enzyme I
+TRANS-RXN-81	REVERSIBLE	D-fructuronate[periplasm] + H+[periplasm] <--> D-fructuronate[cytosol] + H+[cytosol]
+TRANS-RXN-16	REVERSIBLE	D-galactonate[periplasm] + 2 H+[periplasm] <--> D-galactonate[cytosol] + 2 H+[cytosol]
+TRANS-RXN-21	REVERSIBLE	D-galactopyranose[periplasm] + H+[periplasm] <--> D-galactopyranose[cytosol] + H+[cytosol]
+TRANS-RXN-123	REVERSIBLE	D-galacturonate[periplasm] + H+[periplasm] <--> D-galacturonate[cytosol] + H+[cytosol]
+TRANS-RXN0-204	REVERSIBLE	D-glucarate[periplasm] + H+[periplasm] <--> D-glucarate[cytosol] + H+[cytosol]
+TRANS-RXN0-209	REVERSIBLE	D-gluconate[periplasm] + H+[periplasm] <--> D-gluconate[cytosol] + H+[cytosol]
+TRANS-RXN-33	REVERSIBLE	D-glucopyranose 6-phosphate[periplasm] + phosphate[cytosol] <--> D-glucopyranose 6-phosphate[cytosol] + phosphate[periplasm]
+TRANS-RXN0-574	LEFT-TO-RIGHT	D-glucopyranose[periplasm] -> D-glucopyranose[cytosol]
+RXN0-7077	PHYSIOL-LEFT-TO-RIGHT	D-glucopyranose[periplasm] + H+[periplasm] -> D-glucopyranose[cytosol] + H+[cytosol]
+TRANS-RXN-35	REVERSIBLE	D-glucuronate[periplasm] + H+[periplasm] <--> D-glucuronate[cytosol] + H+[cytosol]
+TRANS-RXN0-523	REVERSIBLE	D-glycerate[periplasm] + H+[periplasm] <--> D-glycerate[cytosol] + H+[cytosol]
+TRANS-RXN0-502	REVERSIBLE	D-mannopyranose 6-phosphate[periplasm] + phosphate[cytosol] <--> D-mannopyranose 6-phosphate[cytosol] + phosphate[periplasm]
+TRANS-RXN-165	PHYSIOL-LEFT-TO-RIGHT	D-mannopyranose[periplasm] + HPr-Phis15 -> D-mannopyranose 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-383	PHYSIOL-LEFT-TO-RIGHT	D-selenomethionine[periplasm] + ATP + H2O -> D-selenomethionine[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-495	LEFT-TO-RIGHT	D-serine[periplasm] -> D-serine[cytosol]
+RXN0-5130	REVERSIBLE	D-serine[periplasm] + H+[periplasm] <--> D-serine[cytosol] + H+[cytosol]
+TRANS-RXN0-499	REVERSIBLE	D-tartrate[periplasm] + succinate[cytosol] <--> succinate[periplasm] + D-tartrate[cytosol]
+TRANS-RXN-30	REVERSIBLE	D-xylose[periplasm] + H+[periplasm] <--> D-xylose[cytosol] + H+[cytosol]
+TRANS-RXN-356	PHYSIOL-LEFT-TO-RIGHT	decanoate[periplasm] + H+[periplasm] -> decanoate[extracellular space] + H+[cytosol]
+TRANS-RXN-365	PHYSIOL-LEFT-TO-RIGHT	deoxycholate[cytosol] + H+[periplasm] -> deoxycholate[extracellular space] + H+[cytosol]
+TRANS-RXN0-589	REVERSIBLE	deoxycholate[cytosol] + H+[periplasm] <--> deoxycholate[periplasm] + H+[cytosol]
+TRANS-RXN-349	REVERSIBLE	deoxycholate[cytosol] + Na+[periplasm] <--> deoxycholate[periplasm] + Na+[cytosol]
+TRANS-RXN-352	PHYSIOL-LEFT-TO-RIGHT	deoxycholate[periplasm] + H+[periplasm] -> deoxycholate[extracellular space] + H+[cytosol]
+TRANS-RXN-337	REVERSIBLE	dequalinium[cytosol] + 2 H+[periplasm] <--> dequalinium[periplasm] + 2 H+[cytosol]
+TRANS-RXN0-286	PHYSIOL-LEFT-TO-RIGHT	ditrans,octacis-undecaprenyldiphospho-[(N-acetyl-beta-D-glucosaminyl)-(1,4)-]-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine[cytosol] + H+[periplasm] -> ditrans,octacis-undecaprenyldiphospho-[(N-acetyl-beta-D-glucosaminyl)-(1,4)-]-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine[periplasm] + H+[cytosol]
+TRANS-RXN0-536	REVERSIBLE	DL-glyceraldehyde[periplasm] <--> DL-glyceraldehyde[cytosol]
+TRANS-RXN-92	PHYSIOL-LEFT-TO-RIGHT	dodecyl sulfate[periplasm] + H+[periplasm] -> dodecyl sulfate[extracellular space] + H+[cytosol]
+TRANS-RXN0-496	REVERSIBLE	enterobactin[cytosol] + H+[periplasm] <--> enterobactin[periplasm] + H+[cytosol]
+TRANS-RXN-357	PHYSIOL-LEFT-TO-RIGHT	enterobactin[periplasm] + H+[periplasm] -> enterobactin[extracellular space] + H+[cytosol]
+TRANS-RXN0-539	LEFT-TO-RIGHT	ethidium[cytosol] -> ethidium[periplasm]
+TRANS-RXN-344	REVERSIBLE	ethidium[cytosol] + 2 H+[periplasm] <--> ethidium[periplasm] + 2 H+[cytosol]
+TRANS-RXN-338	REVERSIBLE	ethidium[cytosol] + H+[periplasm] <--> ethidium[periplasm] + H+[cytosol]
+TRANS-RXN-359	PHYSIOL-LEFT-TO-RIGHT	ethidium[periplasm] + H+[periplasm] -> ethidium[extracellular space] + H+[cytosol]
+TRANS-RXN-272	LEFT-TO-RIGHT	FAD[cytosol] -> FAD[periplasm]
+RXN0-6	REVERSIBLE	Fe2+[cytosol] + H+[periplasm] <--> Fe2+[periplasm] + H+[cytosol]
+TRANS-RXN-8	LEFT-TO-RIGHT	Fe2+[periplasm] -> Fe2+[cytosol]
+TRANS-RXN-424	PHYSIOL-LEFT-TO-RIGHT	Fe2+[periplasm] + GTP + H2O -> Fe2+[cytosol] + GDP + phosphate + H+
+RXN0-2421	REVERSIBLE	Fe2+[periplasm] + H+[periplasm] <--> Fe2+[cytosol] + H+[cytosol]
+RXN0-1701	PHYSIOL-LEFT-TO-RIGHT	ferrichrome[extracellular space] + H+[periplasm] -> ferrichrome[periplasm] + H+[cytosol]
+TRANS-RXN-298	PHYSIOL-LEFT-TO-RIGHT	ferrichrome[periplasm] + ATP + H2O -> ferrichrome[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-498	REVERSIBLE	fluoride[cytosol] <--> fluoride[periplasm]
+TRANS-RXN0-595	LEFT-TO-RIGHT	FMN[cytosol] -> FMN[periplasm]
+TRANS-RXN-1	REVERSIBLE	formate[cytosol] <--> formate[periplasm]
+FORMATEDEHYDROG-RXN	PHYSIOL-LEFT-TO-RIGHT	formate[periplasm] + a menaquinone[inner membrane] + 2 H+ -> CO2[periplasm] + a menaquinol[inner membrane] + H+[periplasm]
+TRANS-RXN-342	REVERSIBLE	fosfomycin[cytosol] + H+[periplasm] <--> fosfomycin[periplasm] + H+[cytosol]
+TRANS-RXN-41	REVERSIBLE	fosmidomycin[cytosol] + H+[periplasm] <--> fosmidomycin[periplasm] + H+[cytosol]
+TRANS-RXN0-553	REVERSIBLE	fumarate[periplasm] + 2 H+[periplasm] <--> fumarate[cytosol] + 2 H+[cytosol]
+TRANS-RXN-299	REVERSIBLE	fumarate[periplasm] + 3 H+[periplasm] <--> fumarate[cytosol] + 3 H+[cytosol]
+TRANS-RXN0-203	REVERSIBLE	galactarate[periplasm] + H+[periplasm] <--> galactarate[cytosol] + H+[cytosol]
+TRANS-RXN-100	REVERSIBLE	gamma-butyrobetaine[cytosol] + L-carnitine[periplasm] <--> gamma-butyrobetaine[periplasm] + L-carnitine[cytosol]
+TRANS-RXN0-226	REVERSIBLE	GlcNAc-1,6-anhMurNAc-L-Ala-gamma-D-Glu-DAP-D-Ala[periplasm] + H+[periplasm] <--> GlcNAc-1,6-anhMurNAc-L-Ala-gamma-D-Glu-DAP-D-Ala[cytosol] + H+[cytosol]
+RXN0-21	PHYSIOL-LEFT-TO-RIGHT	glutathione[cytosol] + ATP + H2O -> glutathione[periplasm] + ADP + phosphate + H+
+RXN0-11	PHYSIOL-LEFT-TO-RIGHT	glutathione[periplasm] + ATP + H2O -> glutathione[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-598	REVERSIBLE	glycerol 1-phosphate[periplasm] <--> glycerol 1-phosphate[extracellular space]
+TRANS-RXN-131	REVERSIBLE	glycerol[periplasm] <--> glycerol[cytosol]
+TRANS-RXN0-532	REVERSIBLE	glycine betaine[cytosol] + H+[periplasm] <--> glycine betaine[periplasm] + H+[cytosol]
+TRANS-RXN0-490	REVERSIBLE	glycine betaine[extracellular space] <--> glycine betaine[periplasm]
+TRANS-RXN-283	PHYSIOL-LEFT-TO-RIGHT	glycine betaine[periplasm] + ATP + H2O -> glycine betaine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-29A	REVERSIBLE	glycine betaine[periplasm] + H+[periplasm] <--> glycine betaine[cytosol] + H+[cytosol]
+TRANS-RXN0-537	REVERSIBLE	glycine[periplasm] <--> glycine[cytosol]
+TRANS-RXN-62B	REVERSIBLE	glycine[periplasm] + H+[periplasm] <--> glycine[cytosol] + H+[cytosol]
+TRANS-RXN-105	REVERSIBLE	glycolate[periplasm] + H+[periplasm] <--> glycolate[cytosol] + H+[cytosol]
+RXN0-5111	REVERSIBLE	glycolate[periplasm] + Na+[periplasm] <--> glycolate[cytosol] + Na+[cytosol]
+TRANS-RXN-369	REVERSIBLE	guanidinium[cytosol] + 2 H+[periplasm] <--> guanidinium[periplasm] + 2 H+[cytosol]
+TRANS-RXN0-578	LEFT-TO-RIGHT	guanine[periplasm] + H+[periplasm] -> guanine[cytosol] + H+[cytosol]
+RXN0-22	REVERSIBLE	guanosine[cytosol] + H+[periplasm] <--> guanosine[periplasm] + H+[cytosol]
+TRANS-RXN-474	REVERSIBLE	guanosine[periplasm] + H+[periplasm] <--> guanosine[cytosol] + H+[cytosol]
+TRANS-RXN-145	REVERSIBLE	H2O[periplasm] <--> H2O[cytosol]
+TRANS-RXN0-603	REVERSIBLE	H2O[periplasm] <--> H2O[extracellular space]
+TRANS-RXN-355	PHYSIOL-LEFT-TO-RIGHT	hexane[periplasm] + H+[periplasm] -> hexane[extracellular space] + H+[cytosol]
+RXN0-2522	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + 2-O-(alpha-D-mannosyl)-D-glycerate[periplasm] -> 2-O-(6-phospho-alpha-D-mannosyl)-D-glycerate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-168	LEFT-TO-RIGHT	HPr-Phis15 + alpha,alpha-trehalose[periplasm] -> alpha,alpha-trehalose 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-155	LEFT-TO-RIGHT	HPr-Phis15 + beta-D-cellobiose[periplasm] -> beta-D-cellobiose 6'-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-157	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + D-glucopyranose[periplasm] -> D-glucopyranose 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-167A	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + D-glucosamine[periplasm] -> D-glucosamine 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-156	LEFT-TO-RIGHT	HPr-Phis15 + D-mannitol[periplasm] -> D-mannitol 1-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-169	LEFT-TO-RIGHT	HPr-Phis15 + D-sorbitol[periplasm] -> D-sorbitol 6-phosphate[cytosol] + phosphocarrier protein HPr
+RXN0-2461	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + L-ascorbate[periplasm] -> L-ascorbate 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-155B	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + N,N'-diacetylchitobiose[periplasm] -> N,N'-diacetylchitobiose 6'-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-167	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + N-acetyl-D-glucosamine[periplasm] -> N-acetyl-D-glucosamine 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN-153A	PHYSIOL-LEFT-TO-RIGHT	HPr-Phis15 + salicin[periplasm] -> salicin 6-phosphate[cytosol] + phosphocarrier protein HPr
+RXN-19778	PHYSIOL-LEFT-TO-RIGHT	hydrogen peroxide[periplasm] + an ubiquinol[inner membrane] -> a ubiquinone[inner membrane] + 2 H2O[periplasm]
+RXN0-2481	REVERSIBLE	hydrophilic solute or ion < 600 Da[extracellular space] <--> hydrophilic solute or ion < 600 Da[periplasm]
+RXN0-2542	LEFT-TO-RIGHT	hydrophilic solute < 900 Da[extracellular space] -> hydrophilic solute < 900 Da[periplasm]
+TRANS-RXN0-562	LEFT-TO-RIGHT	hypoxanthine[cytosol] + H+[cytosol] -> hypoxanthine[periplasm] + H+[periplasm]
+TRANS-RXN-142	REVERSIBLE	indole[periplasm] + H+[periplasm] <--> indole[cytosol] + H+[cytosol]
+RXN0-18	REVERSIBLE	inosine[cytosol] + H+[periplasm] <--> inosine[periplasm] + H+[cytosol]
+TRANS-RXN-108G	REVERSIBLE	inosine[periplasm] + H+[periplasm] <--> inosine[cytosol] + H+[cytosol]
+RXN0-1684	PHYSIOL-LEFT-TO-RIGHT	iron(III) dicitrate[extracellular space] + H+[periplasm] -> iron(III) dicitrate[periplasm] + H+[cytosol]
+RXN0-1702	PHYSIOL-LEFT-TO-RIGHT	iron(III)-coprogen[extracellular space] + H+[periplasm] -> iron(III)-coprogen[periplasm] + H+[cytosol]
+TRANS-RXN-297	PHYSIOL-LEFT-TO-RIGHT	iron(III)-coprogen[periplasm] + ATP + H2O -> iron(III)-coprogen[cytosol] + ADP + phosphate + H+
+RXN0-1682	PHYSIOL-LEFT-TO-RIGHT	iron(III)-enterobactin complex[extracellular space] + H+[periplasm] -> iron(III)-enterobactin complex[periplasm] + H+[cytosol]
+RXN0-1721	LEFT-TO-RIGHT	iron(III)-[N-(2,3-dihydroxybenzoyl)-L-serine trimer] complex[extracellular space] + H+[periplasm] -> iron(III)-[N-(2,3-dihydroxybenzoyl)-L-serine trimer] complex[periplasm] + H+[cytosol]
+TRANS-RXN-336	REVERSIBLE	K+[cytosol] + 2 H+[periplasm] <--> K+[periplasm] + 2 H+[cytosol]
+TRANS-RXN-42	REVERSIBLE	K+[cytosol] + H+[periplasm] <--> K+[periplasm] + H+[cytosol]
+TRANS-RXN-2	PHYSIOL-LEFT-TO-RIGHT	K+[periplasm] + ATP + H2O -> K+[cytosol] + ADP + phosphate + H+
+TRANS-RXN-3	REVERSIBLE	K+[periplasm] + H+[periplasm] <--> K+[cytosol] + H+[cytosol]
+TRANS-RXN0-617	PHYSIOL-LEFT-TO-RIGHT	L,L-homocystine[periplasm] + ATP + H2O -> L,L-homocystine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-286	REVERSIBLE	L,L-homocystine[periplasm] + H+[periplasm] <--> L,L-homocystine[cytosol] + H+[cytosol]
+TRANS-RXN0-469	REVERSIBLE	L-alanine[cytosol] + H+[periplasm] <--> L-alanine[periplasm] + H+[cytosol]
+RXN0-5202	REVERSIBLE	L-alanine[periplasm] + H+[periplasm] <--> L-alanine[cytosol] + H+[cytosol]
+TRANS-RXN-40	REVERSIBLE	L-arabinose[cytosol] + H+[periplasm] <--> L-arabinose[periplasm] + H+[cytosol]
+TRANS-RXN-10	REVERSIBLE	L-arabinose[periplasm] + H+[periplasm] <--> L-arabinose[cytosol] + H+[cytosol]
+RXN66-448	LEFT-TO-RIGHT	L-arginine[periplasm] -> L-arginine[cytosol]
+TRANS-RXN-262	REVERSIBLE	L-asparagine[periplasm] + H+[periplasm] <--> L-asparagine[cytosol] + H+[cytosol]
+TRANS-RXN-122A	REVERSIBLE	L-aspartate[periplasm] + 2 H+[periplasm] <--> L-aspartate[cytosol] + 2 H+[cytosol]
+TRANS-RXN-379	REVERSIBLE	L-aspartate[periplasm] + fumarate[cytosol] <--> L-aspartate[cytosol] + fumarate[periplasm]
+TRANS-RXN-325	PHYSIOL-LEFT-TO-RIGHT	L-canavanine[cytosol] -> L-canavanine[periplasm]
+TRANS-RXN0-512	LEFT-TO-RIGHT	L-cystathionine[periplasm] -> L-cystathionine[cytosol]
+RXN0-1924	LEFT-TO-RIGHT	L-cysteine[cytosol] -> L-cysteine[periplasm]
+RXN0-3	PHYSIOL-LEFT-TO-RIGHT	L-cysteine[cytosol] + ATP + H2O -> L-cysteine[periplasm] + ADP + phosphate + H+
+TRANS-RXN0-507	LEFT-TO-RIGHT	L-cystine[cytosol] -> L-cystine[periplasm]
+TRANS-RXN0-593	PHYSIOL-LEFT-TO-RIGHT	L-cystine[periplasm] + ATP + H2O -> L-cystine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-285	REVERSIBLE	L-cystine[periplasm] + H+[periplasm] <--> L-cystine[cytosol] + H+[cytosol]
+TRANS-RXN0-508	PHYSIOL-LEFT-TO-RIGHT	L-djenkolate[periplasm] + ATP + H2O -> L-djenkolate[cytosol] + ADP + phosphate + H+
+TRANS-RXN-20	LEFT-TO-RIGHT	L-fucose[periplasm] + H+[periplasm] -> L-fucose[cytosol] + H+[cytosol]
+TRANS-RXN0-227	REVERSIBLE	L-galactonate[periplasm] + H+[periplasm] <--> L-galactonate[cytosol] + H+[cytosol]
+RXN0-7222	REVERSIBLE	L-galactose[periplasm] + H+[periplasm] <--> L-galactose[cytosol] + H+[cytosol]
+TRANS-RXN-162	REVERSIBLE	L-glutamate[periplasm] + 2 H+[periplasm] <--> L-glutamate[cytosol] + 2 H+[cytosol]
+TRANS-RXN0-534	REVERSIBLE	L-glyceraldehyde 3-phosphate[periplasm] + phosphate[cytosol] <--> L-glyceraldehyde 3-phosphate[cytosol] + phosphate[periplasm]
+TRANS-RXN-242A	REVERSIBLE	L-homoserine lactone[cytosol] + H+[periplasm] <--> L-homoserine lactone[periplasm] + H+[cytosol]
+TRANS-RXN-242	REVERSIBLE	L-homoserine[cytosol] + H+[periplasm] <--> L-homoserine[periplasm] + H+[cytosol]
+TRANS-RXN-181A	REVERSIBLE	L-idonate[periplasm] + H+[periplasm] <--> L-idonate[cytosol] + H+[cytosol]
+TRANS-RXN-281	REVERSIBLE	L-isoleucine[cytosol] + H+[periplasm] <--> L-isoleucine[periplasm] + H+[cytosol]
+TRANS-RXN0-270	REVERSIBLE	L-leucine[cytosol] + H+[periplasm] <--> L-leucine[periplasm] + H+[cytosol]
+TRANS-RXN0-569	LEFT-TO-RIGHT	L-lysine[cytosol] -> L-lysine[periplasm]
+ABC-3-RXN	PHYSIOL-LEFT-TO-RIGHT	L-lysine[periplasm] + ATP + H2O -> L-lysine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-58	REVERSIBLE	L-lysine[periplasm] + H+[periplasm] <--> L-lysine[cytosol] + H+[cytosol]
+TRANS-RXN0-236	REVERSIBLE	L-lyxopyranose[periplasm] + H+[periplasm] <--> L-lyxopyranose[cytosol] + H+[cytosol]
+TRANS-RXN0-511	PHYSIOL-LEFT-TO-RIGHT	L-methionine S-oxide[periplasm] + ATP + H2O -> L-methionine S-oxide[cytosol] + ADP + phosphate + H+
+RXN0-7185	PHYSIOL-LEFT-TO-RIGHT	L-methionine-(R)-S-oxide[periplasm] + ATP + H2O -> L-methionine-(R)-S-oxide[cytosol] + ADP + phosphate + H+
+RXN0-7186	PHYSIOL-LEFT-TO-RIGHT	L-methionine-(S)-S-oxide[periplasm] + ATP + H2O -> L-methionine-(S)-S-oxide[cytosol] + ADP + phosphate + H+
+RXN0-7050	REVERSIBLE	L-methionine[cytosol] + H+[periplasm] <--> L-methionine[periplasm] + H+[cytosol]
+TRANS-RXN-312	PHYSIOL-LEFT-TO-RIGHT	L-phenylalanine[periplasm] + ATP + H2O -> L-phenylalanine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-56	REVERSIBLE	L-phenylalanine[periplasm] + H+[periplasm] <--> L-phenylalanine[cytosol] + H+[cytosol]
+TRANS-RXN-324	PHYSIOL-LEFT-TO-RIGHT	L-proline betaine[periplasm] + ATP + H2O -> L-proline betaine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-29	REVERSIBLE	L-proline[periplasm] + H+[periplasm] <--> L-proline[cytosol] + H+[cytosol]
+TRANS-RXN-112	REVERSIBLE	L-rhamnose[periplasm] + H+[periplasm] <--> L-rhamnose[cytosol] + H+[cytosol]
+TRANS-RXN0-480	LEFT-TO-RIGHT	L-selenocysteine[periplasm] -> L-selenocysteine[cytosol]
+TRANS-RXN-71	REVERSIBLE	L-serine[periplasm] + H+[periplasm] <--> L-serine[cytosol] + H+[cytosol]
+TRANS-RXN-127	REVERSIBLE	L-tartrate[periplasm] + succinate[cytosol] <--> L-tartrate[cytosol] + succinate[periplasm]
+TRANS-RXN0-0244	REVERSIBLE	L-threonine[cytosol] + H+[periplasm] <--> L-threonine[periplasm] + H+[cytosol]
+TRANS-RXN-72	REVERSIBLE	L-threonine[periplasm] + H+[periplasm] <--> L-threonine[cytosol] + H+[cytosol]
+TRANS-RXN-76	REVERSIBLE	L-tryptophan[periplasm] + H+[periplasm] <--> L-tryptophan[cytosol] + H+[cytosol]
+TRANS-RXN-77	REVERSIBLE	L-tyrosine[periplasm] + H+[periplasm] <--> L-tyrosine[cytosol] + H+[cytosol]
+TRANS-RXN0-269	REVERSIBLE	L-valine[cytosol] <--> L-valine[periplasm]
+TRANS-RXN-282	REVERSIBLE	L-valine[cytosol] + H+[periplasm] <--> L-valine[periplasm] + H+[cytosol]
+RXN0-7215	REVERSIBLE	lactulose[periplasm] + H+[periplasm] <--> lactulose[cytosol] + H+[cytosol]
+TRANS-RXN0-513	PHYSIOL-LEFT-TO-RIGHT	lanthionine[periplasm] + ATP + H2O -> lanthionine[cytosol] + ADP + phosphate + H+
+TRANS-RXN-292	REVERSIBLE	Li+[cytosol] + 2 H+[periplasm] <--> Li+[periplasm] + 2 H+[cytosol]
+TRANS-RXN-94B	REVERSIBLE	Li+[periplasm] + melibiose[periplasm] <--> Li+[cytosol] + melibiose[cytosol]
+TRANS-RXN-277	REVERSIBLE	magnesium hydrogenphosphate[periplasm] + H+[periplasm] <--> magnesium hydrogenphosphate[cytosol] + H+[cytosol]
+RXN0-1741	LEFT-TO-RIGHT	maltose[extracellular space] -> maltose[periplasm]
+TRANS-RXN0-575	LEFT-TO-RIGHT	maltose[periplasm] -> maltose[cytosol]
+ABC-16-RXN	PHYSIOL-LEFT-TO-RIGHT	maltose[periplasm] + ATP + H2O -> maltose[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-504	PHYSIOL-LEFT-TO-RIGHT	maltotetraose[periplasm] + ATP + H2O -> ADP + maltotetraose[cytosol] + phosphate + H+
+TRANS-RXN0-503	PHYSIOL-LEFT-TO-RIGHT	maltotriose[periplasm] + ATP + H2O -> ADP + maltotriose[cytosol] + phosphate + H+
+RXN-17755	REVERSIBLE	melibionate[periplasm] + H+[periplasm] <--> melibionate[cytosol] + H+[cytosol]
+TRANS-RXN-94	REVERSIBLE	melibiose[periplasm] + H+[periplasm] <--> melibiose[cytosol] + H+[cytosol]
+TRANS-RXN-291	PHYSIOL-LEFT-TO-RIGHT	meso-diaminopimelate[periplasm] + ATP + H2O -> meso-diaminopimelate[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-583	LEFT-TO-RIGHT	methyl alpha-D-glucoside[periplasm] + HPr-Phis15 -> phosphocarrier protein HPr + methyl alpha-D-glucoside 6-phosphate[cytosol]
+TRANS-RXN0-518	LEFT-TO-RIGHT	methyl beta-D-glucoside[periplasm] + HPr-Phis15 -> methyl beta-D-glucoside 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN0-519	REVERSIBLE	methyl-alpha-D-galactopyranoside[periplasm] + H+[periplasm] <--> methyl-alpha-D-galactopyranoside[cytosol] + H+[cytosol]
+TRANS-RXN0-541	PHYSIOL-LEFT-TO-RIGHT	methyl-beta-D-galactoside[periplasm] + ATP + H2O -> methyl-beta-D-galactoside[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-520	REVERSIBLE	methyl-beta-D-galactoside[periplasm] + Na+[periplasm] <--> methyl-beta-D-galactoside[cytosol] + Na+[cytosol]
+TRANS-RXN-141	LEFT-TO-RIGHT	Mg2+[periplasm] -> Mg2+[cytosol]
+TRANS-RXN-250	PHYSIOL-LEFT-TO-RIGHT	Mg2+[periplasm] + ATP + H2O -> Mg2+[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-487	LEFT-TO-RIGHT	Mn2+[cytosol] -> Mn2+[periplasm]
+RXN0-16	LEFT-TO-RIGHT	Mn2+[periplasm] -> Mn2+[cytosol]
+TRANS-RXN-241	REVERSIBLE	Mn2+[periplasm] + H+[periplasm] <--> Mn2+[cytosol] + H+[cytosol]
+RXN0-5413	PHYSIOL-LEFT-TO-RIGHT	n UDP-N-acetyl-alpha-D-glucosamine + N-acetyl-D-glucosamine -> poly-beta-1,6-N-acetyl-D-glucosamine + n UDP
+TRANS-RXN-481	PHYSIOL-LEFT-TO-RIGHT	N,N',N''-triacetylchitotriose[extracellular space] -> N,N',N''-triacetylchitotriose[periplasm]
+TRANS-RXN0-445	LEFT-TO-RIGHT	N,N'-diacetylchitobiose[extracellular space] -> N,N'-diacetylchitobiose[periplasm]
+TRANS-RXN0-452	REVERSIBLE	N-(4-aminobenzoyl)-L-glutamate[periplasm] + H+[periplasm] <--> N-(4-aminobenzoyl)-L-glutamate[cytosol] + H+[cytosol]
+TRANS-RXN0-258	REVERSIBLE	N-acetyl-beta-D-glucosamine-1,6-anhydro-N-acetyl-beta-D-muramate[periplasm] + H+[periplasm] <--> N-acetyl-beta-D-glucosamine-1,6-anhydro-N-acetyl-beta-D-muramate[cytosol] + H+[cytosol]
+RXN-15315	LEFT-TO-RIGHT	N-acetyl-beta-neuraminate[extracellular space] -> N-acetyl-beta-neuraminate[periplasm]
+RXN-15314	REVERSIBLE	N-acetyl-beta-neuraminate[periplasm] + H+[periplasm] <--> N-acetyl-beta-neuraminate[cytosol] + H+[cytosol]
+TRANS-RXN0-446	LEFT-TO-RIGHT	N-acetyl-D-mannosamine[periplasm] + HPr-Phis15 -> N-acetyl-D-mannosamine 6-phosphate[cytosol] + phosphocarrier protein HPr
+RXN0-17	PHYSIOL-LEFT-TO-RIGHT	N-acetyl-D-muramate[periplasm] + HPr-Phis15 -> N-acetyl-D-muramate 6-phosphate[cytosol] + phosphocarrier protein HPr
+TRANS-RXN0-510	PHYSIOL-LEFT-TO-RIGHT	N-acetyl-DL-methionine[periplasm] + ATP + H2O -> N-acetyl-DL-methionine[cytosol] + ADP + phosphate + H+
+RXN0-0	LEFT-TO-RIGHT	N-acetylneuraminate[extracellular space] -> N-acetylneuraminate[periplasm]
+TRANS-RXN0-417	LEFT-TO-RIGHT	N6-(D-fructosyl)-L-lysine[periplasm] -> N6-(D-fructosyl)-L-lysine[cytosol]
+TRANS-RXN0-418	LEFT-TO-RIGHT	N6-(D-psicosyl)-L-lysine[periplasm] -> N6-(D-psicosyl)-L-lysine[cytosol]
+TRANS-RXN-129	REVERSIBLE	Na+[cytosol] + 2 H+[periplasm] <--> Na+[periplasm] + 2 H+[cytosol]
+TRANS-RXN-101	LEFT-TO-RIGHT	Na+[cytosol] + H+[periplasm] -> Na+[periplasm] + H+[cytosol]
+TRANS-RXN-117	REVERSIBLE	Na+[periplasm] + (R)-pantothenate[periplasm] <--> Na+[cytosol] + (R)-pantothenate[cytosol]
+TRANS-RXN0-235	LEFT-TO-RIGHT	Na+[periplasm] + 2,3-didehydro-L-gulonate[periplasm] -> Na+[cytosol] + 2,3-didehydro-L-gulonate[cytosol]
+TRANS-RXN-126	REVERSIBLE	Na+[periplasm] + L-isoleucine[periplasm] <--> Na+[cytosol] + L-isoleucine[cytosol]
+TRANS-RXN-126B	REVERSIBLE	Na+[periplasm] + L-leucine[periplasm] <--> Na+[cytosol] + L-leucine[cytosol]
+TRANS-RXN-118	REVERSIBLE	Na+[periplasm] + L-proline[periplasm] <--> Na+[cytosol] + L-proline[cytosol]
+RXN0-4083	REVERSIBLE	Na+[periplasm] + L-serine[periplasm] <--> Na+[cytosol] + L-serine[cytosol]
+TRANS-RXN-126A	REVERSIBLE	Na+[periplasm] + L-valine[periplasm] <--> Na+[cytosol] + L-valine[cytosol]
+TRANS-RXN-94A	REVERSIBLE	Na+[periplasm] + melibiose[periplasm] <--> Na+[cytosol] + melibiose[cytosol]
+NADH-DEHYDROG-A-RXN	REVERSIBLE	NADH + a ubiquinone[inner membrane] + 5 H+ <--> NAD+ + an ubiquinol[inner membrane] + 4 H+[periplasm]
+TRANS-RXN0-277	REVERSIBLE	NADPH + NAD+ + H+[cytosol] <--> NADP+ + NADH + H+[periplasm]
+TRANS-RXN-363	PHYSIOL-LEFT-TO-RIGHT	nalidixate[cytosol] + H+[periplasm] -> nalidixate[extracellular space] + H+[cytosol]
+TRANS-RXN-350	REVERSIBLE	nalidixate[cytosol] + H+[periplasm] <--> nalidixate[periplasm] + H+[cytosol]
+TRANS-RXN0-584	LEFT-TO-RIGHT	Ni2+[cytosol] -> Ni2+[periplasm]
+TRANS-RXN-141B	LEFT-TO-RIGHT	Ni2+[periplasm] -> Ni2+[cytosol]
+ABC-20-RXN	PHYSIOL-LEFT-TO-RIGHT	Ni2+[periplasm] + ATP + H2O -> Ni2+[cytosol] + ADP + phosphate + H+
+RXN0-3501	LEFT-TO-RIGHT	nitrate + a menaquinol[inner membrane] + 2 H+ -> nitrite + a menaquinone[inner membrane] + H2O + 2 H+[periplasm]
+RXN0-7124	PHYSIOL-LEFT-TO-RIGHT	nitrate + an ubiquinol[inner membrane] + 2 H+ -> nitrite + a ubiquinone[inner membrane] + 2 H+[periplasm] + H2O
+TRANS-RXN0-239	PHYSIOL-LEFT-TO-RIGHT	nitrate[periplasm] + nitrite[cytosol] -> nitrate[cytosol] + nitrite[periplasm]
+TRANS-RXN-137	LEFT-TO-RIGHT	nitrite[periplasm] -> nitrite[cytosol]
+TRANS-RXN-86	LEFT-TO-RIGHT	non-specific ion/solute[cytosol] -> non-specific ion/solute[periplasm]
+RXN0-1804	LEFT-TO-RIGHT	non-specific ion/solute[extracellular space] -> non-specific ion/solute[periplasm]
+TRANS-RXN-347	REVERSIBLE	norfloxacin[cytosol] + Na+[periplasm] <--> norfloxacin[periplasm] + Na+[cytosol]
+TRANS-RXN-353	PHYSIOL-LEFT-TO-RIGHT	novobiocin[periplasm] + H+[periplasm] -> novobiocin[extracellular space] + H+[cytosol]
+RXN0-1923	LEFT-TO-RIGHT	O-acetyl-L-serine[cytosol] -> O-acetyl-L-serine[periplasm]
+RXN-9644	PHYSIOL-LEFT-TO-RIGHT	oleate + ATP + coenzyme A -> oleoyl-CoA + AMP + diphosphate
+RXN0-7239	PHYSIOL-LEFT-TO-RIGHT	oleate[periplasm] + ATP + coenzyme A + H+[periplasm] -> oleoyl-CoA + AMP + diphosphate + H+
+TRANS-RXN-121C	REVERSIBLE	orotate[periplasm] + 2 H+[periplasm] <--> orotate[cytosol] + 2 H+[cytosol]
+RXN0-7248	PHYSIOL-LEFT-TO-RIGHT	palmitoleate[periplasm] + ATP + coenzyme A + H+[periplasm] -> palmitoleoyl-CoA + AMP + diphosphate + H+
+TRANS-RXN0-275	LEFT-TO-RIGHT	partially deacetylated poly-beta-1,6-N-acetyl-D-glucosamine[periplasm] -> partially deacetylated poly-beta-1,6-N-acetyl-D-glucosamine[extracellular space]
+TRANS-RXN-452	PHYSIOL-LEFT-TO-RIGHT	Pb2+[cytosol] + ATP + H2O -> Pb2+[periplasm] + ADP + phosphate + H+
+TRANS-RXN0-470	LEFT-TO-RIGHT	phosphate[cytosol] -> phosphate[periplasm]
+TRANS-RXN-114	REVERSIBLE	phosphate[periplasm] + H+[periplasm] <--> phosphate[cytosol] + H+[cytosol]
+TRANS-RXN-381	REVERSIBLE	phosphinate[cytosol] <--> phosphinate[periplasm]
+TRANS-RXN0-549	PHYSIOL-LEFT-TO-RIGHT	poly-beta-1,6-N-acetyl-D-glucosamine[cytosol] -> poly-beta-1,6-N-acetyl-D-glucosamine[periplasm]
+TRANS-RXN-412	PHYSIOL-LEFT-TO-RIGHT	preQ0[periplasm] -> preQ0[cytosol]
+PROPIONATE--COA-LIGASE-RXN	PHYSIOL-LEFT-TO-RIGHT	propanoate + ATP + coenzyme A -> propanoyl-CoA + AMP + diphosphate
+TRANS-RXN0-505	LEFT-TO-RIGHT	propanoate[periplasm] -> propanoate[cytosol]
+RXN-21407	PHYSIOL-LEFT-TO-RIGHT	protoheme[cytosol] + a CcmCDE complex + an oxidized unknown electron carrier[inner membrane] + H+ -> a heme(III)-bound CcmCDE complex[periplasm] + a reduced unknown one electron carrier
+TRANS-RXN0-538	REVERSIBLE	pseudouridine[periplasm] + H+[periplasm] <--> pseudouridine[cytosol] + H+[cytosol]
+TRANS-RXN0-618	PHYSIOL-LEFT-TO-RIGHT	PtsI-Phis189 + D-fructopyranose[periplasm] -> PTS enzyme I + D-fructopyranose 1-phosphate[cytosol]
+TRANS-RXN-328	PHYSIOL-LEFT-TO-RIGHT	putrescine[cytosol] + ATP + H2O -> putrescine[periplasm] + ADP + phosphate + H+
+TRANS-RXN-69	REVERSIBLE	putrescine[periplasm] + H+[periplasm] <--> putrescine[cytosol] + H+[cytosol]
+TRANS-RXN0-211	REVERSIBLE	putrescine[periplasm] + L-ornithine[cytosol] <--> putrescine[cytosol] + L-ornithine[periplasm]
+TRANS-RXN0-214	LEFT-TO-RIGHT	pyridoxal[periplasm] -> pyridoxal[cytosol]
+TRANS-RXN0-213	LEFT-TO-RIGHT	pyridoxamine[periplasm] -> pyridoxamine[cytosol]
+TRANS-RXN0-205	LEFT-TO-RIGHT	pyridoxine[periplasm] -> pyridoxine[cytosol]
+TRANS-RXN-335	REVERSIBLE	pyruvate[periplasm] + H+[periplasm] <--> pyruvate[cytosol] + H+[cytosol]
+TRANS-RXN0-486	LEFT-TO-RIGHT	S-methyl-L-methionine[periplasm] -> S-methyl-L-methionine[cytosol]
+TRANS-RXN-330	REVERSIBLE	S-sulfo-L-cysteine[periplasm] + H+[periplasm] <--> S-sulfo-L-cysteine[cytosol] + H+[cytosol]
+TRANS-RXN0-478	PHYSIOL-LEFT-TO-RIGHT	selenate[periplasm] + ATP + H2O -> selenate[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-479	PHYSIOL-LEFT-TO-RIGHT	selenite[periplasm] + ATP + H2O -> selenite[cytosol] + ADP + phosphate + H+
+TRANS-RXN-27	REVERSIBLE	shikimate[periplasm] + H+[periplasm] <--> shikimate[cytosol] + H+[cytosol]
+TRANS-RXN-22	REVERSIBLE	sn-glycerol 3-phosphate[periplasm] + phosphate[cytosol] <--> sn-glycerol 3-phosphate[cytosol] + phosphate[periplasm]
+TRANS-RXN0-266	REVERSIBLE	spermidine[cytosol] + H+[periplasm] <--> spermidine[periplasm] + H+[cytosol]
+TRANS-RXN-106B	REVERSIBLE	succinate[cytosol] + (S)-malate[periplasm] <--> (S)-malate[cytosol] + succinate[periplasm]
+TRANS-RXN-300	REVERSIBLE	succinate[cytosol] + 3 H+[cytosol] <--> succinate[periplasm] + 3 H+[periplasm]
+TRANS-RXN0-201	REVERSIBLE	succinate[cytosol] + citrate[periplasm] <--> citrate[cytosol] + succinate[periplasm]
+TRANS-RXN-106	REVERSIBLE	succinate[cytosol] + fumarate[periplasm] <--> fumarate[cytosol] + succinate[periplasm]
+TRANS-RXN-106A	REVERSIBLE	succinate[cytosol] + L-aspartate[periplasm] <--> L-aspartate[cytosol] + succinate[periplasm]
+TRANS-RXN-121	REVERSIBLE	succinate[periplasm] + 2 H+[periplasm] <--> succinate[cytosol] + 2 H+[cytosol]
+TRANS-RXN0-493	REVERSIBLE	sulfadiazine[cytosol] + 2 H+[periplasm] <--> sulfadiazine[periplasm] + 2 H+[cytosol]
+TRANS-RXN-351	PHYSIOL-LEFT-TO-RIGHT	sulfadiazine[periplasm] + H+[periplasm] -> sulfadiazine[extracellular space] + H+[cytosol]
+ABC-70-RXN	PHYSIOL-LEFT-TO-RIGHT	sulfate[periplasm] + ATP + H2O -> sulfate[cytosol] + ADP + phosphate + H+
+TRANS-RXN0-586	REVERSIBLE	sulfate[periplasm] + H+[periplasm] <--> sulfate[cytosol] + H+[cytosol]
+ABC-64-RXN	PHYSIOL-LEFT-TO-RIGHT	taurine[periplasm] + ATP + H2O -> taurine[cytosol] + ADP + phosphate + H+
+RXN-15119	LEFT-TO-RIGHT	tellurite + a reduced unknown two electron carrier -> Te0 + an oxidized unknown electron carrier
+TRANS-RXN-280	REVERSIBLE	tellurite[periplasm] + H+[periplasm] <--> tellurite[cytosol] + H+[cytosol]
+TRANS-RXN0-576	REVERSIBLE	tellurite[periplasm] + Na+[periplasm] <--> tellurite[cytosol] + Na+[cytosol]
+TRANS-RXN-348	REVERSIBLE	tetraphenylphosphonium[cytosol] + Na+[periplasm] <--> tetraphenylphosphonium[periplasm] + Na+[cytosol]
+RXN0-7041	PHYSIOL-LEFT-TO-RIGHT	thiamine diphosphate + phosphate + H+[periplasm] -> thiamine triphosphate + H2O + H+[cytosol]
+TRANS-RXN-108H	REVERSIBLE	thymidine[periplasm] + H+[periplasm] <--> thymidine[cytosol] + H+[cytosol]
+TRANS-RXN-362	REVERSIBLE	thymine[periplasm] + H+[periplasm] <--> thymine[cytosol] + H+[cytosol]
+TRANS-RXN-132	REVERSIBLE	uracil[periplasm] + H+[periplasm] <--> uracil[cytosol] + H+[cytosol]
+TRANS-RXN0-530	REVERSIBLE	urate[periplasm] + H+[periplasm] <--> urate[cytosol] + H+[cytosol]
+TRANS-RXN0-460	REVERSIBLE	urea[cytosol] <--> urea[periplasm]
+TRANS-RXN-108I	REVERSIBLE	uridine[periplasm] + H+[periplasm] <--> uridine[cytosol] + H+[cytosol]
+RXN-5076	REVERSIBLE	xanthine[periplasm] + H+[periplasm] <--> xanthine[cytosol] + H+[cytosol]
+TRANS-RXN-31	REVERSIBLE	xanthosine[periplasm] + H+[periplasm] <--> xanthosine[cytosol] + H+[cytosol]
+TRANS-RXN-279	REVERSIBLE	zinc hydrogenphosphate[periplasm] + H+[periplasm] <--> zinc hydrogenphosphate[cytosol] + H+[cytosol]
+RXN0-5205	PHYSIOL-LEFT-TO-RIGHT	Zn2+[cytosol] + ATP + H2O -> Zn2+[periplasm] + ADP + phosphate + H+
+TRANS-RXN0-200	LEFT-TO-RIGHT	Zn2+[cytosol] + H+[periplasm] -> Zn2+[periplasm] + H+[cytosol]
+RXN0-12	LEFT-TO-RIGHT	Zn2+[periplasm] -> Zn2+[cytosol]
+ABC-63-RXN	PHYSIOL-LEFT-TO-RIGHT	Zn2+[periplasm] + ATP + H2O -> Zn2+[cytosol] + ADP + phosphate + H+
+TRANS-RXN-346	LEFT-TO-RIGHT	Zn2+[periplasm] + H+[periplasm] -> Zn2+[cytosol] + H+[cytosol]

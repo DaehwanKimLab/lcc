@@ -8,6 +8,7 @@ from abc import abstractmethod
 class FDataset():
     def __init__(self):
         self.Switch4DebugDataset = False
+        # self.PrintTag = 'UnassignedTag | '
 
     @abstractmethod
     def SetUpData(self, Dataset, Comp):
@@ -38,6 +39,9 @@ class FDataset():
             MasterDataset.ID_Master.append(ID)
             MasterDataset.ID2Type_Master[ID] = MolType
             MasterDataset.Type_Master.append(MolType)
+            if len(MasterDataset.ID_Master) != len(MasterDataset.ID2Type_Master):
+                self.DebugPrint('Redundant ID found in ID2Type_Master: %s' % ID)
+                pass
 
 
         MasterDataset.Count_Master = np.append(MasterDataset.Count_Master, Counts)
@@ -55,6 +59,12 @@ class FDataset():
                     print('Master Dataset | ', 'The length of "%s": %d' % (Key, LengthOfValue))
 
         MasterDataset.NUniq_Master = len(MasterDataset.ID_Master)
+
+        self.DebugPrint('MasterDataset lengths:')
+        print(len(MasterDataset.ID_Master))
+        print(len(MasterDataset.ID2Idx_Master))
+        print(len(MasterDataset.Count_Master))
+        print(len(MasterDataset.MW_Master))
 
         assert len(MasterDataset.ID_Master) == len(MasterDataset.ID2Idx_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.Count_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.MW_Master)
 
@@ -84,8 +94,13 @@ class FDataset():
                 ID += '[c]'
             return ID
 
+    def DebugPrint(self, Statement):
+        print(self.PrintTag, Statement)
+
 class FMetabolite(FDataset):
     def __init__(self):
+        self.PrintTag = 'Metabolite | '
+
         self.MolType_Metabolites = 'Metabolite'
         self.ID2MW_Metabolites_Temp = dict()
         self.ID_Metabolites = list()
@@ -94,6 +109,8 @@ class FMetabolite(FDataset):
         self.MW_Metabolites = 0
         self.NUniq_Metabolites = 0
         self.SpecieIdx_Metabolites = 0
+
+        self.ID_Metabolites_NoLocalization = list()
 
         super().__init__() # MasterLocalizations
 
@@ -118,6 +135,8 @@ class FMetabolite(FDataset):
             assert Name not in self.ID2Idx_Metabolites
             self.ID2Idx_Metabolites[Name] = len(self.ID_Metabolites)  # = i
             self.ID_Metabolites.append(Name)
+            if NameLocRemoved not in self.ID_Metabolites_NoLocalization:   # ID without localization
+                self.ID_Metabolites_NoLocalization.append(NameLocRemoved)
             self.MW_Metabolites[i] = self.ID2MW_Metabolites_Temp[NameLocRemoved]
             self.Count_Metabolites[i] = Count
             assert self.MW_Metabolites[i] != 0
@@ -127,7 +146,7 @@ class FMetabolite(FDataset):
                 Count_Temporary_Int32 = int(1e7)
                 self.Count_Metabolites[i] = Count_Temporary_Int32
                 if self.Switch4DebugDataset:
-                    print('Metabolites | The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s' % (Name, Count, Count_Temporary_Int32))
+                    self.DebugPrint('The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s' % (Name, Count, Count_Temporary_Int32))
 
         # Add to the Master Dataset
         self.AddToMaster(Comp.Master, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
@@ -135,6 +154,8 @@ class FMetabolite(FDataset):
 
 class FChromosome(FDataset):
     def __init__(self):
+        self.PrintTag = 'Chromosome | '
+
         self.MolType_Chromosomes = 'Chromosome'
         self.Len_ChromosomesInGenome = 0
         self.Count_NTsInChromosomesInGenome = list()
@@ -232,6 +253,8 @@ class FChromosome(FDataset):
 
 class FGene(FDataset):
     def __init__(self):
+        self.PrintTag = 'Gene | '
+
         self.MolType_Genes = 'Gene'
 
         self.Len_Genes = 0
@@ -330,12 +353,10 @@ class FGene(FDataset):
         assert max(self.Coord_Genes_Reindexed_Rightward) < Len_Genome, 'Reindexing failed'
 
         # Gene synonyms
-        GeneSynonyms = Dataset['All_instances_of_Genes_in_Escherichia_coli_K-12_substr._MG1655.txt']
+        GeneSynonyms = Dataset['All_instances_of_Genes_in_Escherichia_coli_K-12_substr._MG1655.tsv']
 
-        for i, Line in enumerate(GeneSynonyms):
-            if i == 0:
-                continue
-            Gene, Synonyms, ObjectID = Line.split('\t')
+        for Line in GeneSynonyms:
+            Gene, Synonyms, ObjectID = Line
             self.Dict_GeneSynonyms[Gene] = ObjectID
             if Synonyms:
                 for Synonym in Synonyms.split(' // '):
@@ -354,6 +375,8 @@ class FGene(FDataset):
 
 class FPromoter(FDataset):
     def __init__(self):
+        self.PrintTag = 'Promoter | '
+
         self.MolType_Promoters = 'Promoter'
         self.ID2Idx_Promoters = dict()
         self.ID_Promoters = list()
@@ -578,6 +601,8 @@ class FPromoter(FDataset):
 
 class FRNA(FDataset):
     def __init__(self):
+        self.PrintTag = 'RNA | '
+
         self.MolType_RNAs = 'RNA'
 
         self.ID2Count_RNAs_Temp = dict()
@@ -683,6 +708,8 @@ class FRNA(FDataset):
 
 class FProtein(FDataset):
     def __init__(self):
+        self.PrintTag = 'Protein | '
+
         self.MolType_Proteins = 'Protein'
 
         self.ID2Count_Proteins_Temp = dict()
@@ -774,6 +801,8 @@ class FProtein(FDataset):
 
 class FComplex(FDataset):
     def __init__(self):
+        self.PrintTag = 'Complex | '
+
         self.MolType_Complexes = 'Complex'
 
         self.ID_Proteins = list()
@@ -852,6 +881,8 @@ class FComplex(FDataset):
 
 class FComplexation(FDataset):
     def __init__(self):
+        self.PrintTag = 'Complexation | '
+
         self.MolType_Complexations = 'Complexation'
 
         self.ID_Complexations = list()
@@ -1135,6 +1166,8 @@ class FComplexation(FDataset):
 
 class FEquilibrium(FDataset):
     def __init__(self):
+        self.PrintTag = 'Equilibrium | '
+
         self.MolType_EQMRXNs = 'EQMRXN'
 
         self.ID_EQMRXNs = list()
@@ -1285,6 +1318,8 @@ class FEquilibrium(FDataset):
 
 class FMetabolism(FDataset):
     def __init__(self):
+        self.PrintTag = 'Metabolism | '
+
         self.MolType_METRXNs = 'METRXN'
 
         self.ID_METRXNs = list()
@@ -1575,6 +1610,8 @@ class FMetabolism(FDataset):
 
 class FKinetics(FDataset):
     def __init__(self): # MasterLocalizations
+        self.PrintTag = 'Kinetics | '
+
         self.MolType_Kinetics = 'Kinetics'
 
         self.ID_KINRXNs = list()
@@ -1737,8 +1774,411 @@ class FKinetics(FDataset):
             Variable = Variable[0]
         return Variable
 
+
+class FTransporter(FDataset):
+    def __init__(self):
+        self.PrintTag = 'Transporters | '
+
+        self.MolType_Transporters = 'Transporters'
+
+        # for synonym dictionary
+        self.Name2ID_Substrates4TRNRXNs = dict()
+        self.ID2Name_Substrates4TRNRXNs = dict()
+        self.ID2Class_Substrates4TRNRXNs = dict()
+        self.Class2ID_Substrates4TRNRXNs = dict()
+        self.Class2Name_Substrates4TRNRXNs = dict()
+
+        self.ID_TRNRXNs = list()
+        self.ID2Idx_TRNRXNs = dict()
+        self.Dir_RevTRNRXNs = list()   # Rev for Reversibility
+        self.ID2EQN_TRNRXNs = dict()
+        self.ID_Enzymes4TRNRXN = list()
+        self.ID_Substrates4TRNRXN = list()
+        # self.ID2Idx_Enzymes4TRNRXN = dict()
+        self.NUniq_TRNRXNs = 0
+
+        self.ID_MolsInTRNRXN = list()
+        self.ID_MolsExcludedInTRNRXN = list()   # for debugging
+        self.ID_MolsAddedInTRNRXN = list()   # for extracellular molecules missing from the system
+        self.ID2Idx_MolsInTRNRXN = dict()
+        self.Coeff_MolsInTRNRXN = list()
+        self.NUniq_MolsInTRNRXN = 0
+        self.NUniq_EnzymesInTRNRXN = 0
+
+        self.Dict_LocalizationTags = dict()
+        self.IDModification = dict()
+
+        # Unregistered Metabolites
+        self.ID_UnregisteredFromTRNRXN_Metabolites = list()  # Mostly additional metabolites
+        self.MolType_UnregisteredFromTRNRXN_Metabolites = 'UnregisteredMetabolitesFromTRNRXN'
+        self.Count_UnregisteredFromTRNRXN_Metabolites = 0
+        self.MW_UnregisteredFromTRNRXN_Metabolites = 0
+        self.NUniq_UnregisteredFromTRNRXN_Metabolites = 0
+
+        # # Unregistered Enzymes
+        # self.ID_UnregisteredFromTRNRXN_Enzymes = list()  # Mostly additional Enzymes
+        # self.MolType_UnregisteredFromTRNRXN_Enzymes = 'UnregisteredEnzymesFromTRNRXN'
+        # self.Count_UnregisteredFromTRNRXN_Enzymes = 0
+        # self.MW_UnregisteredFromTRNRXN_Enzymes = 0
+        # self.NUniq_UnregisteredFromTRNRXN_Enzymes = 0
+
+        super().__init__()
+
+    def SetUpData(self, Dataset, Comp):
+        self.SetUpMetaboliteIDRef(Dataset)
+
+        # Build a transporter synonym reference
+
+        # The below modified file no longer contains html language <i>, </i>, etc
+        Transporters_SubstratesDicts = list()
+        Transporters_SubstratesDicts.append(Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_SubInstances.tsv'])
+        Transporters_SubstratesDicts.append(Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_modified.tsv'])
+
+        for i, Transporters_SubstratesDict in enumerate(Transporters_SubstratesDicts):
+            for Names in Transporters_SubstratesDict:
+                Classes = ''
+                ID = ''
+                CommonName = ''
+                Synonyms = ''
+
+                if i == 0:   # All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_SubInstances.tsv
+                    Classes = list(Names[0].split(' // '))
+                    ID = Names[3]
+                    CommonName = Names[1]
+                    Synonyms = Names[2]
+
+                elif i == 1:   # All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_modified.tsv
+                    # No class information
+                    ID = Names[2]
+                    CommonName = Names[0]
+                    Synonyms = Names[1]
+
+                # self.DebugPrint('ID: %s' % ID)
+
+                if ID not in self.Name2ID_Substrates4TRNRXNs:
+                    self.ID2Name_Substrates4TRNRXNs[ID] = list()
+                else:
+                    # self.DebugPrint('Redundant ID found in self.Name2ID_Substrates4Transporters: %s' % ID)
+                    # self.DebugPrint('Existing synonyms: \t%s' % (str(self.ID2Name_Substrates4Transporters[ID])))
+                    # self.DebugPrint('New synonyms: \t%s, %s' % (CommonName, Synonyms))
+                    # if ID in self.ID2Class_Substrates4Transporters:
+                    #     self.DebugPrint('Existing class: \t%s' % str(self.ID2Class_Substrates4TRNRXNs[ID]))
+                    #     self.DebugPrint('New class: \t%s' % Class)
+                    continue
+
+                # Construct synonym dictionary
+                self.Name2ID_Substrates4TRNRXNs[ID] = ID
+                self.ID2Name_Substrates4TRNRXNs[ID].append(ID)
+                if ID != CommonName:
+                    self.Name2ID_Substrates4TRNRXNs[CommonName] = ID
+                    self.ID2Name_Substrates4TRNRXNs[ID].append(CommonName)
+                for Synonym in Synonyms.split('//'):
+                    if not Synonym:
+                        continue
+                    Synonym_Refined = Synonym.strip()
+                    # self.DebugPrint('"%s"\t to \t"%s"' % (Synonym, Synonym_Refined))
+                    # self.Name2ID_Substrates4TRNRXNs[Synonym] = ID
+                    self.Name2ID_Substrates4TRNRXNs[Synonym_Refined] = ID
+                    self.ID2Name_Substrates4TRNRXNs[ID].append(Synonym_Refined)
+
+                # Classes of Mol ID
+                if Classes:
+                    if ID not in self.ID2Class_Substrates4TRNRXNs:
+                        self.ID2Class_Substrates4TRNRXNs[ID] = list()
+
+                    for Class in Classes:
+                        if Class not in self.Class2ID_Substrates4TRNRXNs:
+                            self.Class2ID_Substrates4TRNRXNs[Class] = list()
+                            self.Class2Name_Substrates4TRNRXNs[Class] = list()
+
+                        # Add elements
+                        if Class not in self.ID2Class_Substrates4TRNRXNs[ID]:
+                            self.ID2Class_Substrates4TRNRXNs[ID].append(Class)
+                        if ID not in self.Class2ID_Substrates4TRNRXNs[Class]:
+                            self.Class2ID_Substrates4TRNRXNs[Class].append(ID)
+                        for Synonym in self.ID2Name_Substrates4TRNRXNs[ID]:
+                            if Synonym not in self.Class2Name_Substrates4TRNRXNs:
+                                self.Class2Name_Substrates4TRNRXNs[Class].append(Synonym)
+
+        # Buildingblocks added to the synonyms
+        self.ID2Name_Substrates4TRNRXNs.update(Comp.BuildingBlock.ID2Name_BuildingBlocks)
+        self.Name2ID_Substrates4TRNRXNs.update(Comp.BuildingBlock.Name2ID_BuildingBlocks)
+
+        Exceptions_Dict = {
+            'diphosphate'       : 'PPI',
+            'PPi'               : 'PPI',
+            'Pi'                : 'PI',
+        }
+
+        for Synonym, ID in Exceptions_Dict.items():
+            self.Name2ID_Substrates4TRNRXNs[Synonym] = ID
+            self.Name2ID_Substrates4TRNRXNs[ID] = ID
+            self.ID2Name_Substrates4TRNRXNs[ID] = [Synonym]
+
+        ReversibilityBinaryDict = {
+            'REVERSIBLE'            : 1,
+            'LEFT-TO-RIGHT'         : 0,
+            'PHYSIOL-LEFT-TO-RIGHT' : 0,
+            'RIGHT-TO-LEFT'         : 0,
+        }
+
+        ReversibilityArrows = [' -> ', ' <--> ']
+
+        self.Dict_LocalizationTags = {
+            'cytosol'               : '[c]',
+            'periplasm'             : '[p]',
+            'inner membrane'        : '[i]',
+            'outer membrane'        : '[o]',
+            'extracellular space'   : '[e]',
+
+            'out'   : '[e]',   # RXN-22326
+            'in'    : '[p]',  # RXN-22326
+        }
+
+        # The modifications made:
+        # TRANS-RXN0-562, RXN66-448: RIGHT-TO-LEFT reaction direction, molecule localizations
+        # character beta from
+        TransporterReactions = Dataset['All_transporter_reactions_of_E._coli_K-12_substr._MG1655_ReExported_Modified.tsv']
+        for TransporterReaction in TransporterReactions:
+            ID_TRNRXN = TransporterReaction[0]
+            EQN_TRNRXN = TransporterReaction[2]
+            self.ID2EQN_TRNRXNs[ID_TRNRXN] = EQN_TRNRXN
+
+            # TODO: Include classes of molecules for transport
+            if re.search('(a |an )', EQN_TRNRXN):
+                self.DebugPrint('Molecule class in reaction is not implemented yet: %s\t%s' % (ID_TRNRXN, EQN_TRNRXN))
+                continue
+
+            EQN_Split = EQN_TRNRXN.split(' -> ')
+            if len(EQN_Split) == 1:
+                EQN_Split = EQN_TRNRXN.split(' <--> ')
+            assert len(EQN_Split) == 2, self.PrintTag + 'Equation is not in the expected format: %s' % EQN_TRNRXN
+
+            for i, Substrates in enumerate(EQN_Split):
+                for Substrate in Substrates.split(' + '):
+                    Substrate_CoeffSplit = re.split('^(\d\s|n\s)', Substrate)[-1]
+                    MolID, LocalizationTag = self.ParseSubstrate_ID(Substrate_CoeffSplit, Comp)
+                    # assert MolID in self.Name2ID_Substrates4TRNRXNs, self.PrintTag + 'ID_Substrate not found in self.Name2ID_Substrates4TRNRXNs: %s' % Substrate_CoeffSplit[-1]
+                    if MolID not in self.Name2ID_Substrates4TRNRXNs:
+                        if MolID not in self.ID_MolsExcludedInTRNRXN:
+                            self.ID_MolsExcludedInTRNRXN.append(MolID)
+                            self.DebugPrint('ID_Substrate not found in self.Name2ID_Substrates4TRNRXNs: %s' % Substrate_CoeffSplit)
+                        continue
+                    ID_Substrate = MolID + LocalizationTag
+
+                    # TODO: Support the metabolites to transport not used in wcs.
+                    # Check ID in relevant lists to add
+                    if MolID in Comp.Metabolite.ID_Metabolites_NoLocalization:
+                        if ID_Substrate not in self.ID_MolsInTRNRXN:
+                            self.ID2Idx_MolsInTRNRXN[ID_Substrate] = len(self.ID_MolsInTRNRXN)
+                            self.ID_MolsInTRNRXN.append(ID_Substrate)
+                            if ID_Substrate not in Comp.Master.ID_Master:
+                                if ID_Substrate in self.ID_UnregisteredFromTRNRXN_Metabolites:
+                                    self.NewMoleculeID(ID_Substrate)
+                        # Missing extracellular species added to the system
+                        MolID_Extracellular = MolID + '[e]'
+                        if LocalizationTag == '[p]' and ID_Substrate in self.ID_MolsInTRNRXN:
+                            if MolID_Extracellular not in self.ID_MolsInTRNRXN and MolID_Extracellular not in Comp.Master.ID_Master and MolID_Extracellular in self.ID_UnregisteredFromTRNRXN_Metabolites:
+                                self.NewMoleculeID(MolID_Extracellular)
+                # self.DebugPrint("%s %s" % (Coeff, ID_Substrate)
+
+        self.NUniq_MolsInTRNRXN = len(self.ID_MolsInTRNRXN)
+
+        self.NUniq_UnregisteredFromTRNRXN_Metabolites = len(self.ID_UnregisteredFromTRNRXN_Metabolites)
+        self.Count_UnregisteredFromTRNRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromTRNRXN_Metabolites)
+        self.MW_UnregisteredFromTRNRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromTRNRXN_Metabolites)  # TODO: get values from database
+
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromTRNRXN_Metabolites, self.MolType_UnregisteredFromTRNRXN_Metabolites, self.Count_UnregisteredFromTRNRXN_Metabolites, self.MW_UnregisteredFromTRNRXN_Metabolites)
+
+        # Generate a stoichiometry table
+        Transporters = Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_IDs.tsv']
+
+        self.NUniq_EnzymesInTRNRXN = len(Transporters)
+        for Value in Transporters:
+            ID_TRNRXNs = Value[0]
+            ID_Transporter = Value[1]
+            Reversibility_TRNRXNs = Value[4]
+
+            Separator = ' // '
+
+            for ID_TRNRXN, Reversibility in zip(ID_TRNRXNs.split(Separator), Reversibility_TRNRXNs.split(Separator)):
+                SkipRXN = False
+                EQN_TRNRXN = self.ID2EQN_TRNRXNs[ID_TRNRXN]
+                # self.DebugPrint('EQN_TRNRXN: \t%s' % EQN_TRNRXN)
+                EQN_Split = EQN_TRNRXN.split(' -> ')
+                if len(EQN_Split) == 1:
+                    EQN_Split = EQN_TRNRXN.split(' <--> ')
+                assert len(EQN_Split) == 2, self.PrintTag + 'Equation is not in the expected format: %s' % EQN_TRNRXN
+
+                ID_Substrates = list()
+                Coeff_Substrates = list()
+
+                for i, Substrates in enumerate(EQN_Split):
+                    # Set default coefficient
+                    Coeff_Default = 0
+                    if Reversibility == 'RIGHT-TO-LEFT':
+                        if i == 0:  # Reactants
+                            Coeff_Default = 1
+                        else:  # Products
+                            Coeff_Default = -1
+                    else:   # LEFT-TO-RIGHT or REVERSIBILE, etc
+                        if i == 0:  # Reactants
+                            Coeff_Default = -1
+                        else:  # Products
+                            Coeff_Default = 1
+                    assert Coeff_Default != 0, self.PrintTag + 'Coeff_Default value is not assigned: %s' % Coeff_Default
+
+                    # Parse Substrate
+                    for Substrate in Substrates.split(' + '):
+                        Coeff = self.ParseSubstrate_Coeff(Substrate, Coeff_Default)
+                        Substrate_CoeffSplit = re.split('^(%s|n)\s' % Coeff, Substrate)[-1]
+                        MolID, LocalizationTag = self.ParseSubstrate_ID(Substrate_CoeffSplit, Comp)
+                        ID_Substrate = MolID + LocalizationTag
+                        if ID_Substrate not in self.ID_MolsInTRNRXN:
+                            SkipRXN = True
+                        Coeff_Substrates.append(Coeff)
+                        ID_Substrates.append(ID_Substrate)
+
+                if SkipRXN:
+                    continue
+                if ID_TRNRXN in self.ID_TRNRXNs:
+                    self.DebugPrint('Redundant Transporter Reaction: %s' % ID_TRNRXN)
+                self.ID2Idx_TRNRXNs[ID_TRNRXN] = len(self.ID_TRNRXNs)  # = i
+                self.ID_TRNRXNs.append(ID_TRNRXN)
+                if Reversibility not in ReversibilityBinaryDict:
+                    print(Reversibility)
+                self.Dir_RevTRNRXNs.append(ReversibilityBinaryDict[Reversibility])
+                self.ID_Enzymes4TRNRXN.append(ID_Transporter)
+                self.ID_Substrates4TRNRXN.append(ID_Substrates)
+                CoeffArray = np.zeros(self.NUniq_MolsInTRNRXN)
+                for Coeff, ID_Substrate in zip(Coeff_Substrates, ID_Substrates):
+                    CoeffArray[self.ID2Idx_MolsInTRNRXN[ID_Substrate]] = Coeff
+                self.Coeff_MolsInTRNRXN.append(CoeffArray)
+
+        self.NUniq_TRNRXNs = len(self.ID_TRNRXNs)
+        self.NUniq_MolsInTRNRXN = len(self.ID_MolsInTRNRXN)
+
+
+    def ParseSubstrate_Coeff(self, Substrate, Coeff_Default):
+            # Determine coefficient
+            Coeff = 0
+            Substrate_CoeffSearch = re.search('^(\d|n)\s', Substrate)
+            if Substrate_CoeffSearch:
+                Coeff_Parsed = Substrate_CoeffSearch[0].strip()
+                if Coeff_Parsed == 'n':
+                    Coeff_Parsed = 2   # TODO: The value of 'n' may be different, depend on the reaction. Current default value is set to 2.
+                Coeff = int(Coeff_Parsed) * Coeff_Default
+            else:
+                Coeff = Coeff_Default
+            return Coeff
+
+    def ParseSubstrate_ID(self, Substrate, Comp):
+            MolID = Substrate
+
+            # Determine localization and remove localization text
+            Localization = 'cytosol'  # default localization
+            Localization_RE = re.compile('\[([a-z]|\s)+\]$')
+
+            Localization_Search = Localization_RE.search(Substrate)
+            if Localization_Search:
+                Localization = Localization_Search[0].strip('[').strip(']')
+                MolID = Substrate[:-len(Localization_Search[0])]
+            LocalizationTag = self.Dict_LocalizationTags[Localization]
+
+            # Determine Molecule Name
+            if MolID in self.Name2ID_Substrates4TRNRXNs:
+                MolID = self.Name2ID_Substrates4TRNRXNs[MolID]
+            else:
+                self.DebugPrint('MolID not parsed: %s' % MolID)
+            # self.DebugPrint('MolID: \t%s' % MolID)
+            return MolID, LocalizationTag
+
+    def NewMoleculeID(self, ID_Substrate):
+        self.ID2Idx_MolsInTRNRXN[ID_Substrate] = len(self.ID_MolsInTRNRXN)
+        self.ID_MolsInTRNRXN.append(ID_Substrate)
+        self.ID_MolsAddedInTRNRXN.append(ID_Substrate)
+        self.ID_UnregisteredFromTRNRXN_Metabolites.append(ID_Substrate)
+        self.DebugPrint('MolID not found in ID_Master, hence added to the unregistered: %s' % ID_Substrate)
+
+
+
+'''
+        # TCA CYCLE RXN IDs ONLY
+        TCACycle = Dataset['DL_TCAcycleI_prokaryotic.tsv']
+
+        RXNIDChange = {
+            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN': 'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
+        }
+
+        for i, RXN in enumerate(TCACycle):
+            ID_RXN, ID_Substrates, ID_Enzymes = RXN
+            if ID_RXN in RXNIDChange:
+                ID_RXN = RXNIDChange[ID_RXN]
+            assert ID_RXN in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % ID_RXN
+            self.ID_RXNsInTCACycle.append(ID_RXN)
+
+        self.NUniq_RXNsInTCACycle = len(self.ID_RXNsInTCACycle)
+
+        # TCA CYCLE INDEPENDENT
+        TCARXNs = Dataset['reactions_TCA.tsv']
+
+        RXNIDChange = {
+            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN': 'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
+        }
+
+        for Value in TCARXNs:
+            for MoleculeInfo in Value[1].strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for MolIDCoeffPair in MoleculeInfo.strip().split(','):
+                    MolID, Coeff = MolIDCoeffPair.strip().split(': ')
+                    MolID = MolID[1:-1]
+                    N_Mol_Total += 1
+                    if MolID not in self.ID_MolsInTCARXN:
+                        self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
+                        self.ID_MolsInTCARXN.append(MolID)
+        self.NMax_TCARXNMolParts = len(self.ID_MolsInTCARXN)
+
+        for i, Value in enumerate(TCARXNs):
+            RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = Value
+            assert RXNID not in self.ID2Idx_TCARXNs
+            if RXNID in RXNIDChange:
+                RXNID = RXNIDChange[RXNID]
+            assert RXNID in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % RXNID
+            self.ID2Idx_TCARXNs[RXNID] = len(self.ID_TCARXNs)  # = i
+            self.ID_TCARXNs.append(RXNID)
+            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
+            self.Dir_RevTCARXNs.append(RXNReversibilityBinary)
+
+            CoeffArray = np.zeros(self.NMax_TCARXNMolParts)
+            Substrate = None
+            for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+                for MolIDCoeffPair in MoleculeInfo.split(','):
+                    MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
+                    MolID = MolID[1:-1]
+                    N_Mol_Total += 1
+                    if MolID not in self.ID_MolsInTCARXN:
+                        self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
+                        self.ID_MolsInTCARXN.append(MolID)
+
+                    Idx = self.ID2Idx_MolsInTCARXN[MolID]
+                    CoeffArray[Idx] = int(Coeff)
+
+                    # Substrate
+                    if int(Coeff) < 0:
+                        if Substrate == None:
+                            Substrate = MolID
+                        elif Substrate in SubstratesToSkipWithTags:
+                            Substrate = MolID
+                        elif Substrate.__contains__('+'):
+                            Substrate = MolID
+
+            self.ID_Substrates4TCARXN.append(Substrate)  # Only one substrate taken from one reaction
+            self.Coeff_MolsInTCARXN.append(CoeffArray)
+        self.NUniq_MolsInTCARXN = len(self.ID_MolsInTCARXN)
+'''
+
 class FCompartment(FDataset):
     def __init__(self): # MasterLocalizations
+        self.PrintTag = 'Compartment | '
 
         self.ID_Compartments = list()
         self.ID2Key_Compartments = dict()
@@ -1764,6 +2204,8 @@ class FCompartment(FDataset):
 
 class FBuildingBlock(FDataset):
     def __init__(self):
+        self.PrintTag = 'BuildingBlock | '
+
         # Lists of molecular specie
         self.Name_dNTPs = list()
         self.Name_NTPs = list()
@@ -1776,6 +2218,8 @@ class FBuildingBlock(FDataset):
         self.NUniq_AAs = 0
 
         self.Name2Key_BuildingBlocks = dict()
+        self.Name2ID_BuildingBlocks = dict()
+        self.ID2Name_BuildingBlocks = dict()
 
         super().__init__()
 
@@ -1810,9 +2254,41 @@ class FBuildingBlock(FDataset):
         self.Name2Key_BuildingBlocks['AAs'] = self.Key_AAs
         self.Name2Key_BuildingBlocks['AA'] = self.Key_AAs
 
+        Synonyms_Lists = [
+            Dataset['Group_a_nucleic_acid_component.tsv'],
+            # Dataset['Group_a_nucleoside.tsv'],
+            # Dataset['Group_a_nucleotide.tsv'],
+            Dataset['Group_an_amino_acid.tsv'],
+        ]
+        for Synonym_List in Synonyms_Lists:
+            for Names in Synonym_List:
+                ID = Names[3]
+                CommonName = Names[1]
+                Synonyms = Names[2]
+                if ID not in self.ID2Name_BuildingBlocks:
+                    self.ID2Name_BuildingBlocks[ID] = list()
+                # self.DebugPrint('ID: %s' % ID)
+
+                # Construct synonym dictionary
+                self.Name2ID_BuildingBlocks[ID] = ID
+                self.Name2ID_BuildingBlocks[CommonName] = ID
+                self.ID2Name_BuildingBlocks[ID].append(ID)
+                self.ID2Name_BuildingBlocks[ID].append(CommonName)
+
+                for Synonym in Synonyms.split('//'):
+                    if not Synonym:
+                        continue
+                    Synonym_Refined = Synonym.strip()
+                    # self.DebugPrint('"%s"\t to \t"%s"' % (Synonym, Synonym_Refined))
+                    # self.Name2ID_BuildingBlocks[Synonym] = ID
+                    self.Name2ID_BuildingBlocks[Synonym_Refined] = ID
+                    self.ID2Name_BuildingBlocks[ID].append(Synonym_Refined)
+
 
 class FUserInput(FDataset):
     def __init__(self):
+        self.PrintTag = 'UserInput | '
+
         self.CellProcesses = list()
 
         super().__init__()  # MasterLocalizations
@@ -1913,6 +2389,8 @@ class FUserInput(FDataset):
 # Master Dataset is an exception to the SetUpData method
 class FMaster():
     def __init__(self):
+        self.PrintTag = 'Master | '
+
         self.Switch4DebugMasterDataset = False
 
         self.ID2Idx_Master = dict()

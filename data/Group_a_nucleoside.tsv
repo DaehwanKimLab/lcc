@@ -1,6 +1,6 @@
 Synonyms	Ontology -  all instances of class from New SmartTable with a nucleoside	Synonyms	Object ID
-nucleoside	1-(5-phospho-&beta;-D-ribosyl)-AMP	1-(5-phosphoribosyl)-AMP // phosphoribosyl-AMP // 5-phosphoribosyl-AMP // N-(5-phospho-D-ribosyl)-AMP // N-(5'-phospho-D-ribosyl)-AMP // N1-(5-phospho-D-ribosyl)-AMP	PHOSPHORIBOSYL-AMP
-nucleoside	1-(5-phospho-&beta;-D-ribosyl)-ATP	1-(5-phosphoribosyl)-ATP // N1-(5-phospho-D-ribosyl)-ATP // 5-phosphoribosyl-ATP // 1-(5-phospho-D-ribosyl)-ATP // phosphoribosyl-ATP	PHOSPHORIBOSYL-ATP
+nucleoside	1-(5-phospho-beta-D-ribosyl)-AMP	1-(5-phosphoribosyl)-AMP // phosphoribosyl-AMP // 5-phosphoribosyl-AMP // N-(5-phospho-D-ribosyl)-AMP // N-(5'-phospho-D-ribosyl)-AMP // N1-(5-phospho-D-ribosyl)-AMP	PHOSPHORIBOSYL-AMP
+nucleoside	1-(5-phospho-beta-D-ribosyl)-ATP	1-(5-phosphoribosyl)-ATP // N1-(5-phospho-D-ribosyl)-ATP // 5-phosphoribosyl-ATP // 1-(5-phospho-D-ribosyl)-ATP // phosphoribosyl-ATP	PHOSPHORIBOSYL-ATP
 nucleoside	1-methylguanosine	N1-methylguanosine	CPD0-1043
 nucleoside	1-methylinosine		CPD0-1042
 nucleoside	2'-deoxyadenosine	deoxyadenosine // 2-deoxy-adenosine	DEOXYADENOSINE
@@ -22,16 +22,16 @@ nucleoside	5-methylaminomethyl-2-thiouridine	mnm5s2U	5-METHYLAMINOMETHYL-2-THIOU
 nucleoside	7-methylinosine		CPD0-1040
 nucleoside	adenine arabinoside	Vidarabine // 2-(6-amino-purin-9-yl)-5-hydroxymethyl-tetrahydro-furan-3,4-diol // 9--D-arabinofuranosyl-9H-purin-6-amine // 9-beta-D-arabinofuranosyladenine // Spongoadenosine	CPD-13918
 nucleoside	adenosine	adenine-D-ribose	ADENOSINE
-nucleoside	<i>bis</i>(5'-adenosyl) diphosphate	Ap2A // diadenosine pyrophosphate // adenosine-5'-diphospho-5'-adenosine // diadenosine 5',5'''-P1,P2-diphosphate // diadenosine 5',5'-diphosphate // diadenosine 5',5'''-diphosphate	CPD-19513
+nucleoside	bis(5'-adenosyl) diphosphate	Ap2A // diadenosine pyrophosphate // adenosine-5'-diphospho-5'-adenosine // diadenosine 5',5'''-P1,P2-diphosphate // diadenosine 5',5'-diphosphate // diadenosine 5',5'''-diphosphate	CPD-19513
 nucleoside	cytidine		CYTIDINE
 nucleoside	guanosine	nucleoside Q	GUANOSINE
 nucleoside	inosine	hypoxanthine-ribose // iso-prinosine // riboxine	INOSINE
-nucleoside	<i>N</i><sup>4</sup>-acetylcytidine	4-acetyl-1-(beta-D-ribofuranosyl)cytosine // 4-acetylcytidine // acetamide, N-(1,2-dihydro-2-oxo-1-beta-D-ribofuranosyl-4-pyrimidinyl) // acetylcytidine // N-[1-[(2R,3R,4S,5R)-3,4-dihydroxy-5-(hydroxymethyl)oxolan-2-yl]-2-oxopyrimidin-4-yl]acetamide	CPD-11648
-nucleoside	<i>N</i><sup>7</sup>-methylguanosine	N7-methyl-guanosine // 7-methylguanosine	CPD-15544
-nucleoside	P<sup>1</sup>,P<sup>3</sup>-<i>bis</i>(5'-adenosyl) triphosphate	bis(5'-adenosyl) triphosphate // adenosine 5'-(tetrahydrogen triphosphate), P''-5'-ester with adenosine // Ap3A // adenosine(5')triphospho(5')adenosine // 5',5'''-diadenosine triphosphate	ADENOSINE5TRIPHOSPHO5ADENOSINE
-nucleoside	P<sup>1</sup>,P<sup>4</sup>-<i>bis</i>(5'-adenosyl) tetraphosphate	Ap4A // AppppA // P(1),P(4)-bis(5'-adenosyl)tetraphosphate // bis(5'-adenosyl) tetraphosphate // 5',5'''-diadenosine tetraphosphate	ADENOSYL-P4
-nucleoside	P<sup>1</sup>,P<sup>4</sup>-<i>bis</i>(5'-guanosyl) tetraphosphate	Gp4G // bis(5'-guanosyl) tetraphosphate	CPD-609
-nucleoside	<i>P</i><sup>1</sup>,<i>P</i><sup>5</sup>-<i>bis</i>(5'-adenosyl) pentaphosphate	5',5'''-diadenosine pentaphosphate // bis(5'-adenosyl) pentaphosphate // P(1),P(5)-di(adenosine-5'-)pentaphosphate // Ap5A // P1,P5-di(adenosine-5')-pentaphosphate	CPD0-1137
+nucleoside	N4-acetylcytidine	4-acetyl-1-(beta-D-ribofuranosyl)cytosine // 4-acetylcytidine // acetamide, N-(1,2-dihydro-2-oxo-1-beta-D-ribofuranosyl-4-pyrimidinyl) // acetylcytidine // N-[1-[(2R,3R,4S,5R)-3,4-dihydroxy-5-(hydroxymethyl)oxolan-2-yl]-2-oxopyrimidin-4-yl]acetamide	CPD-11648
+nucleoside	N7-methylguanosine	N7-methyl-guanosine // 7-methylguanosine	CPD-15544
+nucleoside	P1,P3-bis(5'-adenosyl) triphosphate	bis(5'-adenosyl) triphosphate // adenosine 5'-(tetrahydrogen triphosphate), P''-5'-ester with adenosine // Ap3A // adenosine(5')triphospho(5')adenosine // 5',5'''-diadenosine triphosphate	ADENOSINE5TRIPHOSPHO5ADENOSINE
+nucleoside	P1,P4-bis(5'-adenosyl) tetraphosphate	Ap4A // AppppA // P(1),P(4)-bis(5'-adenosyl)tetraphosphate // bis(5'-adenosyl) tetraphosphate // 5',5'''-diadenosine tetraphosphate	ADENOSYL-P4
+nucleoside	P1,P4-bis(5'-guanosyl) tetraphosphate	Gp4G // bis(5'-guanosyl) tetraphosphate	CPD-609
+nucleoside	P1,P5-bis(5'-adenosyl) pentaphosphate	5',5'''-diadenosine pentaphosphate // bis(5'-adenosyl) pentaphosphate // P(1),P(5)-di(adenosine-5'-)pentaphosphate // Ap5A // P1,P5-di(adenosine-5')-pentaphosphate	CPD0-1137
 nucleoside	pseudouridine		CPD-497
 nucleoside	pyrimidin-2-one-ribonucleoside		CPD0-1312
 nucleoside	thymidine	deoxythymidine	THYMIDINE

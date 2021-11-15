@@ -1,73 +1,73 @@
 Matches	Ontology -  all instances of class from New SmartTable with a sugar	Synonyms	Object ID
 a sugar	1,3,4-butanetriol	2-deoxyerythritol	CPD-16716
-a sugar	2,7-anhydro-&alpha;-<i>N</i>-acetylneuraminate	2,7-AN	CPD-6182
+a sugar	2,7-anhydro-alpha-N-acetylneuraminate	2,7-AN	CPD-6182
 a sugar	2-aminogalactopyranose		CPD0-1299
-a sugar	2-deoxy-2-fluoro-&beta;-D-galactopyranosyl fluoride	2-deoxy-2-fluoro-beta-D-galactose	CPD0-1297
+a sugar	2-deoxy-2-fluoro-beta-D-galactopyranosyl fluoride	2-deoxy-2-fluoro-beta-D-galactose	CPD0-1297
 a sugar	2-deoxy-D-galactose	2-deoxy-D-lyxohexose // deoxygalactose	CPD-5861
-a sugar	3-dehydro-1-<i>O</i>-methyl-&alpha;-D-glucose	methyl alpha-3-keto-D-glucoside	CPD0-2657
-a sugar	3-dehydro-1-<i>O</i>-methyl-&beta;-D-glucose	methyl beta-3-keto-D-glucoside	CPD0-2655
-a sugar	3-<i>O</i>-D-mannopyranose		CPD-22681
-a sugar	3-<i>O</i>-methyl-D-glucose	methylglucose // 3-methyl-glucose	CPD0-1937
+a sugar	3-dehydro-1-O-methyl-alpha-D-glucose	methyl alpha-3-keto-D-glucoside	CPD0-2657
+a sugar	3-dehydro-1-O-methyl-beta-D-glucose	methyl beta-3-keto-D-glucoside	CPD0-2655
+a sugar	3-O-D-mannopyranose		CPD-22681
+a sugar	3-O-methyl-D-glucose	methylglucose // 3-methyl-glucose	CPD0-1937
 a sugar	4-amino-4-deoxy-L-arabinose	L-Ara4N	4-AMINO-4-DEOXY-L-ARABINOSE
-a sugar	4-deoxy-L-<i>threo</i>-hex-4-enopyranuronate	(3R,4S)-2,3,4-trihydroxy-3,4-dihydro-2H-pyran-6-carboxylic acid // 4-deoxy-L-threo-5-hexosulose-uronic acid // 4-deoxy-L-threo-5-hexosulose-uronate // 4-deoxy-L-threo-hex-4-enopyranuronate // 4-deoxy-L-threo-5-hexosulose-uronate // 4-deoxy-beta-L-threo-hex-4-enopyranuronose	CPD-13122
+a sugar	4-deoxy-L-threo-hex-4-enopyranuronate	(3R,4S)-2,3,4-trihydroxy-3,4-dihydro-2H-pyran-6-carboxylic acid // 4-deoxy-L-threo-5-hexosulose-uronic acid // 4-deoxy-L-threo-5-hexosulose-uronate // 4-deoxy-L-threo-hex-4-enopyranuronate // 4-deoxy-L-threo-5-hexosulose-uronate // 4-deoxy-beta-L-threo-hex-4-enopyranuronose	CPD-13122
 a sugar	5-deoxy-D-ribose	5'-deoxyribose // 5-deoxy-D-ribofuranose	CPD0-2167
 a sugar	6-deoxy-D-allose	D-allomethylose	CPD-22597
 a sugar	6-deoxy-D-sorbose		CPD0-2049
-a sugar	6-sulfo-&alpha;-D-quinovose	alpha-D-sulphoquinovose // 6-deoxy-6-alpha-D-sulfoglucose // 6-deoxy-6-sulfo-alpha-D-glucopyranose // alpha-sulfoquinovose	CPD-21685
-a sugar	<i>aldehydo</i>-D-allose		CPD-15629
-a sugar	<i>aldehydo</i>-D-altrose		ALTROSE
-a sugar	<i>aldehydo</i>-D-arabinose		CPD-15700
-a sugar	<i>aldehydo</i>-D-galactose		CPD-15590
-a sugar	<i>aldehydo</i>-D-glucose	(2R,3S,4R,5R)-2,3,4,5,6-pentahydroxyhexanal // linear D-glucose	CPD-15374
-a sugar	<i>aldehydo</i>-D-mannose		CPD-15373
-a sugar	<i>aldehydo</i>-D-quinovose	6-deoxy-D-glucose	CPD-21255
-a sugar	<i>aldehydo</i>-D-ribose		CPD-15818
-a sugar	<i>aldehydo</i>-D-xylose	linear D-xylose	CPD-15377
-a sugar	<i>aldehydo</i>-L-arabinose		CPD-15699
-a sugar	<i>aldehydo</i>-L-fucose		CPD-15619
-a sugar	<i>aldehydo</i>-L-lyxose		CPD-15868
-a sugar	<i>aldehydo</i>-<i>N</i>-acetylneuraminate	N-acetyl-keto-neuraminic acid // N-acetyl-keto-neuraminate	CPD0-2701
-a sugar	&alpha;-D-altrose	alpha-D-altropyranose	CPD-15762
-a sugar	&alpha;-D-arabinofuranose	alpha-D-arabinose	CPD-12044
-a sugar	&alpha;-D-arabinopyranose	alpha-D-arabinose	CPD-12047
-a sugar	&alpha;-D-fructofuranose		CPD-10723
-a sugar	&alpha;-D-fructopyranose		CPD-10725
-a sugar	&alpha;-D-fucopyranose	alpha-D-fucose	CPD-14019
-a sugar	&alpha;-D-galactofuranose		CPD0-2486
-a sugar	&alpha;-D-galactopyranose	6-(hydroxymethyl)tetrahydropyran-2,3,4,5-tetraol // alpha-D-galactose	ALPHA-D-GALACTOSE
-a sugar	&alpha;-D-glucopyranose	alpha-glucose // alpha-D-glucose	ALPHA-GLUCOSE
-a sugar	&alpha;-D-glucosamine		CPD-12538
-a sugar	&alpha;-D-lyxopyranose	alpha-D-lyxose	CPD-227
-a sugar	&alpha;-D-mannopyranose	alpha-D-Man	CPD-13559
-a sugar	&alpha;-D-quinovopyranose	alpha-D-quinovose	CPD-10543
-a sugar	&alpha;-D-rhamnopyranose	alpha-D-rhamnose	CPD-13829
-a sugar	&alpha;-D-ribofuranose	alpha D-ribose	CPD-10330
-a sugar	&alpha;-D-ribopyranose		CPD-15829
-a sugar	&alpha;-D-xylopyranose	alpha-D-xylose // xylose // D-xylose // wood sugar	XYLOSE
-a sugar	&alpha;-L-arabinofuranose	alpha-L-arabinose	CPD-12045
-a sugar	&alpha;-L-arabinopyranose	alpha-L-arabinose // arabinose	ARABINOSE
-a sugar	&alpha;-L-fucopyranose	alpha-L-fucose	CPD-10329
-a sugar	&alpha;-L-galactopyranose	alpha-L-galactose	CPD-13428
-a sugar	&alpha;-L-rhamnopyranose	6-deoxy-alpha-L-mannopyranose // alpha-L-mannomethylose // isodulcit	RHAMNOSE
-a sugar	&alpha;-L-xylopyranose		CPD-21258
-a sugar	&beta;-D-altrose	beta-D-altropyranose	CPD-15761
-a sugar	&beta;-D-arabinofuranose	beta-D-arabinose	CPD-12043
-a sugar	&beta;-D-arabinopyranose	beta-D-arabinose	CPD-12049
-a sugar	&beta;-D-fructofuranose	beta-D-fructofuranose // beta-D-fructose // beta-fruit sugar // beta-Levulose // beta-D-arabino-Hexulose	BETA-D-FRUCTOSE
-a sugar	&beta;-D-fructopyranose		CPD-10726
-a sugar	&beta;-D-galactofuranose	Galf	CPD0-2485
-a sugar	&beta;-D-galactopyranose	beta-D-galactopyranose // beta-D-galactose // cerebrose // 6-(hydroxymethyl)tetrahydropyran-2,3,4,5-tetraol	GALACTOSE
-a sugar	&beta;-D-glucopyranose	beta-D-glucose // beta-glucose	GLC
-a sugar	&beta;-D-glucosamine		CPD-12539
-a sugar	&beta;-D-mannopyranose	beta-D-mannose	CPD-12601
-a sugar	&beta;-D-ribofuranose		CPD0-1108
-a sugar	&beta;-D-ribopyranose		CPD0-1110
-a sugar	&beta;-D-xylopyranose	beta-D-xylose	BETA-D-XYLOSE
-a sugar	&beta;-L-arabinofuranose	beta-L-arabinose	CPD-12046
-a sugar	&beta;-L-fucopyranose	beta-L-fucose	CPD0-1107
-a sugar	&beta;-L-galactopyranose	beta-L-galactose	L-GALACTOSE
-a sugar	&beta;-L-lyxopyranose	beta-L-lyxose	L-LYXOSE
-a sugar	&beta;-L-rhamnopyranose		CPD0-1112
+a sugar	6-sulfo-alpha-D-quinovose	alpha-D-sulphoquinovose // 6-deoxy-6-alpha-D-sulfoglucose // 6-deoxy-6-sulfo-alpha-D-glucopyranose // alpha-sulfoquinovose	CPD-21685
+a sugar	aldehydo-D-allose		CPD-15629
+a sugar	aldehydo-D-altrose		ALTROSE
+a sugar	aldehydo-D-arabinose		CPD-15700
+a sugar	aldehydo-D-galactose		CPD-15590
+a sugar	aldehydo-D-glucose	(2R,3S,4R,5R)-2,3,4,5,6-pentahydroxyhexanal // linear D-glucose	CPD-15374
+a sugar	aldehydo-D-mannose		CPD-15373
+a sugar	aldehydo-D-quinovose	6-deoxy-D-glucose	CPD-21255
+a sugar	aldehydo-D-ribose		CPD-15818
+a sugar	aldehydo-D-xylose	linear D-xylose	CPD-15377
+a sugar	aldehydo-L-arabinose		CPD-15699
+a sugar	aldehydo-L-fucose		CPD-15619
+a sugar	aldehydo-L-lyxose		CPD-15868
+a sugar	aldehydo-N-acetylneuraminate	N-acetyl-keto-neuraminic acid // N-acetyl-keto-neuraminate	CPD0-2701
+a sugar	alpha-D-altrose	alpha-D-altropyranose	CPD-15762
+a sugar	alpha-D-arabinofuranose	alpha-D-arabinose	CPD-12044
+a sugar	alpha-D-arabinopyranose	alpha-D-arabinose	CPD-12047
+a sugar	alpha-D-fructofuranose		CPD-10723
+a sugar	alpha-D-fructopyranose		CPD-10725
+a sugar	alpha-D-fucopyranose	alpha-D-fucose	CPD-14019
+a sugar	alpha-D-galactofuranose		CPD0-2486
+a sugar	alpha-D-galactopyranose	6-(hydroxymethyl)tetrahydropyran-2,3,4,5-tetraol // alpha-D-galactose	ALPHA-D-GALACTOSE
+a sugar	alpha-D-glucopyranose	alpha-glucose // alpha-D-glucose	ALPHA-GLUCOSE
+a sugar	alpha-D-glucosamine		CPD-12538
+a sugar	alpha-D-lyxopyranose	alpha-D-lyxose	CPD-227
+a sugar	alpha-D-mannopyranose	alpha-D-Man	CPD-13559
+a sugar	alpha-D-quinovopyranose	alpha-D-quinovose	CPD-10543
+a sugar	alpha-D-rhamnopyranose	alpha-D-rhamnose	CPD-13829
+a sugar	alpha-D-ribofuranose	alpha D-ribose	CPD-10330
+a sugar	alpha-D-ribopyranose		CPD-15829
+a sugar	alpha-D-xylopyranose	alpha-D-xylose // xylose // D-xylose // wood sugar	XYLOSE
+a sugar	alpha-L-arabinofuranose	alpha-L-arabinose	CPD-12045
+a sugar	alpha-L-arabinopyranose	alpha-L-arabinose // arabinose	ARABINOSE
+a sugar	alpha-L-fucopyranose	alpha-L-fucose	CPD-10329
+a sugar	alpha-L-galactopyranose	alpha-L-galactose	CPD-13428
+a sugar	alpha-L-rhamnopyranose	6-deoxy-alpha-L-mannopyranose // alpha-L-mannomethylose // isodulcit	RHAMNOSE
+a sugar	alpha-L-xylopyranose		CPD-21258
+a sugar	beta-D-altrose	beta-D-altropyranose	CPD-15761
+a sugar	beta-D-arabinofuranose	beta-D-arabinose	CPD-12043
+a sugar	beta-D-arabinopyranose	beta-D-arabinose	CPD-12049
+a sugar	beta-D-fructofuranose	beta-D-fructofuranose // beta-D-fructose // beta-fruit sugar // beta-Levulose // beta-D-arabino-Hexulose	BETA-D-FRUCTOSE
+a sugar	beta-D-fructopyranose		CPD-10726
+a sugar	beta-D-galactofuranose	Galf	CPD0-2485
+a sugar	beta-D-galactopyranose	beta-D-galactopyranose // beta-D-galactose // cerebrose // 6-(hydroxymethyl)tetrahydropyran-2,3,4,5-tetraol	GALACTOSE
+a sugar	beta-D-glucopyranose	beta-D-glucose // beta-glucose	GLC
+a sugar	beta-D-glucosamine		CPD-12539
+a sugar	beta-D-mannopyranose	beta-D-mannose	CPD-12601
+a sugar	beta-D-ribofuranose		CPD0-1108
+a sugar	beta-D-ribopyranose		CPD0-1110
+a sugar	beta-D-xylopyranose	beta-D-xylose	BETA-D-XYLOSE
+a sugar	beta-L-arabinofuranose	beta-L-arabinose	CPD-12046
+a sugar	beta-L-fucopyranose	beta-L-fucose	CPD0-1107
+a sugar	beta-L-galactopyranose	beta-L-galactose	L-GALACTOSE
+a sugar	beta-L-lyxopyranose	beta-L-lyxose	L-LYXOSE
+a sugar	beta-L-rhamnopyranose		CPD0-1112
 a sugar	D-arabinitol	D-arabitol // D-arabinol // D-lyxitol // (2R,4R)-pentane-1,2,3,4,5-pentol	CPD-355
 a sugar	D-erythrose	D-erythro-tetrose	ERYTHROSE
 a sugar	D-galactal	1,5-anhydro-2-deoxy-D-lyxo-hex-1-enitol // arabino-hex-5-enitol, 2,6-anhydro-5-deoxy-	CPD0-1300
@@ -83,12 +83,12 @@ a sugar	galactitol	dulcitol // dulcite // dulcose // (2R,3S,4R,5S)-hexane-1,2,3,
 a sugar	glycerol	1,2,3-trihydroxypropane // glycerin // 1,2,3-trihydroxypropanol	GLYCEROL
 a sugar	glycolaldehyde	glycoaldehyde // 2-OH-acetaldehyde // hydroxyacetaldehyde // 2-hydroxyethanal	GLYCOLALDEHYDE
 a sugar	glycolaldehyde phosphate		CPD-19745
-a sugar	<i>keto</i>-D-fructose		CPD-15382
-a sugar	<i>keto</i>-D-psicose	D-ribo-2-ketohexose // D-ribo-2-hexulose // erythrohexulose // D-allulose // psicose // pseudofructose // D-altrulose	PSICOSE
-a sugar	<i>keto</i>-D-tagatose		TAGATOSE
-a sugar	<i>keto</i>-L-<i>glycero</i>-L-galacto-octuluronate		CPD-23431
-a sugar	<i>keto</i>-L-rhamnulose		CPD-16566
-a sugar	<i>keto</i>-L-sorbose		CPD-15616
+a sugar	keto-D-fructose		CPD-15382
+a sugar	keto-D-psicose	D-ribo-2-ketohexose // D-ribo-2-hexulose // erythrohexulose // D-allulose // psicose // pseudofructose // D-altrulose	PSICOSE
+a sugar	keto-D-tagatose		TAGATOSE
+a sugar	keto-L-glycero-L-galacto-octuluronate		CPD-23431
+a sugar	keto-L-rhamnulose		CPD-16566
+a sugar	keto-L-sorbose		CPD-15616
 a sugar	L-arabinitol	L-arabinol // L-arabitol // L-lyxitol // (2S,4S)-pentane-1,2,3,4,5-pentol	L-ARABITOL
 a sugar	L-fuculose	fuculose // 6-deoxy-L-tagatose	L-FUCULOSE
 a sugar	L-glucose	L-glucopyranose	CPD-3607
@@ -100,12 +100,12 @@ a sugar	L-ribulose	ribulose	L-RIBULOSE
 a sugar	L-xylulose	xylulose // L-threo-pent-2-ulose	L-XYLULOSE
 a sugar	lactitol	importal // 4-O-beta-D-galactopyranosyl-D-glucitol // beta-D-galactopyranosyl-(1->4)-D-glucitol // D-lactitol	CPD0-2460
 a sugar	maltitol	alpha-D-glucopyranosyl-(1->4)-D-glucitol // 4-O-alpha-D-glucopyranosyl-D-glucitol	CPD-3609
-a sugar	<i>N</i>-acetyl-&alpha;-D-galactosamine	N-acetylgalactosamine // acetylgalactosamine // 2-acetamido-2-deoxy-D-galactopyranose // 2-acetamido-2-deoxy-D-galactose // N-acetyl-D-chondrosamine // alpha-D-galactopyranose, 2-(acetylamino)-2-deoxy- // N-acetyl-D-galactosamine // alpha-GalNAc	CPD-3604
-a sugar	<i>N</i>-acetyl-&alpha;-D-galactosamine 1-phosphate	N-Acetyl-D-galactosamine 1-phosphate	CPD-7246
-a sugar	<i>N</i>-acetyl-&alpha;-D-glucosamine 1-phosphate		N-ACETYL-D-GLUCOSAMINE-1-P
-a sugar	<i>N</i>-acetyl-&alpha;-neuraminate	alpha-Neu5Ac // alpha-N-acetylneuraminate	CPD0-1122
-a sugar	<i>N</i>-acetyl-&beta;-D-glucosamine	NAcGlc // N-acetylglucosamine // N-acetyl-D-glucosamine	N-ACETYL-D-GLUCOSAMINE
-a sugar	<i>N</i>-acetyl-&beta;-D-mannosamine		N-ACETYL-D-MANNOSAMINE
-a sugar	<i>N</i>-acetyl-&beta;-neuraminate	beta-Neu5Ac // beta-N-acetylneuraminate	CPD0-1123
+a sugar	N-acetyl-alpha-D-galactosamine	N-acetylgalactosamine // acetylgalactosamine // 2-acetamido-2-deoxy-D-galactopyranose // 2-acetamido-2-deoxy-D-galactose // N-acetyl-D-chondrosamine // alpha-D-galactopyranose, 2-(acetylamino)-2-deoxy- // N-acetyl-D-galactosamine // alpha-GalNAc	CPD-3604
+a sugar	N-acetyl-alpha-D-galactosamine 1-phosphate	N-Acetyl-D-galactosamine 1-phosphate	CPD-7246
+a sugar	N-acetyl-alpha-D-glucosamine 1-phosphate		N-ACETYL-D-GLUCOSAMINE-1-P
+a sugar	N-acetyl-alpha-neuraminate	alpha-Neu5Ac // alpha-N-acetylneuraminate	CPD0-1122
+a sugar	N-acetyl-beta-D-glucosamine	NAcGlc // N-acetylglucosamine // N-acetyl-D-glucosamine	N-ACETYL-D-GLUCOSAMINE
+a sugar	N-acetyl-beta-D-mannosamine		N-ACETYL-D-MANNOSAMINE
+a sugar	N-acetyl-beta-neuraminate	beta-Neu5Ac // beta-N-acetylneuraminate	CPD0-1123
 a sugar	ribitol	meso-ribitol // adonitol // L-ribitol (incorrect) // D-ribitol (incorrect)	RIBITOL
 a sugar	xylitol	(2R,3R,4S)-pentane-1,2,3,4,5-pentaol	XYLITOL

@@ -149,6 +149,9 @@ class FCompilerData:
         self.Kinetics = FKinetics()
         self.Dict_DataClass['Kinetics'] = self.Kinetics
 
+        self.Transporters = FTransporter()
+        self.Dict_DataClass['Transporters'] = self.Transporters
+
         self.UserInput = FUserInput()
         self.Dict_DataClass['UserInput'] = self.UserInput
 

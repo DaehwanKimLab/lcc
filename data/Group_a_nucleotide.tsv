@@ -1,12 +1,12 @@
 Matches	Ontology -  all instances of class from New SmartTable with a nucleotide	Synonyms	Object ID
-a nucleotide	(<i>R</i>)-NADHX	(6R)-6-beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide	CPD0-2472
-a nucleotide	(<i>R</i>)-NADPHX		CPD-14133
-a nucleotide	(<i>S</i>)-NADHX	(6S)-6-beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide	CPD-653
-a nucleotide	(<i>S</i>)-NADPHX	(6S)-6beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide phosphate	CPD0-2474
-a nucleotide	1,2-dihydro-&beta;-NADP	2-dihydro-nicotinamide adenine dinucleotide phosphate // 2DHNADP	CPD-18085
+a nucleotide	(R)-NADHX	(6R)-6-beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide	CPD0-2472
+a nucleotide	(R)-NADPHX		CPD-14133
+a nucleotide	(S)-NADHX	(6S)-6-beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide	CPD-653
+a nucleotide	(S)-NADPHX	(6S)-6beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide phosphate	CPD0-2474
+a nucleotide	1,2-dihydro-beta-NADP	2-dihydro-nicotinamide adenine dinucleotide phosphate // 2DHNADP	CPD-18085
 a nucleotide	1-methyl-dAMP	N1-methyl-2'deoxyadenosine 5'-monophosphate // 1-methyldeoxyadenosine monophosphate	CPD-20035
 a nucleotide	1-methyl-dATP	N1-methyl-2'-deoxyadenosine 5'-triphosphate // 1-methyldeoxyadenosine triphosphate	CPD-20036
-a nucleotide	2''-<i>O</i>-acetyl-ADP-ribose	2''-OAADPr	CPD-14762
+a nucleotide	2''-O-acetyl-ADP-ribose	2''-OAADPr	CPD-14762
 a nucleotide	2'-deoxy-5-hydroxymethylcytidine-5'-triphosphate	hydroxymethyl-dCTP	DEOXY-OH-METHYLCYTIDINE-TRIPHOSPHATE
 a nucleotide	2'-deoxyadenosine 3'-monophosphate	2'-deoxy-3'AMP // 2'-Deoxy-3'-adenosine monophosphate // 2'-deoxy-3'-adenylic acid	CPD-15391
 a nucleotide	2'-deoxycytidine 3'-monophosphate		CPD-15392
@@ -16,7 +16,7 @@ a nucleotide	2-hydroxy-dADP	2-OH-dADP	CPD0-2643
 a nucleotide	2-hydroxy-dAMP	2-OH-dAMP // 2-hydroxy-2'-deoxyadenosine 5'-monophosphate	CPD-13852
 a nucleotide	2-hydroxy-dATP	2-hydroxy-2'-deoxyadenosine 5'-triphosphate // 2'-deoxyisoguanosine triphosphate	CPD-13851
 a nucleotide	2-phospho-4-(cytidine 5'-diphospho)-2-C-methyl-D-erythritol	CDP-ME-2P // CDP-methyl-D-erylthritol 2-phosphate // 4-diphosphocytidyl-2C-methyl-D-erythritol 2-phosphate // 4-diphosphocytidyl-2-C-methylerythritol 2-phosphate	2-PHOSPHO-4-CYTIDINE-5-DIPHOSPHO-2-C-MET
-a nucleotide	3''-<i>O</i>-acetyl-ADP-ribose		CPD-14763
+a nucleotide	3''-O-acetyl-ADP-ribose		CPD-14763
 a nucleotide	3-acetyl pyridine adenine dinucleotide	3-acetylpyridine-NAD	CPD0-1222
 a nucleotide	3-acetyl-NADH		CPD0-2573
 a nucleotide	3-pyridinecarboxaldehyde adenine dinucleotide		CPD0-1364
@@ -34,27 +34,27 @@ a nucleotide	8-hydroxy-dGTP	8-hydroxydeoxyguanosine 5'-triphosphate	8-hydroxy-dG
 a nucleotide	8-oxo-dADP		8-oxo-dADP
 a nucleotide	8-oxo-dGTP	7,8-dihydro-8-oxo-2'-dGTP // 2'-deoxy-7,8-dihydro-8-oxo-guanosine 5'-triphosphate	CPD0-1905
 a nucleotide	8-oxo-dGTP	7,8-dihydro-8-oxo-2'-dGTP // 2'-deoxy-7,8-dihydro-8-oxo-guanosine 5'-triphosphate	8-Oxo-dGTP
-a nucleotide	a [protein]-<i>N</i><sup>6</sup>-[1,1-(5-adenosylyl-&alpha;-D-ribose-1,2-di-O-yl)ethyl]-L-lysine		CPD-21533
+a nucleotide	a [protein]-N6-[1,1-(5-adenosylyl-alpha-D-ribose-1,2-di-O-yl)ethyl]-L-lysine		CPD-21533
 a nucleotide	adenosine 2',3'-cyclic monophosphate	cyclic 2',3'-AMP // 2',3'-Cyclic AMP // adenosine 2',3'-(hydrogen phosphate) // (2R,3aR,4R,6R,6aR)-4-(6-amino-9H-purin-9-yl)-6-(hydroxymethyl)tetrahydrofuro[3,4-d][1,3,2]dioxaphosphol-2-ol 2-oxide // (3aR,4R,6R,6aR)-4-(6-amino-9H-purin-9-yl)-6-(hydroxymethyl)tetrahydrofuro[3,4-d][1,3,2]dioxaphosphol-2-ol 2-oxide // adenosine cyclic 2',3'-(hydrogen phosphate) // cyclic 2',3'-adenosine monophosphate	CPD-3707
 a nucleotide	adenosine 2'-monophosphate	2'-adenylic acid // adenosine-2'-monophosphate // AMP 2'-phosphate	CPD-3705
 a nucleotide	adenosine 3',5'-bisphosphate	adenosine-3',5'-bisphosphate // phosphoadenosine phosphate // PAP	3-5-ADP
 a nucleotide	adenosine 5'-phosphoramidate	adenosine-5'-monophosphoramidate // AMP-NH2	CPD-487
 a nucleotide	adenosine tetraphosphate	Adenosine 5'-tetraphosphate // p4A	CPD-607
 a nucleotide	adenylo-succinate	N6-(1,2-dicarboxyethyl)-AMP // adenylo-succ	ADENYLOSUCC
-a nucleotide	ADP-&alpha;-D-glucose	adenosine diphosphate glucose // ADP-glucose // ADP-D-glucose	ADP-D-GLUCOSE
-a nucleotide	ADP-D-glycero-&beta;-D-<i>manno</i>-heptose	2-[[[5-[(6-amino-9H-purin-9-yl)]-3,4-dihydroxy-tetrahydrofuran- 2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-6- (1,2-dihydroxyethyl)tetrahydropyran-3,4,5-triol // ADP-D-beta-D-heptose	ADP-D-GLYCERO-D-MANNO-HEPTOSE
+a nucleotide	ADP-alpha-D-glucose	adenosine diphosphate glucose // ADP-glucose // ADP-D-glucose	ADP-D-GLUCOSE
+a nucleotide	ADP-D-glycero-beta-D-manno-heptose	2-[[[5-[(6-amino-9H-purin-9-yl)]-3,4-dihydroxy-tetrahydrofuran- 2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-6- (1,2-dihydroxyethyl)tetrahydropyran-3,4,5-triol // ADP-D-beta-D-heptose	ADP-D-GLYCERO-D-MANNO-HEPTOSE
 a nucleotide	ADP-D-ribose	adenosine diphosphate D-ribose // adenosine 5'-(5-deoxy-D-ribofuranos-5-yl diphosphate)	ADENOSINE_DIPHOSPHATE_RIBOSE
-a nucleotide	ADP-L-glycero-&beta;-D-<I>manno</I>-heptose	2-[[[5-[(6-amino-9H-purin-9-yl)]-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-6-(1,2-dihydroxyethyl)tetrahydropyran-3,4,5-triol // ADP-L-glycero-D-manno-heptose	ADP-L-GLYCERO-D-MANNO-HEPTOSE
+a nucleotide	ADP-L-glycero-beta-D-manno-heptose	2-[[[5-[(6-amino-9H-purin-9-yl)]-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-6-(1,2-dihydroxyethyl)tetrahydropyran-3,4,5-triol // ADP-L-glycero-D-manno-heptose	ADP-L-GLYCERO-D-MANNO-HEPTOSE
 a nucleotide	ADP-mannose		ADP-MANNOSE
-a nucleotide	AMP-N-&epsilon;-(N-&alpha;-acetyl lysine methyl ester) 5-phosphoramidate		AMP-LYSINE
+a nucleotide	AMP-N-epsilon-(N-alpha-acetyl lysine methyl ester) 5-phosphoramidate		AMP-LYSINE
 a nucleotide	arabinouracil 5'-monophosphate	aUMP	CPD0-2080
-a nucleotide	&beta;-nicotinamide D-ribonucleotide	beta-nicotinamide mononucleotide // beta-nicotinamide ribonucleotide // beta-nicotinamide nucleotide	NICOTINAMIDE_NUCLEOTIDE
+a nucleotide	beta-nicotinamide D-ribonucleotide	beta-nicotinamide mononucleotide // beta-nicotinamide ribonucleotide // beta-nicotinamide nucleotide	NICOTINAMIDE_NUCLEOTIDE
 a nucleotide	CDP	cytidine-diphosphate // cytidine-5'-diphosphate	CDP
-a nucleotide	CDP-&alpha;-D-glucose	CDP-glc // CDP-glucose // CDP-D-glucose	CDP-D-GLUCOSE
+a nucleotide	CDP-alpha-D-glucose	CDP-glc // CDP-glucose // CDP-D-glucose	CDP-D-GLUCOSE
 a nucleotide	CDP-choline	citicoline // citicholine // cidifos // cyticholine // cytidine 5'-diphosphocholine // cytidine diphosphate choline	CDP-CHOLINE
 a nucleotide	CDP-ethanolamine	cytidine diphosphate ethanolamine	CDP-ETHANOLAMINE
 a nucleotide	CMP	5'-cytidylic acid // cytidine 5'-monophosphate // cytidylate // cytidylic acid // cytidine-P // cytidine-monophosphate // cytidine-phosphate // cytidine 5'-phosphate	CMP
-a nucleotide	CMP-3-deoxy-&beta;-D-<i>manno</i>-octulosonate	CMP-2-dehydro-3-deoxy-D-octonate // CMP-beta-Kdo // CMP-ketodeoxyoctonate	CMP-KDO
+a nucleotide	CMP-3-deoxy-beta-D-manno-octulosonate	CMP-2-dehydro-3-deoxy-D-octonate // CMP-beta-Kdo // CMP-ketodeoxyoctonate	CMP-KDO
 a nucleotide	CTP	cytidine-triphosphate // cytidine-5'-triphosphate	CTP
 a nucleotide	cyclic 3',5'-cytidine monophosphate	cyclic-CMP // cytidine cyclic-monophosphate // cyclic 3',5'-CMP // cytidine 3',5'-cyclic monophosphate	CPD-683
 a nucleotide	cyclic 3',5'-thymidine monophosphate	thymidine 3',5'-cyclic monophosphate	CPD-3733
@@ -76,26 +76,26 @@ a nucleotide	dGTP	2'-deoxyguanosine-5'-triphosphate // deoxy-GTP // deoxyguanosi
 a nucleotide	dIDP	deoxyinosine diphosphate	CPD0-2231
 a nucleotide	dIMP	2'-deoxy-IMP // 2'-deoxy-5'-inosinic acid // 2'-Deoxyinosine 5'-monophosphate // 2'-Deoxyinosine 5'-phosphate // 9-(2-deoxy-5-O-phosphono-beta-D-erythro-pentofuranosyl)-9H-purin-6-ol // Deoxyinosine monophosphate // Hypoxanthine deoxyriboside	DIMP
 a nucleotide	dITP	deoxyinosine triphosphate	DITP
-a nucleotide	dTDP-4-acetamido-&alpha;-D-fucose	TDP-Fuc4NAc // dTDP-N-acetylthomosamine // TDP-4N-acetyl-alpha-D-fucosamine // dTDP-4-acetamido-4,6-dideoxy-alpha-D-galactose	TDP-FUC4NAC
-a nucleotide	dTDP-4-amino-4,6-dideoxy-&alpha;-D-galactose	TDP-fucosamine (misleading) // TDP-D-fucosamine (misleading) // dTDP-thomosamine // dTDP-alpha-D-fucosamine (misleading)	TDP-D-FUCOSAMINE
-a nucleotide	dTDP-4-dehydro-6-deoxy-&alpha;-D-glucopyranose	TDP-4-keto-6-deoxy--alpha-D-glucose // TDP-4-oxo-6-deoxy--alpha-D-glucose // dTDP-4-oxo-6-deoxy--alpha-D-glucose // dTDP-6-deoxy-alpha-D-xylo-4-hexosulose // dTDP-6-deoxy-alpha-D-xylohex-4-ulose // dTDP-4-dehydro-6-deoxy-alpha-D-glucose	DTDP-DEOH-DEOXY-GLUCOSE
-a nucleotide	dTDP-4-dehydro-&beta;-L-rhamnose	dTDP-4-oxo-6-deoxy-beta-L-mannose // dTDP-4-oxo-beta-L-rhamnose // dTDP-4-dehydro-6-deoxy-beta-L-mannose // dTDP-4-keto-L-rhamnose	DTDP-DEOH-DEOXY-MANNOSE
-a nucleotide	dTDP-6-deoxy-&alpha;-D-glucose	dTDP-alpha-D-quinovose	CPD0-2617
-a nucleotide	dTDP-&alpha;-D-glucose	TDP-glucose // dTDP-glucose // dTDP-D-glucose	DTDP-D-GLUCOSE
-a nucleotide	dTDP-&beta;-L-rhamnose	dTDP-6-deoxy-beta-L-mannose // dTDP-L-rhamnose // dTDP-L-Rha	DTDP-RHAMNOSE
+a nucleotide	dTDP-4-acetamido-alpha-D-fucose	TDP-Fuc4NAc // dTDP-N-acetylthomosamine // TDP-4N-acetyl-alpha-D-fucosamine // dTDP-4-acetamido-4,6-dideoxy-alpha-D-galactose	TDP-FUC4NAC
+a nucleotide	dTDP-4-amino-4,6-dideoxy-alpha-D-galactose	TDP-fucosamine (misleading) // TDP-D-fucosamine (misleading) // dTDP-thomosamine // dTDP-alpha-D-fucosamine (misleading)	TDP-D-FUCOSAMINE
+a nucleotide	dTDP-4-dehydro-6-deoxy-alpha-D-glucopyranose	TDP-4-keto-6-deoxy--alpha-D-glucose // TDP-4-oxo-6-deoxy--alpha-D-glucose // dTDP-4-oxo-6-deoxy--alpha-D-glucose // dTDP-6-deoxy-alpha-D-xylo-4-hexosulose // dTDP-6-deoxy-alpha-D-xylohex-4-ulose // dTDP-4-dehydro-6-deoxy-alpha-D-glucose	DTDP-DEOH-DEOXY-GLUCOSE
+a nucleotide	dTDP-4-dehydro-beta-L-rhamnose	dTDP-4-oxo-6-deoxy-beta-L-mannose // dTDP-4-oxo-beta-L-rhamnose // dTDP-4-dehydro-6-deoxy-beta-L-mannose // dTDP-4-keto-L-rhamnose	DTDP-DEOH-DEOXY-MANNOSE
+a nucleotide	dTDP-6-deoxy-alpha-D-glucose	dTDP-alpha-D-quinovose	CPD0-2617
+a nucleotide	dTDP-alpha-D-glucose	TDP-glucose // dTDP-glucose // dTDP-D-glucose	DTDP-D-GLUCOSE
+a nucleotide	dTDP-beta-L-rhamnose	dTDP-6-deoxy-beta-L-mannose // dTDP-L-rhamnose // dTDP-L-Rha	DTDP-RHAMNOSE
 a nucleotide	dTMP	thymidylic acid // thymidine monophosphate // deoxythymidylate // dTMP // thymidine 5'-monophosphate // thymidine-phosphate // thymidine 5'-phosphate // deoxythymidine 5'-phosphate // 5'-thymidylic acid // deoxythymidylic acid // thymidylate	TMP
 a nucleotide	dTTP	thymidine triphosphate // thymidine 5'-triphosphate // dTTP	TTP
 a nucleotide	dUDP	2'-deoxyuridine-5'-diphosphate // deoxyuridine-diphosphate	DUDP
 a nucleotide	dUMP	deoxyurdine-phosphate // 2'-deoxyuridine 5-monophosphate // deoxyuridine-phosphate // 2'-deoxyuridine 5'-phosphate // 2'-deoxyuridylic acid // 2'-deoxy-5'-uridylic acid	DUMP
 a nucleotide	dUTP	deoxy-UTP // 2'-deoxyuridine-5'-triphosphate // deoxyuridine-triphosphate	DUTP
-a nucleotide	GDP-4-dehydro-6-deoxy-&beta;-L-galactose	GDP-4-oxo-L-fucose // GDP-4-keto-6-L-deoxygalactose	GDP-4-DEHYDRO-6-L-DEOXYGALACTOSE
-a nucleotide	GDP-4-dehydro-&alpha;-D-rhamnose	GDP-4-keto-6-deoxymannose // GDP-4-keto-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxy-alpha-D-talose // GDP-4-oxo-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxymannose // GDP-6-deoxy-D-lyxo-4-hexulose	GDP-4-DEHYDRO-6-DEOXY-D-MANNOSE
-a nucleotide	GDP-&alpha;-D-glucose	GDP-glucose	GDP-D-GLUCOSE
-a nucleotide	GDP-&alpha;-D-mannose	guanosine pyrophosphate mannose // guanosine diphosphomannose // guanosine diphosphate mannose // GDP-mannose	GDP-MANNOSE
-a nucleotide	GDP-&beta;-L-fucose	GDP-beta-L-fucopyranose // GDP-L-fucose // guanosine diphosphate fucose // GDP-L-fucopyranose // GDP-L-Fuc // GDP-L-Fucp	CPD-13118
+a nucleotide	GDP-4-dehydro-6-deoxy-beta-L-galactose	GDP-4-oxo-L-fucose // GDP-4-keto-6-L-deoxygalactose	GDP-4-DEHYDRO-6-L-DEOXYGALACTOSE
+a nucleotide	GDP-4-dehydro-alpha-D-rhamnose	GDP-4-keto-6-deoxymannose // GDP-4-keto-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxy-alpha-D-talose // GDP-4-oxo-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxymannose // GDP-6-deoxy-D-lyxo-4-hexulose	GDP-4-DEHYDRO-6-DEOXY-D-MANNOSE
+a nucleotide	GDP-alpha-D-glucose	GDP-glucose	GDP-D-GLUCOSE
+a nucleotide	GDP-alpha-D-mannose	guanosine pyrophosphate mannose // guanosine diphosphomannose // guanosine diphosphate mannose // GDP-mannose	GDP-MANNOSE
+a nucleotide	GDP-beta-L-fucose	GDP-beta-L-fucopyranose // GDP-L-fucose // guanosine diphosphate fucose // GDP-L-fucopyranose // GDP-L-Fuc // GDP-L-Fucp	CPD-13118
 a nucleotide	gemcitabine 5'-triphosphate	dF-dCTP	CPD0-2635
 a nucleotide	GMP	guanylate // guanylic acid // guanosine phosphate // guanosine 5'-phosphate // guanosine monophosphate // guanosine-5'-monophosphate	GMP
-a nucleotide	GMP-N-&epsilon;-(N-&alpha;-acetyl lysine methyl ester) 5'-phosphoramidate	GMP-lysine	GMP-LYSINE-PHOSPHORAMIDATE
+a nucleotide	GMP-N-epsilon-(N-alpha-acetyl lysine methyl ester) 5'-phosphoramidate	GMP-lysine	GMP-LYSINE-PHOSPHORAMIDATE
 a nucleotide	GTP	guanylyl imidodiphosphate // guanosine 5'-triphosphate // guanosine-triphosphate	GTP
 a nucleotide	guanosine 2',3'-cyclic monophosphate	2',3'-cyclic GMP // cyclic 2',3'-guanosine monophosphate	CPD-3709
 a nucleotide	guanosine 2'-monophosphate		CPD-13025
@@ -105,8 +105,8 @@ a nucleotide	IDP	riboxin // inosine diphosphate	IDP
 a nucleotide	immucillin-A 5'-triphosphate	ImmA-TP // immucillin-A triphosphate	CPD0-2585
 a nucleotide	IMP	5'-IMP // ribosylhypoxanthine monophosphate // inosinate // inosine monophosphate // inosine 5'-monophosphate // inosine 5'-phosphate // 5'-inosinate // 5'-inosinic acid // 5'-inosine monophosphate	IMP
 a nucleotide	ITP	inosine triphosphate	ITP
-a nucleotide	<i>N</i><sup>6</sup>-(3-methylbut-2-en-1-yl)-2-(methylsulfanyl)adenosine<sup>37</sup> in tRNA	tRNA-(2-methylsulfanyl-N6-dimethylallyladenosine37) // a tRNA containing 2-methylsulfanyl-N6-dimethylallyladenosine37 // 2-methylthio-N6-dimethylallyladenosine37 in tRNA // ms2i6A37 // tRNA 2-(methylsulfanyl)-N6-isopentenyl adenosine37 // 2-(methylsulfanyl)-N6-dimethylallyladenosine37 in tRNA	CPD-11592
-a nucleotide	<i>N</i><sup>6</sup>-(3-methylbut-2-en-1-yl)-2-thioadenosine<sup>37</sup> in tRNA	tRNA-(2-thio-N6-dimethylallyladenosine37) // a tRNA containing 2-thio-N6-dimethylallyladenosine37 // 2-thio-N6-dimethylallyladenosine37 in tRNA // 2-sulfanyl-N6-dimethylallyladenosine37 in tRNA	CPD-15360
+a nucleotide	N6-(3-methylbut-2-en-1-yl)-2-(methylsulfanyl)adenosine37 in tRNA	tRNA-(2-methylsulfanyl-N6-dimethylallyladenosine37) // a tRNA containing 2-methylsulfanyl-N6-dimethylallyladenosine37 // 2-methylthio-N6-dimethylallyladenosine37 in tRNA // ms2i6A37 // tRNA 2-(methylsulfanyl)-N6-isopentenyl adenosine37 // 2-(methylsulfanyl)-N6-dimethylallyladenosine37 in tRNA	CPD-11592
+a nucleotide	N6-(3-methylbut-2-en-1-yl)-2-thioadenosine37 in tRNA	tRNA-(2-thio-N6-dimethylallyladenosine37) // a tRNA containing 2-thio-N6-dimethylallyladenosine37 // 2-thio-N6-dimethylallyladenosine37 in tRNA // 2-sulfanyl-N6-dimethylallyladenosine37 in tRNA	CPD-15360
 a nucleotide	nicotinamide hypoxanthine dinucleotide	d-NADH	CPD0-1117
 a nucleotide	nicotinate adenine dinucleotide	deamino-NAD+ // NaADN // deamido-NAD+ // deamidonicotinamide adenine dinucleoetide // deamido-NAD // NaAD	DEAMIDO-NAD
 a nucleotide	pGp	guanosine 3',5'-bis(dihydrogen phosphate) // guanosine 3',5'-bisphosphate // guanosine 5'-phosphate,3'-phosphate // guanosine 3'-phosphate 5'-phosphate	CPD0-2634
@@ -116,33 +116,33 @@ a nucleotide	pseudouridine 5'-phosphate		PSEUDOURIDINE-5-P
 a nucleotide	pseudouridine 5'-triphosphate	pseudo-UTP	CPD0-2551
 a nucleotide	pyridine 3-aldehyde adenine dinucleotide		CPD0-1223
 a nucleotide	reduced 3-acetylpyridine adenine dinucleotide	AcNADH	CPD0-1899
-a nucleotide	reduced &beta;-nicotinamide D-ribonucleotide	nicotinamide mononucleotide (reduced) // reduced &beta;-nicotinamide D-ribonucleotide	NMNH
+a nucleotide	reduced beta-nicotinamide D-ribonucleotide	nicotinamide mononucleotide (reduced) // reduced beta-nicotinamide D-ribonucleotide	NMNH
 a nucleotide	thymidine 3'-monophosphate	T3P // [2-(hydroxymethyl)-5-[(5-methyl-2,4-dioxo-1H-pyrimidin-1-yl)]tetrahydrofuran-3-yl]oxyphosphonic acid // 3' thymidylic acid // deoxythymidine 3'-monophosphate	CPD-3732
 a nucleotide	two adjacent 2'-deoxycytidines in DNA		CPD-20735
 a nucleotide	two adjacent thymidines in DNA	thymidylyl-(3'-5')-thymidylate (in DNA)	CPD-11643
-a nucleotide	UDP-2-N,3-O-bis[(3R)-3-hydroxytetradecanoyl]-&alpha;-D-glucosamine	UDP-2,3-bis(3-hydroxytetradecanoyl)glucosamine // UDP-2,3-diacyl-glucosamine // UDP-2,3-bis(3-hydroxymyristoyl)glucosamine // UDP-2,3-bis[(3R)-3-hydroxymyristoyl]-alpha-D-glucosamine // UDP-2,3-bis[O-(3R)-3-hydroxymyristoyl]-alpha-D-glucosamine	OH-MYRISTOYL
-a nucleotide	UDP-3-<i>O</i>-(3-hydroxymyristoyl)-&alpha;-D-glucosamine	UDP-3-O-(3-hydroxytetradecanoyl)-D-glucosamine // UDP-3-O-(3-hydroxytetradecanoyl)glucosamine // UDP-3-O-[(3R)-3-hydroxymyristoyl]-D-glucosamine	UDP-OHMYR-GLUCOSAMINE
-a nucleotide	UDP-3-<i>O</i>-[(3<i>R</i>)-3-hydroxymyristoyl]-<i>N</i>-acetyl-&alpha;-D-glucosamine	UDP-3-O-(3-hydroxytetradecanoyl)-N-acetylglucosamine // UDP-3-O-(3-hydroxymyristoyl)-N-acetylglucosamine	UDP-OHMYR-ACETYLGLUCOSAMINE
-a nucleotide	UDP-4-amino-4-deoxy-&beta;-L-arabinopyranose	uridine 5''-diphospho-{beta}-4-deoxy-4-amino-L-arabinose // UDP-4-amino-4-deoxy-L-arabinose	UDP-4-AMINO-4-DEOXY-L-ARABINOSE
-a nucleotide	UDP-&alpha;-D-galactofuranose	UDP-Galf // UDP-D-galactofuranose // UDP-alpha-D-galacto-1,4-furanose	UDP-D-GALACTO-14-FURANOSE
-a nucleotide	UDP-&alpha;-D-galactose	UDP-alpha-D-galactopyranose // UDP-galactose // UDP-Gal	CPD-14553
-a nucleotide	UDP-&alpha;-D-glucosamine	UDP-glucosamine // UDP-D-glucosamine	UDP-D-GLUCOSAMINE
-a nucleotide	UDP-&alpha;-D-glucose	UDPG // UDP-glucose // UDP-D-glucose // UDP-alpha-D-glucopyranose	CPD-12575
-a nucleotide	UDP-&alpha;-D-glucuronate	UDP-D-glucuronic acid // UDP-glucuronic acid // UDP-glucuronate // uridine diphosphate glucuronate // uridine diphosphate glucuronic acid // UDP-D-glucuronate // UDP-GlcA	UDP-GLUCURONATE
-a nucleotide	UDP-&beta;-L-threo-pentapyranos-4-ulose	UDP-4-keto-alpha-D-xylose // UDP-4-dehydro-alpha-D-xylose // UDP-4-keto-pyranose // uridine 5'-beta-L-threo-pentapyranosyl-4''-ulose diphosphate // UDP-4-ketopentose // UDP-L-Ara4O	5-BETA-L-THREO-PENTAPYRANOSYL-4-ULOSE-
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-glucosamine	UDP-2-acetamido-2-deoxy-D-glucose // UDP-acetyl-D-glucosamine // UDP-GlcNAc // UDP-N-acetyl-glucosamine // uridine diphosphate N-acetylglucosamine // N-[2-[[[5-[(2,4-dioxo-1H-pyrimidin-1-yl)]-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-4,5-dihydroxy-6-(hydroxymethyl)tetrahydropyran-3-yl]acetamide // UDP-2-acetamido-2-deoxy-alpha-D-glucose // UDP-N-acetyl-D-glucosamine // UDP-alpha-N-acetyl-D-glucosamine	UDP-N-ACETYL-D-GLUCOSAMINE
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-glucosamine 3'-phosphate	UNAG-3P // UDP-N-acetyl-alpha-D-glucosamine 3-phosphate // UDP-N-acetyl-D-glucosamine 3'-phosphate	CPD-14021
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-glucosamine-enolpyruvate	UDP-N-acetyl-3-O-(1-carboxyvinyl)-alpha-D-glucosamine // UDP-N-acetyl-alpha-D-glucosamine-3-O-pyruvate ether // UDP-N-acetyl-3-(1-carboxyvinyl)-alpha-D-glucosamine // UDP-GlcNAc-pyruvate enol ether // UDP-GlcNAc-enolpyruvate	UDP-ACETYL-CARBOXYVINYL-GLUCOSAMINE
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-mannosamine	uridine diphosphate N-acetylmannosamine // uridine 5'-(trihydrogen diphosphate), P'-(2-(acetylamino)-2-deoxy-alpha-D-mannopyranosyl) ester // UDP-acetylmannosamine // UDP-ManNAc	UDP-MANNAC
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-mannosaminuronate	UDP-ManNAcA	UDP-MANNACA
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-muramate	dihydro-UDP-MurNAc // dihydro-UDP-N-acetylmuramic acid // dihydro-UDP-N-acetylmuramate // uridine diphosphate N-acetylmuramic acid // UDP-N-acetylmuramic acid // UDP-N-acetyl-D-muramate // UDP-MurNAc // UDP-N-acetylmuramoyl // -O-[(1R)-1-carboxyethyl]-2-acetoxy-2-deoxy-D-glucopyranose	UDP-N-ACETYLMURAMATE
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-muramoyl-L-alanine	UDP-N-acetyl-alpha-D-muramyl-L-Ala	CPD0-1456
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-muramoyl-L-alanyl-D-glutamate		UDP-AA-GLUTAMATE
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-muramoyl-L-alanyl-&gamma;-D-glutamyl-L-lysine		CPD-209
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-muramoyl-L-alanyl-&gamma;-D-glutamyl-L-lysyl-D-alanyl-D-alanine	UDP-Mur2Ac(oyl-L-Ala-g-D-Glu-L-Lys-D-Ala-D-Ala) // UDP-MurNAc-pentapeptide	C3
-a nucleotide	UDP-<I>N</I>-acetyl-&alpha;-D-muramoyl-L-alanyl-&gamma;-D-glutamyl-<I>meso</I>-2,6-diaminopimelate	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimelate // UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-diaminopimelate // UDP-MurNAc-L-Ala-gamma-D-Glu-meso-A2pm // UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate	UDP-AAGM-DIAMINOHEPTANEDIOATE
-a nucleotide	UDP-<i>N</i>-acetyl-&alpha;-D-muramoyl-L-alanyl-&gamma;-D-glutamyl-<I>meso</I>-2,6-diaminopimeloyl-D-alanyl-D-alanine	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine // UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate- D-alanyl-D-alanine	C1
-a nucleotide	UDP-<i>N</i>-acetylmuramoyl-L-alanyl-&gamma;-D-glutamyl-<I>meso</I>-2,6-diaminopimeloyl-D-alanine	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate-D-alanine // UDP-MurNAc-tetrapeptide // uridine 5'-pyrophosphoryl N-acetylmuramyl-tetrapeptide	UDP-MURNAC-TETRAPEPTIDE
+a nucleotide	UDP-2-N,3-O-bis[(3R)-3-hydroxytetradecanoyl]-alpha-D-glucosamine	UDP-2,3-bis(3-hydroxytetradecanoyl)glucosamine // UDP-2,3-diacyl-glucosamine // UDP-2,3-bis(3-hydroxymyristoyl)glucosamine // UDP-2,3-bis[(3R)-3-hydroxymyristoyl]-alpha-D-glucosamine // UDP-2,3-bis[O-(3R)-3-hydroxymyristoyl]-alpha-D-glucosamine	OH-MYRISTOYL
+a nucleotide	UDP-3-O-(3-hydroxymyristoyl)-alpha-D-glucosamine	UDP-3-O-(3-hydroxytetradecanoyl)-D-glucosamine // UDP-3-O-(3-hydroxytetradecanoyl)glucosamine // UDP-3-O-[(3R)-3-hydroxymyristoyl]-D-glucosamine	UDP-OHMYR-GLUCOSAMINE
+a nucleotide	UDP-3-O-[(3R)-3-hydroxymyristoyl]-N-acetyl-alpha-D-glucosamine	UDP-3-O-(3-hydroxytetradecanoyl)-N-acetylglucosamine // UDP-3-O-(3-hydroxymyristoyl)-N-acetylglucosamine	UDP-OHMYR-ACETYLGLUCOSAMINE
+a nucleotide	UDP-4-amino-4-deoxy-beta-L-arabinopyranose	uridine 5''-diphospho-beta-4-deoxy-4-amino-L-arabinose // UDP-4-amino-4-deoxy-L-arabinose	UDP-4-AMINO-4-DEOXY-L-ARABINOSE
+a nucleotide	UDP-alpha-D-galactofuranose	UDP-Galf // UDP-D-galactofuranose // UDP-alpha-D-galacto-1,4-furanose	UDP-D-GALACTO-14-FURANOSE
+a nucleotide	UDP-alpha-D-galactose	UDP-alpha-D-galactopyranose // UDP-galactose // UDP-Gal	CPD-14553
+a nucleotide	UDP-alpha-D-glucosamine	UDP-glucosamine // UDP-D-glucosamine	UDP-D-GLUCOSAMINE
+a nucleotide	UDP-alpha-D-glucose	UDPG // UDP-glucose // UDP-D-glucose // UDP-alpha-D-glucopyranose	CPD-12575
+a nucleotide	UDP-alpha-D-glucuronate	UDP-D-glucuronic acid // UDP-glucuronic acid // UDP-glucuronate // uridine diphosphate glucuronate // uridine diphosphate glucuronic acid // UDP-D-glucuronate // UDP-GlcA	UDP-GLUCURONATE
+a nucleotide	UDP-beta-L-threo-pentapyranos-4-ulose	UDP-4-keto-alpha-D-xylose // UDP-4-dehydro-alpha-D-xylose // UDP-4-keto-pyranose // uridine 5'-beta-L-threo-pentapyranosyl-4''-ulose diphosphate // UDP-4-ketopentose // UDP-L-Ara4O	5-BETA-L-THREO-PENTAPYRANOSYL-4-ULOSE-
+a nucleotide	UDP-N-acetyl-alpha-D-glucosamine	UDP-2-acetamido-2-deoxy-D-glucose // UDP-acetyl-D-glucosamine // UDP-GlcNAc // UDP-N-acetyl-glucosamine // uridine diphosphate N-acetylglucosamine // N-[2-[[[5-[(2,4-dioxo-1H-pyrimidin-1-yl)]-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-4,5-dihydroxy-6-(hydroxymethyl)tetrahydropyran-3-yl]acetamide // UDP-2-acetamido-2-deoxy-alpha-D-glucose // UDP-N-acetyl-D-glucosamine // UDP-alpha-N-acetyl-D-glucosamine	UDP-N-ACETYL-D-GLUCOSAMINE
+a nucleotide	UDP-N-acetyl-alpha-D-glucosamine 3'-phosphate	UNAG-3P // UDP-N-acetyl-alpha-D-glucosamine 3-phosphate // UDP-N-acetyl-D-glucosamine 3'-phosphate	CPD-14021
+a nucleotide	UDP-N-acetyl-alpha-D-glucosamine-enolpyruvate	UDP-N-acetyl-3-O-(1-carboxyvinyl)-alpha-D-glucosamine // UDP-N-acetyl-alpha-D-glucosamine-3-O-pyruvate ether // UDP-N-acetyl-3-(1-carboxyvinyl)-alpha-D-glucosamine // UDP-GlcNAc-pyruvate enol ether // UDP-GlcNAc-enolpyruvate	UDP-ACETYL-CARBOXYVINYL-GLUCOSAMINE
+a nucleotide	UDP-N-acetyl-alpha-D-mannosamine	uridine diphosphate N-acetylmannosamine // uridine 5'-(trihydrogen diphosphate), P'-(2-(acetylamino)-2-deoxy-alpha-D-mannopyranosyl) ester // UDP-acetylmannosamine // UDP-ManNAc	UDP-MANNAC
+a nucleotide	UDP-N-acetyl-alpha-D-mannosaminuronate	UDP-ManNAcA	UDP-MANNACA
+a nucleotide	UDP-N-acetyl-alpha-D-muramate	dihydro-UDP-MurNAc // dihydro-UDP-N-acetylmuramic acid // dihydro-UDP-N-acetylmuramate // uridine diphosphate N-acetylmuramic acid // UDP-N-acetylmuramic acid // UDP-N-acetyl-D-muramate // UDP-MurNAc // UDP-N-acetylmuramoyl // -O-[(1R)-1-carboxyethyl]-2-acetoxy-2-deoxy-D-glucopyranose	UDP-N-ACETYLMURAMATE
+a nucleotide	UDP-N-acetyl-alpha-D-muramoyl-L-alanine	UDP-N-acetyl-alpha-D-muramyl-L-Ala	CPD0-1456
+a nucleotide	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-D-glutamate		UDP-AA-GLUTAMATE
+a nucleotide	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-L-lysine		CPD-209
+a nucleotide	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-L-lysyl-D-alanyl-D-alanine	UDP-Mur2Ac(oyl-L-Ala-g-D-Glu-L-Lys-D-Ala-D-Ala) // UDP-MurNAc-pentapeptide	C3
+a nucleotide	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimelate	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimelate // UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-diaminopimelate // UDP-MurNAc-L-Ala-gamma-D-Glu-meso-A2pm // UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate	UDP-AAGM-DIAMINOHEPTANEDIOATE
+a nucleotide	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine // UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate- D-alanyl-D-alanine	C1
+a nucleotide	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanine	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate-D-alanine // UDP-MurNAc-tetrapeptide // uridine 5'-pyrophosphoryl N-acetylmuramyl-tetrapeptide	UDP-MURNAC-TETRAPEPTIDE
 a nucleotide	UMP	uridylate // 5'-UMP // uridine 5'-phosphate // 5'-uridylic acid (8CI)(9CI) // uridine monophosphate // uridine 5'-monophosphate	UMP
 a nucleotide	uridine 2'-monophosphate	2'-uridylic acid // uridine 2'-phosphate	CPD-3723
 a nucleotide	uridine 2'3'-cyclic monophosphate	2',3'-Cyclic UMP	CPD-3725

@@ -1,0 +1,262 @@
+Matches	Ontology -  all instances of class from New SmartTable with a nucleic acid component	Synonyms	Object ID
+a nucleic acid component	(R)-NADHX	(6R)-6-beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide	CPD0-2472
+a nucleic acid component	(R)-NADPHX		CPD-14133
+a nucleic acid component	(S)-NADHX	(6S)-6-beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide	CPD-653
+a nucleic acid component	(S)-NADPHX	(6S)-6beta-hydroxy-1,4,5,6-tetrahydronicotinamide-adenine dinucleotide phosphate	CPD0-2474
+a nucleic acid component	1,2-dihydro-beta-NADP	2-dihydro-nicotinamide adenine dinucleotide phosphate // 2DHNADP	CPD-18085
+a nucleic acid component	1,N2-ethenoguanine	1,N(2)-ethenoguanine // 1,4-dihydro-9H-imidazo[1,2-a]purin-9-one // epsilonG // epsilonG	CPD-20033
+a nucleic acid component	1,N6-ethanoadenine	1,N(6)-ethanoadenine // EA	CPD-20034
+a nucleic acid component	1,N6-ethenoadenine	1-N6-ethenoadenine // 1H-imidazo[2,1-i]purine // ethenoadenine	CPD0-1927
+a nucleic acid component	1-(5-phospho-beta-D-ribosyl)-AMP	1-(5-phosphoribosyl)-AMP // phosphoribosyl-AMP // 5-phosphoribosyl-AMP // N-(5-phospho-D-ribosyl)-AMP // N-(5'-phospho-D-ribosyl)-AMP // N1-(5-phospho-D-ribosyl)-AMP	PHOSPHORIBOSYL-AMP
+a nucleic acid component	1-(5-phospho-beta-D-ribosyl)-ATP	1-(5-phosphoribosyl)-ATP // N1-(5-phospho-D-ribosyl)-ATP // 5-phosphoribosyl-ATP // 1-(5-phospho-D-ribosyl)-ATP // phosphoribosyl-ATP	PHOSPHORIBOSYL-ATP
+a nucleic acid component	1-methyl-dAMP	N1-methyl-2'deoxyadenosine 5'-monophosphate // 1-methyldeoxyadenosine monophosphate	CPD-20035
+a nucleic acid component	1-methyl-dATP	N1-methyl-2'-deoxyadenosine 5'-triphosphate // 1-methyldeoxyadenosine triphosphate	CPD-20036
+a nucleic acid component	1-methylguanine	N1-methylguanine // 2-amino-1-methyl-1,9-dihydro-6H-purin-6-one	CPD0-1932
+a nucleic acid component	1-methylguanosine	N1-methylguanosine	CPD0-1043
+a nucleic acid component	1-methylinosine		CPD0-1042
+a nucleic acid component	2''-O-acetyl-ADP-ribose	2''-OAADPr	CPD-14762
+a nucleic acid component	2'-deoxy-5-hydroxymethylcytidine-5'-triphosphate	hydroxymethyl-dCTP	DEOXY-OH-METHYLCYTIDINE-TRIPHOSPHATE
+a nucleic acid component	2'-deoxyadenosine	deoxyadenosine // 2-deoxy-adenosine	DEOXYADENOSINE
+a nucleic acid component	2'-deoxyadenosine 3'-monophosphate	2'-deoxy-3'AMP // 2'-Deoxy-3'-adenosine monophosphate // 2'-deoxy-3'-adenylic acid	CPD-15391
+a nucleic acid component	2'-deoxycytidine	d-cytidine // deoxycytidine	DEOXYCYTIDINE
+a nucleic acid component	2'-deoxycytidine 3'-monophosphate		CPD-15392
+a nucleic acid component	2'-deoxyguanosine	deoxyguanosine	DEOXYGUANOSINE
+a nucleic acid component	2'-deoxyguanosine 3'-monophosphate	2'-Deoxyguanosine 3'-(dihydrogen phosphate) // 2'-Deoxyguanosine 3'-phosphate // 2'-deoxy-3'GMP	CPD-15390
+a nucleic acid component	2'-deoxyinosine	deoxyinosine	DEOXYINOSINE
+a nucleic acid component	2'-deoxyuridine	deoxyuridine	DEOXYURIDINE
+a nucleic acid component	2'-deoxyuridine 3'-monophosphate		CPD-15393
+a nucleic acid component	2,6-diaminopurine		CPD0-2060
+a nucleic acid component	2-amino-6-hydroxyaminopurine	2-amino-N(6)-hydroxyadenine // guanine oxime	CPD-15921
+a nucleic acid component	2-aminopurine	9H-purin-2-amine	CPD-15920
+a nucleic acid component	2-hydroxy-dADP	2-OH-dADP	CPD0-2643
+a nucleic acid component	2-hydroxy-dAMP	2-OH-dAMP // 2-hydroxy-2'-deoxyadenosine 5'-monophosphate	CPD-13852
+a nucleic acid component	2-hydroxy-dATP	2-hydroxy-2'-deoxyadenosine 5'-triphosphate // 2'-deoxyisoguanosine triphosphate	CPD-13851
+a nucleic acid component	2-oxo-2'-deoxyadenosine	2'-deoxyisoguanosine	CPD-16020
+a nucleic acid component	2-phospho-4-(cytidine 5'-diphospho)-2-C-methyl-D-erythritol	CDP-ME-2P // CDP-methyl-D-erylthritol 2-phosphate // 4-diphosphocytidyl-2C-methyl-D-erythritol 2-phosphate // 4-diphosphocytidyl-2-C-methylerythritol 2-phosphate	2-PHOSPHO-4-CYTIDINE-5-DIPHOSPHO-2-C-MET
+a nucleic acid component	2-thiouridine	s2U	2-THIOURIDINE
+a nucleic acid component	3''-O-acetyl-ADP-ribose		CPD-14763
+a nucleic acid component	3'-azido-3'-deoxythymidine	zidovudine // AZT // zidovudinum // azidothymidine	CPD-15110
+a nucleic acid component	3'-azido-3'-deoxythymidine 5'-phosphate	3'-azido-3'-deoxythymidine monophosphate // AZTMP // Zidovudine monophosphate // Zidovudine 5'-monophosphate // ZDVMP	CPD-12546
+a nucleic acid component	3'-deoxyadenosine 5'-monophosphate	3'-dAMP // 3'-deoxyadenosine 5'-phosphate	CPD0-2026
+a nucleic acid component	3,N4-ethenocytosine	epsilonC // epsilonC // 3,N(4)-ethenocytosine	CPD0-1931
+a nucleic acid component	3-acetyl pyridine adenine dinucleotide	3-acetylpyridine-NAD	CPD0-1222
+a nucleic acid component	3-acetyl-NADH		CPD0-2573
+a nucleic acid component	3-ethylcytosine		CPD0-1929
+a nucleic acid component	3-methyladenine		3-Methyl-Adenines
+a nucleic acid component	3-methylguanine	3-MeG // 2-amino-3-methyl-3,9-dihydro-6H-purin-6-one	CPD-13319
+a nucleic acid component	3-pyridinecarboxaldehyde adenine dinucleotide		CPD0-1364
+a nucleic acid component	4-(cytidine 5'-diphospho)-2-C-methyl-D-erythritol	CDP-ME // CDP-methyl-D-erythritol // 4-diphosphocytidyl-2C-methyl-D-erythritol // 4-diphosphocytidyl-2-C-methylerythritol	4-CYTIDINE-5-DIPHOSPHO-2-C
+a nucleic acid component	5'-amino-5'-deoxyuridine		CPD0-1322
+a nucleic acid component	5'-azido-5-deoxyuridine		CPD0-1320
+a nucleic acid component	5'-D-arabinosyladenine triphosphate		CPD0-1194
+a nucleic acid component	5'-deoxyadenosine	CH3Ado	CH33ADO
+a nucleic acid component	5'-deoxyuridine		CPD0-1319
+a nucleic acid component	5'-ethylthioadenosine		5-ETHYLTHIOADENOSINE
+a nucleic acid component	5'-iodo-5'-deoxyuridine		CPD0-1321
+a nucleic acid component	5'-n-propylthioadenosine		5-N-PROPYLTHIOADENOSINE
+a nucleic acid component	5,6-dihydrothymine	dihydrothymine	DIHYDRO-THYMINE
+a nucleic acid component	5,6-dihydrouracil	dihydrouracil // DI-H-uracil	DI-H-URACIL
+a nucleic acid component	5,6-dihydroxycytosine		CPD-18019
+a nucleic acid component	5,6-dihydroxyuracil		CPD-18018
+a nucleic acid component	5-amino-6-(5-phospho-D-ribitylamino)uracil	5-amino-6-(5'-phosphoribitylamino)uracil // 5-amino-6-(5-phosphoribitylamino)uracil // 5-amino-6-ribitylamino-2,4(1H,3H)-pyrimidinedione 5'-phosphate	CPD-1086
+a nucleic acid component	5-amino-6-(5-phospho-D-ribosylamino)uracil	5-amino-6-(ribosylamino)-2,4-(1H,3H)-pyrimidinedione 5'-phosphate // 5-amino-6-(5'-phosphoribosylamino)uracil	CPD-602
+a nucleic acid component	5-amino-6-(D-ribitylamino)uracil	6-(1-D-ribitylamino)-5-amino-2,4-dihydroxypyrimidine // 5-amino-6-ribitylamino-2,4(1H,3H)-pyrimidinedione // 6-(1-D-ribitylamino)-5-aminouracil // 5-amino-6-(1-D-ribitylamino)pyrimidine-2,4(1H,3H)-dione	AMINO-RIBOSYLAMINO-1H-3H-PYR-DIONE
+a nucleic acid component	5-azacytidine		CPD-15118
+a nucleic acid component	5-bromo-2'-deoxyuridine	dBU // 5-bromodeoxyuridine	CPD0-2633
+a nucleic acid component	5-fluoropyrimidin-2-one-ribonucleoside		CPD0-1311
+a nucleic acid component	5-fluorouracil		CPD0-1327
+a nucleic acid component	5-fluorouridine 5'-monophosphate	5-F-UMP // 5-fluorouridine monophosphate // fosfluoridine	CPD-22690
+a nucleic acid component	5-hydroxy-6-hydrothymine		CPD-18014
+a nucleic acid component	5-hydroxy-CMP	5-hydroxycytidine monophosphate	CPD-15158
+a nucleic acid component	5-hydroxy-CTP	5-hydroxycytidine triphosphate	5-HYDROXY-CTP
+a nucleic acid component	5-hydroxycytosine		CPD-18016
+a nucleic acid component	5-hydroxyuracil		CPD-18017
+a nucleic acid component	5-methyl-CTP	m5CTP	CPD0-2549
+a nucleic acid component	5-methyl-dCTP	5-methyldeoxycytidine triphosphate // 5-methyl-2'-deoxycytidine-5'-triphosphate // 5-methyl deoxycytidine-5'-triphosphate // cytidine 5'-(tetrahydrogen triphosphate), 2'-deoxy-5-methyl- // [[[5-[(4-amino-5-methyl-2-oxo-1H-pyrimidin-1-yl)]-3-hydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxyphosphonic acid	CPD-1094
+a nucleic acid component	5-methylaminomethyl-2-selenouridine	mnm(5)se(2)U	5-METHYLAMINOMETHYL-2-SELENOURIDINE
+a nucleic acid component	5-methylaminomethyl-2-thiouridine	mnm5s2U	5-METHYLAMINOMETHYL-2-THIOURIDINE
+a nucleic acid component	5-methylcytosine	Cytosine, 5-methyl- // 2(1H)-Pyrimidinone, 4-amino-5-methyl- // Cytosine, 5-methyl- (VAN)	CPD0-2018
+a nucleic acid component	6-hydroxyaminopurine	HAP // N(6)-Hydroxyadenine // 6-Hydroxylaminopurine // N-(7H-purin-6-yl)hydroxylamine // 6-N-hydroxyaminopurine // N-Hydroxyadenine	CPD-15922
+a nucleic acid component	7,8-dihydro-8-oxoguanine	8-oxoguanine	CPD-12427
+a nucleic acid component	7-carboxy-7-deazaguanine		CPD-13043
+a nucleic acid component	7-methyladenine		CPD-13320
+a nucleic acid component	7-methylinosine		CPD0-1040
+a nucleic acid component	8-hydroxy-dADP		8-hydroxy-dADP
+a nucleic acid component	8-hydroxy-dATP		CPD0-1093
+a nucleic acid component	8-hydroxy-dGTP	8-hydroxydeoxyguanosine 5'-triphosphate	8-hydroxy-dGTP
+a nucleic acid component	8-oxo-dADP		8-oxo-dADP
+a nucleic acid component	8-oxo-dGDP	7,8-dihydro-8-oxo-dGDP // 2'-deoxy-7,8-dihydro-8-oxo-guanosine 5'-diphosphate	CPD-13853
+a nucleic acid component	8-oxo-dGMP	7,8-dihydro-8-oxo-2'-dGMP // 2'-deoxy-7,8-dihydro-8-oxo-guanosine 5'-phosphate // 8-oxo-deoxyguanosine-monophosphate	CPD-12365
+a nucleic acid component	8-oxo-dGTP	7,8-dihydro-8-oxo-2'-dGTP // 2'-deoxy-7,8-dihydro-8-oxo-guanosine 5'-triphosphate	CPD0-1905
+a nucleic acid component	8-oxo-dGTP	7,8-dihydro-8-oxo-2'-dGTP // 2'-deoxy-7,8-dihydro-8-oxo-guanosine 5'-triphosphate	8-Oxo-dGTP
+a nucleic acid component	8-oxo-GDP	8-oxo-guanosine diphosphate	CPD-14101
+a nucleic acid component	8-oxo-GMP	7,8-dihydro-8-oxo-guanosine 5'-phosphate	CPD-12367
+a nucleic acid component	8-oxo-GTP	7,8-dihydro-8-oxoguanosine 5'-triphosphate	CPD-12366
+a nucleic acid component	a [protein]-N6-[1,1-(5-adenosylyl-alpha-D-ribose-1,2-di-O-yl)ethyl]-L-lysine		CPD-21533
+a nucleic acid component	adenine	6-aminopurine // A	ADENINE
+a nucleic acid component	adenine arabinoside	Vidarabine // 2-(6-amino-purin-9-yl)-5-hydroxymethyl-tetrahydro-furan-3,4-diol // 9--D-arabinofuranosyl-9H-purin-6-amine // 9-beta-D-arabinofuranosyladenine // Spongoadenosine	CPD-13918
+a nucleic acid component	adenosine	adenine-D-ribose	ADENOSINE
+a nucleic acid component	adenosine 2',3'-cyclic monophosphate	cyclic 2',3'-AMP // 2',3'-Cyclic AMP // adenosine 2',3'-(hydrogen phosphate) // (2R,3aR,4R,6R,6aR)-4-(6-amino-9H-purin-9-yl)-6-(hydroxymethyl)tetrahydrofuro[3,4-d][1,3,2]dioxaphosphol-2-ol 2-oxide // (3aR,4R,6R,6aR)-4-(6-amino-9H-purin-9-yl)-6-(hydroxymethyl)tetrahydrofuro[3,4-d][1,3,2]dioxaphosphol-2-ol 2-oxide // adenosine cyclic 2',3'-(hydrogen phosphate) // cyclic 2',3'-adenosine monophosphate	CPD-3707
+a nucleic acid component	adenosine 2'-monophosphate	2'-adenylic acid // adenosine-2'-monophosphate // AMP 2'-phosphate	CPD-3705
+a nucleic acid component	adenosine 3',5'-bisphosphate	adenosine-3',5'-bisphosphate // phosphoadenosine phosphate // PAP	3-5-ADP
+a nucleic acid component	adenosine 3'-monophosphate	3'-adenylic acid // adenosine 3'-phosphate // adenosine-3'-monophosphoric acid // adenosine-3'-monophosphate // 3'-adenosine monophosphate	CPD-3706
+a nucleic acid component	adenosine 5'-phosphoramidate	adenosine-5'-monophosphoramidate // AMP-NH2	CPD-487
+a nucleic acid component	adenosine tetraphosphate	Adenosine 5'-tetraphosphate // p4A	CPD-607
+a nucleic acid component	adenylo-succinate	N6-(1,2-dicarboxyethyl)-AMP // adenylo-succ	ADENYLOSUCC
+a nucleic acid component	ADP	adenosine pyrophosphate // adenosine 5'-pyrophosphate // adenosine-5'-diphosphate // adenosine-diphosphate // adenosine-5-diphosphate	ADP
+a nucleic acid component	ADP-alpha-D-glucose	adenosine diphosphate glucose // ADP-glucose // ADP-D-glucose	ADP-D-GLUCOSE
+a nucleic acid component	ADP-D-glycero-beta-D-manno-heptose	2-[[[5-[(6-amino-9H-purin-9-yl)]-3,4-dihydroxy-tetrahydrofuran- 2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-6- (1,2-dihydroxyethyl)tetrahydropyran-3,4,5-triol // ADP-D-beta-D-heptose	ADP-D-GLYCERO-D-MANNO-HEPTOSE
+a nucleic acid component	ADP-D-ribose	adenosine diphosphate D-ribose // adenosine 5'-(5-deoxy-D-ribofuranos-5-yl diphosphate)	ADENOSINE_DIPHOSPHATE_RIBOSE
+a nucleic acid component	ADP-L-glycero-beta-D-manno-heptose	2-[[[5-[(6-amino-9H-purin-9-yl)]-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-6-(1,2-dihydroxyethyl)tetrahydropyran-3,4,5-triol // ADP-L-glycero-D-manno-heptose	ADP-L-GLYCERO-D-MANNO-HEPTOSE
+a nucleic acid component	ADP-mannose		ADP-MANNOSE
+a nucleic acid component	alloxanthine	oxypurinol	CPD-21304
+a nucleic acid component	AMP	5'-AMP // adenosine-monophosphate // adenylic acid // adenosine 5'-phosphate // adenosine 5'-monophosphate // adenylate // 5'-adenylic acid // 5'-adenosine monophosphate	AMP
+a nucleic acid component	AMP-N-epsilon-(N-alpha-acetyl lysine methyl ester) 5-phosphoramidate		AMP-LYSINE
+a nucleic acid component	an N3-propylcytosine in DNA		CPD0-1921
+a nucleic acid component	arabinouracil 5'-monophosphate	aUMP	CPD0-2080
+a nucleic acid component	ATP	adenylpyrophosphate // adenosine-triphosphate // adenosine-5'-triphosphate	ATP
+a nucleic acid component	azaguanine	8-azaguanine	CPD0-1143
+a nucleic acid component	beta-nicotinamide D-ribonucleotide	beta-nicotinamide mononucleotide // beta-nicotinamide ribonucleotide // beta-nicotinamide nucleotide	NICOTINAMIDE_NUCLEOTIDE
+a nucleic acid component	bis(5'-adenosyl) diphosphate	Ap2A // diadenosine pyrophosphate // adenosine-5'-diphospho-5'-adenosine // diadenosine 5',5'''-P1,P2-diphosphate // diadenosine 5',5'-diphosphate // diadenosine 5',5'''-diphosphate	CPD-19513
+a nucleic acid component	CDP	cytidine-diphosphate // cytidine-5'-diphosphate	CDP
+a nucleic acid component	CDP-alpha-D-glucose	CDP-glc // CDP-glucose // CDP-D-glucose	CDP-D-GLUCOSE
+a nucleic acid component	CDP-choline	citicoline // citicholine // cidifos // cyticholine // cytidine 5'-diphosphocholine // cytidine diphosphate choline	CDP-CHOLINE
+a nucleic acid component	CDP-ethanolamine	cytidine diphosphate ethanolamine	CDP-ETHANOLAMINE
+a nucleic acid component	CMP	5'-cytidylic acid // cytidine 5'-monophosphate // cytidylate // cytidylic acid // cytidine-P // cytidine-monophosphate // cytidine-phosphate // cytidine 5'-phosphate	CMP
+a nucleic acid component	CMP-3-deoxy-beta-D-manno-octulosonate	CMP-2-dehydro-3-deoxy-D-octonate // CMP-beta-Kdo // CMP-ketodeoxyoctonate	CMP-KDO
+a nucleic acid component	CTP	cytidine-triphosphate // cytidine-5'-triphosphate	CTP
+a nucleic acid component	cyclic 3',5'-cytidine monophosphate	cyclic-CMP // cytidine cyclic-monophosphate // cyclic 3',5'-CMP // cytidine 3',5'-cyclic monophosphate	CPD-683
+a nucleic acid component	cyclic 3',5'-thymidine monophosphate	thymidine 3',5'-cyclic monophosphate	CPD-3733
+a nucleic acid component	cyclic 3'5'-uridine monophosphate	uridine 3',5'-cyclic monophosphate	CPD-3727
+a nucleic acid component	cyclic di-3',5'-guanylate	cyclic di-3',5'-GMP // c-di-guanylate // cyclic bis(3' -> 5') dimeric GMP	C-DI-GMP
+a nucleic acid component	cyclic-AMP	cyclic 3',5'-AMP // 3',5'-cyclic AMP // adenosine cyclic-3',5'-monophosphate // adenosine cyclic-monophosphate // adenosine-cyclic-phosphoric-acid // cAMP // adenosine-cyclic-phosphate // adenosine-3',5'-monophosphate // adenosine 3',5'-cyclic phosphate // adenosine-3',5'-cyclic monophosphate // cyclic-3',5'-adenosine monophosphate	CAMP
+a nucleic acid component	cyclic-GMP	3',5'-cyclic GMP // guanosine-cyclic-phosphoric-acid // cGMP // guanosine cyclic-monophosphate // guanosine 3',5'-cyclic-monophosphate // guanosine 3',5'-cyclic phosphate // cyclic 3',5'-guanosine monophosphate	CGMP
+a nucleic acid component	cytidine		CYTIDINE
+a nucleic acid component	cytidine 2',3'-cyclic monophosphate	2',3'-cyclic CMP // cyclic cytidine 2',3'-monophosphate	CPD-3713
+a nucleic acid component	cytidine 2'-monophosphate	2'-cytidylic acid // cytidine 2'-phosphate // 2'-CMP	CPD-3710
+a nucleic acid component	cytidine-3'-monophosphate	3'-CMP // cytidine 3'-phosphate // 3'-cytidylic acid	CPD-3711
+a nucleic acid component	cytosine	4-amino-2-oxo-1,2-dihydropyrimidine // C	CYTOSINE
+a nucleic acid component	dADP	2'-deoxyadenosine-5'-diphosphate // deoxyadenosine-diphosphate	DADP
+a nucleic acid component	dAMP	2'-deoxyadenosine 5'-phosphate // deoxyadenosine-phosphate // 2'-deoxyadenosine 5''-monophosphate // 2'-dAMP	DAMP
+a nucleic acid component	dATP	2'-deoxyATP // 2'-deoxyadenosine triphosphate // deoxy-ATP // deoxyadenosine-triphosphate // 2'-deoxyadenosine-5'-triphosphate	DATP
+a nucleic acid component	dCDP	2'-deoxycytidine diphosphate // 2'-deoxycytidine-5'-diphosphate // deoxycytidine-diphosphate	DCDP
+a nucleic acid component	dCMP	2'-deoxycytidine 5'-monophosphate // deoxycytidylate // deoxycytidylic acid // deoxycytidine monophosphate // 2'-deoxycytidine 5'-phosphate // deoxycytidine-phosphate	DCMP
+a nucleic acid component	dCTP	2'-deoxycytidine-5'-triphosphate // deoxycytidine-triphosphate // deoxy-CTP	DCTP
+a nucleic acid component	decoyinine	angustmycin A	DECOYININE
+a nucleic acid component	dGDP	2'-deoxyguanosine-5'-diphosphate // deoxyguanosine-diphosphate	DGDP
+a nucleic acid component	dGMP	2'-dG-5'-MP // 2'-deoxyguanosine 5'-monophosphate // guanine riboside // vernine // 2'-deoxyguanosine 5'-phosphate // deoxyguanosine-phosphate	DGMP
+a nucleic acid component	dGTP	2'-deoxyguanosine-5'-triphosphate // deoxy-GTP // deoxyguanosine-triphosphate	DGTP
+a nucleic acid component	dIDP	deoxyinosine diphosphate	CPD0-2231
+a nucleic acid component	dIMP	2'-deoxy-IMP // 2'-deoxy-5'-inosinic acid // 2'-Deoxyinosine 5'-monophosphate // 2'-Deoxyinosine 5'-phosphate // 9-(2-deoxy-5-O-phosphono-beta-D-erythro-pentofuranosyl)-9H-purin-6-ol // Deoxyinosine monophosphate // Hypoxanthine deoxyriboside	DIMP
+a nucleic acid component	dITP	deoxyinosine triphosphate	DITP
+a nucleic acid component	dTDP-4-acetamido-alpha-D-fucose	TDP-Fuc4NAc // dTDP-N-acetylthomosamine // TDP-4N-acetyl-alpha-D-fucosamine // dTDP-4-acetamido-4,6-dideoxy-alpha-D-galactose	TDP-FUC4NAC
+a nucleic acid component	dTDP-4-amino-4,6-dideoxy-alpha-D-galactose	TDP-fucosamine (misleading) // TDP-D-fucosamine (misleading) // dTDP-thomosamine // dTDP-alpha-D-fucosamine (misleading)	TDP-D-FUCOSAMINE
+a nucleic acid component	dTDP-4-dehydro-6-deoxy-alpha-D-glucopyranose	TDP-4-keto-6-deoxy--alpha-D-glucose // TDP-4-oxo-6-deoxy--alpha-D-glucose // dTDP-4-oxo-6-deoxy--alpha-D-glucose // dTDP-6-deoxy-alpha-D-xylo-4-hexosulose // dTDP-6-deoxy-alpha-D-xylohex-4-ulose // dTDP-4-dehydro-6-deoxy-alpha-D-glucose	DTDP-DEOH-DEOXY-GLUCOSE
+a nucleic acid component	dTDP-4-dehydro-beta-L-rhamnose	dTDP-4-oxo-6-deoxy-beta-L-mannose // dTDP-4-oxo-beta-L-rhamnose // dTDP-4-dehydro-6-deoxy-beta-L-mannose // dTDP-4-keto-L-rhamnose	DTDP-DEOH-DEOXY-MANNOSE
+a nucleic acid component	dTDP-6-deoxy-alpha-D-glucose	dTDP-alpha-D-quinovose	CPD0-2617
+a nucleic acid component	dTDP-alpha-D-glucose	TDP-glucose // dTDP-glucose // dTDP-D-glucose	DTDP-D-GLUCOSE
+a nucleic acid component	dTDP-beta-L-rhamnose	dTDP-6-deoxy-beta-L-mannose // dTDP-L-rhamnose // dTDP-L-Rha	DTDP-RHAMNOSE
+a nucleic acid component	dTMP	thymidylic acid // thymidine monophosphate // deoxythymidylate // dTMP // thymidine 5'-monophosphate // thymidine-phosphate // thymidine 5'-phosphate // deoxythymidine 5'-phosphate // 5'-thymidylic acid // deoxythymidylic acid // thymidylate	TMP
+a nucleic acid component	dTTP	thymidine triphosphate // thymidine 5'-triphosphate // dTTP	TTP
+a nucleic acid component	dUDP	2'-deoxyuridine-5'-diphosphate // deoxyuridine-diphosphate	DUDP
+a nucleic acid component	dUMP	deoxyurdine-phosphate // 2'-deoxyuridine 5-monophosphate // deoxyuridine-phosphate // 2'-deoxyuridine 5'-phosphate // 2'-deoxyuridylic acid // 2'-deoxy-5'-uridylic acid	DUMP
+a nucleic acid component	dUTP	deoxy-UTP // 2'-deoxyuridine-5'-triphosphate // deoxyuridine-triphosphate	DUTP
+a nucleic acid component	GDP	ppG // guanosine-5'-diphosphate // guanosine-diphosphate	GDP
+a nucleic acid component	GDP-4-dehydro-6-deoxy-beta-L-galactose	GDP-4-oxo-L-fucose // GDP-4-keto-6-L-deoxygalactose	GDP-4-DEHYDRO-6-L-DEOXYGALACTOSE
+a nucleic acid component	GDP-4-dehydro-alpha-D-rhamnose	GDP-4-keto-6-deoxymannose // GDP-4-keto-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxy-alpha-D-talose // GDP-4-oxo-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxy-alpha-D-mannose // GDP-4-dehydro-6-deoxymannose // GDP-6-deoxy-D-lyxo-4-hexulose	GDP-4-DEHYDRO-6-DEOXY-D-MANNOSE
+a nucleic acid component	GDP-alpha-D-glucose	GDP-glucose	GDP-D-GLUCOSE
+a nucleic acid component	GDP-alpha-D-mannose	guanosine pyrophosphate mannose // guanosine diphosphomannose // guanosine diphosphate mannose // GDP-mannose	GDP-MANNOSE
+a nucleic acid component	GDP-beta-L-fucose	GDP-beta-L-fucopyranose // GDP-L-fucose // guanosine diphosphate fucose // GDP-L-fucopyranose // GDP-L-Fuc // GDP-L-Fucp	CPD-13118
+a nucleic acid component	gemcitabine		CPD-24549
+a nucleic acid component	gemcitabine 5'-triphosphate	dF-dCTP	CPD0-2635
+a nucleic acid component	GMP	guanylate // guanylic acid // guanosine phosphate // guanosine 5'-phosphate // guanosine monophosphate // guanosine-5'-monophosphate	GMP
+a nucleic acid component	GMP-N-epsilon-(N-alpha-acetyl lysine methyl ester) 5'-phosphoramidate	GMP-lysine	GMP-LYSINE-PHOSPHORAMIDATE
+a nucleic acid component	GTP	guanylyl imidodiphosphate // guanosine 5'-triphosphate // guanosine-triphosphate	GTP
+a nucleic acid component	guanine	G	GUANINE
+a nucleic acid component	guanosine	nucleoside Q	GUANOSINE
+a nucleic acid component	guanosine 2',3'-cyclic monophosphate	2',3'-cyclic GMP // cyclic 2',3'-guanosine monophosphate	CPD-3709
+a nucleic acid component	guanosine 2'-monophosphate		CPD-13025
+a nucleic acid component	guanosine 3'-monophosphate	guanosine 3'-phosphate // 3'-guanylic acid	CPD-3708
+a nucleic acid component	guanosine 5'-monophosphomorpholidate	GMP-MOR	CPD-11209
+a nucleic acid component	guanosine tetraphosphate		GUANOSINE_TETRAPHOSPHATE
+a nucleic acid component	hypoxanthine		HYPOXANTHINE
+a nucleic acid component	IDP	riboxin // inosine diphosphate	IDP
+a nucleic acid component	immucillin-A 5'-triphosphate	ImmA-TP // immucillin-A triphosphate	CPD0-2585
+a nucleic acid component	IMP	5'-IMP // ribosylhypoxanthine monophosphate // inosinate // inosine monophosphate // inosine 5'-monophosphate // inosine 5'-phosphate // 5'-inosinate // 5'-inosinic acid // 5'-inosine monophosphate	IMP
+a nucleic acid component	inosine	hypoxanthine-ribose // iso-prinosine // riboxine	INOSINE
+a nucleic acid component	isoguanine	2-oxoadenine // 2-hydroxyadenine	CPD0-2461
+a nucleic acid component	ITP	inosine triphosphate	ITP
+a nucleic acid component	N1-ethyladenine		1-ETHYLADENINE
+a nucleic acid component	N1-methyladenine	m1A	N1-METHYLADENINE
+a nucleic acid component	N3-methylthymine		CPD0-1930
+a nucleic acid component	N4-acetylcytidine	4-acetyl-1-(beta-D-ribofuranosyl)cytosine // 4-acetylcytidine // acetamide, N-(1,2-dihydro-2-oxo-1-beta-D-ribofuranosyl-4-pyrimidinyl) // acetylcytidine // N-[1-[(2R,3R,4S,5R)-3,4-dihydroxy-5-(hydroxymethyl)oxolan-2-yl]-2-oxopyrimidin-4-yl]acetamide	CPD-11648
+a nucleic acid component	N6-(3-methylbut-2-en-1-yl)-2-(methylsulfanyl)adenosine37 in tRNA	tRNA-(2-methylsulfanyl-N6-dimethylallyladenosine37) // a tRNA containing 2-methylsulfanyl-N6-dimethylallyladenosine37 // 2-methylthio-N6-dimethylallyladenosine37 in tRNA // ms2i6A37 // tRNA 2-(methylsulfanyl)-N6-isopentenyl adenosine37 // 2-(methylsulfanyl)-N6-dimethylallyladenosine37 in tRNA	CPD-11592
+a nucleic acid component	N6-(3-methylbut-2-en-1-yl)-2-thioadenosine37 in tRNA	tRNA-(2-thio-N6-dimethylallyladenosine37) // a tRNA containing 2-thio-N6-dimethylallyladenosine37 // 2-thio-N6-dimethylallyladenosine37 in tRNA // 2-sulfanyl-N6-dimethylallyladenosine37 in tRNA	CPD-15360
+a nucleic acid component	N6-benzoyladenine		CPD-16183
+a nucleic acid component	N7-methylguanine	7-MeG // 7-methylguanine // 2-amino-7-methyl-1,7-dihydro-6H-purin-6-one	CPD0-2377
+a nucleic acid component	N7-methylguanosine	N7-methyl-guanosine // 7-methylguanosine	CPD-15544
+a nucleic acid component	nicotinamide hypoxanthine dinucleotide	d-NADH	CPD0-1117
+a nucleic acid component	nicotinate adenine dinucleotide	deamino-NAD+ // NaADN // deamido-NAD+ // deamidonicotinamide adenine dinucleoetide // deamido-NAD // NaAD	DEAMIDO-NAD
+a nucleic acid component	P1,P3-bis(5'-adenosyl) triphosphate	bis(5'-adenosyl) triphosphate // adenosine 5'-(tetrahydrogen triphosphate), P''-5'-ester with adenosine // Ap3A // adenosine(5')triphospho(5')adenosine // 5',5'''-diadenosine triphosphate	ADENOSINE5TRIPHOSPHO5ADENOSINE
+a nucleic acid component	P1,P4-bis(5'-adenosyl) tetraphosphate	Ap4A // AppppA // P(1),P(4)-bis(5'-adenosyl)tetraphosphate // bis(5'-adenosyl) tetraphosphate // 5',5'''-diadenosine tetraphosphate	ADENOSYL-P4
+a nucleic acid component	P1,P4-bis(5'-guanosyl) tetraphosphate	Gp4G // bis(5'-guanosyl) tetraphosphate	CPD-609
+a nucleic acid component	P1,P5-bis(5'-adenosyl) pentaphosphate	5',5'''-diadenosine pentaphosphate // bis(5'-adenosyl) pentaphosphate // P(1),P(5)-di(adenosine-5'-)pentaphosphate // Ap5A // P1,P5-di(adenosine-5')-pentaphosphate	CPD0-1137
+a nucleic acid component	pGp	guanosine 3',5'-bis(dihydrogen phosphate) // guanosine 3',5'-bisphosphate // guanosine 5'-phosphate,3'-phosphate // guanosine 3'-phosphate 5'-phosphate	CPD0-2634
+a nucleic acid component	pGpp	guanosine 5'-monophosphate,3'-diphosphate	CPD0-1415
+a nucleic acid component	phosphonocytosine		CPD0-2458
+a nucleic acid component	ppGpp	guanosine tetraphosphate // guanosine 5'-diphosphate,3'-diphosphate // guanosine 3',5'-bispyrophosphate // guanosine 3',5'-bis(diphosphate) // guanosine 3'-diphosphate 5'-diphosphate // magic spot // guanosine-5',3'-tetraphosphate	GUANOSINE-5DP-3DP
+a nucleic acid component	pppApp	adenosine-5-triphosphate-3-diphosphate	CPD0-1410
+a nucleic acid component	pppGpp	guanosine pentaphosphate // guanosine 3'-diphosphate 5'-triphosphate // guanosine 5'-triphosphate,3'-diphosphate	GDP-TP
+a nucleic acid component	preQ1	7-aminomethyl-7-deazaguanine // 7-aminomethyl-7-carbaguanine	7-AMINOMETHYL-7-DEAZAGUANINE
+a nucleic acid component	pseudouridine		CPD-497
+a nucleic acid component	pseudouridine 5'-phosphate		PSEUDOURIDINE-5-P
+a nucleic acid component	pseudouridine 5'-triphosphate	pseudo-UTP	CPD0-2551
+a nucleic acid component	purine		PURINE
+a nucleic acid component	purine-6-thiol	1,7-dihydro-6H-purine-6-thione // mercaptopurine // 6-MP // 6-mercaptopurine	CPD-15916
+a nucleic acid component	pyridine 3-aldehyde adenine dinucleotide		CPD0-1223
+a nucleic acid component	pyrimidin-2-one-ribonucleoside		CPD0-1312
+a nucleic acid component	reduced 3-acetylpyridine adenine dinucleotide	AcNADH	CPD0-1899
+a nucleic acid component	reduced beta-nicotinamide D-ribonucleotide	nicotinamide mononucleotide (reduced) // reduced beta-nicotinamide D-ribonucleotide	NMNH
+a nucleic acid component	thioguanine	6-thioguanine // 6-mercaptoguanine	CPD-5721
+a nucleic acid component	thymidine	deoxythymidine	THYMIDINE
+a nucleic acid component	thymidine 3'-monophosphate	T3P // [2-(hydroxymethyl)-5-[(5-methyl-2,4-dioxo-1H-pyrimidin-1-yl)]tetrahydrofuran-3-yl]oxyphosphonic acid // 3' thymidylic acid // deoxythymidine 3'-monophosphate	CPD-3732
+a nucleic acid component	thymine	5-methyluracil // 5-methyl-2,4(1H,3H)-pyrimidinedione // T	THYMINE
+a nucleic acid component	thymine glycol	5,6-dihydroxy-5-methyldihydropyrimidine-2,4(1H,3H)-dione	CPD-18012
+a nucleic acid component	two adjacent 2'-deoxycytidines in DNA		CPD-20735
+a nucleic acid component	two adjacent thymidines in DNA	thymidylyl-(3'-5')-thymidylate (in DNA)	CPD-11643
+a nucleic acid component	UDP-2-N,3-O-bis[(3R)-3-hydroxytetradecanoyl]-alpha-D-glucosamine	UDP-2,3-bis(3-hydroxytetradecanoyl)glucosamine // UDP-2,3-diacyl-glucosamine // UDP-2,3-bis(3-hydroxymyristoyl)glucosamine // UDP-2,3-bis[(3R)-3-hydroxymyristoyl]-alpha-D-glucosamine // UDP-2,3-bis[O-(3R)-3-hydroxymyristoyl]-alpha-D-glucosamine	OH-MYRISTOYL
+a nucleic acid component	UDP-3-O-(3-hydroxymyristoyl)-alpha-D-glucosamine	UDP-3-O-(3-hydroxytetradecanoyl)-D-glucosamine // UDP-3-O-(3-hydroxytetradecanoyl)glucosamine // UDP-3-O-[(3R)-3-hydroxymyristoyl]-D-glucosamine	UDP-OHMYR-GLUCOSAMINE
+a nucleic acid component	UDP-3-O-[(3R)-3-hydroxymyristoyl]-N-acetyl-alpha-D-glucosamine	UDP-3-O-(3-hydroxytetradecanoyl)-N-acetylglucosamine // UDP-3-O-(3-hydroxymyristoyl)-N-acetylglucosamine	UDP-OHMYR-ACETYLGLUCOSAMINE
+a nucleic acid component	UDP-4-amino-4-deoxy-beta-L-arabinopyranose	uridine 5''-diphospho-beta-4-deoxy-4-amino-L-arabinose // UDP-4-amino-4-deoxy-L-arabinose	UDP-4-AMINO-4-DEOXY-L-ARABINOSE
+a nucleic acid component	UDP-alpha-D-galactofuranose	UDP-Galf // UDP-D-galactofuranose // UDP-alpha-D-galacto-1,4-furanose	UDP-D-GALACTO-14-FURANOSE
+a nucleic acid component	UDP-alpha-D-galactose	UDP-alpha-D-galactopyranose // UDP-galactose // UDP-Gal	CPD-14553
+a nucleic acid component	UDP-alpha-D-glucosamine	UDP-glucosamine // UDP-D-glucosamine	UDP-D-GLUCOSAMINE
+a nucleic acid component	UDP-alpha-D-glucose	UDPG // UDP-glucose // UDP-D-glucose // UDP-alpha-D-glucopyranose	CPD-12575
+a nucleic acid component	UDP-alpha-D-glucuronate	UDP-D-glucuronic acid // UDP-glucuronic acid // UDP-glucuronate // uridine diphosphate glucuronate // uridine diphosphate glucuronic acid // UDP-D-glucuronate // UDP-GlcA	UDP-GLUCURONATE
+a nucleic acid component	UDP-beta-L-threo-pentapyranos-4-ulose	UDP-4-keto-alpha-D-xylose // UDP-4-dehydro-alpha-D-xylose // UDP-4-keto-pyranose // uridine 5'-beta-L-threo-pentapyranosyl-4''-ulose diphosphate // UDP-4-ketopentose // UDP-L-Ara4O	5-BETA-L-THREO-PENTAPYRANOSYL-4-ULOSE-
+a nucleic acid component	UDP-N-acetyl-alpha-D-glucosamine	UDP-2-acetamido-2-deoxy-D-glucose // UDP-acetyl-D-glucosamine // UDP-GlcNAc // UDP-N-acetyl-glucosamine // uridine diphosphate N-acetylglucosamine // N-[2-[[[5-[(2,4-dioxo-1H-pyrimidin-1-yl)]-3,4-dihydroxy-tetrahydrofuran-2-yl]methoxy-hydroxy-phosphinoyl]oxy-hydroxy-phosphinoyl]oxy-4,5-dihydroxy-6-(hydroxymethyl)tetrahydropyran-3-yl]acetamide // UDP-2-acetamido-2-deoxy-alpha-D-glucose // UDP-N-acetyl-D-glucosamine // UDP-alpha-N-acetyl-D-glucosamine	UDP-N-ACETYL-D-GLUCOSAMINE
+a nucleic acid component	UDP-N-acetyl-alpha-D-glucosamine 3'-phosphate	UNAG-3P // UDP-N-acetyl-alpha-D-glucosamine 3-phosphate // UDP-N-acetyl-D-glucosamine 3'-phosphate	CPD-14021
+a nucleic acid component	UDP-N-acetyl-alpha-D-glucosamine-enolpyruvate	UDP-N-acetyl-3-O-(1-carboxyvinyl)-alpha-D-glucosamine // UDP-N-acetyl-alpha-D-glucosamine-3-O-pyruvate ether // UDP-N-acetyl-3-(1-carboxyvinyl)-alpha-D-glucosamine // UDP-GlcNAc-pyruvate enol ether // UDP-GlcNAc-enolpyruvate	UDP-ACETYL-CARBOXYVINYL-GLUCOSAMINE
+a nucleic acid component	UDP-N-acetyl-alpha-D-mannosamine	uridine diphosphate N-acetylmannosamine // uridine 5'-(trihydrogen diphosphate), P'-(2-(acetylamino)-2-deoxy-alpha-D-mannopyranosyl) ester // UDP-acetylmannosamine // UDP-ManNAc	UDP-MANNAC
+a nucleic acid component	UDP-N-acetyl-alpha-D-mannosaminuronate	UDP-ManNAcA	UDP-MANNACA
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramate	dihydro-UDP-MurNAc // dihydro-UDP-N-acetylmuramic acid // dihydro-UDP-N-acetylmuramate // uridine diphosphate N-acetylmuramic acid // UDP-N-acetylmuramic acid // UDP-N-acetyl-D-muramate // UDP-MurNAc // UDP-N-acetylmuramoyl // -O-[(1R)-1-carboxyethyl]-2-acetoxy-2-deoxy-D-glucopyranose	UDP-N-ACETYLMURAMATE
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramoyl-L-alanine	UDP-N-acetyl-alpha-D-muramyl-L-Ala	CPD0-1456
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-D-glutamate		UDP-AA-GLUTAMATE
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-L-lysine		CPD-209
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-L-lysyl-D-alanyl-D-alanine	UDP-Mur2Ac(oyl-L-Ala-g-D-Glu-L-Lys-D-Ala-D-Ala) // UDP-MurNAc-pentapeptide	C3
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimelate	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimelate // UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-diaminopimelate // UDP-MurNAc-L-Ala-gamma-D-Glu-meso-A2pm // UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate	UDP-AAGM-DIAMINOHEPTANEDIOATE
+a nucleic acid component	UDP-N-acetyl-alpha-D-muramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanyl-D-alanine // UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate- D-alanyl-D-alanine	C1
+a nucleic acid component	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminopimeloyl-D-alanine	UDP-N-acetylmuramoyl-L-alanyl-gamma-D-glutamyl-meso-2,6-diaminoheptanedioate-D-alanine // UDP-MurNAc-tetrapeptide // uridine 5'-pyrophosphoryl N-acetylmuramyl-tetrapeptide	UDP-MURNAC-TETRAPEPTIDE
+a nucleic acid component	UMP	uridylate // 5'-UMP // uridine 5'-phosphate // 5'-uridylic acid (8CI)(9CI) // uridine monophosphate // uridine 5'-monophosphate	UMP
+a nucleic acid component	uracil	U	URACIL
+a nucleic acid component	uracil glycol		CPD-18013
+a nucleic acid component	uridine		URIDINE
+a nucleic acid component	uridine 2'-monophosphate	2'-uridylic acid // uridine 2'-phosphate	CPD-3723
+a nucleic acid component	uridine 2'3'-cyclic monophosphate	2',3'-Cyclic UMP	CPD-3725
+a nucleic acid component	uridine 3'-monophosphate	3'-uridylic acid	CPD-3724
+a nucleic acid component	UTP	uridine-triphosphate // uridine-5'-triphosphate	UTP
+a nucleic acid component	vidarabine phosphate	adenine-9-beta-D-arabinofuranoside 5'-monophosphate // araAMP	CPD0-1139
+a nucleic acid component	xanthosine	9 beta-D-ribofuranosylxanthine	XANTHOSINE
+a nucleic acid component	XDP	xanthosine diphosphate	XDP
+a nucleic acid component	XMP	(9-D-ribosylxanthine) 5'-phosphate // xanthosine 5-phosphate // xanthosine 5'-phosphate // xanthosine-5-P // xanthosine-5'-P // 9-(5-phospho-beta-D-ribosyl)xanthine	XANTHOSINE-5-PHOSPHATE
+a nucleic acid component	XTP	xanthosine 5' triphosphate	XTP
