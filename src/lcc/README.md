@@ -20,19 +20,6 @@ Installing llvm development environment:
     make install 
     (or) DESTDIR=/home/somewhere make install
 
-
-
-## make token list from the metabolites.tsv
-
-	./generate_mol_keyword.py -m ../../data/metabolites.tsv -o etc/mol_list
-	
-    # make vim syntax file
-	./generate_mol_keyword.py -k etc/mol_list -v etc/lpp.vim -o ~/.vim/syntax/lpp.vim
-
-	./generate_mol_keyword.py -k etc/mol_list -l lpp.l.template -o lpp.l
-	./generate_mol_keyword.py -k etc/mol_list -y lpp.y.template -o lpp.y
-	make
-
 ## build lcc-prep and run
 
     make clean
@@ -48,3 +35,9 @@ Installing llvm development environment:
     make lcc-run
     #python cell.py
 
+
+## Vim syntax highlight
+Copy etc/lpp.vim to $HOME/.vim/syntax directory and add below line to .vimrc or create a file to $HOME/.vim/ftdetect/lpp.vim
+```
+au BufRead,BufNewFile *.lpp set filetype=lpp
+```
