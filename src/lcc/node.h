@@ -138,12 +138,12 @@ public:
 
     virtual void Print(std::ostream& os) const override {
         os << "NGeneralReaction(" << std::endl;
-        os << "  ";
+        os << "  Reactants: ";
         for (const auto& item: Reactants) {
              os << item->Name << ", ";
         }
         os << std::endl;
-        os << "  ";
+        os << "  Products: ";
         for (const auto& item: Products) {
             os << item->Name << ", ";
         }
