@@ -75,6 +75,7 @@ public:
 
     FTable GeneTable;
     FTable ReactionTable;
+    FTable EnzymeTable;
 
 
     std::vector<std::string> UsingModuleList;

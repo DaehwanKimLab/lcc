@@ -92,6 +92,7 @@ void FCompilerContext::Init(const FOption& InOption)
     if (InOption.DataPaths.size() > 0) {
         GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/genes.tsv").c_str());
 		ReactionTable.LoadFromTSV((InOption.DataPaths[0] + "/reactions.tsv").c_str());
+        EnzymeTable.LoadFromTSV((InOption.DataPaths[0] + "/EnzymeDatabase.txt").c_str());
     }
 }
 
