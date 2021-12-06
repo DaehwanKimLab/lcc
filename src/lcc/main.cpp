@@ -35,7 +35,83 @@ void DumpNBlock(const NBlock* InProgramBlock) {
     }
 }
 
-void TraversalNode(NBlock* InProgramBlock)
+class Database {
+
+
+};
+
+class NCompilerData {
+public:
+    std::vector<string> EnzymeList;
+    std::vector<string> SubstrateList;
+
+    const float CellVolume = 0.005; // 7e-16;
+    const float MolWeight = 100.0;
+    const float kcat = 5.0;
+    const float kM = 0.004;
+    int Count_Enzymes = 50;
+    int Count_Substrates = 100000;
+//    std::vector<float> MolWeight;
+//    std::vector<float> kcat;
+//    std::vector<float> kM;
+//    std::vector<int> Count_Enzymes;
+//    std::vector<int> Count_Substrates;
+    
+    NCompilerData() {}
+    
+    void Print() const {
+        cout << "CompilerData(" << std::endl;
+
+        cout << "  EnzymeList(" << std::endl;
+        for (auto& enzymeName: EnzymeList) {
+            cout << "  " << enzymeName << ", ";
+        } cout << "  )" << std::endl; 
+
+        cout << "  SubstrateList(" << std::endl;
+        for (auto& substrateName: SubstrateList) {
+            cout << "  " << substrateName << ", ";
+        } cout << "  )" << std::endl; 
+    }
+   
+    void Print_SystemState() const {
+        cout << "System State(" << std::endl;
+        cout << "  CellVolume:" << CellVolume << std::endl;
+        cout << "  MolWeight:" << MolWeight << std::endl;
+        cout << "  kcat:" << kcat << std::endl;
+        cout << "  kM:" << kM << std::endl;
+        cout << "  Count_Enzymes:" << Count_Enzymes << std::endl;
+        cout << "  Count_Substrates:" << Count_Substrates << std::endl;
+        cout << "  )" << std::endl; 
+    }
+};
+
+float ConcentrationToCount(float Conc_Molecule, float Volume) {
+    return Conc_Molecule * Volume;
+};
+
+float CountToConcentration(int Count_Molecule, float Volume) {
+    return Count_Molecule / Volume;
+};
+
+float MichaelisMentenEqn(int Count_Enzyme, int Count_Substrate, float CellVolume ,float kcat, float kM) {
+    float Conc_Enzyme = CountToConcentration(Count_Enzyme, CellVolume);
+    float Conc_Substrate = CountToConcentration(Count_Substrate, CellVolume);
+
+    float Rate = (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM);
+    cout << Rate << std::endl;
+    return Rate;
+}; 
+
+//void AddToList(vector<string> List, string Item) {
+//    if (std::find(std::begin(List), std::end(List), Item) != std::end(List)) {
+//        IdList.push_back(Item);
+//    } else {
+//        return; 
+//
+//    }  
+//};
+
+void TraversalNode(NBlock* InProgramBlock, NCompilerData* CompilerData)
 {
     ostream& os = std::cout;
     FTraversalContext tc(std::cerr);
@@ -46,20 +122,64 @@ void TraversalNode(NBlock* InProgramBlock)
 
         if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
             auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
-            os << "Protein: " << Protein->Id.Name << endl;
+            os << "Protein Id: " << Protein->Id.Name << endl;
+//            Protein->Print(os);
 
-            if (Protein->Block) {
-                auto& Block = Protein->Block;
-                for (auto& stmt: Block->Statements) {
-                    os << "  "; stmt->Print(os);
-                }
+            auto& Id = Protein->Id;
+            os << "  Id: " << Id.Name << endl;
+            CompilerData->EnzymeList.push_back(Id.Name);
 
+            auto& OverallReaction = Protein->OverallReaction;
+//            os << "  OverallReaction:" << endl;
+
+            for (const auto& reactant : OverallReaction.Reactants) {
+                os << "  Reatant: " << reactant->Name << ", " << endl;
+                CompilerData->SubstrateList.push_back(reactant->Name);
             }
+
+//            os << "  Products: " << endl;
+//            os << "    ";
+
+//            for (const auto& product : OverallReaction.Products) {
+//                SubstrateList.push_back(product);
+//                for (auto& substrate: SubstrateList) {
+//                    os << substrate->Name << ", ";
+//                }
+
+//                product->Print(os); os << ", ";
+//            }
+//            os << std::endl;
+
+//            os << "-----" << endl;
+//
+//            if (Protein->Block) {
+//                auto& Block = Protein->Block;
+//                for (auto& stmt: Block->Statements) {
+//                    os << "  "; stmt->Print(os);
+//                }
+//
+//            }
             Context.ProteinList.emplace_back(*Protein);
 
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
             os << "Pathway: " << Pathway->Id.Name << endl;
+
+            if (Pathway->PathwayChainReaction) {
+                auto& PathwayChainReaction = Pathway->PathwayChainReaction;
+//                os << "  "; PathwayChainReaction->Print(os);
+               
+                auto& Exprs = PathwayChainReaction->Exprs;
+                for (auto& expr: Exprs) {
+//                    os << "  "; expr->Print(os);
+                    auto& Identifiers = expr->Identifiers;
+                    for (auto& Id: Identifiers) {
+                        os << "  Enzyme: " << Id.Name << endl;
+// ASK Mr. Park
+//                        CompilerData->EnzymeList.push_back(Id);
+                    }  
+                }
+            }
 
             Context.PathwayList.emplace_back(Pathway->Id.Name);
 
@@ -67,6 +187,7 @@ void TraversalNode(NBlock* InProgramBlock)
             auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
             os << "Organism: " << Organism->Id.Name << endl;
             os << "  " << Organism->Description << endl;
+
         } else if (Utils::is_class_of<NExperimentDeclaration, NNode>(node)) {
             auto Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
             os << "Experiment: " << Experiment->Id.Name << endl;
@@ -134,6 +255,8 @@ int main(int argc, char *argv[])
 		Context.ReactionTable.Dump(Keys);
     }
 
+    NCompilerData CompilerData;
+
     for (const auto& SourceFile: Option.SourceFiles) {
         ProgramBlock = nullptr;
         yyin = fopen(SourceFile.c_str(), "r");
@@ -151,9 +274,16 @@ int main(int argc, char *argv[])
             DumpNBlock(ProgramBlock);
         }
 
-        TraversalNode(ProgramBlock);
+        TraversalNode(ProgramBlock, &CompilerData);
 
         delete ProgramBlock;
+
+        CompilerData.Print_SystemState();
+        CompilerData.Print();
+        
+        MichaelisMentenEqn(CompilerData.Count_Enzymes, CompilerData.Count_Substrates, CompilerData.CellVolume, CompilerData.kcat, CompilerData.kM);
+        
+
     }
 
 
