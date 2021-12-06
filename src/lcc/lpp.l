@@ -42,7 +42,7 @@
 "step"                        { return TOKEN(T_STEP); }
 "sequence"                    { return TOKEN(T_SEQUENCE); } 
 
-(([\(\[\{}]*[A-Za-z\d]+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}]+)+?[\,\-]?\s?)+?	{ return TOKEN(T_MOLECULE); } 	/* 			
+(([\(\[\{}]*\w+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}])+?[\,\-]?\s?)+?	{ return TOKEN(T_MOLECULE); } 	/* 			
 
 	add_brackets_beginning = "[\(\[\{}]" 
 	add_words = "[A-Za-z\d]"
