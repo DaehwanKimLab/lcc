@@ -132,6 +132,9 @@ int main(int argc, char *argv[])
         Keys.emplace_back("reaction id");
         Keys.emplace_back("stoichiometry");
 		Context.ReactionTable.Dump(Keys);
+
+        // Dump EnzymeTable
+		Context.EnzymeTable.Dump();
     }
 
     for (const auto& SourceFile: Option.SourceFiles) {
