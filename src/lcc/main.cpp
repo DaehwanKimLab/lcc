@@ -111,7 +111,7 @@ float MichaelisMentenEqn(int Count_Enzyme, int Count_Substrate, float CellVolume
 //    }  
 //};
 
-void TraversalNode(NBlock* InProgramBlock, NCompilerData* CompilerData)
+void TraversalNode(NBlock* InProgramBlock)
 {
     ostream& os = std::cout;
     FTraversalContext tc(std::cerr);
@@ -123,18 +123,26 @@ void TraversalNode(NBlock* InProgramBlock, NCompilerData* CompilerData)
         if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
             auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
             os << "Protein Id: " << Protein->Id.Name << endl;
-//            Protein->Print(os);
+            // Protein->Print(os);
 
             auto& Id = Protein->Id;
-            os << "  Id: " << Id.Name << endl;
-            CompilerData->EnzymeList.push_back(Id.Name);
+	    os << "  Id: " << Id.Name << endl;
+	    
+            string Name = Id.Name;
+            string Substrate = Context.QueryEnzymeTable(Name, "Substrate");
+            float kcat = std::stof(Context.QueryEnzymeTable(Name, "kcat"));
+            float kM = std::stof(Context.QueryEnzymeTable(Name, "kM"));
+
+            os << "Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
+
+            FEnzyme Enzyme(Name, Substrate, kcat, kM);
 
             auto& OverallReaction = Protein->OverallReaction;
-//            os << "  OverallReaction:" << endl;
+            // os << "  OverallReaction:" << endl;
 
             for (const auto& reactant : OverallReaction.Reactants) {
-                os << "  Reatant: " << reactant->Name << ", " << endl;
-                CompilerData->SubstrateList.push_back(reactant->Name);
+                os << "  Reactant: " << reactant->Name << ", " << endl;
+                // CompilerData->SubstrateList.push_back(reactant->Name);
             }
 
 //            os << "  Products: " << endl;
@@ -159,29 +167,31 @@ void TraversalNode(NBlock* InProgramBlock, NCompilerData* CompilerData)
 //                }
 //
 //            }
-            Context.ProteinList.emplace_back(*Protein);
-
+//            Context.ProteinList.emplace_back(*Protein);
+            Context.EnzymeList.emplace_back(Enzyme);
+ 
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
             os << "Pathway: " << Pathway->Id.Name << endl;
 
+            string Name = Pathway->Id.Name;
+            vector<string> Sequence;
+
             if (Pathway->PathwayChainReaction) {
                 auto& PathwayChainReaction = Pathway->PathwayChainReaction;
-//                os << "  "; PathwayChainReaction->Print(os);
-               
                 auto& Exprs = PathwayChainReaction->Exprs;
                 for (auto& expr: Exprs) {
 //                    os << "  "; expr->Print(os);
                     auto& Identifiers = expr->Identifiers;
                     for (auto& Id: Identifiers) {
                         os << "  Enzyme: " << Id.Name << endl;
-// ASK Mr. Park
-//                        CompilerData->EnzymeList.push_back(Id);
+                        Sequence.push_back(Id.Name);
                     }  
                 }
             }
 
-            Context.PathwayList.emplace_back(Pathway->Id.Name);
+            FPathway Pathway_New(Name, Sequence);
+            Context.PathwayList.emplace_back(Pathway_New);
 
         } else if (Utils::is_class_of<NOrganismDeclaration, NNode>(node)) {
             auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
@@ -254,11 +264,15 @@ int main(int argc, char *argv[])
         Keys.emplace_back("stoichiometry");
 		Context.ReactionTable.Dump(Keys);
 
-        // Dump EnzymeTable
-		Context.EnzymeTable.Dump();
+                Keys.clear();
+        Keys.emplace_back("EnzymeName");
+        Keys.emplace_back("Substrate");
+        Keys.emplace_back("kcat");
+        Keys.emplace_back("kM");
+                Context.EnzymeTable.Dump(Keys);
     }
 
-    NCompilerData CompilerData;
+    // NCompilerData CompilerData;
 
     for (const auto& SourceFile: Option.SourceFiles) {
         ProgramBlock = nullptr;
@@ -277,14 +291,15 @@ int main(int argc, char *argv[])
             DumpNBlock(ProgramBlock);
         }
 
-        TraversalNode(ProgramBlock, &CompilerData);
+        // organize context database (protein list, pathway list)
+        TraversalNode(ProgramBlock);
 
         delete ProgramBlock;
 
-        CompilerData.Print_SystemState();
-        CompilerData.Print();
+        // CompilerData.Print_SystemState();
+        // CompilerData.Print();
         
-        MichaelisMentenEqn(CompilerData.Count_Enzymes, CompilerData.Count_Substrates, CompilerData.CellVolume, CompilerData.kcat, CompilerData.kM);
+        // MichaelisMentenEqn(CompilerData.Count_Enzymes, CompilerData.Count_Substrates, CompilerData.CellVolume, CompilerData.kcat, CompilerData.kM);
         
 
     }

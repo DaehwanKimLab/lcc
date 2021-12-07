@@ -33,7 +33,11 @@ public:
 
 class FPathway {
 public:
+    std::string Name;
+    std::vector<std::string> Sequence;
 
+    FPathway(const std::string& InName, std::vector<std::string>& InSequence)
+        : Name(InName), Sequence(InSequence) {};
 };
 
 class FProtein {
@@ -53,13 +57,13 @@ private:
 
 class FEnzyme { //: public FProtein {
 public:
-    std::string EnzymeName; // remove after resolving inheritance issue
+    std::string Name; // remove after resolving inheritance issue
     std::string Substrate;
     float kcat;
     float kM;
 
-    FEnzyme(const std::string& InEnzymeName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
-        : EnzymeName(InEnzymeName), Substrate(InSubstrate), kcat(Inkcat), kM(InkM) {}; // , FProtein(InEnzymeName) {};
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
+        : Name(InName), Substrate(InSubstrate), kcat(Inkcat), kM(InkM) {}; // , FProtein(InName) {};
 
 };
 
@@ -97,7 +101,7 @@ public:
     std::vector<std::string> UsingModuleList;
     std::vector<FProtein> ProteinList;
     std::vector<FEnzyme> EnzymeList;
-    std::vector<std::string> PathwayList;
+    std::vector<FPathway> PathwayList;
     std::vector<std::string> IdentifierList;
 
     const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property){
@@ -105,7 +109,7 @@ public:
             if (Name == record["EnzymeName"]) {
                 return record[Property];
             }          
-        } 
+        }
         std::cout << "No such enzyme found in the database: " << Name << std::endl;
     }
 
@@ -117,8 +121,6 @@ public:
         }
         std::cout << "No such reaction found in the database: " << Name << std::endl;
     }
-
-
 
     void SaveUsingModuleList(const char *Filename);
 };
