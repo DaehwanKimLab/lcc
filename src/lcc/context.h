@@ -40,6 +40,7 @@ public:
         : Name(InName), Sequence(InSequence) {};
 };
 
+// TODO: Resolve NProteinDeclaration link
 class FProtein {
 public:
 //    std::string Name;
@@ -55,6 +56,7 @@ private:
     const NProteinDeclaration ProteinDecl;
 };
 
+// TODO: Inheret FProtein after resolving NProteinDeclaration link issue
 class FEnzyme { //: public FProtein {
 public:
     std::string Name; // remove after resolving inheritance issue
@@ -62,19 +64,35 @@ public:
     float kcat;
     float kM;
 
+    FEnzyme() {}
+
     FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
-        : Name(InName), Substrate(InSubstrate), kcat(Inkcat), kM(InkM) {}; // , FProtein(InName) {};
+        : Name(InName), Substrate(InSubstrate), kcat(Inkcat), kM(InkM) {} // , FProtein(InName) {};
 
 };
 
 class FReaction {
 public:
-    std::string ReactionName; // currently equivalent to EnzymeName
-    std::vector<std::string> Substrate;
-    std::vector<std::string> Product;
+    std::string Name; // Name is equivalent to EnzymeName for now
+    std::map<std::string, int> Stoichiometry;
 
-//    FReaction() : {};
+    FReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry) 
+        : Name(InName), Stoichiometry(InStoichiometry) {}
 
+    bool CheckIfReactant(const std::string& Name) {
+        return (Stoichiometry[Name] < 0);
+    }
+    bool CheckIfProduct(const std::string& Name) {
+        return (Stoichiometry[Name] > 0);
+    }
+};
+
+class FEnzymaticReaction : public FReaction {
+public:
+    std::string Enzyme;
+
+    FEnzymaticReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry, const std::string& InEnzyme)
+        : Enzyme(InEnzyme), FReaction(InName, InStoichiometry) {}
 };
 
 class FModule {
@@ -106,6 +124,7 @@ public:
     std::vector<FProtein> ProteinList;
     std::vector<FEnzyme> EnzymeList;
     std::vector<FPathway> PathwayList;
+    std::vector<FEnzymaticReaction> EnzymaticReactionList;
     std::vector<std::string> IdentifierList;
 
     const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property){
@@ -124,6 +143,35 @@ public:
             }          
         }
         std::cout << "No such reaction found in the database: " << Name << std::endl;
+    }
+
+//    void PrintList(std::vector List) {
+//        for (auto& item : List){
+//            std::cout << item.Name << ", ";
+//        };
+//        std::cout << std::endl;
+//    }
+
+    void PrintLists(std::ostream& os) {
+        os << "Compiler Context Lists:" << std::endl;
+        
+        os << "  PathwayList: " << std::endl << "  " << "  ";
+        for (auto& item : PathwayList){
+            os << item.Name << ", ";
+        };
+        os << std::endl;
+
+        os << "  EnzymeList: " << std::endl << "  " << "  ";
+        for (auto& item : EnzymeList){
+            os << item.Name << ", ";
+        };
+        os << std::endl;
+
+        os << "  EnzymaticReactionList: " << std::endl << "  " << "  ";
+        for (auto& item : EnzymaticReactionList){
+            os << item.Name << ", ";
+        };
+        os << std::endl;      
     }
 
     void SaveUsingModuleList(const char *Filename);

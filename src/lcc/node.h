@@ -170,7 +170,7 @@ public:
     NProteinDeclaration(const NIdentifier& InId)
             : Id(InId) {}
 
-    virtual void Print(std::ostream &os) const override {
+    virtual void Print(std::ostream& os) const override {
         os << "NProteinDeclaration: ";
         Id.Print(os);
         os << ", ";

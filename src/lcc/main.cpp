@@ -123,25 +123,36 @@ void TraversalNode(NBlock* InProgramBlock)
             // Protein->Print(os);
 
             auto& Id = Protein->Id;
-	    os << "  Id: " << Id.Name << endl;
 	    
             string Name = Id.Name;
             string Substrate = Context.QueryEnzymeTable(Name, "Substrate");
             float kcat = std::stof(Context.QueryEnzymeTable(Name, "kcat"));
             float kM = std::stof(Context.QueryEnzymeTable(Name, "kM"));
 
-            os << "Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
+            os << "  Enzyme Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
 
             FEnzyme Enzyme(Name, Substrate, kcat, kM);
 
             auto& OverallReaction = Protein->OverallReaction;
             // os << "  OverallReaction:" << endl;
+            map<string, int> Stoichiometry;
 
+            int Coefficient;
             for (const auto& reactant : OverallReaction.Reactants) {
-                os << "  Reactant: " << reactant->Name << ", " << endl;
-                // CompilerData->SubstrateList.push_back(reactant->Name);
-            }
+                Coefficient = -1; // update when coeff is fully implemented in parser
+                os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
+                Stoichiometry[reactant->Name]= Coefficient;
+            };
 
+            for (const auto& product : OverallReaction.Products) {
+                Coefficient = 1; // update when coeff is fully implemented in parser
+                os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
+                Stoichiometry[product->Name]= Coefficient;
+            };
+
+            FEnzymaticReaction EnzymaticReaction(Name, Stoichiometry, Name);
+
+            
 //            os << "  Products: " << endl;
 //            os << "    ";
 
@@ -163,9 +174,10 @@ void TraversalNode(NBlock* InProgramBlock)
 //                    os << "  "; stmt->Print(os);
 //                }
 //
-//            }
+//            };
 //            Context.ProteinList.emplace_back(*Protein);
             Context.EnzymeList.emplace_back(Enzyme);
+            Context.EnzymaticReactionList.emplace_back(EnzymaticReaction);
  
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
@@ -174,6 +186,7 @@ void TraversalNode(NBlock* InProgramBlock)
             string Name = Pathway->Id.Name;
             vector<string> Sequence;
 
+            os << "  Enzymes: ";
             if (Pathway->PathwayChainReaction) {
                 auto& PathwayChainReaction = Pathway->PathwayChainReaction;
                 auto& Exprs = PathwayChainReaction->Exprs;
@@ -181,11 +194,12 @@ void TraversalNode(NBlock* InProgramBlock)
 //                    os << "  "; expr->Print(os);
                     auto& Identifiers = expr->Identifiers;
                     for (auto& Id: Identifiers) {
-                        os << "  Enzyme: " << Id.Name << endl;
+                        os << Id.Name << ", ";
                         Sequence.push_back(Id.Name);
                     }  
                 }
             }
+            os << endl;
 
             FPathway Pathway_New(Name, Sequence);
             Context.PathwayList.emplace_back(Pathway_New);
@@ -246,6 +260,8 @@ int main(int argc, char *argv[])
         Option.Dump();
     }
 
+    ostream& os = std::cout;
+
     // Load genes.tsv
     if (!Option.bParseOnly)
     {
@@ -288,6 +304,8 @@ int main(int argc, char *argv[])
 
         // organize context database (protein list, pathway list)
         TraversalNode(ProgramBlock);
+
+        Context.PrintLists(os);
 
         delete ProgramBlock;
 
