@@ -70,6 +70,10 @@ public:
 class FReaction {
 public:
     std::string ReactionName; // currently equivalent to EnzymeName
+    std::vector<std::string> Substrate;
+    std::vector<std::string> Product;
+
+//    FReaction() : {};
 
 };
 
