@@ -105,16 +105,26 @@ public:
         State.SetEnzCount("FumA", 3);
         State.SetEnzCount("Mdh", 5);
 
-        State.SetSubCount("oxaloacetate", 100);
-        State.SetSubCount("citrate", 100);
-        State.SetSubCount("isocitrate", 100);
-        State.SetSubCount("keto-glutarate", 100);
-        State.SetSubCount("succinyl-CoA", 100);
-        State.SetSubCount("succinate", 100);
-        State.SetSubCount("fumarate", 100);
-        State.SetSubCount("malate", 100);
+        State.SetSubCount("oxaloacetate", 500);
+        State.SetSubCount("citrate", 500);
+        State.SetSubCount("isocitrate", 500);
+        State.SetSubCount("keto-glutarate", 500);
+        State.SetSubCount("succinyl-CoA", 500);
+        State.SetSubCount("succinate", 500);
+        State.SetSubCount("fumarate", 500);
+        State.SetSubCount("malate", 500);
 
-        State.SetSubCount("acetyl-CoA", 100);
+        State.SetSubCount("acetyl-CoA", 500);
+        State.SetSubCount("H2O", 500);
+        State.SetSubCount("CoA", 500);
+        State.SetSubCount("NAD+", 500);
+        State.SetSubCount("NADH", 500);
+        State.SetSubCount("CO2", 500);
+        State.SetSubCount("ADP", 500);
+        State.SetSubCount("Pi", 500);
+        State.SetSubCount("FAD", 500);
+        State.SetSubCount("FADH2", 500);
+        State.SetSubCount("H+", 500);
     }
     
     void Run(FState& State, FCompilerContext Context) {
@@ -129,7 +139,7 @@ public:
                 // Pathway contains a name (a string) and enzyme names (a vector of strings)
 
                 for (auto& EnzymeName : Pathway.Sequence) {
-                    std::cout << "  Enzyme: " << EnzymeName << std::endl; 
+                    std::cout << "  Enzyme: " << EnzymeName << "\t|"; //std::endl; 
                     std::string Substrate;
                     float kcat;
                     float kM;
@@ -140,9 +150,9 @@ public:
                             Substrate = Enzyme.Substrate;
                             kcat = Enzyme.kcat;
                             kM = Enzyme.kM;
-                            std::cout << "  Substrate: " << Substrate << std::endl;
-                            std::cout << "  kcat: " << kcat << std::endl;
-                            std::cout << "  kM: " << kM << std::endl;
+                            //std::cout << "  Substrate: " << Substrate << std::endl;
+                            //std::cout << "  kcat: " << kcat << std::endl;
+                            //std::cout << "  kM: " << kM << std::endl;
                         };
                     }; 
 
@@ -154,8 +164,8 @@ public:
                     float EnzConc = State.GetEnzConc(EnzymeName);
                     float SubConc = State.GetSubConc(Substrate);
 
-                    std::cout << "    EnzConc: " << EnzConc << std::endl;
-                    std::cout << "    SubConc: " << SubConc << std::endl;
+                    std::cout << "    EnzConc: " << EnzConc << "\t|" ; //std::endl;
+                    std::cout << "    SubConc: " << SubConc << "\t|" ; // std::endl;
  
                     // calculate reaction rate
                     float Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, kM);

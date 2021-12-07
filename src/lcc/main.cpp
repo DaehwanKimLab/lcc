@@ -114,6 +114,8 @@ void TraversalNode(NBlock* InProgramBlock)
     FTraversalContext tc(std::cerr);
     tc.Queue.push(InProgramBlock);
 
+    os << endl << "## TraversalNode ##" << endl;
+
     while(!tc.Queue.empty()) {
         const NNode* node = tc.Queue.front(); tc.Queue.pop();
 
@@ -265,6 +267,7 @@ int main(int argc, char *argv[])
     // Load genes.tsv
     if (!Option.bParseOnly)
     {
+        std::cout<< endl << "## Loading Database ##" << std::endl;
         Context.Init(Option);
         vector<string> Keys;
         Keys.emplace_back("symbol");
@@ -302,19 +305,11 @@ int main(int argc, char *argv[])
             DumpNBlock(ProgramBlock);
         }
 
-        // organize context database (protein list, pathway list)
         TraversalNode(ProgramBlock);
 
         Context.PrintLists(os);
 
         delete ProgramBlock;
-
-        Simulation.Init(State, 3);
-        Simulation.Run(State, Context);
-         
-        // MichaelisMentenEqn(CompilerData.Count_Enzymes, CompilerData.Count_Substrates, CompilerData.CellVolume, CompilerData.kcat, CompilerData.kM);
-        
-
     }
 
 
@@ -339,6 +334,12 @@ int main(int argc, char *argv[])
 
         Context.SaveUsingModuleList(UsingModuleFilename.c_str());
     }
+
+    // temporary simulation code
+    cout << endl << "## Simulation ##" << endl;
+
+    Simulation.Init(State, 20);
+    Simulation.Run(State, Context);
 
     return 0;
 }

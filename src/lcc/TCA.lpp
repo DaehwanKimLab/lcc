@@ -4,22 +4,22 @@
 //@Reference: [Stryer Biochemistry 7ed](https://www.amazon.com/Biochemistry-Lubert-Stryer/dp/1319114679/ref=sr_1_1?keywords=Stryer+Biochemistry&qid=1636994919&s=books&sr=1-1).
 //@
 //@```
-protein GltA(oxaloacetate + acetyl-CoA --> citrate);
+protein GltA(oxaloacetate + acetyl-CoA + H2O --> citrate + CoA);
 protein AcnA(citrate --> isocitrate);
-protein Icd(isocitrate --> keto-glutarate);
+protein Icd(isocitrate + NAD+ --> keto-glutarate + NADH + CO2);
 //protein AceK(Icd <--> Icd@phosphate);
-protein SucA(keto-glutarate --> succinyl-CoA);
-protein SucD(succinyl-CoA --> succinate);
+protein SucA(keto-glutarate + NAD+ + CoA --> succinyl-CoA + NADH + CO2);
+protein SucD(succinyl-CoA + ADP + Pi --> succinate + ATP + CoA);
 //protein SucA, SucB, SucD, SucC;
-protein Sdh(succinate --> fumarate);
+protein Sdh(succinate + FAD --> fumarate + FADH2);
 //protein SdhA(succinate --> fumarate);
 //        SdhB(succinate --> fumarate), 
 //        SdhC(succinate --> fumarate),          
 //        SdhD(anchor), 
 //        SdhE(succinate --> fumarate);
-protein FumA(fumarate --> malate);
+protein FumA(fumarate + H2O --> malate);
 //protein FumA(), FumB(an), FumC, FumD, FumE;
-protein Mdh(malate --> oxaloacetate);
+protein Mdh(malate + NAD+ --> oxaloacetate + NADH + H+);
 //protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
 
 //pathway TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh; 

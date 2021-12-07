@@ -177,4 +177,10 @@ public:
     void SaveUsingModuleList(const char *Filename);
 };
 
+class FDataset {
+public:
+    std::vector<std::vector<int>> EnzCountList;
+
+};
+
 #endif /* LCC_CONTEXT_H */
