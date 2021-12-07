@@ -309,8 +309,8 @@ int main(int argc, char *argv[])
 
         delete ProgramBlock;
 
-        Simulation.Init(State, 10);
-        Simulation.Run(State);
+        Simulation.Init(State, 3);
+        Simulation.Run(State, Context);
          
         // MichaelisMentenEqn(CompilerData.Count_Enzymes, CompilerData.Count_Substrates, CompilerData.CellVolume, CompilerData.kcat, CompilerData.kM);
         
