@@ -38,7 +38,10 @@ public:
 
 class FProtein {
 public:
+//    std::string Name;
+
     FProtein(const NProteinDeclaration& InProteinDecl) : ProteinDecl(InProteinDecl) {};
+//    FProtein(std::string& InName) : Name(InName) {};
 
     const std::string& GetName() const {
         return ProteinDecl.Id.Name;
@@ -48,8 +51,21 @@ private:
     const NProteinDeclaration ProteinDecl;
 };
 
+class FEnzyme { //: public FProtein {
+public:
+    std::string EnzymeName; // remove after resolving inheritance issue
+    std::string Substrate;
+    float kcat;
+    float kM;
+
+    FEnzyme(const std::string& InEnzymeName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
+        : EnzymeName(InEnzymeName), Substrate(InSubstrate), kcat(Inkcat), kM(InkM) {}; // , FProtein(InEnzymeName) {};
+
+};
+
 class FReaction {
 public:
+    std::string ReactionName; // currently equivalent to EnzymeName
 
 };
 
@@ -80,8 +96,27 @@ public:
 
     std::vector<std::string> UsingModuleList;
     std::vector<FProtein> ProteinList;
+    std::vector<FEnzyme> EnzymeList;
     std::vector<std::string> PathwayList;
     std::vector<std::string> IdentifierList;
+
+    const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property){
+        for (auto& record : EnzymeTable.Records) {
+            if (Name == record["EnzymeName"]) {
+                return record[Property];
+            }          
+        } 
+        std::cout << "No such enzyme found in the database: " << Name << std::endl;
+    }
+
+    const std::string QueryReactionTable(const std::string& Name, const std::string& Property){
+        for (auto& record : ReactionTable.Records) {
+            if (Name == record["EnzymeName"]) {
+                return record[Property];
+            }          
+        }
+        std::cout << "No such reaction found in the database: " << Name << std::endl;
+    }
 
 
 
