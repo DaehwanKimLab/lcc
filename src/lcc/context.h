@@ -7,6 +7,7 @@
 
 #include "option.h"
 #include "node.h"
+#include "simulation.h"
 
 typedef std::map<std::string, std::string> FTableRecord;
 
@@ -179,7 +180,41 @@ public:
 
 class FDataset {
 public:
-    std::vector<std::vector<int>> EnzCountList;
+    std::vector<int> StepList;
+    std::vector<float> VolList;
+    std::vector<std::vector<int>> EnzCountsList;
+    std::vector<std::vector<int>> SubCountsList;
+    std::vector<std::vector<float>> RatesList;   // same size as EnzCountList
+
+    void Init(const FOption& InOption);
+
+    void ImportState(FState& State) {
+        VolList.push_back(State.Vol);
+
+        std::vector<int> EnzCounts;
+        for (auto& count : State.Enz2Count){
+            EnzCounts.push_back(count);
+        EnzCountsList.push_back(EnzCounts);
+
+        std::vector<int> SubCounts;
+        for (auto& count : State.Sub2Count){
+            SubCounts.push_back(count);
+        SubCountsList.push_back(SubCounts);
+        };
+    }
+
+    void ImportRates(float& Rates) {
+        
+        RatesList.push_back(Rates);
+    }
+
+    void Export(const FOption& InOption) {
+        // header from Context
+        //
+        // dataset from Dataset
+
+
+    }
 
 };
 

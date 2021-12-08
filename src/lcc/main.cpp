@@ -22,6 +22,7 @@ FOption Option;
 FCompilerContext Context;
 FSimulation Simulation;
 FState State;
+FDataset Dataset;
 
 const char *VersionString = "1.0.0";
 using namespace std;

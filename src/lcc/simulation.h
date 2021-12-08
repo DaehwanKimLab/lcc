@@ -80,6 +80,7 @@ public:
 class FSimulation {
 public:
     int N_SimSteps;
+    int CurrentSimStep;
     FState State;
 
     FSimulation(){};
@@ -91,19 +92,30 @@ public:
     // float 
 
     void Init(FState& State, const int& SimSteps) {
+
         SetSimSteps(SimSteps);
+        CurrentSimStep = 0
 
         State.SetVol(1);
 
         // Set up all molecule counts for now
-        State.SetEnzCount("GltA", 1);
-        State.SetEnzCount("AcnA", 7);
-        State.SetEnzCount("Icd", 6);
-        State.SetEnzCount("SucA", 1);
-        State.SetEnzCount("SucD", 2);
-        State.SetEnzCount("Sdh", 3);
-        State.SetEnzCount("FumA", 3);
-        State.SetEnzCount("Mdh", 5);
+//        State.SetEnzCount("GltA", 1);
+//        State.SetEnzCount("AcnA", 7);
+//        State.SetEnzCount("Icd", 6);
+//        State.SetEnzCount("SucA", 1);
+//        State.SetEnzCount("SucD", 2);
+//        State.SetEnzCount("Sdh", 3);
+//        State.SetEnzCount("FumA", 3);
+//        State.SetEnzCount("Mdh", 5);
+
+        State.SetEnzCount("GltA", 10);
+        State.SetEnzCount("AcnA", 10);
+        State.SetEnzCount("Icd", 10);
+        State.SetEnzCount("SucA", 10);
+        State.SetEnzCount("SucD", 10);
+        State.SetEnzCount("Sdh", 10);
+        State.SetEnzCount("FumA", 10);
+        State.SetEnzCount("Mdh", 10);
 
         State.SetSubCount("oxaloacetate", 500);
         State.SetSubCount("citrate", 500);
@@ -125,11 +137,13 @@ public:
         State.SetSubCount("FAD", 500);
         State.SetSubCount("FADH2", 500);
         State.SetSubCount("H+", 500);
+
+        //Dataset.ImportState(State);
+
     }
     
     void Run(FState& State, FCompilerContext Context) {
-        std::cout << "Simulation: " << std::endl;
-        int CurrentSimStep = 0;
+        CurrentSimStep++;
 
         while (CurrentSimStep < N_SimSteps) {
             std::cout << "Step: " << CurrentSimStep << std::endl;
@@ -138,11 +152,14 @@ public:
                 std::cout << "Pathway: " << Pathway.Name << std::endl;
                 // Pathway contains a name (a string) and enzyme names (a vector of strings)
 
+                std::vector<float> Rates;
+
                 for (auto& EnzymeName : Pathway.Sequence) {
                     std::cout << "  Enzyme: " << EnzymeName << "\t|"; //std::endl; 
                     std::string Substrate;
                     float kcat;
                     float kM;
+
 
                     // loop enzyme list to find its substrate
                     for (auto& Enzyme: Context.EnzymeList) {
@@ -169,6 +186,7 @@ public:
  
                     // calculate reaction rate
                     float Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, kM);
+                    Rates.push_back(Rate);
                     std::cout << "    Rate: " << Rate << std::endl;
 
                     // currently each pathway sub reaction occurs linearly. 
@@ -191,14 +209,15 @@ public:
                             };
                         };
                     };
+                // Data accumulation
+                Dataset.ImportRates(Rates);
+
                 };
             };
-            CurrentSimStep++;
-        };
-
-
+        }; // end of while loop
+        //std::vector<float> Rates(length, 
+        //Dataset.ImportRates(Rates)
     }
-
 };
 
 

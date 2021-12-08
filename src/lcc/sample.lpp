@@ -27,11 +27,11 @@ protein Mdh(malate --> oxaloacetate);
 protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
 protein CA2(CO2 + H2O --> H+ + OHCOO-) {
 	cofactor co1(Zn2+);
-	domain dom1(co1-his, co1-his, co1-his);
+	//domain dom1(co1-his, co1-his, co1-his);
 	step step1(dom1 + H2O --> dom1-OH- + H+);
 	step step2(dom1-OH- + CO2 --> dom1-OHCOO-);
 	step step3(dom1-OHCOO- --> dom1 + OHCOO-);
-	sequence steps(step1, step2, step3);
+	//sequence steps(step1, step2, step3);
 	// property PDBID xxxx;
 };
 
