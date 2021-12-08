@@ -1,4 +1,4 @@
-//#ifndef LCC_SIMULATION_H
+#ifndef LCC_SIMULATION_H
 #define LCC_SIMULATION_H
 
 #include <string>
@@ -8,6 +8,7 @@
 // #include "option.h"
 // #include "node.h"
 #include "context.h"
+// #include "dataset.h"
 
 float ConcToCount(float Conc_Molecule, float Volume) {
     return Conc_Molecule * Volume;
@@ -33,8 +34,9 @@ public:
     std::map<std::string, int> Enz2Count; // The count info may be merged but in the future sim.py
     std::map<std::string, int> Sub2Count;
     float Vol;
+    float SimStep = 0; // temporary
 
-    FState(){};
+    FState(){}
 
     void SetVol(const int& InVol){
         Vol = InVol;
@@ -68,13 +70,55 @@ public:
         std::cout << "EnzCounts:" << std::endl;
         for (auto& Enz : Enz2Count) {
            std::cout<< "  " << "PRINT HERE" << std::endl; 
-        };
+        }
         
         std::cout << "SubCounts:" << std::endl;
         for (auto& Sub : Sub2Count) {
            std::cout<< "  " << "PRINT HERE" << std::endl; 
-        };
+        }
     }
+
+    std::vector<float> ExportState() {
+        std::vector<float> DataExport;
+        DataExport.resize(Enz2Count.size() + Sub2Count.size() + 2); // 2 for step and vol
+        
+        DataExport[0] = SimStep;
+        DataExport[1] = Vol;
+
+        int i = 2;
+        std::vector<float> EnzCounts;
+        for (auto& KeyValue : Enz2Count){
+            DataExport[i] = KeyValue.second;
+            i++;
+        }
+
+        std::vector<float> SubCounts;
+        for (auto& KeyValue : Sub2Count){
+            DataExport[i] = KeyValue.second;
+            i++;
+        }
+
+        SimStep++;
+
+        return DataExport;
+    }
+};
+
+class FDataset {
+public:
+    std::vector<std::string> Legend;
+    std::vector<float> Data;
+
+    void Init(const FOption& InOption);
+
+//    void ImportRates(std::vector<float>& Rates) {
+//  
+//        RatesList.push_back(Rates);
+//    }
+
+    void ExportAsTSV(const FOption& InOption) {
+
+   }
 };
 
 class FSimulation {
@@ -82,7 +126,7 @@ public:
     int N_SimSteps;
     FState State;
 
-    FSimulation(){};
+    FSimulation(){}
 
     int SetSimSteps(const int& SimSteps) {
         N_SimSteps = SimSteps;
@@ -90,7 +134,7 @@ public:
 
     // float 
 
-    void Init(FState& State, const int& SimSteps) {
+    void Init(FState& State, FDataset& Dataset, const int& SimSteps) {
         SetSimSteps(SimSteps);
 
         State.SetVol(1);
@@ -125,9 +169,17 @@ public:
         State.SetSubCount("FAD", 500);
         State.SetSubCount("FADH2", 500);
         State.SetSubCount("H+", 500);
+
+        // Data Export
+        Dataset.Data = State.ExportState();
+        std::cout << "DataStrip: " << std::endl;
+        for (auto& data : Dataset.Data) {
+            std::cout << data << ", ";
+        }
+        std::cout << std::endl;
     }
     
-    void Run(FState& State, FCompilerContext Context) {
+    void Run(FState& State, FCompilerContext& Context, FDataset& Dataset) {
         std::cout << "Simulation: " << std::endl;
         int CurrentSimStep = 0;
 
@@ -138,7 +190,7 @@ public:
                 std::cout << "Pathway: " << Pathway.Name << std::endl;
                 // Pathway contains a name (a string) and enzyme names (a vector of strings)
 
-                for (auto& EnzymeName : Pathway.Sequence) {
+                for(auto& EnzymeName : Pathway.Sequence) {
                     std::cout << "  Enzyme: " << EnzymeName << "\t|"; //std::endl; 
                     std::string Substrate;
                     float kcat;
@@ -153,8 +205,8 @@ public:
                             //std::cout << "  Substrate: " << Substrate << std::endl;
                             //std::cout << "  kcat: " << kcat << std::endl;
                             //std::cout << "  kM: " << kM << std::endl;
-                        };
-                    }; 
+                        }
+                    } 
 
                     // std::cout << "  Substrate: " << Substrate << std::endl;
                     // std::cout << "  kcat: " << kcat << std::endl;
@@ -188,22 +240,24 @@ public:
                                 MolConc += Rate * Coeff;
                                 int MolCount = ConcToCount(MolConc, State.Vol);
                                 State.SetSubCount(Molecule, MolCount);
-                            };
-                        };
-                    };
-                };
-            };
+                            }
+                        }
+                    } // Enzymatic Reaction for loop
+                } // Pathway.Sequence for loop
+            } // Context.Pathway loop
             CurrentSimStep++;
-        };
+
+            // Data Export
+            Dataset.Data = State.ExportState();
+            std::cout << "DataStrip: ";
+            for (auto& data : Dataset.Data) {
+                std::cout << data << ", ";
+            }
+            std::cout << std::endl;
+            
+        } // while loop
+    }// run
+};// FSimulation
 
 
-    }
-
-};
-
-
-
-
-
-
-
+#endif /* LCC_SIMULATION_H */

@@ -11,6 +11,7 @@
 #include "simulation.h"
 #include "util.h"
 
+
 extern NBlock* ProgramBlock;
 extern int yyparse();
 extern int yylex_destroy();
@@ -21,6 +22,7 @@ using namespace std;
 FOption Option;
 FCompilerContext Context;
 FSimulation Simulation;
+FDataset Dataset;
 FState State;
 
 const char *VersionString = "1.0.0";
@@ -36,77 +38,6 @@ void DumpNBlock(const NBlock* InProgramBlock) {
         }
     }
 }
-
-// class NCompilerData {
-// public:
-//     std::vector<string> EnzymeList;
-//     std::vector<string> SubstrateList;
-// 
-//     const float CellVolume = 0.005; // 7e-16;
-//     const float MolWeight = 100.0;
-//     const float kcat = 5.0;
-//     const float kM = 0.004;
-//     int Count_Enzymes = 50;
-//     int Count_Substrates = 100000;
-// //    std::vector<float> MolWeight;
-// //    std::vector<float> kcat;
-// //    std::vector<float> kM;
-// //    std::vector<int> Count_Enzymes;
-// //    std::vector<int> Count_Substrates;
-//     
-//     NCompilerData() {}
-//     
-//     void Print() const {
-//         cout << "CompilerData(" << std::endl;
-// 
-//         cout << "  EnzymeList(" << std::endl;
-//         for (auto& enzymeName: EnzymeList) {
-//             cout << "  " << enzymeName << ", ";
-//         } cout << "  )" << std::endl; 
-// 
-//         cout << "  SubstrateList(" << std::endl;
-//         for (auto& substrateName: SubstrateList) {
-//             cout << "  " << substrateName << ", ";
-//         } cout << "  )" << std::endl; 
-//     }
-//    
-//     void Print_SystemState() const {
-//         cout << "System State(" << std::endl;
-//         cout << "  CellVolume:" << CellVolume << std::endl;
-//         cout << "  MolWeight:" << MolWeight << std::endl;
-//         cout << "  kcat:" << kcat << std::endl;
-//         cout << "  kM:" << kM << std::endl;
-//         cout << "  Count_Enzymes:" << Count_Enzymes << std::endl;
-//         cout << "  Count_Substrates:" << Count_Substrates << std::endl;
-//         cout << "  )" << std::endl; 
-//     }
-// };
-// 
-// float ConcentrationToCount(float Conc_Molecule, float Volume) {
-//     return Conc_Molecule * Volume;
-// };
-// 
-// float CountToConcentration(int Count_Molecule, float Volume) {
-//     return Count_Molecule / Volume;
-// };
-// 
-// float MichaelisMentenEqn(int Count_Enzyme, int Count_Substrate, float CellVolume ,float kcat, float kM) {
-//     float Conc_Enzyme = CountToConcentration(Count_Enzyme, CellVolume);
-//     float Conc_Substrate = CountToConcentration(Count_Substrate, CellVolume);
-// 
-//     float Rate = (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM);
-//     cout << Rate << std::endl;
-//     return Rate;
-// }; 
-
-//void AddToList(vector<string> List, string Item) {
-//    if (std::find(std::begin(List), std::end(List), Item) != std::end(List)) {
-//        IdList.push_back(Item);
-//    } else {
-//        return; 
-//
-//    }  
-//};
 
 void TraversalNode(NBlock* InProgramBlock)
 {
@@ -144,40 +75,25 @@ void TraversalNode(NBlock* InProgramBlock)
                 Coefficient = -1; // update when coeff is fully implemented in parser
                 os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
                 Stoichiometry[reactant->Name]= Coefficient;
-            };
+            }
 
             for (const auto& product : OverallReaction.Products) {
                 Coefficient = 1; // update when coeff is fully implemented in parser
                 os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
                 Stoichiometry[product->Name]= Coefficient;
-            };
+            }
 
             FEnzymaticReaction EnzymaticReaction(Name, Stoichiometry, Name);
 
-            
-//            os << "  Products: " << endl;
-//            os << "    ";
-
-//            for (const auto& product : OverallReaction.Products) {
-//                SubstrateList.push_back(product);
-//                for (auto& substrate: SubstrateList) {
-//                    os << substrate->Name << ", ";
-//                }
-
-//                product->Print(os); os << ", ";
-//            }
-//            os << std::endl;
-
-//            os << "-----" << endl;
-//
 //            if (Protein->Block) {
 //                auto& Block = Protein->Block;
 //                for (auto& stmt: Block->Statements) {
 //                    os << "  "; stmt->Print(os);
 //                }
 //
-//            };
+//            }
 //            Context.ProteinList.emplace_back(*Protein);
+
             Context.EnzymeList.emplace_back(Enzyme);
             Context.EnzymaticReactionList.emplace_back(EnzymaticReaction);
  
@@ -338,8 +254,8 @@ int main(int argc, char *argv[])
     // temporary simulation code
     cout << endl << "## Simulation ##" << endl;
 
-    Simulation.Init(State, 20);
-    Simulation.Run(State, Context);
+    Simulation.Init(State, Dataset, 20);
+    Simulation.Run(State, Context, Dataset);
 
     return 0;
 }
