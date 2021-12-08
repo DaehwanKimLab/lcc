@@ -78,14 +78,39 @@ public:
         }
     }
 
+    std::vector<std::string> ExportLegend() {
+        std::vector<std::string> Legend;
+        Legend.resize(Enz2Count.size() + Sub2Count.size() + 2); // 2 for step and vol
+
+        int i = 0;
+        
+        Legend[0] = "SimStep"; i++;
+        Legend[1] = "Vol"; i++;
+   
+        std::vector<float> EnzCounts;
+        for (auto& KeyValue : Enz2Count){
+            Legend[i] = KeyValue.first;
+            i++;
+        }
+
+        std::vector<float> SubCounts;
+        for (auto& KeyValue : Sub2Count){
+            Legend[i] = KeyValue.first;
+            i++;
+        }
+
+        return Legend;
+    }
+
     std::vector<float> ExportState() {
         std::vector<float> DataExport;
         DataExport.resize(Enz2Count.size() + Sub2Count.size() + 2); // 2 for step and vol
-        
-        DataExport[0] = SimStep;
-        DataExport[1] = Vol;
 
-        int i = 2;
+        int i = 0;
+        
+        DataExport[0] = SimStep; i++;
+        DataExport[1] = Vol; i++;
+
         std::vector<float> EnzCounts;
         for (auto& KeyValue : Enz2Count){
             DataExport[i] = KeyValue.second;
@@ -116,9 +141,25 @@ public:
 //        RatesList.push_back(Rates);
 //    }
 
+    void PrintLegend(){
+        std::cout << "DataStrip: " << std::endl;
+        for (auto& legend : Legend) {
+            std::cout << legend << ", ";
+        }
+        std::cout << std::endl;
+    }
+
+    void PrintData(){
+        std::cout << "DataStrip: " << std::endl;
+        for (auto& data : Data) {
+            std::cout << data << ", ";
+        }
+        std::cout << std::endl;
+    }
+
     void ExportAsTSV(const FOption& InOption) {
 
-   }
+    }
 };
 
 class FSimulation {
@@ -170,17 +211,19 @@ public:
         State.SetSubCount("FADH2", 500);
         State.SetSubCount("H+", 500);
 
-        // Data Export
+        // Legend Export
+        Dataset.Legend = State.ExportLegend();
+        Dataset.PrintLegend();
+
+        // Data Export for Sim Step 0
         Dataset.Data = State.ExportState();
-        std::cout << "DataStrip: " << std::endl;
-        for (auto& data : Dataset.Data) {
-            std::cout << data << ", ";
-        }
-        std::cout << std::endl;
+        Dataset.PrintData();
     }
     
     void Run(FState& State, FCompilerContext& Context, FDataset& Dataset) {
         std::cout << "Simulation: " << std::endl;
+
+        // TODO: export this variable in simulation object instead of cell state Sim step
         int CurrentSimStep = 0;
 
         while (CurrentSimStep < N_SimSteps) {
@@ -245,15 +288,12 @@ public:
                     } // Enzymatic Reaction for loop
                 } // Pathway.Sequence for loop
             } // Context.Pathway loop
+
             CurrentSimStep++;
 
             // Data Export
             Dataset.Data = State.ExportState();
-            std::cout << "DataStrip: ";
-            for (auto& data : Dataset.Data) {
-                std::cout << data << ", ";
-            }
-            std::cout << std::endl;
+            Dataset.PrintData();
             
         } // while loop
     }// run
