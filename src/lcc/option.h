@@ -24,7 +24,9 @@ public:
 
     std::string OutputPrefix;
 
-	std::string SimResultFile;
+    std::string SimResultFile;
+
+    std::string SimModuleFile;
 
     bool bDebug;
     bool bVersion;

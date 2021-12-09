@@ -15,6 +15,7 @@ enum {
     ARG_DATA_PATH,
     ARG_OUTPUT_PREFIX,
 	ARG_SIMOUT,
+    ARG_SIMMODULE,
 };
 
 int FOption::Parse(int argc, char *argv[])
@@ -28,7 +29,8 @@ int FOption::Parse(int argc, char *argv[])
             {"output", required_argument, NULL, 'o'},
             {"debug", no_argument, NULL, ARG_DEBUG},
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
-			{"simout", required_argument, NULL, ARG_SIMOUT},
+		            {"simout", required_argument, NULL, ARG_SIMOUT},
+            {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {NULL, 0, NULL, 0},
     };
 
@@ -76,6 +78,10 @@ int FOption::Parse(int argc, char *argv[])
 			case ARG_SIMOUT:
 				SimResultFile = std::string(optarg);
 				break;
+			
+            case ARG_SIMMODULE:
+                SimModuleFile = std::string(optarg);
+                break;
 
             case '?':
             default:
@@ -139,6 +145,7 @@ void FOption::Usage(const char *argv0)
     os << "  " << "                    Use <name> as output file prefix" << std::endl;
     os << "  " << "--debug             Enable debug mode" << std::endl;
     os << "  " << "--parse-only        Check syntax" << std::endl;
+    os << "  " << "--simmodule           Simulation Module File" << std::endl;
 }
 
 void FOption::Dump()
