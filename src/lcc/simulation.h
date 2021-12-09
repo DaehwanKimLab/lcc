@@ -209,10 +209,12 @@ public:
         State.SetSubCount("NADH", 500);
         State.SetSubCount("CO2", 500);
         State.SetSubCount("ADP", 500);
+        State.SetSubCount("ATP", 500);
         State.SetSubCount("Pi", 500);
         State.SetSubCount("FAD", 500);
         State.SetSubCount("FADH2", 500);
         State.SetSubCount("H+", 500);
+        State.SetSubCount("Pi", 500);
 
         // Legend Export
         Dataset.Legend = State.ExportLegend();
