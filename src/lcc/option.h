@@ -24,6 +24,8 @@ public:
 
     std::string OutputPrefix;
 
+	std::string SimResultFile;
+
     bool bDebug;
     bool bVersion;
     int Verbose;

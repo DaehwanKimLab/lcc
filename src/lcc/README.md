@@ -35,6 +35,13 @@ Installing llvm development environment:
     make lcc-run
     #python cell.py
 
+## build lcc-prep and run TCA simulation
+	
+	make clean
+	make
+	# run
+	./lcc-prep -i . TCA.lpp --simout TCA_sim.tsv
+
 
 ## Vim syntax highlight
 Copy etc/lpp.vim to $HOME/.vim/syntax directory and add below line to .vimrc or create a file to $HOME/.vim/ftdetect/lpp.vim

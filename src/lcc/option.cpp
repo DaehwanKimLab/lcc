@@ -14,6 +14,7 @@ enum {
     ARG_LIBRARY_PATH,
     ARG_DATA_PATH,
     ARG_OUTPUT_PREFIX,
+	ARG_SIMOUT,
 };
 
 int FOption::Parse(int argc, char *argv[])
@@ -27,6 +28,7 @@ int FOption::Parse(int argc, char *argv[])
             {"output", required_argument, NULL, 'o'},
             {"debug", no_argument, NULL, ARG_DEBUG},
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
+			{"simout", required_argument, NULL, ARG_SIMOUT},
             {NULL, 0, NULL, 0},
     };
 
@@ -70,6 +72,10 @@ int FOption::Parse(int argc, char *argv[])
             case ARG_PARSEONLY:
                 bParseOnly = true;
                 break;
+
+			case ARG_SIMOUT:
+				SimResultFile = std::string(optarg);
+				break;
 
             case '?':
             default:

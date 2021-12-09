@@ -9,6 +9,7 @@
 #include "option.h"
 #include "context.h"
 #include "simulation.h"
+#include "datamanager.h"
 #include "util.h"
 
 
@@ -24,6 +25,7 @@ FCompilerContext Context;
 FSimulation Simulation;
 FDataset Dataset;
 FState State;
+FDataManager DataManager;
 
 const char *VersionString = "1.0.0";
 using namespace std;
@@ -257,5 +259,8 @@ int main(int argc, char *argv[])
     Simulation.Init(State, Dataset, 20);
     Simulation.Run(State, Context, Dataset);
 
+	if (!Option.SimResultFile.empty()) {
+		DataManager.SaveToFile(Option.SimResultFile.c_str());
+	}
     return 0;
 }

@@ -8,7 +8,10 @@
 // #include "option.h"
 // #include "node.h"
 #include "context.h"
+#include "datamanager.h"
 // #include "dataset.h"
+
+extern FDataManager DataManager;
 
 float ConcToCount(float Conc_Molecule, float Volume) {
     return Conc_Molecule * Volume;
@@ -213,11 +216,13 @@ public:
 
         // Legend Export
         Dataset.Legend = State.ExportLegend();
-        Dataset.PrintLegend();
+        //Dataset.PrintLegend();
+		DataManager.SetLegend(Dataset.Legend);
 
         // Data Export for Sim Step 0
         Dataset.Data = State.ExportState();
-        Dataset.PrintData();
+        //Dataset.PrintData();
+		DataManager.Add(Dataset.Data);
     }
     
     void Run(FState& State, FCompilerContext& Context, FDataset& Dataset) {
@@ -293,7 +298,8 @@ public:
 
             // Data Export
             Dataset.Data = State.ExportState();
-            Dataset.PrintData();
+            //Dataset.PrintData();
+			DataManager.Add(Dataset.Data);
             
         } // while loop
     }// run
