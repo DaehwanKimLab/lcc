@@ -1,60 +1,73 @@
+import os
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
 
-def VisualizeData(Dataset, RequestedData):
-    if RequestedData[0]:   # Check the Molecule ID List
-        PlotData(Dataset, RequestedData[0], RequestedData[1])   # [0] for ID list, [1] for ID2UserInput Dictionary
-    else:
-        pass
+def LoadRawData(Data_Dir):
+    Datasets = dict()
 
-def PlotData(Dataset, TargetNames, DictTargetName=None):
+    def Parse_tsv(FilePath, FileName):
+        Fullpath = FilePath + '/' + FileName
+        # print(fname)
 
-    X = list()
-    Y = list()
+        with open(Fullpath) as fp:
+            Reader = csv.reader(fp, delimiter=',')
+            Datasets[FileName] = list(Reader)
 
-    with open(Dataset) as CsvFile:
-        Reader = csv.reader(CsvFile, delimiter=',')
+    for FileName in os.listdir(Data_Dir):
+        if FileName.endswith('.tsv'):
+            Parse_tsv(Data_Dir, FileName)
 
-        Name_Row = next(Reader)
-        ColumnsForTargetNames = []
-        TargetNameToShow = []
-        for TargetName in TargetNames:
-            ColumnsForTargetNames.append(Name_Row.index(TargetName))
-            if TargetName in DictTargetName.keys():
-                TargetNameToShow.append(DictTargetName[TargetName])
-            else:
-                TargetNameToShow.append(TargetName)
-            # print("found a column for %s" % TargetName)
+    return Datasets
 
-        NumRows = 0
-        for Row in Reader:
-            ValuesInColumnsForTargetNames = list()
-            for Column in ColumnsForTargetNames:
-                ValuesInColumnsForTargetNames.append(int(Row[Column]))
-            Y.append(ValuesInColumnsForTargetNames)
-            NumRows += 1
+def PlotData(Dataset):
 
-        # print("Rows = ", numRows)
-        X = list(range(NumRows))
-        # print(len(X) == len(Y))
+    Legend = Dataset[0]
+    Data = Dataset[1:]
 
+    for i, Row in enumerate(Data):
+        Data[i] = [int(NumStr) for NumStr in Row]
 
+    Idx_SimStep = 1
+    Idx_Vol = 1 + Idx_SimStep
+    Idx_Enzyme = 8 + Idx_Vol
+    Idx_Substrate = 21 + Idx_Enzyme
 
-    Y = np.array(Y).transpose()
+    Data_Transposed = np.array(Data).transpose()
+    Data_SimStep = Data_Transposed[0:Idx_SimStep]
+    Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+    Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
+    Data_SubCounts = Data_Transposed[Idx_Enzyme:Idx_Substrate]
+
+    Legend_SimStep = Legend[0:Idx_SimStep]
+    Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+    Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
+    Legend_SubCounts = Legend[Idx_Enzyme:Idx_Substrate]
+
+# Potentially split point for another function
+
+    X = Data_SimStep
+    Y = Data_SubCounts
+
+    assert X.shape[1] == Y.shape[1]
 
     ax = plt.axes(xlim=(0, len(X)), ylim=(0, Y.max() * 1.2))
 
-    ax.set_ylabel('Count')
-    ax.set_xlabel('Time (seconds)')
-    ax.set_title(TargetNameToShow)
+    ax.set_ylabel('Substrate Count')
+    ax.set_xlabel('Sim Step')
+    ax.set_title('TCA cycle')
 
-    for i, TargetName in enumerate(TargetNameToShow):
-        ax.plot(X, Y[i], label=TargetName)
+    for i in range(len(Legend_SubCounts)):
+        ax.plot(X[0], Y[i], label=Legend_SubCounts[i])
 
     ax.legend(loc='upper left')
 
     plt.show()
+
+Data_Dir = '../lcc'
+Datasets = LoadRawData(Data_Dir)
+for FileName, Dataset in Datasets.items():
+    PlotData(Dataset)
 
 
 # SavePath = 'lccsave/'
