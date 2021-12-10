@@ -15,6 +15,7 @@ enum {
     ARG_DATA_PATH,
     ARG_OUTPUT_PREFIX,
 	ARG_SIMOUT,
+    ARG_SIMIMP,
     ARG_SIMMODULE,
 };
 
@@ -30,6 +31,7 @@ int FOption::Parse(int argc, char *argv[])
             {"debug", no_argument, NULL, ARG_DEBUG},
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
 		            {"simout", required_argument, NULL, ARG_SIMOUT},
+            {"simimp", required_argument, NULL, ARG_SIMIMP},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {NULL, 0, NULL, 0},
     };
@@ -75,6 +77,13 @@ int FOption::Parse(int argc, char *argv[])
                 bParseOnly = true;
                 break;
 
+            case ARG_SIMIMP:
+		if (std::string(optarg).find("c++") != -1) {                
+                    bSimCpp = true;
+                } else if (std::string(optarg).find("python") != -1) {
+                    bSimPython = true;
+                }
+                break;
 			case ARG_SIMOUT:
 				SimResultFile = std::string(optarg);
 				break;
@@ -110,6 +119,8 @@ void FOption::Reset() {
     Verbose = 0;
     bShowHelp = false;
     bParseOnly = false;
+    bSimCpp = false;
+    bSimPython = false;    
 }
 
 

@@ -25,8 +25,10 @@ public:
     std::string OutputPrefix;
 
     std::string SimResultFile;
-
     std::string SimModuleFile;
+
+    bool bSimCpp;
+    bool bSimPython;
 
     bool bDebug;
     bool bVersion;

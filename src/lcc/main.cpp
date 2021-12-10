@@ -162,6 +162,117 @@ void ScanNodes(const NBlock* InProgramBlock)
     }
 }
 
+void WriteSimModule(int TestInt)
+{
+    // write simulation.py
+    std::ofstream ofs(Option.SimModuleFile.c_str());
+    std::string endl = "\n";
+    std::string in = "    ";
+
+    // IMPORT
+    ofs << "import os, sys" << endl;
+    ofs << "import numpy as np" << endl;
+    ofs << "import tensorflow as tf" << endl;
+    ofs << "from datetime import datetime" << endl;
+    ofs << endl;
+
+    // C++ to Python Data conversion
+    ofs << "PathwayList = list()" << endl;
+    for (auto& pathway : Context.PathwayList) {
+       ofs << "PathwayList.append({";
+       ofs << "'Name' : '" << pathway.Name << "', ";
+       ofs << "'Sequence' : [";
+       for (auto& enzyme : pathway.Sequence) {
+           ofs << "'" << enzyme << "', ";
+       }
+       ofs << "]" << "})" << endl;
+    }
+    ofs << endl;
+
+    ofs << "EnzymeList = list()" << endl;
+    for (auto& enzyme : Context.EnzymeList) {
+        ofs << "EnzymeList.append({";
+        ofs << "'Name' : '" << enzyme.Name << "', ";
+        ofs << "'Substrate' : '" << enzyme.Substrate << "', ";
+        ofs << "'kcat' : " << enzyme.kcat << ", ";
+        ofs << "'kM' : " << enzyme.kM << ", })" << endl;
+    }
+    ofs << endl;
+
+    // BODY
+    ofs << "def main():   # add verbose" << endl;
+    ofs << endl;
+
+    // user input
+    ofs << in+ "N_SimSteps = 5" << endl;
+    
+
+    ofs << endl;
+
+    // class FState 
+    ofs << in+ "class FState:" << endl;
+    ofs << in+ in+ "def __init__(self):" << endl;
+    ofs << in+ in+ in+ "self.Vol = 0" << endl;
+    ofs << in+ in+ in+ "self.Step = 0   ## temporary" << endl;
+
+
+    ofs << endl;
+
+    // class FDataset
+    ofs << in+ "class FDataset:" << endl;
+    ofs << in+ in+ "def __init__(self):" << endl;
+    ofs << in+ in+ in+ "self.Legend = list()" << endl;
+    ofs << in+ in+ in+ "self.Data = list()" << endl;
+
+
+    ofs << endl;
+
+    // class FSimulation
+    ofs << in+ "class FSimulation:" << endl;
+    ofs << in+ in+ "def __init__(self, State, Data, DM ):" << endl;
+    ofs << in+ in+ in+ "self.N_SimSteps = 0" << endl;
+    ofs << in+ in+ in+ "self.State = State" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def Initialize(self, InN_SimSteps):" << endl;
+    ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
+    ofs << in+ in+ in+ "pass" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def Run(self):" << endl;
+    ofs << in+ in+ in+ "print('Simulation Run Begins...')" << endl;
+    ofs << in+ in+ in+ "pass" << endl;
+
+
+    ofs << endl;
+
+    // class FDataManager
+    ofs << in+ "class FDataManager:" << endl;
+    ofs << in+ in+ "def __init__(self):" << endl;
+    ofs << in+ in+ in+ "self.Legend = list()" << endl;
+    ofs << in+ in+ in+ "self.DataBuffer = list()" << endl;
+
+
+    ofs << endl;
+
+    // Instantiate Objects
+    ofs << in+ "State = FState()" << endl;
+    ofs << in+ "Data = FDataset()" << endl;
+    ofs << in+ "DM = FDataManager()" << endl;
+    ofs << in+ "Sim = FSimulation(State, Data, DM)" << endl;
+    ofs << endl;
+
+    // Simulation Module
+    ofs << in+ "Sim.Initialize(N_SimSteps)" << endl;
+    ofs << in+ "Sim.Run()" << endl;
+    ofs << endl;
+
+    // MAIN
+    ofs << "if __name__ == '__main__':" << endl;
+    ofs << in+ "main()" << endl;
+    ofs << endl;
+
+}
+
+
 int main(int argc, char *argv[])
 {
     if (Option.Parse(argc, argv)) {
@@ -240,125 +351,29 @@ int main(int argc, char *argv[])
         }
     }
 
-    // write simulation.py
-    std::ofstream ofs(Option.SimModuleFile.c_str());
-    std::string endl = "\n";
-    std::string in = "    ";
+    if (Option.bSimPython) {
+        cout << endl << "## Simulation_Python ##" << endl;
+        
+        int TestInt = 1;
+        WriteSimModule(TestInt);
 
-    // IMPORT
-    ofs << "import os, sys" << endl;
-    ofs << "import numpy as np" << endl;
-    ofs << "import tensorflow as tf" << endl;
-    ofs << "from datetime import datetime" << endl;
-    ofs << "from os import listdir" << endl;
-    ofs << "from argparse import ArgumentParser, FileType" << endl;
-    ofs << "import abc" << endl;
-    ofs << "import csv" << endl;
-    ofs << endl;
-
-    // C++ to Python Data conversion
-
-    ofs << "PathwayList = list()" << endl;
-    for (auto& pathway : Context.PathwayList) {
-       ofs << "PathwayList.append({";
-       ofs << "'Name' : '" << pathway.Name << "', ";
-       ofs << "'Sequence' : [";
-       for (auto& enzyme : pathway.Sequence) {
-           ofs << "'" << enzyme << "', ";
-       }
-       ofs << "]" << "})" << endl;
+        cout << "Simulation_Python module has been generated: ";
+        cout << Option.SimModuleFile << endl;
     }
-    ofs << endl;
 
-    ofs << "EnzymeList = list()" << endl;
-    for (auto& enzyme : Context.EnzymeList) {
-        ofs << "EnzymeList.append({";
-        ofs << "'Name' : '" << enzyme.Name << "', ";
-        ofs << "'Substrate' : '" << enzyme.Substrate << "', ";
-        ofs << "'kcat' : " << enzyme.kcat << ", ";
-        ofs << "'kM' : " << enzyme.kM << ", })" << endl;
+    if (Option.bSimCpp) {
+        // temporary C++ simulation code
+        cout << endl << "## Simulation_C++ ##" << endl;
+  
+        Simulation.Init(State, Dataset, 100);
+        Simulation.Run(State, Context, Dataset);
     }
-    ofs << endl;
+            if (!Option.SimResultFile.empty()) {
+		DataManager.SaveToFile(Option.SimResultFile.c_str());
 
-    // BODY
-    ofs << "def main():   # add verbose" << endl;
-    ofs << endl;
+                
+ 	    }       
 
-    // user input
-    ofs << in+ "N_SimSteps = 5";
-
-    // class FState 
-    ofs << in+ "class FState:" << endl;
-    ofs << in+ in+ "def __init__(self):" << endl;
-    ofs << in+ in+ in+ "self.Vol = 0" << endl;
-    ofs << in+ in+ in+ "self.Step = 0   ## temporary" << endl;
-
-
-    ofs << endl;
-
-    // class FDataset
-    ofs << in+ "class FDataset:" << endl;
-    ofs << in+ in+ "def __init__(self):" << endl;
-    ofs << in+ in+ in+ "self.Legend = list()" << endl;
-    ofs << in+ in+ in+ "self.Data = list()" << endl;
-
-
-    ofs << endl;
-
-    // class FSimulation
-    ofs << in+ "class FSimulation:" << endl;
-    ofs << in+ in+ "def __init__(self, State):" << endl;
-    ofs << in+ in+ in+ "self.N_SimSteps = 0" << endl;
-    ofs << in+ in+ in+ "self.State = State" << endl;
-    ofs << endl;
-    ofs << in+ in+ "def Initialize(self, InN_SimSteps):" << endl;
-    ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
-    ofs << in+ in+ in+ "pass" << endl;
-    ofs << endl;
-    ofs << in+ in+ "def Run(self):" << endl;
-    ofs << in+ in+ in+ "print('Simulation Run Begins...')" << endl;
-    ofs << in+ in+ in+ "pass" << endl;
-
-
-    ofs << endl;
-
-    // class FDataManager
-    ofs << in+ "class FDataManager:" << endl;
-    ofs << in+ in+ "def __init__(self):" << endl;
-    ofs << in+ in+ in+ "self.Legend = list()" << endl;
-    ofs << in+ in+ in+ "self.DataBuffer = list()" << endl;
-
-
-    ofs << endl;
-
-    // Instantiate Objects
-    ofs << in+ "State = FState()" << endl;
-    ofs << in+ "Data = FDataset()" << endl;
-    ofs << in+ "Sim = FSimulation(Data)" << endl;
-    ofs << in+ "DM = FDataManager()" << endl;
-    ofs << endl;
-
-    // Simulation Module
-    ofs << in+ "Sim.Initialize(N_SimSteps)" << endl;
-    ofs << in+ "Sim.Run()" << endl;
-
-
-    ofs << endl;
-
-    // MAIN
-    ofs << "if __name__ == '__main__':" << endl;
-    ofs << in+ "main()" << endl;
-    ofs << endl;
-
-
-    // temporary simulation code
-//    cout << endl << "## Simulation ##" << endl;
-//
-//    Simulation.Init(State, Dataset, 20000);
-//    Simulation.Run(State, Context, Dataset);
-//
-//	if (!Option.SimResultFile.empty()) {
-//		DataManager.SaveToFile(Option.SimResultFile.c_str());
-//	}
     return 0;
 }
+

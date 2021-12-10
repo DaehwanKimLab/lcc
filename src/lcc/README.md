@@ -14,7 +14,12 @@
 
 ## compile TCA.lpp and simulate
 
-        ./build/lcc-prep -i . TCA.lpp --simmodule Sim.py
+        For simulation in C++
+        ./build/lcc-prep -i . TCA.lpp --simimp c++ --simout TCA_simout.tsv
+
+        For simulation in python
+        ./build/lcc-prep -i . TCA.lpp --simimp python --simmodule Sim.py 
+        (--simout TCA_simout.tsv not implemented for python yet)
 
 ## plotting
 
