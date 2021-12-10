@@ -18,6 +18,8 @@ add_executable(lcc-prep
 	option.cpp
 	context.cpp
 	util.cpp
+	simulation.cpp
+        state.cpp
 	${BISON_LPPParser_OUTPUTS}
 	${FLEX_LPPScanner_OUTPUTS}
 )

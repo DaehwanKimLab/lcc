@@ -12,7 +12,6 @@
 #include "datamanager.h"
 #include "util.h"
 
-
 extern NBlock* ProgramBlock;
 extern int yyparse();
 extern int yylex_destroy();
@@ -29,7 +28,9 @@ FDataManager DataManager;
 
 const char *VersionString = "1.0.0";
 using namespace std;
-void DumpNBlock(const NBlock* InProgramBlock) {
+
+void DumpNBlock(const NBlock* InProgramBlock) 
+{
     if (!InProgramBlock) {
         return;
     }
@@ -365,7 +366,7 @@ int main(int argc, char *argv[])
         // temporary C++ simulation code
         cout << endl << "## Simulation_C++ ##" << endl;
   
-        Simulation.Init(State, Dataset, 100);
+        Simulation.Init(State, Dataset, DataManager, 100);
         Simulation.Run(State, Context, Dataset);
     }
             if (!Option.SimResultFile.empty()) {
