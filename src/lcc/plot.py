@@ -26,7 +26,7 @@ def PlotData(Dataset):
     Data = Dataset[1:]
 
     for i, Row in enumerate(Data):
-        Data[i] = [int(NumStr) for NumStr in Row]
+        Data[i] = [float(NumStr) for NumStr in Row]
 
     Idx_SimStep = 1
     Idx_Vol = 1 + Idx_SimStep

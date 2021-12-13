@@ -1,6 +1,7 @@
 #include <iostream>
 #include <queue>
 #include <cassert>
+#include <algorithm>
 
 #include <unistd.h>
 #include <getopt.h>
@@ -175,6 +176,7 @@ void WriteSimModule(int TestInt)
     ofs << "import numpy as np" << endl;
     ofs << "import tensorflow as tf" << endl;
     ofs << "from datetime import datetime" << endl;
+    ofs << "import csv" << endl;
     ofs << endl;
 
     // C++ to Python Data conversion
@@ -205,8 +207,23 @@ void WriteSimModule(int TestInt)
     ofs << endl;
 
     // user input
-    ofs << in+ "N_SimSteps = 5" << endl;
+    ofs << in+ "N_SimSteps = 100" << endl;
     
+
+    ofs << endl;
+
+    // utilities
+    ofs << in+ "def ConcToCount(Conc_Molecule, Volume):" << endl;
+    ofs << in+ in+ "return Conc_Molecule * Volume" << endl;
+    ofs << endl;
+
+    ofs << in+ "def CountToConc(Count_Molecule, Volume):" << endl;
+    ofs << in+ in+ "return Count_Molecule / Volume" << endl;
+    ofs << endl;
+
+    ofs << in+ "def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM):" << endl;
+    ofs << in+ in+ "# Return Rate of Reaction" << endl;
+    ofs << in+ in+ "return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)" << endl;
 
     ofs << endl;
 
@@ -214,34 +231,165 @@ void WriteSimModule(int TestInt)
     ofs << in+ "class FState:" << endl;
     ofs << in+ in+ "def __init__(self):" << endl;
     ofs << in+ in+ in+ "self.Vol = 0" << endl;
-    ofs << in+ in+ in+ "self.Step = 0   ## temporary" << endl;
-
-
+    //ofs << in+ in+ in+ "self.Enz2Count = dict()" << endl;
+    //ofs << in+ in+ in+ "self.Sub2Count = dict()" << endl;
     ofs << endl;
-
+    ofs << in+ in+ in+ "# State Arrays" << endl;
+    ofs << in+ in+ in+ "self.Enz2Count = dict()" << endl;
+    ofs << in+ in+ in+ "self.Sub2Count = dict()" << endl;
+    ofs << in+ in+ in+ "self.Enz2DelCount = dict()" << endl;
+    ofs << in+ in+ in+ "self.Sub2DelCount = dict()" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def SetEnzCount(self, Name, Count):" << endl;
+    ofs << in+ in+ in+ "self.Enz2Count[Name] = Count" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def SetSubCount(self, Name, Count):" << endl;
+    ofs << in+ in+ in+ "self.Sub2Count[Name] = Count" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def GetEnzCount(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.Enz2Count[Name]" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def GetSubCount(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.Sub2Count[Name]" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def GetEnzConc(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.Enz2Count[Name] / self.Vol" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def GetSubConc(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.Sub2Count[Name] / self.Vol" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def ExportLegend(self):" << endl;
+    ofs << in+ in+ in+ "Legend = list()" << endl;
+    ofs << in+ in+ in+ "Legend.append('SimStep')" << endl;
+    ofs << in+ in+ in+ "Legend.append('Vol')" << endl; 
+    ofs << in+ in+ in+ "# Enzymes" << endl;
+    ofs << in+ in+ in+ "for Name, Count in self.Enz2Count.items():" << endl;    
+    ofs << in+ in+ in+ in+ "Legend.append(Name)" << endl;
+    ofs << in+ in+ in+ "# Substrates" << endl;
+    ofs << in+ in+ in+ "for Name, Count in self.Sub2Count.items():" << endl;
+    ofs << in+ in+ in+ in+ "Legend.append(Name)" << endl;
+    ofs << in+ in+ in+ "return Legend" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def ExportData(self, SimStep):" << endl;
+    ofs << in+ in+ in+ "Data = list()" << endl;
+    ofs << in+ in+ in+ "Data.append(SimStep)" << endl;
+    ofs << in+ in+ in+ "Data.append(self.Vol)" << endl; 
+    ofs << in+ in+ in+ "# Enzymes" << endl;
+    ofs << in+ in+ in+ "for Name, Count in self.Enz2Count.items():" << endl;    
+    ofs << in+ in+ in+ in+ "Data.append(Count)" << endl;
+    ofs << in+ in+ in+ "# Substrates" << endl;
+    ofs << in+ in+ in+ "for Name, Count in self.Sub2Count.items():" << endl;
+    ofs << in+ in+ in+ in+ "Data.append(Count)" << endl;
+    ofs << in+ in+ in+ "return Data" << endl;
+    ofs << endl;
+    
     // class FDataset
     ofs << in+ "class FDataset:" << endl;
     ofs << in+ in+ "def __init__(self):" << endl;
     ofs << in+ in+ in+ "self.Legend = list()" << endl;
     ofs << in+ in+ in+ "self.Data = list()" << endl;
-
-
+    ofs << endl;
+    ofs << in+ in+ "def PrintLegend(self):" << endl;
+    ofs << in+ in+ in+ "print(self.Legend)" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def PrintData(self):" << endl;
+    ofs << in+ in+ in+ "print(self.Data)" << endl;
     ofs << endl;
 
     // class FSimulation
     ofs << in+ "class FSimulation:" << endl;
-    ofs << in+ in+ "def __init__(self, State, Data, DM ):" << endl;
+    ofs << in+ in+ "def __init__(self, InState, InDataset, InDM):" << endl;
     ofs << in+ in+ in+ "self.N_SimSteps = 0" << endl;
-    ofs << in+ in+ in+ "self.State = State" << endl;
+    ofs << in+ in+ in+ "self.SimStep = 0" << endl;
+    ofs << in+ in+ in+ "self.State = InState" << endl;
+    ofs << in+ in+ in+ "self.Dataset = InDataset" << endl;
+    ofs << in+ in+ in+ "self.DM = InDM" << endl;
     ofs << endl;
     ofs << in+ in+ "def Initialize(self, InN_SimSteps):" << endl;
     ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
-    ofs << in+ in+ in+ "pass" << endl;
+    ofs << in+ in+ in+ "self.N_SimSteps = InN_SimSteps" << endl;
+    ofs << in+ in+ in+ "self.State.Vol = 1" << endl;
     ofs << endl;
+
+    for (auto& Enzyme : Context.EnzymeList) {
+        ofs << in+ in+ in+ "self.State.SetEnzCount('" << Enzyme.Name << "', 5)" << endl;
+    }
+    ofs << endl;
+
+    std::vector<std::string> SubstrateWritten;
+    for (auto& EnzymaticReaction : Context.EnzymaticReactionList) {
+        for (std::pair<std::string, int> Stoich : EnzymaticReaction.Stoichiometry) {
+            if (std::find(SubstrateWritten.begin(), SubstrateWritten.end(), Stoich.first) == SubstrateWritten.end()) {
+            
+                SubstrateWritten.push_back(Stoich.first);
+                ofs << in+ in+ in+ "self.State.SetSubCount('" << Stoich.first << "', 500)" << endl;
+            }
+        }
+    }
+    ofs << endl;
+    ofs << in+ in+ in+ "# Legend Export" << endl;
+    ofs << in+ in+ in+ "self.Dataset.Legend = self.State.ExportLegend()" << endl;
+    ofs << in+ in+ in+ "self.DM.SetLegend(self.Dataset.Legend)" << endl;
+
+    ofs << in+ in+ in+ "# Data Export" << endl;
+    ofs << in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep)" << endl;
+    ofs << in+ in+ in+ "self.DM.Add(self.Dataset.Data)" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "def Run(self):" << endl;
     ofs << in+ in+ in+ "print('Simulation Run Begins...')" << endl;
-    ofs << in+ in+ in+ "pass" << endl;
+    ofs << in+ in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
+    ofs << in+ in+ in+ in+ "self.SimStep += 1" << endl;
 
+    for (auto& Pathway : Context.PathwayList) {
+    ofs << in+ in+ in+ in+ "print('" << Pathway.Name << "')" << endl;
+
+        for (auto& EnzymeName : Pathway.Sequence) {
+            // ofs << in+ in+ in+ in+ "print('" << EnzymeName << "')"<< endl;
+            std::string Substrate;
+            float kcat;
+            float kM;
+
+            for (auto& Enzyme: Context.EnzymeList) {
+                if (Enzyme.Name == EnzymeName) {
+                    Substrate = Enzyme.Substrate;
+                    ofs << in+ in+ in+ in+ "kcat = " << Enzyme.kcat << endl;
+                    ofs << in+ in+ in+ in+ "kM = " << Enzyme.kM << endl;
+                }
+            } 
+            ofs << in+ in+ in+ in+ "EnzConc = self.State.GetEnzConc('" << EnzymeName << "')" << endl;
+            ofs << in+ in+ in+ in+ "SubConc = self.State.GetSubConc('" << Substrate << "')" << endl;
+            ofs << in+ in+ in+ in+ "Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, kM)" << endl;
+            ofs << endl;
+
+            ofs << in+ in+ in+ in+ "# Display" << endl;
+            ofs << in+ in+ in+ in+ "EnzName = '" << EnzymeName << "' + '\\t|'" << endl;
+            ofs << in+ in+ in+ in+ "EnzStr = 'EnzConc: ' + str(EnzConc) + '\\t|'" << endl;
+            ofs << in+ in+ in+ in+ "SubStr = 'SubConc: ' + str(SubConc) + '\\t|'" << endl;
+            ofs << in+ in+ in+ in+ "RateStr = 'Rate: ' + str(Rate)" << endl;
+            ofs << in+ in+ in+ in+ "print(EnzName + EnzStr + SubStr + RateStr)" << endl;
+
+            for (auto& EnzymaticReaction : Context.EnzymaticReactionList) {
+                if ((EnzymaticReaction.Enzyme == EnzymeName) & EnzymaticReaction.CheckIfReactant(Substrate)){
+                    for (std::pair<std::string, int> Stoich : EnzymaticReaction.Stoichiometry) {
+                        ofs << in+ in+ in+ in+ "Coeff = " << Stoich.second << endl;
+                        ofs << in+ in+ in+ in+ "SubDelConc = Rate * Coeff" << endl;
+                        ofs << in+ in+ in+ in+ "self.State.Sub2DelCount['" << Stoich.first << "'] = ConcToCount(SubDelConc, self.State.Vol)" << endl;
+                        ofs << endl;
+                    }
+                }
+            }
+        }                   
+    ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
+    ofs << in+ in+ in+ in+ "for Name, Count in self.State.Sub2Count.items():" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.State.Sub2Count[Name] += self.State.Sub2DelCount[Name]" << endl;
+    ofs << endl;
+
+
+    ofs << in+ in+ in+ in+ "# Save and Export Data" << endl;
+    ofs << in+ in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep)" << endl;
+    ofs << in+ in+ in+ in+ "self.DM.Add(self.Dataset.Data)" << endl;
+    }
 
     ofs << endl;
 
@@ -250,8 +398,20 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ "def __init__(self):" << endl;
     ofs << in+ in+ in+ "self.Legend = list()" << endl;
     ofs << in+ in+ in+ "self.DataBuffer = list()" << endl;
-
-
+    ofs << endl;
+    ofs << in+ in+ "def SetLegend(self, InLegend):" << endl;
+    ofs << in+ in+ in+ "self.Legend = InLegend" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def Add(self, InData):" << endl;
+    ofs << in+ in+ in+ "self.DataBuffer.append(InData)" << endl;
+    ofs << endl;
+    ofs << in+ in+ "def SaveToFile(self, InFileName):" << endl;
+    ofs << in+ in+ in+ "with open(InFileName, 'w') as OutFile:" << endl;
+    ofs << in+ in+ in+ in+ "TsvWriter = csv.writer(OutFile, delimiter='\\t')" << endl;
+    ofs << in+ in+ in+ in+ "if self.Legend:" << endl;
+    ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(self.Legend)" << endl;
+    ofs << in+ in+ in+ in+ "for Row in self.DataBuffer:" << endl;
+    ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(Row)" << endl;
     ofs << endl;
 
     // Instantiate Objects
@@ -264,6 +424,8 @@ void WriteSimModule(int TestInt)
     // Simulation Module
     ofs << in+ "Sim.Initialize(N_SimSteps)" << endl;
     ofs << in+ "Sim.Run()" << endl;
+    ofs << endl;
+    ofs << in+ "DM.SaveToFile('" << Option.SimResultFile.c_str() << "')" << endl;
     ofs << endl;
 
     // MAIN
