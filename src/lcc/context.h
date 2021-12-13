@@ -40,26 +40,22 @@ public:
         : Name(InName), Sequence(InSequence) {};
 };
 
-// TODO: Resolve NProteinDeclaration link
 class FProtein {
 public:
-//    std::string Name;
+    std::string Name;
 
-    FProtein(const NProteinDeclaration& InProteinDecl) : ProteinDecl(InProteinDecl) {};
-//    FProtein(std::string& InName) : Name(InName) {};
+    FProtein() {}
 
-    const std::string& GetName() const {
-        return ProteinDecl.Id.Name;
+    FProtein(const std::string& InName) : Name(InName) {}
+
+    const std::string GetName() const {
+        return Name;
     }
-
-private:
-    const NProteinDeclaration ProteinDecl;
+    
 };
 
-// TODO: Inheret FProtein after resolving NProteinDeclaration link issue
-class FEnzyme { //: public FProtein {
+class FEnzyme : public FProtein {
 public:
-    std::string Name; // remove after resolving inheritance issue
     std::string Substrate;
     float kcat;
     float kM;
@@ -67,7 +63,7 @@ public:
     FEnzyme() {}
 
     FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
-        : Name(InName), Substrate(InSubstrate), kcat(Inkcat), kM(InkM) {} // , FProtein(InName) {};
+        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FProtein(InName) {}
 
 };
 
