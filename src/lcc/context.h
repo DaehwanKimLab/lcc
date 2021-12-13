@@ -130,6 +130,7 @@ public:
             }          
         }
         std::cout << "No such enzyme found in the database: " << Name << std::endl;
+        return std::string();
     }
 
     const std::string QueryReactionTable(const std::string& Name, const std::string& Property){
@@ -139,6 +140,7 @@ public:
             }          
         }
         std::cout << "No such reaction found in the database: " << Name << std::endl;
+        return std::string();
     }
 
 //    void PrintList(std::vector List) {

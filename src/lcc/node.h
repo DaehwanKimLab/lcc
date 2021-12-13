@@ -13,11 +13,26 @@ class NStatement;
 class NMoleculeIdentifier;
 class NIdentifier;
 class NPathwayExpression;
+class NProteinDeclaration;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
 typedef std::vector<std::shared_ptr<NIdentifier>> IdentifierList;
 typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
+typedef std::vector<std::shared_ptr<NProteinDeclaration>> ProteinDeclList;
+
+class NNodeUtil {
+public:
+    static StatementList* InitStatementList(NStatement* InStatementPtr = nullptr)
+    {
+        StatementList* ptr = new StatementList();
+		if (InStatementPtr) {
+			ptr->emplace_back(InStatementPtr);
+		}
+        return ptr;
+    }
+};
+
 
 class NNode;
 class FTraversalContext {
@@ -46,13 +61,17 @@ class NExpression : public NNode {
 };
 
 class NStatement : public NNode {
+public:
+	NStatement() {};
+
+private:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
 
 class NIdentifier : public NExpression {
 public:
-    const std::string Name;
+    std::string Name;
 
     NIdentifier() {}
 
@@ -84,6 +103,15 @@ public:
     StatementList Statements;
 
     NBlock() {}
+
+
+    void AddStatment(NStatement* InStatement) {
+        Statements.emplace_back(InStatement);
+    }
+
+    void AddStatment(const std::vector<std::shared_ptr<NStatement>>* InStatements) {
+        Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
+    }
 
     virtual void Print(std::ostream& os) const override {
         os << "NBlock(" << std::endl;
@@ -131,10 +159,15 @@ public:
     IdentifierList Reactants;
     IdentifierList Products;
     bool bBiDirection;
+	NIdentifier Location;
 
     NReaction() : bBiDirection(false) {}
     NReaction(const IdentifierList& InReactants, const IdentifierList& InProducts, bool bInBiDirection)
     : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
+
+	void SetLocation(const NIdentifier& InLocation) {
+		Location = InLocation;
+	}
 
     virtual void Print(std::ostream& os) const override {
         os << "NGeneralReaction(" << std::endl;

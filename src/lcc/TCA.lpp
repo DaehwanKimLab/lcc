@@ -18,7 +18,8 @@ protein Sdh(succinate + FAD --> fumarate + FADH2);
 //        SdhD(anchor), 
 //        SdhE(succinate --> fumarate);
 protein FumA(fumarate + H2O --> malate);
-//protein FumA(), FumB(an), FumC, FumD, FumE;
+//protein AA(H_{2}O --> malate);
+protein FumA(), FumB(an), FumC, FumD, FumE;
 protein Mdh(malate + NAD+ --> oxaloacetate + NADH + H+);
 //protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
 
