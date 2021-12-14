@@ -10,8 +10,6 @@
 
 typedef std::map<std::string, std::string> FTableRecord;
 
-template <typename T>
-
 class FExperiment {
 public:
     std::string Name;
@@ -140,20 +138,20 @@ public:
     std::vector<std::string> GetNames_ReactionList();
     std::vector<std::string> GetSubstrateNames_ReactionList();
     std::vector<std::string> GetReactantNames_ReactionList();
-    std::vector<std::string> GetProductNames_ReactionList(); 
+    std::vector<std::string> GetProductNames_ReactionList();
 
     std::vector<std::string> GetNames_EnzymaticReactionList();
     std::vector<std::string> GetSubstrateNames_EnzymaticReactionList();
     std::vector<std::string> GetReactantNames_EnzymaticReactionList();
-    std::vector<std::string> GetProductNames_EnzymaticReactionList(); 
-    std::vector<std::string> GetEnzymeNames_EnzymaticReactionList(); 
+    std::vector<std::string> GetProductNames_EnzymaticReactionList();
+    std::vector<std::string> GetEnzymeNames_EnzymaticReactionList();
 
     std::vector<std::string> GetNames_PathwayList();
     std::vector<std::string> GetSequences_PathwayList();
 
     std::vector<std::vector<int>> GetStoichiometryMatrix();
 
-    std::vector<int> GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList); 
+    std::vector<int> GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList);
     std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
 
 };

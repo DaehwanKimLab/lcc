@@ -73,6 +73,7 @@ void TraversalNode(NBlock* InProgramBlock)
             auto& OverallReaction = Protein->OverallReaction;
             // os << "  OverallReaction:" << endl;
             map<string, int> Stoichiometry;
+			string Location = OverallReaction.Location.Name;
 
             int Coefficient;
             for (const auto& reactant : OverallReaction.Reactants) {
@@ -86,6 +87,10 @@ void TraversalNode(NBlock* InProgramBlock)
                 os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
                 Stoichiometry[product->Name]= Coefficient;
             }
+
+			if (!Location.empty()) {
+                os << "    Location: " << Location << endl;
+			}
 
             FEnzymaticReaction EnzymaticReaction(Name, Stoichiometry, Name);
 

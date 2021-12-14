@@ -30,7 +30,7 @@ int FOption::Parse(int argc, char *argv[])
             {"output", required_argument, NULL, 'o'},
             {"debug", no_argument, NULL, ARG_DEBUG},
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
-		            {"simout", required_argument, NULL, ARG_SIMOUT},
+            {"simout", required_argument, NULL, ARG_SIMOUT},
             {"simimp", required_argument, NULL, ARG_SIMIMP},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {NULL, 0, NULL, 0},
@@ -156,7 +156,9 @@ void FOption::Usage(const char *argv0)
     os << "  " << "                    Use <name> as output file prefix" << std::endl;
     os << "  " << "--debug             Enable debug mode" << std::endl;
     os << "  " << "--parse-only        Check syntax" << std::endl;
-    os << "  " << "--simmodule           Simulation Module File" << std::endl;
+    os << "  " << "--simout <name>     Write simulation result to <name> file" << std::endl;
+    os << "  " << "--simmodule <name>  Write simulation code to <name> file" << std::endl;
+    os << "  " << "--simimp <mode>     Use <mode> simulation implementation. mode: python, c++" << std::endl;
 }
 
 void FOption::Dump()

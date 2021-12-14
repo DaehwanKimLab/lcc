@@ -41,19 +41,6 @@
 "domain"                      { return TOKEN(T_DOMAIN); }
 "step"                        { return TOKEN(T_STEP); }
 "sequence"                    { return TOKEN(T_SEQUENCE); } 
-
-(([\(\[\{}]*\w+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}])+?[\,\-]?\s?)+?	{ return TOKEN(T_MOLECULE); } 	/* 			
-
-	add_brackets_beginning = "[\(\[\{}]" 
-	add_words = "[A-Za-z\d]"
-	add_characters = "[\'\+\-\>']"
-	add_brackets_end = "[\)\]\}]"
-	add_comma_or_dash = "[\,\-]"
-	add_space = "\s"
-	pattern_words = add_brackets_beginning+"*"+add_words+"+"+add_characters+"*"+add_brackets_end+"*"
-	pattern_characters = add_brackets_beginning+"+"+add_characters+"+"+add_brackets_end+"+" 
-	compile_pattern = "("+"("+pattern_words+"|"+pattern_characters+")+?"+add_comma_or_dash+"?"+add_space+"?"+")+?"		*/ 
-
 [a-zA-Z_][a-zA-Z0-9_\-+]*     { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
 ("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
@@ -69,6 +56,19 @@
 ";"                           { return TOKEN(T_SEMIC); }
 "{"                           { return TOKEN(T_LBRACE); }
 "}"                           { return TOKEN(T_RBRACE); }
+
+(([\(\[\{}]*\w+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}])+?[\,\-]?\s?)+?	{ return TOKEN(T_MOLECULE); } 	/*
+
+	add_brackets_beginning = "[\(\[\{}]"
+	add_words = "[A-Za-z\d]"
+	add_characters = "[\'\+\-\>']"
+	add_brackets_end = "[\)\]\}]"
+	add_comma_or_dash = "[\,\-]"
+	add_space = "\s"
+	pattern_words = add_brackets_beginning+"*"+add_words+"+"+add_characters+"*"+add_brackets_end+"*"
+	pattern_characters = add_brackets_beginning+"+"+add_characters+"+"+add_brackets_end+"+"
+	compile_pattern = "("+"("+pattern_words+"|"+pattern_characters+")+?"+add_comma_or_dash+"?"+add_space+"?"+")+?"		*/
+
 .                             { printf("Unknown token!\n"); yyterminate(); }
 
 %%
