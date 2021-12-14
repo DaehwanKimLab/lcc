@@ -159,6 +159,7 @@ const std::string FCompilerContext::QueryEnzymeTable(const std::string& Name, co
         }          
     }
     std::cout << "No such enzyme found in the database: " << Name << std::endl;
+    return std::string();
 }
 
 const std::string FCompilerContext::QueryReactionTable(const std::string& Name, const std::string& Property)
@@ -169,6 +170,7 @@ const std::string FCompilerContext::QueryReactionTable(const std::string& Name, 
         }          
     }
     std::cout << "No such reaction found in the database: " << Name << std::endl;
+    return std::string();
 }
 
 std::vector<std::string> FCompilerContext::GetNames_EnzymeList() 

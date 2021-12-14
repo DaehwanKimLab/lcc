@@ -474,7 +474,7 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ in+ in+ "if self.Legend:" << endl;
     ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(self.Legend)" << endl;
     ofs << in+ in+ in+ in+ "for Row in self.DataBuffer:" << endl;
-    ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(Row)" << endl;
+    ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(np.array(Row).flatten().tolist())" << endl;
     ofs << endl;
 
     // Instantiate Objects
