@@ -10,6 +10,8 @@
 
 typedef std::map<std::string, std::string> FTableRecord;
 
+template <typename T>
+
 class FExperiment {
 public:
     std::string Name;
@@ -113,8 +115,9 @@ public:
 
     FTable GeneTable;
     FTable ReactionTable;
+    FTable ProteinTable;
     FTable EnzymeTable;
-
+    FTable PathwayTable;
 
     std::vector<std::string> UsingModuleList;
     std::vector<FProtein> ProteinList;
@@ -123,54 +126,36 @@ public:
     std::vector<FEnzymaticReaction> EnzymaticReactionList;
     std::vector<std::string> IdentifierList;
 
-    const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property){
-        for (auto& record : EnzymeTable.Records) {
-            if (Name == record["EnzymeName"]) {
-                return record[Property];
-            }          
-        }
-        std::cout << "No such enzyme found in the database: " << Name << std::endl;
-    }
-
-    const std::string QueryReactionTable(const std::string& Name, const std::string& Property){
-        for (auto& record : ReactionTable.Records) {
-            if (Name == record["EnzymeName"]) {
-                return record[Property];
-            }          
-        }
-        std::cout << "No such reaction found in the database: " << Name << std::endl;
-    }
-
-//    void PrintList(std::vector List) {
-//        for (auto& item : List){
-//            std::cout << item.Name << ", ";
-//        };
-//        std::cout << std::endl;
-//    }
-
-    void PrintLists(std::ostream& os) {
-        os << "Compiler Context Lists:" << std::endl;
-        
-        os << "  PathwayList: " << std::endl << "  " << "  ";
-        for (auto& item : PathwayList){
-            os << item.Name << ", ";
-        };
-        os << std::endl;
-
-        os << "  EnzymeList: " << std::endl << "  " << "  ";
-        for (auto& item : EnzymeList){
-            os << item.Name << ", ";
-        };
-        os << std::endl;
-
-        os << "  EnzymaticReactionList: " << std::endl << "  " << "  ";
-        for (auto& item : EnzymaticReactionList){
-            os << item.Name << ", ";
-        };
-        os << std::endl;      
-    }
-
+    void PrintLists(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
+
+    const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property);
+    const std::string QueryReactionTable(const std::string& Name, const std::string& Property);
+
+    std::vector<std::string> GetNames_EnzymeList();
+    std::vector<std::string> GetSubstrates_EnzymeList();
+    std::vector<float> Getkcats_EnzymeList();
+    std::vector<float> GetkMs_EnzymeList();
+
+    std::vector<std::string> GetNames_ReactionList();
+    std::vector<std::string> GetSubstrateNames_ReactionList();
+    std::vector<std::string> GetReactantNames_ReactionList();
+    std::vector<std::string> GetProductNames_ReactionList(); 
+
+    std::vector<std::string> GetNames_EnzymaticReactionList();
+    std::vector<std::string> GetSubstrateNames_EnzymaticReactionList();
+    std::vector<std::string> GetReactantNames_EnzymaticReactionList();
+    std::vector<std::string> GetProductNames_EnzymaticReactionList(); 
+    std::vector<std::string> GetEnzymeNames_EnzymaticReactionList(); 
+
+    std::vector<std::string> GetNames_PathwayList();
+    std::vector<std::string> GetSequences_PathwayList();
+
+    std::vector<std::vector<int>> GetStoichiometryMatrix();
+
+    std::vector<int> GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList); 
+    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
+
 };
 
 #endif /* LCC_CONTEXT_H */
