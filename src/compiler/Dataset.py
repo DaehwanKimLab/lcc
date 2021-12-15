@@ -60,11 +60,11 @@ class FDataset():
 
         MasterDataset.NUniq_Master = len(MasterDataset.ID_Master)
 
-        self.DebugPrint('MasterDataset lengths:')
-        print(len(MasterDataset.ID_Master))
-        print(len(MasterDataset.ID2Idx_Master))
-        print(len(MasterDataset.Count_Master))
-        print(len(MasterDataset.MW_Master))
+        # self.DebugPrint('MasterDataset lengths:')
+        # print(len(MasterDataset.ID_Master))
+        # print(len(MasterDataset.ID2Idx_Master))
+        # print(len(MasterDataset.Count_Master))
+        # print(len(MasterDataset.MW_Master))
 
         assert len(MasterDataset.ID_Master) == len(MasterDataset.ID2Idx_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.Count_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.MW_Master)
 
