@@ -349,5 +349,15 @@ std::vector<int> FCompilerContext::GetEnzSubstrateIdxFromAllSubstrates()
     return GetIdxListFromList(EnzSubstrateList, AllSubstrateList);
 }
 
+std::vector<float> FCompilerContext::GetFreqMatrixForChromosomes()
+{
+}
 
+std::vector<float> FCompilerContext::GetFreqMatrixForRNAs()
+{
+}
+
+std::vector<float> FCompilerContext::GetFreqMatrixForProteins()
+{
+}
 

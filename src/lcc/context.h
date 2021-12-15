@@ -154,6 +154,9 @@ public:
     std::vector<int> GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList);
     std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
 
+    std::vector<float> GetFreqMatrixForChromosomes();
+    std::vector<float> GetFreqMatrixForRNAs();
+    std::vector<float> GetFreqMatrixForProteins();
 };
 
 #endif /* LCC_CONTEXT_H */
