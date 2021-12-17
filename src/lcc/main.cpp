@@ -3,8 +3,12 @@
 #include <cassert>
 #include <algorithm>
 
+#ifdef _MSC_VER
+#include <io.h>
+#else
 #include <unistd.h>
 #include <getopt.h>
+#endif
 
 #include "node.h"
 #include "option.h"
@@ -626,7 +630,7 @@ void WriteSimModule(int TestInt)
     ofs << endl;
 
     ofs << in+ in+ "def SaveToFile(self, InFileName):" << endl;
-    ofs << in+ in+ in+ "with open(InFileName, 'w') as OutFile:" << endl;
+    ofs << in+ in+ in+ "with open(InFileName, 'w', newline='', encoding='utf-8') as OutFile:" << endl;
     ofs << in+ in+ in+ in+ "TsvWriter = csv.writer(OutFile, delimiter='\\t')" << endl;
     ofs << in+ in+ in+ in+ "if self.Legend:" << endl;
     ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(self.Legend)" << endl;

@@ -351,13 +351,16 @@ std::vector<int> FCompilerContext::GetEnzSubstrateIdxFromAllSubstrates()
 
 std::vector<float> FCompilerContext::GetFreqMatrixForChromosomes()
 {
+	return std::vector<float>();
 }
 
 std::vector<float> FCompilerContext::GetFreqMatrixForRNAs()
 {
+	return std::vector<float>();
 }
 
 std::vector<float> FCompilerContext::GetFreqMatrixForProteins()
 {
+	return std::vector<float>();
 }
 
