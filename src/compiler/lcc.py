@@ -84,7 +84,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Output
     Writer.Switch4Comment = True
     Writer.Switch4PrintString = True
-    Writer.Switch4TFGraph = True
+    Writer.Switch4TFGraph = False
 
     # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True

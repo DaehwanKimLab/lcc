@@ -275,7 +275,10 @@ class TFCodeWriter(CodeWriter):
         self.ReturnVar(ReturnVariable)
 
     def IfEl_Func(self, Predicate, True_Function, False_Function):
-        Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
+        if self.Switch4TFGraph:
+            Line = True_Function + "()"
+        else:
+            Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
         self.Statement(Line)
 
     # tf.print
@@ -432,7 +435,7 @@ class TFCodeWriter(CodeWriter):
         return self
 
     def TF_Graph_(self):
-        if self.Switch4Graph:
+        if self.Switch4TFGraph:
             self.Statement("@tf.function")
 
     def TFForLoop(self, Timer, MaxTime):

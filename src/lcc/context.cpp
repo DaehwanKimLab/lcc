@@ -459,13 +459,16 @@ std::vector<int> FCompilerContext::GetIdxListFromList(std::vector<std::string> I
 
 std::vector<float> FCompilerContext::GetFreqMatrixForChromosomes()
 {
+	return std::vector<float>();
 }
 
 std::vector<float> FCompilerContext::GetFreqMatrixForRNAs()
 {
+	return std::vector<float>();
 }
 
 std::vector<float> FCompilerContext::GetFreqMatrixForProteins()
 {
+	return std::vector<float>();
 }
 

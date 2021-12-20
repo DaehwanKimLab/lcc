@@ -1,6 +1,7 @@
 #ifndef LCC_NODE_H
 #define LCC_NODE_H
 #include <iostream>
+#include <string>
 #include <vector>
 #include <queue>
 #include <memory>

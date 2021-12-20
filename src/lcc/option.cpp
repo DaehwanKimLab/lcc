@@ -1,6 +1,10 @@
 #include <iostream>
 #include <cassert>
+#ifdef _MSC_VER
+#include "windows/getopt.h"
+#else
 #include <getopt.h>
+#endif
 
 #include "option.h"
 
