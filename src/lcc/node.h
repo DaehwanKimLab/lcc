@@ -498,6 +498,144 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
+class NRibosomeDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+
+    StatementList Statements;
+
+
+    NRibosomeDeclaration(const NIdentifier& InId, const StatementList* InStatements) : Id(InId) {
+        Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NRibosomeDeclaration(" << std::endl;
+        for (const auto stmt : Statements) {
+            os << "\t"; stmt->Print(os); os << std::endl;
+        }
+        os << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NPolymeraseDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+
+    StatementList Statements;
+
+
+    NPolymeraseDeclaration(const NIdentifier& InId, const StatementList* InStatements) : Id(InId) {
+        Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NPolymeraseDeclaration(" << std::endl;
+        for (const auto stmt : Statements) {
+            os << "\t"; stmt->Print(os); os << std::endl;
+        }
+        os << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NInitiationStatement : public NStatement {
+public:
+    const NIdentifier Id;
+
+    NInitiationStatement(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Initiation(" << Id.Name << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NElongationStatement : public NStatement {
+public:
+    NReaction Reaction;
+
+    NElongationStatement(const NReaction& InReaction) : Reaction(InReaction) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Elongation Reaction(";
+        Reaction.Print(os);
+        os << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NTerminationStatement : public NStatement {
+public:
+    const NIdentifier Id;
+
+    NTerminationStatement(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Termination(" << Id.Name << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+
+class NRibosomeBindingSite : public NStatement {
+public:
+    const NIdentifier Id;
+
+    NRibosomeBindingSite(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "RibosomeBindingSite(" << Id.Name << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NTranslationTerminator : public NStatement {
+public:
+    const NIdentifier Id;
+
+    NTranslationTerminator(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "TranslationTerminator(" << Id.Name << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NReplicationOrigin : public NStatement {
+public:
+    const NIdentifier Id;
+
+    NReplicationOrigin(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "ReplicationOrigin(" << Id.Name << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NReplicationTerminus : public NStatement {
+public:
+    const NIdentifier Id;
+
+    NReplicationTerminus(const NIdentifier& InId) : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "ReplicationTerminus(" << Id.Name << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
 class NUsingStatement : public NStatement {
 public:
     int Type;

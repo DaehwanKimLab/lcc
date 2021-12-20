@@ -41,6 +41,23 @@
 "domain"                      { return TOKEN(T_DOMAIN); }
 "step"                        { return TOKEN(T_STEP); }
 "sequence"                    { return TOKEN(T_SEQUENCE); } 
+"replication_origin"          { return TOKEN(T_REPLICATION_ORIGIN); }
+"replication_terminus"        { return TOKEN(T_REPLICATION_TERMINUS); }
+"ribosome_binding_site"       { return TOKEN(T_RIBOSOME_BINDING_SITE); }
+"translation_terminator"      { return TOKEN(T_TRANSLATION_TERMINATOR); }
+"polymerase"                  { return TOKEN(T_POLYMERASE); }
+"ribosome"                    { return TOKEN(T_RIBOSOME); }
+"initiation"                  { return TOKEN(T_INITIATION); }
+"elongation"                  { return TOKEN(T_ELONGATION); }
+"termination"                 { return TOKEN(T_TERMINATION); }
+"dna_{n}"                     { SAVE_TOKEN; return T_MOLECULE; }
+"dna_{n+1}"                   { SAVE_TOKEN; return T_MOLECULE; }
+"dnt"                         { SAVE_TOKEN; return T_MOLECULE; }
+"ppi"                         { SAVE_TOKEN; return T_MOLECULE; }
+"peptide_{n}"                 { SAVE_TOKEN; return T_MOLECULE; }
+"peptide_{n+1}"               { SAVE_TOKEN; return T_MOLECULE; }
+"aa"|"AA"                     { SAVE_TOKEN; return T_MOLECULE; }
+"H_{2}O"                      { SAVE_TOKEN; return T_MOLECULE; }
 [a-zA-Z_][a-zA-Z0-9_\-+]*     { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
 ("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
@@ -54,10 +71,11 @@
 "="                           { return TOKEN(T_EQUAL); }
 "|"                           { return TOKEN(T_OR); }
 ";"                           { return TOKEN(T_SEMIC); }
+":"                           { return TOKEN(T_COLON); }
 "{"                           { return TOKEN(T_LBRACE); }
 "}"                           { return TOKEN(T_RBRACE); }
 
-(([\(\[\{}]*\w+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}])+?[\,\-]?\s?)+?	{ return TOKEN(T_MOLECULE); } 	/*
+(([\(\[\{}]*\w+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}])+?[\,\-]?\s?)+?	{ SAVE_TOKEN; return T_MOLECULE; } 	/*
 
 	add_brackets_beginning = "[\(\[\{}]"
 	add_words = "[A-Za-z\d]"

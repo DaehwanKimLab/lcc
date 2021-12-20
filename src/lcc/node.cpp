@@ -94,6 +94,18 @@ void NProteinDomainStatement::Visit(FTraversalContext &Context) const {
 void NUsingStatement::Visit(FTraversalContext& Context) const {
 }
 
+void NPolymeraseDeclaration::Visit(FTraversalContext& Context) const {
+    for (auto& stmt: Statements) {
+        Context.Queue.push(static_cast<const NNode *>(stmt.get())); // Fixme
+    }
+}
+
+void NRibosomeDeclaration::Visit(FTraversalContext& Context) const {
+    for (auto& stmt: Statements) {
+        Context.Queue.push(static_cast<const NNode *>(stmt.get())); // Fixme
+    }
+}
+
 void NDummyDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Dummy(" << StringLiteral << ")" << std::endl;
 }
