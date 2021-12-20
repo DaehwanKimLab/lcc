@@ -128,7 +128,7 @@ void FCompilerContext::SaveUsingModuleList(const char* Filename)
 
 }
 
-int FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
+void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 {
     bool Addition = true;
     // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
@@ -142,7 +142,22 @@ int FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
     if (Addition) {
         MoleculeList.push_back(NewMolecule);
     }
-    return 0;
+}
+
+void FCompilerContext::AddToReactionList(FReaction *NewReaction)
+{
+    bool Addition = true;
+    // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
+    for (auto& Reaction : ReactionList) {
+        if (Reaction->Name == Reaction->Name){
+            Addition = false;
+            // std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
+            break;
+        }
+    }
+    if (Addition) {
+        ReactionList.push_back(NewReaction);
+    }
 }
 
 void FCompilerContext::PrintLists(std::ostream& os) 
@@ -167,9 +182,9 @@ void FCompilerContext::PrintLists(std::ostream& os)
 //    };
 //    os << std::endl;
 
-    os << "  EnzymaticReactionList: " << std::endl << "  " << "  ";
-    for (auto& item : EnzymaticReactionList){
-        os << item.Name << ", ";
+    os << "  ReactionList: " << std::endl << "  " << "  ";
+    for (auto& item : ReactionList){
+        os << item->Name << ", ";
     };
     os << std::endl;
 }
@@ -241,20 +256,24 @@ std::vector<float> FCompilerContext::GetkMs_EnzymeList(std::vector<const FEnzyme
     return FloatList;
 }
 
-std::vector<std::string> FCompilerContext::GetNames_EnzymaticReactionList()
+std::vector<const FEnzymaticReaction *> FCompilerContext::GetList_Enzymatic_ReactionList()
 {
-    std::vector<std::string> StrList;
-    for (auto& item : EnzymaticReactionList){
-        StrList.push_back(item.Name);
+    std::vector<const FEnzymaticReaction *> SubList;
+
+    for (const FReaction* Reaction: ReactionList) {
+        if (Utils::is_class_of<FEnzymaticReaction, FReaction>(Reaction)) {
+            auto EnzymaticReaction = dynamic_cast<const FEnzymaticReaction* >(Reaction);
+            SubList.push_back(EnzymaticReaction);
+        }
     }
-    return StrList;
+    return SubList;
 }
 
-std::vector<std::string> FCompilerContext::GetSubstrateNames_EnzymaticReactionList()
+std::vector<std::string> FCompilerContext::GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
-        for (auto& Stoich : item.Stoichiometry){
+        for (auto& Stoich : item->Stoichiometry){
             if (std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) {
                 StrList.push_back(Stoich.first);
             }
@@ -263,11 +282,24 @@ std::vector<std::string> FCompilerContext::GetSubstrateNames_EnzymaticReactionLi
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetReactantNames_EnzymaticReactionList()
+std::vector<std::string> FCompilerContext::GetSubstrateNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
-        for (auto& Stoich : item.Stoichiometry){
+        for (auto& Stoich : item->Stoichiometry){
+            if (std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) {
+                StrList.push_back(Stoich.first);
+            }
+        }
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetReactantNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
+{
+    std::vector<std::string> StrList;
+    for (auto& item : EnzymaticReactionList){
+        for (auto& Stoich : item->Stoichiometry){
             if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second < 0)){
                 StrList.push_back(Stoich.first);
             }
@@ -276,11 +308,11 @@ std::vector<std::string> FCompilerContext::GetReactantNames_EnzymaticReactionLis
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetProductNames_EnzymaticReactionList()
+std::vector<std::string> FCompilerContext::GetProductNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
-        for (auto& Stoich : item.Stoichiometry){
+        for (auto& Stoich : item->Stoichiometry){
             if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second > 0)){
                 StrList.push_back(Stoich.first);
             }
@@ -289,11 +321,11 @@ std::vector<std::string> FCompilerContext::GetProductNames_EnzymaticReactionList
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetEnzymeNames_EnzymaticReactionList()
+std::vector<std::string> FCompilerContext::GetEnzymeNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
-        StrList.push_back(item.Enzyme);
+        StrList.push_back(item->Enzyme);
     }
     return StrList;
 }
@@ -320,7 +352,7 @@ std::vector<std::string> FCompilerContext::GetSequences_PathwayList()
     return StrList;
 }
 
-std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix()
+std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_EnzymaticReaction(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
 {
     std::vector<std::vector<int>> StoichMatrix;
     std::vector<const FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList();
@@ -328,7 +360,7 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix()
     for (auto& EnzymaticReaction : EnzymaticReactionList){
         std::vector<int> CoeffArray(SMolList.size(), 0);
 
-        for (auto& Stoich : EnzymaticReaction.Stoichiometry){
+        for (auto& Stoich : EnzymaticReaction->Stoichiometry){
             std::string SubstrateName = Stoich.first;
             int Coeff = Stoich.second;
 	    int Index = 0;

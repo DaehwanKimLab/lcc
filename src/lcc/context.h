@@ -79,10 +79,26 @@ public:
 
 };
 
+class FComplex : public FMolecule {
+public:
+    FComplex() {}
+
+    FComplex(const std::string& InName) : FMolecule(InName) {}
+};
+
+class FPolymerase : public FMolecule{
+public:
+    FPolymerase() {}
+
+    FPolymerase(const std::string& InName) : FMolecule(InName) {}
+};
+
 class FReaction {
 public:
     std::string Name; // Name is equivalent to EnzymeName for now
     std::map<std::string, int> Stoichiometry;
+
+    virtual ~FReaction() {}
 
     FReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry) 
         : Name(InName), Stoichiometry(InStoichiometry) {}
@@ -101,6 +117,16 @@ public:
 
     FEnzymaticReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry, const std::string& InEnzyme)
         : Enzyme(InEnzyme), FReaction(InName, InStoichiometry) {}
+};
+
+class FPolymeraseReaction : public FReaction {
+public:
+    std::string Polymerase;
+    std::vector<std::string> BuildingBlocks;
+    // std::map<std::string, int> Stoichiometry;
+
+    FPolymeraseReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry, const std::string& InPolymerase, const std::vector<std::string>& InBuildingBlocks)
+        : Polymerase(InPolymerase), BuildingBlocks(InBuildingBlocks), FReaction(InName, InStoichiometry) {}
 };
 
 class FModule {
@@ -131,15 +157,14 @@ public:
 
     std::vector<std::string> UsingModuleList;
     std::vector<FMolecule*> MoleculeList;
-    std::vector<FProtein> ProteinList;
-    std::vector<FEnzyme> EnzymeList;
+    std::vector<FReaction*> ReactionList;
     std::vector<FPathway> PathwayList;
-    std::vector<FEnzymaticReaction> EnzymaticReactionList;
     std::vector<std::string> IdentifierList;
 
     void PrintLists(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
-    int AddToMoleculeList(FMolecule *NewMolecule);
+    void AddToMoleculeList(FMolecule *NewMolecule);
+    void AddToReactionList(FReaction *NewReaction);
 
     const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property);
     const std::string QueryReactionTable(const std::string& Name, const std::string& Property);
@@ -156,20 +181,22 @@ public:
     std::vector<std::string> GetReactantNames_ReactionList();
     std::vector<std::string> GetProductNames_ReactionList();
 
-    std::vector<std::string> GetNames_EnzymaticReactionList();
-    std::vector<std::string> GetSubstrateNames_EnzymaticReactionList();
-    std::vector<std::string> GetReactantNames_EnzymaticReactionList();
-    std::vector<std::string> GetProductNames_EnzymaticReactionList();
-    std::vector<std::string> GetEnzymeNames_EnzymaticReactionList();
+    std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
+    std::vector<std::string> GetSubstrateNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
+    std::vector<std::string> GetReactantNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
+    std::vector<std::string> GetProductNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
+    std::vector<std::string> GetEnzymeNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
 
     std::vector<std::string> GetNames_PathwayList();
     std::vector<std::string> GetSequences_PathwayList();
 
-    std::vector<std::vector<int>> GetStoichiometryMatrix();
+    std::vector<std::vector<int>> GetStoichiometryMatrix_EnzymaticReaction(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
 
     int GetIdxByName_MoleculeList(std::string InputName);
+
     std::vector<const FEnzyme *> GetList_Enzyme_MoleculeList();
     std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
+    std::vector<const FEnzymaticReaction *> GetList_Enzymatic_ReactionList();
     
     std::vector<int> GetIdx_Enzyme_MoleculeList();
     std::vector<int> GetIdx_EnzymeSubstrate_MoleculeList();

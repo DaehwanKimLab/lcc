@@ -53,6 +53,9 @@
 "dna_{n}"                     { SAVE_TOKEN; return T_MOLECULE; }
 "dna_{n+1}"                   { SAVE_TOKEN; return T_MOLECULE; }
 "dnt"                         { SAVE_TOKEN; return T_MOLECULE; }
+"rna_{n}"                     { SAVE_TOKEN; return T_MOLECULE; }
+"rna_{n+1}"                   { SAVE_TOKEN; return T_MOLECULE; }
+"nt"                          { SAVE_TOKEN; return T_MOLECULE; }
 "ppi"                         { SAVE_TOKEN; return T_MOLECULE; }
 "peptide_{n}"                 { SAVE_TOKEN; return T_MOLECULE; }
 "peptide_{n+1}"               { SAVE_TOKEN; return T_MOLECULE; }

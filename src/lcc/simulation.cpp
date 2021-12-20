@@ -98,80 +98,80 @@ void FSimulation::Init(FState& State, FDataset& Dataset, FDataManager& DataManag
 
 void FSimulation::Run(FState& State, FCompilerContext& Context, FDataset& Dataset)
 {
-    std::cout << "Simulation: " << std::endl;
-
-    // TODO: export this variable in simulation object instead of cell state Sim step
-    int CurrentSimStep = 0;
-
-    while (CurrentSimStep < N_SimSteps) {
-        std::cout << "Step: " << CurrentSimStep << std::endl;
-
-        for (auto& Pathway : Context.PathwayList) {
-            std::cout << "Pathway: " << Pathway.Name << std::endl;
-            // Pathway contains a name (a string) and enzyme names (a vector of strings)
-
-            for(auto& EnzymeName : Pathway.Sequence) {
-                std::cout << "  Enzyme: " << EnzymeName << "\t|"; //std::endl;
-                std::string Substrate;
-                float kcat;
-                float kM;
-
-                // loop enzyme list to find its substrate
-                for (auto& Enzyme: Context.EnzymeList) {
-                    if (Enzyme.Name == EnzymeName) {
-                        Substrate = Enzyme.Substrate;
-                        kcat = Enzyme.kcat;
-                        kM = Enzyme.kM;
-                        //std::cout << "  Substrate: " << Substrate << std::endl;
-                        //std::cout << "  kcat: " << kcat << std::endl;
-                        //std::cout << "  kM: " << kM << std::endl;
-                    }
-                }
-
-                // std::cout << "  Substrate: " << Substrate << std::endl;
-                // std::cout << "  kcat: " << kcat << std::endl;
-                // std::cout << "  kM: " << kM << std::endl;
-
-                // get enzyme and substrate concentration
-                float EnzConc = State.GetEnzConc(EnzymeName);
-                float SubConc = State.GetSubConc(Substrate);
-
-                std::cout << "    EnzConc: " << EnzConc << "\t|" ; //std::endl;
-                std::cout << "    SubConc: " << SubConc << "\t|" ; // std::endl;
-
-                // calculate reaction rate
-                float Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, kM);
-                std::cout << "    Rate: " << Rate << std::endl;
-
-                // currently each pathway sub reaction occurs linearly.
-                // set up delta count variable to change it to concurrent simulation in sim.py
-
-                // loop enzymatic reaction list to find the stoichiometry
-                for (auto& EnzymaticReaction: Context.EnzymaticReactionList) {
-                    if ((EnzymaticReaction.Enzyme == EnzymeName) & EnzymaticReaction.CheckIfReactant(Substrate)) {
-//                         std::map<std::string, int> Stoich = EnzymaticReaction.Stoichiometry;
-//                            std::map<std::string, int>::iterator Stoich_Iter = Stoich.begin();
-                        for (std::pair<std::string, int> stoich : EnzymaticReaction.Stoichiometry) {
-                            std::string Molecule = stoich.first;
-                            int Coeff = stoich.second;
-
-                            // multiply reaction rate to stoichiometry to get delta concentration
-                            float MolConc = State.GetSubConc(Molecule);
-                            MolConc += Rate * Coeff;
-                            int MolCount = ConcToCount(MolConc, State.Vol);
-                            State.SetSubCount(Molecule, MolCount);
-                        }
-                    }
-                } // Enzymatic Reaction for loop
-            } // Pathway.Sequence for loop
-        } // Context.Pathway loop
-
-        CurrentSimStep++;
-
-        // Data Export
-        Dataset.Data = State.ExportState();
-        //Dataset.PrintData();
-        DataManager.Add(Dataset.Data);
-
-    } // while loop
+//    std::cout << "Simulation: " << std::endl;
+//
+//    // TODO: export this variable in simulation object instead of cell state Sim step
+//    int CurrentSimStep = 0;
+//
+//    while (CurrentSimStep < N_SimSteps) {
+//        std::cout << "Step: " << CurrentSimStep << std::endl;
+//
+//        for (auto& Pathway : Context.PathwayList) {
+//            std::cout << "Pathway: " << Pathway.Name << std::endl;
+//            // Pathway contains a name (a string) and enzyme names (a vector of strings)
+//
+//            for(auto& EnzymeName : Pathway.Sequence) {
+//                std::cout << "  Enzyme: " << EnzymeName << "\t|"; //std::endl;
+//                std::string Substrate;
+//                float kcat;
+//                float kM;
+//
+//                // loop enzyme list to find its substrate
+//                for (auto& Enzyme: Context.EnzymeList) {
+//                    if (Enzyme.Name == EnzymeName) {
+//                        Substrate = Enzyme.Substrate;
+//                        kcat = Enzyme.kcat;
+//                        kM = Enzyme.kM;
+//                        //std::cout << "  Substrate: " << Substrate << std::endl;
+//                        //std::cout << "  kcat: " << kcat << std::endl;
+//                        //std::cout << "  kM: " << kM << std::endl;
+//                    }
+//                }
+//
+//                // std::cout << "  Substrate: " << Substrate << std::endl;
+//                // std::cout << "  kcat: " << kcat << std::endl;
+//                // std::cout << "  kM: " << kM << std::endl;
+//
+//                // get enzyme and substrate concentration
+//                float EnzConc = State.GetEnzConc(EnzymeName);
+//                float SubConc = State.GetSubConc(Substrate);
+//
+//                std::cout << "    EnzConc: " << EnzConc << "\t|" ; //std::endl;
+//                std::cout << "    SubConc: " << SubConc << "\t|" ; // std::endl;
+//
+//                // calculate reaction rate
+//                float Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, kM);
+//                std::cout << "    Rate: " << Rate << std::endl;
+//
+//                // currently each pathway sub reaction occurs linearly.
+//                // set up delta count variable to change it to concurrent simulation in sim.py
+//
+//                // loop enzymatic reaction list to find the stoichiometry
+//                for (auto& EnzymaticReaction: Context.EnzymaticReactionList) {
+//                    if ((EnzymaticReaction.Enzyme == EnzymeName) & EnzymaticReaction.CheckIfReactant(Substrate)) {
+////                         std::map<std::string, int> Stoich = EnzymaticReaction.Stoichiometry;
+////                            std::map<std::string, int>::iterator Stoich_Iter = Stoich.begin();
+//                        for (std::pair<std::string, int> stoich : EnzymaticReaction.Stoichiometry) {
+//                            std::string Molecule = stoich.first;
+//                            int Coeff = stoich.second;
+//
+//                            // multiply reaction rate to stoichiometry to get delta concentration
+//                            float MolConc = State.GetSubConc(Molecule);
+//                            MolConc += Rate * Coeff;
+//                            int MolCount = ConcToCount(MolConc, State.Vol);
+//                            State.SetSubCount(Molecule, MolCount);
+//                        }
+//                    }
+//                } // Enzymatic Reaction for loop
+//            } // Pathway.Sequence for loop
+//        } // Context.Pathway loop
+//
+//        CurrentSimStep++;
+//
+//        // Data Export
+//        Dataset.Data = State.ExportState();
+//        //Dataset.PrintData();
+//        DataManager.Add(Dataset.Data);
+//
+//    } // while loop
 }

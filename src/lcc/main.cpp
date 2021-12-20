@@ -74,6 +74,7 @@ void TraversalNode(NBlock* InProgramBlock)
             os << "  Enzyme Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
 
             FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM);
+            Context.AddToMoleculeList(Enzyme);
 
             auto& OverallReaction = Protein->OverallReaction;
             // os << "  OverallReaction:" << endl;
@@ -103,7 +104,8 @@ void TraversalNode(NBlock* InProgramBlock)
                 os << "    Location: " << Location << endl;
 			}
 
-            FEnzymaticReaction EnzymaticReaction(Name, Stoichiometry, Name);
+            FEnzymaticReaction *EnzymaticReaction = new FEnzymaticReaction(Name, Stoichiometry, Name);
+            Context.AddToReactionList(EnzymaticReaction);
 
 //            if (Protein->Block) {
 //                auto& Block = Protein->Block;
@@ -112,9 +114,6 @@ void TraversalNode(NBlock* InProgramBlock)
 //                }
 //
 //            }
-//            Context.ProteinList.emplace_back(*Protein);
-            Context.AddToMoleculeList(Enzyme);
-            Context.EnzymaticReactionList.emplace_back(EnzymaticReaction);
  
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
@@ -294,6 +293,8 @@ void WriteSimModule()
     std::vector<std::string> EnzNames = Context.GetNames_EnzymeList(EnzymeList);
     std::cout << endl;
 
+    std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
+
 //    std::vector<const FSmallMolecule *> SMolList = Context.GetList_SmallMolecule_MoleculeList();
 
 //    std::vector<std::string> SMolNames = Context.GetNames_SmallMoleculeList(SMolList);
@@ -302,7 +303,7 @@ void WriteSimModule()
 
     std::vector<float> kcats = Context.Getkcats_EnzymeList(EnzymeList);
     std::vector<float> kMs = Context.GetkMs_EnzymeList(EnzymeList);
-    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix();
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix_EnzymaticReaction(EnzymaticReactionList);
 
     std::vector<int> Idx_Enz = Context.GetIdx_Enzyme_MoleculeList();
     std::vector<int> Idx_EnzSub = Context.GetIdx_EnzymeSubstrate_MoleculeList();
@@ -741,9 +742,7 @@ int main(int argc, char *argv[])
 
 
     if (Option.bDebug) {
-        for(const auto& protein : Context.ProteinList) {
-            cout << protein.GetName() << endl;
-        }
+    
         for(const auto& name : Context.UsingModuleList) {
             cout << name << endl;
         }
@@ -758,13 +757,13 @@ int main(int argc, char *argv[])
         cout << Option.SimModuleFile << endl;
     }
 
-    if (Option.bSimCpp) {
-        // temporary C++ simulation code
-        cout << endl << "## Simulation_C++ ##" << endl;
-  
-        Simulation.Init(State, Dataset, DataManager, 100);
-        Simulation.Run(State, Context, Dataset);
-    }
+//    if (Option.bSimCpp) {
+//        // temporary C++ simulation code
+//        cout << endl << "## Simulation_C++ ##" << endl;
+//  
+//        Simulation.Init(State, Dataset, DataManager, 100);
+//        Simulation.Run(State, Context, Dataset);
+//    }
             if (!Option.SimResultFile.empty()) {
 		DataManager.SaveToFile(Option.SimResultFile.c_str());
 
