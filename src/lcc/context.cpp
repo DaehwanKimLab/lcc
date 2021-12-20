@@ -128,9 +128,32 @@ void FCompilerContext::SaveUsingModuleList(const char* Filename)
 
 }
 
+int FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
+{
+    bool Addition = true;
+    std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
+    for (auto& Molecule : MoleculeList) {
+        if (Molecule->Name == NewMolecule->Name){
+            Addition = false;
+            std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
+            break;
+        }
+    }
+    if (Addition) {
+        MoleculeList.push_back(NewMolecule);
+    }
+    return 0;
+}
+
 void FCompilerContext::PrintLists(std::ostream& os) 
 {
     os << "Compiler Context Lists:" << std::endl;
+
+    os << "  MoleculeList: " << std::endl << "  " << "  ";
+    for (auto& item : MoleculeList){
+        os << item->Name << ", ";
+    };
+    os << std::endl;
 
     os << "  PathwayList: " << std::endl << "  " << "  ";
     for (auto& item : PathwayList){
@@ -173,38 +196,47 @@ const std::string FCompilerContext::QueryReactionTable(const std::string& Name, 
     return std::string();
 }
 
-std::vector<std::string> FCompilerContext::GetNames_EnzymeList() 
+std::vector<std::string> FCompilerContext::GetNames_MoleculeList() 
 {
     std::vector<std::string> StrList;
-    for (auto& item : EnzymeList){
-        StrList.push_back(item.Name);
+    for (auto& item : MoleculeList){
+        StrList.push_back(item->Name);
     }
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetSubstrates_EnzymeList() 
+std::vector<std::string> FCompilerContext::GetNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
 {
     std::vector<std::string> StrList;
     for (auto& item : EnzymeList){
-        StrList.push_back(item.Substrate);
+        StrList.push_back(item->Name);
     }
     return StrList;
 }
 
-std::vector<float> FCompilerContext::Getkcats_EnzymeList()
+std::vector<std::string> FCompilerContext::GetSubstrateNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
+{
+    std::vector<std::string> StrList;
+    for (auto& item : EnzymeList){
+        StrList.push_back(item->Substrate);
+    }
+    return StrList;
+}
+
+std::vector<float> FCompilerContext::Getkcats_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
 {
     std::vector<float> FloatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item.kcat);
+        FloatList.push_back(item->kcat);
     }
     return FloatList;
 }
 
-std::vector<float> FCompilerContext::GetkMs_EnzymeList() 
+std::vector<float> FCompilerContext::GetkMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
 {
     std::vector<float> FloatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item.kM);
+        FloatList.push_back(item->kM);
     }
     return FloatList;
 }
@@ -322,6 +354,82 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix()
     return StoichMatrix;
 }
 
+int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
+{
+    int Index = 0;
+    for (auto& Molecule : MoleculeList) {
+        if (Molecule->Name == InputName) {
+            break;
+        }
+        Index++; 
+    }
+    return Index;
+}
+
+std::vector<const FEnzyme *> FCompilerContext::GetList_Enzyme_MoleculeList()
+{
+    std::vector<const FEnzyme *> EnzymeList;
+    
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
+            auto Enzyme = dynamic_cast<const FEnzyme *>(Molecule);
+            EnzymeList.push_back(Enzyme);
+        }
+    }
+    return EnzymeList;
+}
+
+std::vector<int> FCompilerContext::GetIdx_Enzyme_MoleculeList()
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    Index = 0;
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
+            IndexArray.push_back(Index);
+        }
+        Index++;
+    }
+    return IndexArray;
+}
+
+std::vector<int> FCompilerContext::GetIdx_EnzymeSubstrate_MoleculeList()
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
+            auto Enzyme = dynamic_cast<const FEnzyme *>(Molecule);
+            std::string EnzSub = Enzyme->Substrate;
+            Index = 0;
+            for (auto& Molecule : MoleculeList) {
+                if (Molecule->Name == EnzSub) {
+                    IndexArray.push_back(Index);
+                break;
+                } 
+                Index++;
+            }
+        }
+    }
+    return IndexArray;
+}
+
+std::vector<int> FCompilerContext::GetIdx_SmallMolecule_MoleculeList()
+{
+    std::vector<int> IndexArray;
+    int Index;
+    
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
+            IndexArray.push_back(Index);
+        }
+        Index++;
+    }
+    return IndexArray;
+}
+
 std::vector<int> FCompilerContext::GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList)
 {
     std::vector<int> IndexArray;
@@ -341,13 +449,13 @@ std::vector<int> FCompilerContext::GetIdxListFromList(std::vector<std::string> I
     return IndexArray;
 }
 
-std::vector<int> FCompilerContext::GetEnzSubstrateIdxFromAllSubstrates()
-{
-    std::vector<std::string> EnzSubstrateList = GetSubstrates_EnzymeList();
-    std::vector<std::string> AllSubstrateList = GetSubstrateNames_EnzymaticReactionList();
-
-    return GetIdxListFromList(EnzSubstrateList, AllSubstrateList);
-}
+// std::vector<int> FCompilerContext::GetEnzSubstrateIdxFromAllSubstrates(std::vector<const FEnzyme *> EnzymeList)
+// {
+//     std::vector<std::string> EnzSubstrateList = GetSubstrateNames_EnzymeList(EnzymeList);
+//     std::vector<std::string> AllSubstrateList = GetSubstrateNames_EnzymaticReactionList();
+// 
+//     return GetIdxListFromList(EnzSubstrateList, AllSubstrateList);
+// }
 
 std::vector<float> FCompilerContext::GetFreqMatrixForChromosomes()
 {

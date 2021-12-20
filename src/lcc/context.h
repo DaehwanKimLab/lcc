@@ -29,6 +29,17 @@ public:
     std::string Name;
     std::string Id;
 
+    FMolecule() {}
+    virtual ~FMolecule() {}
+
+    FMolecule(const std::string& InName) : Name(InName), Id(InName) {}
+
+    const std::string GetName() const {
+        return Name;
+    }
+    const std::string GetId() const {
+        return Id;
+    }
 };
 
 class FPathway {
@@ -40,18 +51,19 @@ public:
         : Name(InName), Sequence(InSequence) {};
 };
 
-class FProtein {
+class FSmallMolecule : public FMolecule {
 public:
-    std::string Name;
+    FSmallMolecule() {}
 
+    FSmallMolecule(const std::string& InName) : FMolecule(InName) {}
+};
+ 
+class FProtein : public FMolecule {
+public:
     FProtein() {}
 
-    FProtein(const std::string& InName) : Name(InName) {}
+    FProtein(const std::string& InName) : FMolecule(InName) {}
 
-    const std::string GetName() const {
-        return Name;
-    }
-    
 };
 
 class FEnzyme : public FProtein {
@@ -118,6 +130,7 @@ public:
     FTable PathwayTable;
 
     std::vector<std::string> UsingModuleList;
+    std::vector<FMolecule*> MoleculeList;
     std::vector<FProtein> ProteinList;
     std::vector<FEnzyme> EnzymeList;
     std::vector<FPathway> PathwayList;
@@ -126,14 +139,17 @@ public:
 
     void PrintLists(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
+    int AddToMoleculeList(FMolecule *NewMolecule);
 
     const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property);
     const std::string QueryReactionTable(const std::string& Name, const std::string& Property);
 
-    std::vector<std::string> GetNames_EnzymeList();
-    std::vector<std::string> GetSubstrates_EnzymeList();
-    std::vector<float> Getkcats_EnzymeList();
-    std::vector<float> GetkMs_EnzymeList();
+    std::vector<std::string> GetNames_MoleculeList();
+
+    std::vector<std::string> GetNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
+    std::vector<std::string> GetSubstrateNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
+    std::vector<float> Getkcats_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
+    std::vector<float> GetkMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
 
     std::vector<std::string> GetNames_ReactionList();
     std::vector<std::string> GetSubstrateNames_ReactionList();
@@ -151,8 +167,16 @@ public:
 
     std::vector<std::vector<int>> GetStoichiometryMatrix();
 
+    int GetIdxByName_MoleculeList(std::string InputName);
+    std::vector<const FEnzyme *> GetList_Enzyme_MoleculeList();
+    
+    std::vector<int> GetIdx_Enzyme_MoleculeList();
+    std::vector<int> GetIdx_EnzymeSubstrate_MoleculeList();
+    std::vector<int> GetIdx_SmallMolecule_MoleculeList();
+    
+
     std::vector<int> GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList);
-    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
+//    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
 
     std::vector<float> GetFreqMatrixForChromosomes();
     std::vector<float> GetFreqMatrixForRNAs();

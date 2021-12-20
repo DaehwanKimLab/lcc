@@ -2,6 +2,7 @@
 #include <queue>
 #include <cassert>
 #include <algorithm>
+#include <new>
 
 #include <unistd.h>
 #include <getopt.h>
@@ -68,6 +69,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
             os << "  Enzyme Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
 
+            FEnzyme * Enzyme1 = new FEnzyme(Name, Substrate, kcat, kM);
             FEnzyme Enzyme(Name, Substrate, kcat, kM);
 
             auto& OverallReaction = Protein->OverallReaction;
@@ -80,12 +82,18 @@ void TraversalNode(NBlock* InProgramBlock)
                 Coefficient = -1; // update when coeff is fully implemented in parser
                 os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
                 Stoichiometry[reactant->Name]= Coefficient;
+
+                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
+                Context.AddToMoleculeList(Molecule);
             }
 
             for (const auto& product : OverallReaction.Products) {
                 Coefficient = 1; // update when coeff is fully implemented in parser
                 os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
                 Stoichiometry[product->Name]= Coefficient;
+
+                FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+                Context.AddToMoleculeList(Molecule);
             }
 
 			if (!Location.empty()) {
@@ -102,6 +110,7 @@ void TraversalNode(NBlock* InProgramBlock)
 //
 //            }
 //            Context.ProteinList.emplace_back(*Protein);
+            Context.AddToMoleculeList(Enzyme1);
 
             Context.EnzymeList.emplace_back(Enzyme);
             Context.EnzymaticReactionList.emplace_back(EnzymaticReaction);
@@ -301,18 +310,49 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ in+ "self.Vol = 0" << endl;
     ofs << endl;
 
-    std::vector<std::string> EnzymeNames = Context.GetNames_EnzymeList();
-    std::vector<std::string> SubstrateNames = Context.GetSubstrateNames_EnzymaticReactionList();
-    std::vector<float> kcats = Context.Getkcats_EnzymeList();
-    std::vector<float> kMs = Context.GetkMs_EnzymeList();
+    // for legends
+    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
+    std::cout << in+ in+ in+ "# MoleNames: " << JoinStr2Str(MolNames) << endl;
+    std::cout << endl;
+
+    // for enzyme reactions
+    std::vector<const FEnzyme *> EnzymeList = Context.GetList_Enzyme_MoleculeList();
+
+    std::vector<std::string> EnzNames = Context.GetNames_EnzymeList(EnzymeList);
+    std::cout << in+ in+ in+ "# EnzNames: " << JoinStr2Str(EnzNames) << endl;
+    std::cout << endl;
+
+//    std::vector<const FSmallMolecule *> SMolList = Context.GetList_SmallMolecule_MoleculeList();
+
+//    std::vector<std::string> SMolNames = Context.GetNames_SmallMoleculeList(SMolList);
+//    std::cout << in+ in+ in+ "# SMolNames: " << JoinStr2Str(SMolNames) << endl;
+//    os << endl;
+
+    std::vector<float> kcats = Context.Getkcats_EnzymeList(EnzymeList);
+    std::vector<float> kMs = Context.GetkMs_EnzymeList(EnzymeList);
     std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix();
-    std::vector<int> Idx_EnzSubInAllSub = Context.GetEnzSubstrateIdxFromAllSubstrates();
+
+    std::vector<int> Idx_Enz = Context.GetIdx_Enzyme_MoleculeList();
+    std::vector<int> Idx_EnzSub = Context.GetIdx_EnzymeSubstrate_MoleculeList();
+    std::vector<int> Idx_SMol = Context.GetIdx_SmallMolecule_MoleculeList();
+  
+    //if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
+    //    auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
 
     ofs << in+ in+ in+ "# State Arrays" << endl;
-    ofs << in+ in+ in+ "self.Count_Enz = np.zeros(" << EnzymeNames.size() << ")" << endl;
-    ofs << in+ in+ in+ "self.Count_Sub = np.zeros(" << SubstrateNames.size() << ")" << endl;
-    ofs << in+ in+ in+ "self.dCount_Enz = np.zeros(len(self.Count_Enz))" << endl;
-    ofs << in+ in+ in+ "self.dCount_Sub = np.zeros(len(self.Count_Sub))" << endl;
+    ofs << in+ in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ in+ "self.dCount_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "self.Idx_Enz = 0" << endl;
+    ofs << in+ in+ in+ "self.Idx_EnzSub = 0" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol = 0" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "self.Count_Enz = np.asmatrix(np.zeros([0, " << Idx_Enz.size() << "]))" << endl;
+    ofs << in+ in+ in+ "self.Count_Sub = np.asmatrix(np.zeros([0, " << Idx_SMol.size() << "]))" << endl;
+    ofs << in+ in+ in+ "self.dCount_Enz = np.asmatrix(np.zeros([0, " << Idx_Enz.size() << "]))" << endl;
+    ofs << in+ in+ in+ "self.dCount_Sub = np.asmatrix(np.zeros([0, " << Idx_SMol.size() << "]))" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
@@ -380,17 +420,28 @@ void WriteSimModule(int TestInt)
 
     ofs << in+ in+ "def Initialize(self):" << endl;
     ofs << in+ in+ in+ "self.Vol = np.asmatrix([1])" << endl;
+    ofs << endl;
 
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
-    ofs << in+ in+ in+ "self.Count_Enz = np.asmatrix(np.random.randint(10, high=100, size=len(self.Count_Enz)))" << endl;
-    ofs << in+ in+ in+ "self.Count_Sub = np.asmatrix(np.random.randint(100, high=1000, size=len(self.Count_Sub)))" << endl;
     // ofs << in+ in+ in+ "self.Counts_Enz = np.matrix(np.array(5, size=len(self.Counts_Enz)))" << endl;
     // ofs << in+ in+ in+ "self.Counts_Sub = np.matrix(np.array(500, size=len(self.Counts_Sub)))" << endl;
     ofs << in+ in+ in+ "self.Const_kcats = np.asmatrix([" << JoinFloat2Str(kcats) << "])" << endl;
     ofs << in+ in+ in+ "self.Const_kMs = np.asmatrix([" << JoinFloat2Str(kMs) << "])" << endl;
     ofs << in+ in+ in+ "self.Const_StoichMatrix = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
+    ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_EnzSubInAllSub = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSubInAllSub) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_EnzSub = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol) << "])" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "Count_Enz = np.asmatrix(np.random.randint(10, high=100, size=self.Idx_Enz.size))" << endl;
+    ofs << in+ in+ in+ "Count_SMol = np.asmatrix(np.random.randint(100, high=1000, size=self.Idx_SMol.size))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Enz, Count_Enz, axis=1)" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_SMol, Count_SMol, axis=1)" << endl;
+
     ofs << endl;
 
 
@@ -440,20 +491,21 @@ void WriteSimModule(int TestInt)
 
 
     ofs << in+ in+ "def ExportLegend(self):" << endl;
-    ofs << in+ in+ in+ "return ['SimStep', 'Vol', " << JoinStr2Str(EnzymeNames) << JoinStr2Str(SubstrateNames) << "]" << endl;
+    ofs << in+ in+ in+ "return ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def ExportData(self, SimStep):" << endl;
-    ofs << in+ in+ in+ "Data = np.asmatrix(np.zeros(2 + " << EnzymeNames.size() << " + " << SubstrateNames.size() << "))" << endl;
+    ofs << in+ in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
     int i = 0;
     int i_SimStep = i + 1;
     ofs << in+ in+ in+ "Data[0, " << i << ":" << i_SimStep << "] = SimStep" << endl;
+
     int i_Vol = i_SimStep + 1;
     ofs << in+ in+ in+ "Data[0, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
-    int i_Count_Enz = i_Vol + EnzymeNames.size();
-    ofs << in+ in+ in+ "Data[0, " << i_Vol << ":" << i_Count_Enz << "] = self.Count_Enz" << endl;
-    int i_Count_Sub = i_Count_Enz + SubstrateNames.size();
-    ofs << in+ in+ in+ "Data[0, " << i_Count_Enz << ":" << i_Count_Sub << "] = self.Count_Sub" << endl;
+
+    int i_Count_Mol = i_Vol + MolNames.size();
+    ofs << in+ in+ in+ "Data[0, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
+
     ofs << in+ in+ in+ "return Data" << endl;
     ofs << endl;
     
@@ -493,52 +545,40 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ in+ "self.DM.SetLegend(self.Dataset.Legend)" << endl;
 
     ofs << in+ in+ in+ "# Data Export" << endl;
-    ofs << in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep)" << endl;
-    ofs << in+ in+ in+ "self.DM.Add(self.Dataset.Data)" << endl;
+    ofs << in+ in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def Run(self):" << endl;
     ofs << in+ in+ in+ "print('Simulation Run Begins...')" << endl;
+    ofs << endl;
     ofs << in+ in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
     ofs << in+ in+ in+ in+ "self.SimStep += 1" << endl;
     
     ofs << in+ in+ in+ in+ "self.EnzymaticReactions()" << endl;
     ofs << in+ in+ in+ in+ "self.ElongationReactions()" << endl;
-    ofs << endl;
-
-
-//    ofs << in+ in+ in+ in+ "# Display" << endl;
-//    ofs << in+ in+ in+ in+ "EnzName = '" << EnzymeName << "' + '\\t|'" << endl;
-//    ofs << in+ in+ in+ in+ "EnzStr = 'EnzConc: ' + str(EnzConc) + '\\t|'" << endl;
-//    ofs << in+ in+ in+ in+ "SubStr = 'SubConc: ' + str(SubConc) + '\\t|'" << endl;
-//    ofs << in+ in+ in+ in+ "RateStr = 'Rate: ' + str(Rate)" << endl;
-//    ofs << in+ in+ in+ in+ "print(EnzName + EnzStr + SubStr + RateStr)" << endl;
-// 
-//    for (auto& EnzymaticReaction : Context.EnzymaticReactionList) {
-//        if ((EnzymaticReaction.Enzyme == EnzymeName) & EnzymaticReaction.CheckIfReactant(Substrate)){
-//            for (std::pair<std::string, int> Stoich : EnzymaticReaction.Stoichiometry) {
-//                ofs << in+ in+ in+ in+ "Coeff = " << Stoich.second << endl;
-//                ofs << in+ in+ in+ in+ "SubDelConc = Rate * Coeff" << endl;
-//                ofs << in+ in+ in+ in+ "self.State.Sub2DelCount['" << Stoich.first << "'] = ConcToCount(SubDelConc, self.State.Vol)" << endl;
-//                ofs << endl;
-//            }
-//        }
-//    }
-                           
+                          
     ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
-    ofs << in+ in+ in+ in+ "self.State.Count_Sub = self.State.Count_Sub + self.State.dCount_Sub" << endl;
+    ofs << in+ in+ in+ in+ "self.State.Count_All = self.State.Count_All + self.State.dCount_All" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ in+ "# Save and Export Data" << endl;
+    ofs << in+ in+ in+ in+ "self.ExportData()" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "print('Simulation Run Completed')" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def ExportData(self):" << endl;    
     ofs << in+ in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep)" << endl;
     ofs << in+ in+ in+ in+ "self.DM.Add(self.Dataset.Data)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = self.State.Count_Enz / self.State.Vol" << endl;
-    ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_Sub, self.State.Idx_EnzSubInAllSub) / self.State.Vol" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = np.take(self.State.Count_All, self.State.Idx_Enz) / self.State.Vol" << endl;
+    ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn_Array(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_Sub = np.transpose(np.matmul(np.transpose(self.State.Const_StoichMatrix), np.transpose(Rate)))" << endl;
+    // Update with mole indexes from EnzReactions
+    ofs << in+ in+ in+ "np.put_along_axis(self.State.dCount_All, self.State.Idx_SMol, np.transpose(np.matmul(np.transpose(self.State.Const_StoichMatrix), np.transpose(Rate))), axis=1)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def ElongationReactions(self):" << endl;
