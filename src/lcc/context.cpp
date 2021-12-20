@@ -131,11 +131,11 @@ void FCompilerContext::SaveUsingModuleList(const char* Filename)
 int FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 {
     bool Addition = true;
-    std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
+    // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
     for (auto& Molecule : MoleculeList) {
         if (Molecule->Name == NewMolecule->Name){
             Addition = false;
-            std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
+            // std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
             break;
         }
     }
@@ -161,11 +161,11 @@ void FCompilerContext::PrintLists(std::ostream& os)
     };
     os << std::endl;
 
-    os << "  EnzymeList: " << std::endl << "  " << "  ";
-    for (auto& item : EnzymeList){
-        os << item.Name << ", ";
-    };
-    os << std::endl;
+//    os << "  EnzymeList: " << std::endl << "  " << "  ";
+//    for (auto& item : EnzymeList){
+//        os << item.Name << ", ";
+//    };
+//    os << std::endl;
 
     os << "  EnzymaticReactionList: " << std::endl << "  " << "  ";
     for (auto& item : EnzymaticReactionList){
@@ -323,28 +323,27 @@ std::vector<std::string> FCompilerContext::GetSequences_PathwayList()
 std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix()
 {
     std::vector<std::vector<int>> StoichMatrix;
-    std::vector<std::string> SubstrateList = GetSubstrateNames_EnzymaticReactionList();
+    std::vector<const FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList();
 
     for (auto& EnzymaticReaction : EnzymaticReactionList){
-        std::vector<int> CoeffArray(SubstrateList.size(), 0);
+        std::vector<int> CoeffArray(SMolList.size(), 0);
 
         for (auto& Stoich : EnzymaticReaction.Stoichiometry){
             std::string SubstrateName = Stoich.first;
             int Coeff = Stoich.second;
 	    int Index = 0;
 
-            std::cout << "NOW SEARCHING: " << SubstrateName << ", " << Coeff << " " << Index << endl;
-
-            for (auto& Substrate : SubstrateList){
-                std::cout << "Searching from the List: " << Substrate << " | " << "Index: " << Index << endl;
-                if (Substrate == SubstrateName){
+            for (auto& Molecule : SMolList){
+                // std::cout << "Searching from the List: " << Substrate << " | " << "Index: " << Index << endl;
+                if (Molecule->Name == SubstrateName){
                     break;
                 }
                 Index++;
             }
-
-            if (Index <= SubstrateList.size()) {
-                std::cout << "Substrate indexing failed: " << SubstrateName << std::endl;
+            if (Index >= MoleculeList.size()) {
+                std::cout << "Substrate index searching in MoleculeList failed: " << SubstrateName << endl;
+            } else {
+            // std::cout << "Substrate Searching from the List: " << SubstrateName << " | " << "Index: " << Index << endl;
             } 
 
             CoeffArray[Index] = Coeff;
@@ -377,6 +376,19 @@ std::vector<const FEnzyme *> FCompilerContext::GetList_Enzyme_MoleculeList()
         }
     }
     return EnzymeList;
+}
+
+std::vector<const FSmallMolecule *> FCompilerContext::GetList_SmallMolecule_MoleculeList()
+{
+    std::vector<const FSmallMolecule *> SmallMoleculeList;
+    
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
+            auto SmallMolecule = dynamic_cast<const FSmallMolecule *>(Molecule);
+            SmallMoleculeList.push_back(SmallMolecule);
+        }
+    }
+    return SmallMoleculeList;
 }
 
 std::vector<int> FCompilerContext::GetIdx_Enzyme_MoleculeList()

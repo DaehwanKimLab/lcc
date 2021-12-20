@@ -73,8 +73,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
             os << "  Enzyme Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
 
-            FEnzyme * Enzyme1 = new FEnzyme(Name, Substrate, kcat, kM);
-            FEnzyme Enzyme(Name, Substrate, kcat, kM);
+            FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM);
 
             auto& OverallReaction = Protein->OverallReaction;
             // os << "  OverallReaction:" << endl;
@@ -114,9 +113,7 @@ void TraversalNode(NBlock* InProgramBlock)
 //
 //            }
 //            Context.ProteinList.emplace_back(*Protein);
-            Context.AddToMoleculeList(Enzyme1);
-
-            Context.EnzymeList.emplace_back(Enzyme);
+            Context.AddToMoleculeList(Enzyme);
             Context.EnzymaticReactionList.emplace_back(EnzymaticReaction);
  
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
@@ -238,7 +235,7 @@ std::string Matrix2Str(std::vector<std::vector<int>> Matrix)
     return MatrixStr;
 }
 
-void WriteSimModule(int TestInt)
+void WriteSimModule()
 {
     // write simulation.py
     std::ofstream ofs(Option.SimModuleFile.c_str());
@@ -251,29 +248,6 @@ void WriteSimModule(int TestInt)
     // ofs << "import tensorflow as tf" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
-    ofs << endl;
-
-    // C++ to Python Data conversion
-    ofs << "PathwayList = list()" << endl;
-    for (auto& pathway : Context.PathwayList) {
-       ofs << "PathwayList.append({";
-       ofs << "'Name' : '" << pathway.Name << "', ";
-       ofs << "'Sequence' : [";
-       for (auto& enzyme : pathway.Sequence) {
-           ofs << "'" << enzyme << "', ";
-       }
-       ofs << "]" << "})" << endl;
-    }
-    ofs << endl;
-
-    ofs << "EnzymeList = list()" << endl;
-    for (auto& enzyme : Context.EnzymeList) {
-        ofs << "EnzymeList.append({";
-        ofs << "'Name' : '" << enzyme.Name << "', ";
-        ofs << "'Substrate' : '" << enzyme.Substrate << "', ";
-        ofs << "'kcat' : " << enzyme.kcat << ", ";
-        ofs << "'kM' : " << enzyme.kM << ", })" << endl;
-    }
     ofs << endl;
 
     // BODY
@@ -314,16 +288,10 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ in+ "self.Vol = 0" << endl;
     ofs << endl;
 
-    // for legends
-    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
-    std::cout << in+ in+ in+ "# MoleNames: " << JoinStr2Str(MolNames) << endl;
-    std::cout << endl;
-
     // for enzyme reactions
     std::vector<const FEnzyme *> EnzymeList = Context.GetList_Enzyme_MoleculeList();
 
     std::vector<std::string> EnzNames = Context.GetNames_EnzymeList(EnzymeList);
-    std::cout << in+ in+ in+ "# EnzNames: " << JoinStr2Str(EnzNames) << endl;
     std::cout << endl;
 
 //    std::vector<const FSmallMolecule *> SMolList = Context.GetList_SmallMolecule_MoleculeList();
@@ -353,15 +321,9 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ in+ "self.Idx_SMol = 0" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Count_Enz = np.asmatrix(np.zeros([0, " << Idx_Enz.size() << "]))" << endl;
-    ofs << in+ in+ in+ "self.Count_Sub = np.asmatrix(np.zeros([0, " << Idx_SMol.size() << "]))" << endl;
-    ofs << in+ in+ in+ "self.dCount_Enz = np.asmatrix(np.zeros([0, " << Idx_Enz.size() << "]))" << endl;
-    ofs << in+ in+ in+ "self.dCount_Sub = np.asmatrix(np.zeros([0, " << Idx_SMol.size() << "]))" << endl;
-    ofs << endl;
-
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
-    ofs << in+ in+ in+ "self.Const_kcats = np.zeros(len(self.Count_Enz))" << endl;
-    ofs << in+ in+ in+ "self.Const_kMs = np.zeros(len(self.Count_Enz))" << endl;
+    ofs << in+ in+ in+ "self.Const_kcats = 0" << endl;
+    ofs << in+ in+ in+ "self.Const_kMs = 0" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
@@ -495,6 +457,9 @@ void WriteSimModule(int TestInt)
 
 
     ofs << in+ in+ "def ExportLegend(self):" << endl;
+    // for legends
+    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
+    // std::cout << "Legend_MoleNames: " << JoinStr2Str(MolNames) << endl;
     ofs << in+ in+ in+ "return ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
@@ -557,12 +522,16 @@ void WriteSimModule(int TestInt)
     ofs << endl;
     ofs << in+ in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
     ofs << in+ in+ in+ in+ "self.SimStep += 1" << endl;
+
+    ofs << in+ in+ in+ in+ "# Reset Substrate Count" << endl;
+    ofs << in+ in+ in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
     
+    ofs << in+ in+ in+ in+ "# Run Reactions" << endl;
     ofs << in+ in+ in+ in+ "self.EnzymaticReactions()" << endl;
     ofs << in+ in+ in+ in+ "self.ElongationReactions()" << endl;
                           
     ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
-    ofs << in+ in+ in+ in+ "self.State.Count_All = self.State.Count_All + self.State.dCount_All" << endl;
+    ofs << in+ in+ in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ in+ "# Save and Export Data" << endl;
@@ -582,7 +551,9 @@ void WriteSimModule(int TestInt)
     ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn_Array(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "np.put_along_axis(self.State.dCount_All, self.State.Idx_SMol, np.transpose(np.matmul(np.transpose(self.State.Const_StoichMatrix), np.transpose(Rate))), axis=1)" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(dCount_SMol, self.State.Idx_SMol, np.transpose(np.matmul(np.transpose(self.State.Const_StoichMatrix), np.transpose(Rate))), axis=1)" << endl;
+    ofs << in+ in+ in+ "self.State.dCount_All += dCount_SMol" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def ElongationReactions(self):" << endl;
@@ -779,10 +750,9 @@ int main(int argc, char *argv[])
     }
 
     if (Option.bSimPython) {
-        cout << endl << "## Simulation_Python ##" << endl;
-        
-        int TestInt = 1;
-        WriteSimModule(TestInt);
+        // cout << "## Simulation_Python ##" << endl;
+     
+        WriteSimModule();
 
         cout << "Simulation_Python module has been generated: ";
         cout << Option.SimModuleFile << endl;

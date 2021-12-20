@@ -169,6 +169,7 @@ public:
 
     int GetIdxByName_MoleculeList(std::string InputName);
     std::vector<const FEnzyme *> GetList_Enzyme_MoleculeList();
+    std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
     
     std::vector<int> GetIdx_Enzyme_MoleculeList();
     std::vector<int> GetIdx_EnzymeSubstrate_MoleculeList();

@@ -24,11 +24,11 @@ public:
 
     std::string OutputPrefix;
 
-    std::string SimResultFile;
-    std::string SimModuleFile;
+    std::string SimResultFile = "SimOut.py";
+    std::string SimModuleFile = "SimModule.py";
 
     bool bSimCpp;
-    bool bSimPython;
+    bool bSimPython = true;
 
     bool bDebug;
     bool bVersion;

@@ -34,8 +34,8 @@ int FOption::Parse(int argc, char *argv[])
             {"output", required_argument, NULL, 'o'},
             {"debug", no_argument, NULL, ARG_DEBUG},
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
-            {"simout", required_argument, NULL, ARG_SIMOUT},
-            {"simimp", required_argument, NULL, ARG_SIMIMP},
+	    {"simout", required_argument, NULL, ARG_SIMOUT},
+	    {"simimp", required_argument, NULL, ARG_SIMIMP},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {NULL, 0, NULL, 0},
     };
@@ -124,7 +124,9 @@ void FOption::Reset() {
     bShowHelp = false;
     bParseOnly = false;
     bSimCpp = false;
-    bSimPython = false;    
+    bSimPython = true;    
+    SimModuleFile = "";
+    SimResultFile = "";
 }
 
 
