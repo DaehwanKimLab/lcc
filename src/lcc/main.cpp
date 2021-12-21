@@ -3,6 +3,8 @@
 #include <cassert>
 #include <algorithm>
 #include <new>
+#include <string>
+#include <vector>
 
 #ifdef _MSC_VER
 #include <io.h>
@@ -59,24 +61,24 @@ void TraversalNode(NBlock* InProgramBlock)
     while(!tc.Queue.empty()) {
         const NNode* node = tc.Queue.front(); tc.Queue.pop();
 
+        // This is inteded for NEnzymeDeclaration, to be fixed later on.
         if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
-            auto Protein = dynamic_cast<const NProteinDeclaration *>(node);
-            os << "Protein Id: " << Protein->Id.Name << endl;
-            // Protein->Print(os);
+            auto N_Enzyme = dynamic_cast<const NProteinDeclaration *>(node);
+            os << "Enzyme Id: " << N_Enzyme->Id.Name << endl;
+            // Enzyme->Print(os);
 
-            auto& Id = Protein->Id;
+            auto& Id = N_Enzyme->Id;	    
 	    
             string Name = Id.Name;
-            string Substrate = Context.QueryEnzymeTable(Name, "Substrate");
-            float kcat = std::stof(Context.QueryEnzymeTable(Name, "kcat"));
-            float kM = std::stof(Context.QueryEnzymeTable(Name, "kM"));
-
-            os << "  Enzyme Query Results: " << Substrate << ", " << kcat << ", " << kM << endl;
+            string Substrate = Context.QueryTable(Name, "Substrate", Context.EnzymeTable);
+            float kcat = std::stof(Context.QueryTable(Name, "kcat", Context.EnzymeTable));
+            float kM = std::stof(Context.QueryTable(Name, "kM", Context.EnzymeTable));
 
             FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM);
+            Enzyme->Print(os);
             Context.AddToMoleculeList(Enzyme);
 
-            auto& OverallReaction = Protein->OverallReaction;
+            auto& OverallReaction = N_Enzyme->OverallReaction;
             // os << "  OverallReaction:" << endl;
             map<string, int> Stoichiometry;
 			string Location = OverallReaction.Location.Name;
@@ -88,6 +90,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 Stoichiometry[reactant->Name]= Coefficient;
 
                 FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
+                Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
 
@@ -97,6 +100,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 Stoichiometry[product->Name]= Coefficient;
 
                 FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+                Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
 
@@ -105,10 +109,11 @@ void TraversalNode(NBlock* InProgramBlock)
 			}
 
             FEnzymaticReaction *EnzymaticReaction = new FEnzymaticReaction(Name, Stoichiometry, Name);
+            EnzymaticReaction->Print(os);
             Context.AddToReactionList(EnzymaticReaction);
 
-//            if (Protein->Block) {
-//                auto& Block = Protein->Block;
+//            if (N_Enzyme->Block) {
+//                auto& Block = N_Enzyme->Block;
 //                for (auto& stmt: Block->Statements) {
 //                    os << "  "; stmt->Print(os);
 //                }
@@ -137,8 +142,176 @@ void TraversalNode(NBlock* InProgramBlock)
             }
             os << endl;
 
-            FPathway Pathway_New(Name, Sequence);
+            FPathway Pathway_New(Name, Sequence); // Fixme
             Context.PathwayList.emplace_back(Pathway_New);
+
+        } else if (Utils::is_class_of<NPolymeraseDeclaration, NNode>(node)) {
+            auto N_Polymerase = dynamic_cast<const NPolymeraseDeclaration *>(node);
+            os << "Polymerase Id: " << N_Polymerase->Id.Name << endl;
+            // N_Polymerase->Print(os);
+
+            auto& Id = N_Polymerase->Id;
+	    
+            string Name = Id.Name;
+            string Substrate = Context.QueryTable(Name, "Substrate", Context.PolymeraseTable);
+            float Rate = std::stof(Context.QueryTable(Name, "Rate", Context.PolymeraseTable));
+
+            FPolymerase * Polymerase = new FPolymerase(Name, Substrate, Rate);
+            Polymerase->Print(os);
+            Context.AddToMoleculeList(Polymerase);
+
+//            int i = 0;
+//
+//            for (const auto stmt : N_Polymerase->Statements) {
+//                stmt->Print(os);
+//                NStatement Statement = *stmt;
+//
+//                if (i == 1) {
+//                    auto Elongation = static_cast<NElongationStatement *>(&Statement);
+//                    NReaction ElongationReaction = Elongation->Reaction;
+//                    ElongationReaction.Print(os);
+//                    os << "AAAAAAAAAAA" << endl;
+//
+////                if (Utils::is_class_of<const NElongationStatement, const NStatement>(&Statement)) {
+////                    auto Elongation = static_cast<const NElongationStatement *>(&Statement);
+////                    NReaction ElongationReaction = Elongation->Reaction;
+//
+//                    os << "11111" << endl; 
+//
+//                    os << "  Elongation:"; ElongationReaction.Print(os);
+//                    map<string, int> Stoichiometry;
+//        			string Location = ElongationReaction.Location.Name;
+//                    int Coefficient;
+//                    std::vector<std::string> BuildingBlocks;
+//
+//                    for (const auto& reactant : ElongationReaction.Reactants) {
+//                        Coefficient = -1; // update when coeff is fully implemented in parser
+//                        os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
+//                        if ((reactant->Name == "dna_{n}") | (reactant->Name == "rna_{n}") | (reactant->Name == "peptide_{n}")) {
+//                            continue;
+//                        } else if (reactant->Name == "dnt") {
+//                            BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
+//                            continue;
+//                        } else if (reactant->Name == "nt") {
+//                            BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
+//                            continue;
+//                        } else if (reactant->Name == "nt") {
+//                            BuildingBlocks = {"ALPHA-ALANINE", "ARG", "ASN", "L-ASPARTATE", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "L-SELENOCYSTEINE", "VAL"};
+//                            continue;
+//                        }
+//        
+//                        Stoichiometry[reactant->Name]= Coefficient;
+//        
+//                        FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
+//                        Molecule->Print(os);
+//                        Context.AddToMoleculeList(Molecule);
+//                    }
+//
+//                    os << "2222" << endl;
+//                    for (const auto& product : ElongationReaction.Products) {
+//                        Coefficient = 1; // update when coeff is fully implemented in parser
+//                        os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
+//                        if (product->Name == "rna_{n+1}") {
+//                            continue;
+//                        }
+//                        Stoichiometry[product->Name]= Coefficient;
+//
+//                        FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+//                        Molecule->Print(os);
+//                        Context.AddToMoleculeList(Molecule);
+//                    }
+//        
+//        			if (!Location.empty()) {
+//                        os << "    Location: " << Location << endl;
+//        			}
+//
+//                    os << "3333" << endl;
+//                    for (auto& BuildingBlock : BuildingBlocks) {
+//                        FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
+//                        Molecule->Print(os);
+//                        Context.AddToMoleculeList(Molecule);
+//                    }
+//
+//                    FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+//                    PolymeraseReaction->Print(os);
+//                    Context.AddToReactionList(PolymeraseReaction);
+//                } // if
+//            i++;
+//            }
+
+
+
+
+
+        } else if (Utils::is_class_of<NElongationStatement, NNode>(node)) {
+            auto N_Elongation = dynamic_cast<const NElongationStatement *>(node);
+            std::string Name = "rnap";
+
+            auto& ElongationReaction = N_Elongation->Reaction;
+
+            os << "  Elongation:"; ElongationReaction.Print(os);
+            map<string, int> Stoichiometry;
+			string Location = ElongationReaction.Location.Name;
+            int Coefficient;
+            std::vector<std::string> BuildingBlocks;
+
+            for (const auto& reactant : ElongationReaction.Reactants) {
+                Coefficient = -1; // update when coeff is fully implemented in parser
+                os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
+                if ((reactant->Name == "dna_{n}") | (reactant->Name == "rna_{n}") | (reactant->Name == "peptide_{n}")) {
+                    continue;
+                } else if (reactant->Name == "dnt") {
+                    BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
+                    continue;
+                } else if (reactant->Name == "nt") {
+                    BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
+                    continue;
+                } else if (reactant->Name == "nt") {
+                    BuildingBlocks = {"ALPHA-ALANINE", "ARG", "ASN", "L-ASPARTATE", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "L-SELENOCYSTEINE", "VAL"};
+                    continue;
+                }
+
+                Stoichiometry[reactant->Name]= Coefficient;
+
+                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
+                Molecule->Print(os);
+                Context.AddToMoleculeList(Molecule);
+            }
+
+            for (const auto& product : ElongationReaction.Products) {
+                Coefficient = 1; // update when coeff is fully implemented in parser
+                os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
+                if (product->Name == "rna_{n+1}") {
+                    continue;
+                }
+                Stoichiometry[product->Name]= Coefficient;
+
+                FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+                Molecule->Print(os);
+                Context.AddToMoleculeList(Molecule);
+            }
+
+			if (!Location.empty()) {
+                os << "    Location: " << Location << endl;
+			}
+
+            for (auto& BuildingBlock : BuildingBlocks) {
+                os << "BuildingBlock" << endl;
+                FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
+                Molecule->Print(os);
+                Context.AddToMoleculeList(Molecule);
+            }
+
+            FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+            PolymeraseReaction->Print(os);
+            Context.AddToReactionList(PolymeraseReaction);
+    
+       
+
+
+
+
+
 
         } else if (Utils::is_class_of<NOrganismDeclaration, NNode>(node)) {
             auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
@@ -709,11 +882,19 @@ int main(int argc, char *argv[])
 		Context.ReactionTable.Dump(Keys);
 
                 Keys.clear();
-        Keys.emplace_back("EnzymeName");
+        Keys.emplace_back("Name");
         Keys.emplace_back("Substrate");
         Keys.emplace_back("kcat");
         Keys.emplace_back("kM");
+                os << "# EnzymeTable #" << endl;
                 Context.EnzymeTable.Dump(Keys);
+
+                Keys.clear();
+        Keys.emplace_back("Name");
+        Keys.emplace_back("Substrate");
+        Keys.emplace_back("Rate");
+                os << "# PolymeraseTable #" << endl;
+                Context.PolymeraseTable.Dump(Keys);
     }
 
     for (const auto& SourceFile: Option.SourceFiles) {
@@ -772,4 +953,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-

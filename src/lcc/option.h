@@ -24,7 +24,7 @@ public:
 
     std::string OutputPrefix;
 
-    std::string SimResultFile = "SimOut.py";
+    std::string SimResultFile = "SimOut.tsv";
     std::string SimModuleFile = "SimModule.py";
 
     bool bSimCpp;

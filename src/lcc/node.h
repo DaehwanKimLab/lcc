@@ -15,12 +15,14 @@ class NMoleculeIdentifier;
 class NIdentifier;
 class NPathwayExpression;
 class NProteinDeclaration;
+class NPolymeraseDeclaration;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
 typedef std::vector<std::shared_ptr<NIdentifier>> IdentifierList;
 typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
 typedef std::vector<std::shared_ptr<NProteinDeclaration>> ProteinDeclList;
+typedef std::vector<std::shared_ptr<NPolymeraseDeclaration>> PolymeraseDeclList;
 
 class NNodeUtil {
 public:
@@ -171,7 +173,7 @@ public:
 	}
 
     virtual void Print(std::ostream& os) const override {
-        os << "NGeneralReaction(" << std::endl;
+        os << "NReaction(" << std::endl;
         os << "  Reactants: ";
         for (const auto& item: Reactants) {
              os << item->Name << ", ";
@@ -498,50 +500,6 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
-class NRibosomeDeclaration : public NStatement {
-public:
-    const NIdentifier Id;
-
-    StatementList Statements;
-
-
-    NRibosomeDeclaration(const NIdentifier& InId, const StatementList* InStatements) : Id(InId) {
-        Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
-    }
-
-    virtual void Print(std::ostream& os) const override {
-        os << "NRibosomeDeclaration(" << std::endl;
-        for (const auto stmt : Statements) {
-            os << "\t"; stmt->Print(os); os << std::endl;
-        }
-        os << ")" << std::endl;
-    }
-
-    virtual void Visit(FTraversalContext& Context) const override;
-};
-
-class NPolymeraseDeclaration : public NStatement {
-public:
-    const NIdentifier Id;
-
-    StatementList Statements;
-
-
-    NPolymeraseDeclaration(const NIdentifier& InId, const StatementList* InStatements) : Id(InId) {
-        Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
-    }
-
-    virtual void Print(std::ostream& os) const override {
-        os << "NPolymeraseDeclaration(" << std::endl;
-        for (const auto stmt : Statements) {
-            os << "\t"; stmt->Print(os); os << std::endl;
-        }
-        os << ")" << std::endl;
-    }
-
-    virtual void Visit(FTraversalContext& Context) const override;
-};
-
 class NInitiationStatement : public NStatement {
 public:
     const NIdentifier Id;
@@ -581,6 +539,51 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NRibosomeDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+
+    StatementList Statements;
+
+
+    NRibosomeDeclaration(const NIdentifier& InId, const StatementList* InStatements) 
+        : Id(InId) {
+            Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
+        }
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NRibosomeDeclaration(" << std::endl;
+        for (const auto stmt : Statements) {
+            os << "\t"; stmt->Print(os); os << std::endl;
+        }
+        os << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NPolymeraseDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+
+    StatementList Statements;
+
+    NPolymeraseDeclaration(const NIdentifier& InId, const StatementList* InStatements)
+        : Id(InId) 
+		{Statements.insert(Statements.end(), InStatements->begin(), InStatements->end());
+        }
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NPolymeraseDeclaration(" << std::endl;
+        for (const auto stmt : Statements) {
+            os << "\t"; stmt->Print(os); os << std::endl;
+        }
+        os << ")" << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
 };
 
 

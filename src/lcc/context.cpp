@@ -98,6 +98,7 @@ void FCompilerContext::Init(const FOption& InOption)
         GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/genes.tsv").c_str());
 		ReactionTable.LoadFromTSV((InOption.DataPaths[0] + "/reactions.tsv").c_str());
         EnzymeTable.LoadFromTSV((InOption.DataPaths[0] + "/EnzymeDatabase.txt").c_str());
+        PolymeraseTable.LoadFromTSV((InOption.DataPaths[0] + "/PolymeraseDatabase.txt").c_str());
     }
 }
 
@@ -135,7 +136,7 @@ void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
     for (auto& Molecule : MoleculeList) {
         if (Molecule->Name == NewMolecule->Name){
             Addition = false;
-            // std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
+            std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
             break;
         }
     }
@@ -162,52 +163,44 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 
 void FCompilerContext::PrintLists(std::ostream& os) 
 {
-    os << "Compiler Context Lists:" << std::endl;
+    os << "## Compiler Context Lists ##" << std::endl;
+    if (!MoleculeList.empty()) {
+        os << "  MoleculeList: " << std::endl << "  " << "  ";
+        for (auto& item : MoleculeList){
+            os << item->Name << ", ";
+        }
+        os << std::endl;
+    }
 
-    os << "  MoleculeList: " << std::endl << "  " << "  ";
-    for (auto& item : MoleculeList){
-        os << item->Name << ", ";
-    };
-    os << std::endl;
-
-    os << "  PathwayList: " << std::endl << "  " << "  ";
-    for (auto& item : PathwayList){
-        os << item.Name << ", ";
-    };
-    os << std::endl;
-
+    if (!PathwayList.empty()) { 
+        os << "  PathwayList: " << std::endl << "  " << "  ";
+        for (auto& item : PathwayList){
+            os << item.Name << ", ";
+        }
+        os << std::endl;
+    }
 //    os << "  EnzymeList: " << std::endl << "  " << "  ";
 //    for (auto& item : EnzymeList){
 //        os << item.Name << ", ";
 //    };
 //    os << std::endl;
-
-    os << "  ReactionList: " << std::endl << "  " << "  ";
-    for (auto& item : ReactionList){
-        os << item->Name << ", ";
-    };
-    os << std::endl;
+    if (!ReactionList.empty()) {
+        os << "  ReactionList: " << std::endl << "  " << "  ";
+        for (auto& item : ReactionList){
+            os << item->Name << ", ";
+        }
+        os << std::endl;
+        }
 }
 
-const std::string FCompilerContext::QueryEnzymeTable(const std::string& Name, const std::string& Property)
+const std::string FCompilerContext::QueryTable(const std::string& Name, const std::string& Property, FTable Table)
 {
-    for (auto& record : EnzymeTable.Records) {
-        if (Name == record["EnzymeName"]) {
+    for (auto& record : Table.Records) {
+        if (record["Name"] == Name) {
             return record[Property];
         }          
     }
-    std::cout << "No such enzyme found in the database: " << Name << std::endl;
-    return std::string();
-}
-
-const std::string FCompilerContext::QueryReactionTable(const std::string& Name, const std::string& Property)
-{
-    for (auto& record : ReactionTable.Records) {
-        if (Name == record["EnzymeName"]) {
-            return record[Property];
-        }          
-    }
-    std::cout << "No such reaction found in the database: " << Name << std::endl;
+    std::cout << "Record not found in the database. Query: " << Name << std::endl;
     return std::string();
 }
 

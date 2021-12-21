@@ -40,6 +40,11 @@ public:
     const std::string GetId() const {
         return Id;
     }
+
+    void Print(std::ostream& os) {
+        os << "  Molecule Id: " << Id << std::endl;
+    }
+
 };
 
 class FPathway {
@@ -56,6 +61,10 @@ public:
     FSmallMolecule() {}
 
     FSmallMolecule(const std::string& InName) : FMolecule(InName) {}
+
+    void Print(std::ostream& os) {
+        os << "  SmallMolecule Id: " << Name << std::endl;
+    }
 };
  
 class FProtein : public FMolecule {
@@ -77,6 +86,9 @@ public:
     FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
         : Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FProtein(InName) {}
 
+    void Print(std::ostream& os) {
+        os << "  Enzyme Id: " << Name << " | Substrate: " << Substrate << "\tkcat:  " << std::to_string(kcat) << "\tkM: " << std::to_string(kM) << std::endl;
+    }
 };
 
 class FComplex : public FMolecule {
@@ -88,9 +100,17 @@ public:
 
 class FPolymerase : public FMolecule{
 public:
+    std::string Substrate;
+    float Rate;
+
     FPolymerase() {}
 
-    FPolymerase(const std::string& InName) : FMolecule(InName) {}
+    FPolymerase(const std::string& InName, const std::string& InSubstrate, const float& InRate) 
+        : Substrate(InSubstrate), Rate(InRate), FMolecule(InName) {}
+
+    void Print(std::ostream& os) {
+        os << "  Polymerase Id: " << Name << "\tSubstrate: " << Substrate << "\tRate:  " << std::to_string(Rate) << std::endl;
+    }
 };
 
 class FReaction {
@@ -108,6 +128,14 @@ public:
     }
     bool CheckIfProduct(const std::string& Name) {
         return (Stoichiometry[Name] > 0);
+    }
+
+    void Print(std::ostream& os) {
+        os << "  Reaction Id: " << Name << " | ";
+        for (auto& Stoich : Stoichiometry) {
+            os << "[" << Stoich.first << ", " << Stoich.second << "], ";
+        }
+        os << std::endl;
     }
 };
 
@@ -153,6 +181,7 @@ public:
     FTable ReactionTable;
     FTable ProteinTable;
     FTable EnzymeTable;
+    FTable PolymeraseTable;
     FTable PathwayTable;
 
     std::vector<std::string> UsingModuleList;
@@ -166,8 +195,7 @@ public:
     void AddToMoleculeList(FMolecule *NewMolecule);
     void AddToReactionList(FReaction *NewReaction);
 
-    const std::string QueryEnzymeTable(const std::string& Name, const std::string& Property);
-    const std::string QueryReactionTable(const std::string& Name, const std::string& Property);
+    const std::string QueryTable(const std::string& Name, const std::string& Property, FTable Table);
 
     std::vector<std::string> GetNames_MoleculeList();
 

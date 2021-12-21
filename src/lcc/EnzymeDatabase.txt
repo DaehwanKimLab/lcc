@@ -1,4 +1,4 @@
-EnzymeName	Substrate	kcat	kM
+Name	Substrate	kcat	kM
 GltA	oxaloacetate	1	0.001
 AcnA	citrate	1	0.001
 Icd	isocitrate	1	0.001
