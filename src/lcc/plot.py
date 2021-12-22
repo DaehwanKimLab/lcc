@@ -28,37 +28,72 @@ def PlotData(Dataset):
     for i, Row in enumerate(Data):
         Data[i] = [float(NumStr) for NumStr in Row]
 
-    Idx_SimStep = 1
-    Idx_Vol = 1 + Idx_SimStep
-    Idx_Enzyme = 8 + Idx_Vol
-    Idx_Substrate = 20 + Idx_Enzyme
-
     Data_Transposed = np.array(Data).transpose()
-    Data_SimStep = Data_Transposed[0:Idx_SimStep]
-    Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-    Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
-    Data_SubCounts = Data_Transposed[Idx_Enzyme:Idx_Substrate]
+    Data_SimStep = Data_Transposed[0:1]
 
-    Legend_SimStep = Legend[0:Idx_SimStep]
-    Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-    Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
-    Legend_SubCounts = Legend[Idx_Enzyme:Idx_Substrate]
+    # # TCA Cycle
+    # Idx_SimStep = 1
+    # Idx_Vol = 1 + Idx_SimStep
+    # Idx_Enzyme = 8 + Idx_Vol
+    #
+    # Data_SimStep = Data_Transposed[0:Idx_SimStep]
+    # Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+    # Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
+    # Data_SubCounts = Data_Transposed[Idx_Enzyme:]
+    #
+    # Legend_SimStep = Legend[0:Idx_SimStep]
+    # Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+    # Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
+    # Legend_SubCounts = Legend[Idx_Enzyme:]
+
+    # Title = 'TCA cycle'
+    # Data = Data_SubCounts
+    # Legend = Legend_SubCounts
+
+    # # Polymerase Reactions
+    # Idx_SimStep = 1
+    # Idx_Vol = 1 + Idx_SimStep
+    # Idx_Polymerase = 1 + Idx_Vol
+    # Idx_ReactionSubstrate = 1 + Idx_Polymerase
+    #
+    # Data_SimStep = Data_Transposed[0:Idx_SimStep]
+    # Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+    # Data_PolymeraseCounts = Data_Transposed[Idx_Vol:Idx_Polymerase]
+    # Data_ReactionSubstrateCounts = Data_Transposed[Idx_Polymerase:Idx_ReactionSubstrate]
+    # Data_BuildingBlockCounts = Data_Transposed[Idx_ReactionSubstrate:]
+    # Data_AllSmallMoleculeCounts = Data_Transposed[Idx_Polymerase:]
+    #
+    # Legend_SimStep = Legend[0:Idx_SimStep]
+    # Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+    # Legend_PolymeraseCounts = Legend[Idx_Vol:Idx_Polymerase]
+    # Legend_ReactionSubstrateCounts = Legend[Idx_Polymerase:Idx_ReactionSubstrate]
+    # Legend_BuildingBlockCounts = Legend[Idx_ReactionSubstrate:]
+    # Legend_AllSmallMoleculeCounts = Legend[Idx_Polymerase:]
+    #
+    # Title = 'PolymeraseReaction'
+    # Data = Data_BuildingBlockCounts
+    # Legend = Legend_BuildingBlockCounts
+
+    # Show all
+    Title = ''
+    Data = Data_Transposed[2:]
+    Legend = Legend[2:]
 
 # Potentially split point for another function
 
     X = Data_SimStep[0]
-    Y = Data_SubCounts
+    Y = Data
 
     assert len(X) == Y.shape[-1]
 
     ax = plt.axes(xlim=(0, len(X)), ylim=(0, Y.max() * 1.2))
 
-    ax.set_ylabel('Substrate Count')
+    ax.set_ylabel('Count')
     ax.set_xlabel('Sim Step')
-    ax.set_title('TCA cycle')
+    ax.set_title(Title)
 
-    for i in range(len(Legend_SubCounts)):
-        ax.plot(X, Y[i], label=Legend_SubCounts[i])
+    for i in range(len(Legend)):
+        ax.plot(X, Y[i], label=Legend[i])
 
     ax.legend(loc='upper left')
 

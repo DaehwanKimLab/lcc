@@ -1,0 +1,66 @@
+//@# Tricarboxylic Acid Cycle (TCA) or Citric Acid Cycle (CAC)
+//@
+//@![TCA_Image](TCA_Image.png)
+//@Reference: [Stryer Biochemistry 7ed](https://www.amazon.com/Biochemistry-Lubert-Stryer/dp/1319114679/ref=sr_1_1?keywords=Stryer+Biochemistry&qid=1636994919&s=books&sr=1-1).
+//@
+//@```
+protein GltA(oxaloacetate + acetyl-CoA + H2O --> citrate + CoA);
+protein AcnA(citrate --> isocitrate);
+protein Icd(isocitrate + NAD+ --> keto-glutarate + NADH + CO2);
+//protein AceK(Icd <--> Icd@phosphate);
+protein SucA(keto-glutarate + NAD+ + CoA --> succinyl-CoA + NADH + CO2);
+protein SucD(succinyl-CoA + ADP + Pi --> succinate + ATP + CoA);
+//protein SucA, SucB, SucD, SucC;
+protein Sdh(succinate + FAD --> fumarate + FADH2);
+//protein SdhA(succinate --> fumarate);
+//        SdhB(succinate --> fumarate), 
+//        SdhC(succinate --> fumarate),          
+//        SdhD(anchor), 
+//        SdhE(succinate --> fumarate);
+protein FumA(fumarate + H2O --> malate);
+//protein AA(H_{2}O --> malate);
+//protein FumA(), FumB(an), FumC, FumD, FumE;
+protein Mdh(malate + NAD+ --> oxaloacetate + NADH + H+);
+//protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
+
+//pathway TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh; 
+pathway TCA = GltA --> AcnA --> Icd --> SucA --> SucD --> Sdh --> FumA --> Mdh; 
+//@```
+//@
+
+
+//@# DNA Replication​
+//@
+//@```
+replication_origin origin1;
+replication_terminus terminus1;
+polymerase pol1(initiation: origin1, 
+               elongation: dna_{n} + dnt -->
+                           dna_{n+1} + ppi, 
+               termination: terminus1);
+//@```
+
+
+//@# RNA Transcription
+//@
+//@```
+polymerase rnap(initiation: promoter, 
+                elongation: rna_{n} + nt -->
+                           rna_{n+1} + ppi,
+                termination: taa);
+//@```
+
+
+//@# Protein Synthesis
+//@
+//@```
+ribosome_binding_site rbs1;
+translation_terminator tt1;
+ribosome r1(initiation: rbs1, 
+            elongation: peptide_{n} + aa -->
+                        peptide_{n+1} + H_{2}O, 
+            termination: tt1);
+//@```
+
+
+

@@ -46,7 +46,7 @@
 "ribosome_binding_site"       { return TOKEN(T_RIBOSOME_BINDING_SITE); }
 "translation_terminator"      { return TOKEN(T_TRANSLATION_TERMINATOR); }
 "polymerase"                  { return TOKEN(T_POLYMERASE); }
-"ribosome"                    { return TOKEN(T_RIBOSOME); }
+"ribosome"                    { return TOKEN(T_POLYMERASE); }
 "initiation"                  { return TOKEN(T_INITIATION); }
 "elongation"                  { return TOKEN(T_ELONGATION); }
 "termination"                 { return TOKEN(T_TERMINATION); }

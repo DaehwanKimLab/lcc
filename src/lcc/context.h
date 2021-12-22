@@ -204,6 +204,10 @@ public:
     std::vector<float> Getkcats_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
     std::vector<float> GetkMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
 
+    std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
+    std::vector<std::string> GetSubstrateNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
+    std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
+
     std::vector<std::string> GetNames_ReactionList();
     std::vector<std::string> GetSubstrateNames_ReactionList();
     std::vector<std::string> GetReactantNames_ReactionList();
@@ -215,21 +219,34 @@ public:
     std::vector<std::string> GetProductNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
     std::vector<std::string> GetEnzymeNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
 
+    std::vector<std::string> GetNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
+    std::vector<std::string> GetSubstrateNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
+    std::vector<std::string> GetReactantNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
+    std::vector<std::string> GetProductNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
+    std::vector<std::string> GetBuildingBlockNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
+
     std::vector<std::string> GetNames_PathwayList();
     std::vector<std::string> GetSequences_PathwayList();
 
     std::vector<std::vector<int>> GetStoichiometryMatrix_EnzymaticReaction(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
+    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *> PolymeraseReactionList);
 
     int GetIdxByName_MoleculeList(std::string InputName);
+    std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
 
     std::vector<const FEnzyme *> GetList_Enzyme_MoleculeList();
+    std::vector<const FPolymerase *> GetList_Polymerase_MoleculeList();
     std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
     std::vector<const FEnzymaticReaction *> GetList_Enzymatic_ReactionList();
+    std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
     
     std::vector<int> GetIdx_Enzyme_MoleculeList();
     std::vector<int> GetIdx_EnzymeSubstrate_MoleculeList();
     std::vector<int> GetIdx_SmallMolecule_MoleculeList();
-    
+    std::vector<int> GetIdx_Polymerase_MoleculeList();
+    std::vector<int> GetIdx_PolymeraseSubstrate_MoleculeList();
+
+    std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
 
     std::vector<int> GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList);
 //    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();

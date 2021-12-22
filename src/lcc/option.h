@@ -8,6 +8,8 @@ class FOption {
 public:
     FOption() {
         Reset();
+        PreferredSetting();
+
     }
 
     int Parse(int argc, char *argv[]);
@@ -15,6 +17,7 @@ public:
     void Usage(const char *argv0);
     void ShowVersion(const char *argv0);
     void Dump();
+    void PreferredSetting(); 
 
 
 public:

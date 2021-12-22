@@ -150,9 +150,9 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
     bool Addition = true;
     // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
     for (auto& Reaction : ReactionList) {
-        if (Reaction->Name == Reaction->Name){
+        if (Reaction->Name == NewReaction->Name){
             Addition = false;
-            // std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
+            std::cout << "Redundant reaction (" << NewReaction->Name << " Found in ReactionList" << std::endl;
             break;
         }
     }
@@ -163,7 +163,7 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 
 void FCompilerContext::PrintLists(std::ostream& os) 
 {
-    os << "## Compiler Context Lists ##" << std::endl;
+    os << std::endl << "## Compiler Context Lists ##" << std::endl;
     if (!MoleculeList.empty()) {
         os << "  MoleculeList: " << std::endl << "  " << "  ";
         for (auto& item : MoleculeList){
@@ -323,6 +323,109 @@ std::vector<std::string> FCompilerContext::GetEnzymeNames_EnzymaticReactionList(
     return StrList;
 }
 
+std::vector<std::string> FCompilerContext::GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList) 
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseList){
+        StrList.push_back(item->Name);
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetSubstrateNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList) 
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseList){
+        StrList.push_back(item->Substrate);
+    }
+    return StrList;
+}
+
+std::vector<float> FCompilerContext::GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList)
+{
+    std::vector<float> FloatList;
+    for (auto& item : PolymeraseList){
+        FloatList.push_back(item->Rate);
+    }
+    return FloatList;
+}
+
+std::vector<const FPolymeraseReaction *> FCompilerContext::GetList_Polymerase_ReactionList()
+{
+    std::vector<const FPolymeraseReaction *> SubList;
+
+    for (const FReaction* Reaction: ReactionList) {
+        if (Utils::is_class_of<FPolymeraseReaction, FReaction>(Reaction)) {
+            auto PolymeraseReaction = dynamic_cast<const FPolymeraseReaction* >(Reaction);
+            SubList.push_back(PolymeraseReaction);
+        }
+    }
+    return SubList;
+}
+
+std::vector<std::string> FCompilerContext::GetNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseReactionList){
+        for (auto& Stoich : item->Stoichiometry){
+            if (std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) {
+                StrList.push_back(Stoich.first);
+            }
+        }
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetSubstrateNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseReactionList){
+        for (auto& Stoich : item->Stoichiometry){
+            if (std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) {
+                StrList.push_back(Stoich.first);
+            }
+        }
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetReactantNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseReactionList){
+        for (auto& Stoich : item->Stoichiometry){
+            if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second < 0)){
+                StrList.push_back(Stoich.first);
+            }
+        }
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetProductNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseReactionList){
+        for (auto& Stoich : item->Stoichiometry){
+            if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second > 0)){
+                StrList.push_back(Stoich.first);
+            }
+        }
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetBuildingBlockNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+{
+    std::vector<std::string> StrList;
+    for (auto& item : PolymeraseReactionList){
+        for (auto& BuildingBlock : item->BuildingBlocks){
+            StrList.push_back(BuildingBlock);
+        }
+    }
+    return StrList;
+}
+
 std::vector<std::string> FCompilerContext::GetNames_PathwayList()
 {
     std::vector<std::string> StrList;
@@ -354,6 +457,40 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_Enzymatic
         std::vector<int> CoeffArray(SMolList.size(), 0);
 
         for (auto& Stoich : EnzymaticReaction->Stoichiometry){
+            std::string SubstrateName = Stoich.first;
+            int Coeff = Stoich.second;
+	    int Index = 0;
+
+            for (auto& Molecule : SMolList){
+                // std::cout << "Searching from the List: " << Substrate << " | " << "Index: " << Index << endl;
+                if (Molecule->Name == SubstrateName){
+                    break;
+                }
+                Index++;
+            }
+            if (Index >= MoleculeList.size()) {
+                std::cout << "Substrate index searching in MoleculeList failed: " << SubstrateName << endl;
+            } else {
+            // std::cout << "Substrate Searching from the List: " << SubstrateName << " | " << "Index: " << Index << endl;
+            } 
+
+            CoeffArray[Index] = Coeff;
+        }
+        StoichMatrix.push_back(CoeffArray);         
+    }
+    return StoichMatrix;
+}
+
+
+std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+{
+    std::vector<std::vector<int>> StoichMatrix;
+    std::vector<const FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList();
+
+    for (auto& PolymeraseReaction : PolymeraseReactionList){
+        std::vector<int> CoeffArray(SMolList.size(), 0);
+
+        for (auto& Stoich : PolymeraseReaction->Stoichiometry){
             std::string SubstrateName = Stoich.first;
             int Coeff = Stoich.second;
 	    int Index = 0;
@@ -416,6 +553,19 @@ std::vector<const FSmallMolecule *> FCompilerContext::GetList_SmallMolecule_Mole
     return SmallMoleculeList;
 }
 
+std::vector<const FPolymerase *> FCompilerContext::GetList_Polymerase_MoleculeList()
+{
+    std::vector<const FPolymerase *> PolymeraseList;
+    
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+            auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
+            PolymeraseList.push_back(Polymerase);
+        }
+    }
+    return PolymeraseList;
+}
+
 std::vector<int> FCompilerContext::GetIdx_Enzyme_MoleculeList()
 { 
     std::vector<int> IndexArray;
@@ -463,6 +613,80 @@ std::vector<int> FCompilerContext::GetIdx_SmallMolecule_MoleculeList()
             IndexArray.push_back(Index);
         }
         Index++;
+    }
+    return IndexArray;
+}
+
+
+std::vector<int> FCompilerContext::GetIdx_Polymerase_MoleculeList()
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    Index = 0;
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+            IndexArray.push_back(Index);
+        }
+        Index++;
+    }
+    return IndexArray;
+}
+
+std::vector<int> FCompilerContext::GetIdx_PolymeraseSubstrate_MoleculeList()
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    for (const FMolecule* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+            auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
+            std::string PolSub = Polymerase->Substrate;
+            Index = 0;
+            for (auto& Molecule : MoleculeList) {
+                if (Molecule->Name == PolSub) {
+                    IndexArray.push_back(Index);
+                break;
+                } 
+                Index++;
+            }
+        }
+    }
+    return IndexArray;
+}
+
+std::vector<int> FCompilerContext::GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string InPolymeraseName)
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    std::vector<const FPolymeraseReaction *> PolymeraseReactionList = GetList_Polymerase_ReactionList();
+
+    for (auto& PolymeraseReaction : PolymeraseReactionList){
+        if (PolymeraseReaction->Polymerase == InPolymeraseName){
+            for (auto& stoich : PolymeraseReaction->Stoichiometry) {
+                Index = GetIdxByName_MoleculeList(stoich.first);
+                IndexArray.push_back(Index);
+            }
+        }
+    }
+    return IndexArray;
+}
+
+std::vector<int> FCompilerContext::GetIdxByStrList_MoleculeList(std::vector<std::string> StrList)
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    for (std::string Item : StrList){
+        Index = 0;
+        for (auto& Molecule : MoleculeList) {
+            if (Molecule->Name == Item) {
+                IndexArray.push_back(Index);
+                break;
+            }
+            Index++;
+        }
     }
     return IndexArray;
 }

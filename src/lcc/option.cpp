@@ -190,3 +190,10 @@ void FOption::Dump()
         std::cerr << "\t" << p << std::endl;
     }
 }
+
+void FOption::PreferredSetting() 
+{
+    bSimPython = true;
+    SimModuleFile = "SimModule.py";
+    SimResultFile = "SimOut.tsv";
+}
