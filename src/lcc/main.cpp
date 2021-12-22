@@ -160,6 +160,31 @@ void TraversalNode(NBlock* InProgramBlock)
             Polymerase->Print(os);
             Context.AddToMoleculeList(Polymerase);
 
+
+#if 1
+            for (const shared_ptr<NStatement>& stmt: N_Polymerase->Statements) {
+                if (Utils::is_class_of<NElongationStatement, NStatement>(stmt.get())) {
+                    const shared_ptr<NElongationStatement> elongstmt = dynamic_pointer_cast<NElongationStatement>(stmt);
+                    os << "---This is an elongation statement of the polymerase stmt---" << endl;
+                    elongstmt->Print(os);
+                    os << "-----------------" << endl;
+                } else if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
+                    const shared_ptr<NInitiationStatement> initstmt = dynamic_pointer_cast<NInitiationStatement>(stmt);
+                    os << "---This is an initiation statement of the polymerase stmt---" << endl;
+                    initstmt->Print(os);
+                    os << "-----------------" << endl;
+                } else if (Utils::is_class_of<NTerminationStatement, NStatement>(stmt.get())) {
+                    const shared_ptr<NTerminationStatement> termstmt = dynamic_pointer_cast<NTerminationStatement>(stmt);
+                    os << "---This is a termination statement of the polymerase stmt---" << endl;
+                    termstmt->Print(os);
+                    os << "-----------------" << endl;
+                }
+            }
+
+
+
+#endif
+
 //            int i = 0;
 //
 //            for (const auto stmt : N_Polymerase->Statements) {
