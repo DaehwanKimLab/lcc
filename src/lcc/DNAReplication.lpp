@@ -1,0 +1,10 @@
+//@# DNA Replication​
+//@
+//@```
+replication_origin origin1;
+replication_terminus terminus1;
+polymerase pol1(initiation: origin1, 
+               elongation: dna_{n} + dnt -->
+                           dna_{n+1} + ppi, 
+               termination: terminus1);
+//@```
