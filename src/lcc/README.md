@@ -12,13 +12,15 @@
     make
 
 
-## compile TCA.lpp and simulate
+## compile TCA.lpp (or any) and simulate
 
-    ./build/lcc-prep -i . TCA.lpp
+    ./build/lcc-prep -i . TCA.lpp, RNASynthesis.lpp ProteinSynthesis.lpp Ecoli.lpp
+
+    python SimModule.py
 
 ## plotting
 
-    ./plot.py TCA_simout.tsv
+    ./plot.py
 
 
 

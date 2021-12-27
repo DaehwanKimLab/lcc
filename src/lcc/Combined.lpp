@@ -1,3 +1,5 @@
+organism ecoli "E. coli K-12 MG1655";
+
 //@# Tricarboxylic Acid Cycle (TCA) or Citric Acid Cycle (CAC)
 //@
 //@![TCA_Image](TCA_Image.png)

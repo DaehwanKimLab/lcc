@@ -74,10 +74,27 @@ def PlotData(Dataset):
     # Data = Data_BuildingBlockCounts
     # Legend = Legend_BuildingBlockCounts
 
-    # Show all
+    # Show E.coli
+    # Temporary capping for plotting speed
     Title = ''
-    Data = Data_Transposed[2:]
-    Legend = Legend[2:]
+    N_Species = 100
+    GeneBegins = 30+2
+    mRNABegins = 4603+2
+    ProteinBegins = 9146+2
+    # Target = GeneBegins
+    Target = mRNABegins
+    # Target = ProteinBegins
+    Data = Data_Transposed[Target:Target+N_Species]
+    Legend = Legend[Target:Target+N_Species]
+
+
+
+    # # Show all
+    # # Temporary capping for plotting speed
+    # Cap = 50
+    # Title = ''
+    # Data = Data_Transposed[2:Cap]
+    # Legend = Legend[2:Cap]
 
 # Potentially split point for another function
 

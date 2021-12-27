@@ -193,7 +193,7 @@ void TraversalNode(NBlock* InProgramBlock)
 //
 //                if (i == 1) {
 //                    auto Elongation = static_cast<NElongationStatement *>(&Statement);
-//                    NReaction ElongationReaction = Elongation->Reaction;
+//                    NReaction EPickRandomNumberWithWeight>Reaction;
 //                    ElongationReaction.Print(os);
 //                    os << "AAAAAAAAAAA" << endl;
 //
@@ -221,7 +221,7 @@ void TraversalNode(NBlock* InProgramBlock)
 //                            BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
 //                            continue;
 //                        } else if (reactant->Name == "nt") {
-//                            BuildingBlocks = {"ALPHA-ALANINE", "ARG", "ASN", "L-ASPARTATE", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "L-SELENOCYSTEINE", "VAL"};
+//                            BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
 //                            continue;
 //                        }
 //        
@@ -295,7 +295,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     continue;
                 } else if (reactant->Name == "aa") {
                     Name = "r1";
-                    BuildingBlocks = {"ALPHA-ALANINE", "ARG", "ASN", "L-ASPARTATE", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "L-SELENOCYSTEINE", "VAL"};
+                    BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
                     continue;
                 }
 
@@ -345,6 +345,66 @@ void TraversalNode(NBlock* InProgramBlock)
             auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
             os << "Organism: " << Organism->Id.Name << endl;
             os << "  " << Organism->Description << endl;
+
+            if ((Organism->Id.Name == "ecoli") | (Organism->Description == "E. coli K-12 MG1655")) {
+
+                int ChromosomeSize = 4641652;
+                os << "Chromosome_I: " << std::to_string(ChromosomeSize) << "bp" << endl;
+                FChromosome * Chromosome = new FChromosome("ChI", ChromosomeSize);
+                Context.AddToMoleculeList(Chromosome);                
+
+                int i;
+                int i_cap = 5000;
+
+                i = 0;
+                os << ">> Genes being imported... : ";
+                for (auto& record : Context.GeneTable.Records) {
+                    // os << record["symbol"] << ", ";
+                    FGene * Gene = new FGene(record["id"], record["symbol"]);
+                    Context.AddToMoleculeList(Gene);
+
+                    i++;
+                    // temporary capping
+                    if (i == i_cap) {
+                        os << "Gene importing is capped at " <<  std::to_string(i_cap) << endl;
+                        break;
+                    }
+                } os << "done" << endl;
+                // os << endl;
+                
+                i = 0;
+                os << ">> RNAs being imported... : ";
+                for (auto& record : Context.RNATable.Records) {
+                    // os << record["id"] << ", ";
+                    FRNA * RNA = new FRNA(record["id"], record["type"]);
+                    Context.AddToMoleculeList(RNA);
+
+                    i++;
+                    // temporary capping
+                    if (i == i_cap) {
+                        os << "RNA importing is capped at " <<  std::to_string(i_cap) << endl;
+                        break;
+                    }
+                } os << "done" << endl;
+                // os << endl;
+                
+                i = 0;
+                os << ">> Proteins being imported... : ";
+                for (auto& record : Context.ProteinTable.Records) {
+                    // os << record["id"] << ", ";
+                    FProtein * Protein = new FProtein(record["id"]);
+                    Context.AddToMoleculeList(Protein);
+
+                    // temporary capping
+                    i++;
+                    if (i == i_cap) {
+                        os << "Protein importing is capped at " <<  std::to_string(i_cap) << endl;
+                        break;
+                    }
+                } os << "done" << endl;
+                // os << endl;
+                
+            }
 
         } else if (Utils::is_class_of<NExperimentDeclaration, NNode>(node)) {
             auto Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
@@ -455,7 +515,7 @@ std::string Name2Molecule(std::string InName)
     return Molecule;
 }
 
-void Print_EnzymeReactionInitialize(ofstream& ofs)
+void Print_InitializeEnzymeReaction(ofstream& ofs)
 {
     std::string in = "    ";
 
@@ -478,11 +538,11 @@ void Print_EnzymeReactionInitialize(ofstream& ofs)
     ofs << endl;
 }
 
-void Print_EnzymeReactionSetUp(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList)
+void Print_SetUpEnzymeReaction(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList)
 {
     std::string in = "    ";
 
-    
+ 
     std::vector<std::string> EnzNames = Context.GetNames_EnzymeList(EnzymeList);
     std::cout << endl;
 
@@ -492,9 +552,9 @@ void Print_EnzymeReactionSetUp(ofstream& ofs, std::vector<const FEnzyme *> Enzym
     std::vector<float> kMs = Context.GetkMs_EnzymeList(EnzymeList);
     std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction = Context.GetStoichiometryMatrix_EnzymaticReaction(EnzymaticReactionList);
 
-    std::vector<int> Idx_Enz = Context.GetIdx_Enzyme_MoleculeList();
+    std::vector<int> Idx_Enz = Context.GetIdxListFromMoleculeList("Enzyme");
     std::vector<int> Idx_EnzSub = Context.GetIdx_EnzymeSubstrate_MoleculeList();
-    std::vector<int> Idx_SMol = Context.GetIdx_SmallMolecule_MoleculeList();
+    std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
   
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
     // ofs << in+ in+ in+ "self.Counts_Enz = np.matrix(np.array(5, size=len(self.Counts_Enz)))" << endl;
@@ -510,7 +570,7 @@ void Print_EnzymeReactionSetUp(ofstream& ofs, std::vector<const FEnzyme *> Enzym
     ofs << endl;
 
     ofs << in+ in+ in+ "Count_Enz = np.asmatrix(np.random.randint(10, high=100, size=self.Idx_Enz.size))" << endl;
-    ofs << in+ in+ in+ "Count_SMol = np.asmatrix(np.random.randint(100, high=1000, size=self.Idx_SMol.size))" << endl;
+    ofs << in+ in+ in+ "Count_SMol = np.asmatrix(np.random.randint(1000, high=2000, size=self.Idx_SMol.size))" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Enz, Count_Enz, axis=1)" << endl;
@@ -518,15 +578,23 @@ void Print_EnzymeReactionSetUp(ofstream& ofs, std::vector<const FEnzyme *> Enzym
     ofs << endl;
 }
 
-void Print_ElongationInitialize(ofstream& ofs, std::string PolymeraseName)
+void Print_InitializePolymeraseReaction(ofstream& ofs, std::string PolymeraseName)
 {
     std::string in = "    ";
     std::string Process = Name2Process(PolymeraseName);
     std::string Molecule = Name2Molecule(PolymeraseName);
 
+    ofs << in+ in+ in+ "self.Freq_BB_" << Molecule << "s = 0" << endl;
+
+    // Initiation
+    ofs << in+ in+ in+ "self.Idx_Pol_" << Process << " = 0" << endl;
+    ofs << in+ in+ in+ "self.Idx_Template_" << Process << " = 0" << endl;
+    		ofs << in+ in+ in+ "self.Weight_" << Process << " = 0" << endl;
+    ofs << endl;
+
+    // Elongation
     ofs << in+ in+ in+ "# " << Process << " Initialize ElongationReaction" << endl;
     ofs << in+ in+ in+ "self.Rate_" << Process << " = 0" << endl;
-    ofs << in+ in+ in+ "self.Freq_BB_" << Molecule << "s = 0" << endl;
     ofs << in+ in+ in+ "self.MaxLen_Nascent" << Molecule << "s = 0" << endl;
     ofs << in+ in+ in+ "self.Len_Nascent" << Molecule << "s = 0" << endl;
     ofs << endl;
@@ -536,17 +604,43 @@ void Print_ElongationInitialize(ofstream& ofs, std::string PolymeraseName)
     ofs << endl;
 }
 
-void Print_ElongationSetUp(ofstream& ofs, std::string PolymeraseName, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB)
+void Print_SetUpPolymeraseReaction(ofstream& ofs, std::string PolymeraseName, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB)
 {
     std::string in = "    ";
     std::string Process = Name2Process(PolymeraseName);
     std::string Molecule = Name2Molecule(PolymeraseName);
 
-    ofs << in+ in+ in+ "# " << Process << " SetUp ElongationReaction" << endl;
-    ofs << in+ in+ in+ "self.Rate_" << Process << " = " << std::to_string(Rate) << endl;
     ofs << in+ in+ in+ "self.Freq_BB_" << Molecule << "s = np.asmatrix(np.load(r'" << FreqBBFileName << "'))" << endl;
+
+    // Initiation
+    ofs << in+ in+ in+ "self.Idx_Pol_" << Process << " = np.asmatrix([" << std::to_string(Idx_Pol) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Template_" << Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Template) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Target_" << Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Target) << "])" << endl;
+    		ofs << in+ in+ in+ "self.Weight_" << Process << " = np.asmatrix([" << "1" << "])" << endl;
+    ofs << endl;
+
+    int Template_Min, Template_Max, Target_Min, Target_Max;
+
+    if      (Process == "DNAReplication") 	{Template_Min = 1;	Template_Max = 2;	Target_Min = 1;	Target_Max = 2	;}
+    else if (Process == "RNATranscription") 	{Template_Min = 1;	Template_Max = 2;	Target_Min = 0;	Target_Max = 1	;}
+    else if (Process == "ProteinTranslation") 	{Template_Min = 0;	Template_Max = 1;	Target_Min = 0;	Target_Max = 1	;}
+    else    					{Template_Min = 0;	Template_Max = 1;	Target_Min = 0;	Target_Max = 1	;}
+        
+
+    ofs << in+ in+ in+ "Count_Template_" << Process << " = np.random.randint(" << std::to_string(Template_Min) << ", high=" << std::to_string(Template_Max) << ", size=self.Idx_Template_" << Process << ".shape[1])" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Template_" << Process << ", Count_Template_" << Process << ", axis=1)" << endl;
+    ofs << endl; 
+
+    ofs << in+ in+ in+ "Count_Target_" << Process << " = np.random.randint(" << std::to_string(Target_Min) << ", high=" << std::to_string(Target_Max) << ", size=self.Idx_Target_" << Process << ".shape[1])" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Target_" << Process << ", Count_Target_" << Process << ", axis=1)" << endl;
+    ofs << endl; 
+
+
+    // Elongation
+    ofs << in+ in+ in+ "# " << Process << " SetUp ElongationReaction" << endl;
+    ofs << in+ in+ in+ "self.Rate_" << Process << " = " << std::to_string(int(Rate)) << endl;
     ofs << in+ in+ in+ "self.MaxLen_Nascent" << Molecule << "s = np.asmatrix(np.load(r'" << MaxLenFileName << "'))" << endl;
-    ofs << in+ in+ in+ "self.Len_Nascent" << Molecule << "s = np.asmatrix(np.full([10, len(self.Freq_BB_" << Molecule << "s)], 0))" << endl;
+    ofs << in+ in+ in+ "self.Len_Nascent" << Molecule << "s = np.asmatrix(np.full([10, len(self.Freq_BB_" << Molecule << "s)], -1))" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "self.Idx_Pol_" << Process << " = np.asmatrix([" << std::to_string(Context.GetIdxByName_MoleculeList(PolymeraseName)) << "])" << endl;
@@ -558,13 +652,29 @@ void Print_ElongationSetUp(ofstream& ofs, std::string PolymeraseName, float Rate
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Pol_" << Process << ", Count_Pol_" << Process << ", axis=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Count_PolSub_" << Process << " = np.asmatrix(np.full(len(self.Idx_PolSub_" << Process << "), 10000))" << endl;
+    ofs << in+ in+ in+ "Count_PolSub_" << Process << " = np.asmatrix(np.full(len(self.Idx_PolSub_" << Process << "), 1000))" << endl;
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolSub_" << Process << ", Count_PolSub_" << Process << ", axis=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Count_PolBB_" << Process << " = np.random.randint(4000000, high=5000000, size=self.Freq_BB_" << Molecule << "s.shape[1])" << endl;
+    ofs << in+ in+ in+ "Count_PolBB_" << Process << " = np.random.randint(4000, high=5000, size=self.Freq_BB_" << Molecule << "s.shape[1])" << endl;
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolBB_" << Process << ", Count_PolBB_" << Process << ", axis=1)" << endl;
     ofs << endl; 
+
+}
+
+void Print_InitiationReaction(ofstream& ofs, std::string PolymeraseName)
+{
+    std::string in = "    ";
+    std::string Process = Name2Process(PolymeraseName);
+    std::string Molecule = Name2Molecule(PolymeraseName);
+    
+    ofs << in+ in+ in+ "# " << Process << endl;
+    ofs << in+ in+ in+ "self.State.Len_Nascent" << Molecule << "s = self.Initiation(";
+                       ofs << "self.State.Len_Nascent" << Molecule << "s, ";
+                       ofs << "self.State.Idx_Pol_" << Process << ", ";
+                       ofs << "self.State.Idx_Template_" << Process << ", ";
+                       ofs << "self.State.Weight_" << Process << ") " << endl;
+    ofs << endl;
 }
 
 void Print_ElongationReaction(ofstream& ofs, std::string PolymeraseName)
@@ -582,6 +692,20 @@ void Print_ElongationReaction(ofstream& ofs, std::string PolymeraseName)
                        ofs << "self.State.Freq_BB_" << Molecule << "s, "; 
                        ofs << "self.State.Idx_PolSub_" << Process << ", ";
                        ofs << "self.State.Idx_PolBB_" << Process << ") " << endl;
+    ofs << endl;
+}
+
+void Print_TerminationReaction(ofstream& ofs, std::string PolymeraseName)
+{
+    std::string in = "    ";
+    std::string Process = Name2Process(PolymeraseName);
+    std::string Molecule = Name2Molecule(PolymeraseName);
+
+    ofs << in+ in+ in+ "# " << Process << endl;
+    ofs << in+ in+ in+ "self.State.Len_Nascent" << Molecule << "s = self.Termination(";
+                       ofs << "self.State.Len_Nascent" << Molecule << "s, ";
+                       ofs << "self.State.MaxLen_Nascent" << Molecule << "s, ";
+                       ofs << "self.State.Idx_Target_" << Process << ")" << endl;;
     ofs << endl;
 }
 
@@ -606,7 +730,7 @@ void WriteSimModule()
     ofs << endl;
 
     // user input
-    ofs << in+ "N_SimSteps = 100" << endl;
+    ofs << in+ "N_SimSteps = 500" << endl;
     
 
     ofs << endl;
@@ -633,6 +757,43 @@ void WriteSimModule()
     ofs << in+ in+ "return np.transpose(np.multiply(np.transpose(Freq), np.transpose(Rate)))" << endl;
     ofs << endl;
 
+    ofs << in+ "def PickRandomIdx(Quantity, Indices, Weight=1):" << endl;
+    ofs << in+ in+ "# Adjust Quantity and Weight if Weight is completely zero" << endl;
+    ofs << in+ in+ "Sum_Weight = np.sum(Weight)" << endl;
+    ofs << in+ in+ "Weight = np.add(Weight, np.where(Sum_Weight == 0, 1, 0))" << endl;
+    ofs << in+ in+ "Quantity = np.multiply(Quantity, np.where(Sum_Weight == 0, 0, 1))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Generate cumulative sum on weight and pick a random number in its range" << endl;
+    ofs << in+ in+ "Weight_Cumsum = np.cumsum(Weight)" << endl;
+    ofs << in+ in+ "RanNums = np.asmatrix(np.random.randint(Weight_Cumsum[0, 0], high=Weight_Cumsum[0, -1], size=Quantity)).transpose()" << endl;
+    ofs << in+ in+ "# Generate a matrix of the random numbers for comparison to indices" << endl;
+    ofs << in+ in+ "RanNums_Matrix = np.reshape(np.repeat(RanNums, Indices.shape[1]), [-1, Indices.shape[1]])" << endl;
+    ofs << in+ in+ "Bin_RanNumLessThanWeightCumsum = np.where(RanNums_Matrix < Weight_Cumsum, 1, 0)" << endl;
+    ofs << in+ in+ "Idx_Rnd = np.argmax(Bin_RanNumLessThanWeightCumsum, 1)" << endl;
+    ofs << in+ in+ "return Idx_Rnd" << endl;
+    ofs << endl;
+
+    ofs << in+ "def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):" << endl;
+    ofs << in+ in+ "# Generate an array of counts for each index" << endl;
+    ofs << in+ in+ "Count_Indices = np.zeros(Len.shape[1])" << endl;
+    ofs << in+ in+ "np.put_along_axis(Count_Indices, Indices, 1, axis=0)" << endl;
+    ofs << in+ in+ "# Generate a cumulative sum matrix of available position in the Len Matrix" << endl;
+    ofs << in+ in+ "Bool_LenAvailable = np.less(Len, 0)   # used again later" << endl;
+    ofs << in+ in+ "Bin_LenAvailable = Bool_LenAvailable.astype(int)" << endl;
+    ofs << in+ in+ "LenCumsum = np.cumsum(Bin_LenAvailable, axis=0)" << endl;
+
+    ofs << in+ in+ "# Get an overlap between availability and new count positions" << endl;
+    ofs << in+ in+ "Bool_LenCumsumGreaterThanZero = np.greater(LenCumsum, 0)" << endl;
+    ofs << in+ in+ "Bool_LenCumsumLessThanOrEqualToCountOfIndices = np.less_equal(LenCumsum, Count_Indices)" << endl;
+    ofs << in+ in+ "Bool_LenCumsum = np.logical_and(Bool_LenCumsumGreaterThanZero, Bool_LenCumsumLessThanOrEqualToCountOfIndices)" << endl;
+
+    ofs << in+ in+ "Bin_Len_Selected = np.logical_and(Bool_LenAvailable, Bool_LenCumsum).astype(int)" << endl;
+    ofs << in+ in+ "return np.add(Len, Bin_Len_Selected)" << endl;
+    ofs << endl;
+
+
+
     // class FState 
     ofs << in+ "class FState:" << endl;
     ofs << in+ in+ "def __init__(self):" << endl;
@@ -649,7 +810,7 @@ void WriteSimModule()
     ofs << endl;
 
     if (!EnzymeList.empty()) {
-        Print_EnzymeReactionInitialize(ofs);
+        Print_InitializeEnzymeReaction(ofs);
     }
 
     // for polymerase reactions
@@ -659,7 +820,7 @@ void WriteSimModule()
 
     if (!PolymeraseList.empty()) {
         for (auto& Polymerase : PolymeraseList) {
-            Print_ElongationInitialize(ofs, Polymerase->Name);
+            Print_InitializePolymeraseReaction(ofs, Polymerase->Name);
         }
     }
 
@@ -668,13 +829,16 @@ void WriteSimModule()
     ofs << endl;
 
     if (!EnzymeList.empty()) {
-        Print_EnzymeReactionSetUp(ofs, EnzymeList);
+        Print_SetUpEnzymeReaction(ofs, EnzymeList);
     }
 
     if (!PolymeraseList.empty()) {
         for (auto& Polymerase : PolymeraseList) {
             std::string PolymeraseName = Polymerase->Name;
             float Rate = Polymerase->Rate;
+            int Idx_Pol = Context.GetIdxByName_MoleculeList(PolymeraseName);
+            std::vector<int> Idx_Template;
+            std::vector<int> Idx_Target;
             std::vector<int> Idx_PolSub = Context.GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(PolymeraseName);
             std::vector<int> Idx_PolBB;
             std::vector<std::string> BuildingBlockNames;
@@ -693,17 +857,28 @@ void WriteSimModule()
             std::vector<std::vector<int>> StoichMatrix_PolymeraseReaction = Context.GetStoichiometryMatrix_PolymeraseReaction(PolymeraseReactionList);
     
             if      (PolymeraseName == "pol1") {MaxLenFileName = "./Database/Len_ChromosomesInGenome.npy"; 
-                                      FreqBBFileName = "./Database/Freq_NTsInChromosomes.npy";}
+                                                FreqBBFileName = "./Database/Freq_NTsInChromosomes.npy";
+                                                Idx_Template   = Context.GetIdxListFromMoleculeList("Chromosome");
+                                                Idx_Target     = Context.GetIdxListFromMoleculeList("Chromosome");
+                                               }
     
             else if (PolymeraseName == "rnap") {MaxLenFileName = "./Database/Len_RNAs.npy"; 
-                                      FreqBBFileName = "./Database/Freq_NTsInRNAs.npy";}
+                                                FreqBBFileName = "./Database/Freq_NTsInRNAs.npy";
+                                                Idx_Template   = Context.GetIdxListFromMoleculeList("Gene");
+                                                Idx_Target     = Context.GetIdxListFromMoleculeList("RNA"); // update to link gene to RNA matching when importing and generating this list
+                                               }
     
             else if (PolymeraseName == "r1")   {MaxLenFileName = "./Database/Len_Proteins.npy";
-                                      FreqBBFileName = "./Database/Freq_AAsInProteins.npy";}
-    
+                                                FreqBBFileName = "./Database/Freq_AAsInProteins.npy";
+                                                Idx_Template   = Context.GetIdxListFromMoleculeList("mRNA"); // update to mRNA
+                                                Idx_Target     = Context.GetIdxListFromMoleculeList("Protein"); // update to link mRNA to protein matching
+                                               }
+
             else                     {} // add exception handling
-    
-            Print_ElongationSetUp(ofs, Polymerase->Name, Rate, FreqBBFileName, MaxLenFileName, Idx_PolSub, Idx_PolBB);
+
+            assert (Idx_Template.size() == Idx_Target.size());   
+ 
+            Print_SetUpPolymeraseReaction(ofs, Polymerase->Name, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_Target, Idx_PolSub, Idx_PolBB);
         }
     }
     ofs << endl;
@@ -728,7 +903,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Data[0, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
 
     ofs << in+ in+ in+ "return Data" << endl;
-
+    ofs << endl;
     
     // class FDataset
     ofs << in+ "class FDataset:" << endl;
@@ -785,7 +960,9 @@ void WriteSimModule()
     }
 
     if (!PolymeraseList.empty()){
+        ofs << in+ in+ in+ in+ "self.InitiationReactions()" << endl;
         ofs << in+ in+ in+ in+ "self.ElongationReactions()" << endl;
+        ofs << in+ in+ in+ in+ "self.TerminationReactions()" << endl;
     }
                           
     ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
@@ -804,6 +981,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ in+ "self.DM.Add(self.Dataset.Data)" << endl;
     ofs << endl;
 
+    ofs << in+ in+ "# Enzymatic Reaction related routines" << endl;
     ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
     ofs << in+ in+ in+ "Conc_Enz = np.take(self.State.Count_All, self.State.Idx_Enz) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
@@ -814,73 +992,133 @@ void WriteSimModule()
     ofs << in+ in+ in+ "self.State.dCount_All += dCount_SMol" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def ElongationReactions(self):" << endl;
     if (!PolymeraseList.empty()) {
+
+        ofs << in+ in+ "def InitiationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
+            
+            Print_InitiationReaction(ofs, Polymerase->Name);
+        }
+
+
+        ofs << in+ in+ "def ElongationReactions(self):" << endl;
+        for (auto& Polymerase : PolymeraseList) {
+            
             Print_ElongationReaction(ofs, Polymerase->Name);
+        }
+
+        ofs << in+ in+ "def TerminationReactions(self):" << endl;
+        for (auto& Polymerase : PolymeraseList) {
+            
+            Print_TerminationReaction(ofs, Polymerase->Name);
         }
     } else {
             ofs << in+ in+ in+ "pass" << endl;
             ofs << endl;
     }
 
-    ofs << in+ in+ "def Elongation(self, Len, Max, Rate, Weight, Freq, Idx_PolSub, Idx_BB):   # should additionally take buildingblock indices for count deduction" << endl;
+    
+    ofs << in+ in+ "# Useful routines" << endl;
+    ofs << in+ in+ "def GetCount(self, Idx):" << endl;
+    ofs << in+ in+ in+ "return np.take(self.State.Count_All, Idx)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def AddTodCount(self, Idx, Values):" << endl;
+    ofs << in+ in+ in+ "dCountToAdd = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
+    ofs << in+ in+ in+ "self.State.dCount_All = np.add(self.State.dCount_All, dCountToAdd)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def Update_dCount(self, Idx, Value):" << endl;
+    ofs << in+ in+ in+ "dCount = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(dCount, Idx, Value, axis=1)" << endl;
+    ofs << in+ in+ in+ "self.State.dCount_All = np.add(self.State.dCount_All, dCount)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
+    ofs << in+ in+ in+ "Len_Over = np.where(Len_Elongated > Max, Len_Elongated - Max, 0)" << endl;
+    ofs << in+ in+ in+ "return Len_Elongated - Len_Over" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
+    ofs << in+ in+ in+ "Raw = np.transpose(np.matmul(np.transpose(Freq), np.transpose(N_Elongated_PerSpecies)))" << endl;
+    ofs << in+ in+ in+ "Rounded = np.around(Raw)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Discrepancy handling" << endl;
+    ofs << in+ in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ in+ "Discrepancy = np.sum(Rounded) - N_Elongated" << endl;
+
+    ofs << in+ in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
+    ofs << in+ in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
+    ofs << in+ in+ in+ "return Rounded + np.multiply(np.ones(NUniq_BuildingBlocks), np.int32(Sets)) + np.concatenate((np.ones(np.int32(Remainder)), np.zeros(np.int32(NUniq_BuildingBlocks - Remainder))))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Polymerase Reaction related" << endl;
+    ofs << in+ in+ "def Initiation(self, Len, Idx_Pol, Idx_Template, Weight):" << endl;
+    ofs << in+ in+ in+ "# Get available, active polymerase count - TO BE UPDATED with more regulatory algorithms" << endl;
+    ofs << in+ in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
+    ofs << in+ in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol, 2).astype(int)" << endl;
+    ofs << in+ in+ in+ "Count_Pol_Occupied = np.count_nonzero(np.where(Len != -1, 1, 0))" << endl;
+    ofs << in+ in+ in+ "Count_Pol_Avail = np.subtract(Count_Pol_Active, Count_Pol_Occupied)" << endl;
+    ofs << in+ in+ in+ "Count_Pol_Avail = np.where(Count_Pol_Avail > 0, Count_Pol_Avail, 0)[0, 0]" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Get final initiation weight by applying template count" << endl;
+    ofs << in+ in+ in+ "Weight_Initiation = np.multiply(self.GetCount(Idx_Template), Weight) " << endl;
+
+    ofs << in+ in+ in+ "# Get randomly selected target indices" << endl;
+    ofs << in+ in+ in+ "Idx_Selected = PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
+	    ofs << in+ in+ in+ "Len_Initiated = InsertZeroIntoNegOneElementInLenMatrix(Len, Idx_Selected)" << endl;
+    ofs << in+ in+ in+ "# Export Data" << endl;
+    ofs << in+ in+ in+ "# N_Initiated" << endl;
+
+    ofs << in+ in+ in+ "return Len_Initiated" << endl;
+    ofs << endl;
+ 
+    ofs << in+ in+ "def Elongation(self, Len, Max, Rate, Weight, Freq, Idx_PolSub, Idx_BB):" << endl;
     ofs << in+ in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
     ofs << in+ in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
     ofs << endl;
 
 //    ofs << in+ in+ in+ "dLength = np.matmul(SMatrix,Rate )
     ofs << in+ in+ in+ "dLength = Rate   # this is not necessarily true based on the reaction input" << endl;
+    ofs << in+ in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, Len)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# TODO: Initiation " << endl;
-    ofs << endl;
+    ofs << in+ in+ in+ "Len_Trimmed = self.OverElongationCorrection(Len_Elongated, Max)" << endl;
 
-    ofs << in+ in+ in+ "# def Elongation(self, ):" << endl;
-    ofs << in+ in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, -1)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ in+ "# def OverElongation Correction(self, ):   # Some polymerization process may not have max" << endl;
-    ofs << in+ in+ in+ "Len_Over = np.where(Len_Elongated > Max, Len_Elongated - Max, 0)" << endl;
-    ofs << in+ in+ in+ "N_OverElongated = np.sum(Len_Over, axis=0)" << endl;
-    ofs << in+ in+ in+ "Len_Trimmed = Len_Elongated - Len_Over" << endl;
     ofs << in+ in+ in+ "N_Elongated_PerSpecies = np.asmatrix(np.sum(Len_Trimmed - Len, axis=0))   # This step loses shape for some reason, hence apply matrix again" << endl;
     ofs << in+ in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# def Building block Consumption(self, ):" << endl;
-    ofs << in+ in+ in+ "Raw = np.transpose(np.matmul(np.transpose(Freq), np.transpose(N_Elongated_PerSpecies)))" << endl;
-    ofs << in+ in+ in+ "Rounded = np.around(Raw)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ in+ "# Discrepancy handling" << endl;
-    ofs << in+ in+ in+ "Discrepancy = np.sum(Rounded) - N_Elongated" << endl;
-    ofs << in+ in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
-    ofs << in+ in+ in+ "Revised = Rounded + np.multiply(np.ones(NUniq_BuildingBlocks), np.int32(Sets)) + np.concatenate((np.ones(np.int32(Remainder)), np.zeros(np.int32(NUniq_BuildingBlocks - Remainder))))" << endl;
-    ofs << endl;
-    
+    ofs << in+ in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated_PerSpecies)" << endl;
+   
     ofs << in+ in+ in+ "# Update dCount for BuildingBlocks" << endl;
-    ofs << in+ in+ in+ "dCount_BB = np.zeros_like(self.State.dCount_All)" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(dCount_BB, Idx_BB, -Revised, axis=1)" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All = np.add(self.State.dCount_All, dCount_BB)" << endl;
+    ofs << in+ in+ in+ "self.Update_dCount(Idx_BB, -Consumed_BB)" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Update dCount for Polymerase Reaction Substrates (To be updated by the reaction matrix form" << endl;
-    ofs << in+ in+ in+ "dCount_PolSub = np.zeros_like(self.State.dCount_All)" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(dCount_PolSub, Idx_PolSub, N_Elongated, axis=1)" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All = np.add(self.State.dCount_All, dCount_PolSub)" << endl;
-    ofs << endl;
-
-
-
-    ofs << in+ in+ in+ "# def Elongation Completion(self, ):   # Some polymerization process may not have max" << endl;
-    ofs << in+ in+ in+ "N_Completed = np.sum(np.where(Len_Trimmed == Max, 1, 0))" << endl;
-    ofs << in+ in+ in+ "Len_Completed =  np.where(Len_Trimmed == Max, -1, Len_Trimmed)" << endl;
+    ofs << in+ in+ in+ "self.Update_dCount(Idx_PolSub, N_Elongated)" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Export Data" << endl;
-    ofs << in+ in+ in+ "# Rate" << endl;
-    ofs << in+ in+ in+ "# N_Initiated" << endl;
+    ofs << in+ in+ in+ "# N_Elongated" << endl;
+    
+    ofs << in+ in+ in+ "return Len_Trimmed" << endl;
+    ofs << endl; 
+
+    ofs << in+ in+ "def Termination(self, Len, Max, Idx_Target):   # Some polymerization process may not have max" << endl;
+    ofs << in+ in+ in+ "Bool_Completed = (Len == Max)" << endl;
+    ofs << in+ in+ in+ "N_Completed_PerSpecies = np.sum(Bool_Completed, axis=0)" << endl;
+    ofs << in+ in+ in+ "N_Completed = np.sum(N_Completed_PerSpecies)" << endl;
+    ofs << in+ in+ in+ "Len_Completed = np.where(Bool_Completed, -1, Len)" << endl;
+
+    ofs << in+ in+ in+ "# Update dCount for BuildingBlocks" << endl;
+    ofs << in+ in+ in+ "self.Update_dCount(Idx_Target, N_Completed_PerSpecies)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Export Data" << endl;
     ofs << in+ in+ in+ "# N_Completed" << endl;
     
     ofs << in+ in+ in+ "return Len_Completed" << endl;
@@ -962,8 +1200,26 @@ int main(int argc, char *argv[])
         vector<string> Keys;
         Keys.emplace_back("symbol");
         Keys.emplace_back("name");
+        Keys.emplace_back("id");
         Keys.emplace_back("rnaId");
         Context.GeneTable.Dump(Keys);
+
+                Keys.clear();
+        Keys.emplace_back("id");
+        Keys.emplace_back("name");
+        Keys.emplace_back("type");
+        Keys.emplace_back("location");
+        Keys.emplace_back("geneId");
+        Keys.emplace_back("monomerId");
+        Context.RNATable.Dump(Keys);
+
+                Keys.clear();
+        Keys.emplace_back("id");
+        Keys.emplace_back("name");
+        Keys.emplace_back("location");
+        Keys.emplace_back("geneId");
+        Keys.emplace_back("rnaId");
+        Context.ProteinTable.Dump(Keys);
 
 		Keys.clear();
         Keys.emplace_back("reaction id");

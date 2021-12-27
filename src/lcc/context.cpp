@@ -95,10 +95,12 @@ void FTable::Dump(const vector<string>& InKeys)
 void FCompilerContext::Init(const FOption& InOption)
 {
     if (InOption.DataPaths.size() > 0) {
-        GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/genes.tsv").c_str());
-		ReactionTable.LoadFromTSV((InOption.DataPaths[0] + "/reactions.tsv").c_str());
-        EnzymeTable.LoadFromTSV((InOption.DataPaths[0] + "/EnzymeDatabase.txt").c_str());
-        PolymeraseTable.LoadFromTSV((InOption.DataPaths[0] + "/PolymeraseDatabase.txt").c_str());
+        GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/Database/genes.tsv").c_str());
+        RNATable.LoadFromTSV((InOption.DataPaths[0] + "/Database/rnas.tsv").c_str());
+        ProteinTable.LoadFromTSV((InOption.DataPaths[0] + "/Database/proteins.tsv").c_str());
+		ReactionTable.LoadFromTSV((InOption.DataPaths[0] + "/Database/reactions.tsv").c_str());
+        EnzymeTable.LoadFromTSV((InOption.DataPaths[0] + "/Database/EnzymeDatabase.txt").c_str());
+        PolymeraseTable.LoadFromTSV((InOption.DataPaths[0] + "/Database/PolymeraseDatabase.txt").c_str());
     }
 }
 
@@ -527,56 +529,155 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
     return Index;
 }
 
+std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()
+{
+    std::vector<const FGene *> SubList;
+    
+    for (auto* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FGene, FMolecule>(Molecule)) {
+            auto Item = dynamic_cast<const FGene *>(Molecule);
+            SubList.push_back(Item);
+        }
+    }
+    return SubList;
+}
+
+std::vector<const FRNA *> FCompilerContext::GetList_RNA_MoleculeList()
+{
+    std::vector<const FRNA *> SubList;
+    
+    for (auto* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
+            auto Item = dynamic_cast<const FRNA *>(Molecule);
+            SubList.push_back(Item);
+        }
+    }
+    return SubList;
+}
+
+std::vector<const FProtein *> FCompilerContext::GetList_Protein_MoleculeList()
+{
+    std::vector<const FProtein *> SubList;
+    
+    for (auto* Molecule : MoleculeList) {
+        if (Utils::is_class_of<FProtein, FMolecule>(Molecule)) {
+            auto Item = dynamic_cast<const FProtein *>(Molecule);
+            SubList.push_back(Item);
+        }
+    }
+    return SubList;
+}
+
 std::vector<const FEnzyme *> FCompilerContext::GetList_Enzyme_MoleculeList()
 {
-    std::vector<const FEnzyme *> EnzymeList;
+    std::vector<const FEnzyme *> SubList;
     
     for (const FMolecule* Molecule : MoleculeList) {
         if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
             auto Enzyme = dynamic_cast<const FEnzyme *>(Molecule);
-            EnzymeList.push_back(Enzyme);
+            SubList.push_back(Enzyme);
         }
     }
-    return EnzymeList;
+    return SubList;
 }
 
 std::vector<const FSmallMolecule *> FCompilerContext::GetList_SmallMolecule_MoleculeList()
 {
-    std::vector<const FSmallMolecule *> SmallMoleculeList;
+    std::vector<const FSmallMolecule *> SubList;
     
     for (const FMolecule* Molecule : MoleculeList) {
         if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
             auto SmallMolecule = dynamic_cast<const FSmallMolecule *>(Molecule);
-            SmallMoleculeList.push_back(SmallMolecule);
+            SubList.push_back(SmallMolecule);
         }
     }
-    return SmallMoleculeList;
+    return SubList;
 }
 
 std::vector<const FPolymerase *> FCompilerContext::GetList_Polymerase_MoleculeList()
 {
-    std::vector<const FPolymerase *> PolymeraseList;
+    std::vector<const FPolymerase *> SubList;
     
     for (const FMolecule* Molecule : MoleculeList) {
         if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
             auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
-            PolymeraseList.push_back(Polymerase);
+            SubList.push_back(Polymerase);
         }
     }
-    return PolymeraseList;
+    return SubList;
 }
 
-std::vector<int> FCompilerContext::GetIdx_Enzyme_MoleculeList()
+std::vector<int> FCompilerContext::GetIdxListFromMoleculeList(std::string FClassName)
 { 
     std::vector<int> IndexArray;
-    int Index;
+    int Index = 0;
 
-    Index = 0;
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
-            IndexArray.push_back(Index);
+//    // update this code after studying template syntax
+//    template <typename Derived, typename Base> 
+//    static bool is_class_of(const Base*Node) {
+//        Derived* DerivedNode = dynamic_cast<Derived *>(const_cast<Base *>(Node));
+//        return DerivedNode != nullptr;
+//    }
+
+    if (FClassName == "Chromosome") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FChromosome, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
         }
-        Index++;
+    } else if (FClassName == "Gene") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FGene, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
+        }
+    } else if (FClassName == "RNA") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
+        }
+    } else if (FClassName == "Protein") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FProtein, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
+        }
+    } else if (FClassName == "Enzyme") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
+        }
+    } else if (FClassName == "SmallMolecule") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
+        }
+    } else if (FClassName == "Polymerase") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+                IndexArray.push_back(Index);
+            }
+            Index++;
+        }
+    } else if (FClassName == "mRNA") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
+                FRNA * RNA = dynamic_cast<FRNA *>(Molecule);
+                if (RNA->Type == "mRNA") {
+                    IndexArray.push_back(Index);
+                }
+            }
+            Index++;
+        }
     }
     return IndexArray;
 }
@@ -599,36 +700,6 @@ std::vector<int> FCompilerContext::GetIdx_EnzymeSubstrate_MoleculeList()
                 Index++;
             }
         }
-    }
-    return IndexArray;
-}
-
-std::vector<int> FCompilerContext::GetIdx_SmallMolecule_MoleculeList()
-{
-    std::vector<int> IndexArray;
-    int Index;
-    
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
-            IndexArray.push_back(Index);
-        }
-        Index++;
-    }
-    return IndexArray;
-}
-
-
-std::vector<int> FCompilerContext::GetIdx_Polymerase_MoleculeList()
-{ 
-    std::vector<int> IndexArray;
-    int Index;
-
-    Index = 0;
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
-            IndexArray.push_back(Index);
-        }
-        Index++;
     }
     return IndexArray;
 }
@@ -691,7 +762,7 @@ std::vector<int> FCompilerContext::GetIdxByStrList_MoleculeList(std::vector<std:
     return IndexArray;
 }
 
-std::vector<int> FCompilerContext::GetIdxListFromList(std::vector<std::string> InputList, std::vector<std::string> RefList)
+std::vector<int> FCompilerContext::GetIdxOfStrListFromStrList(std::vector<std::string> InputList, std::vector<std::string> RefList)
 {
     std::vector<int> IndexArray;
     int Index;
