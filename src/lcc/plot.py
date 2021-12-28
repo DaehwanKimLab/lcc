@@ -31,61 +31,76 @@ def PlotData(Dataset):
     Data_Transposed = np.array(Data).transpose()
     Data_SimStep = Data_Transposed[0:1]
 
-    # # TCA Cycle
-    # Idx_SimStep = 1
-    # Idx_Vol = 1 + Idx_SimStep
-    # Idx_Enzyme = 8 + Idx_Vol
-    #
-    # Data_SimStep = Data_Transposed[0:Idx_SimStep]
-    # Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-    # Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
-    # Data_SubCounts = Data_Transposed[Idx_Enzyme:]
-    #
-    # Legend_SimStep = Legend[0:Idx_SimStep]
-    # Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-    # Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
-    # Legend_SubCounts = Legend[Idx_Enzyme:]
-
-    # Title = 'TCA cycle'
-    # Data = Data_SubCounts
-    # Legend = Legend_SubCounts
-
-    # # Polymerase Reactions
-    # Idx_SimStep = 1
-    # Idx_Vol = 1 + Idx_SimStep
-    # Idx_Polymerase = 1 + Idx_Vol
-    # Idx_ReactionSubstrate = 1 + Idx_Polymerase
-    #
-    # Data_SimStep = Data_Transposed[0:Idx_SimStep]
-    # Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-    # Data_PolymeraseCounts = Data_Transposed[Idx_Vol:Idx_Polymerase]
-    # Data_ReactionSubstrateCounts = Data_Transposed[Idx_Polymerase:Idx_ReactionSubstrate]
-    # Data_BuildingBlockCounts = Data_Transposed[Idx_ReactionSubstrate:]
-    # Data_AllSmallMoleculeCounts = Data_Transposed[Idx_Polymerase:]
-    #
-    # Legend_SimStep = Legend[0:Idx_SimStep]
-    # Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-    # Legend_PolymeraseCounts = Legend[Idx_Vol:Idx_Polymerase]
-    # Legend_ReactionSubstrateCounts = Legend[Idx_Polymerase:Idx_ReactionSubstrate]
-    # Legend_BuildingBlockCounts = Legend[Idx_ReactionSubstrate:]
-    # Legend_AllSmallMoleculeCounts = Legend[Idx_Polymerase:]
-    #
-    # Title = 'PolymeraseReaction'
-    # Data = Data_BuildingBlockCounts
-    # Legend = Legend_BuildingBlockCounts
-
-    # Show E.coli
-    # Temporary capping for plotting speed
+    # Default setting
     Title = ''
-    N_Species = 100
-    GeneBegins = 30+2
-    mRNABegins = 4603+2
-    ProteinBegins = 9146+2
-    # Target = GeneBegins
-    Target = mRNABegins
-    # Target = ProteinBegins
-    Data = Data_Transposed[Target:Target+N_Species]
-    Legend = Legend[Target:Target+N_Species]
+    Data = list()
+    Legend = list()
+
+    plot_TCACycle = False
+    plot_PolymeraseReactions = False
+    plot_Ecoli_NoTCA = False
+
+    # plot_TCACycle = True
+    # plot_PolymeraseReactions = True
+    plot_Ecoli_NoTCA = True
+
+    # TCA Cycle
+    if plot_TCACycle:
+        Idx_SimStep = 1
+        Idx_Vol = 1 + Idx_SimStep
+        Idx_Enzyme = 8 + Idx_Vol
+
+        Data_SimStep = Data_Transposed[0:Idx_SimStep]
+        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+        Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
+        Data_SubCounts = Data_Transposed[Idx_Enzyme:]
+
+        Legend_SimStep = Legend[0:Idx_SimStep]
+        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+        Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
+        Legend_SubCounts = Legend[Idx_Enzyme:]
+
+        Title = 'TCA cycle'
+        Data = Data_SubCounts
+        Legend = Legend_SubCounts
+
+    # Polymerase Reactions
+    if plot_PolymeraseReactions:
+        Idx_SimStep = 1
+        Idx_Vol = 1 + Idx_SimStep
+        Idx_Polymerase = 1 + Idx_Vol
+        Idx_ReactionSubstrate = 1 + Idx_Polymerase
+
+        Data_SimStep = Data_Transposed[0:Idx_SimStep]
+        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+        Data_PolymeraseCounts = Data_Transposed[Idx_Vol:Idx_Polymerase]
+        Data_ReactionSubstrateCounts = Data_Transposed[Idx_Polymerase:Idx_ReactionSubstrate]
+        Data_BuildingBlockCounts = Data_Transposed[Idx_ReactionSubstrate:]
+        Data_AllSmallMoleculeCounts = Data_Transposed[Idx_Polymerase:]
+
+        Legend_SimStep = Legend[0:Idx_SimStep]
+        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+        Legend_PolymeraseCounts = Legend[Idx_Vol:Idx_Polymerase]
+        Legend_ReactionSubstrateCounts = Legend[Idx_Polymerase:Idx_ReactionSubstrate]
+        Legend_BuildingBlockCounts = Legend[Idx_ReactionSubstrate:]
+        Legend_AllSmallMoleculeCounts = Legend[Idx_Polymerase:]
+
+        Title = 'PolymeraseReaction'
+        Data = Data_BuildingBlockCounts
+        Legend = Legend_BuildingBlockCounts
+
+    if plot_Ecoli_NoTCA:
+    # Temporary capping for plotting speed
+        Title = ''
+        N_Species = 1000
+        GeneBegins = 30+2
+        mRNABegins = 4603+2
+        ProteinBegins = 9146+2
+        # Target = GeneBegins
+        # Target = mRNABegins
+        Target = ProteinBegins
+        Data = Data_Transposed[Target:Target+N_Species]
+        Legend = Legend[Target:Target+N_Species]
 
 
 

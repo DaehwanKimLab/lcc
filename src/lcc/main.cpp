@@ -640,7 +640,7 @@ void Print_SetUpPolymeraseReaction(ofstream& ofs, std::string PolymeraseName, fl
     ofs << in+ in+ in+ "# " << Process << " SetUp ElongationReaction" << endl;
     ofs << in+ in+ in+ "self.Rate_" << Process << " = " << std::to_string(int(Rate)) << endl;
     ofs << in+ in+ in+ "self.MaxLen_Nascent" << Molecule << "s = np.asmatrix(np.load(r'" << MaxLenFileName << "'))" << endl;
-    ofs << in+ in+ in+ "self.Len_Nascent" << Molecule << "s = np.asmatrix(np.full([10, len(self.Freq_BB_" << Molecule << "s)], -1))" << endl;
+    ofs << in+ in+ in+ "self.Len_Nascent" << Molecule << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Molecule << "s.shape[0]], -1))" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "self.Idx_Pol_" << Process << " = np.asmatrix([" << std::to_string(Context.GetIdxByName_MoleculeList(PolymeraseName)) << "])" << endl;
@@ -754,7 +754,7 @@ void WriteSimModule()
 
     // Elementary simulation functions
     ofs << in+ "def DetermineAmountOfBuildingBlocks(Freq, Rate):" << endl;
-    ofs << in+ in+ "return np.transpose(np.multiply(np.transpose(Freq), np.transpose(Rate)))" << endl;
+    ofs << in+ in+ "return np.transpose(np.matmul(np.transpose(Freq), np.transpose(Rate)))" << endl;
     ofs << endl;
 
     ofs << in+ "def PickRandomIdx(Quantity, Indices, Weight=1):" << endl;
@@ -857,7 +857,7 @@ void WriteSimModule()
             std::vector<std::vector<int>> StoichMatrix_PolymeraseReaction = Context.GetStoichiometryMatrix_PolymeraseReaction(PolymeraseReactionList);
     
             if      (PolymeraseName == "pol1") {MaxLenFileName = "./Database/Len_ChromosomesInGenome.npy"; 
-                                                FreqBBFileName = "./Database/Freq_NTsInChromosomes.npy";
+                                                FreqBBFileName = "./Database/Freq_NTsInChromosomesInGenome.npy";
                                                 Idx_Template   = Context.GetIdxListFromMoleculeList("Chromosome");
                                                 Idx_Target     = Context.GetIdxListFromMoleculeList("Chromosome");
                                                }
@@ -987,9 +987,8 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn_Array(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dCount_SMol = np.zeros_like(self.State.dCount_All)" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(dCount_SMol, self.State.Idx_SMol, np.transpose(np.matmul(np.transpose(self.State.Const_StoichMatrix), np.transpose(Rate))), axis=1)" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All += dCount_SMol" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = DetermineAmountOfBuildingBlocks(self.State.Const_StoichMatrix, Rate)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol, dCount_SMol)" << endl;
     ofs << endl;
 
     if (!PolymeraseList.empty()) {
@@ -1026,13 +1025,9 @@ void WriteSimModule()
     ofs << in+ in+ "def AddTodCount(self, Idx, Values):" << endl;
     ofs << in+ in+ in+ "dCountToAdd = np.zeros_like(self.State.dCount_All)" << endl;
     ofs << in+ in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All = np.add(self.State.dCount_All, dCountToAdd)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "def Update_dCount(self, Idx, Value):" << endl;
-    ofs << in+ in+ in+ "dCount = np.zeros_like(self.State.dCount_All)" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(dCount, Idx, Value, axis=1)" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All = np.add(self.State.dCount_All, dCount)" << endl;
+    ofs << in+ in+ in+ "dCount_All_New = np.add(self.State.dCount_All, dCountToAdd)" << endl;
+    ofs << in+ in+ in+ "ZeroTest = np.add(dCount_All_New, self.State.Count_All)" << endl;
+    ofs << in+ in+ in+ "self.State.dCount_All =  np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
@@ -1095,11 +1090,11 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated_PerSpecies)" << endl;
    
     ofs << in+ in+ in+ "# Update dCount for BuildingBlocks" << endl;
-    ofs << in+ in+ in+ "self.Update_dCount(Idx_BB, -Consumed_BB)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(Idx_BB, -Consumed_BB)" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Update dCount for Polymerase Reaction Substrates (To be updated by the reaction matrix form" << endl;
-    ofs << in+ in+ in+ "self.Update_dCount(Idx_PolSub, N_Elongated)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated)" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Export Data" << endl;
@@ -1115,7 +1110,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Len_Completed = np.where(Bool_Completed, -1, Len)" << endl;
 
     ofs << in+ in+ in+ "# Update dCount for BuildingBlocks" << endl;
-    ofs << in+ in+ in+ "self.Update_dCount(Idx_Target, N_Completed_PerSpecies)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(Idx_Target, N_Completed_PerSpecies)" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Export Data" << endl;
