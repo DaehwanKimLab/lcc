@@ -33,16 +33,16 @@ def PlotData(Dataset):
 
     # Default setting
     Title = ''
-    Data = list()
-    Legend = list()
 
     plot_TCACycle = False
     plot_PolymeraseReactions = False
     plot_Ecoli_NoTCA = False
+    plot_Ecoli_TCA = False
 
     # plot_TCACycle = True
     # plot_PolymeraseReactions = True
     plot_Ecoli_NoTCA = True
+    # plot_Ecoli_TCA = True
 
     # TCA Cycle
     if plot_TCACycle:
@@ -65,7 +65,7 @@ def PlotData(Dataset):
         Legend = Legend_SubCounts
 
     # Polymerase Reactions
-    if plot_PolymeraseReactions:
+    elif plot_PolymeraseReactions:
         Idx_SimStep = 1
         Idx_Vol = 1 + Idx_SimStep
         Idx_Polymerase = 1 + Idx_Vol
@@ -89,16 +89,37 @@ def PlotData(Dataset):
         Data = Data_BuildingBlockCounts
         Legend = Legend_BuildingBlockCounts
 
-    if plot_Ecoli_NoTCA:
+    elif plot_Ecoli_NoTCA:
     # Temporary capping for plotting speed
         Title = ''
-        N_Species = 1000
-        GeneBegins = 30+2
-        mRNABegins = 4603+2
-        ProteinBegins = 9146+2
+        N_Species = 500
+        GeneBegins = 35 + 2
+        mRNABegins = 4610 + 2
+        ProteinBegins = 9180 + 2
         # Target = GeneBegins
         # Target = mRNABegins
         Target = ProteinBegins
+
+        Data = Data_Transposed[Target:Target+N_Species]
+        Legend = Legend[Target:Target+N_Species]
+
+    elif plot_Ecoli_TCA:
+    # Temporary capping for plotting speed
+        Title = ''
+        SmallMoleculesBegins = 0 + 2
+        GeneBegins = 62 + 2
+        mRNABegins = 4635 + 2
+        ProteinBegins = 9176 + 2
+        N_Species = 500
+
+        # Target = GeneBegins
+        # Target = mRNABegins
+        # Target = ProteinBegins
+        Target = SmallMoleculesBegins
+
+        if Target == SmallMoleculesBegins:
+            N_Species = GeneBegins - SmallMoleculesBegins - 1 # -1 For chromosome
+
         Data = Data_Transposed[Target:Target+N_Species]
         Legend = Legend[Target:Target+N_Species]
 

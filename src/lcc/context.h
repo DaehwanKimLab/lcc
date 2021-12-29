@@ -201,19 +201,24 @@ public:
     }
 };
 
-class FPolymerase : public FMolecule{ // update to FProtein when ID system is set up
+class FPolymerase : public FMolecule{ // update to FProtein when ID system is set up with SQL // Note: specific to template-dependent polymerase class.
 public:
-    std::string Substrate;
+    std::string Template;
+    std::string Target;
+    std::string Process; // temporary
     float Rate;
 
     FPolymerase() {}
 
-    FPolymerase(const std::string& InName, const std::string& InSubstrate, const float& InRate) 
-//        : Substrate(InSubstrate), Rate(InRate), FProtein(InName) {}
-        : Substrate(InSubstrate), Rate(InRate), FMolecule(InName) {}
+    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const float& InRate) 
+        : Template(InTemplate), Target(InTarget), Rate(InRate), FMolecule(InName) {}
+
+    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const std::string& InProcess, const float& InRate) 
+//        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
+        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "  Polymerase Id: " << Name << "\tSubstrate: " << Substrate << "\tRate:  " << std::to_string(Rate) << std::endl;
+        os << "  Polymerase Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << std::to_string(Rate) << std::endl;
     }
 };
 
@@ -320,7 +325,6 @@ public:
     std::vector<float> GetkMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
 
     std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
-    std::vector<std::string> GetSubstrateNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
     std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
 
     std::vector<std::string> GetNames_ReactionList();
@@ -359,9 +363,10 @@ public:
     std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
     
     std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
+    std::vector<std::string> GetNameListFromMoleculeList(std::string FClassName);
 
     std::vector<int> GetIdx_EnzymeSubstrate_MoleculeList();
-    std::vector<int> GetIdx_PolymeraseSubstrate_MoleculeList();
+//    std::vector<int> GetIdx_PolymeraseSubstrate_MoleculeList();
 
     std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
 

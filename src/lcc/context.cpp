@@ -334,15 +334,6 @@ std::vector<std::string> FCompilerContext::GetNames_PolymeraseList(std::vector<c
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetSubstrateNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList) 
-{
-    std::vector<std::string> StrList;
-    for (auto& item : PolymeraseList){
-        StrList.push_back(item->Substrate);
-    }
-    return StrList;
-}
-
 std::vector<float> FCompilerContext::GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList)
 {
     std::vector<float> FloatList;
@@ -542,19 +533,6 @@ std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()
     return SubList;
 }
 
-std::vector<const FRNA *> FCompilerContext::GetList_RNA_MoleculeList()
-{
-    std::vector<const FRNA *> SubList;
-    
-    for (auto* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
-            auto Item = dynamic_cast<const FRNA *>(Molecule);
-            SubList.push_back(Item);
-        }
-    }
-    return SubList;
-}
-
 std::vector<const FProtein *> FCompilerContext::GetList_Protein_MoleculeList()
 {
     std::vector<const FProtein *> SubList;
@@ -682,6 +660,72 @@ std::vector<int> FCompilerContext::GetIdxListFromMoleculeList(std::string FClass
     return IndexArray;
 }
 
+std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::string FClassName)
+{ 
+    std::vector<string> StrArray;
+
+//    // update this code after studying template syntax
+//    template <typename Derived, typename Base> 
+//    static bool is_class_of(const Base*Node) {
+//        Derived* DerivedNode = dynamic_cast<Derived *>(const_cast<Base *>(Node));
+//        return DerivedNode != nullptr;
+//    }
+
+    if (FClassName == "Chromosome") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FChromosome, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "Gene") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FGene, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "RNA") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "Protein") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FProtein, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "Enzyme") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "SmallMolecule") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "Polymerase") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+                StrArray.push_back(Molecule->Name);
+            }
+        }
+    } else if (FClassName == "mRNA") {
+        for (FMolecule * Molecule : MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
+                FRNA * RNA = dynamic_cast<FRNA *>(Molecule);
+                if (RNA->Type == "mRNA") {
+                    StrArray.push_back(Molecule->Name);
+                }
+            }
+        }
+    }
+    return StrArray;
+}
+
 std::vector<int> FCompilerContext::GetIdx_EnzymeSubstrate_MoleculeList()
 { 
     std::vector<int> IndexArray;
@@ -704,27 +748,27 @@ std::vector<int> FCompilerContext::GetIdx_EnzymeSubstrate_MoleculeList()
     return IndexArray;
 }
 
-std::vector<int> FCompilerContext::GetIdx_PolymeraseSubstrate_MoleculeList()
-{ 
-    std::vector<int> IndexArray;
-    int Index;
-
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
-            auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
-            std::string PolSub = Polymerase->Substrate;
-            Index = 0;
-            for (auto& Molecule : MoleculeList) {
-                if (Molecule->Name == PolSub) {
-                    IndexArray.push_back(Index);
-                break;
-                } 
-                Index++;
-            }
-        }
-    }
-    return IndexArray;
-}
+// std::vector<int> FCompilerContext::GetIdx_PolymeraseSubstrate_MoleculeList()
+// { 
+//     std::vector<int> IndexArray;
+//     int Index;
+// 
+//     for (const FMolecule* Molecule : MoleculeList) {
+//         if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+//             auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
+//             std::string PolSub = Polymerase->Substrate;
+//             Index = 0;
+//             for (auto& Molecule : MoleculeList) {
+//                 if (Molecule->Name == PolSub) {
+//                     IndexArray.push_back(Index);
+//                 break;
+//                 } 
+//                 Index++;
+//             }
+//         }
+//     }
+//     return IndexArray;
+// }
 
 std::vector<int> FCompilerContext::GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string InPolymeraseName)
 { 

@@ -1,4 +1,4 @@
-Name	Substrate	Rate
-pol1	dna_{n}	1000
-rnap	rna_{n}	60
-r1	peptide_{n}	20
+Name	Template	Target	Process	Rate
+pol1	Chromosome	Chromosome	DNAReplication	1000
+rnap	Gene	RNA	RNATranscription	60
+r1	RNA	Protein	ProteinTranslation	20
