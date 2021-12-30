@@ -8,6 +8,8 @@
 
 #ifdef _MSC_VER
 #include <io.h>
+#include <sqlite3.h>
+
 #else
 #include <unistd.h>
 #include <getopt.h>
@@ -171,6 +173,12 @@ void TraversalNode(NBlock* InProgramBlock)
                     const shared_ptr<NElongationStatement> elongstmt = dynamic_pointer_cast<NElongationStatement>(stmt);
                     os << "---This is an elongation statement of the polymerase stmt---" << endl;
                     elongstmt->Print(os);
+
+                    NReaction ElongationReaction = elongstmt->Reaction;
+                    os << "  Elongation:";
+                    ElongationReaction.Print(os);
+
+
                     os << "-----------------" << endl;
                 } else if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
                     const shared_ptr<NInitiationStatement> initstmt = dynamic_pointer_cast<NInitiationStatement>(stmt);
@@ -507,18 +515,18 @@ void Print_InitializeEnzymeReaction(ofstream& ofs)
     ofs << endl;
 
     ofs << in+ in+ in+ "# Indices" << endl;
-    ofs << in+ in+ in+ "self.Idx_Enz = 0" << endl;
-    ofs << in+ in+ in+ "self.Idx_EnzSub = 0" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol = 0" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_EnzSub = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
-    ofs << in+ in+ in+ "self.Const_kcats = 0" << endl;
-    ofs << in+ in+ in+ "self.Const_kMs = 0" << endl;
+    ofs << in+ in+ in+ "self.Const_kcats = None" << endl;
+    ofs << in+ in+ in+ "self.Const_kMs = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix = 0" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix = None" << endl;
     ofs << endl;
 }
 
@@ -564,14 +572,14 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::vector<const FEnzyme *> Enzym
 
 void Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
-    ofs << in+ in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = 0" << endl;
+    ofs << in+ in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = None" << endl;
 
     // Initiation
-    ofs << in+ in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = 0" << endl;
-    ofs << in+ in+ in+ "self.Idx_Template_" << Polymerase->Process << " = 0" << endl;
-    ofs << in+ in+ in+ "self.Idx_TemplateSubset" << Polymerase->Process << " = 0" << endl; // local indexing within the template population for mRNA in RNA for protein translation
-    		ofs << in+ in+ in+ "self.Weight_" << Polymerase->Process << " = 0" << endl;
-    ofs << in+ in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = 0" << endl;
+    ofs << in+ in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Template_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_TemplateSubset" << Polymerase->Process << " = None" << endl; // local indexing within the template population for mRNA in RNA for protein translation
+    		ofs << in+ in+ in+ "self.Weight_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = None" << endl;
     ofs << endl;
 
     // Check if template exists as a target of any polymerases in the system
@@ -585,18 +593,18 @@ void Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polyme
     } 
 
     if (!TemplateExists) {
-        ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = 0" << endl;
+        ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = None" << endl;
     }
 
     // Elongation
     ofs << in+ in+ in+ "# " << Polymerase->Process << " Initialize ElongationReaction" << endl;
-    ofs << in+ in+ in+ "self.Rate_" << Polymerase->Process << " = 0" << endl;
-    ofs << in+ in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = 0" << endl;
-    ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = 0" << endl;
+    ofs << in+ in+ in+ "self.Rate_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = None" << endl;
+    ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = None" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = 0" << endl;
-    ofs << in+ in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = 0" << endl; 
+    ofs << in+ in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = None" << endl; 
     ofs << endl;
 }
 
@@ -731,7 +739,7 @@ void WriteSimModule()
 
     // user input
     ofs << in+ "N_SimSteps = 500" << endl;
-    
+    ofs << in+ "SimStepTimeResolution = 1000" << endl;
 
     ofs << endl;
 
@@ -754,13 +762,13 @@ void WriteSimModule()
 
     // Elementary simulation functions
     ofs << in+ "def DetermineAmountOfBuildingBlocks(Freq, Rate):" << endl;
-    ofs << in+ in+ "return np.transpose(np.matmul(np.transpose(Freq), np.transpose(Rate)))" << endl;
+    ofs << in+ in+ "return np.matmul(Rate, Freq)" << endl;
     ofs << endl;
 
     ofs << in+ "def PickRandomIdx(Quantity, Indices, Weight=1):" << endl;
     ofs << in+ in+ "# Adjust Quantity and Weight if Weight is completely zero" << endl;
     ofs << in+ in+ "Sum_Weight = np.sum(Weight)" << endl;
-    ofs << in+ in+ "Weight = np.add(Weight, np.where(Sum_Weight == 0, 1, 0))" << endl;
+    ofs << in+ in+ "Weight = Weight + np.where(Sum_Weight == 0, 1, 0)" << endl;
     ofs << in+ in+ "Quantity = np.multiply(Quantity, np.where(Sum_Weight == 0, 0, 1))" << endl;
     ofs << endl;
 
@@ -792,7 +800,7 @@ void WriteSimModule()
     ofs << in+ in+ "Bool_LenCumsum = np.logical_and(Bool_LenCumsumGreaterThanZero, Bool_LenCumsumLessThanOrEqualToCountOfIndices)" << endl;
 
     ofs << in+ in+ "Bin_Len_Selected = np.logical_and(Bool_LenAvailable, Bool_LenCumsum).astype(int)" << endl;
-    ofs << in+ in+ "return np.add(Len, Bin_Len_Selected)" << endl;
+    ofs << in+ in+ "return Len + Bin_Len_Selected" << endl;
     ofs << endl;
 
 
@@ -917,11 +925,11 @@ void WriteSimModule()
     ofs << in+ in+ in+ "return ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def ExportData(self, SimStep):" << endl;
+    ofs << in+ in+ "def ExportData(self, Time):" << endl;
     ofs << in+ in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
     int i = 0;
     int i_SimStep = i + 1;
-    ofs << in+ in+ in+ "Data[0, " << i << ":" << i_SimStep << "] = SimStep" << endl;
+    ofs << in+ in+ in+ "Data[0, " << i << ":" << i_SimStep << "] = Time" << endl;
 
     int i_Vol = i_SimStep + 1;
     ofs << in+ in+ in+ "Data[0, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
@@ -936,7 +944,7 @@ void WriteSimModule()
     ofs << in+ "class FDataset:" << endl;
     ofs << in+ in+ "def __init__(self):" << endl;
     ofs << in+ in+ in+ "self.Legend = list()" << endl;
-    ofs << in+ in+ in+ "self.Data = 0" << endl;
+    ofs << in+ in+ in+ "self.Data = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def PrintLegend(self):" << endl;
@@ -952,14 +960,16 @@ void WriteSimModule()
     ofs << in+ in+ "def __init__(self, InState, InDataset, InDM):" << endl;
     ofs << in+ in+ in+ "self.N_SimSteps = 0" << endl;
     ofs << in+ in+ in+ "self.SimStep = 0" << endl;
+    ofs << in+ in+ in+ "self.SimTimeResolutionPerSecond = 0" << endl;
     ofs << in+ in+ in+ "self.State = InState" << endl;
     ofs << in+ in+ in+ "self.Dataset = InDataset" << endl;
     ofs << in+ in+ in+ "self.DM = InDM" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def Initialize(self, InN_SimSteps):" << endl;
+    ofs << in+ in+ "def Initialize(self, InN_SimSteps, InTimeResolution):" << endl;
     ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
     ofs << in+ in+ in+ "self.N_SimSteps = np.asmatrix([InN_SimSteps])" << endl;
+    ofs << in+ in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
     ofs << in+ in+ in+ "self.State.Initialize()" << endl;
     ofs << endl;
 
@@ -1004,8 +1014,12 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ in+ "def ExportData(self):" << endl;    
-    ofs << in+ in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep)" << endl;
+    ofs << in+ in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
     ofs << in+ in+ in+ in+ "self.DM.Add(self.Dataset.Data)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def ApplySimTimeResolution(self, Rate):" << endl;    
+    ofs << in+ in+ in+ in+ "return Rate / self.SimTimeResolutionPerSecond" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Enzymatic Reaction related routines" << endl;
@@ -1013,6 +1027,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Conc_Enz = np.take(self.State.Count_All, self.State.Idx_Enz) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn_Array(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
+    ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
     ofs << in+ in+ in+ "dCount_SMol = DetermineAmountOfBuildingBlocks(self.State.Const_StoichMatrix, Rate)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol, dCount_SMol)" << endl;
@@ -1052,8 +1067,8 @@ void WriteSimModule()
     ofs << in+ in+ "def AddTodCount(self, Idx, Values):" << endl;
     ofs << in+ in+ in+ "dCountToAdd = np.zeros_like(self.State.dCount_All)" << endl;
     ofs << in+ in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
-    ofs << in+ in+ in+ "dCount_All_New = np.add(self.State.dCount_All, dCountToAdd)" << endl;
-    ofs << in+ in+ in+ "ZeroTest = np.add(dCount_All_New, self.State.Count_All)" << endl;
+    ofs << in+ in+ in+ "dCount_All_New = self.State.dCount_All + dCountToAdd" << endl;
+    ofs << in+ in+ in+ "ZeroTest = dCount_All_New + self.State.Count_All" << endl;
     ofs << in+ in+ in+ "self.State.dCount_All =  np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
     ofs << endl;
 
@@ -1073,7 +1088,7 @@ void WriteSimModule()
 
     ofs << in+ in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
     ofs << in+ in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
-    ofs << in+ in+ in+ "return Rounded + np.multiply(np.ones(NUniq_BuildingBlocks), np.int32(Sets)) + np.concatenate((np.ones(np.int32(Remainder)), np.zeros(np.int32(NUniq_BuildingBlocks - Remainder))))" << endl;
+    ofs << in+ in+ in+ "return Rounded + np.multiply(np.ones(NUniq_BuildingBlocks), np.int32(Sets)) + np.concatenate((np.ones(np.int32(np.round(Remainder))), np.zeros(np.int32(np.around(NUniq_BuildingBlocks - Remainder)))))" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Polymerase Reaction related" << endl;
@@ -1082,7 +1097,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
     ofs << in+ in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol, 2).astype(int)" << endl;
     ofs << in+ in+ in+ "Count_Pol_Occupied = np.multiply(np.count_nonzero(np.where(Len_Target != -1, 1, 0)), PolThreshold)" << endl;
-    ofs << in+ in+ in+ "Count_Pol_Avail = np.subtract(Count_Pol_Active, Count_Pol_Occupied)" << endl;
+    ofs << in+ in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
     ofs << in+ in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
     ofs << in+ in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)[0, 0]" << endl;
     ofs << endl;
@@ -1091,7 +1106,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
     ofs << in+ in+ in+ "Count_Template_Nascent = np.count_nonzero(np.where(Len_Template != -1, 1, 0), axis=0)   # Assumption: each nascent template has one highly efficient initiation site" << endl;
     ofs << in+ in+ in+ "Count_TemplateSubset_Nascent = np.take(Count_Template_Nascent, Idx_TemplateSubset)" << endl;
-    ofs << in+ in+ in+ "Count_InitiationSite = np.add(Count_Template_Complete, Count_TemplateSubset_Nascent)" << endl;
+    ofs << in+ in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_TemplateSubset_Nascent" << endl;
     ofs << in+ in+ in+ "Weight_Initiation = np.multiply(Count_InitiationSite, Weight) " << endl;
     ofs << endl;
 
@@ -1110,8 +1125,8 @@ void WriteSimModule()
     ofs << in+ in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
     ofs << endl;
 
-//    ofs << in+ in+ in+ "dLength = np.matmul(SMatrix,Rate )
-    ofs << in+ in+ in+ "dLength = Rate   # this is not necessarily true based on the reaction input" << endl;
+//    ofs << in+ in+ in+ "dLength = np.matmul(SMatrix,Rate)
+    ofs << in+ in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
     ofs << in+ in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, Len)" << endl;
     ofs << endl;
 
@@ -1186,7 +1201,7 @@ void WriteSimModule()
     ofs << endl;
 
     // Simulation Module
-    ofs << in+ "Sim.Initialize(N_SimSteps)" << endl;
+    ofs << in+ "Sim.Initialize(N_SimSteps, SimStepTimeResolution)" << endl;
     ofs << in+ "Sim.Run()" << endl;
     ofs << endl;
     ofs << in+ "DM.SaveToFile('" << Option.SimResultFile.c_str() << "')" << endl;
