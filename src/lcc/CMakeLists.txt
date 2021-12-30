@@ -35,6 +35,6 @@ if(WIN32)
 	add_definitions(-DYY_NO_UNISTD_H)
 endif()
 
-add_executable(lcc-prep
+add_executable(lcc
 	${SOURCEFILE}
 )

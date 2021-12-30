@@ -14,7 +14,7 @@
 
 ## compile TCA.lpp (or any) and simulate
 
-    ./build/lcc-prep -i . TCA.lpp, RNASynthesis.lpp ProteinSynthesis.lpp Ecoli.lpp
+    ./build/lcc -i . TCA.lpp RNASynthesis.lpp ProteinSynthesis.lpp Ecoli.lpp
 
     python SimModule.py
 
