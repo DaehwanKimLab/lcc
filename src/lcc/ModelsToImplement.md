@@ -24,6 +24,10 @@
 - S-System models
 
 ### Ch4 Analysis of Dynamic Mathematical Models
+- Phase Plane Analysis: Direction field, Nullcline, 
+- Phase Plane Analysis: Stability, Linearized Stability analysis
+- 
+
 
 ### Ch5 Metabolic Networks
 

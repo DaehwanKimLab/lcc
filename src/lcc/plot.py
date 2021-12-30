@@ -20,7 +20,10 @@ def LoadRawData(Data_Dir):
 
     return Datasets
 
-def PlotData(Dataset):
+def PlotData(Dataset, Type):
+    # Type 1 --> plot over sim step
+    # Type 2 --> phase plane
+    # Type 3 --> both
 
     Legend = Dataset[0]
     Data = Dataset[1:]
@@ -38,14 +41,18 @@ def PlotData(Dataset):
     plot_PolymeraseReactions = False
     plot_Ecoli_NoTCA = False
     plot_Ecoli_TCA = False
+    plot_ShowAll = False
 
     # plot_TCACycle = True
     # plot_PolymeraseReactions = True
-    plot_Ecoli_NoTCA = True
-    # plot_Ecoli_TCA = True
+    # plot_Ecoli_NoTCA = True
+    plot_Ecoli_TCA = True
+    # plot_ShowAll = True
 
     # TCA Cycle
     if plot_TCACycle:
+        Molecules = ['SimStep', 'Vol', 'GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+
         Idx_SimStep = 1
         Idx_Vol = 1 + Idx_SimStep
         Idx_Enzyme = 8 + Idx_Vol
@@ -91,7 +98,7 @@ def PlotData(Dataset):
 
     elif plot_Ecoli_NoTCA:
     # Temporary capping for plotting speed
-        Title = ''
+        Title = 'Ecoli_noTCA'
         N_Species = 500
         GeneBegins = 35 + 2
         mRNABegins = 4610 + 2
@@ -104,8 +111,17 @@ def PlotData(Dataset):
         Legend = Legend[Target:Target+N_Species]
 
     elif plot_Ecoli_TCA:
-    # Temporary capping for plotting speed
-        Title = ''
+
+        # Reference for molecules before Ch1, Genes, RNAs, Proteins
+        Molecules = ['SimStep', 'Vol', 'GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate',
+                     'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi',
+                     'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+', 'pol1', 'ppi',
+                     'dATP', 'dCTP', 'dGTP', 'dUTP', 'rnap', 'CTP', 'GTP', 'UTP', 'r1', 'H_{2}O', 'ALA', 'ARG', 'ASN',
+                     'ASP', 'CYS', 'GLT', 'GLN', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR',
+                     'TRP', 'TYR', 'SEL', 'VAL']
+
+        # Temporary capping for plotting speed
+        Title = 'Ecoli_TCA'
         SmallMoleculesBegins = 0 + 2
         GeneBegins = 62 + 2
         mRNABegins = 4635 + 2
@@ -123,18 +139,29 @@ def PlotData(Dataset):
         Data = Data_Transposed[Target:Target+N_Species]
         Legend = Legend[Target:Target+N_Species]
 
+    # Show all
+    else:
+        Cap = 50
+        Title = 'Show All'
+        Data = Data_Transposed[2:Cap]
+        Legend = Legend[2:Cap]
 
 
-    # # Show all
-    # # Temporary capping for plotting speed
-    # Cap = 50
-    # Title = ''
-    # Data = Data_Transposed[2:Cap]
-    # Legend = Legend[2:Cap]
+    # Plotting options
+    if Type == 1:
+        Plot_OverSimStep(Title, Data_SimStep[0], Data, Legend)
+
+    elif Type == 2:
+        Plot_PhasePlane(Title, Data_SimStep[0], Data, Legend)
+
+    elif Type == 3:
+        Plot_OverSimStep(Title, Data_SimStep[0], Data, Legend)
+        Plot_PhasePlane(Title, Data_SimStep[0], Data, Legend)
 
 # Potentially split point for another function
 
-    X = Data_SimStep[0]
+def Plot_OverSimStep(Title, SimStep, Data, Legend):
+    X = SimStep
     Y = Data
 
     assert len(X) == Y.shape[-1]
@@ -143,7 +170,7 @@ def PlotData(Dataset):
 
     ax.set_ylabel('Count')
     ax.set_xlabel('Sim Step')
-    ax.set_title(Title)
+    ax.set_title(Title + " over SimStep")
 
     for i in range(len(Legend)):
         ax.plot(X, Y[i], label=Legend[i])
@@ -152,10 +179,102 @@ def PlotData(Dataset):
 
     plt.show()
 
+def Plot_PhasePlane(Title, SimStep, Data, Legend):
+    SinglePair = False
+    AllPairs = False
+    # SinglePair = True
+    AllPairs = True
+
+    # Pick two indices for data
+    Molecules = ['SimStep', 'Vol', 'GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+
+    SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
+    # Subset for convenient visualization
+    SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', ]
+
+    Idx_SelectedMolecules = list()
+    for SelectedMolecule in SelectedMolecules:
+        i = 0
+        for Molecule in Molecules:
+            if Molecule == SelectedMolecule:
+                Idx_SelectedMolecules.append(i)
+                break
+            i += 1
+
+    if SinglePair:
+
+        fig = plt.figure()
+
+        i = Idx_SelectedMolecules[5]
+        j = Idx_SelectedMolecules[4]
+
+        X = Data[i]
+        Y = Data[j]
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(1,2,1)
+        ax2 = fig.add_subplot(1,2,2)
+
+        ax1.plot(X, 'r-', label=Molecules[i])
+        ax1.plot(Y, 'b-', label=Molecules[j])
+        ax1.set_title(Title + ' Dynamics')
+        ax1.set_xlabel('SimStep')
+        # ax2.legend(loc='upper left')
+        ax1.grid()
+
+        # ax = plt.axes(xlim=(0, X.max()), ylim=(0, Y.max()))
+
+        ax2.plot(X, Y, color="blue")
+        ax2.set_title(Title + ' Phase plane')
+        ax2.set_xlabel(Molecules[i])
+        ax2.set_ylabel(Molecules[j])
+        ax2.grid()
+
+        plt.show()
+
+    # all pairs
+    elif AllPairs:
+        fig = plt.figure()
+        fig.subplots_adjust(wspace=0.2, hspace=0.2)
+        # PossiblePairs_Legend = [(a, b) for idx_a, a in zip(Idx_SelectedMolecules, SelectedMolecules) for idx_b, b in zip(Idx_SelectedMolecules, SelectedMolecules) if idx_a < idx_b]
+        PossiblePairs_Idx = [(idx_a, idx_b) for idx_a, a in zip(Idx_SelectedMolecules, SelectedMolecules) for idx_b, b in zip(Idx_SelectedMolecules, SelectedMolecules) if idx_a < idx_b]
+
+        N_PossiblePairs = len(PossiblePairs_Idx)
+        n = 1
+        for i, j in PossiblePairs_Idx:
+            X = Data[i]
+            Y = Data[j]
+
+            ax1 = fig.add_subplot(int(N_PossiblePairs / 2), 2 * 2, 2 * n - 1)
+            ax2 = fig.add_subplot(int(N_PossiblePairs / 2), 2 * 2, 2 * n)
+
+            ax1.plot(X, 'r-', label=Molecules[i])
+            ax1.plot(Y, 'b-', label=Molecules[j])
+            ax1.set_title(Title + ' Dynamics')
+            ax1.set_xlabel('SimStep')
+            ax1.set_ylabel('Count')
+            ax1.legend(loc='upper left')
+            ax1.grid()
+
+            # ax = plt.axes(xlim=(0, X.max()), ylim=(0, Y.max()))
+
+            ax2.plot(X, Y, color="blue")
+            ax2.set_title(Title + ' Phase plane')
+            ax2.set_xlabel(Molecules[i])
+            ax2.set_ylabel(Molecules[j])
+            ax2.grid()
+
+            n += 1
+
+        plt.show()
+
+
+
+
 Data_Dir = '.'
 Datasets = LoadRawData(Data_Dir)
 for FileName, Dataset in Datasets.items():
-    PlotData(Dataset)
+    PlotData(Dataset, 2)
 
 
 # SavePath = 'lccsave/'
