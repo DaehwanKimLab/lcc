@@ -300,6 +300,7 @@ public:
     FTable EnzymeTable;
     FTable PolymeraseTable;
     FTable PathwayTable;
+	    FTable InitialCountTable_TCA;
 
     std::vector<std::string> 	UsingModuleList;
     std::vector<FMolecule*> 	MoleculeList;

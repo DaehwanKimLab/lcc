@@ -186,18 +186,20 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
     AllPairs = True
 
     # Pick two indices for data
-    Molecules = ['SimStep', 'Vol', 'GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+    Molecules = ['GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
 
     SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
-    # Subset for convenient visualization
-    SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', ]
+    # Subset for convenient visualization, assuming acetyl-CoA level is constant
+    SelectedMolecules = ['oxaloacetate', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
 
     Idx_SelectedMolecules = list()
+    Dict_SelectedMoleculesIdx = dict()
     for SelectedMolecule in SelectedMolecules:
         i = 0
         for Molecule in Molecules:
             if Molecule == SelectedMolecule:
                 Idx_SelectedMolecules.append(i)
+                Dict_SelectedMoleculesIdx[SelectedMolecule] = i
                 break
             i += 1
 
@@ -235,9 +237,10 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
     # all pairs
     elif AllPairs:
         fig = plt.figure()
-        fig.subplots_adjust(wspace=0.2, hspace=0.2)
+        fig.subplots_adjust(wspace=0.2, hspace=0.3)
         # PossiblePairs_Legend = [(a, b) for idx_a, a in zip(Idx_SelectedMolecules, SelectedMolecules) for idx_b, b in zip(Idx_SelectedMolecules, SelectedMolecules) if idx_a < idx_b]
-        PossiblePairs_Idx = [(idx_a, idx_b) for idx_a, a in zip(Idx_SelectedMolecules, SelectedMolecules) for idx_b, b in zip(Idx_SelectedMolecules, SelectedMolecules) if idx_a < idx_b]
+        PossiblePairs_Idx = [(idx_a, idx_b) for i, [name_a, idx_a] in enumerate(Dict_SelectedMoleculesIdx.items()) for j, [name_b, idx_b] in enumerate(Dict_SelectedMoleculesIdx.items()) if (i + 1 == j)]
+        PossiblePairs_Names = [(name_a, name_b) for i, [name_a, idx_a] in enumerate(Dict_SelectedMoleculesIdx.items()) for j, [name_b, idx_b] in enumerate(Dict_SelectedMoleculesIdx.items()) if (i + 1 == j)]
 
         N_PossiblePairs = len(PossiblePairs_Idx)
         n = 1
@@ -245,8 +248,8 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
             X = Data[i]
             Y = Data[j]
 
-            ax1 = fig.add_subplot(int(N_PossiblePairs / 2), 2 * 2, 2 * n - 1)
-            ax2 = fig.add_subplot(int(N_PossiblePairs / 2), 2 * 2, 2 * n)
+            ax1 = fig.add_subplot(2, int(N_PossiblePairs) + 1, 2 * n - 1)
+            ax2 = fig.add_subplot(2, int(N_PossiblePairs) + 1, 2 * n)
 
             ax1.plot(X, 'r-', label=Molecules[i])
             ax1.plot(Y, 'b-', label=Molecules[j])
