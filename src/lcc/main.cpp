@@ -562,8 +562,8 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::vector<const FEnzyme *> Enzym
     std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
   
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
-    ofs << in+ in+ in+ "self.Const_kcats = np.asmatrix([" << JoinFloat2Str(kcats) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_kMs = np.asmatrix([" << JoinFloat2Str(kMs) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_kcats = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_kMs = np.array([" << JoinFloat2Str(kMs) << "])" << endl;
     ofs << in+ in+ in+ "self.Const_StoichMatrix = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction) << "])" << endl;
     ofs << endl;
 
@@ -643,7 +643,7 @@ void Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase,
     ofs << in+ in+ in+ "self.Idx_Template_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Template) << "])" << endl;
     ofs << in+ in+ in+ "self.Idx_TemplateSubset_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_TemplateSubset) << "])" << endl;
     ofs << in+ in+ in+ "self.Idx_Target_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Target) << "])" << endl;
-    		ofs << in+ in+ in+ "self.Weight_" << Polymerase->Process << " = np.asmatrix([" << "1" << "])" << endl;
+    		ofs << in+ in+ in+ "self.Weight_" << Polymerase->Process << " = np.array([" << "1" << "])" << endl;
     ofs << endl;
 
     // Check if template exists as a target of any polymerases in the system
@@ -782,10 +782,6 @@ void WriteSimModule()
     ofs << in+ in+ "return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)" << endl;
     ofs << endl;
 
-    ofs << in+ "def MichaelisMentenEqn_Array(Conc_Enzyme, Conc_Substrate, kcat, kM):" << endl;
-    ofs << in+ in+ "return np.multiply(np.multiply(kcat, Conc_Enzyme), Conc_Substrate) / (Conc_Substrate + kM)" << endl;
-    ofs << endl;
-
     // Elementary simulation functions
     ofs << in+ "def DetermineAmountOfBuildingBlocks(Freq, Rate):" << endl;
     ofs << in+ in+ "return np.matmul(Rate, Freq)" << endl;
@@ -795,13 +791,13 @@ void WriteSimModule()
     ofs << in+ in+ "# Adjust Quantity and Weight if Weight is completely zero" << endl;
     ofs << in+ in+ "Sum_Weight = np.sum(Weight)" << endl;
     ofs << in+ in+ "Weight = Weight + np.where(Sum_Weight == 0, 1, 0)" << endl;
-    ofs << in+ in+ "Quantity = np.multiply(Quantity, np.where(Sum_Weight == 0, 0, 1))" << endl;
+    ofs << in+ in+ "Quantity = Quantity * np.where(Sum_Weight == 0, 0, 1)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Generate cumulative sum on weight and pick a random number in its range" << endl;
     ofs << in+ in+ "Weight_Cumsum = np.cumsum(Weight)" << endl;
-    ofs << in+ in+ "Weight_Cumsum_Min = Weight_Cumsum[0, 0]" << endl;
-    ofs << in+ in+ "Weight_Cumsum_Max = Weight_Cumsum[0, -1]" << endl;
+    ofs << in+ in+ "Weight_Cumsum_Min = Weight_Cumsum[0]" << endl;
+    ofs << in+ in+ "Weight_Cumsum_Max = Weight_Cumsum[-1]" << endl;
     ofs << in+ in+ "Weight_Cumsum_Min = np.where(Weight_Cumsum_Min == Weight_Cumsum_Max, Weight_Cumsum_Min - 1, Weight_Cumsum_Min)" << endl;
     ofs << in+ in+ "RanNums = np.asmatrix(np.random.randint(Weight_Cumsum_Min, high=Weight_Cumsum_Max, size=Quantity)).transpose()" << endl;
     ofs << in+ in+ "# Generate a matrix of the random numbers for comparison to indices" << endl;
@@ -862,7 +858,7 @@ void WriteSimModule()
     }
 
     ofs << in+ in+ "def Initialize(self):" << endl;
-    ofs << in+ in+ in+ "self.Vol = np.asmatrix([1])" << endl;
+    ofs << in+ in+ in+ "self.Vol = 1" << endl;
     ofs << endl;
 
     if (!EnzymeList.empty()) {
@@ -1080,6 +1076,8 @@ void WriteSimModule()
                 ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Pathway.Name << ", " << std::to_string(Count) << ", axis=1)   # " << MoleculeToRestore << endl;
             }
         }
+    } else {
+        ofs << in+ in+ in+ "pass" << endl;
     }
     ofs << endl;
 
@@ -1089,7 +1087,7 @@ void WriteSimModule()
     ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
     ofs << in+ in+ in+ "Conc_Enz = np.take(self.State.Count_All, self.State.Idx_Enz) / self.State.Vol" << endl;
     ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
-    ofs << in+ in+ in+ "Rate = MichaelisMentenEqn_Array(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
+    ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
     ofs << in+ in+ in+ "dCount_SMol = DetermineAmountOfBuildingBlocks(self.State.Const_StoichMatrix, Rate)" << endl;
@@ -1141,7 +1139,7 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
-    ofs << in+ in+ in+ "Raw = np.transpose(np.matmul(np.transpose(Freq), np.transpose(N_Elongated_PerSpecies)))" << endl;
+    ofs << in+ in+ in+ "Raw = DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
     ofs << in+ in+ in+ "Rounded = np.around(Raw)" << endl;
     ofs << endl;
 
@@ -1151,7 +1149,7 @@ void WriteSimModule()
 
     ofs << in+ in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
     ofs << in+ in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
-    ofs << in+ in+ in+ "return Rounded + np.multiply(np.ones(NUniq_BuildingBlocks), np.int32(Sets)) + np.concatenate((np.ones(np.int32(np.round(Remainder))), np.zeros(np.int32(np.around(NUniq_BuildingBlocks - Remainder)))))" << endl;
+    ofs << in+ in+ in+ "return Rounded + np.ones(NUniq_BuildingBlocks) * np.int32(Sets) + np.concatenate((np.ones(np.int32(np.round(Remainder))), np.zeros(np.int32(np.around(NUniq_BuildingBlocks - Remainder)))))" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Polymerase Reaction related" << endl;
@@ -1159,7 +1157,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "# Get available, active polymerase count - TO BE UPDATED with more regulatory algorithms" << endl;
     ofs << in+ in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
     ofs << in+ in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol, 2).astype(int)" << endl;
-    ofs << in+ in+ in+ "Count_Pol_Occupied = np.multiply(np.count_nonzero(np.where(Len_Target != -1, 1, 0)), PolThreshold)" << endl;
+    ofs << in+ in+ in+ "Count_Pol_Occupied = np.count_nonzero(np.where(Len_Target != -1, 1, 0)) * PolThreshold" << endl;
     ofs << in+ in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
     ofs << in+ in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
     ofs << in+ in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)[0, 0]" << endl;
@@ -1170,7 +1168,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Count_Template_Nascent = np.count_nonzero(np.where(Len_Template != -1, 1, 0), axis=0)   # Assumption: each nascent template has one highly efficient initiation site" << endl;
     ofs << in+ in+ in+ "Count_TemplateSubset_Nascent = np.take(Count_Template_Nascent, Idx_TemplateSubset)" << endl;
     ofs << in+ in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_TemplateSubset_Nascent" << endl;
-    ofs << in+ in+ in+ "Weight_Initiation = np.multiply(Count_InitiationSite, Weight) " << endl;
+    ofs << in+ in+ in+ "Weight_Initiation = Count_InitiationSite * Weight " << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Get randomly selected target indices" << endl;
