@@ -44,6 +44,13 @@ void NProteinDeclaration::Visit(FTraversalContext &Context) const {
     Context.Queue.push(&OverallReaction);
 }
 
+void NProcessDeclaration::Visit(FTraversalContext &Context) const {
+//    Context.OutStream << "Process Declaration(" << Id.Name << ")" << std::endl;
+
+    Context.Queue.push(Block.get());
+}
+
+
 
 void NPathwayExpression::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "PathwayExpression(" << Type << ")" << std::endl;

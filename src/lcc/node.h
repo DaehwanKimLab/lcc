@@ -237,6 +237,32 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
+class NProcessDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+    NReaction OverallReaction;
+    std::shared_ptr<NBlock> Block;
+
+    NProcessDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction, NBlock* InBlock)
+        : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
+
+    NProcessDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction)
+        : Id(InId), OverallReaction(InOverallReaction) {}
+
+    NProcessDeclaration(const NIdentifier& InId)
+        : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NProcessDeclaration: ";
+        Id.Print(os);
+        os << ", ";
+        OverallReaction.Print(os);
+        os << std::endl;
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+
+};
 
 class NChainReactionExpression : public NExpression {
 public:
@@ -465,16 +491,16 @@ public:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
-class NProteinStepStatement : public NStatement {
+class NStepStatement : public NStatement {
 public:
     const NIdentifier Id;
     NReaction Reaction;
 
-    NProteinStepStatement(const NIdentifier& InId, const NReaction& InReaction)
+    NStepStatement(const NIdentifier& InId, const NReaction& InReaction)
     : Id(InId), Reaction(InReaction) {}
 
     virtual void Print(std::ostream& os) const override {
-        os << "NProteinStepStatement(" << Id.Name << "): ";
+        os << "NStepStatement(" << Id.Name << "): ";
         Reaction.Print(os);
     }
 
