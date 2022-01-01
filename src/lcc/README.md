@@ -25,7 +25,7 @@
 
 
 # Build on Windows
-Required packges:  
+Required packages:  
 - Visual Studio 2017(or newer version, community version) [Download](https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads)  
 - win_flex_bison package [Download](https://sourceforge.net/projects/winflexbison/files/latest/download)  
 - cmake (>=3.17) [Download](https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-windows-x86_64.msi)  
