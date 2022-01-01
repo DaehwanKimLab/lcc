@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
+message(STATUS "Build configuration: " ${CMAKE_BUILD_TYPE})
 
 include_directories(${PROJECT_SOURCE_DIR})
 
