@@ -63,7 +63,7 @@
 "peptide_{n+1}"               { SAVE_TOKEN; return T_MOLECULE; }
 "aa"|"AA"                     { SAVE_TOKEN; return T_MOLECULE; }
 "H_{2}O"                      { SAVE_TOKEN; return T_MOLECULE; }
-[a-zA-Z_][a-zA-Z0-9_\-+.]*    { SAVE_TOKEN; return T_IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_\-+.\{\}\^]*    { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
 ("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }
