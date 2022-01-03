@@ -20,10 +20,7 @@ def LoadRawData(Data_Dir):
 
     return Datasets
 
-def PlotData(Dataset, Type):
-    # Type 1 --> plot over sim step
-    # Type 2 --> phase plane
-    # Type 3 --> both
+def PlotData(Dataset):
 
     Legend = Dataset[0]
     Data = Dataset[1:]
@@ -34,7 +31,7 @@ def PlotData(Dataset, Type):
     Data_Transposed = np.array(Data).transpose()
     Data_SimStep = Data_Transposed[0:1]
 
-    # Default setting
+    ### Default setting ###
     Title = ''
 
     plot_TCACycle = False
@@ -44,12 +41,57 @@ def PlotData(Dataset, Type):
     plot_Ecoli_TCA = False
     plot_ShowAll = False
 
+    CheckRateExpected = False
+
+    ### Cycle option ### 
+
     # plot_TCACycle = True
     plot_TCACycle_Reduced = True
     # plot_PolymeraseReactions = True
     # plot_Ecoli_NoTCA = True
     # plot_Ecoli_TCA = True
     # plot_ShowAll = True
+
+    ### Debugging option ###
+    CheckRateExpected = True
+
+    # Show all
+    if plot_ShowAll:
+        Cap = 50
+        Title = 'Show All'
+        Data = Data_Transposed[2:Cap]
+        Legend = Legend[2:Cap]
+
+        Plot_Dynamics(Title, Data_SimStep[0], Data, Legend)
+        return 0
+
+    # Polymerase Reactions
+    if plot_PolymeraseReactions:
+        Idx_SimStep = 1
+        Idx_Vol = 1 + Idx_SimStep
+        Idx_Polymerase = 1 + Idx_Vol
+        Idx_ReactionSubstrate = 1 + Idx_Polymerase
+
+        Data_SimStep = Data_Transposed[0:Idx_SimStep]
+        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+        Data_PolymeraseCounts = Data_Transposed[Idx_Vol:Idx_Polymerase]
+        Data_ReactionSubstrateCounts = Data_Transposed[Idx_Polymerase:Idx_ReactionSubstrate]
+        Data_BuildingBlockCounts = Data_Transposed[Idx_ReactionSubstrate:]
+        Data_AllSmallMoleculeCounts = Data_Transposed[Idx_Polymerase:]
+
+        Legend_SimStep = Legend[0:Idx_SimStep]
+        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+        Legend_PolymeraseCounts = Legend[Idx_Vol:Idx_Polymerase]
+        Legend_ReactionSubstrateCounts = Legend[Idx_Polymerase:Idx_ReactionSubstrate]
+        Legend_BuildingBlockCounts = Legend[Idx_ReactionSubstrate:]
+        Legend_AllSmallMoleculeCounts = Legend[Idx_Polymerase:]
+
+        Title = 'PolymeraseReaction'
+        Data = Data_BuildingBlockCounts
+        Legend = Legend_BuildingBlockCounts
+        
+        Plot_Dynamics(Title, Data_SimStep[0], Data, Legend)
+        return 0
 
     # TCA Cycle
     if plot_TCACycle:
@@ -73,7 +115,7 @@ def PlotData(Dataset, Type):
         Data = Data_SubCounts
         Legend = Legend_SubCounts
 
-    if plot_TCACycle_Reduced:
+    elif plot_TCACycle_Reduced:
         Molecules = ['SimStep', 'Vol', 'GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA']
 
         Idx_SimStep = 1
@@ -93,31 +135,6 @@ def PlotData(Dataset, Type):
         Title = 'TCA cycle_Reduced'
         Data = Data_SubCounts
         Legend = Legend_SubCounts
-
-    # Polymerase Reactions
-    elif plot_PolymeraseReactions:
-        Idx_SimStep = 1
-        Idx_Vol = 1 + Idx_SimStep
-        Idx_Polymerase = 1 + Idx_Vol
-        Idx_ReactionSubstrate = 1 + Idx_Polymerase
-
-        Data_SimStep = Data_Transposed[0:Idx_SimStep]
-        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-        Data_PolymeraseCounts = Data_Transposed[Idx_Vol:Idx_Polymerase]
-        Data_ReactionSubstrateCounts = Data_Transposed[Idx_Polymerase:Idx_ReactionSubstrate]
-        Data_BuildingBlockCounts = Data_Transposed[Idx_ReactionSubstrate:]
-        Data_AllSmallMoleculeCounts = Data_Transposed[Idx_Polymerase:]
-
-        Legend_SimStep = Legend[0:Idx_SimStep]
-        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-        Legend_PolymeraseCounts = Legend[Idx_Vol:Idx_Polymerase]
-        Legend_ReactionSubstrateCounts = Legend[Idx_Polymerase:Idx_ReactionSubstrate]
-        Legend_BuildingBlockCounts = Legend[Idx_ReactionSubstrate:]
-        Legend_AllSmallMoleculeCounts = Legend[Idx_Polymerase:]
-
-        Title = 'PolymeraseReaction'
-        Data = Data_BuildingBlockCounts
-        Legend = Legend_BuildingBlockCounts
 
     elif plot_Ecoli_NoTCA:
     # Temporary capping for plotting speed
@@ -163,28 +180,27 @@ def PlotData(Dataset, Type):
         Legend = Legend[Target:Target+N_Species]
 
 
-    # Show all
-    else:
-        Cap = 50
-        Title = 'Show All'
-        Data = Data_Transposed[2:Cap]
-        Legend = Legend[2:Cap]
+    # All TCA Cases
+    Idx_Pairs, Names_Pairs = Indexing(Legend)
+
+    Plot_DynamicsAndPhasePlaneAndRate(Title, Data_SimStep[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
 
-    # Plotting options
-    if Type == 1:
-        Plot_OverSimStep(Title, Data_SimStep[0], Data, Legend)
+def CheckRateExpected(Data, Index):
+        pass
+        # Conc_Enz = ]
+        # Conc_oxaloacetate = []
+        # Conc_citrate
 
-    elif Type == 2:
-        Plot_PhasePlane(Title, Data_SimStep[0], Data, Legend)
+        # Rate = MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM)
+        # assert Conc_oxaloacetate - Conc_oxaloacetate_Prev == Rate 
+        # assert Conc_citrate - Conc_citrate_Prev == Rate
 
-    elif Type == 3:
-        Plot_OverSimStep(Title, Data_SimStep[0], Data, Legend)
-        Plot_PhasePlane(Title, Data_SimStep[0], Data, Legend)
+    # Plot
 
 # Potentially split point for another function
 
-def Plot_OverSimStep(Title, SimStep, Data, Legend):
+def Plot_Dynamics(Title, SimStep, Data, Legend):
     X = SimStep
     Y = Data
 
@@ -203,14 +219,9 @@ def Plot_OverSimStep(Title, SimStep, Data, Legend):
 
     plt.show()
 
-def Plot_PhasePlane(Title, SimStep, Data, Legend):
-    SinglePair = False
-    AllPairs = False
-    SinglePair = True
-    # AllPairs = True
-
+def Indexing(Legend):
     # Pick two indices for data
-    Molecules = ['oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+    Legend = ['oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
 
     SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
     # Subset for convenient visualization, assuming acetyl-CoA level is constant
@@ -221,31 +232,40 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
     Dict_SelectedMoleculesIdx = dict()
     for SelectedMolecule in SelectedMolecules:
         i = 0
-        for Molecule in Molecules:
+        for Molecule in Legend:
             if Molecule == SelectedMolecule:
                 Idx_SelectedMolecules.append(i)
                 Dict_SelectedMoleculesIdx[SelectedMolecule] = i
                 break
             i += 1
 
-    if SinglePair:
+    # PossiblePairs_Legend = [(a, b) for idx_a, a in zip(Idx_SelectedMolecules, SelectedMolecules) for idx_b, b in zip(Idx_SelectedMolecules, SelectedMolecules) if idx_a < idx_b]
+    PossiblePairs_Idx = [(idx_a, idx_b) for i, [name_a, idx_a] in enumerate(Dict_SelectedMoleculesIdx.items()) for j, [name_b, idx_b] in enumerate(Dict_SelectedMoleculesIdx.items()) if (i + 1 == j)]
+    PossiblePairs_Names = [(name_a, name_b) for i, [name_a, idx_a] in enumerate(Dict_SelectedMoleculesIdx.items()) for j, [name_b, idx_b] in enumerate(Dict_SelectedMoleculesIdx.items()) if (i + 1 == j)]
 
-        i = Idx_SelectedMolecules[0]
-        j = Idx_SelectedMolecules[1]
+    return PossiblePairs_Idx, PossiblePairs_Names
 
-        X = Data[i]
-        Y = Data[j]
+def Plot_DynamicsAndPhasePlaneAndRate(Title, SimStep, Data, Legend, Idx_Pairs, Names_Pairs):
+    fig = plt.figure()
+    fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
-        fig = plt.figure()
-        fig.subplots_adjust(wspace=0.2, hspace=0.3)
+    N_PossiblePairs = len(Idx_Pairs)
+    n = 1
+    for i, [a, b] in enumerate(Idx_Pairs):
+        X = Data[a]
+        Y = Data[b]
 
-        ax1 = fig.add_subplot(1,2,1)
-        ax2 = fig.add_subplot(1,2,2)
+        assert Names_Pairs[i][0] == Legend[a]
+        assert Names_Pairs[i][1] == Legend[b]
 
-        ax1.plot(X, 'r-', label=Molecules[i])
-        ax1.plot(Y, 'b-', label=Molecules[j])
+        ax1 = fig.add_subplot(2, int(N_PossiblePairs), 2 * n - 1)
+        ax2 = fig.add_subplot(2, int(N_PossiblePairs), 2 * n)
+
+        ax1.plot(X, 'r-', label=Legend[a])
+        ax1.plot(Y, 'b-', label=Legend[b])
         ax1.set_title(Title + ' Dynamics')
         ax1.set_xlabel('SimStep')
+        ax1.set_ylabel('Count')
         ax1.legend(loc='upper left')
         ax1.grid()
 
@@ -253,56 +273,23 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
 
         ax2.plot(X, Y, color="blue")
         ax2.set_title(Title + ' Phase plane')
-        ax2.set_xlabel(Molecules[i])
-        ax2.set_ylabel(Molecules[j])
+        ax2.set_xlabel(Legend[a])
+        ax2.set_ylabel(Legend[b])
         ax2.grid()
 
-        plt.show()
+        n += 1
 
-    # all pairs
-    elif AllPairs:
-        fig = plt.figure()
-        fig.subplots_adjust(wspace=0.2, hspace=0.3)
-        # PossiblePairs_Legend = [(a, b) for idx_a, a in zip(Idx_SelectedMolecules, SelectedMolecules) for idx_b, b in zip(Idx_SelectedMolecules, SelectedMolecules) if idx_a < idx_b]
-        PossiblePairs_Idx = [(idx_a, idx_b) for i, [name_a, idx_a] in enumerate(Dict_SelectedMoleculesIdx.items()) for j, [name_b, idx_b] in enumerate(Dict_SelectedMoleculesIdx.items()) if (i + 1 == j)]
-        PossiblePairs_Names = [(name_a, name_b) for i, [name_a, idx_a] in enumerate(Dict_SelectedMoleculesIdx.items()) for j, [name_b, idx_b] in enumerate(Dict_SelectedMoleculesIdx.items()) if (i + 1 == j)]
-
-        N_PossiblePairs = len(PossiblePairs_Idx)
-        n = 1
-        for i, j in PossiblePairs_Idx:
-            X = Data[i]
-            Y = Data[j]
-
-            ax1 = fig.add_subplot(2, int(N_PossiblePairs) + 1, 2 * n - 1)
-            ax2 = fig.add_subplot(2, int(N_PossiblePairs) + 1, 2 * n)
-
-            ax1.plot(X, 'r-', label=Molecules[i])
-            ax1.plot(Y, 'b-', label=Molecules[j])
-            ax1.set_title(Title + ' Dynamics')
-            ax1.set_xlabel('SimStep')
-            ax1.set_ylabel('Count')
-            ax1.legend(loc='upper left')
-            ax1.grid()
-
-            # ax = plt.axes(xlim=(0, X.max()), ylim=(0, Y.max()))
-
-            ax2.plot(X, Y, color="blue")
-            ax2.set_title(Title + ' Phase plane')
-            ax2.set_xlabel(Molecules[i])
-            ax2.set_ylabel(Molecules[j])
-            ax2.grid()
-
-            n += 1
-
-        plt.show()
+    plt.show()
 
 
+def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM):
+    return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)
 
 
 Data_Dir = '.'
 Datasets = LoadRawData(Data_Dir)
 for FileName, Dataset in Datasets.items():
-    PlotData(Dataset, 2)
+    PlotData(Dataset)
 
 
 # SavePath = 'lccsave/'
