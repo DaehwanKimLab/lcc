@@ -38,15 +38,17 @@ def PlotData(Dataset, Type):
     Title = ''
 
     plot_TCACycle = False
+    plot_TCACycle_Reduced = False
     plot_PolymeraseReactions = False
     plot_Ecoli_NoTCA = False
     plot_Ecoli_TCA = False
     plot_ShowAll = False
 
     # plot_TCACycle = True
+    plot_TCACycle_Reduced = True
     # plot_PolymeraseReactions = True
     # plot_Ecoli_NoTCA = True
-    plot_Ecoli_TCA = True
+    # plot_Ecoli_TCA = True
     # plot_ShowAll = True
 
     # TCA Cycle
@@ -68,6 +70,27 @@ def PlotData(Dataset, Type):
         Legend_SubCounts = Legend[Idx_Enzyme:]
 
         Title = 'TCA cycle'
+        Data = Data_SubCounts
+        Legend = Legend_SubCounts
+
+    if plot_TCACycle_Reduced:
+        Molecules = ['SimStep', 'Vol', 'GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA']
+
+        Idx_SimStep = 1
+        Idx_Vol = 1 + Idx_SimStep
+        Idx_Enzyme = 1 + Idx_Vol
+
+        Data_SimStep = Data_Transposed[0:Idx_SimStep]
+        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
+        Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
+        Data_SubCounts = Data_Transposed[Idx_Enzyme:]
+
+        Legend_SimStep = Legend[0:Idx_SimStep]
+        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
+        Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
+        Legend_SubCounts = Legend[Idx_Enzyme:]
+
+        Title = 'TCA cycle_Reduced'
         Data = Data_SubCounts
         Legend = Legend_SubCounts
 
@@ -139,6 +162,7 @@ def PlotData(Dataset, Type):
         Data = Data_Transposed[Target:Target+N_Species]
         Legend = Legend[Target:Target+N_Species]
 
+
     # Show all
     else:
         Cap = 50
@@ -182,15 +206,16 @@ def Plot_OverSimStep(Title, SimStep, Data, Legend):
 def Plot_PhasePlane(Title, SimStep, Data, Legend):
     SinglePair = False
     AllPairs = False
-    # SinglePair = True
-    AllPairs = True
+    SinglePair = True
+    # AllPairs = True
 
     # Pick two indices for data
-    Molecules = ['GltA', 'oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+    Molecules = ['oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
 
     SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
     # Subset for convenient visualization, assuming acetyl-CoA level is constant
     SelectedMolecules = ['oxaloacetate', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
+    SelectedMolecules = ['oxaloacetate', 'citrate']
 
     Idx_SelectedMolecules = list()
     Dict_SelectedMoleculesIdx = dict()
@@ -205,15 +230,15 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
 
     if SinglePair:
 
-        fig = plt.figure()
-
-        i = Idx_SelectedMolecules[5]
-        j = Idx_SelectedMolecules[4]
+        i = Idx_SelectedMolecules[0]
+        j = Idx_SelectedMolecules[1]
 
         X = Data[i]
         Y = Data[j]
 
         fig = plt.figure()
+        fig.subplots_adjust(wspace=0.2, hspace=0.3)
+
         ax1 = fig.add_subplot(1,2,1)
         ax2 = fig.add_subplot(1,2,2)
 
@@ -221,7 +246,7 @@ def Plot_PhasePlane(Title, SimStep, Data, Legend):
         ax1.plot(Y, 'b-', label=Molecules[j])
         ax1.set_title(Title + ' Dynamics')
         ax1.set_xlabel('SimStep')
-        # ax2.legend(loc='upper left')
+        ax1.legend(loc='upper left')
         ax1.grid()
 
         # ax = plt.axes(xlim=(0, X.max()), ylim=(0, Y.max()))

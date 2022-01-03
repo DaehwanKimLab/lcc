@@ -88,8 +88,8 @@ void TraversalNode(NBlock* InProgramBlock)
             string Name = Id.Name;
             string Substrate = Context.QueryTable(Name, "Substrate", Context.EnzymeTable);
 
-            float kcat = std::stof(Context.QueryTable(Name, "kcat", Context.EnzymeTable)) * RandomNumber();
-            float kM = std::stof(Context.QueryTable(Name, "kM", Context.EnzymeTable)) * RandomNumber();
+            float kcat = std::stof(Context.QueryTable(Name, "kcat", Context.EnzymeTable));// * RandomNumber();
+            float kM = std::stof(Context.QueryTable(Name, "kM", Context.EnzymeTable));// * RandomNumber();
 
             FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM);
             Enzyme->Print(os);
@@ -858,7 +858,7 @@ void WriteSimModule()
     }
 
     ofs << in+ in+ "def Initialize(self):" << endl;
-    ofs << in+ in+ in+ "self.Vol = 1" << endl;
+    ofs << in+ in+ in+ "self.Vol = 7e-16" << endl;
     ofs << endl;
 
     if (!EnzymeList.empty()) {
@@ -1005,8 +1005,16 @@ void WriteSimModule()
     if (!Context.PathwayList.empty()){
         for (auto& Pathway : Context.PathwayList) {
             if (Pathway.Name == "TCA") {
-                std::string MoleculeToRestore = "acetyl-CoA";
-                int Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
+                std::string MoleculeToRestore;
+                int Idx;
+
+                MoleculeToRestore = "acetyl-CoA";
+                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
+                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
+
+	                MoleculeToRestore.clear();
+                MoleculeToRestore = "malate";
+                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
                 ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
             }
         }
@@ -1085,12 +1093,13 @@ void WriteSimModule()
 
     ofs << in+ in+ "# Enzymatic Reaction related routines" << endl;
     ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = np.take(self.State.Count_All, self.State.Idx_Enz) / self.State.Vol" << endl;
-    ofs << in+ in+ in+ "Conc_EnzSub = np.take(self.State.Count_All, self.State.Idx_EnzSub) / self.State.Vol" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_EnzSub = CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub), self.State.Vol)" << endl;
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dCount_SMol = DetermineAmountOfBuildingBlocks(self.State.Const_StoichMatrix, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = DetermineAmountOfBuildingBlocks(self.State.Const_StoichMatrix, Rate)" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol, dCount_SMol)" << endl;
     ofs << endl;
 
