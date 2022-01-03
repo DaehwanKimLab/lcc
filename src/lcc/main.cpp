@@ -764,7 +764,7 @@ void WriteSimModule()
     ofs << endl;
 
     // user input
-    ofs << in+ "N_SimSteps = 500" << endl;
+    ofs << in+ "N_SimSteps = 5000" << endl;
     ofs << in+ "SimStepTimeResolution = 1000" << endl;
 
     ofs << endl;
@@ -782,9 +782,17 @@ void WriteSimModule()
     ofs << in+ in+ "return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)" << endl;
     ofs << endl;
 
-    // Elementary simulation functions
-    ofs << in+ "def DetermineAmountOfBuildingBlocks(Freq, Rate):" << endl;
+    ofs << in+ "def MatrixMultiplication(Rate, Freq):" << endl; 
     ofs << in+ in+ "return np.matmul(Rate, Freq)" << endl;
+    ofs << endl;
+
+    // Elementary simulation functions
+    ofs << in+ "def GetDerivativeFromStoichiometryMatrix(Freq, Rate):" << endl;
+    ofs << in+ in+ "return MatrixMultiplication(Rate, Freq)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def DetermineAmountOfBuildingBlocks(Freq, Rate):" << endl;
+    ofs << in+ in+ "return MatrixMultiplication(Rate, Freq)" << endl;
     ofs << endl;
 
     ofs << in+ "def PickRandomIdx(Quantity, Indices, Weight=1):" << endl;
@@ -858,7 +866,7 @@ void WriteSimModule()
     }
 
     ofs << in+ in+ "def Initialize(self):" << endl;
-    ofs << in+ in+ in+ "self.Vol = 7e-16" << endl;
+    ofs << in+ in+ in+ "self.Vol = 1" << endl;
     ofs << endl;
 
     if (!EnzymeList.empty()) {
@@ -1098,7 +1106,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = DetermineAmountOfBuildingBlocks(self.State.Const_StoichMatrix, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol, dCount_SMol)" << endl;
     ofs << endl;

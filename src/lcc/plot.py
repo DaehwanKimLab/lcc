@@ -183,20 +183,41 @@ def PlotData(Dataset):
     # All TCA Cases
     Idx_Pairs, Names_Pairs = Indexing(Legend)
 
+    if CheckRateExpected:
+        RateCheck(Data, Legend, Idx_Pairs, Names_Pairs)
+
     Plot_DynamicsAndPhasePlaneAndRate(Title, Data_SimStep[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
 
-def CheckRateExpected(Data, Index):
-        pass
-        # Conc_Enz = ]
-        # Conc_oxaloacetate = []
-        # Conc_citrate
+def RateCheck(Data, Legend, Idx_Pairs, Names_Pairs):
+    return 0
+    for a, b in Idx_Pairs:
+        Conc_A = Data[a]
+        Conc_B = Data[b]
+        assert len(Conc_A) == len(Conc_B)
 
-        # Rate = MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM)
-        # assert Conc_oxaloacetate - Conc_oxaloacetate_Prev == Rate 
-        # assert Conc_citrate - Conc_citrate_Prev == Rate
+        Conc_Enz = 0
+        kcat = 0
+        kM = 0
+        if ('oxaloacetate' in Names_Pairs) and ('citrate' in Names_Pairs):
+            Idx_Enz = Legend.index('GltA')  # TODO:make a dictionary
+            Conc_Enz = Data[Idx_Enz]
+            # kcat =
+            # kM =
+        else:
+            print('No matching Conc_Enz is not determined')
 
-    # Plot
+
+        for i in range(len(Conc_A)):
+            Conc_A_Before = Conc_A[i]
+            Conc_A_After = Conc_A[i + 1]
+
+            Conc_B_Before = Conc_B[i]
+            Conc_B_After = Conc_B[i + 1]
+
+            # Rate = MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM)
+            # assert Conc_oxaloacetate - Conc_oxaloacetate_Prev == Rate
+            # assert Conc_citrate - Conc_citrate_Prev == Rate
 
 # Potentially split point for another function
 

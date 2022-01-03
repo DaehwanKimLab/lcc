@@ -1,5 +1,5 @@
 Name	Substrate	kcat	kM
-GltA	oxaloacetate	1	0.001
+GltA	oxaloacetate	10	15
 AcnA	citrate	1	0.001
 Icd	isocitrate	1	0.001
 SucA	keto-glutarate	1	0.001

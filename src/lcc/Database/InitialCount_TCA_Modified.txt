@@ -1,6 +1,6 @@
 Name	Count
 GltA	5
-oxaloacetate	50000
+oxaloacetate	50
 acetyl-CoA	44631
 H2O	1000000
 citrate	0

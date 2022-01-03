@@ -6,10 +6,8 @@ def MMequation(Vmax, S, km):
 # Concentration
 A = 50
 B = 0
-Vmax = 25
-km = 10
-
-TimeResolution = 100
+Vmax = 50
+km = 15
 
 Data_A = list()
 Data_B = list()
@@ -20,11 +18,12 @@ Data_B.append(B)
 Data_Rate.append(0)
 
 SimSteps = 5000
+TimeResolution = 1000
 
 i = 0
 while i < SimSteps:
 
-    Rate = MMequation(Vmax, A, 13) / TimeResolution
+    Rate = MMequation(Vmax, A, km) / TimeResolution
 
     A = A - Rate
     B = B + Rate
