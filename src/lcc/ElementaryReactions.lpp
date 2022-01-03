@@ -4,10 +4,10 @@
 protein p1(S + E --> P + E, kcat=10, km=0.001);
 
 protein p3(S + E --> P + E) {
-    reaction (S + E --> C, k=1, krev=0.1);
-    reaction (C --> P + E, k=5, krev=0.0001);
-    reaction (I + E --> CI, k=0.5, krev=0.001);
-}
+    reaction r1(S + E --> C, k=1, krev=0.1);
+    reaction r2(C --> P + E, k=5, krev=0.0001);
+    reaction r3(I + E --> CI, k=0.5, krev=0.001);
+};
 
 //@```
 //@
