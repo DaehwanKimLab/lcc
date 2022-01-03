@@ -16,6 +16,7 @@ class NIdentifier;
 class NPathwayExpression;
 class NProteinDeclaration;
 class NPolymeraseDeclaration;
+class NPropertyStatement;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
@@ -23,6 +24,7 @@ typedef std::vector<std::shared_ptr<NIdentifier>> IdentifierList;
 typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
 typedef std::vector<std::shared_ptr<NProteinDeclaration>> ProteinDeclList;
 typedef std::vector<std::shared_ptr<NPolymeraseDeclaration>> PolymeraseDeclList;
+typedef std::vector<std::shared_ptr<NPropertyStatement>> PropertyList;
 
 class NNodeUtil {
 public:
@@ -157,20 +159,57 @@ public:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
-class NReaction : public NExpression {
+class NPropertyStatement : public NStatement {
 public:
+    const std::string Key;
+    const std::string Value;
+
+    NPropertyStatement() {}
+    NPropertyStatement(const std::string& InKey)
+        : Key(InKey) {}
+    NPropertyStatement(const std::string& InKey, const std::string& InValue)
+        : Key(InKey), Value(InValue) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Property(" << Key << "): " << Value;
+    }
+    virtual void Visit(FTraversalContext& Context) const override;
+
+};
+
+
+class NReaction : public NStatement {
+public:
+    NIdentifier Id;
     IdentifierList Reactants;
     IdentifierList Products;
     bool bBiDirection;
 	NIdentifier Location;
+    PropertyList Property;
 
     NReaction() : bBiDirection(false) {}
     NReaction(const IdentifierList& InReactants, const IdentifierList& InProducts, bool bInBiDirection)
     : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
 
+    void SetID(const NIdentifier& InId) {
+        Id = InId;
+    }
+
 	void SetLocation(const NIdentifier& InLocation) {
 		Location = InLocation;
 	}
+
+    void SetProperty(const PropertyList& InProperty) {
+        Property = InProperty;
+    }
+
+    void AddProperty(NPropertyStatement* InProperty) {
+        Property.emplace_back(InProperty);
+    }
+
+    void AddProperty(const std::string& InName, const std::string& InValue) {
+        Property.emplace_back(new NPropertyStatement(InName, InValue));
+    }
 
     virtual void Print(std::ostream& os) const override {
         os << "NReaction(" << std::endl;
@@ -434,22 +473,6 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "NExperimentDeclaration(";
         Id.Print(os); os << ", " << Description << ")" << std::endl;
-    }
-    virtual void Visit(FTraversalContext& Context) const override;
-
-};
-
-class NPropertyStatement : public NStatement {
-public:
-    const std::string Key;
-    const std::string Value;
-
-    NPropertyStatement(const std::string& InKey, const std::string& InValue)
-        : Key(InKey), Value(InValue) {}
-
-
-    virtual void Print(std::ostream& os) const override {
-        os << "Property(" << Key << "): " << Value;
     }
     virtual void Visit(FTraversalContext& Context) const override;
 
