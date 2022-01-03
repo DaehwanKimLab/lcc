@@ -68,7 +68,6 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Reaction> process_decl_args
 %type <Reaction> gen_reaction_decl_args step_decl_args
 %type <Reaction> gen_reaction_decl_reaction
-%type <Ident> gen_reaction_decl_location
 %type <ChainReaction> pathway_expr pathway_decl_args
 %type <Stmt> pathway_stmt protein_stmt process_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
