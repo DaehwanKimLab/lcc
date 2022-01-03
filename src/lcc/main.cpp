@@ -1396,6 +1396,10 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (Option.bParseOnly) {
+        return 0;
+    }
+
     if (Option.bSimPython) {
         // cout << "## Simulation_Python ##" << endl;
      
@@ -1411,11 +1415,10 @@ int main(int argc, char *argv[])
 //        Simulation.Init(State, Dataset, DataManager, 100);
 //        Simulation.Run(State, Context, Dataset);
 //    }
-            if (!Option.SimResultFile.empty()) {
-		DataManager.SaveToFile(Option.SimResultFile.c_str());
 
-                
- 	    }       
+    if (!Option.SimResultFile.empty()) {
+        DataManager.SaveToFile(Option.SimResultFile.c_str());
+    }
 
     return 0;
 }

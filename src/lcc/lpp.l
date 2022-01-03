@@ -29,6 +29,7 @@
 "protein"                     { return TOKEN(T_PROTEIN); }
 "protein_complex"             { return TOKEN(T_PROTEIN_COMPLEX); }
 "pathway"                     { return TOKEN(T_PATHWAY); }
+"process"                     { return TOKEN(T_PROCESS); }
 "experiment"                  { return TOKEN(T_EXPERIMENT); }
 "organism"                    { return TOKEN(T_ORGANISM); }
 "description"                 { return TOKEN(T_DESCRIPTION); }
@@ -39,6 +40,7 @@
 "module"                      { return TOKEN(T_MODULE); }
 "cofactor"                    { return TOKEN(T_COFACTOR); }
 "domain"                      { return TOKEN(T_DOMAIN); }
+"PDB"                         { return TOKEN(T_PDB); }
 "step"                        { return TOKEN(T_STEP); }
 "sequence"                    { return TOKEN(T_SEQUENCE); } 
 "replication_origin"          { return TOKEN(T_REPLICATION_ORIGIN); }
@@ -61,7 +63,7 @@
 "peptide_{n+1}"               { SAVE_TOKEN; return T_MOLECULE; }
 "aa"|"AA"                     { SAVE_TOKEN; return T_MOLECULE; }
 "H_{2}O"                      { SAVE_TOKEN; return T_MOLECULE; }
-[a-zA-Z_][a-zA-Z0-9_\-+]*     { SAVE_TOKEN; return T_IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_\-+.\{\}\^]*    { SAVE_TOKEN; return T_IDENTIFIER; }
 [0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
 ("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }

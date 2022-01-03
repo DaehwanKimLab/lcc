@@ -34,10 +34,10 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	int Token;
 }
 
-%token <Token> T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_ORGANISM
+%token <Token> T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_ORGANISM T_PROCESS
 %token <Token> T_DESCRIPTION T_REACTION T_REACTION_ID
 %token <Token> T_PROPERTY T_USING T_MODULE
-%token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE
+%token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE T_PDB
 %token <Token> T_POLYMERASE T_RIBOSOME
 %token <Token> T_REPLICATION_ORIGIN T_REPLICATION_TERMINUS T_RIBOSOME_BINDING_SITE T_TRANSLATION_TERMINATOR
 %token <Token> T_INITIATION T_ELONGATION T_TERMINATION
@@ -56,17 +56,21 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Block> program stmts block
 %type <Block> pathway_block pathway_stmts
 %type <Block> protein_block protein_stmts
+%type <Block> process_block process_stmts
 %type <Stmt> protein_decl
+%type <Stmt> process_decl
 %type <MolVec> mol_expr
 %type <MolIdent> mol_ident
 %type <Reaction> protein_decl_args
-%type <Reaction> gen_reaction_decl_args protein_step_decl_args
+%type <Reaction> process_decl_args
+%type <Reaction> gen_reaction_decl_args step_decl_args
 %type <Reaction> gen_reaction_decl_reaction
 %type <Ident> gen_reaction_decl_location
 %type <ChainReaction> pathway_expr pathway_decl_args
-%type <Stmt> pathway_stmt protein_stmt
+%type <Stmt> pathway_stmt protein_stmt process_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
-%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt
+%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt protein_pdb_stmt
+%type <Stmt> process_step_stmt
 %type <IdentVec> ident_list protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
 %type <IdentVec> protein_complex_decl_args
 %type <ChainReaction> chain_reaction_decl_args
@@ -75,7 +79,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Block> experiment_block experiment_stmts
 %type <Stmt> property_stmt experiment_stmt
 
-%type <StmtVec> stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl protein_decls ribosome_decl_stmt polymerase_decl_stmt
+%type <StmtVec> stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
 %type <Stmt> ribosome_arg polymerase_arg
 
@@ -100,6 +104,7 @@ stmts          : stmt { $$ = new NBlock(); $$->AddStatment($<StmtVec>1); }
 stmt           : protein_decl_stmt T_SEMIC
                | protein_complex_decl T_SEMIC
                | pathway_decl T_SEMIC
+               | process_decl_stmt T_SEMIC
                | organism_decl T_SEMIC
                | experiment_decl T_SEMIC
                | using_stmt T_SEMIC
@@ -148,6 +153,7 @@ protein_stmt   : protein_cofactor_stmt T_SEMIC { $$ = $1; }
                | protein_domain_stmt T_SEMIC { $$ = $1; }
                | protein_step_stmt T_SEMIC { $$ = $1; }
                | protein_sequence_stmt T_SEMIC { $$ = $1; }
+               | protein_pdb_stmt T_SEMIC { $$ = $1; }
                ;
 
 protein_cofactor_stmt : T_COFACTOR ident T_LPAREN protein_cofactor_decl_args T_RPAREN { $$ = new NProteinCofactorStatement(*$2, *$4); delete $2; delete $4; }
@@ -156,11 +162,14 @@ protein_cofactor_stmt : T_COFACTOR ident T_LPAREN protein_cofactor_decl_args T_R
 protein_domain_stmt : T_DOMAIN ident T_LPAREN protein_domain_decl_args T_RPAREN { $$ = new NProteinDomainStatement(*$2, *$4); delete $2; delete $4; }
                     ;
 
-protein_step_stmt : T_STEP ident T_LPAREN protein_step_decl_args T_RPAREN { $$ = new NProteinStepStatement(*$2, *$4); delete $2; delete $4; }
+protein_step_stmt : T_STEP ident T_LPAREN step_decl_args T_RPAREN { $$ = new NStepStatement(*$2, *$4); delete $2; delete $4; }
                   ;
 
 protein_sequence_stmt : T_SEQUENCE ident T_LPAREN protein_sequence_decl_args T_RPAREN { $$ = new NProteinSequenceStatement(*$2, *$4); delete $2; delete $4; }
                       ;
+
+protein_pdb_stmt : T_PDB T_STRING_LITERAL { $$ = new NPropertyStatement("PDB", *$2); delete $2; }
+                 ;
 
 protein_cofactor_decl_args : ident_list { $$ = $1; }
                            ;
@@ -168,7 +177,7 @@ protein_cofactor_decl_args : ident_list { $$ = $1; }
 protein_domain_decl_args : ident_list { $$ = $1; }
                          ;
 
-protein_step_decl_args : gen_reaction_decl_args { $$ = $1; }
+step_decl_args : gen_reaction_decl_args { $$ = $1; }
                        ;
 
 protein_sequence_decl_args : ident_list { $$ = $1; }
@@ -215,6 +224,32 @@ pathway_reaction_id_stmt : T_REACTION_ID ident { $$ = new NPathwayReactionIDStat
 
 pathway_reaction_stmt    : T_REACTION pathway_decl_args { $$ = new NPathwayReactionStatement(*$2); delete $2; }
                          ;
+
+process_decl_stmt : T_PROCESS process_decl { $$ = NNodeUtil::InitStatementList($2); }
+                  ;
+
+process_decl      : ident { $$ = new NProcessDeclaration(*$1); delete $1; }
+                  | ident T_LPAREN process_decl_args T_RPAREN { $$ = new NProcessDeclaration(*$1, *$3); delete $1; delete $3; }
+                  | ident T_LPAREN process_decl_args T_RPAREN process_block { $$ = new NProcessDeclaration(*$1, *$3, $5); delete $1; delete $3; }
+                  ;
+
+process_decl_args : /* blank */ { $$ = new NReaction(); } /* gen_reaction_decl_args */
+                  ;
+
+process_block     : T_LBRACE process_stmts T_RBRACE { $$ = $2; }
+                  | T_LBRACE T_RBRACE { $$ = new NBlock(); }
+                  ;
+
+process_stmts     : process_stmt { $$ = new NBlock(); $$->AddStatment($<Stmt>1); }
+                  | process_stmts process_stmt { $1->AddStatment($<Stmt>2); }
+                  ;
+
+process_stmt      : process_step_stmt T_SEMIC { $$ = $1; }
+                  ;
+
+process_step_stmt : T_STEP ident T_LPAREN step_decl_args T_RPAREN { $$ = new NStepStatement(*$2, *$4); delete $2; delete $4; }
+                  ;
+
 
 experiment_block : T_LBRACE experiment_stmts T_RBRACE { $$ = $2; }
                  | T_LBRACE T_RBRACE { $$ = new NBlock(); }
