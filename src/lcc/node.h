@@ -310,6 +310,10 @@ public:
         Id.Print(os);
         os << ", ";
         OverallReaction.Print(os);
+        if (Block) {
+            os << ", ";
+            Block->Print(os);
+        }
         os << "}";
     }
 
@@ -416,10 +420,19 @@ public:
 
     virtual void Print(std::ostream& os) const override {
         os << "PathwayDeclaration: {";
-        Id.Print(os); os << ", ";
-        if (PathwayExpression) { PathwayExpression->Print(os); os << ", "; }
-        if (Block) { Block->Print(os); os << ", "; }
-        if (PathwayChainReaction) { PathwayChainReaction->Print(os); os << ", "; }
+        Id.Print(os);
+        if (PathwayExpression) {
+            os << ", ";
+            PathwayExpression->Print(os);
+        }
+        if (Block) {
+            os << ", ";
+            Block->Print(os);
+        }
+        if (PathwayChainReaction) {
+            os << ", ";
+            PathwayChainReaction->Print(os);
+        }
         os << "}";
     }
 
@@ -510,8 +523,9 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "Experiment: {";
         Id.Print(os); os << ", ";
-        os << "Description: " << Description; os << ", ";
+        os << "Description: " << Description;
         if (Block) {
+            os << ", ";
             Block->Print(os);
         }
         os << "}";
