@@ -1326,7 +1326,7 @@ int main(int argc, char *argv[])
         Keys.emplace_back("rnaId");
         Context.GeneTable.Dump(Keys);
 
-                Keys.clear();
+        Keys.clear();
         Keys.emplace_back("id");
         Keys.emplace_back("name");
         Keys.emplace_back("type");
@@ -1335,7 +1335,7 @@ int main(int argc, char *argv[])
         Keys.emplace_back("monomerId");
         Context.RNATable.Dump(Keys);
 
-                Keys.clear();
+        Keys.clear();
         Keys.emplace_back("id");
         Keys.emplace_back("name");
         Keys.emplace_back("location");
@@ -1343,33 +1343,33 @@ int main(int argc, char *argv[])
         Keys.emplace_back("rnaId");
         Context.ProteinTable.Dump(Keys);
 
-		Keys.clear();
+        Keys.clear();
         Keys.emplace_back("reaction id");
         Keys.emplace_back("stoichiometry");
-		Context.ReactionTable.Dump(Keys);
+        Context.ReactionTable.Dump(Keys);
 
-                Keys.clear();
+        Keys.clear();
         Keys.emplace_back("Name");
         Keys.emplace_back("Substrate");
         Keys.emplace_back("kcat");
         Keys.emplace_back("kM");
-                os << "# EnzymeTable #" << endl;
-                Context.EnzymeTable.Dump(Keys);
+        os << "# EnzymeTable #" << endl;
+        Context.EnzymeTable.Dump(Keys);
 
-                Keys.clear();
+        Keys.clear();
         Keys.emplace_back("Name");
         Keys.emplace_back("Template");
         Keys.emplace_back("Target");
         Keys.emplace_back("Process");
         Keys.emplace_back("Rate");
-                os << "# PolymeraseTable #" << endl;
-                Context.PolymeraseTable.Dump(Keys);
+        os << "# PolymeraseTable #" << endl;
+        Context.PolymeraseTable.Dump(Keys);
 
-                Keys.clear();
+        Keys.clear();
         Keys.emplace_back("Name");
         Keys.emplace_back("Count");
-                os << "# InitialCountTable_TCA #" << endl;
-                Context.InitialCountTable_TCA.Dump(Keys);
+        os << "# InitialCountTable_TCA #" << endl;
+        Context.InitialCountTable_TCA.Dump(Keys);
     }
 
     for (const auto& SourceFile: Option.SourceFiles) {
@@ -1389,9 +1389,12 @@ int main(int argc, char *argv[])
             DumpNBlock(ProgramBlock);
         }
 
-        TraversalNode(ProgramBlock);
+        if (!Option.bParseOnly) {
 
-        Context.PrintLists(os);
+            TraversalNode(ProgramBlock);
+
+            Context.PrintLists(os);
+        }
 
         delete ProgramBlock;
     }

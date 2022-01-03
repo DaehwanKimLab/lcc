@@ -30,6 +30,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	std::vector<std::shared_ptr<NMoleculeIdentifier>> *MolVec;
 	std::vector<std::shared_ptr<NIdentifier>> *IdentVec;
 	std::vector<std::shared_ptr<NProteinDeclaration>> *ProteinDeclVec;
+    std::vector<std::shared_ptr<NPropertyStatement>> *PropertyVec;
 	std::string *String;
 	int Token;
 }
@@ -52,6 +53,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_PLUS T_MINUS T_ARROW T_BIARROW
 %token <Token> T_EQUAL T_OR T_SEMIC T_COLON
 
+%type <String> gen_value
+
 %type <Ident> ident gen_ident
 %type <Block> program stmts block
 %type <Block> pathway_block pathway_stmts
@@ -65,16 +68,17 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Reaction> process_decl_args
 %type <Reaction> gen_reaction_decl_args step_decl_args
 %type <Reaction> gen_reaction_decl_reaction
-%type <Ident> gen_reaction_decl_location
 %type <ChainReaction> pathway_expr pathway_decl_args
 %type <Stmt> pathway_stmt protein_stmt process_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt pathway_reaction_stmt
-%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt protein_pdb_stmt
+%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt protein_pdb_stmt protein_reaction_stmt
 %type <Stmt> process_step_stmt
 %type <IdentVec> ident_list protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
 %type <IdentVec> protein_complex_decl_args
 %type <ChainReaction> chain_reaction_decl_args
 %type <ChainReactionExpr> chain_expr
+%type <PropertyVec> gen_property_args gen_reaction_decl_property_args
+%type <Stmt> gen_property_arg
 
 %type <Block> experiment_block experiment_stmts
 %type <Stmt> property_stmt experiment_stmt
@@ -154,6 +158,7 @@ protein_stmt   : protein_cofactor_stmt T_SEMIC { $$ = $1; }
                | protein_step_stmt T_SEMIC { $$ = $1; }
                | protein_sequence_stmt T_SEMIC { $$ = $1; }
                | protein_pdb_stmt T_SEMIC { $$ = $1; }
+               | protein_reaction_stmt T_SEMIC { $$ = $1; }
                ;
 
 protein_cofactor_stmt : T_COFACTOR ident T_LPAREN protein_cofactor_decl_args T_RPAREN { $$ = new NProteinCofactorStatement(*$2, *$4); delete $2; delete $4; }
@@ -182,6 +187,9 @@ step_decl_args : gen_reaction_decl_args { $$ = $1; }
 
 protein_sequence_decl_args : ident_list { $$ = $1; }
                            ;
+
+protein_reaction_stmt : T_REACTION ident T_LPAREN gen_reaction_decl_args T_RPAREN { $4->SetID(*$2); delete $2; $$ = $4; }
+                      ;
 
 protein_complex_decl : T_PROTEIN_COMPLEX ident T_EQUAL protein_complex_decl_args { $$ = NNodeUtil::InitStatementList(new NProteinComplexDeclaration(*$2, *$4)); delete $2; delete $4; }
                      ;
@@ -346,16 +354,31 @@ chain_expr : gen_ident { $$ = new NChainReactionExpression(); $$->Add(*$1); dele
 
 gen_reaction_decl_args : /* blank */ { $$ = new NReaction(); }
                        | gen_reaction_decl_reaction { $$ = $1; }
-					   | gen_reaction_decl_location { $$ = new NReaction(); $$->SetLocation(*$1); delete $1; }
-					   | gen_reaction_decl_reaction T_COMMA gen_reaction_decl_location { $$ = $1; $$->SetLocation(*$3); delete $3; }
+					   | gen_reaction_decl_property_args { $$ = new NReaction(); $$->SetProperty(*$1); delete $1; }
+					   | gen_reaction_decl_reaction T_COMMA gen_reaction_decl_property_args { $$ = $1; $$->SetProperty(*$3); delete $3; }
 					   ;
 
 gen_reaction_decl_reaction : gen_expr T_ARROW gen_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
                            | gen_expr T_BIARROW gen_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
                            ;
 
-gen_reaction_decl_location : ident { $$ = $1; }
+gen_reaction_decl_property_args : gen_property_args { $$ = $1; }
                            ;
+
+gen_property_args : gen_property_arg { $$ = new PropertyList(); $$->emplace_back(static_cast<NPropertyStatement*>($1)); }
+                  | gen_property_args T_COMMA gen_property_arg { $1->emplace_back(static_cast<NPropertyStatement*>($3)); }
+                  ;
+
+gen_property_arg  : /* */ { $$ = new NPropertyStatement(); }
+                  | ident { $$ = new NPropertyStatement($1->Name); delete $1; }
+                  | ident T_EQUAL gen_value { $$ = new NPropertyStatement($1->Name, *$3); delete $1; delete $3; }
+                  ;
+
+gen_value      : T_STRING_LITERAL
+               | T_IDENTIFIER
+               | T_NUMBER
+               | T_INTEGER
+               ;
 
 gen_expr       : gen_ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
                | gen_expr T_PLUS gen_ident { $1->emplace_back($<Ident>3); }
