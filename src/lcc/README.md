@@ -15,9 +15,13 @@
 ## compile TCA.lpp (or any) and simulate
 
     ./build/lcc -i . TCA.lpp RNASynthesis.lpp ProteinSynthesis.lpp Ecoli.lpp
-
     python SimModule.py
-
+    
+    
+    To see a nice curve:
+    ./build/lcc -i . TCA_Reduced_2.lpp
+    python SimModule.py
+    
 ## plotting
 
     ./plot.py
