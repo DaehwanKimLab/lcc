@@ -42,6 +42,11 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_POLYMERASE T_RIBOSOME
 %token <Token> T_REPLICATION_ORIGIN T_REPLICATION_TERMINUS T_RIBOSOME_BINDING_SITE T_TRANSLATION_TERMINATOR
 %token <Token> T_INITIATION T_ELONGATION T_TERMINATION
+%token <Token> T_FOR T_WHILE T_IF T_ELSE
+%token <Token> T_INT T_FLOAT T_ARRAY T_DICT T_AND T_L_OR T_NOT
+%token <Token> T_GT T_LT T_GE T_LE T_EQ T_NE
+%token <Token> T_STAR T_DIV
+%token <Token> T_LBRACKET T_RBRACKET
 
 %token <String> T_STRING_LITERAL
 
@@ -51,7 +56,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 
 %token <Token> T_LPAREN T_RPAREN T_LBRACE T_RBRACE T_COMMA T_DOT
 %token <Token> T_PLUS T_MINUS T_ARROW T_BIARROW
-%token <Token> T_EQUAL T_OR T_SEMIC T_COLON
+%token <Token> T_ASSIGN T_OR T_SEMIC T_COLON
+%token <Token> T_INC T_DEC
 
 %type <String> gen_value
 
@@ -83,6 +89,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Block> experiment_block experiment_stmts
 %type <Stmt> property_stmt experiment_stmt
 
+%type <StmtVec> for_stmt if_stmt while_stmt
 %type <StmtVec> stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
 %type <Stmt> ribosome_arg polymerase_arg
@@ -90,6 +97,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Stmt> gen_initiation_stmt gen_elongation_stmt gen_termination_stmt
 %type <Reaction> gen_elongation_decl_arg
 %type <StmtVec> ribosome_binding_site_stmt translation_terminator_stmt replication_origin_stmt replication_terminus_stmt
+
+%type <Expr> p_expr variable
 
 %right T_ARROW T_BIARROW
 %left T_PLUS
@@ -118,10 +127,26 @@ stmt           : protein_decl_stmt T_SEMIC
 			   | translation_terminator_stmt T_SEMIC
 			   | replication_origin_stmt T_SEMIC
                | replication_terminus_stmt T_SEMIC
+               | for_stmt T_SEMIC
+               | for_stmt
+               | while_stmt T_SEMIC
+               | while_stmt
+               | if_stmt T_SEMIC
+               | if_stmt
                ;
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
                | T_LBRACE T_RBRACE { $$ = new NBlock(); }
+               ;
+
+for_stmt       : T_FOR T_LPAREN p_expr T_SEMIC p_expr T_SEMIC p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NLoopStatement($3, $5, $7, $9)); }
+               ;
+
+if_stmt        : T_IF T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NIfStatement($3, $5)); }
+               | T_IF T_LPAREN p_expr T_RPAREN block T_ELSE block { $$ = NNodeUtil::InitStatementList(new NIfStatement($3, $5, $7)); }
+               ;
+
+while_stmt     : T_WHILE T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NLoopStatement($3, $5)); }
                ;
 
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, *$3)); delete $2; delete $3; }
@@ -191,13 +216,13 @@ protein_sequence_decl_args : ident_list { $$ = $1; }
 protein_reaction_stmt : T_REACTION ident T_LPAREN gen_reaction_decl_args T_RPAREN { $4->SetID(*$2); delete $2; $$ = $4; }
                       ;
 
-protein_complex_decl : T_PROTEIN_COMPLEX ident T_EQUAL protein_complex_decl_args { $$ = NNodeUtil::InitStatementList(new NProteinComplexDeclaration(*$2, *$4)); delete $2; delete $4; }
+protein_complex_decl : T_PROTEIN_COMPLEX ident T_ASSIGN protein_complex_decl_args { $$ = NNodeUtil::InitStatementList(new NProteinComplexDeclaration(*$2, *$4)); delete $2; delete $4; }
                      ;
 
 protein_complex_decl_args : gen_expr { $$ = $1; }
                           ;
 
-pathway_decl   : T_PATHWAY ident T_EQUAL pathway_decl_args { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $4)); delete $2; }
+pathway_decl   : T_PATHWAY ident T_ASSIGN pathway_decl_args { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $4)); delete $2; }
                | T_PATHWAY ident pathway_block { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $3)); delete $2; }
                ;
 
@@ -371,7 +396,7 @@ gen_property_args : gen_property_arg { $$ = new PropertyList(); $$->emplace_back
 
 gen_property_arg  : /* */ { $$ = new NPropertyStatement(); }
                   | ident { $$ = new NPropertyStatement($1->Name); delete $1; }
-                  | ident T_EQUAL gen_value { $$ = new NPropertyStatement($1->Name, *$3); delete $1; delete $3; }
+                  | ident T_ASSIGN gen_value { $$ = new NPropertyStatement($1->Name, *$3); delete $1; delete $3; }
                   ;
 
 gen_value      : T_STRING_LITERAL
@@ -396,6 +421,28 @@ mol_ident      : T_MOLECULE { $$ = new NMoleculeIdentifier(T_MOLECULE, *$1); del
                ;
 
 ident          : T_IDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
+               ;
+
+p_expr         : /* */ { $$ = new NExpression(); }
+               | T_NUMBER { $$ = new NConstantExpression(*$1); delete $1; }
+               | T_INTEGER { $$ = new NConstantExpression(*$1); delete $1; }
+               | variable { $$ = $1; }
+               | variable T_ASSIGN p_expr { $$ = new NAExpression(T_ASSIGN, $1, $3); }
+               | p_expr T_PLUS p_expr { $$ = new NAExpression(T_PLUS, $1, $3); }
+               | p_expr T_MINUS p_expr { $$ = new NAExpression(T_MINUS, $1, $3); }
+               | p_expr T_STAR p_expr { $$ = new NAExpression(T_STAR, $1, $3); }
+               | p_expr T_DIV p_expr { $$ = new NAExpression(T_DIV, $1, $3); }
+               | p_expr T_LT p_expr { $$ = new NAExpression(T_LT, $1, $3); }
+               | p_expr T_GT p_expr { $$ = new NAExpression(T_GT, $1, $3); }
+               | p_expr T_LE p_expr { $$ = new NAExpression(T_LE, $1, $3); }
+               | p_expr T_GE p_expr { $$ = new NAExpression(T_GE, $1, $3); }
+               | p_expr T_EQ p_expr { $$ = new NAExpression(T_EQ, $1, $3); }
+               | p_expr T_NE p_expr { $$ = new NAExpression(T_NE, $1, $3); }
+               | T_LPAREN p_expr T_RPAREN { $$ = $2; }
+               ;
+
+variable       : ident { $$ = new NVariableExpression(*$1); delete $1; }
+               | ident T_LBRACKET p_expr T_RBRACKET { $$ = new NVariableExpression(*$1, $3); delete $1; }
                ;
 
 %%

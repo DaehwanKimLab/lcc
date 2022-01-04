@@ -53,7 +53,6 @@ public:
 	virtual ~NNode() {}
 
 	virtual void Print(std::ostream& os) const {
-		os << "Node";
 	}
 
     virtual void Visit(FTraversalContext& Context) const {
@@ -62,6 +61,8 @@ public:
 };
 
 class NExpression : public NNode {
+public:
+    NExpression() {};
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
@@ -69,7 +70,6 @@ class NStatement : public NNode {
 public:
 	NStatement() {};
 
-private:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
@@ -783,6 +783,150 @@ public:
     }
     virtual void Visit(FTraversalContext& Context) const override;
 
+};
+
+class NLoopStatement : public NStatement {
+public:
+    std::shared_ptr<NExpression> InitExpression;
+    std::shared_ptr<NExpression> CondExpression;
+    std::shared_ptr<NExpression> LoopExpression;
+
+    std::shared_ptr<NBlock> Body;
+
+    // for-statement
+    NLoopStatement(NExpression* InInitExpression, NExpression* InCondExpression, NExpression* InLoopExpression, NBlock* InBody)
+        : InitExpression(InInitExpression), CondExpression(InCondExpression), LoopExpression(InLoopExpression), Body(InBody) {}
+
+    // while-statement
+    NLoopStatement(NExpression* InCondExpression, NBlock* InBody)
+        : CondExpression(InCondExpression), Body(InBody) {}
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Loop: {";
+        if (InitExpression) {
+            os << "Init: {";
+            InitExpression->Print(os);
+            os << "}, ";
+        }
+        if (CondExpression) {
+            os << "Cond: {";
+            CondExpression->Print(os);
+            os << "}, ";
+        }
+        if (LoopExpression) {
+            os << "Loop: {";
+            LoopExpression->Print(os);
+            os << "}, ";
+        }
+        if (Body) {
+            os << "Body: {";
+            Body->Print(os);
+        }
+        os << "}";
+    }
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NIfStatement : public NStatement {
+public:
+    std::shared_ptr<NExpression> CondExpression;
+    std::shared_ptr<NBlock> Body;
+    std::shared_ptr<NBlock> ElseBody;
+
+    NIfStatement(NExpression* InCondExpression, NBlock* InBody)
+        : CondExpression(InCondExpression)
+        , Body(InBody) {}
+
+    NIfStatement(NExpression* InCondExpression, NBlock* InBody, NBlock* InElseBody)
+        : CondExpression(InCondExpression)
+        , Body(InBody), ElseBody(InElseBody) {}
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "If: {";
+        os << "Cond: {"; CondExpression->Print(os); os << "}";
+        os << ", ";
+        os << "Body: {"; Body->Print(os); os << "}";
+        if (ElseBody) {
+            os << ", ";
+            os << "Else: {"; ElseBody->Print(os); os << "}";
+        }
+        os << "}";
+    }
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NAExpression : public NExpression {
+public:
+    std::shared_ptr<NExpression> OpA;
+    std::shared_ptr<NExpression> OpB;
+    int Oper;
+
+    NAExpression(int InOper, NExpression* InOpA)
+        : Oper(InOper), OpA(InOpA) {}
+
+    NAExpression(int InOper, NExpression* InOpA, NExpression* InOpB)
+        : Oper(InOper), OpA(InOpA), OpB(InOpB) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Arithmetic: {";
+        os << "OpCode: " << Oper;
+        if (OpA) {
+            os << ", ";
+            os << "OpA: {";
+            OpA->Print(os);
+            os << "}";
+        }
+        if (OpB) {
+            os << ", ";
+            os << "OpB: {";
+            OpB->Print(os);
+            os << "}";
+        }
+        os << "}";
+    }
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NConstantExpression : public NExpression {
+public:
+    std::string Value;
+
+    NConstantExpression(const std::string& InValue)
+        : Value(InValue) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Constant: " << Value;
+    }
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NVariableExpression : public NExpression {
+public:
+    NIdentifier Id;
+    std::shared_ptr<NExpression> IndexExpression;
+
+    NVariableExpression(const NIdentifier& InId)
+        : Id(InId) {}
+
+    NVariableExpression(const NIdentifier& InId, NExpression* InIndexExpr)
+        : Id(InId), IndexExpression(InIndexExpr) {}
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Variable: {";
+        os << "Name: " << Id.Name;
+        if (IndexExpression) {
+            os << ", ";
+            os << "Index: {";
+            IndexExpression->Print(os);
+            os << "}";
+        }
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
 };
 
 #endif /* LCC_NODE_H */

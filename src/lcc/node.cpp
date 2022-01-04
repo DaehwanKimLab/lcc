@@ -116,3 +116,13 @@ void NRibosomeDeclaration::Visit(FTraversalContext& Context) const {
 void NDummyDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Dummy(" << StringLiteral << ")" << std::endl;
 }
+
+void NIfStatement::Visit(FTraversalContext& Context) const {
+    if (CondExpression) Context.Queue.push(CondExpression.get());
+    if (Body) Context.Queue.push(Body.get());
+    if (ElseBody) Context.Queue.push(ElseBody.get());
+}
+
+void NLoopStatement::Visit(FTraversalContext& Context) const {
+    if (Body) Context.Queue.push(Body.get());
+}
