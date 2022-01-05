@@ -28,6 +28,8 @@ class FMolecule {
 public:
     std::string Name;
     std::string Id;
+    int InitialCount = -1;
+    bool Fixed = false;
 
     FMolecule() {}
     virtual ~FMolecule() {}
@@ -35,6 +37,11 @@ public:
     FMolecule(const std::string& InName) : Name(InName), Id(InName) {}
 
     FMolecule(const std::string& InName, const std::string& InId) : Name(InName), Id(InId) {}
+
+    FMolecule(const std::string& InName, const int InInitialCount) : Name(InName), Id(InName), InitialCount(InInitialCount), Fixed(false) {}
+
+    FMolecule(const std::string& InName, const int InInitialCount, const bool InFixed) : Name(InName), Id(InName), InitialCount(InInitialCount), Fixed(InFixed) {}
+
 
     const std::string GetName() const {
         return Name;
@@ -45,6 +52,12 @@ public:
 
     void Print(std::ostream& os) {
         os << "  Molecule Id: " << Id << std::endl;
+        if (InitialCount < -1) {
+            os << "    InitialCount: " << InitialCount;
+        }
+        if (Fixed) {
+            os << "(Fixed)" << std::endl;
+        }
     }
 
 };
@@ -64,8 +77,19 @@ public:
 
     FSmallMolecule(const std::string& InName) : FMolecule(InName) {}
 
+    FSmallMolecule(const std::string& InName, const int InInitialCount) : FMolecule(InName, InInitialCount) {}
+
+    FSmallMolecule(const std::string& InName, const int InInitialCount, const bool InFixed) : FMolecule(InName, InInitialCount, InFixed) {}
+
     void Print(std::ostream& os) {
-        os << "  SmallMolecule Id: " << Name << std::endl;
+        os << "  Small Molecule Id: " << Id;
+        if (InitialCount >= 0 ) {
+            os << "\t| InitialCount: " << InitialCount;
+        }
+        if (Fixed) {
+            os << " (Fixed)";
+        }
+        os << std::endl;
     }
 };
 
@@ -187,17 +211,59 @@ public:
 class FEnzyme : public FMolecule { // update to FProtein when ID system is set up
 public:
     std::string Substrate;
-    float kcat;
-    float kM;
+    float kcat = -1;
+    float kM = -1;
+
+    std::string Inhibitor;
+    float ki = -1;
+
+    // standard chemical reaction rates for approximation
+    float k = -1;
+    float krev = -1;
 
     FEnzyme() {}
 
+    // UPDATE TO FProtein(InName) when ID System is set up
+// without InitialCount
     FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
-        //: Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FProtein(InName) {}
         : Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FMolecule(InName) {}
 
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM, const std::string& InInhibitor, const float& Inki)
+        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM),  Inhibitor(InInhibitor), ki(Inki), FMolecule(InName) {}
+
+    // standard chemical reaction case may have Product specified
+    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev)
+        : k(Ink), krev(Inkrev), FMolecule(InName) {}
+
+// with InitialCount
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM, const int& InInitialCount, const bool Fixed)
+        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FMolecule(InName, InInitialCount, Fixed) {}
+
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM, const std::string& InInhibitor, const float& Inki, const int& InInitialCount, const bool Fixed)
+        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM),  Inhibitor(InInhibitor), ki(Inki), FMolecule(InName, InInitialCount, Fixed) {}
+
+    // standard chemical reaction case may have Product specified
+    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const int& InInitialCount, const bool Fixed)
+        : k(Ink), krev(Inkrev), FMolecule(InName, InInitialCount, Fixed) {}
+
     void Print(std::ostream& os) {
-        os << "  Enzyme Id: " << Name << " | Substrate: " << Substrate << "\tkcat:  " << std::to_string(kcat) << "\tkM: " << std::to_string(kM) << std::endl;
+        os << "  Enzyme Id: " << Name; 
+        if (kM > 0) {
+            os << "\t| Substrate: " << Substrate << "\t| kcat:  " << std::to_string(kcat) << "\t| kM: " << std::to_string(kM);
+        }
+        if (!Inhibitor.empty()) {
+            os << "\t| Inhibitor: " << Inhibitor << "\t| ki:  " << std::to_string(ki);
+        }        
+        if (k > 0) {
+            os << "\t| k: " << std::to_string(k) << "\t| krev:  " << std::to_string(krev);
+        }
+        if (InitialCount > 0) {
+            os << "\t| InitialCount: " << InitialCount;
+        }
+        if (Fixed) {
+            os << " (Fixed)";
+        }
+        os << std::endl;
     }
 };
 
@@ -320,10 +386,15 @@ public:
 
     std::vector<std::string> GetNames_MoleculeList();
 
-    std::vector<std::string> GetNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
-    std::vector<std::string> GetSubstrateNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
-    std::vector<float> Getkcats_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
-    std::vector<float> GetkMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList);
+    // TODO: merge the below methods to return to have vector<string> and vector<float> functions, taking key strings. 
+    std::vector<std::string> GetNames_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<std::string> GetSubstrateNames_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> Getkcats_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> GetkMs_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<std::string> GetInhibitorNames_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> Getkis_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> Getks_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> Getkrevs_EnzymeList(std::vector<const FEnzyme *>);
 
     std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
     std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
@@ -352,7 +423,9 @@ public:
     std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *> PolymeraseReactionList);
 
     int GetIdxByName_MoleculeList(std::string InputName);
+    int GetInitialCountByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
+    std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
 
     std::vector<const FGene *> GetList_Gene_MoleculeList();
     std::vector<const FRNA *> GetList_RNA_MoleculeList();

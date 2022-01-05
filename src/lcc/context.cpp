@@ -62,8 +62,7 @@ void FTable::LoadFromTSV(const char *Filename)
 
 
 	fp.close();
-
-	return;
+return;
 
 }
 
@@ -139,12 +138,13 @@ void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
     for (auto& Molecule : MoleculeList) {
         if (Molecule->Name == NewMolecule->Name){
             Addition = false;
-            std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
+//            std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
             break;
         }
     }
     if (Addition) {
         MoleculeList.push_back(NewMolecule);
+//        std::cout << "Molecule "<< NewMolecule->Name << " has been added to the system" << std::endl;
     }
 }
 
@@ -203,7 +203,7 @@ const std::string FCompilerContext::QueryTable(const std::string& Name, const st
             return record[Property];
         }          
     }
-    std::cout << "Record not found in the database. Query: " << Name << std::endl;
+//    std::cout << "Record not found in the database. Query: " << Name << " | Property Keyword: " << Property << std::endl;
     return std::string();
 }
 
@@ -248,6 +248,42 @@ std::vector<float> FCompilerContext::GetkMs_EnzymeList(std::vector<const FEnzyme
     std::vector<float> FloatList;
     for (auto& item : EnzymeList){
         FloatList.push_back(item->kM);
+    }
+    return FloatList;
+}
+
+std::vector<std::string> FCompilerContext::GetInhibitorNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
+{
+    std::vector<std::string> StrList;
+    for (auto& item : EnzymeList){
+        StrList.push_back(item->Inhibitor);
+    }
+    return StrList;
+}
+
+std::vector<float> FCompilerContext::Getkis_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
+{
+    std::vector<float> FloatList;
+    for (auto& item : EnzymeList){
+        FloatList.push_back(item->ki);
+    }
+    return FloatList;
+}
+
+std::vector<float> FCompilerContext::Getks_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
+{
+    std::vector<float> FloatList;
+    for (auto& item : EnzymeList){
+        FloatList.push_back(item->k);
+    }
+    return FloatList;
+}
+
+std::vector<float> FCompilerContext::Getkrevs_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
+{
+    std::vector<float> FloatList;
+    for (auto& item : EnzymeList){
+        FloatList.push_back(item->krev);
     }
     return FloatList;
 }
@@ -519,6 +555,15 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
         Index++; 
     }
     return Index;
+}
+
+int FCompilerContext::GetInitialCountByName_MoleculeList(std::string InputName)
+{
+    for (auto& Molecule : MoleculeList) {
+        if (Molecule->Name == InputName) {
+            return Molecule->InitialCount;
+        }
+    }
 }
 
 std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()
@@ -795,14 +840,20 @@ std::vector<int> FCompilerContext::GetIdxByStrList_MoleculeList(std::vector<std:
     int Index;
 
     for (std::string Item : StrList){
-        Index = 0;
-        for (auto& Molecule : MoleculeList) {
-            if (Molecule->Name == Item) {
-                IndexArray.push_back(Index);
-                break;
-            }
-            Index++;
-        }
+        Index = GetIdxByName_MoleculeList(Item);
+        IndexArray.push_back(Index);
+    }
+    return IndexArray;
+}
+
+std::vector<int> FCompilerContext::GetInitialCountByStrList_MoleculeList(std::vector<std::string> StrList)
+{ 
+    std::vector<int> IndexArray;
+    int Index;
+
+    for (std::string Item : StrList){
+        Index = GetInitialCountByName_MoleculeList(Item);
+        IndexArray.push_back(Index);
     }
     return IndexArray;
 }

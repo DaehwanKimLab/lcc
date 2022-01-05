@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <cctype>
+#include <locale>
 
 #ifdef _MSC_VER
 #include <io.h>
@@ -71,6 +73,10 @@ void TraversalNode(NBlock* InProgramBlock)
     ostream& os = std::cout;
     FTraversalContext tc(std::cerr);
     tc.Queue.push(InProgramBlock);
+    float Float_Init = 0.09876723; // random initialized float
+    int Int_Init = -128; // random initialized int 
+    // std::locale loc;
+
 
     os << endl << "## TraversalNode ##" << endl;
 
@@ -84,51 +90,211 @@ void TraversalNode(NBlock* InProgramBlock)
             // Enzyme->Print(os);
 
             auto& Id = N_Enzyme->Id;	    
-	    
-            string Name = Id.Name;
-            string Substrate = Context.QueryTable(Name, "Substrate", Context.EnzymeTable);
-
-            float kcat = std::stof(Context.QueryTable(Name, "kcat", Context.EnzymeTable));// * RandomNumber();
-            float kM = std::stof(Context.QueryTable(Name, "kM", Context.EnzymeTable));// * RandomNumber();
-
-            FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM);
-            Enzyme->Print(os);
-            Context.AddToMoleculeList(Enzyme);
-
             auto& OverallReaction = N_Enzyme->OverallReaction;
             // os << "  OverallReaction:" << endl;
+
+            // Enzyme Information
+            string Name = Id.Name;
+
+            string Substrate;
+            float kcat = Float_Init;
+            float kM = Float_Init;
+
+            string Inhibitor;
+            float ki = Float_Init;
+
+            float k = Float_Init;
+            float krev = Float_Init;
+
+            int InitialCount = Int_Init;
+            bool Fixed = false;
+
+            //parse properties
+            const auto& propertylist = OverallReaction.Property;
+            for (auto& property :propertylist) {
+                auto& Key = property->Key;
+		auto& Value = property->Value;
+
+                if (Key == "kcat") {
+                    kcat = std::stof(Value);
+                } else if (Key == "km") {
+                    kM = std::stof(Value);
+                } else if (Key == "inhibitor") {
+                    Inhibitor = std::stof(Value);
+                } else if (Key == "ki") {
+                    ki = std::stof(Value);
+
+                } else if (Key == "k") {
+                    k = std::stof(Value);
+                } else if (Key == "krev") {
+                    krev = std::stof(Value);
+
+                } else if (Key == Name) {
+                    InitialCount = std::stoi(Value);
+                } else if (Key == "Fixed") {
+                    if (Value == Name) {
+                        Fixed = true;
+                    }
+
+                } else {
+//                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
+                }
+            }
+
+            // if not defined by user input, search the database            
+            if (Substrate.empty()) {
+                Substrate = Context.QueryTable(Name, "Substrate", Context.EnzymeTable);
+                if (!Substrate.empty()) {
+                    os << "  Substrate imported from database: " << Substrate << endl;
+                }
+            }
+ 
+            if (kcat == -1); {
+                string kcat_Database = Context.QueryTable(Name, "kcat", Context.EnzymeTable);
+                if (!kcat_Database.empty()) {
+                    kcat = std::stof(kcat_Database);
+                    os << "  kcat imported from database: " << kcat_Database << endl;
+                }
+            }
+
+            if (kM == -1); {
+                string kM_Database = Context.QueryTable(Name, "kM", Context.EnzymeTable); // * RandomNumber();
+                if (!kM_Database.empty()) { 
+                    kM = std::stof(kM_Database);
+                    os << "  kM imported from database: " << kM_Database << endl;
+                }
+            }
+          
+            if (Inhibitor.empty()) {
+                Inhibitor = Context.QueryTable(Name, "Inhibitor", Context.EnzymeTable);
+                if (!Inhibitor.empty()) {
+                    os << "  Inhibitor imported from database: " << Substrate << endl;
+                }
+            }
+
+            if (ki == Float_Init); {
+                string ki_Database = Context.QueryTable(Name, "ki", Context.EnzymeTable); // * RandomNumber();
+                if (!ki_Database.empty()) { 
+                    ki = std::stof(ki_Database);
+                    os << "  ki imported from database: " << ki_Database << endl;
+                }
+            }
+
             map<string, int> Stoichiometry;
 			string Location = OverallReaction.Location.Name;
 
             int Coefficient;
             for (const auto& reactant : OverallReaction.Reactants) {
+                if (reactant->Name == Name) {
+                    break;
+                }
+
+                if (Substrate.empty()) {
+                    Substrate = reactant->Name;
+                }
+
                 Coefficient = -1; // update when coeff is fully implemented in parser
                 os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
                 Stoichiometry[reactant->Name]= Coefficient;
+                int InitialCount = Int_Init;
+                bool Fixed = false;
 
-                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
-                Molecule->Print(os);
-                Context.AddToMoleculeList(Molecule);
+                const auto& propertylist = OverallReaction.Property;
+                for (auto& property :propertylist) {
+                    if (property->Key == reactant->Name) {
+                        InitialCount = stoi(property->Value);
+                    } else if ((property->Key == "Fixed") & (property->Value == reactant->Name)) {
+                        Fixed = true;
+                    }
+                }
+                if (InitialCount == Int_Init) {
+                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
+                    Molecule->Print(os);
+                    Context.AddToMoleculeList(Molecule);
+
+                } else {
+                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Fixed);
+                    Molecule->Print(os);
+                    Context.AddToMoleculeList(Molecule);
+                }
             }
 
             for (const auto& product : OverallReaction.Products) {
+                if (product->Name == Name) {
+                    break;
+                }
+
                 Coefficient = 1; // update when coeff is fully implemented in parser
                 os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
                 Stoichiometry[product->Name]= Coefficient;
+                int InitialCount = Int_Init;
+                bool Fixed = false;
 
-                FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
-                Molecule->Print(os);
-                Context.AddToMoleculeList(Molecule);
+                const auto& propertylist = OverallReaction.Property;
+                for (auto& property :propertylist) {
+                    if (property->Key == product->Name) {
+                        InitialCount = stoi(property->Value);
+                    } else if ((property->Key == "Fixed") & (property->Value == product->Name)) {
+                        Fixed = true;
+                    }                
+                }
+                if (InitialCount == Int_Init) {
+                    FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+                    Molecule->Print(os);
+                    Context.AddToMoleculeList(Molecule);
+
+                } else {
+                    FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Fixed);
+                    Molecule->Print(os);
+                    Context.AddToMoleculeList(Molecule);
+                }
             }
 
 			if (!Location.empty()) {
                 os << "    Location: " << Location << endl;
 			}
 
+            // add new enzymatic reaction to the system
             FEnzymaticReaction *EnzymaticReaction = new FEnzymaticReaction(Name, Stoichiometry, Name);
             EnzymaticReaction->Print(os);
             Context.AddToReactionList(EnzymaticReaction);
 
+            // add new enzyme to the system
+            if (InitialCount == Float_Init) {
+                if (!Inhibitor.empty() & (kM != Float_Init)) {
+                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM, Inhibitor, ki);
+                    Enzyme->Print(os);
+                    Context.AddToMoleculeList(Enzyme);
+    
+                } else if ((kM != Float_Init) & (k == Float_Init) & Inhibitor.empty()) {
+                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM);
+                    Enzyme->Print(os);
+                    Context.AddToMoleculeList(Enzyme);
+    
+                } else if ((kM == Float_Init) & (k != Float_Init)) {
+                    FEnzyme * Enzyme = new FEnzyme(Name, k, krev);
+                    Enzyme->Print(os);
+                    Context.AddToMoleculeList(Enzyme);
+                }
+            } else {
+                if (!Inhibitor.empty() & (kM != Float_Init)) {
+                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM, Inhibitor, ki, InitialCount, Fixed);
+                    Enzyme->Print(os);
+                    Context.AddToMoleculeList(Enzyme);
+    
+                } else if ((kM != Float_Init) & (k == Float_Init) & Inhibitor.empty()) {
+                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, kM, InitialCount, Fixed);
+                    Enzyme->Print(os);
+                    Context.AddToMoleculeList(Enzyme);
+    
+                } else if ((kM == Float_Init) & (k != Float_Init)) {
+                    FEnzyme * Enzyme = new FEnzyme(Name, k, krev, InitialCount, Fixed);
+                    Enzyme->Print(os);
+                    Context.AddToMoleculeList(Enzyme);
+                }
+            }
+
+            // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
 //            if (N_Enzyme->Block) {
 //                auto& Block = N_Enzyme->Block;
 //                for (auto& stmt: Block->Statements) {
@@ -190,7 +356,6 @@ void TraversalNode(NBlock* InProgramBlock)
                     NReaction ElongationReaction = elongstmt->Reaction;
                     os << "  Elongation:";
                     ElongationReaction.Print(os);
-
 
                     os << "-----------------" << endl;
                 } else if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
@@ -1097,9 +1262,13 @@ void WriteSimModule()
     }
     ofs << endl;
 
-
-
     ofs << in+ in+ "# Enzymatic Reaction related routines" << endl;
+
+    // Insert FULL MODEL
+
+
+
+    // REDUCED MODEL
     ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
     ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz), self.State.Vol)" << endl;
     ofs << in+ in+ in+ "Conc_EnzSub = CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub), self.State.Vol)" << endl;
@@ -1353,6 +1522,8 @@ int main(int argc, char *argv[])
         Keys.emplace_back("Substrate");
         Keys.emplace_back("kcat");
         Keys.emplace_back("kM");
+        Keys.emplace_back("Inhibitor");
+        Keys.emplace_back("ki");
         os << "# EnzymeTable #" << endl;
         Context.EnzymeTable.Dump(Keys);
 

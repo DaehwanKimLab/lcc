@@ -1,4 +1,4 @@
-Name	Substrate	kcat	kM
+Name	Substrate	kcat	kM  Inhibitor   ki
 GltA	oxaloacetate	10	15
 AcnA	citrate	1	0.001
 Icd	isocitrate	1	0.001
