@@ -56,3 +56,21 @@ protein p3(S + E --> P + E) {
     reaction r2(C --> P + E, k=5, krev=0.0001);
     reaction r3(I + E --> CI, k=0.5, krev=0.001);
 };
+
+if (a) {
+    protein IFProtein();
+}
+
+if (b) {
+    protein IFProtein2();
+} else {
+    protein ElseProtein();
+}
+
+while (c) {
+    protein WhileProtein();
+}
+
+for (a=10; a != 100; a = a + 1) {
+    protein MyEnz();
+}
