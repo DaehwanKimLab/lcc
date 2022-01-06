@@ -742,11 +742,10 @@ void Print_SetUpEnzymeReaction_MassAction(ofstream& ofs, std::vector<const FEnzy
                     std::vector<int> Idx_Reactants;
                     std::vector<int> Idx_Products;
                     for (auto& stoich : reaction->Stoichiometry) {
+                        int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
                         if (stoich.second < 0) {
-                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
                             Idx_Reactants.push_back(Idx);
                         } else if (stoich.second > 0) {
-                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
                             Idx_Products.push_back(Idx);
                         }
                     }
@@ -836,11 +835,11 @@ void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const 
                     std::vector<int> Idx_Reactants;
                     std::vector<int> Idx_Products;
                     for (auto& stoich : reaction->Stoichiometry) {
+                        int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                        Idx_SMol_MM.push_back(Idx);
                         if (stoich.second < 0) {
-                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
                             Idx_Reactants.push_back(Idx);
                         } else if (stoich.second > 0) {
-                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
                             Idx_Products.push_back(Idx);
                         }
                     }
@@ -849,8 +848,8 @@ void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const 
                     // Idx_Reactant_2.push_back(Idx_Reactants[1]);
                     Idx_Product_1.push_back(Idx_Products[0]);
                     // Idx_Product_2.push_back(Idx_Products[1]);
-                    Idx_SMol_MM.push_back(Idx_Reactants[0]);
-                    Idx_SMol_MM.push_back(Idx_Products[0]);
+                    // Idx_SMol_MM.push_back(Idx_Reactants[0]);
+                    // Idx_SMol_MM.push_back(Idx_Products[0]);
                 }
             }
         }
