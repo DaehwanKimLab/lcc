@@ -1,7 +1,10 @@
-import os
+import os, sys
+from argparse import ArgumentParser
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+
+SaveFilename = ''
 
 def LoadRawData(Data_Dir):
     Datasets = dict()
@@ -244,7 +247,10 @@ def Plot_Dynamics(Title, SimStep, Data, Legend):
 
     ax.legend(loc='upper left')
 
-    plt.show()
+    if SaveFilename:
+        plt.savefig(SaveFilename)
+    else:
+        plt.show()
 
 def Indexing(Legend):
     # Pick two indices for data
@@ -306,17 +312,37 @@ def Plot_DynamicsAndPhasePlaneAndRate(Title, SimStep, Data, Legend, Idx_Pairs, N
 
         n += 1
 
-    plt.show()
+    if SaveFilename:
+        plt.savefig(SaveFilename)
+    else:
+        plt.show()
 
 
 def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM):
     return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)
 
 
-Data_Dir = '.'
-Datasets = LoadRawData(Data_Dir)
-for FileName, Dataset in Datasets.items():
-    PlotData(Dataset)
+
+def main():
+    Data_Dir = '.'
+    Datasets = LoadRawData(Data_Dir)
+    for FileName, Dataset in Datasets.items():
+        PlotData(Dataset)
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description = 'LCC plot')
+    parser.add_argument('--save-png',
+            dest='save_png',
+            type=str,
+            help='Plot image file')
+
+
+    args = parser.parse_args()
+    if args.save_png:
+        SaveFilename = args.save_png
+
+    main()
 
 
 # SavePath = 'lccsave/'
