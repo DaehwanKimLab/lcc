@@ -46,14 +46,20 @@ def PlotData(Dataset):
     ### Cycle option ### 
 
     # plot_TCACycle = True
-    plot_TCACycle_Reduced = True
+    # plot_TCACycle_Reduced = True
     # plot_PolymeraseReactions = True
     # plot_Ecoli_NoTCA = True
     # plot_Ecoli_TCA = True
-    # plot_ShowAll = True
+    plot_ShowAll = True
 
     ### Debugging option ###
     CheckRateExpected = True
+
+
+    # Detect TCA legend for appropriate display
+    if "oxaloacetate" in Legend:
+        plot_ShowAll = False
+        plot_Ecoli_TCA = True
 
     # Show all
     if plot_ShowAll:
@@ -227,11 +233,11 @@ def Plot_Dynamics(Title, SimStep, Data, Legend):
 
     assert len(X) == Y.shape[-1]
 
-    ax = plt.axes(xlim=(0, len(X)), ylim=(0, Y.max() * 1.2))
+    ax = plt.axes(ylim=(0, Y.max() * 1.2))
 
-    ax.set_ylabel('Count')
-    ax.set_xlabel('Sim Step')
-    ax.set_title(Title + " over SimStep")
+    ax.set_ylabel('Amount (a.u.)')
+    ax.set_xlabel('Time (s)')
+    ax.set_title(Title + " over Time")
 
     for i in range(len(Legend)):
         ax.plot(X, Y[i], label=Legend[i])

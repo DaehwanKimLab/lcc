@@ -73,7 +73,7 @@ void TraversalNode(NBlock* InProgramBlock)
     ostream& os = std::cout;
     FTraversalContext tc(std::cerr);
     tc.Queue.push(InProgramBlock);
-    float Float_Init = 0.09876723; // random initialized float
+    float Float_Init = -0.09876723; // random initialized float
     int Int_Init = -128; // random initialized int 
     // std::locale loc;
 
@@ -149,16 +149,15 @@ void TraversalNode(NBlock* InProgramBlock)
                 }
             }
  
-            if (kcat == -1); {
+            if (kcat == Float_Init) {
                 string kcat_Database = Context.QueryTable(Name, "kcat", Context.EnzymeTable);
                 if (!kcat_Database.empty()) {
                     kcat = std::stof(kcat_Database);
                     os << "  kcat imported from database: " << kcat_Database << endl;
                 }
             }
-
-            if (kM == -1); {
-                string kM_Database = Context.QueryTable(Name, "kM", Context.EnzymeTable); // * RandomNumber();
+            if (kM == Float_Init) {
+                string kM_Database = Context.QueryTable(Name, "kM", Context.EnzymeTable);
                 if (!kM_Database.empty()) { 
                     kM = std::stof(kM_Database);
                     os << "  kM imported from database: " << kM_Database << endl;
@@ -172,7 +171,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 }
             }
 
-            if (ki == Float_Init); {
+            if (ki == Float_Init) {
                 string ki_Database = Context.QueryTable(Name, "ki", Context.EnzymeTable); // * RandomNumber();
                 if (!ki_Database.empty()) { 
                     ki = std::stof(ki_Database);
@@ -685,79 +684,187 @@ std::string Matrix2Str(std::vector<std::vector<int>> Matrix)
     return MatrixStr;
 }
 
-void Print_InitializeEnzymeReaction(ofstream& ofs)
+void Print_InitializeEnzymeReaction_MassAction(ofstream& ofs)
+{
+    std::string in = "    ";
+
+    ofs << in+ in+ in+ "# General Mass Action" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Indices" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1 = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Reactant_2 = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1 = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Product_2 = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Mol = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_MA = None" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# K Constant Arrays" << endl;
+    ofs << in+ in+ in+ "self.Const_ks = None" << endl;
+    ofs << in+ in+ in+ "self.Const_krevs = None" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_MassAction = None" << endl;
+    ofs << endl;
+}
+
+void Print_SetUpEnzymeReaction_MassAction(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList) // to be changed with reaction list
+{
+    std::string in = "    ";
+
+    // declare all arrays to push back
+    std::vector<float> ks;
+    std::vector<float> krevs;
+    std::vector<int> Idx_Enz_MA; // for Enzyme where En is not included in the reaction
+    std::vector<int> Idx_Reactant_1;
+    // std::vector<int> Idx_Reactant_2;
+    std::vector<int> Idx_Product_1;
+    // std::vector<int> Idx_Product_2;
+    std::vector<int> Idx_SMol_MA;
+
+    std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
+    // std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
+
+    // loop through enzymelist and push back if k >= 0
+    std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
+
+    for (auto& Enzyme : EnzymeList) {
+        if ((Enzyme->k >= 0) & (Enzyme->kM < 0)) {
+            Idx_Enz_MA.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Name));
+            ks.push_back(Enzyme->k);
+            krevs.push_back(Enzyme->krev);
+           
+            for (auto& reaction : EnzymaticReactionList) {
+                if (Enzyme->Name == reaction->Name) {
+                    int i = 0;
+                    std::vector<int> Idx_Reactants;
+                    std::vector<int> Idx_Products;
+                    for (auto& stoich : reaction->Stoichiometry) {
+                        if (stoich.second < 0) {
+                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                            Idx_Reactants.push_back(Idx);
+                        } else if (stoich.second > 0) {
+                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                            Idx_Products.push_back(Idx);
+                        }
+                    }
+                    // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
+                    Idx_Reactant_1.push_back(Idx_Reactants[0]);
+                    // Idx_Reactant_2.push_back(Idx_Reactants[1]);
+                    Idx_Product_1.push_back(Idx_Products[0]);
+                    // Idx_Product_2.push_back(Idx_Products[1]);
+                    Idx_SMol_MA.push_back(Idx_Reactants[0]);
+                    Idx_SMol_MA.push_back(Idx_Products[0]);
+                }
+            }
+        }
+    }
+    
+    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MassAction = Context.GetStoichiometryMatrix("MassAction");
+
+    ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
+    ofs << in+ in+ in+ "self.Const_ks = np.asmatrix([" << JoinFloat2Str(ks) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_krevs = np.asmatrix([" << JoinFloat2Str(krevs) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_MassAction = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_MassAction) << "])" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "self.Idx_Enz_MA = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_MA) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1 = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactant_1) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1 = np.asmatrix([" << JoinInt2Str_Idx(Idx_Product_1) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_MA = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_MA) << "])" << endl;
+    ofs << endl;
+
+}
+
+void Print_InitializeEnzymeReaction_MichaelisMenten(ofstream& ofs)
 {
     std::string in = "    ";
 
     ofs << in+ in+ in+ "# Enzymatic Reaction" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Indices" << endl;
-    ofs << in+ in+ in+ "self.Idx_Enz = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_EnzSub = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_MM = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_EnzSub_MM = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_MM = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Mol = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
     ofs << in+ in+ in+ "self.Const_kcats = None" << endl;
     ofs << in+ in+ in+ "self.Const_kMs = None" << endl;
+    ofs << in+ in+ in+ "self.Const_kis = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix = None" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_MichaelisMenten = None" << endl;
     ofs << endl;
+
 }
 
-void Print_SetUpEnzymeReaction(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList)
+void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList)
 {
     std::string in = "    ";
 
  
-    std::vector<std::string> EnzNames = Context.GetNames_EnzymeList(EnzymeList);
-    std::cout << endl;
-
     std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
+    // std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
     
-    std::vector<float> kcats = Context.Getkcats_EnzymeList(EnzymeList);
-    std::vector<float> kMs = Context.GetkMs_EnzymeList(EnzymeList);
-    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction = Context.GetStoichiometryMatrix_EnzymaticReaction(EnzymaticReactionList);
+    std::vector<float> kcats;
+    std::vector<float> kMs;
+    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MichaelisMenten = Context.GetStoichiometryMatrix("MichaelisMenten");
 
-    std::vector<int> Idx_Enz = Context.GetIdxListFromMoleculeList("Enzyme");
-    std::vector<int> Idx_EnzSub = Context.GetIdx_EnzymeSubstrate_MoleculeList();
-    std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
+    std::vector<int> Idx_Enz_MM;
+    std::vector<int> Idx_EnzSub_MM;
+    std::vector<int> Idx_SMol_MM;
+
+    std::vector<int> Idx_Reactant_1; // not used in MM
+    std::vector<int> Idx_Product_1; // not used in MM
+
+    for (auto& Enzyme : EnzymeList) {
+        if ((Enzyme->kM >= 0) & (Enzyme->k < 0)) {
+            Idx_Enz_MM.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Name));
+            kcats.push_back(Enzyme->kcat);
+            kMs.push_back(Enzyme->kM);
+            Idx_EnzSub_MM.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Substrate));
+           
+            for (auto& reaction : EnzymaticReactionList) {
+                if (Enzyme->Name == reaction->Name) {
+                    int i = 0;
+                    std::vector<int> Idx_Reactants;
+                    std::vector<int> Idx_Products;
+                    for (auto& stoich : reaction->Stoichiometry) {
+                        if (stoich.second < 0) {
+                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                            Idx_Reactants.push_back(Idx);
+                        } else if (stoich.second > 0) {
+                            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                            Idx_Products.push_back(Idx);
+                        }
+                    }
+                    // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
+                    Idx_Reactant_1.push_back(Idx_Reactants[0]);
+                    // Idx_Reactant_2.push_back(Idx_Reactants[1]);
+                    Idx_Product_1.push_back(Idx_Products[0]);
+                    // Idx_Product_2.push_back(Idx_Products[1]);
+                    Idx_SMol_MM.push_back(Idx_Reactants[0]);
+                    Idx_SMol_MM.push_back(Idx_Products[0]);
+                }
+            }
+        }
+    }
   
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
     ofs << in+ in+ in+ "self.Const_kcats = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
     ofs << in+ in+ in+ "self.Const_kMs = np.array([" << JoinFloat2Str(kMs) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_MichaelisMenten = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_MichaelisMenten) << "])" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_Enz = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_EnzSub = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol) << "])" << endl;
-    ofs << endl;
-
-    std::vector<std::string> InitialCount_Enzyme;
-    for (auto& enzyme : EnzymeList) {
-        std::string Count = Context.QueryTable(enzyme->Name, "Count", Context.InitialCountTable_TCA);
-        InitialCount_Enzyme.push_back(Count);
-    }
-    ofs << in+ in+ in+ "Count_Enz = np.asmatrix([" << JoinStr2Str(InitialCount_Enzyme) << "])" << endl;
-    
-    std::vector<std::string> InitialCount_SmallMolecules;
-    std::vector<const FSmallMolecule *> SMolList = Context.GetList_SmallMolecule_MoleculeList();
-    for (auto& smol : SMolList) {
-        std::string Count = Context.QueryTable(smol->Name, "Count", Context.InitialCountTable_TCA);
-        if (Count == "") {
-        Count = "0";
-        }
-        InitialCount_SmallMolecules.push_back(Count);
-    }
-    ofs << in+ in+ in+ "Count_SMol = np.asmatrix([" << JoinStr2Str(InitialCount_SmallMolecules) << "])" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Enz, Count_Enz, axis=1)" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_SMol, Count_SMol, axis=1)" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_MM = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_MM) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_EnzSub_MM = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub_MM) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_MM = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_MM) << "])" << endl;
     ofs << endl;
 }
 
@@ -776,8 +883,8 @@ void Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polyme
     // Check if template exists as a target of any polymerases in the system
     bool TemplateExists = false;
 //    auto& PolymeraseList = Context.GetList_PolymeraseMoleculeList
-    for (auto& PolymeraseInSystem : Context.GetList_Polymerase_MoleculeList()){
-        if (PolymeraseInSystem->Target == Polymerase->Template){
+    for (auto& PolymeraseInSystem : Context.GetList_Polymerase_MoleculeList()) {
+        if (PolymeraseInSystem->Target == Polymerase->Template) {
         TemplateExists = true;
         break;
         }
@@ -904,7 +1011,7 @@ void Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase)
     ofs << in+ in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Termination(";
                        ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
                        ofs << "self.State.MaxLen_Nascent" << Polymerase->Target << "s, ";
-                       ofs << "self.State.Idx_Target_" << Polymerase->Process << ")" << endl;;
+                       ofs << "self.State.Idx_Target_" << Polymerase->Process << ")" << endl;
     ofs << endl;
 }
 
@@ -941,6 +1048,10 @@ void WriteSimModule()
 
     ofs << in+ "def CountToConc(Count_Molecule, Volume):" << endl;
     ofs << in+ in+ "return Count_Molecule / Volume" << endl;
+    ofs << endl;
+
+    ofs << in+ "def MassActionEqn(Conc_Enzyme, Conc_Reactant, Conc_Product, k, krev):" << endl;
+    ofs << in+ in+ "return Conc_Enzyme * ((-k * Conc_Reactant) + (krev * Conc_Product))" << endl;
     ofs << endl;
 
     ofs << in+ "def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM):" << endl;
@@ -1016,7 +1127,18 @@ void WriteSimModule()
     ofs << endl;
 
     if (!EnzymeList.empty()) {
-        Print_InitializeEnzymeReaction(ofs);
+        for (auto& enzyme : EnzymeList) {
+            if (enzyme->k >= 0){
+                Print_InitializeEnzymeReaction_MassAction(ofs);
+                break;
+            }
+        }
+        for (auto& enzyme : EnzymeList) {
+            if (enzyme->kM >= 0){
+                Print_InitializeEnzymeReaction_MichaelisMenten(ofs);
+                break;
+            }
+        }
     }
 
     // for polymerase reactions (Template-based)
@@ -1035,7 +1157,18 @@ void WriteSimModule()
     ofs << endl;
 
     if (!EnzymeList.empty()) {
-        Print_SetUpEnzymeReaction(ofs, EnzymeList);
+        for (auto& enzyme : EnzymeList) {
+            if (enzyme->k >= 0){
+                Print_SetUpEnzymeReaction_MassAction(ofs, EnzymeList);
+                break;
+            }
+        }
+        for (auto& enzyme : EnzymeList) {
+            if (enzyme->kM >= 0){
+                Print_SetUpEnzymeReaction_MichaelisMenten(ofs, EnzymeList);
+                break;
+            }
+        }
     }
 
     if (!PolymeraseList.empty()) {
@@ -1111,7 +1244,28 @@ void WriteSimModule()
             Print_SetUpPolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
         }
     }
+    std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
+    std::vector<int> InitialCount_Molecules;
+    for (auto& mol : Context.MoleculeList) {
+        int InitialCount = mol->InitialCount;
+        if (InitialCount < 0) {
+            for (auto& Pathway : Context.PathwayList) {
+                if (Pathway.Name == "TCA") {
+                    InitialCount = std::stoi(Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA));
+                    std::cout << "InitialCount Imported | Molecule: " << mol->Name << "\t| Count: " << InitialCount << endl;
+                    }
+                }
+            }
+        if (InitialCount < 0) {
+            InitialCount = 0;
+        }
+        InitialCount_Molecules.push_back(InitialCount);
+    }
+    ofs << in+ in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
+    ofs << in+ in+ in+ "Count_Mol = np.asmatrix([" << JoinInt2Str_Idx(InitialCount_Molecules) << "])" << endl;
+    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
     ofs << endl;
+
 
     ofs << in+ in+ "def ExportLegend(self):" << endl;
     // for legends
@@ -1160,13 +1314,19 @@ void WriteSimModule()
     ofs << in+ in+ in+ "self.Dataset = InDataset" << endl;
     ofs << in+ in+ in+ "self.DM = InDM" << endl;
 
-    if (!Context.PathwayList.empty()){
-        for (auto& Pathway : Context.PathwayList) {
-            if (Pathway.Name == "TCA") {
-                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = None" << endl;
-            }
+    for (auto& molecule : Context.MoleculeList) {
+        if (molecule->Fixed) {
+            ofs << in+ in+ in+ "self.Idx_Restore_" << molecule->Name << " = None" << endl;
         }
     }
+
+//    if (!Context.PathwayList.empty()){
+//        for (auto& Pathway : Context.PathwayList) {
+//            if (Pathway.Name == "TCA") {
+//                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = None" << endl;
+//            }
+//        }
+//    }
     ofs << endl;
 
     ofs << in+ in+ "def Initialize(self, InN_SimSteps, InTimeResolution):" << endl;
@@ -1175,23 +1335,30 @@ void WriteSimModule()
     ofs << in+ in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
     ofs << endl;
 
-    if (!Context.PathwayList.empty()){
-        for (auto& Pathway : Context.PathwayList) {
-            if (Pathway.Name == "TCA") {
-                std::string MoleculeToRestore;
-                int Idx;
-
-                MoleculeToRestore = "acetyl-CoA";
-                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
-                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
-
-	                MoleculeToRestore.clear();
-                MoleculeToRestore = "malate";
-                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
-                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
-            }
+    for (auto& molecule : Context.MoleculeList) {
+        if (molecule->Fixed) {
+            int Idx = Context.GetIdxByName_MoleculeList(molecule->Name);
+            ofs << in+ in+ in+ "self.Idx_Restore_" << molecule->Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
         }
     }
+
+//    if (!Context.PathwayList.empty()){
+//        for (auto& Pathway : Context.PathwayList) {
+//            if (Pathway.Name == "TCA") {
+//                std::string MoleculeToRestore;
+//                int Idx;
+//
+//                MoleculeToRestore = "acetyl-CoA";
+//                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
+//                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
+//
+//	                MoleculeToRestore.clear();
+//                MoleculeToRestore = "malate";
+//                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
+//                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
+//            }
+//        }
+//    }
     ofs << in+ in+ in+ "self.State.Initialize()" << endl;
     ofs << endl;
 
@@ -1249,37 +1416,81 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ in+ "def RestoreMoleculeCount(self):" << endl;    
-    if (!Context.PathwayList.empty()){
-        for (auto& Pathway : Context.PathwayList) {
-            if (Pathway.Name == "TCA") {
-                std::string MoleculeToRestore = "acetyl-CoA";
-                int Count = 446331; 
-                ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Pathway.Name << ", " << std::to_string(Count) << ", axis=1)   # " << MoleculeToRestore << endl;
-            }
+    bool Pass = true;
+
+    for (auto& molecule : Context.MoleculeList) {
+        if (molecule->Fixed) {
+            ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << molecule->Name << ", " << std::to_string(molecule->InitialCount) << ", axis=1)" << endl;
+            Pass = false;
         }
-    } else {
+    }
+//    if (!Context.PathwayList.empty()){
+//        for (auto& Pathway : Context.PathwayList) {
+//            if (Pathway.Name == "TCA") {
+//                std::string MoleculeToRestore = "acetyl-CoA";
+//                int Count = 446331; 
+//                ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Pathway.Name << ", " << std::to_string(Count) << ", axis=1)   # " << MoleculeToRestore << endl;
+//                Pass = false;
+//            }
+//        }
+//    }
+    if (Pass) {
         ofs << in+ in+ in+ "pass" << endl;
     }
     ofs << endl;
 
-    ofs << in+ in+ "# Enzymatic Reaction related routines" << endl;
+    ofs << in+ in+ "# Biochemical Reaction related routines" << endl;
 
-    // Insert FULL MODEL
-
-
+    ofs << in+ in+ "def MassAction(self):" << endl;
+    // ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Reactant_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Product_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Rate = MassActionEqn(Conc_Enz, Conc_Reactant_1, Conc_Product_1, self.State.Const_ks, self.State.Const_krevs)" << endl;
+//    ofs << in+ in+ in+ "Rate = MassAction(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_ks, self.State.Const_krevs)" << endl;
+    ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
+    // Update with mole indexes from EnzReactions
+    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, Rate)" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MA, dCount_SMol)" << endl;
+    ofs << endl;
 
     // REDUCED MODEL
-    ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_EnzSub = CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub), self.State.Vol)" << endl;
+    ofs << in+ in+ "def MichaelisMentenKinetics(self):" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MM), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_EnzSub = CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_MM), self.State.Vol)" << endl;
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol, dCount_SMol)" << endl;
-    ofs << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MM, dCount_SMol)" << endl;
 
+    ofs << in+ in+ "def HillKinetics(self):" << endl;
+    ofs << in+ in+ in+ "pass" << endl;
+
+    ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
+    if (!EnzymeList.empty()) {
+        for (auto& enzyme : EnzymeList) {
+            if (enzyme->k >= 0) {
+                ofs << in+ in+ in+ "self.MassAction()" << endl;
+                break;
+            }
+        }
+        for (auto& enzyme : EnzymeList) {
+            if (enzyme->kM >= 0) {
+                ofs << in+ in+ in+ "self.MichaelisMentenKinetics()" << endl;
+                break;
+            }
+        }
+                // ofs << in+ in+ in+ "self.HillKinetics()" << endl;
+    }
+
+    if (!EnzymeList.empty()) {
+
+    } 
     if (!PolymeraseList.empty()) {
 
         ofs << in+ in+ "def InitiationReactions(self):" << endl;
@@ -1300,11 +1511,11 @@ void WriteSimModule()
             
             Print_TerminationReaction(ofs, Polymerase);
         }
-    } else {
+    } 
+    if (EnzymeList.empty() & PolymeraseList.empty()) {
             ofs << in+ in+ in+ "pass" << endl;
             ofs << endl;
     }
-
     
     ofs << in+ in+ "# Useful routines" << endl;
     ofs << in+ in+ "def GetCount(self, Idx):" << endl;
@@ -1569,7 +1780,6 @@ int main(int argc, char *argv[])
 
         delete ProgramBlock;
     }
-
 
     if (Option.bDebug) {
     

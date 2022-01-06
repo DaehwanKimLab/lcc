@@ -404,6 +404,7 @@ public:
     std::vector<std::string> GetReactantNames_ReactionList();
     std::vector<std::string> GetProductNames_ReactionList();
 
+    // update by removing input data
     std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
     std::vector<std::string> GetSubstrateNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
     std::vector<std::string> GetReactantNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
@@ -419,8 +420,12 @@ public:
     std::vector<std::string> GetNames_PathwayList();
     std::vector<std::string> GetSequences_PathwayList();
 
-    std::vector<std::vector<int>> GetStoichiometryMatrix_EnzymaticReaction(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
-    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *> PolymeraseReactionList);
+    // Stoichiometry Matrix-related
+    std::vector<int> GetIdxForStoichiometryMatrix(std::string);
+    std::vector<std::vector<int>> GetStoichiometryMatrix(std::string);
+    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *>);
+
+
 
     int GetIdxByName_MoleculeList(std::string InputName);
     int GetInitialCountByName_MoleculeList(std::string InputName);
