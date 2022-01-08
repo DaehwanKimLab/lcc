@@ -1451,7 +1451,7 @@ void WriteSimModule()
 //    ofs << in+ in+ in+ "Rate = MassAction(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_ks, self.State.Const_krevs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, -Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MA, dCount_SMol)" << endl;
     ofs << endl;
@@ -1463,7 +1463,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, -Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MM, dCount_SMol)" << endl;
 
