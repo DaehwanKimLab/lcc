@@ -179,6 +179,16 @@ void TraversalNode(NBlock* InProgramBlock)
                 }
             }
 
+            if ((k != Float_Init) & (krev == Float_Init)) {
+                krev = 0;
+            }
+
+            if ((k == Float_Init) & (krev != Float_Init)) {
+                k = 0;
+            }
+
+
+
             map<string, int> Stoichiometry;
 			string Location = OverallReaction.Location.Name;
 
@@ -722,7 +732,7 @@ void Print_SetUpEnzymeReaction_MassAction(ofstream& ofs, std::vector<const FEnzy
     // std::vector<int> Idx_Reactant_2;
     std::vector<int> Idx_Product_1;
     // std::vector<int> Idx_Product_2;
-    std::vector<int> Idx_SMol_MA;
+    std::vector<int> Idx_SMol_MA = Context.GetIdxForStoichiometryMatrix("MassAction");
 
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
     // std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
@@ -754,8 +764,6 @@ void Print_SetUpEnzymeReaction_MassAction(ofstream& ofs, std::vector<const FEnzy
                     // Idx_Reactant_2.push_back(Idx_Reactants[1]);
                     Idx_Product_1.push_back(Idx_Products[0]);
                     // Idx_Product_2.push_back(Idx_Products[1]);
-                    Idx_SMol_MA.push_back(Idx_Reactants[0]);
-                    Idx_SMol_MA.push_back(Idx_Products[0]);
                 }
             }
         }
@@ -764,8 +772,8 @@ void Print_SetUpEnzymeReaction_MassAction(ofstream& ofs, std::vector<const FEnzy
     std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MassAction = Context.GetStoichiometryMatrix("MassAction");
 
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
-    ofs << in+ in+ in+ "self.Const_ks = np.asmatrix([" << JoinFloat2Str(ks) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_krevs = np.asmatrix([" << JoinFloat2Str(krevs) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_ks = np.array([" << JoinFloat2Str(ks) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_krevs = np.array([" << JoinFloat2Str(krevs) << "])" << endl;
     ofs << in+ in+ in+ "self.Const_StoichMatrix_MassAction = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_MassAction) << "])" << endl;
     ofs << endl;
 
@@ -817,7 +825,7 @@ void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const 
 
     std::vector<int> Idx_Enz_MM;
     std::vector<int> Idx_EnzSub_MM;
-    std::vector<int> Idx_SMol_MM;
+    std::vector<int> Idx_SMol_MM = Context.GetIdxForStoichiometryMatrix("MichaelisMenten");
 
     std::vector<int> Idx_Reactant_1; // not used in MM
     std::vector<int> Idx_Product_1; // not used in MM
@@ -836,7 +844,6 @@ void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const 
                     std::vector<int> Idx_Products;
                     for (auto& stoich : reaction->Stoichiometry) {
                         int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                        Idx_SMol_MM.push_back(Idx);
                         if (stoich.second < 0) {
                             Idx_Reactants.push_back(Idx);
                         } else if (stoich.second > 0) {
@@ -1445,13 +1452,13 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
     ofs << in+ in+ in+ "Conc_Reactant_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1), self.State.Vol)" << endl;
 //    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Product_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1), self.State.Vol)" << endl;
-//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Product_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2), self.State.Vol)" << endl;
     ofs << in+ in+ in+ "Rate = MassActionEqn(Conc_Enz, Conc_Reactant_1, Conc_Product_1, self.State.Const_ks, self.State.Const_krevs)" << endl;
 //    ofs << in+ in+ in+ "Rate = MassAction(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_ks, self.State.Const_krevs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, -Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MA, dCount_SMol)" << endl;
     ofs << endl;
@@ -1463,7 +1470,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, -Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MM, dCount_SMol)" << endl;
 
