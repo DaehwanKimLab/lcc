@@ -49,7 +49,7 @@ class FNetwork():
         self.Data_S_MM = list()
         self.Data_P_MM = list()
 
-        # Set iniail values
+        # Set initial values
         self.InitializeSimStepZero()
 
     def InitializeSimStepZero(self):

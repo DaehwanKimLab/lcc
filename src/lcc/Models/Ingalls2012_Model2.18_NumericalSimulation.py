@@ -27,7 +27,7 @@ class FModel():
         self.Data_A = list()
         self.Data_B = list()
 
-        # Set iniail values
+        # Set initial values
         self.InitializeSimStepZero()
 
     def InitializeSimStepZero(self):
