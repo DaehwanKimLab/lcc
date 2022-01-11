@@ -117,7 +117,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                 if (Key == "kcat") {
                     kcat = std::stof(Value);
-                } else if (Key == "km") {
+                } else if ((Key == "km") or (Key == "kM")) {
                     kM = std::stof(Value);
                 } else if (Key == "inhibitor") {
                     Inhibitor = std::stof(Value);
@@ -1470,12 +1470,14 @@ void WriteSimModule()
     ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MM, dCount_SMol)" << endl;
+    ofs << endl;
 
     ofs << in+ in+ "def HillKinetics(self):" << endl;
     ofs << in+ in+ in+ "pass" << endl;
+    ofs << endl;
 
     ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
     if (!EnzymeList.empty()) {

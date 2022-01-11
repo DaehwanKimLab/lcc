@@ -1,0 +1,8 @@
+//Ingalls 2012 Mathematical Modelling in Systems Biology
+//
+//MichaelisMenten
+//Network  2.18,   p.35
+//Model   2.19,   p.35
+
+protein E1(A --> B, k=9, krev=12, E1=1, A=0, B=10);
+protein E2(B --> C, k=2, E2=1);

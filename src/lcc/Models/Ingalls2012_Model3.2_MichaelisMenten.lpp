@@ -1,0 +1,14 @@
+//Ingalls 2012 Mathematical Modelling in Systems Biology
+//
+//MichaelisMenten
+//Network	3.2,	p.49
+//Figure	3.3,	p.50
+
+
+//k1 = 30;
+//krev1 = 1;
+//k2 = 10;
+//InkM = (krev1 + k2) / k1;
+
+protein E(S --> P, kcat=10, km=3.666667, E=1, S=5, P=0);
+

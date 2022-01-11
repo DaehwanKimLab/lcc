@@ -3,7 +3,7 @@
 //@```
 protein E1(S1 + E1 --> P1 + E1, kcat=10, km=1, S1=50, P1=0, E1=5);
 
-protein E2(S2 + E2 --> P2 + E2, kcat=10, km=1, S2=50, P2=0, E2=5, Fixed=S2);
+// protein E2(S2 + E2 --> P2 + E2, kcat=10, km=1, S2=50, P2=0, E2=5, Fixed=S2);
 
 protein E3(S3 + E3 --> P3 + E3, k=1, krev=0.1, S3=50, P3=0, E3=5);
 
