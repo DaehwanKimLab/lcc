@@ -1,17 +1,18 @@
 '''
 Ingalls 2012 Mathematical Modelling in Systems Biology
 
-Allosteric Regulation
-Network  3.14,   p.57
-Figure 3.8, p.59
+3.2.1 Competitive Inhibition
+Network  x  p.55
+Equation    x   p.56
+Figure 3.6, p.57
 
 
 '''
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
-def MMEquation_AllostericInhibition(Vmax, S, kM, I, ki):
-    return (Vmax / (1 + (I/ki))) * (S / (kM + S))
+def MMEquation_CompetitiveInhibition(Vmax, S, kM, I, ki):
+    return (Vmax * S) / (kM * (1 + I/ki) + S)
 
 class FNetwork():
     def __init__(self, InE=1, InI=1, Ink1=5, Inkrev1=1, Ink2=8, Ink3=2, Inkrev3=1):
@@ -47,7 +48,7 @@ class FNetwork():
         I = self.I * IFoldChange
         Vmax = self.k2 * self.E
 
-        Rate = MMEquation_AllostericInhibition(Vmax, S, self.kM, I, self.ki) / TimeResolution
+        Rate = MMEquation_CompetitiveInhibition(Vmax, S, self.kM, I, self.ki) / TimeResolution
         self.AppendData(S, Rate)
         
     def AppendData(self, S, Rate):
@@ -59,7 +60,7 @@ class FNetwork():
         self.Data_Rate = list()
         self.InitializeSimStepZero()
 
-    def Run(self, SRange=50, TimeResolution=1, IFoldChange=1, N_Datasets=1):
+    def Run(self, SRange=100, TimeResolution=1, IFoldChange=1, N_Datasets=1):
         for n in range(N_Datasets):
             self.ReinitializeData()
             for S in range(SRange):
@@ -82,7 +83,7 @@ class FNetwork():
 
 def main():
     Network = FNetwork()
-    IFoldChange = 1.5
+    IFoldChange = 5
     N_Datasets = 4
     Network.Run(IFoldChange=IFoldChange, N_Datasets=N_Datasets)
     Network.PlotData(IFoldChange=IFoldChange)
