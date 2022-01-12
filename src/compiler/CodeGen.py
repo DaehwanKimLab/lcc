@@ -277,9 +277,15 @@ class TFCodeWriter(CodeWriter):
     def IfEl_Func(self, Predicate, True_Function, False_Function):
         if self.Switch4TFGraph:
             Line = True_Function + "()"
+            self.Statement(Line)
         else:
-            Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
-        self.Statement(Line)
+            # TODO: FIX FOR tf.graph
+            with self.Statement('if %s:' % Predicate):
+                self.Statement('%s()' % True_Function)
+            with self.Statement('else:'):
+                self.Statement('%s()' % False_Function)
+            # Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
+            # self.Statement(Line)
 
     # tf.print
     def PrintLine(self, Length=100):

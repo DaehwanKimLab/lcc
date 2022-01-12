@@ -1,0 +1,15 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Product Inhibition
+// Network  4.1,   p.78
+// Model   4.1,    p.77
+// Figure  4.2,    p.78
+
+protein E1(S1In --> S1, k=20, Inhibitor=S2, ki=1, Mode=Allosteric, n=4, E1=1, S1In=1, Fixed=A1);
+protein E2(S2In --> S2, k=5, E2=1, S2In=1, Fixed=B1);
+protein E3(S1 --> S1Out, k=5, E3=1);
+protein E4(S2 --> S2Out, k=5, E4=1);
+protein E5(S1 --> S2, k=2, E5=1);
+
+
+

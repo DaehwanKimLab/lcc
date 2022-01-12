@@ -1,5 +1,5 @@
 '''
-Ingalls 2012 Mathematical Modelling in Systems Biology
+Ingalls 2013 Mathematical Modelling in Systems Biology
 
 MichaelisMenten
 Network  3.2,   p.49
@@ -49,7 +49,7 @@ class FNetwork():
         self.Data_S_MM = list()
         self.Data_P_MM = list()
 
-        # Set iniail values
+        # Set initial values
         self.InitializeSimStepZero()
 
     def InitializeSimStepZero(self):
@@ -133,7 +133,8 @@ class FNetwork():
         ax1.plot(C, 'g-', label="[C]")
         ax1.plot(P, 'm-', label="[P]")
         ax1.set_title('Dynamics')
-        ax1.set_xlabel('SimStep')
+        ax1.set_xlabel('Time(a.u.)')
+        ax1.set_ylabel('Concentration(a.u.)')
         ax1.legend(loc='upper left')
         ax1.grid()
         
@@ -142,7 +143,8 @@ class FNetwork():
         ax2.plot(S_MM, 'g-', label="[C]_reduced")
         ax2.plot(P_MM, 'm-', label="[P]_reduced")
         ax2.set_title('Dynamics')
-        ax2.set_xlabel('SimStep')
+        ax2.set_xlabel('Time(a.u.)')
+        ax1.set_ylabel('Concentration(a.u.)')
         ax2.legend(loc='upper left')
         ax2.grid()
     
