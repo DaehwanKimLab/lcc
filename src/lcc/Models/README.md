@@ -4,8 +4,8 @@
 
 
 ### Numerical Simulation
-<img src="Ingalls2012_Model2.18_NumericalSimulation_Model.png" height="100"> 
-<img src="Ingalls2012_Model2.18_NumericalSimulation_Eqn.png" height="150">
+<img src="Ingalls2012_Model2.18_NumericalSimulation_Model.png" height="50"> 
+<img src="Ingalls2012_Model2.18_NumericalSimulation_Eqn.png" height="75">
 
     Initial Concentrations:     A = 0, B = 10
     Kinetic Constants:          k_1 = 9, k_-1 = 12, k_2 = 2
@@ -16,9 +16,9 @@
 
 
 ### Michaelis Menten Kinetics
-<img src="Ingalls2012_Model3.2_MichaelisMenten_Model.png" height="100"> 
-<img src="Ingalls2012_Model3.2_MichaelisMenten_Eqn1.png" height="300"> 
-<img src="Ingalls2012_Model3.2_MichaelisMenten_Eqn2.png" height="100"> 
+<img src="Ingalls2012_Model3.2_MichaelisMenten_Model.png" height="50"> 
+<img src="Ingalls2012_Model3.2_MichaelisMenten_Eqn1.png" height="150"> 
+<img src="Ingalls2012_Model3.2_MichaelisMenten_Eqn2.png" height="50"> 
     
     Initial Concentrations:     S = 5, E = 1, C = 0, P = 0
     Kinetic Constants:          k_1 = 30, k_-1 = 1, k_2 = 10
@@ -30,8 +30,8 @@
 
 
 ### Competitive Inhibition
-<img src="Ingalls2012_Model3.13x_CompetitiveInhibition_Model.png" height="200"> 
-<img src="Ingalls2012_Model3.13x_CompetitiveInhibition_Eqn.png" height="100"> 
+<img src="Ingalls2012_Model3.13x_CompetitiveInhibition_Model.png" height="100"> 
+<img src="Ingalls2012_Model3.13x_CompetitiveInhibition_Eqn.png" height="50"> 
 
     Initial Concentrations:     S = [0, 1, ..., 100], E = 1, I = [0, 5, 10, 15]
     Kinetic Constants:          k_1 = 5, k_-1 = 1, k2 = 8, k3 = 2, k-3 = 1
@@ -43,8 +43,8 @@
 
 
 ### Allosteric Regulation
-<img src="Ingalls2012_Model3.14_AllostericRegulation_Model.png" height="400"> 
-<img src="Ingalls2012_Model3.14_AllostericRegulation_Eqn.png" height="100"> 
+<img src="Ingalls2012_Model3.14_AllostericRegulation_Model.png" height="200"> 
+<img src="Ingalls2012_Model3.14_AllostericRegulation_Eqn.png" height="50"> 
 
     Initial Concentrations:     S = [0, 1, ..., 50], E = 1, I = [0, 1.5, 3, 4.5]
     Kinetic Constants:          k_1 = 5, k_-1 = 1, k2 = 8, k3 = 2, k-3 = 1
@@ -56,8 +56,8 @@
 
 
 ### Cooperativity: Hill Function
-<img src="Ingalls2012_Model3.16_Cooperativity_Model.png" height="400"> 
-<img src="Ingalls2012_Model3.16_Cooperativity_Eqn.png" height="100"> 
+<img src="Ingalls2012_Model3.16_Cooperativity_Model.png" height="200"> 
+<img src="Ingalls2012_Model3.16_Cooperativity_Eqn.png" height="50"> 
 
     Initial Concentrations:     X = [0, 1, ..., 200]
     Kinetic Constants:          K, n = [[5, 1], [20, 2], [45, 3], [80, 4]] 
