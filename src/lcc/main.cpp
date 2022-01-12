@@ -1035,6 +1035,7 @@ void WriteSimModule()
     // ofs << "import tensorflow as tf" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
+    ofs << "import SimulationFunctions as sim" << endl;
     ofs << endl;
 
     // BODY
@@ -1044,78 +1045,7 @@ void WriteSimModule()
     // user input
     ofs << in+ "N_SimSteps = 5000" << endl;
     ofs << in+ "SimStepTimeResolution = 1000" << endl;
-
     ofs << endl;
-
-    // utilities
-    ofs << in+ "def ConcToCount(Conc_Molecule, Volume):" << endl;
-    ofs << in+ in+ "return Conc_Molecule * Volume" << endl;
-    ofs << endl;
-
-    ofs << in+ "def CountToConc(Count_Molecule, Volume):" << endl;
-    ofs << in+ in+ "return Count_Molecule / Volume" << endl;
-    ofs << endl;
-
-    ofs << in+ "def MassActionEqn(Conc_Enzyme, Conc_Reactant, Conc_Product, k, krev):" << endl;
-    ofs << in+ in+ "return Conc_Enzyme * ((-k * Conc_Reactant) + (krev * Conc_Product))" << endl;
-    ofs << endl;
-
-    ofs << in+ "def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM):" << endl;
-    ofs << in+ in+ "return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)" << endl;
-    ofs << endl;
-
-    ofs << in+ "def MatrixMultiplication(Rate, Freq):" << endl; 
-    ofs << in+ in+ "return np.matmul(Rate, Freq)" << endl;
-    ofs << endl;
-
-    // Elementary simulation functions
-    ofs << in+ "def GetDerivativeFromStoichiometryMatrix(Freq, Rate):" << endl;
-    ofs << in+ in+ "return MatrixMultiplication(Rate, Freq)" << endl;
-    ofs << endl;
-
-    ofs << in+ "def DetermineAmountOfBuildingBlocks(Freq, Rate):" << endl;
-    ofs << in+ in+ "return MatrixMultiplication(Rate, Freq)" << endl;
-    ofs << endl;
-
-    ofs << in+ "def PickRandomIdx(Quantity, Indices, Weight=1):" << endl;
-    ofs << in+ in+ "# Adjust Quantity and Weight if Weight is completely zero" << endl;
-    ofs << in+ in+ "Sum_Weight = np.sum(Weight)" << endl;
-    ofs << in+ in+ "Weight = Weight + np.where(Sum_Weight == 0, 1, 0)" << endl;
-    ofs << in+ in+ "Quantity = Quantity * np.where(Sum_Weight == 0, 0, 1)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "# Generate cumulative sum on weight and pick a random number in its range" << endl;
-    ofs << in+ in+ "Weight_Cumsum = np.cumsum(Weight)" << endl;
-    ofs << in+ in+ "Weight_Cumsum_Min = Weight_Cumsum[0]" << endl;
-    ofs << in+ in+ "Weight_Cumsum_Max = Weight_Cumsum[-1]" << endl;
-    ofs << in+ in+ "Weight_Cumsum_Min = np.where(Weight_Cumsum_Min == Weight_Cumsum_Max, Weight_Cumsum_Min - 1, Weight_Cumsum_Min)" << endl;
-    ofs << in+ in+ "RanNums = np.asmatrix(np.random.randint(Weight_Cumsum_Min, high=Weight_Cumsum_Max, size=Quantity)).transpose()" << endl;
-    ofs << in+ in+ "# Generate a matrix of the random numbers for comparison to indices" << endl;
-    ofs << in+ in+ "RanNums_Matrix = np.reshape(np.repeat(RanNums, Indices.shape[1]), [-1, Indices.shape[1]])" << endl;
-    ofs << in+ in+ "Bin_RanNumLessThanWeightCumsum = np.where(RanNums_Matrix < Weight_Cumsum, 1, 0)" << endl;
-    ofs << in+ in+ "Idx_Rnd = np.argmax(Bin_RanNumLessThanWeightCumsum, 1)" << endl;
-    ofs << in+ in+ "return Idx_Rnd" << endl;
-    ofs << endl;
-
-    ofs << in+ "def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):" << endl;
-    ofs << in+ in+ "# Generate an array of counts for each index" << endl;
-    ofs << in+ in+ "Count_Indices = np.zeros(Len.shape[1])" << endl;
-    ofs << in+ in+ "np.put_along_axis(Count_Indices, Indices, 1, axis=0)" << endl;
-    ofs << in+ in+ "# Generate a cumulative sum matrix of available position in the Len Matrix" << endl;
-    ofs << in+ in+ "Bool_LenAvailable = np.less(Len, 0)   # used again later" << endl;
-    ofs << in+ in+ "Bin_LenAvailable = Bool_LenAvailable.astype(int)" << endl;
-    ofs << in+ in+ "LenCumsum = np.cumsum(Bin_LenAvailable, axis=0)" << endl;
-
-    ofs << in+ in+ "# Get an overlap between availability and new count positions" << endl;
-    ofs << in+ in+ "Bool_LenCumsumGreaterThanZero = np.greater(LenCumsum, 0)" << endl;
-    ofs << in+ in+ "Bool_LenCumsumLessThanOrEqualToCountOfIndices = np.less_equal(LenCumsum, Count_Indices)" << endl;
-    ofs << in+ in+ "Bool_LenCumsum = np.logical_and(Bool_LenCumsumGreaterThanZero, Bool_LenCumsumLessThanOrEqualToCountOfIndices)" << endl;
-
-    ofs << in+ in+ "Bin_Len_Selected = np.logical_and(Bool_LenAvailable, Bool_LenCumsum).astype(int)" << endl;
-    ofs << in+ in+ "return Len + Bin_Len_Selected" << endl;
-    ofs << endl;
-
-
 
     // class FState 
     ofs << in+ "class FState:" << endl;
@@ -1449,29 +1379,29 @@ void WriteSimModule()
 
     ofs << in+ in+ "def MassAction(self):" << endl;
     // ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Reactant_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Reactant_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1), self.State.Vol)" << endl;
 //    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Product_1 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Product_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1), self.State.Vol)" << endl;
 //    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Rate = MassActionEqn(Conc_Enz, Conc_Reactant_1, Conc_Product_1, self.State.Const_ks, self.State.Const_krevs)" << endl;
+    ofs << in+ in+ in+ "Rate = sim.MassActionEqn(Conc_Enz, Conc_Reactant_1, Conc_Product_1, self.State.Const_ks, self.State.Const_krevs)" << endl;
 //    ofs << in+ in+ in+ "Rate = MassAction(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_ks, self.State.Const_krevs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = -GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, Rate)" << endl;
-    ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = -sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, Rate)" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = sim.ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MA, dCount_SMol)" << endl;
     ofs << endl;
 
     // REDUCED MODEL
     ofs << in+ in+ "def MichaelisMentenKinetics(self):" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MM), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_EnzSub = CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_MM), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Rate = MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MM), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_MM), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Rate = sim.MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_kMs)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
-    ofs << in+ in+ in+ "dCount_SMol = ConcToCount(dConc_SMol, self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = sim.ConcToCount(dConc_SMol, self.State.Vol)" << endl;
     ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MM, dCount_SMol)" << endl;
     ofs << endl;
 
@@ -1544,7 +1474,7 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
-    ofs << in+ in+ in+ "Raw = DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ in+ "Raw = sim.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
     ofs << in+ in+ in+ "Rounded = np.around(Raw)" << endl;
     ofs << endl;
 
@@ -1577,8 +1507,8 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ in+ in+ "# Get randomly selected target indices" << endl;
-    ofs << in+ in+ in+ "Idx_Selected = PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
-    ofs << in+ in+ in+ "Len_Target_Initiated = InsertZeroIntoNegOneElementInLenMatrix(Len_Target, Idx_Selected)" << endl;
+    ofs << in+ in+ in+ "Idx_Selected = sim.PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
+    ofs << in+ in+ in+ "Len_Target_Initiated = sim.InsertZeroIntoNegOneElementInLenMatrix(Len_Target, Idx_Selected)" << endl;
     ofs << in+ in+ in+ "# Export Data" << endl;
     ofs << in+ in+ in+ "# N_Initiated" << endl;
     ofs << endl;
