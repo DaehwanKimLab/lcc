@@ -1,9 +1,9 @@
 '''
-Ingalls 2012 Mathematical Modelling in Systems Biology
+Ingalls 2013 Mathematical Modelling in Systems Biology
 
-3.2.1 Competitive Inhibition
-Network  x  p.55
-Equation    x   p.56
+Competitive Inhibition
+Network  3.13-3.14  p.55
+Equation    3.13-3.14   p.56
 Figure 3.6, p.57
 
 

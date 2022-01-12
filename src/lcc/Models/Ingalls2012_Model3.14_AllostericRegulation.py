@@ -1,5 +1,5 @@
 '''
-Ingalls 2012 Mathematical Modelling in Systems Biology
+Ingalls 2013 Mathematical Modelling in Systems Biology
 
 Allosteric Regulation
 Network  3.14,   p.57

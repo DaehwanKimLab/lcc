@@ -66,3 +66,15 @@
 
 [comment]: <> (- [Cooperativity.lpp]&#40;Ingalls2012_Model3.16_Cooperativity.lpp&#41;)
 - Examples: Oxygen binding to Hemoglobin (sigmoidal) vs. Myoglobin (hyperbolic)
+
+### Product Inhibition
+<img src="Ingalls2012_Model4.1_ProductInhibition_Model.png" height="200"> 
+<img src="Ingalls2012_Model4.1_ProductInhibition_Eqn.png" height="200">
+
+    Initial Concentrations:     X = [0, 1, ..., 200]
+    Kinetic Constants:          K, n = [[5, 1], [20, 2], [45, 3], [80, 4]] 
+
+- [ProductInhibition.py](Ingalls2012_Model4.1_ProductInhibition.py)
+
+[comment]: <> (- [ProductInhibition.lpp]&#40;Ingalls2012_Model4.1_ProductInhibition.lpp&#41;)
+- Examples: 

@@ -1,5 +1,5 @@
 '''
-Ingalls 2012 Mathematical Modelling in Systems Biology
+Ingalls 2013 Mathematical Modelling in Systems Biology
 
 Cooperativity
 Network  3.16,   p.49

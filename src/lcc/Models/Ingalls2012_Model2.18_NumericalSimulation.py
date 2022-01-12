@@ -1,7 +1,7 @@
 '''
 Ingalls 2012 Mathematical Modelling in Systems Biology
 
-
+Numerical Simulation
 Network  2.18,   p.35
 Model   2.19,   p.35
 
@@ -9,8 +9,8 @@ Model   2.19,   p.35
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
-def MMequation(Vmax, S, km):
-    return (Vmax * S) / (km + S)
+def MMequation(Vmax, S, kM):
+    return (Vmax * S) / (kM + S)
 
 class FModel():
     def __init__(self, InA=0, InB=10, Ink1=9, Inkrev1=12, Ink2=2):
@@ -73,7 +73,8 @@ class FModel():
         ax1.plot(X, 'r-', label="[A]")
         ax1.plot(Y, 'b-', label="[B]")
         ax1.set_title('Dynamics')
-        ax1.set_xlabel('SimStep')
+        ax1.set_xlabel('Time(a.u.)')
+        ax1.set_ylabel('Concentration(a.u.)')
         ax1.legend(loc='upper left')
         ax1.grid()
 
