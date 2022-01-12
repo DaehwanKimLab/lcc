@@ -1,6 +1,6 @@
 # Model Examples
 
-## Ingalls 2012 Mathematical Modelling in Systems Biology
+## Ingalls, B. P. (2013). Mathematical modeling in systems biology: an introduction. Cambridge, Massachusetts: MIT Press.
 
 
 ### Numerical Simulation
