@@ -83,9 +83,20 @@
 <img src="Ingalls2012_Model4.1_ProductInhibition_Model.png" height="100"> 
 <img src="Ingalls2012_Model4.1_ProductInhibition_Eqn.png" height="100">
 
-    Initial Concentrations:     X = [0, 1, ..., 200]
-    Kinetic Constants:          K, n = [[5, 1], [20, 2], [45, 3], [80, 4]] 
+    Initial Concentrations:     S1 = 0, S2 = 0
+    Kinetic Constants:          k1 = 20, k2 = 5, k3 = 5, k4 = 5, k5 = 2, K = 1, n = 4 
 
 - [ProductInhibition.py](Ingalls2012_Model4.1_ProductInhibition.py)
 - [ProductInhibition.lpp](Ingalls2012_Model4.1_ProductInhibition.lpp)
+- Examples: 
+
+### Stability
+<img src="Ingalls2013_Model4.2_Stability_Model.png" height="100"> 
+<img src="Ingalls2013_Model4.2_Stability_Eqn.png" height="100">
+
+    Initial Concentrations:     S1 = 1, S2 = 3
+    Kinetic Constants:          k1 = 20, k2 = 20, k3 = 5, k4 = 5, K1 = 1, K2 = 1, n1 = 4, n2 = 1 
+
+- [ProductInhibition.py](Ingalls2013_Model4.2_Stability.py)
+- [ProductInhibition.lpp](Ingalls2013_Model4.2_Stability.lpp)
 - Examples: 
