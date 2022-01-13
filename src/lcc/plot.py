@@ -42,7 +42,8 @@ def PlotData(Dataset):
     plot_PolymeraseReactions = False
     plot_Ecoli_NoTCA = False
     plot_Ecoli_TCA = False
-    plot_ShowAll = False
+    plot_ShowAll_DynamicsOnly = False
+    plot_ShowAll_DynamicsAndPhasePlain = False
 
     CheckRateExpected = False
 
@@ -53,7 +54,8 @@ def PlotData(Dataset):
     # plot_PolymeraseReactions = True
     # plot_Ecoli_NoTCA = True
     # plot_Ecoli_TCA = True
-    plot_ShowAll = True
+    # plot_ShowAll_DynamicsOnly = True
+    plot_ShowAll_DynamicsAndPhasePlain = True
 
     ### Debugging option ###
     CheckRateExpected = True
@@ -61,17 +63,32 @@ def PlotData(Dataset):
 
     # Detect TCA legend for appropriate display
     if "oxaloacetate" in Legend:
-        plot_ShowAll = False
+        plot_ShowAll_DynamicsOnly = False
         plot_Ecoli_TCA = True
 
     # Show all
-    if plot_ShowAll:
+    if plot_ShowAll_DynamicsOnly:
         Cap = 50
         Title = 'Show All'
         Data = Data_Transposed[2:Cap]
         Legend = Legend[2:Cap]
 
         Plot_Dynamics(Title, Data_SimStep[0], Data, Legend)
+        return 0
+
+    # Show all
+    if plot_ShowAll_DynamicsAndPhasePlain:
+        Cap = 50
+        Title = 'Show All'
+        Data = Data_Transposed[2:Cap]
+        Legend = Legend[2:Cap]
+
+        # Plot_Dynamics(Title, Data_SimStep[0], Data, Legend)
+
+        Idx_Pairs, Names_Pairs = Indexing(Legend)
+
+        Plot_DynamicsAndPhasePlaneAndRate(Title, Data_SimStep[0], Data, Legend, Idx_Pairs, Names_Pairs)
+
         return 0
 
     # Polymerase Reactions
@@ -190,7 +207,7 @@ def PlotData(Dataset):
 
 
     # All TCA Cases
-    Idx_Pairs, Names_Pairs = Indexing(Legend)
+    Idx_Pairs, Names_Pairs = Indexing(Legend, Query="TCA")
 
     if CheckRateExpected:
         RateCheck(Data, Legend, Idx_Pairs, Names_Pairs)
@@ -207,12 +224,12 @@ def RateCheck(Data, Legend, Idx_Pairs, Names_Pairs):
 
         Conc_Enz = 0
         kcat = 0
-        kM = 0
+        KM = 0
         if ('oxaloacetate' in Names_Pairs) and ('citrate' in Names_Pairs):
             Idx_Enz = Legend.index('GltA')  # TODO:make a dictionary
             Conc_Enz = Data[Idx_Enz]
             # kcat =
-            # kM =
+            # KM =
         else:
             print('No matching Conc_Enz is not determined')
 
@@ -224,7 +241,7 @@ def RateCheck(Data, Legend, Idx_Pairs, Names_Pairs):
             Conc_B_Before = Conc_B[i]
             Conc_B_After = Conc_B[i + 1]
 
-            # Rate = MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM)
+            # Rate = MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM)
             # assert Conc_oxaloacetate - Conc_oxaloacetate_Prev == Rate
             # assert Conc_citrate - Conc_citrate_Prev == Rate
 
@@ -252,14 +269,27 @@ def Plot_Dynamics(Title, SimStep, Data, Legend):
     else:
         plt.show()
 
-def Indexing(Legend):
-    # Pick two indices for data
-    Legend = ['oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+def Indexing(Legend, Query=None):
+    SelectedMolecules = list()
 
-    SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
-    # Subset for convenient visualization, assuming acetyl-CoA level is constant
-    SelectedMolecules = ['oxaloacetate', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
-    SelectedMolecules = ['oxaloacetate', 'citrate']
+    if Query == "TCA":
+        # Pick two indices for data
+        # Legend = ['oxaloacetate', 'acetyl-CoA', 'H2O', 'citrate', 'CoA', 'AcnA', 'isocitrate', 'Icd', 'NAD+', 'keto-glutarate', 'NADH', 'CO2', 'SucA', 'succinyl-CoA', 'SucD', 'ADP', 'Pi', 'succinate', 'ATP', 'Sdh', 'FAD', 'fumarate', 'FADH2', 'FumA', 'malate', 'Mdh', 'H+']
+
+        SelectedMolecules = ['oxaloacetate', 'acetyl-CoA', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
+        # Subset for convenient visualization, assuming acetyl-CoA level is constant
+        SelectedMolecules = ['oxaloacetate', 'citrate', 'isocitrate', 'keto-glutarate', 'succinyl-CoA', 'succinate', 'fumarate', 'malate']
+        SelectedMolecules = ['oxaloacetate', 'citrate']
+
+    else:
+        if ("S" in Legend) & ("P" in Legend):
+            SelectedMolecules = ["S", "P"]
+        elif ("S1" in Legend) & ("S2" in Legend):
+            SelectedMolecules = ["S1", "S2"]
+        elif ("A" in Legend) & ("B" in Legend):
+            SelectedMolecules = ["A", "B"]
+        else:
+            SelectedMolecules = Legend
 
     Idx_SelectedMolecules = list()
     Dict_SelectedMoleculesIdx = dict()
@@ -291,8 +321,8 @@ def Plot_DynamicsAndPhasePlaneAndRate(Title, SimStep, Data, Legend, Idx_Pairs, N
         assert Names_Pairs[i][0] == Legend[a]
         assert Names_Pairs[i][1] == Legend[b]
 
-        ax1 = fig.add_subplot(2, int(N_PossiblePairs), 2 * n - 1)
-        ax2 = fig.add_subplot(2, int(N_PossiblePairs), 2 * n)
+        ax1 = fig.add_subplot(int(N_PossiblePairs), 2, 2 * n - 1)
+        ax2 = fig.add_subplot(int(N_PossiblePairs), 2, 2 * n)
 
         ax1.plot(X, 'r-', label=Legend[a])
         ax1.plot(Y, 'b-', label=Legend[b])
@@ -318,8 +348,8 @@ def Plot_DynamicsAndPhasePlaneAndRate(Title, SimStep, Data, Legend, Idx_Pairs, N
         plt.show()
 
 
-def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, kM):
-    return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM)
+def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM):
+    return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + KM)
 
 
 

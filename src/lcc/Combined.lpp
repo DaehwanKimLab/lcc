@@ -30,8 +30,7 @@ pathway TCA = GltA --> AcnA --> Icd --> SucA --> SucD --> Sdh --> FumA --> Mdh;
 //@```
 //@
 
-
-//@# DNA Replication​
+//@# DNA Replication
 //@
 //@```
 replication_origin origin1;
@@ -42,7 +41,6 @@ polymerase pol1(initiation: origin1,
                termination: terminus1);
 //@```
 
-
 //@# RNA Transcription
 //@
 //@```
@@ -51,7 +49,6 @@ polymerase rnap(initiation: promoter,
                            rna_{n+1} + ppi,
                 termination: taa);
 //@```
-
 
 //@# Protein Synthesis
 //@
@@ -65,4 +62,47 @@ ribosome r1(initiation: rbs1,
 //@```
 
 
+//@# Carbonic Anhydrase
+//@
+//@![CatalyticDomain](CarbonicAnhydrase_CatalyticDomain.png)
+//@
+//@<img src="CarbonicAnhydrase_Reaction.png" alt="Reaction" width="400"/>
+//@
+//@Reference: [Stryer Biochemistry 7ed](https://www.amazon.com/Biochemistry-Lubert-Stryer/dp/1319114679/ref=sr_1_1?keywords=Stryer+Biochemistry&qid=1636994919&s=books&sr=1-1).
+//@
+//@```
+protein ca2(CO_{2} + H_{2}O --> OHCOO^{-} + H^{+})
+{
+   cofactor co1(zn^{2+});
+   domain dom1(co1-his, co1-his, col1-his);
+   step step1(dom1 + H_{2}O --> dom1-OH^{-} + H^{+});
+   step step2(dom1-OH^{-} + CO_{2} --> dom1-OHCOO^{-});
+   step step3(dom1-OHCOO^{-} --> dom1 + OHCOO^{-});
+   sequence process1(step1, step2, step3);
+};
+//@```
+//@
 
+//@# Endocytosis
+//@
+//@<img src="Endocytosis_Image.png" alt="Endocytosis_Image.png" width="500"/>
+//@
+//@Courtesy of Xinxin Wang from UT Southwestern.
+//@
+//@
+//@```
+protein clathrin()
+{
+   PDB "1XI4";
+   domain dom1();
+   domain dom2();
+};
+
+process clathrin_endocytosis()
+{
+   step step1(clathrin.dom1 + clathrin.dom1 -->
+                     clathrin.dom1-clathrin.dom1);
+   step step2(clathrin.dom2 + clathrin.dom2 -->
+                     clathrin.dom2-clathrin.dom2);
+};
+//@```

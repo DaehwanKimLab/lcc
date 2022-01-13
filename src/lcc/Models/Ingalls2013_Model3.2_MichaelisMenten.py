@@ -10,8 +10,8 @@ Figure 3.3, p.50
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
-def MMequation(Vmax, S, kM):
-    return (Vmax * S) / (kM + S)
+def MMequation(Vmax, S, KM):
+    return (Vmax * S) / (KM + S)
 
 def Derivative_S(S, E, C, P, k1, krev1, k2):
     return -(k1 * S * E) + (krev1 * C)
@@ -38,7 +38,7 @@ class FNetwork():
         self.krev1 = Inkrev1
         self.k2 = Ink2
         
-        self.kM = (self.krev1 + self.k2) / self.k1
+        self.KM = (self.krev1 + self.k2) / self.k1
 
         # Dataset
         self.Data_S = list()
@@ -95,7 +95,7 @@ class FNetwork():
         P = self.Data_P_MM[-1]
         Vmax = self.k2 * self.E
 
-        Rate_MM = MMequation(Vmax, S, self.kM) / TimeResolution
+        Rate_MM = MMequation(Vmax, S, self.KM) / TimeResolution
         
         self.AppendData_Reduced(S - Rate_MM, P + Rate_MM)
 

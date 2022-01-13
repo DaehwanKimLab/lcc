@@ -1,13 +1,13 @@
 import matplotlib.pyplot as plt
 
-def MMequation(Vmax, S, km):
-    return (Vmax * S) / (km + S)
+def MMequation(Vmax, S, KM):
+    return (Vmax * S) / (KM + S)
 
 # Concentration
 A = 50
 B = 0
 Vmax = 50
-km = 15
+KM = 15
 
 Data_A = list()
 Data_B = list()
@@ -23,7 +23,7 @@ TimeResolution = 1000
 i = 0
 while i < SimSteps:
 
-    Rate = MMequation(Vmax, A, km) / TimeResolution
+    Rate = MMequation(Vmax, A, KM) / TimeResolution
 
     A = A - Rate
     B = B + Rate

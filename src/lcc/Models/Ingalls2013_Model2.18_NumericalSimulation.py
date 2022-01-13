@@ -9,8 +9,8 @@ Model   2.19,   p.35
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
-def MMequation(Vmax, S, kM):
-    return (Vmax * S) / (kM + S)
+def MMequation(Vmax, S, KM):
+    return (Vmax * S) / (KM + S)
 
 class FModel():
     def __init__(self, InA=0, InB=10, Ink1=9, Inkrev1=12, Ink2=2):

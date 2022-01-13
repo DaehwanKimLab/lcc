@@ -11,8 +11,8 @@ Figure 3.6, p.57
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
-def MMEquation_CompetitiveInhibition(Vmax, S, kM, I, ki):
-    return (Vmax * S) / (kM * (1 + I/ki) + S)
+def MMEquation_CompetitiveInhibition(Vmax, S, KM, I, ki):
+    return (Vmax * S) / (KM * (1 + I/ki) + S)
 
 class FNetwork():
     def __init__(self, InE=1, InI=1, Ink1=5, Inkrev1=1, Ink2=8, Ink3=2, Inkrev3=1):
@@ -27,7 +27,7 @@ class FNetwork():
         self.k3 = Ink3
         self.krev3 = Inkrev3
 
-        self.kM = (self.krev1 + self.k2) / self.k1
+        self.KM = (self.krev1 + self.k2) / self.k1
         self.ki = self.krev3/self.k3
 
         # Dataset
@@ -48,7 +48,7 @@ class FNetwork():
         I = self.I * IFoldChange
         Vmax = self.k2 * self.E
 
-        Rate = MMEquation_CompetitiveInhibition(Vmax, S, self.kM, I, self.ki) / TimeResolution
+        Rate = MMEquation_CompetitiveInhibition(Vmax, S, self.KM, I, self.ki) / TimeResolution
         self.AppendData(S, Rate)
         
     def AppendData(self, S, Rate):
