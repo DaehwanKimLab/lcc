@@ -1,9 +1,9 @@
 //@# Elementary Reactions
 //@
 //@```
-protein E1(S1 + E1 --> P1 + E1, kcat=10, km=0.1, S1=50, P1=0, E1=5);
+protein E1(S1 + E1 --> P1 + E1, kcat=10, KM=0.1, S1=50, P1=0, E1=5);
 
-protein E2(S2 + E2 --> P2 + E2, kcat=10, km=0.1, S2=50, P2=0, E2=5, Fixed=S2);
+protein E2(S2 + E2 --> P2 + E2, kcat=10, KM=0.1, S2=50, P2=0, E2=5, Fixed=S2);
 
 protein E3(S3 + E3 --> P3 + E3, k=1, krev=0.1, S3=50, P3=0, E3=5);
 
@@ -13,7 +13,7 @@ protein E3(S3 + E3 --> P3 + E3, k=1, krev=0.1, S3=50, P3=0, E3=5);
 //     reaction r3(I4 + E4 --> CI4, k=0.5, krev=0.001);
 // };
 // 
-// protein E5(S5 + E5 --> P5 + E5, kM=0.1, E5=5) {
+// protein E5(S5 + E5 --> P5 + E5, KM=0.1, E5=5) {
 //     reaction r1(S5+ E5 --> C5, k=1, krev=0.1, S5=30);
 //     reaction r2(C5 --> P5 + E5, k=5, krev=0.0001);
 //     reaction r3(I5 + E5 --> CI5, k=0.5, krev=0.001, I5=20, Fixed=I5);

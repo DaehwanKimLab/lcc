@@ -212,50 +212,61 @@ class FEnzyme : public FMolecule { // update to FProtein when ID system is set u
 public:
     std::string Substrate;
     float kcat = -1;
-    float kM = -1;
+    float KM = -1;
 
-    std::string Inhibitor;
-    float ki = -1;
-
-    // standard chemical reaction rates for approximation
+    // standard chemical reaction rates
     float k = -1;
     float krev = -1;
+
+    std::string Inhibitor;
+    std::string Mode;
+    float Ki = -1;
+    float n = -1; // cooperativity
 
     FEnzyme() {}
 
     // UPDATE TO FProtein(InName) when ID System is set up
 // without InitialCount
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM)
-        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FMolecule(InName) {}
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM)
+        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM), FMolecule(InName) {}
 
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM, const std::string& InInhibitor, const float& Inki)
-        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM),  Inhibitor(InInhibitor), ki(Inki), FMolecule(InName) {}
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn)
+        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM),  Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName) {}
 
     // standard chemical reaction case may have Product specified
     FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev)
         : k(Ink), krev(Inkrev), FMolecule(InName) {}
 
-// with InitialCount
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM, const int& InInitialCount, const bool Fixed)
-        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM), FMolecule(InName, InInitialCount, Fixed) {}
+    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn)
+        : k(Ink), krev(Inkrev), Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName) {}
 
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InkM, const std::string& InInhibitor, const float& Inki, const int& InInitialCount, const bool Fixed)
-        : Substrate(InSubstrate), kcat(Inkcat), kM(InkM),  Inhibitor(InInhibitor), ki(Inki), FMolecule(InName, InInitialCount, Fixed) {}
+// with InitialCount
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM, const int& InInitialCount, const bool Fixed)
+        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM), FMolecule(InName, InInitialCount, Fixed) {}
+
+    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn, const int& InInitialCount, const bool Fixed)
+        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM),  Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName, InInitialCount, Fixed) {}
 
     // standard chemical reaction case may have Product specified
     FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const int& InInitialCount, const bool Fixed)
         : k(Ink), krev(Inkrev), FMolecule(InName, InInitialCount, Fixed) {}
 
+    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn, const int& InInitialCount, const bool Fixed)
+        : k(Ink), krev(Inkrev), Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName, InInitialCount, Fixed) {}
+
     void Print(std::ostream& os) {
         os << "  Enzyme Id: " << Name; 
-        if (kM > 0) {
-            os << "\t| Substrate: " << Substrate << "\t| kcat:  " << std::to_string(kcat) << "\t| kM: " << std::to_string(kM);
+        if (KM > 0) {
+            os << "\t| Substrate: " << Substrate << "\t| kcat:  " << std::to_string(kcat) << "\t| KM: " << std::to_string(KM);
         }
-        if (!Inhibitor.empty()) {
-            os << "\t| Inhibitor: " << Inhibitor << "\t| ki:  " << std::to_string(ki);
-        }        
         if (k > 0) {
             os << "\t| k: " << std::to_string(k) << "\t| krev:  " << std::to_string(krev);
+        }
+        if (Ki > 0) {
+            os << "\t| Inhibitor: " << Inhibitor << "\t| Mode: " << Mode << "\t| Ki: " << std::to_string(Ki);
+        }        
+        if (n > 0) {
+        os << "\t| n: " << std::to_string(n);
         }
         if (InitialCount > 0) {
             os << "\t| InitialCount: " << InitialCount;
@@ -295,7 +306,7 @@ public:
     FComplex(const std::string& InName) : FMolecule(InName) {}
 };
 
-class FReaction {
+ class FReaction {
 public:
     std::string Name; // Name is equivalent to EnzymeName for now
     std::map<std::string, int> Stoichiometry;
@@ -390,9 +401,9 @@ public:
     std::vector<std::string> GetNames_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<std::string> GetSubstrateNames_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<float> Getkcats_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<float> GetkMs_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> GetKMs_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<std::string> GetInhibitorNames_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<float> Getkis_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<float> GetKis_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<float> Getks_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<float> Getkrevs_EnzymeList(std::vector<const FEnzyme *>);
 

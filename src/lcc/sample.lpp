@@ -48,7 +48,7 @@ pathway TCA {
 	// property XXX YYY;
 };
 
-protein p1(S + E --> P + E, cp, kcat=10, km=0.001);
+protein p1(S + E --> P + E, cp, kcat=10, KM=0.001);
 //protein p1(S + E --> P + E, cp);
 
 protein p3(S + E --> P + E) {

@@ -17,11 +17,11 @@ float CountToConc(int Count_Molecule, float Volume) {
     return Count_Molecule / Volume;
 }
  
-float MichaelisMentenEqn(float Conc_Enzyme, float Conc_Substrate, float kcat, float kM) {
+float MichaelisMentenEqn(float Conc_Enzyme, float Conc_Substrate, float kcat, float KM) {
     // float Conc_Enzyme = CountToConcentration(Count_Enzyme, Volume);
     // float Conc_Substrate = CountToConcentration(Count_Substrate, Volume);
 
-    float Rate = (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + kM);
+    float Rate = (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + KM);
     // std::cout << "Rate: " << Rate << std::endl;
     return Rate;
 }
@@ -114,23 +114,23 @@ void FSimulation::Run(FState& State, FCompilerContext& Context, FDataset& Datase
 //                std::cout << "  Enzyme: " << EnzymeName << "\t|"; //std::endl;
 //                std::string Substrate;
 //                float kcat;
-//                float kM;
+//                float KM;
 //
 //                // loop enzyme list to find its substrate
 //                for (auto& Enzyme: Context.EnzymeList) {
 //                    if (Enzyme.Name == EnzymeName) {
 //                        Substrate = Enzyme.Substrate;
 //                        kcat = Enzyme.kcat;
-//                        kM = Enzyme.kM;
+//                        KM = Enzyme.KM;
 //                        //std::cout << "  Substrate: " << Substrate << std::endl;
 //                        //std::cout << "  kcat: " << kcat << std::endl;
-//                        //std::cout << "  kM: " << kM << std::endl;
+//                        //std::cout << "  KM: " << KM << std::endl;
 //                    }
 //                }
 //
 //                // std::cout << "  Substrate: " << Substrate << std::endl;
 //                // std::cout << "  kcat: " << kcat << std::endl;
-//                // std::cout << "  kM: " << kM << std::endl;
+//                // std::cout << "  KM: " << KM << std::endl;
 //
 //                // get enzyme and substrate concentration
 //                float EnzConc = State.GetEnzConc(EnzymeName);
@@ -140,7 +140,7 @@ void FSimulation::Run(FState& State, FCompilerContext& Context, FDataset& Datase
 //                std::cout << "    SubConc: " << SubConc << "\t|" ; // std::endl;
 //
 //                // calculate reaction rate
-//                float Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, kM);
+//                float Rate = MichaelisMentenEqn(EnzConc, SubConc, kcat, KM);
 //                std::cout << "    Rate: " << Rate << std::endl;
 //
 //                // currently each pathway sub reaction occurs linearly.

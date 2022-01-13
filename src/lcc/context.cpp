@@ -243,11 +243,11 @@ std::vector<float> FCompilerContext::Getkcats_EnzymeList(std::vector<const FEnzy
     return FloatList;
 }
 
-std::vector<float> FCompilerContext::GetkMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
+std::vector<float> FCompilerContext::GetKMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
 {
     std::vector<float> FloatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->kM);
+        FloatList.push_back(item->KM);
     }
     return FloatList;
 }
@@ -261,11 +261,11 @@ std::vector<std::string> FCompilerContext::GetInhibitorNames_EnzymeList(std::vec
     return StrList;
 }
 
-std::vector<float> FCompilerContext::Getkis_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
+std::vector<float> FCompilerContext::GetKis_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
 {
     std::vector<float> FloatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->ki);
+        FloatList.push_back(item->Ki);
     }
     return FloatList;
 }
@@ -522,29 +522,59 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
  
     if (Type == "MassAction") {
         for (auto& enzyme : EnzymeList){
-            if ((enzyme->k >= 0) & (enzyme->kM < 0)) {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & enzyme->Mode.empty()) {
                 for (auto& enzymaticReaction : EnzymaticReactionList){
                     if (enzymaticReaction->Enzyme == enzyme->Name) {
                         std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
                         for (auto& stoich : enzymaticReaction->Stoichiometry) {
-	std::cout << "enzymaticReaction-> Stoichiometry for loop. Now working on: " << stoich.first << endl;
+//	std::cout << "enzymaticReaction-> Stoichiometry for loop. Now working on: " << stoich.first << endl;
                             std::string SubstrateName = stoich.first;
                             int Coeff = stoich.second;
                             int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
-	std::cout << "MolIdx: " << std::to_string(MolIdx) << endl;
+//	std::cout << "MolIdx: " << std::to_string(MolIdx) << endl;
                             // get local index from Substrate list
                             int Idx_Local = 0;
                             for (auto& Idx_Substrate : Idx_Substrates) {
-	std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
+//	std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
                                 if (Idx_Substrate == MolIdx) {
                                     CoeffArray[Idx_Local] = Coeff;
-	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
+//	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
                                 }
                                 Idx_Local++;
                             }
-	std::cout << "add" << endl;
+//	std::cout << "add" << endl;
                         }
-        std::cout << "pushback" << endl;
+//	std::cout << "pushback" << endl;
+                        StoichMatrix.push_back(CoeffArray);
+                    }
+                }
+            }
+        }
+    } else if (Type == "MassAction_AllostericInhibition") {
+        for (auto& enzyme : EnzymeList){
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode == "Allosteric")) {
+                for (auto& enzymaticReaction : EnzymaticReactionList){
+                    if (enzymaticReaction->Enzyme == enzyme->Name) {
+                        std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
+                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
+//	std::cout << "enzymaticReaction-> Stoichiometry for loop. Now working on: " << stoich.first << endl;
+                            std::string SubstrateName = stoich.first;
+                            int Coeff = stoich.second;
+                            int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
+//	std::cout << "MolIdx: " << std::to_string(MolIdx) << endl;
+                            // get local index from Substrate list
+                            int Idx_Local = 0;
+                            for (auto& Idx_Substrate : Idx_Substrates) {
+//	std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
+                                if (Idx_Substrate == MolIdx) {
+                                    CoeffArray[Idx_Local] = Coeff;
+//	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
+                                }
+                                Idx_Local++;
+                            }
+//	std::cout << "add" << endl;
+                        }
+//	std::cout << "pushback" << endl;
                         StoichMatrix.push_back(CoeffArray);
                     }
                 }
@@ -552,12 +582,12 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
         }
     } else if (Type == "MichaelisMenten") {
         for (auto& enzyme : EnzymeList){
-            if ((enzyme->kM >= 0) & (enzyme->k < 0)) {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0)) {
                 for (auto& enzymaticReaction : EnzymaticReactionList){
                     if (enzymaticReaction->Enzyme == enzyme->Name) {
                         std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
                         for (auto& stoich : enzymaticReaction->Stoichiometry) {
-//    std::cout << "enzymaticReaction-> Stoichiometry for loop" << endl;
+//	std::cout << "enzymaticReaction-> Stoichiometry for loop" << endl;
                             std::string SubstrateName = stoich.first;
                             int Coeff = stoich.second;
                             int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
@@ -566,7 +596,7 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
                             for (auto& Idx_Substrate : Idx_Substrates) {
                                 if (Idx_Substrate == MolIdx) {
                                     CoeffArray[Idx_Local] = Coeff;
-//    std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
+//	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
                                 }
                                 Idx_Local++;
                             }
@@ -593,7 +623,7 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type
 
     if (Type == "MassAction") {
         for (auto& enzyme : EnzymeList){
-            if ((enzyme->k >= 0) & (enzyme->kM < 0)) {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & enzyme->Mode.empty()) {
                 for (auto& enzymaticReaction : EnzymaticReactionList) {
                     if (enzymaticReaction->Enzyme == enzyme->Name) {
                         for (auto& stoich : enzymaticReaction->Stoichiometry) {
@@ -601,11 +631,40 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type
                             for (auto& mol : MoleculeList) {
                                 if (mol->Name == stoich.first) {
                                     if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
-                                        std::cout << "New mol idx added for : " << stoich.first << endl;
+//	std::cout << "New mol idx added for : " << stoich.first << endl;
                                         IdxList.push_back(MolIdx);
                                         break;
                                     } else {
-                                        std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
+//	std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
+                                    }
+                                }
+                                MolIdx++;
+                            //int MolIdx = GetIdxByName_MoleculeList(stoich.first);
+                            //if (std::count(IdxList.begin(), IdxList.end(), MolIdx)) {
+                            //    break;
+                            //}
+                            //IdxList.push_back(MolIdx);                        
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else if (Type == "MassAction_AllostericInhibition") {
+        for (auto& enzyme : EnzymeList){
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode == "Allosteric")) {
+                for (auto& enzymaticReaction : EnzymaticReactionList) {
+                    if (enzymaticReaction->Enzyme == enzyme->Name) {
+                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
+                            int MolIdx = 0;
+                            for (auto& mol : MoleculeList) {
+                                if (mol->Name == stoich.first) {
+                                    if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
+//	std::cout << "New mol idx added for : " << stoich.first << endl;
+                                        IdxList.push_back(MolIdx);
+                                        break;
+                                    } else {
+//	std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
                                     }
                                 }
                                 MolIdx++;
@@ -622,7 +681,7 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type
         }
     } else if (Type == "MichaelisMenten") {
         for (auto& enzyme : EnzymeList){
-            if ((enzyme->kM >= 0) & (enzyme->k < 0)) {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0)) {
                 for (auto& enzymaticReaction : EnzymaticReactionList) {
                     if (enzymaticReaction->Enzyme == enzyme->Name) {
                         for (auto& stoich : enzymaticReaction->Stoichiometry) {
@@ -630,11 +689,11 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type
                             for (auto& mol : MoleculeList) {
                                 if (mol->Name == stoich.first) {
                                     if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
-                                        std::cout << "New mol idx added for : " << stoich.first << endl;
+//	std::cout << "New mol idx added for : " << stoich.first << endl;
                                         IdxList.push_back(MolIdx);
                                         break;
                                     } else {
-                                        std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
+//	std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
                                     }
                                 }
                                 MolIdx++;
@@ -669,7 +728,7 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_Polymeras
                 Index++;
             }
             if (Index >= MoleculeList.size()) {
-                std::cout << "Substrate index searching in MoleculeList failed: " << SubstrateName << endl;
+	std::cout << "Substrate index searching in MoleculeList failed: " << SubstrateName << endl;
             } else {
             // std::cout << "Substrate Searching from the List: " << SubstrateName << " | " << "Index: " << Index << endl;
             } 
