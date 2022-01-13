@@ -5,10 +5,10 @@
 // Figure	3.3,	p.50
 
 
-//k1 = 30;
-//krev1 = 1;
-//k2 = 10;
-//InKM = (krev1 + k2) / k1;
+// k1 = 30;
+// krev1 = 1;
+// k2 = 10;
+// KM = (krev1 + k2) / k1;
 
 protein E(S --> P, kcat=10, KM=3.666667, E=1, S=5, P=0);
 

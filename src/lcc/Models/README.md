@@ -2,8 +2,7 @@
 
 ## Ingalls, B. P. (2013). Mathematical modeling in systems biology: an introduction. Cambridge, Massachusetts: MIT Press.
 
-
-### Numerical Simulation
+### 1. Numerical Simulation (p.35)
 <img src="Ingalls2013_Model2.18_NumericalSimulation_Model.png" height="50"> 
 <img src="Ingalls2013_Model2.18_NumericalSimulation_Eqn.png" height="75">
 
@@ -15,18 +14,47 @@
 - [NumericalSimulation.lpp](Ingalls2013_Model2.18_NumericalSimulation.lpp)
 
 
-### Michaelis Menten Kinetics
+### 2. Full vs. Reduced (Michaelis Menten) Model (p.49)
 <img src="Ingalls2013_Model3.2_MichaelisMenten_Model.png" height="50"> 
 <img src="Ingalls2013_Model3.2_MichaelisMenten_Eqn1.png" height="150"> 
 <img src="Ingalls2013_Model3.2_MichaelisMenten_Eqn2.png" height="50"> 
     
     Initial Concentrations:     S = 5, E = 1, C = 0, P = 0
-    Kinetic Constants:          k_1 = 30, k_-1 = 1, k_2 = 10
+    Kinetic Constants:          Full model      | k_1 = 30, k_-1 = 1, k_2 = 10
+                                Reduced model   | KM = (krev1 + k2) / k1
     Time interval:              t = 1/500
 
 - [MichaelisMentenKinetics.py](Ingalls2013_Model3.2_MichaelisMenten.py)
 - [MichaelisMentenKinetics.lpp](Ingalls2013_Model3.2_MichaelisMenten.lpp)
 - Examples:
+
+
+### 3. Product Inhibition (p.78)
+<img src="Ingalls2013_Model4.1_ProductInhibition_Model.png" height="100"> 
+<img src="Ingalls2013_Model4.1_ProductInhibition_Eqn.png" height="100">
+
+    Initial Concentrations:     S1 = 0, S2 = 0
+    Kinetic Constants:          k1 = 20, k2 = 5, k3 = 5, k4 = 5, k5 = 2, K = 1, n = 4 
+
+- [ProductInhibition.py](Ingalls2013_Model4.1_ProductInhibition.py)
+- [ProductInhibition.lpp](Ingalls2013_Model4.1_ProductInhibition.lpp)
+- Examples: 
+
+### 4. Stability (p.82)
+<img src="Ingalls2013_Model4.2_Stability_Model.png" height="100"> 
+<img src="Ingalls2013_Model4.2_Stability_Eqn.png" height="100">
+
+    Initial Concentrations:     S1 = 1, S2 = 3
+    Kinetic Constants:          k1 = 20, k2 = 20, k3 = 5, k4 = 5, K1 = 1, K2 = 1, n1 = 4, n2 = 1 
+
+- [ProductInhibition.py](Ingalls2013_Model4.2_Stability.py)
+- [ProductInhibition.lpp](Ingalls2013_Model4.2_Stability.lpp)
+- Examples: 
+
+
+
+
+
 
 
 [comment]: <> (### Competitive Inhibition)
@@ -78,25 +106,3 @@
 [comment]: <> ([comment]: <> &#40;- [Cooperativity.lpp]&#40;Ingalls2013_Model3.16_Cooperativity.lpp&#41;&#41;)
 
 [comment]: <> (- Examples: Oxygen binding to Hemoglobin &#40;sigmoidal&#41; vs. Myoglobin &#40;hyperbolic&#41;)
-
-### Product Inhibition
-<img src="Ingalls2013_Model4.1_ProductInhibition_Model.png" height="100"> 
-<img src="Ingalls2013_Model4.1_ProductInhibition_Eqn.png" height="100">
-
-    Initial Concentrations:     S1 = 0, S2 = 0
-    Kinetic Constants:          k1 = 20, k2 = 5, k3 = 5, k4 = 5, k5 = 2, K = 1, n = 4 
-
-- [ProductInhibition.py](Ingalls2013_Model4.1_ProductInhibition.py)
-- [ProductInhibition.lpp](Ingalls2013_Model4.1_ProductInhibition.lpp)
-- Examples: 
-
-### Stability
-<img src="Ingalls2013_Model4.2_Stability_Model.png" height="100"> 
-<img src="Ingalls2013_Model4.2_Stability_Eqn.png" height="100">
-
-    Initial Concentrations:     S1 = 1, S2 = 3
-    Kinetic Constants:          k1 = 20, k2 = 20, k3 = 5, k4 = 5, K1 = 1, K2 = 1, n1 = 4, n2 = 1 
-
-- [ProductInhibition.py](Ingalls2013_Model4.2_Stability.py)
-- [ProductInhibition.lpp](Ingalls2013_Model4.2_Stability.lpp)
-- Examples: 
