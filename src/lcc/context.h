@@ -210,6 +210,8 @@ public:
 
 class FEnzyme : public FMolecule { // update to FProtein when ID system is set up
 public:
+    int Type;
+
     std::string Substrate;
     float kcat = -1;
     float KM = -1;
@@ -218,62 +220,78 @@ public:
     float k = -1;
     float krev = -1;
 
-    std::string Inhibitor;
+    // TODO: Allow more than one inhibitor and activators (i.e. Regulator_1 with effect=inhibition, mode=allosteric, K=10, n=3, etc)
+//    std::string Regulator;
+//    std::string Effect;
     std::string Mode;
-    float Ki = -1;
-    float n = -1; // cooperativity
 
-    FEnzyme() {}
+
+    std::string Inhibitor;
+//    std::string Mode_i;
+    float Ki = -1;
+    float n_i = -1; // cooperativity
+
+    std::string Activator;
+//    std::string Mode_a;
+    float Ka = -1;
+    float n_a = -1; // cooperativity
+
+//    FEnzyme() {}
+
+
+//    FEnzyme(EnzReactionType Type, float a1, float a2) {
+//   if (Type == StandardChemical) {
+//
+//   } else if (Type == Activator) {
+//
+//
+//   }
+//	
+//
+//   }
+//    FEnzyme(int Type, float a1, float a2, string s1, string s2) {
+//        if (Type == 0) {
+//	// 0 -> Standard 
+//	k = a1;
+//    }
 
     // UPDATE TO FProtein(InName) when ID System is set up
-// without InitialCount
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM)
-        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM), FMolecule(InName) {}
+    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const int& InInitialCount=0, const bool Fixed=false)
+        : Type(InType), Substrate(InSubstrate), FMolecule(InName, InInitialCount, Fixed) {
+            if (Type == 0) {
+                k = Ink1;	krev = Ink2;
+            } else if (Type == 5) {
+                kcat = Ink1; 	KM = Ink2;           
+            }       
+        }
 
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn)
-        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM),  Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName) {}
-
-    // standard chemical reaction case may have Product specified
-    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev)
-        : k(Ink), krev(Inkrev), FMolecule(InName) {}
-
-    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn)
-        : k(Ink), krev(Inkrev), Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName) {}
-
-// with InitialCount
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM, const int& InInitialCount, const bool Fixed)
-        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM), FMolecule(InName, InInitialCount, Fixed) {}
-
-    FEnzyme(const std::string& InName, const std::string& InSubstrate, const float& Inkcat, const float& InKM, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn, const int& InInitialCount, const bool Fixed)
-        : Substrate(InSubstrate), kcat(Inkcat), KM(InKM),  Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName, InInitialCount, Fixed) {}
-
-    // standard chemical reaction case may have Product specified
-    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const int& InInitialCount, const bool Fixed)
-        : k(Ink), krev(Inkrev), FMolecule(InName, InInitialCount, Fixed) {}
-
-    FEnzyme(const std::string& InName, const float& Ink, const float& Inkrev, const std::string& InInhibitor, const std::string& InMode, const float& InKi, const float& Inn, const int& InInitialCount, const bool Fixed)
-        : k(Ink), krev(Inkrev), Inhibitor(InInhibitor), Mode(InMode), Ki(InKi), n(Inn), FMolecule(InName, InInitialCount, Fixed) {}
+    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const int& InInitialCount=0, const bool Fixed=false)
+        : Type(InType), Substrate(InSubstrate), Mode(InMode), FMolecule(InName, InInitialCount, Fixed) {
+            if ((Type == 1) or (Type == 2)) {
+                k = Ink1; 	krev = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
+            } else if ((Type == 3) or (Type == 4)) {
+                k = Ink1; 	krev = Ink2; 	Activator = InRegulator;	Ka = InK; 	n_a = Inn;
+            } else if ((Type == 6) or (Type == 7)) {
+                kcat = Ink1; 	KM = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
+            } else if ((Type == 8) or (Type == 9)) {
+                kcat = Ink1; 	KM = Ink2; 	Activator = InRegulator;	Ka = InK; 	n_a = Inn;
+            }       
+        }
 
     void Print(std::ostream& os) {
-        os << "  Enzyme Id: " << Name; 
+        os << "  Enzyme Id: " << Name << "\t| Substrate: " << Substrate << "\t| InitialCount: " << InitialCount; if (Fixed) { os << " (Fixed)"; }
         if (KM > 0) {
-            os << "\t| Substrate: " << Substrate << "\t| kcat:  " << std::to_string(kcat) << "\t| KM: " << std::to_string(KM);
+            os << "\t| kcat:  " << std::to_string(kcat) << "\t| KM: " << std::to_string(KM);
         }
         if (k > 0) {
             os << "\t| k: " << std::to_string(k) << "\t| krev:  " << std::to_string(krev);
         }
-        if (Ki > 0) {
-            os << "\t| Inhibitor: " << Inhibitor << "\t| Mode: " << Mode << "\t| Ki: " << std::to_string(Ki);
+        if (!Inhibitor.empty()) {
+            os << "\t| Inhibitor: " << Inhibitor << "\t| Mode: " << Mode << "\t| Ki: " << std::to_string(Ki) << "\t| n_i: " << std::to_string(n_i);
         }        
-        if (n > 0) {
-        os << "\t| n: " << std::to_string(n);
-        }
-        if (InitialCount > 0) {
-            os << "\t| InitialCount: " << InitialCount;
-        }
-        if (Fixed) {
-            os << " (Fixed)";
-        }
+        if (!Activator.empty()) {
+            os << "\t| Activator: " << Activator << "\t| Mode: " << Mode << "\t| Ka: " << std::to_string(Ka) << "\t| n_a: " << std::to_string(n_a);
+        }        
         os << std::endl;
     }
 };
@@ -406,6 +424,7 @@ public:
     std::vector<float> GetKis_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<float> Getks_EnzymeList(std::vector<const FEnzyme *>);
     std::vector<float> Getkrevs_EnzymeList(std::vector<const FEnzyme *>);
+    std::vector<const FEnzyme *> GetSubList_EnzymeList(std::vector<const FEnzyme*>, std::string); 
 
     std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
     std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);

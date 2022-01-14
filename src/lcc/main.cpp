@@ -84,6 +84,19 @@ void TraversalNode(NBlock* InProgramBlock)
         const NNode* node = tc.Queue.front(); tc.Queue.pop();
 
         // This is inteded for NEnzymeDeclaration, to be fixed later on.
+        enum EnzReactionType {
+            Standard = 0,
+            Standard_Inhibition_Allosteric,
+            Standard_Inhibition_Competitive,
+            Standard_Activation_Allosteric,
+            Standard_Activation_Competitive,
+            MichaelisMenten,
+            MichaelisMenten_Inhibition_Allosteric,
+            MichaelisMenten_Inhibition_Competitive,
+            MichaelisMenten_Activation_Allosteric,
+            MichaelisMenten_Activation_Competitive
+        };
+
         if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
             auto N_Enzyme = dynamic_cast<const NProteinDeclaration *>(node);
             os << "Enzyme Id: " << N_Enzyme->Id.Name << endl;
@@ -96,17 +109,18 @@ void TraversalNode(NBlock* InProgramBlock)
             // Enzyme Information
             string Name = Id.Name;
 
+            EnzReactionType Type;
+
             string Substrate;
-            float kcat = Float_Init;
-            float KM = Float_Init;
+            float k1 = Float_Init;
+            float k2 = Float_Init;
 
-            float k = Float_Init;
-            float krev = Float_Init;
-
+            string Regulator; // Inhibitor or Activator will be assigned as a Regulator
             string Inhibitor;
-            string Mode;
-            float Ki = Float_Init;
-            float n = Float_Init;
+            string Activator;
+            string Mode; // "Allosteric" or "Competitive"
+            float K = Float_Init; // Reduced regulatory kinetic constant
+            float n = Float_Init; // Hill's coefficient
 
             int InitialCount = Int_Init;
             bool Fixed = false;
@@ -117,23 +131,46 @@ void TraversalNode(NBlock* InProgramBlock)
                 auto& Key = property->Key;
 		auto& Value = property->Value;
 
-                if ((Key == "kcat") or (Key == "kCat")) {
-                    kcat = std::stof(Value);
-                } else if ((Key == "KM") or (Key == "kM") or (Key == "km")) {
-                    KM = std::stof(Value);
-
-                } else if (Key == "k") {
-                    k = std::stof(Value);
+                if (Key == "k") {
+                    k1 = std::stof(Value);
+                    Type = Standard;
                 } else if (Key == "krev") {
-                    krev = std::stof(Value);
+                    k2 = std::stof(Value);
+                    Type = Standard; 
+                } else if ((Key == "kcat") or (Key == "kCat")) {
+                    k1 = std::stof(Value);
+                    Type = MichaelisMenten;
+                } else if ((Key == "KM") or (Key == "kM") or (Key == "km")) {
+                    k2 = std::stof(Value);
+                    Type = MichaelisMenten;
 
                 } else if ((Key == "inhibitor") or (Key == "Inhibitor")) {
-                    Inhibitor = Value;
+                    Inhibitor = Value; // TODO: improve coding style
+                    Regulator = Value;
+                } else if ((Key == "activator") or (Key == "Activator")) {
+                    Activator = Value; // TODO: improve coding style
+                    Regulator = Value;
                 } else if ((Key == "mode") or (Key == "Mode")) {
                     Mode = Value;
-
-                } else if ((Key == "Ki") or (Key == "ki")) {
-                    Ki = std::stof(Value);
+                    if (Type == Standard) {
+                        if (!Inhibitor.empty() & Activator.empty()){
+                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = Standard_Inhibition_Allosteric; }
+                       else if ((Mode == "competitive") or ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
+                        } else if (Inhibitor.empty() & !Activator.empty()){
+                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = Standard_Activation_Allosteric; }
+                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
+                        }
+                    } else if (Type == MichaelisMenten) {
+                        if (!Inhibitor.empty() & Activator.empty()){
+                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = MichaelisMenten_Inhibition_Allosteric; }
+                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
+                        } else if (Inhibitor.empty() & !Activator.empty()){
+                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = MichaelisMenten_Activation_Allosteric; }
+                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
+                        }
+                    }
+                } else if ((Key == "Ki") or (Key == "ki") or (Key == "Ka") or (Key == "ka")) {
+                    K = std::stof(Value);
                 } else if (Key == "n") {
                     n = std::stof(Value);
 
@@ -143,7 +180,6 @@ void TraversalNode(NBlock* InProgramBlock)
                     if (Value == Name) {
                         Fixed = true;
                     }
-
                 } else {
 //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
                 }
@@ -157,57 +193,73 @@ void TraversalNode(NBlock* InProgramBlock)
                 }
             }
  
-            if (kcat == Float_Init) {
+            if (k1 == Float_Init) {
                 string kcat_Database = Context.QueryTable(Name, "kcat", Context.EnzymeTable);
                 if (!kcat_Database.empty()) {
-                    kcat = std::stof(kcat_Database);
+                    k1 = std::stof(kcat_Database);
                     os << "  kcat imported from database: " << kcat_Database << endl;
                 }
             }
-            if (KM == Float_Init) {
+            if (k2 == Float_Init) {
                 string KM_Database = Context.QueryTable(Name, "KM", Context.EnzymeTable);
                 if (!KM_Database.empty()) {
-                    KM = std::stof(KM_Database);
+                    k2 = std::stof(KM_Database);
                     os << "  KM imported from database: " << KM_Database << endl;
                 }
             }
 
-            if ((k != Float_Init) & (krev == Float_Init)) {
-                krev = 0;
+            // Fill in presumably irreversible reaction kinetic values 
+            if ((k1 != Float_Init) & (k2 == Float_Init)) {
+                k2 = 0;
             }
 
-            if ((k == Float_Init) & (krev != Float_Init)) {
-                k = 0;
+            if ((k1 == Float_Init) & (k2 != Float_Init)) {
+                k1 = 0;
             }
           
-            if (Inhibitor.empty()) {
-                Inhibitor = Context.QueryTable(Name, "Inhibitor", Context.EnzymeTable);
-                if (!Inhibitor.empty()) {
-                    os << "  Inhibitor imported from database: " << Substrate << endl;
-                }
-            }
-            if (Mode.empty()) {
-                Mode = Context.QueryTable(Name, "Mode", Context.EnzymeTable);
-                if (!Mode.empty()) {
-                    os << "  Mode imported from database: " << Substrate << endl;
-                }
-            }
-
-            if (Ki == Float_Init) {
-                string Ki_Database = Context.QueryTable(Name, "Ki", Context.EnzymeTable); // * RandomNumber();
-                if (!Ki_Database.empty()) {
-                    Ki = std::stof(Ki_Database);
-                    os << "  Ki imported from database: " << Ki_Database << endl;
-                }
-            }
-
-            if (n == Float_Init) {
-                string n_Database = Context.QueryTable(Name, "n", Context.EnzymeTable); // * RandomNumber();
-                if (!n_Database.empty()) {
-                    n = std::stof(n_Database);
-                    os << "  n imported from database: " << n_Database << endl;
-                }
-            }
+//            if (Inhibitor.empty()) {
+//                Inhibitor = Context.QueryTable(Name, "Inhibitor", Context.EnzymeTable);
+//                if (!Inhibitor.empty()) {
+//                    os << "  Inhibitor imported from database: " << Substrate << endl;
+//                }
+//            }
+//
+//            if (Activator.empty()) {
+//                Activator = Context.QueryTable(Name, "Activator", Context.EnzymeTable);
+//                if (!Inhibitor.empty()) {
+//                    os << "  Activator imported from database: " << Substrate << endl;
+//                }
+//            }
+//
+//            if (Mode.empty()) {
+//                Mode = Context.QueryTable(Name, "Mode", Context.EnzymeTable);
+//                if (!Mode.empty()) {
+//                    os << "  Mode imported from database: " << Substrate << endl;
+//                }
+//            }
+//
+//            if (!Inhibitor.empty() and (K == Float_Init)) {
+//                string Ki_Database = Context.QueryTable(Name, "Ki", Context.EnzymeTable); // * RandomNumber();
+//                if (!Ki_Database.empty()) {
+//                    K = std::stof(Ki_Database);
+//                    os << "  Ki imported from database: " << Ki_Database << endl;
+//                }
+//            } else if (!Activator.empty() and (K == Float_Init)) {
+//                string Ka_Database = Context.QueryTable(Name, "Ka", Context.EnzymeTable); // * RandomNumber();
+//                if (!Ka_Database.empty()) {
+//                    K = std::stof(Ka_Database);
+//                    os << "  Ka imported from database: " << Ka_Database << endl;
+//                }
+//
+//            }
+//
+//            if (n == Float_Init) {
+//                string n_Database = Context.QueryTable(Name, "n", Context.EnzymeTable); // * RandomNumber();
+//                if (!n_Database.empty()) {
+//                    n = std::stof(n_Database);
+//                    os << "  n imported from database: " << n_Database << endl;
+//                }
+//            }
 
 
             map<string, int> Stoichiometry;
@@ -237,16 +289,11 @@ void TraversalNode(NBlock* InProgramBlock)
                         Fixed = true;
                     }
                 }
-                if (InitialCount == Int_Init) {
-                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
-                    Molecule->Print(os);
-                    Context.AddToMoleculeList(Molecule);
 
-                } else {
-                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Fixed);
-                    Molecule->Print(os);
-                    Context.AddToMoleculeList(Molecule);
-                }
+                // Add a new small molecule (small molecule is an assumption made on enzyme, but it may not always be true)
+                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Fixed);
+                Molecule->Print(os);
+                Context.AddToMoleculeList(Molecule);
             }
 
             for (const auto& product : OverallReaction.Products) {
@@ -268,16 +315,11 @@ void TraversalNode(NBlock* InProgramBlock)
                         Fixed = true;
                     }                
                 }
-                if (InitialCount == Int_Init) {
-                    FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
-                    Molecule->Print(os);
-                    Context.AddToMoleculeList(Molecule);
 
-                } else {
-                    FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Fixed);
-                    Molecule->Print(os);
-                    Context.AddToMoleculeList(Molecule);
-                }
+                // Add a new small molecule (small molecule is an assumption made on enzyme, but it may not always be true)
+                FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Fixed);
+                Molecule->Print(os);
+                Context.AddToMoleculeList(Molecule);
             }
 
 			if (!Location.empty()) {
@@ -290,53 +332,14 @@ void TraversalNode(NBlock* InProgramBlock)
             Context.AddToReactionList(EnzymaticReaction);
 
             // add new enzyme to the system
-            if (InitialCount == Float_Init) {
-
-                // if KM assigned
-                if ((KM != Float_Init) & (k == Float_Init) & Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, KM);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                // if KM assigned and inhibitor defined
-                } else if ((KM != Float_Init) & (k == Float_Init) & !Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, KM, Inhibitor, Mode, Ki, n);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-
-                // if k assigned
-                } else if ((KM == Float_Init) & (k != Float_Init) & Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, k, krev);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                // if k assigned and inhibitor defined
-                } else if ((KM == Float_Init) & (k != Float_Init) & !Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, k, krev, Inhibitor, Mode, Ki, n);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                }
+            if ((Type == Standard) or (Type == MichaelisMenten)) {
+                FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2, InitialCount, Fixed);
+                Enzyme->Print(os);
+                Context.AddToMoleculeList(Enzyme);
             } else {
-
-                // if KM assigned
-                if ((KM != Float_Init) & (k == Float_Init) & Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, KM, InitialCount, Fixed);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                // if KM assigned and inhibitor defined
-                } else if ((KM != Float_Init) & (k == Float_Init) & !Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, Substrate, kcat, KM, Inhibitor, Mode, Ki, n, InitialCount, Fixed);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                // if k assigned
-                } else if ((KM == Float_Init) & (k != Float_Init) & Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, k, krev, InitialCount, Fixed);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                // if k assigned and inhibitor defined
-                } else if ((KM == Float_Init) & (k != Float_Init) & !Inhibitor.empty()) {
-                    FEnzyme * Enzyme = new FEnzyme(Name, k, krev, Inhibitor, Mode, Ki, n, InitialCount, Fixed);
-                    Enzyme->Print(os);
-                    Context.AddToMoleculeList(Enzyme);
-                }
+                FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2, Regulator, Mode, K, n, InitialCount, Fixed);
+                Enzyme->Print(os);
+                Context.AddToMoleculeList(Enzyme);
             }
 
             // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
@@ -347,7 +350,7 @@ void TraversalNode(NBlock* InProgramBlock)
 //                }
 //
 //            }
- 
+
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
             os << "Pathway: " << Pathway->Id.Name << endl;
@@ -730,191 +733,292 @@ std::string Matrix2Str(std::vector<std::vector<int>> Matrix)
     return MatrixStr;
 }
 
-void Print_InitializeEnzymeReaction_MassAction(ofstream& ofs)
+void Print_InitializeEnzymeReaction_Standard(ofstream& ofs)
 {
-    ofs << in+ in+ in+ "# General Mass Action" << endl;
+    ofs << in+ in+ in+ "# Standard" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Indices" << endl;
-    ofs << in+ in+ in+ "self.Idx_Enz_MA = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_Reactant_1_MA = None" << endl;
-    //ofs << in+ in+ in+ "self.Idx_Reactant_2_MA = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_Product_1_MA = None" << endl;
-    //ofs << in+ in+ in+ "self.Idx_Product_2_MA = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_ST = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1_ST = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Reactant_2_ST = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1_ST = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Product_2_ST = None" << endl;
     ofs << in+ in+ in+ "self.Idx_Mol = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol_MA = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_ST = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
-    ofs << in+ in+ in+ "self.Const_ks_MA = None" << endl;
-    ofs << in+ in+ in+ "self.Const_krevs_MA = None" << endl;
+    ofs << in+ in+ in+ "self.Const_k_ST = None" << endl;
+    ofs << in+ in+ in+ "self.Const_krev_ST = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_MassAction = None" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_Standard = None" << endl;
     ofs << endl;
 }
 
-void Print_SetUpEnzymeReaction_MassAction(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList) // to be changed with reaction list
+void Print_SetUpEnzymeReaction_Standard(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList) // to be changed with reaction list
 {
     // declare all arrays to push back
+    std::string Type = "Standard";
+
     std::vector<float> ks;
-    std::vector<float> krevs;
-    std::vector<int> Idx_Enz_MA; // for Enzyme where En is not included in the reaction
-    std::vector<int> Idx_Reactant_1_MA;
-    // std::vector<int> Idx_Reactant_2_MA;
-    std::vector<int> Idx_Product_1_MA;
-    // std::vector<int> Idx_Product_2_MA;
-    std::vector<int> Idx_SMol_MA = Context.GetIdxForStoichiometryMatrix("MassAction");
+    std::vector<float> krev;
+    std::vector<int> Idx_Enz_ST; // for Enzyme where En is not included in the reaction
+    std::vector<int> Idx_Reactant_1_ST;
+    // std::vector<int> Idx_Reactant_2_ST;
+    std::vector<int> Idx_Product_1_ST;
+    // std::vector<int> Idx_Product_2_ST;
+    std::vector<int> Idx_SMol_ST = Context.GetIdxForStoichiometryMatrix(Type);
 
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
     // std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
 
     // loop through enzymelist and push back if k >= 0
     std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
+    std::vector<const FEnzyme *> EnzymeList_Sub = Context.GetSubList_EnzymeList(EnzymeList, Type);
 
-    for (auto& Enzyme : EnzymeList) {
-        if ((Enzyme->k >= 0) & (Enzyme->KM < 0) & Enzyme->Mode.empty()) {
-            Idx_Enz_MA.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Name));
-            ks.push_back(Enzyme->k);
-            krevs.push_back(Enzyme->krev);
-           
-            for (auto& reaction : EnzymaticReactionList) {
-                if (Enzyme->Name == reaction->Name) {
-                    int i = 0;
-                    std::vector<int> Idx_Reactants;
-                    std::vector<int> Idx_Products;
-                    for (auto& stoich : reaction->Stoichiometry) {
-                        int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                        if (stoich.second < 0) {
-                            Idx_Reactants.push_back(Idx);
-                        } else if (stoich.second > 0) {
-                            Idx_Products.push_back(Idx);
-                        }
+    for (auto& enzyme : EnzymeList_Sub) {
+        Idx_Enz_ST.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
+        ks.push_back(enzyme->k);
+        krev.push_back(enzyme->krev);
+       
+        for (auto& reaction : EnzymaticReactionList) {
+            if (enzyme->Name == reaction->Name) {
+                int i = 0;
+                std::vector<int> Idx_Reactants;
+                std::vector<int> Idx_Products;
+                for (auto& stoich : reaction->Stoichiometry) {
+                    int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                    if (stoich.second < 0) {
+                        Idx_Reactants.push_back(Idx);
+                    } else if (stoich.second > 0) {
+                        Idx_Products.push_back(Idx);
                     }
-                    // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
-                    Idx_Reactant_1_MA.push_back(Idx_Reactants[0]);
-                    // Idx_Reactant_2_MA.push_back(Idx_Reactants[1]);
-                    Idx_Product_1_MA.push_back(Idx_Products[0]);
-                    // Idx_Product_2_MA.push_back(Idx_Products[1]);
                 }
+                // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
+                Idx_Reactant_1_ST.push_back(Idx_Reactants[0]);
+                // Idx_Reactant_2_ST.push_back(Idx_Reactants[1]);
+                Idx_Product_1_ST.push_back(Idx_Products[0]);
+                // Idx_Product_2_ST.push_back(Idx_Products[1]);
             }
         }
     }
     
-    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MassAction = Context.GetStoichiometryMatrix("MassAction");
+    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_Standard = Context.GetStoichiometryMatrix(Type);
 
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
-    ofs << in+ in+ in+ "self.Const_ks_MA = np.array([" << JoinFloat2Str(ks) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_krevs_MA = np.array([" << JoinFloat2Str(krevs) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_MassAction = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_MassAction) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_k_ST = np.array([" << JoinFloat2Str(ks) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_krev_ST = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_Standard = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_Standard) << "])" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_Enz_MA = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_MA) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Reactant_1_MA = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactant_1_MA) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Product_1_MA = np.asmatrix([" << JoinInt2Str_Idx(Idx_Product_1_MA) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_ST = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_ST) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1_ST = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactant_1_ST) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1_ST = np.asmatrix([" << JoinInt2Str_Idx(Idx_Product_1_ST) << "])" << endl;
     ofs << in+ in+ in+ "self.Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol_MA = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_MA) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_ST = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_ST) << "])" << endl;
     ofs << endl;
 
 }
 
-void Print_InitializeEnzymeReaction_MassAction_AllostericInhibition(ofstream& ofs)
+void Print_InitializeEnzymeReaction_Standard_Inhibition_Allosteric(ofstream& ofs)
 {
-    ofs << in+ in+ in+ "# General Mass Action with Allosteric Inhibition (MA_AI)" << endl;
+    ofs << in+ in+ in+ "# Standard_Inhibition_Allosteric (ST_I_A)" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Indices" << endl;
-    ofs << in+ in+ in+ "self.Idx_Enz_MA_AI = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_Reactant_1_MA_AI = None" << endl;
-    //ofs << in+ in+ in+ "self.Idx_Reactant_2_MA_AI = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_Product_1_MA_AI = None" << endl;
-    //ofs << in+ in+ in+ "self.Idx_Product_2_MA_AI = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_Inhibitor_1_MA_AI = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol_MA_AI = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_ST_I_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1_ST_I_A = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Reactant_2_ST_I_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1_ST_I_A = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Product_2_ST_I_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Inhibitor_1_ST_I_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_ST_I_A = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
-    ofs << in+ in+ in+ "self.Const_ks_MA_AI = None" << endl;
-    ofs << in+ in+ in+ "self.Const_krevs_MA_AI = None" << endl;
-    ofs << in+ in+ in+ "self.Const_Kis_MA_AI = None" << endl; // Upper case K to represent a collection of k's
-    ofs << in+ in+ in+ "self.Const_ns_MA_AI = None" << endl;
+    ofs << in+ in+ in+ "self.Const_k_ST_I_A = None" << endl;
+    ofs << in+ in+ in+ "self.Const_krev_ST_I_A = None" << endl;
+    ofs << in+ in+ in+ "self.Const_K_ST_I_A = None" << endl; // Upper case K to represent a collection of k's
+    ofs << in+ in+ in+ "self.Const_n_ST_I_A = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_MA_AI = None" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_ST_I_A = None" << endl;
     ofs << endl;
 }
 
-void Print_SetUpEnzymeReaction_MassAction_AllostericInhibition(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList) // to be changed with reaction list
+void Print_SetUpEnzymeReaction_Standard_Inhibition_Allosteric(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList) // to be changed with reaction list
 {
+    std::string Type = "Standard_Inhibition_Allosteric";
+
     // declare all arrays to push back
-    std::vector<float> ks_MA_AI;
-    std::vector<float> krevs_MA_AI;
-    std::vector<float> Kis_MA_AI;
-    std::vector<float> ns_MA_AI;
-    std::vector<int> Idx_Enz_MA_AI; // for Enzyme where En is not included in the reaction
-    std::vector<int> Idx_Reactant_1_MA_AI;
-    // std::vector<int> Idx_Reactant_2_MA;
-    std::vector<int> Idx_Product_1_MA_AI;
-    // std::vector<int> Idx_Product_2_MA;
-    std::vector<int> Idx_Inhibitor_1_MA_AI;
-    std::vector<int> Idx_SMol_MA_AI = Context.GetIdxForStoichiometryMatrix("MassAction_AllostericInhibition");
+    std::vector<float> k_ST_I_A;
+    std::vector<float> krev_ST_I_A;
+    std::vector<float> K_ST_I_A;
+    std::vector<float> n_ST_I_A;
+    std::vector<int> Idx_Enz_ST_I_A; // for Enzyme where En is not included in the reaction
+    std::vector<int> Idx_Reactant_1_ST_I_A;
+    // std::vector<int> Idx_Reactant_2_ST;
+    std::vector<int> Idx_Product_1_ST_I_A;
+    // std::vector<int> Idx_Product_2_ST;
+    std::vector<int> Idx_Inhibitor_1_ST_I_A;
+    std::vector<int> Idx_SMol_ST_I_A = Context.GetIdxForStoichiometryMatrix(Type);
 
     // loop through enzymelist and push back if k >= 0
     std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
 
-    for (auto& Enzyme : EnzymeList) {
-        if ((Enzyme->k >= 0) & (Enzyme->KM < 0) & (Enzyme->Mode == "Allosteric")) {
-            Idx_Enz_MA_AI.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Name));
-            ks_MA_AI.push_back(Enzyme->k);
-            krevs_MA_AI.push_back(Enzyme->krev);
-            Kis_MA_AI.push_back(Enzyme->Ki);
-            ns_MA_AI.push_back(Enzyme->n);
+    std::vector<const FEnzyme *> EnzymeList_Sub = Context.GetSubList_EnzymeList(EnzymeList, Type);
 
-            // TODO: There may be more than one inhibitor for the enzyme
-            Idx_Inhibitor_1_MA_AI.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Inhibitor));
-           
-            for (auto& reaction : EnzymaticReactionList) {
-                if (Enzyme->Name == reaction->Name) {
-                    int i = 0;
-                    std::vector<int> Idx_Reactants;
-                    std::vector<int> Idx_Products;
-                    for (auto& stoich : reaction->Stoichiometry) {
-                        int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                        if (stoich.second < 0) {
-                            Idx_Reactants.push_back(Idx);
-                        } else if (stoich.second > 0) {
-                            Idx_Products.push_back(Idx);
-                        }
+    for (auto& enzyme : EnzymeList_Sub) {
+        Idx_Enz_ST_I_A.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
+        k_ST_I_A.push_back(enzyme->k);
+        krev_ST_I_A.push_back(enzyme->krev);
+        K_ST_I_A.push_back(enzyme->Ki);
+        n_ST_I_A.push_back(enzyme->n_i);
+
+        // TODO: There may be more than one inhibitor for the enzyme
+        Idx_Inhibitor_1_ST_I_A.push_back(Context.GetIdxByName_MoleculeList(enzyme->Inhibitor));
+       
+        for (auto& reaction : EnzymaticReactionList) {
+            if (enzyme->Name == reaction->Name) {
+                int i = 0;
+                std::vector<int> Idx_Reactants;
+                std::vector<int> Idx_Products;
+                for (auto& stoich : reaction->Stoichiometry) {
+                    int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                    if (stoich.second < 0) {
+                        Idx_Reactants.push_back(Idx);
+                    } else if (stoich.second > 0) {
+                        Idx_Products.push_back(Idx);
                     }
-                    // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
-                    Idx_Reactant_1_MA_AI.push_back(Idx_Reactants[0]);
-                    // Idx_Reactant_2_MA_AI.push_back(Idx_Reactants[1]);
-                    Idx_Product_1_MA_AI.push_back(Idx_Products[0]);
-                    // Idx_Product_2_MA_AI.push_back(Idx_Products[1]);
                 }
+                // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
+                Idx_Reactant_1_ST_I_A.push_back(Idx_Reactants[0]);
+                // Idx_Reactant_2_ST_I_A.push_back(Idx_Reactants[1]);
+                Idx_Product_1_ST_I_A.push_back(Idx_Products[0]);
+                // Idx_Product_2_ST_I_A.push_back(Idx_Products[1]);
             }
         }
     }
     
-    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MassAction = Context.GetStoichiometryMatrix("MassAction_AllostericInhibition");
+    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_Standard = Context.GetStoichiometryMatrix(Type);
 
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
-    ofs << in+ in+ in+ "self.Const_ks_MA_AI = np.array([" << JoinFloat2Str(ks_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_krevs_MA_AI = np.array([" << JoinFloat2Str(krevs_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_Kis_MA_AI = np.array([" << JoinFloat2Str(Kis_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_ns_MA_AI = np.array([" << JoinFloat2Str(ns_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_MA_AI = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_MassAction) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_k_ST_I_A = np.array([" << JoinFloat2Str(k_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_krev_ST_I_A = np.array([" << JoinFloat2Str(krev_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_K_ST_I_A = np.array([" << JoinFloat2Str(K_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_n_ST_I_A = np.array([" << JoinFloat2Str(n_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_ST_I_A = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_Standard) << "])" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_Enz_MA_AI = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Reactant_1_MA_AI = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactant_1_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Product_1_MA_AI = np.asmatrix([" << JoinInt2Str_Idx(Idx_Product_1_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Inhibitor_1_MA_AI = np.asmatrix([" << JoinInt2Str_Idx(Idx_Inhibitor_1_MA_AI) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_SMol_MA_AI = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_MA_AI) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_ST_I_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1_ST_I_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactant_1_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1_ST_I_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Product_1_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Inhibitor_1_ST_I_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Inhibitor_1_ST_I_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_ST_I_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_ST_I_A) << "])" << endl;
+    ofs << endl;
+}
+
+void Print_InitializeEnzymeReaction_Standard_Activation_Allosteric(ofstream& ofs)
+{
+    ofs << in+ in+ in+ "# Standard_Activation_Allosteric (ST_A_A)" << endl;
     ofs << endl;
 
+    ofs << in+ in+ in+ "# Indices" << endl;
+    ofs << in+ in+ in+ "self.Idx_Enz_ST_A_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1_ST_A_A = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Reactant_2_ST_A_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1_ST_A_A = None" << endl;
+    //ofs << in+ in+ in+ "self.Idx_Product_2_ST_A_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_Activator_1_ST_A_A = None" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_ST_A_A = None" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# K Constant Arrays" << endl;
+    ofs << in+ in+ in+ "self.Const_k_ST_A_A = None" << endl;
+    ofs << in+ in+ in+ "self.Const_krev_ST_A_A = None" << endl;
+    ofs << in+ in+ in+ "self.Const_K_ST_A_A = None" << endl; // Upper case K to represent a collection of k's
+    ofs << in+ in+ in+ "self.Const_n_ST_A_A = None" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_ST_A_A = None" << endl;
+    ofs << endl;
+}
+
+void Print_SetUpEnzymeReaction_Standard_Activation_Allosteric(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList) // to be changed with reaction list
+{
+    std::string Type = "Standard_Activation_Allosteric";
+
+    // declare all arrays to push back
+    std::vector<float> k_ST_A_A;
+    std::vector<float> krev_ST_A_A;
+    std::vector<float> K_ST_A_A;
+    std::vector<float> n_ST_A_A;
+    std::vector<int> Idx_Enz_ST_A_A; // for Enzyme where En is not included in the reaction
+    std::vector<int> Idx_Reactant_1_ST_A_A;
+    // std::vector<int> Idx_Reactant_2_ST;
+    std::vector<int> Idx_Product_1_ST_A_A;
+    // std::vector<int> Idx_Product_2_ST;
+    std::vector<int> Idx_Activator_1_ST_A_A;
+    std::vector<int> Idx_SMol_ST_A_A = Context.GetIdxForStoichiometryMatrix(Type);
+
+    // loop through enzymelist and push back if k >= 0
+    std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
+
+    std::vector<const FEnzyme *> EnzymeList_Sub = Context.GetSubList_EnzymeList(EnzymeList, Type);
+
+    for (auto& enzyme : EnzymeList_Sub) {
+        Idx_Enz_ST_A_A.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
+        k_ST_A_A.push_back(enzyme->k);
+        krev_ST_A_A.push_back(enzyme->krev);
+        K_ST_A_A.push_back(enzyme->Ka);
+        n_ST_A_A.push_back(enzyme->n_a);
+
+        // TODO: There may be more than one inhibitor for the enzyme
+        Idx_Activator_1_ST_A_A.push_back(Context.GetIdxByName_MoleculeList(enzyme->Activator));
+       
+        for (auto& reaction : EnzymaticReactionList) {
+            if (enzyme->Name == reaction->Name) {
+                int i = 0;
+                std::vector<int> Idx_Reactants;
+                std::vector<int> Idx_Products;
+                for (auto& stoich : reaction->Stoichiometry) {
+                    int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                    if (stoich.second < 0) {
+                        Idx_Reactants.push_back(Idx);
+                    } else if (stoich.second > 0) {
+                        Idx_Products.push_back(Idx);
+                    }
+                }
+                // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
+                Idx_Reactant_1_ST_A_A.push_back(Idx_Reactants[0]);
+                // Idx_Reactant_2_ST_A_A.push_back(Idx_Reactants[1]);
+                Idx_Product_1_ST_A_A.push_back(Idx_Products[0]);
+                // Idx_Product_2_ST_A_A.push_back(Idx_Products[1]);
+            }
+        }
+    }
+    
+    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_Standard = Context.GetStoichiometryMatrix(Type);
+
+    ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
+    ofs << in+ in+ in+ "self.Const_k_ST_A_A = np.array([" << JoinFloat2Str(k_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_krev_ST_A_A = np.array([" << JoinFloat2Str(krev_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_K_ST_A_A = np.array([" << JoinFloat2Str(K_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_n_ST_A_A = np.array([" << JoinFloat2Str(n_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_StoichMatrix_ST_A_A = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_Standard) << "])" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "self.Idx_Enz_ST_A_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Reactant_1_ST_A_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactant_1_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Product_1_ST_A_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Product_1_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Activator_1_ST_A_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_Activator_1_ST_A_A) << "])" << endl;
+    ofs << in+ in+ in+ "self.Idx_SMol_ST_A_A = np.asmatrix([" << JoinInt2Str_Idx(Idx_SMol_ST_A_A) << "])" << endl;
+    ofs << endl;
 }
 
 
@@ -930,9 +1034,9 @@ void Print_InitializeEnzymeReaction_MichaelisMenten(ofstream& ofs)
     ofs << endl;
 
     ofs << in+ in+ in+ "# K Constant Arrays" << endl;
-    ofs << in+ in+ in+ "self.Const_kcats = None" << endl;
-    ofs << in+ in+ in+ "self.Const_KMs = None" << endl;
-    ofs << in+ in+ in+ "self.Const_Kis = None" << endl;
+    ofs << in+ in+ in+ "self.Const_kcat_MM = None" << endl;
+    ofs << in+ in+ in+ "self.Const_KM_MM = None" << endl;
+    ofs << in+ in+ in+ "self.Const_Ki = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ "# Stoichiometry Matrix" << endl;
@@ -942,53 +1046,55 @@ void Print_InitializeEnzymeReaction_MichaelisMenten(ofstream& ofs)
 
 void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const FEnzyme *> EnzymeList)
 {
+    std::string Type = "MichaelisMenten";
+
     std::vector<const FEnzymaticReaction *> EnzymaticReactionList = Context.GetList_Enzymatic_ReactionList();
     // std::vector<int> Idx_SMol = Context.GetIdxListFromMoleculeList("SmallMolecule");
     
     std::vector<float> kcats;
     std::vector<float> KMs;
-    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MichaelisMenten = Context.GetStoichiometryMatrix("MichaelisMenten");
+    std::vector<std::vector<int>> StoichMatrix_EnzymaticReaction_MichaelisMenten = Context.GetStoichiometryMatrix(Type);
 
     std::vector<int> Idx_Enz_MM;
     std::vector<int> Idx_EnzSub_MM;
-    std::vector<int> Idx_SMol_MM = Context.GetIdxForStoichiometryMatrix("MichaelisMenten");
+    std::vector<int> Idx_SMol_MM = Context.GetIdxForStoichiometryMatrix(Type);
 
     std::vector<int> Idx_Reactant_1_MM; // not used in MM
     std::vector<int> Idx_Product_1_MM; // not used in MM
 
-    for (auto& Enzyme : EnzymeList) {
-        if ((Enzyme->KM >= 0) & (Enzyme->k < 0)) {
-            Idx_Enz_MM.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Name));
-            kcats.push_back(Enzyme->kcat);
-            KMs.push_back(Enzyme->KM);
-            Idx_EnzSub_MM.push_back(Context.GetIdxByName_MoleculeList(Enzyme->Substrate));
-           
-            for (auto& reaction : EnzymaticReactionList) {
-                if (Enzyme->Name == reaction->Name) {
-                    int i = 0;
-                    std::vector<int> Idx_Reactants;
-                    std::vector<int> Idx_Products;
-                    for (auto& stoich : reaction->Stoichiometry) {
-                        int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                        if (stoich.second < 0) {
-                            Idx_Reactants.push_back(Idx);
-                        } else if (stoich.second > 0) {
-                            Idx_Products.push_back(Idx);
-                        }
+    std::vector<const FEnzyme *> EnzymeList_Sub = Context.GetSubList_EnzymeList(EnzymeList, Type);
+
+    for (auto& enzyme : EnzymeList_Sub) {
+        Idx_Enz_MM.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
+        kcats.push_back(enzyme->kcat);
+        KMs.push_back(enzyme->KM);
+        Idx_EnzSub_MM.push_back(Context.GetIdxByName_MoleculeList(enzyme->Substrate));
+       
+        for (auto& reaction : EnzymaticReactionList) {
+            if (enzyme->Name == reaction->Name) {
+                int i = 0;
+                std::vector<int> Idx_Reactants;
+                std::vector<int> Idx_Products;
+                for (auto& stoich : reaction->Stoichiometry) {
+                    int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+                    if (stoich.second < 0) {
+                        Idx_Reactants.push_back(Idx);
+                    } else if (stoich.second > 0) {
+                        Idx_Products.push_back(Idx);
                     }
-                    // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
-                    Idx_Reactant_1_MM.push_back(Idx_Reactants[0]);
-                    // Idx_Reactant_2_MM.push_back(Idx_Reactants[1]);
-                    Idx_Product_1_MM.push_back(Idx_Products[0]);
-                    // Idx_Product_2_MM.push_back(Idx_Products[1]);
                 }
+                // Determines the number of substrates to handle (TODO: implement a pseudo molecule to fill the empty indices. Maybe use -1?)
+                Idx_Reactant_1_MM.push_back(Idx_Reactants[0]);
+                // Idx_Reactant_2_MM.push_back(Idx_Reactants[1]);
+                Idx_Product_1_MM.push_back(Idx_Products[0]);
+                // Idx_Product_2_MM.push_back(Idx_Products[1]);
             }
         }
     }
   
     ofs << in+ in+ in+ "# Enzyme Reactions (small molecules at ~mM range)" << endl;
-    ofs << in+ in+ in+ "self.Const_kcats = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_KMs = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_kcat_MM = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_KM_MM = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
     ofs << in+ in+ in+ "self.Const_StoichMatrix_MichaelisMenten = np.asmatrix([" << Matrix2Str(StoichMatrix_EnzymaticReaction_MichaelisMenten) << "])" << endl;
     ofs << endl;
 
@@ -1159,6 +1265,7 @@ void WriteSimModule()
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
     ofs << "import SimulationFunctions as sim" << endl;
+    ofs << "import plot" << endl;
     ofs << endl;
 
     // BODY
@@ -1187,19 +1294,25 @@ void WriteSimModule()
 
     if (!EnzymeList.empty()) {
         for (auto& enzyme : EnzymeList) {
-            if (enzyme->k >= 0){
-                Print_InitializeEnzymeReaction_MassAction(ofs);
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode.empty())) {
+                Print_InitializeEnzymeReaction_Standard(ofs);
                 break;
             }
         }
         for (auto& enzyme : EnzymeList) {
-            if ((enzyme->k >= 0) & (enzyme->Mode == "Allosteric")) {
-                Print_InitializeEnzymeReaction_MassAction_AllostericInhibition(ofs);
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                Print_InitializeEnzymeReaction_Standard_Inhibition_Allosteric(ofs);
                 break;
             }
         }
         for (auto& enzyme : EnzymeList) {
-            if (enzyme->KM >= 0){
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                Print_InitializeEnzymeReaction_Standard_Activation_Allosteric(ofs);
+                break;
+            }
+        }
+        for (auto& enzyme : EnzymeList) {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Mode.empty())) {
                 Print_InitializeEnzymeReaction_MichaelisMenten(ofs);
                 break;
             }
@@ -1224,13 +1337,19 @@ void WriteSimModule()
     if (!EnzymeList.empty()) {
         for (auto& enzyme : EnzymeList) {
             if (enzyme->k >= 0){
-                Print_SetUpEnzymeReaction_MassAction(ofs, EnzymeList);
+                Print_SetUpEnzymeReaction_Standard(ofs, EnzymeList);
                 break;
             }
         }
         for (auto& enzyme : EnzymeList) {
-            if ((enzyme->k >= 0) & (enzyme->Mode == "Allosteric")) {
-                Print_SetUpEnzymeReaction_MassAction_AllostericInhibition(ofs, EnzymeList);
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                Print_SetUpEnzymeReaction_Standard_Inhibition_Allosteric(ofs, EnzymeList);
+                break;
+            }
+        }
+        for (auto& enzyme : EnzymeList) {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                Print_SetUpEnzymeReaction_Standard_Activation_Allosteric(ofs, EnzymeList);
                 break;
             }
         }
@@ -1513,42 +1632,58 @@ void WriteSimModule()
 
     ofs << in+ in+ "# Biochemical Reaction related routines" << endl;
 
-    ofs << in+ in+ "def MassAction(self):" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Reactant_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1_MA), self.State.Vol)" << endl;
-//    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2_MA), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Product_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1_MA), self.State.Vol)" << endl;
-//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2_MA), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Rate = sim.MassActionEqn(Conc_Enz, Conc_Reactant_1, Conc_Product_1, self.State.Const_ks_MA, self.State.Const_krevs_MA)" << endl;
-//    ofs << in+ in+ in+ "Rate = MassAction(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_ks_MA, self.State.Const_krevs_MA)" << endl;
+    ofs << in+ in+ "def Standard(self):" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_ST), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Reactant_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1_ST), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2_ST), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Product_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1_ST), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2_ST), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Rate = sim.StandardEqn(Conc_Enz, Conc_Reactant_1, Conc_Product_1, self.State.Const_k_ST, self.State.Const_krev_ST)" << endl;
+//    ofs << in+ in+ in+ "Rate = Standard(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_k_ST, self.State.Const_krev_ST)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MassAction, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_Standard, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = sim.ConcToCount(dConc_SMol, self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MA, dCount_SMol)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_ST, dCount_SMol)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def MassAction_AllostericInhibition(self):" << endl;
-    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MA_AI), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Reactant_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1_MA_AI), self.State.Vol)" << endl;
-//    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2_MA_AI), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Product_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1_MA_AI), self.State.Vol)" << endl;
-//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2_MA_AI), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Conc_Inhibitor_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Inhibitor_1_MA_AI), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Rate = sim.MassActionEqn_CooperativeAllostericInhibition(Conc_Enz, Conc_Reactant_1, Conc_Product_1, Conc_Inhibitor_1, self.State.Const_ks_MA_AI, self.State.Const_krevs_MA_AI, self.State.Const_Kis_MA_AI, self.State.Const_ns_MA_AI)" << endl;
-//    ofs << in+ in+ in+ "Rate = MassAction(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_ks, self.State.Const_krevs)" << endl;
+    ofs << in+ in+ "def Standard_Inhibition_Allosteric(self):" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_ST_I_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Reactant_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1_ST_I_A), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2_ST_I_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Product_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1_ST_I_A), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2_ST_I_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Inhibitor_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Inhibitor_1_ST_I_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Rate = sim.StandardEqn_Inhibition_Allosteric(Conc_Enz, Conc_Reactant_1, Conc_Product_1, Conc_Inhibitor_1, self.State.Const_k_ST_I_A, self.State.Const_krev_ST_I_A, self.State.Const_K_ST_I_A, self.State.Const_n_ST_I_A)" << endl;
+//    ofs << in+ in+ in+ "Rate = Standard(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_k, self.State.Const_krev)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
-    ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MA_AI, Rate)" << endl;
+    ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_ST_I_A, Rate)" << endl;
     ofs << in+ in+ in+ "dCount_SMol = sim.ConcToCount(dConc_SMol, self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_MA_AI, dCount_SMol)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_ST_I_A, dCount_SMol)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def Standard_Activation_Allosteric(self):" << endl;
+    ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_ST_A_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Reactant_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_1_ST_A_A), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Reactant_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_2_ST_A_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Product_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_1_ST_A_A), self.State.Vol)" << endl;
+//    ofs << in+ in+ in+ "Conc_Product_2 = CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_2_ST_A_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Conc_Activator_1 = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Activator_1_ST_A_A), self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "Rate = sim.StandardEqn_Activation_Allosteric(Conc_Enz, Conc_Reactant_1, Conc_Product_1, Conc_Activator_1, self.State.Const_k_ST_A_A, self.State.Const_krev_ST_A_A, self.State.Const_K_ST_A_A, self.State.Const_n_ST_A_A)" << endl;
+//    ofs << in+ in+ in+ "Rate = Standard(Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, self.State.Const_k, self.State.Const_krev)" << endl;
+    ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
+    // Update with mole indexes from EnzReactions
+    ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_ST_A_A, Rate)" << endl;
+    ofs << in+ in+ in+ "dCount_SMol = sim.ConcToCount(dConc_SMol, self.State.Vol)" << endl;
+    ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_SMol_ST_A_A, dCount_SMol)" << endl;
     ofs << endl;
 
     // REDUCED MODEL
     ofs << in+ in+ "def MichaelisMentenKinetics(self):" << endl;
     ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_MM), self.State.Vol)" << endl;
     ofs << in+ in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_MM), self.State.Vol)" << endl;
-    ofs << in+ in+ in+ "Rate = sim.MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcats, self.State.Const_KMs)" << endl;
+    ofs << in+ in+ in+ "Rate = sim.MichaelisMentenEqn(Conc_Enz, Conc_EnzSub, self.State.Const_kcat_MM, self.State.Const_KM_MM)" << endl;
     ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
     // Update with mole indexes from EnzReactions
     ofs << in+ in+ in+ "dConc_SMol = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_MichaelisMenten, Rate)" << endl;
@@ -1564,13 +1699,19 @@ void WriteSimModule()
     if (!EnzymeList.empty()) {
         for (auto& enzyme : EnzymeList) {
             if (enzyme->k >= 0) {
-                ofs << in+ in+ in+ "self.MassAction()" << endl;
+                ofs << in+ in+ in+ "self.Standard()" << endl;
                 break;
             }
         }
         for (auto& enzyme : EnzymeList) {
-            if ((enzyme->k >= 0) & (enzyme->Mode == "Allosteric")) {
-                ofs << in+ in+ in+ "self.MassAction_AllostericInhibition()" << endl;
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                ofs << in+ in+ in+ "self.Standard_Inhibition_Allosteric()" << endl;
+                break;
+            }
+        }
+        for (auto& enzyme : EnzymeList) {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                ofs << in+ in+ in+ "self.Standard_Activation_Allosteric()" << endl;
                 break;
             }
         }
@@ -1583,9 +1724,6 @@ void WriteSimModule()
                 // ofs << in+ in+ in+ "self.HillKinetics()" << endl;
     }
 
-    if (!EnzymeList.empty()) {
-
-    } 
     if (!PolymeraseList.empty()) {
 
         ofs << in+ in+ "def InitiationReactions(self):" << endl;
@@ -1607,6 +1745,7 @@ void WriteSimModule()
             Print_TerminationReaction(ofs, Polymerase);
         }
     } 
+
     if (EnzymeList.empty() & PolymeraseList.empty()) {
             ofs << in+ in+ in+ "pass" << endl;
             ofs << endl;
@@ -1763,6 +1902,7 @@ void WriteSimModule()
     // MAIN
     ofs << "if __name__ == '__main__':" << endl;
     ofs << in+ "main()" << endl;
+    ofs << in+ "plot.main()" << endl; // temporary for convenience
     ofs << endl;
 
     cout << "Simulation_Python module has been generated: ";

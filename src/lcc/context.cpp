@@ -135,8 +135,8 @@ void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 {
     bool Addition = true;
     // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
-    for (auto& Molecule : MoleculeList) {
-        if (Molecule->Name == NewMolecule->Name){
+    for (auto& molecule :MoleculeList) {
+        if (molecule->Name == NewMolecule->Name){
             Addition = false;
 //            std::cout << "Redundant molecule " << NewMolecule->Name << " Found in MoleculeList" << std::endl;
             break;
@@ -152,8 +152,8 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 {
     bool Addition = true;
     // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
-    for (auto& Reaction : ReactionList) {
-        if (Reaction->Name == NewReaction->Name){
+    for (auto& reaction : ReactionList) {
+        if (reaction->Name == NewReaction->Name){
             Addition = false;
             std::cout << "Redundant reaction (" << NewReaction->Name << " Found in ReactionList" << std::endl;
             break;
@@ -286,6 +286,40 @@ std::vector<float> FCompilerContext::Getkrevs_EnzymeList(std::vector<const FEnzy
         FloatList.push_back(item->krev);
     }
     return FloatList;
+}
+
+std::vector<const FEnzyme *> FCompilerContext::GetSubList_EnzymeList(std::vector<const FEnzyme*> EnzymeList, std::string Type)
+{
+    std::vector<const FEnzyme *> SubList;
+    
+    for (auto& enzyme : EnzymeList){
+        if (Type == "Standard") {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode.empty())) {
+                SubList.push_back(enzyme);
+            }
+        } else if (Type == "Standard_Inhibition_Allosteric") {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                SubList.push_back(enzyme);
+            }
+        } else if (Type == "Standard_Activation_Allosteric") {
+            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                SubList.push_back(enzyme);
+            }
+        } else if (Type == "MichaelisMenten") {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Mode.empty())) {
+                SubList.push_back(enzyme);
+            }
+        } else if (Type == "MichaelisMenten_Inhibition_Allosteric") {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                SubList.push_back(enzyme);
+            }
+        } else if (Type == "MichaelisMenten_Activation_Allosteric") {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
+                SubList.push_back(enzyme);
+            }
+        }
+    }
+    return SubList;
 }
 
 std::vector<const FEnzymaticReaction *> FCompilerContext::GetList_Enzymatic_ReactionList()
@@ -480,7 +514,7 @@ std::vector<std::string> FCompilerContext::GetSequences_PathwayList()
 
 std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::string Type)
 {
-    // Types: "MichaelisMenten", "MassAction"
+    // Types: "MichaelisMenten", "Standard"
 
     std::vector<std::vector<int>> StoichMatrix;
     std::vector<int> Idx_Substrates = GetIdxForStoichiometryMatrix(Type);
@@ -488,217 +522,70 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
     std::vector<const FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList();
     std::vector<const FEnzymaticReaction *> EnzymaticReactionList = GetList_Enzymatic_ReactionList();
 
-
-//    for (auto& enzymaticReaction : EnzymaticReactionList){
-//        std::vector<int> CoeffArray(SMolList.size(), 0);
-//        for (auto& stoich : enzymaticReaction->Stoichiometry){
-//            std::string SubstrateName = stoich.first;
-//            int Coeff = stoich.second;
-//	    int Index = 0;
-//                   
-//            if (Type == "MichaelisMenten") {
-//                for (auto& Molecule : SMolList){
-//                    // std::cout << "Searching from the List: " << Substrate << " | " << "Index: " << Index << endl;
-//                    if (Molecule->Name == SubstrateName){
-//                        break;
-//                    }
-//                    Index++;
-//                }
-//                if (Index >= MoleculeList.size()) {
-//                    std::cout << "Substrate index searching in MoleculeList failed: " << SubstrateName << endl;
-//                } else {
-//                // std::cout << "Substrate Searching from the List: " << SubstrateName << " | " << "Index: " << Index << endl;
-//                }
-//            } 
-//    
-//            if (Type == "MassAction") {
-//                Index = GetIdxByName_MoleculeList(SubstrateName);
-//            } 
-//            CoeffArray[Index] = Coeff;
-//        }
-//
-//        StoichMatrix.push_back(CoeffArray);        
-
+    std::vector<const FEnzyme *> EnzymeList_Sub = GetSubList_EnzymeList(EnzymeList, Type);
  
-    if (Type == "MassAction") {
-        for (auto& enzyme : EnzymeList){
-            if ((enzyme->k >= 0) & (enzyme->KM < 0) & enzyme->Mode.empty()) {
-                for (auto& enzymaticReaction : EnzymaticReactionList){
-                    if (enzymaticReaction->Enzyme == enzyme->Name) {
-                        std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
-                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
-//	std::cout << "enzymaticReaction-> Stoichiometry for loop. Now working on: " << stoich.first << endl;
-                            std::string SubstrateName = stoich.first;
-                            int Coeff = stoich.second;
-                            int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
-//	std::cout << "MolIdx: " << std::to_string(MolIdx) << endl;
-                            // get local index from Substrate list
-                            int Idx_Local = 0;
-                            for (auto& Idx_Substrate : Idx_Substrates) {
-//	std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
-                                if (Idx_Substrate == MolIdx) {
-                                    CoeffArray[Idx_Local] = Coeff;
-//	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
-                                }
-                                Idx_Local++;
-                            }
-//	std::cout << "add" << endl;
+    for (auto& enzyme : EnzymeList_Sub){
+        for (auto& enzymaticReaction : EnzymaticReactionList){
+            if (enzymaticReaction->Enzyme == enzyme->Name) {
+                std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
+                for (auto& stoich : enzymaticReaction->Stoichiometry) {
+				// std::cout << "enzymaticReaction-> Stoichiometry for loop. Now working on: " << stoich.first << endl;
+                    std::string SubstrateName = stoich.first;
+                    int Coeff = stoich.second;
+                    int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
+				// std::cout << "MolIdx: " << std::to_string(MolIdx) << endl;
+                    // get local index from Substrate list
+                    int Idx_Local = 0;
+                    for (auto& Idx_Substrate : Idx_Substrates) {
+				// std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
+                        if (Idx_Substrate == MolIdx) {
+                            CoeffArray[Idx_Local] = Coeff;
+				// std::cout << "Standard | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
                         }
-//	std::cout << "pushback" << endl;
-                        StoichMatrix.push_back(CoeffArray);
+                        Idx_Local++;
                     }
+				// std::cout << "add" << endl;
                 }
+				// std::cout << "pushback" << endl;
+                StoichMatrix.push_back(CoeffArray);
             }
         }
-    } else if (Type == "MassAction_AllostericInhibition") {
-        for (auto& enzyme : EnzymeList){
-            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode == "Allosteric")) {
-                for (auto& enzymaticReaction : EnzymaticReactionList){
-                    if (enzymaticReaction->Enzyme == enzyme->Name) {
-                        std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
-                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
-//	std::cout << "enzymaticReaction-> Stoichiometry for loop. Now working on: " << stoich.first << endl;
-                            std::string SubstrateName = stoich.first;
-                            int Coeff = stoich.second;
-                            int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
-//	std::cout << "MolIdx: " << std::to_string(MolIdx) << endl;
-                            // get local index from Substrate list
-                            int Idx_Local = 0;
-                            for (auto& Idx_Substrate : Idx_Substrates) {
-//	std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
-                                if (Idx_Substrate == MolIdx) {
-                                    CoeffArray[Idx_Local] = Coeff;
-//	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
-                                }
-                                Idx_Local++;
-                            }
-//	std::cout << "add" << endl;
-                        }
-//	std::cout << "pushback" << endl;
-                        StoichMatrix.push_back(CoeffArray);
-                    }
-                }
-            }
-        }
-    } else if (Type == "MichaelisMenten") {
-        for (auto& enzyme : EnzymeList){
-            if ((enzyme->KM >= 0) & (enzyme->k < 0)) {
-                for (auto& enzymaticReaction : EnzymaticReactionList){
-                    if (enzymaticReaction->Enzyme == enzyme->Name) {
-                        std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
-                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
-//	std::cout << "enzymaticReaction-> Stoichiometry for loop" << endl;
-                            std::string SubstrateName = stoich.first;
-                            int Coeff = stoich.second;
-                            int MolIdx = GetIdxByName_MoleculeList(SubstrateName);
-                            // get local index from Substrate list
-                            int Idx_Local = 0;
-                            for (auto& Idx_Substrate : Idx_Substrates) {
-                                if (Idx_Substrate == MolIdx) {
-                                    CoeffArray[Idx_Local] = Coeff;
-//	std::cout << "MassAction | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
-                                }
-                                Idx_Local++;
-                            }
-                            //std::cout << "add" << endl;
-                        }
-                        //std::cout << "pushback" << endl;
-                        StoichMatrix.push_back(CoeffArray);
-                    }
-                }
-            }
-        }
-    }
+    } 
     return StoichMatrix;
 }
 
 std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type)
 {
-    // Types: "MichaelisMenten", "MassAction"
+    // Types: "MichaelisMenten", "Standard"
     std::vector<int> IdxList;
 
     std::vector<const FEnzyme *> EnzymeList = GetList_Enzyme_MoleculeList();
     std::vector<const FEnzymaticReaction *> EnzymaticReactionList = GetList_Enzymatic_ReactionList();
     // std::vector<const FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList();
 
-    if (Type == "MassAction") {
-        for (auto& enzyme : EnzymeList){
-            if ((enzyme->k >= 0) & (enzyme->KM < 0) & enzyme->Mode.empty()) {
-                for (auto& enzymaticReaction : EnzymaticReactionList) {
-                    if (enzymaticReaction->Enzyme == enzyme->Name) {
-                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
-                            int MolIdx = 0;
-                            for (auto& mol : MoleculeList) {
-                                if (mol->Name == stoich.first) {
-                                    if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
-//	std::cout << "New mol idx added for : " << stoich.first << endl;
-                                        IdxList.push_back(MolIdx);
-                                        break;
-                                    } else {
-//	std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
-                                    }
-                                }
-                                MolIdx++;
-                            //int MolIdx = GetIdxByName_MoleculeList(stoich.first);
-                            //if (std::count(IdxList.begin(), IdxList.end(), MolIdx)) {
-                            //    break;
-                            //}
-                            //IdxList.push_back(MolIdx);                        
+    std::vector<const FEnzyme *> EnzymeList_Sub = GetSubList_EnzymeList(EnzymeList, Type);
+ 
+    for (auto& enzyme : EnzymeList_Sub){
+        for (auto& enzymaticReaction : EnzymaticReactionList) {
+            if (enzymaticReaction->Enzyme == enzyme->Name) {
+                for (auto& stoich : enzymaticReaction->Stoichiometry) {
+                    int MolIdx = 0;
+                    for (auto& mol : MoleculeList) {
+                        if (mol->Name == stoich.first) {
+                            if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
+std::cout << "New mol idx added for : " << stoich.first << endl;
+                                IdxList.push_back(MolIdx);
+                                break;
+                            } else {
+std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
                             }
                         }
-                    }
-                }
-            }
-        }
-    } else if (Type == "MassAction_AllostericInhibition") {
-        for (auto& enzyme : EnzymeList){
-            if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode == "Allosteric")) {
-                for (auto& enzymaticReaction : EnzymaticReactionList) {
-                    if (enzymaticReaction->Enzyme == enzyme->Name) {
-                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
-                            int MolIdx = 0;
-                            for (auto& mol : MoleculeList) {
-                                if (mol->Name == stoich.first) {
-                                    if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
-//	std::cout << "New mol idx added for : " << stoich.first << endl;
-                                        IdxList.push_back(MolIdx);
-                                        break;
-                                    } else {
-//	std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
-                                    }
-                                }
-                                MolIdx++;
-                            //int MolIdx = GetIdxByName_MoleculeList(stoich.first);
-                            //if (std::count(IdxList.begin(), IdxList.end(), MolIdx)) {
-                            //    break;
-                            //}
-                            //IdxList.push_back(MolIdx);                        
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else if (Type == "MichaelisMenten") {
-        for (auto& enzyme : EnzymeList){
-            if ((enzyme->KM >= 0) & (enzyme->k < 0)) {
-                for (auto& enzymaticReaction : EnzymaticReactionList) {
-                    if (enzymaticReaction->Enzyme == enzyme->Name) {
-                        for (auto& stoich : enzymaticReaction->Stoichiometry) {
-                            int MolIdx = 0;
-                            for (auto& mol : MoleculeList) {
-                                if (mol->Name == stoich.first) {
-                                    if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
-//	std::cout << "New mol idx added for : " << stoich.first << endl;
-                                        IdxList.push_back(MolIdx);
-                                        break;
-                                    } else {
-//	std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
-                                    }
-                                }
-                                MolIdx++;
-                            }
-                        }
+                        MolIdx++;
+                    //int MolIdx = GetIdxByName_MoleculeList(stoich.first);
+                    //if (std::count(IdxList.begin(), IdxList.end(), MolIdx)) {
+                    //    break;
+                    //}
+                    //IdxList.push_back(MolIdx);                        
                     }
                 }
             }
@@ -720,9 +607,9 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_Polymeras
             int Coeff = Stoich.second;
 	    int Index = 0;
 
-            for (auto& Molecule : SMolList){
+            for (auto& molecule : SMolList){
                 // std::cout << "Searching from the List: " << Substrate << " | " << "Index: " << Index << endl;
-                if (Molecule->Name == SubstrateName){
+                if (molecule->Name == SubstrateName){
                     break;
                 }
                 Index++;
@@ -743,8 +630,8 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_Polymeras
 int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
 {
     int Index = 0;
-    for (auto& Molecule : MoleculeList) {
-        if (Molecule->Name == InputName) {
+    for (auto& molecule : MoleculeList) {
+        if (molecule->Name == InputName) {
             break;
         }
         Index++; 
@@ -754,9 +641,9 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
 
 int FCompilerContext::GetInitialCountByName_MoleculeList(std::string InputName)
 {
-    for (auto& Molecule : MoleculeList) {
-        if (Molecule->Name == InputName) {
-            return Molecule->InitialCount;
+    for (auto& molecule : MoleculeList) {
+        if (molecule->Name == InputName) {
+            return molecule->InitialCount;
         }
     }
 }
@@ -765,9 +652,9 @@ std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()
 {
     std::vector<const FGene *> SubList;
     
-    for (auto* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FGene, FMolecule>(Molecule)) {
-            auto Item = dynamic_cast<const FGene *>(Molecule);
+    for (auto* molecule :MoleculeList) {
+        if (Utils::is_class_of<FGene, FMolecule>(molecule)) {
+            auto Item = dynamic_cast<const FGene *>(molecule);
             SubList.push_back(Item);
         }
     }
@@ -778,9 +665,9 @@ std::vector<const FProtein *> FCompilerContext::GetList_Protein_MoleculeList()
 {
     std::vector<const FProtein *> SubList;
     
-    for (auto* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FProtein, FMolecule>(Molecule)) {
-            auto Item = dynamic_cast<const FProtein *>(Molecule);
+    for (auto* molecule :MoleculeList) {
+        if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
+            auto Item = dynamic_cast<const FProtein *>(molecule);
             SubList.push_back(Item);
         }
     }
@@ -791,9 +678,9 @@ std::vector<const FEnzyme *> FCompilerContext::GetList_Enzyme_MoleculeList()
 {
     std::vector<const FEnzyme *> SubList;
     
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
-            auto Enzyme = dynamic_cast<const FEnzyme *>(Molecule);
+    for (const FMolecule* molecule :MoleculeList) {
+        if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
+            auto Enzyme = dynamic_cast<const FEnzyme *>(molecule);
             SubList.push_back(Enzyme);
         }
     }
@@ -804,9 +691,9 @@ std::vector<const FSmallMolecule *> FCompilerContext::GetList_SmallMolecule_Mole
 {
     std::vector<const FSmallMolecule *> SubList;
     
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
-            auto SmallMolecule = dynamic_cast<const FSmallMolecule *>(Molecule);
+    for (const FMolecule* molecule :MoleculeList) {
+        if (Utils::is_class_of<FSmallMolecule, FMolecule>(molecule)) {
+            auto SmallMolecule = dynamic_cast<const FSmallMolecule *>(molecule);
             SubList.push_back(SmallMolecule);
         }
     }
@@ -817,9 +704,9 @@ std::vector<const FPolymerase *> FCompilerContext::GetList_Polymerase_MoleculeLi
 {
     std::vector<const FPolymerase *> SubList;
     
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
-            auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
+    for (const FMolecule* molecule :MoleculeList) {
+        if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
+            auto Polymerase = dynamic_cast<const FPolymerase *>(molecule);
             SubList.push_back(Polymerase);
         }
     }
@@ -839,65 +726,65 @@ std::vector<int> FCompilerContext::GetIdxListFromMoleculeList(std::string FClass
 //    }
 
     if (FClassName == "Chromosome") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FChromosome, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FChromosome, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "Gene") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FGene, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FGene, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "RNA") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "Protein") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FProtein, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "Enzyme") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "Molecule") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FMolecule, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FMolecule, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "SmallMolecule") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FSmallMolecule, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "Polymerase") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
                 IndexArray.push_back(Index);
             }
             Index++;
         }
     } else if (FClassName == "mRNA") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
-                FRNA * RNA = dynamic_cast<FRNA *>(Molecule);
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
+                FRNA * RNA = dynamic_cast<FRNA *>(molecule);
                 if (RNA->Type == "mRNA") {
                     IndexArray.push_back(Index);
                 }
@@ -920,53 +807,53 @@ std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::stri
 //    }
 
     if (FClassName == "Chromosome") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FChromosome, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule : MoleculeList) {
+            if (Utils::is_class_of<FChromosome, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "Gene") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FGene, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule : MoleculeList) {
+            if (Utils::is_class_of<FGene, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "RNA") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule : MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "Protein") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FProtein, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "Enzyme") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "SmallMolecule") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FSmallMolecule, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FSmallMolecule, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "Polymerase") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
-                StrArray.push_back(Molecule->Name);
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
+                StrArray.push_back(molecule->Name);
             }
         }
     } else if (FClassName == "mRNA") {
-        for (FMolecule * Molecule : MoleculeList) {
-            if (Utils::is_class_of<FRNA, FMolecule>(Molecule)) {
-                FRNA * RNA = dynamic_cast<FRNA *>(Molecule);
+        for (FMolecule * molecule :MoleculeList) {
+            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
+                FRNA * RNA = dynamic_cast<FRNA *>(molecule);
                 if (RNA->Type == "mRNA") {
-                    StrArray.push_back(Molecule->Name);
+                    StrArray.push_back(molecule->Name);
                 }
             }
         }
@@ -979,13 +866,13 @@ std::vector<int> FCompilerContext::GetIdx_EnzymeSubstrate_MoleculeList()
     std::vector<int> IndexArray;
     int Index;
 
-    for (const FMolecule* Molecule : MoleculeList) {
-        if (Utils::is_class_of<FEnzyme, FMolecule>(Molecule)) {
-            auto Enzyme = dynamic_cast<const FEnzyme *>(Molecule);
-            std::string EnzSub = Enzyme->Substrate;
+    for (const FMolecule* molecule :MoleculeList) {
+        if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
+            auto enzyme = dynamic_cast<const FEnzyme *>(molecule);
+            std::string EnzSub = enzyme->Substrate;
             Index = 0;
-            for (auto& Molecule : MoleculeList) {
-                if (Molecule->Name == EnzSub) {
+            for (auto& molecule : MoleculeList) {
+                if (molecule->Name == EnzSub) {
                     IndexArray.push_back(Index);
                 break;
                 } 
@@ -1001,13 +888,13 @@ std::vector<int> FCompilerContext::GetIdx_EnzymeSubstrate_MoleculeList()
 //     std::vector<int> IndexArray;
 //     int Index;
 // 
-//     for (const FMolecule* Molecule : MoleculeList) {
-//         if (Utils::is_class_of<FPolymerase, FMolecule>(Molecule)) {
-//             auto Polymerase = dynamic_cast<const FPolymerase *>(Molecule);
+//     for (const FMolecule* molecule :MoleculeList) {
+//         if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
+//             auto Polymerase = dynamic_cast<const FPolymerase *>(molecule);
 //             std::string PolSub = Polymerase->Substrate;
 //             Index = 0;
-//             for (auto& Molecule : MoleculeList) {
-//                 if (Molecule->Name == PolSub) {
+//             for (auto& molecule :MoleculeList) {
+//                 if (molecule->Name == PolSub) {
 //                     IndexArray.push_back(Index);
 //                 break;
 //                 } 

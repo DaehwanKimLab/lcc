@@ -1,0 +1,14 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Limit Cycle Oscillations
+// Network  4.14,   p.93
+// Model   4.10,    p.93
+// Figure  4.15,    p.94
+
+protein E1(S1In --> S1, k=8, E1=1, S1=1.5, S1In=1, Fixed=S1In);
+protein E2(S1 --> S2, k=1, Activator=S2, Mode=Allosteric, Ka=1, n=2, E2=1, S2=1);
+protein E3(S2 --> S2Out, k=5, E3=1, S2Out=0);
+
+
+
+

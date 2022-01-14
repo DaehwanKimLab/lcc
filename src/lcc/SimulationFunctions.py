@@ -7,20 +7,26 @@ def ConcToCount(Conc_Molecule, Volume):
 def CountToConc(Count_Molecule, Volume):
     return Count_Molecule / Volume
 
-def MassActionEqn(Conc_Enzyme, Conc_Reactant, Conc_Product, k, krev):
+def StandardEqn(Conc_Enzyme, Conc_Reactant, Conc_Product, k, krev):
     return Conc_Enzyme * ((k * Conc_Reactant) - (krev * Conc_Product))
 
-def MassActionEqn_CooperativeAllostericInhibition(Conc_Enzyme, Conc_Reactant, Conc_Product, Conc_Inhibitor, k, krev, Ki, n):
-    return Conc_Enzyme * ((k * Conc_Reactant / (1 + (Conc_Inhibitor / Ki) ** n)) + (krev * Conc_Product))
+def StandardEqn_Inhibition_Allosteric(Conc_Enzyme, Conc_Reactant, Conc_Product, Conc_Inhibitor, k, krev, Ki, n):
+    return Conc_Enzyme * ((k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_Reactant) - (krev * Conc_Product))
+
+def StandardEqn_Activation_Allosteric(Conc_Enzyme, Conc_Reactant, Conc_Product, Conc_Activator, k, krev, Ka, n):
+    return Conc_Enzyme * ((k * (1 + (Conc_Activator / Ka) ** n) * Conc_Reactant) - (krev * Conc_Product))
 
 def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM):
     return (kcat * Conc_Enzyme * Conc_Substrate) / (KM + Conc_Substrate)
 
-def MichaelisMentenEqn_CompetitiveInhibition(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki):
-    return (kcat * Conc_Enzyme * Conc_Substrate) / (KM * (1 + (Conc_Inhibitor / Ki) + Conc_Substrate))
+# def MichaelisMentenEqn_CompetitiveInhibition(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki):
+#     return (kcat * Conc_Enzyme * Conc_Substrate) / (KM * (1 + (Conc_Inhibitor / Ki) + Conc_Substrate))
 
-def MichaelisMentenEqn_AllostericInhibition(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki):
-    return (kcat * Conc_Enzyme / (1 + Conc_Inhibitor / Ki)) * (Conc_Substrate / (KM + Conc_Substrate))
+def MichaelisMentenEqn_Inhibition_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n):
+    return (kcat * Conc_Enzyme / (1 + (Conc_Inhibitor / Ki) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
+
+def MichaelisMentenEqn_Activation_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n):
+    return (kcat * Conc_Enzyme * (1 + (Conc_Inhibitor / Ki) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
 
 def MatrixMultiplication_Rev(Freq, Rate):
     return np.matmul(Rate, Freq)
