@@ -1273,8 +1273,8 @@ void WriteSimModule()
     ofs << endl;
 
     // user input
-    ofs << in+ "N_SimSteps = 5000" << endl;
-    ofs << in+ "SimStepTimeResolution = 1000" << endl;
+    ofs << in+ "N_SimSteps = 1000" << endl;
+    ofs << in+ "SimStepTimeResolution = 100" << endl;
     ofs << endl;
 
     // class FState 
