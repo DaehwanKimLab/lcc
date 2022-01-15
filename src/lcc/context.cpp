@@ -89,7 +89,13 @@ void FTable::Dump(const vector<string>& InKeys)
 	}
 }
 
-
+float FCount::GetCount(float Time) {
+    for (auto& range: Range) {
+        if ((Time >= range.first.first) & (Time < range.first.second)) {
+            return range.second;
+        }
+    }
+}
 
 void FCompilerContext::Init(const FOption& InOption)
 {

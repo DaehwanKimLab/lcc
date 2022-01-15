@@ -14,7 +14,6 @@ class FExperiment {
 public:
     std::string Name;
     std::string Description;
-
 };
 
 class FOrganism {
@@ -24,10 +23,40 @@ public:
 
 };
 
+class FCount {
+public:
+    int Initial = -1;
+    bool Fixed = false;
+    std::vector<std::pair<std::pair<float, float>, float>> Range;
+
+    FCount() {}
+
+    FCount(const int InInitial, const bool InFixed=false) : Initial(InInitial), Fixed(InFixed) {}
+
+    FCount(const int InInitial, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Initial(InInitial), Range(InRange) {}
+    
+    void Print(std::ostream& os) {
+        os << "Count" << "\t| InitialCount: " << Initial;
+        if (Fixed) {
+            os << " (Fixed)";
+        }
+        if (!Range.empty()) {
+            for (auto& range : Range) {
+                os << "\t\t| for time " << range.first.first << " ~ " << range.first.second << " : " << range.second << " | " << std::endl;
+            }
+        }
+    }
+    float GetCount(float);
+
+};
+
 class FMolecule {
 public:
     std::string Name;
     std::string Id;
+
+    FCount Count;
+
     int InitialCount = -1;
     bool Fixed = false;
 
@@ -52,12 +81,14 @@ public:
 
     void Print(std::ostream& os) {
         os << "  Molecule Id: " << Id << std::endl;
-        if (InitialCount < -1) {
-            os << "    InitialCount: " << InitialCount;
+        if (InitialCount >= 0) {
+            os << "\t| InitialCount: " << InitialCount;
         }
         if (Fixed) {
-            os << "(Fixed)" << std::endl;
+            os << " (Fixed)";
         }
+        Count.Print(os);
+        os << std::endl;
     }
 
 };
