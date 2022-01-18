@@ -202,6 +202,18 @@ void FCompilerContext::PrintLists(std::ostream& os)
         }
 }
 
+void FCompilerContext::PrintInitialCounts(std::ostream& os) 
+{
+    os << std::endl << "## Compiler Initial Counts ##" << std::endl;
+    if (!MoleculeList.empty()) {
+        for (auto& molecule : MoleculeList){
+            auto& count = molecule->Count;
+            os << molecule->Name << " : " << count.Initial << " | ";
+        }
+        os << std::endl;
+    }
+}
+
 const std::string FCompilerContext::QueryTable(const std::string& Name, const std::string& Property, FTable Table)
 {
     for (auto& record : Table.Records) {
@@ -649,7 +661,8 @@ int FCompilerContext::GetInitialCountByName_MoleculeList(std::string InputName)
 {
     for (auto& molecule : MoleculeList) {
         if (molecule->Name == InputName) {
-            return molecule->InitialCount;
+            auto& count = molecule->Count;
+            return count.Initial;
         }
     }
 }

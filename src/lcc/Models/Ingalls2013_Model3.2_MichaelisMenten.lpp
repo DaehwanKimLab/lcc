@@ -10,5 +10,5 @@
 // k2 = 10;
 // KM = (krev1 + k2) / k1;
 
-protein E(S --> P, kcat=10, KM=3.666667, E=1, S=5, P=0);
+protein E(S --> P, kcat=10, KM=3.666667, E=_0__1, S=_0__5, P=_0__0);
 

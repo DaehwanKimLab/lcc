@@ -32,7 +32,8 @@ def PlotData(Dataset):
         Data[i] = [float(NumStr) for NumStr in Row]
 
     Data_Transposed = np.array(Data).transpose()
-    Data_SimStep = Data_Transposed[0:1]
+    Data_Time = Data_Transposed[0:1]
+    Data_Vol = Data_Transposed[1:2]
 
     ### Default setting ###
     Title = ''
@@ -69,25 +70,24 @@ def PlotData(Dataset):
     # Show all
     if plot_ShowAll_DynamicsOnly:
         Cap = 50
-        Title = 'Show All'
-        Data = Data_Transposed[2:Cap]
+        Title = ''
+        Data = Data_Transposed[2:Cap] / Data_Vol
         Legend = Legend[2:Cap]
 
-        Plot_Dynamics(Title, Data_SimStep[0], Data, Legend)
+        Plot_Dynamics(Title, Data_Time[0], Data, Legend)
         return 0
 
-    # Show all
     if plot_ShowAll_DynamicsAndPhasePlain:
         Cap = 50
-        Title = 'Show All'
-        Data = Data_Transposed[2:Cap]
+        Title = ''
+        Data = Data_Transposed[2:Cap] / Data_Vol
         Legend = Legend[2:Cap]
 
-        # Plot_Dynamics(Title, Data_SimStep[0], Data, Legend)
+        # Plot_Dynamics(Title, Data_Time[0], Data, Legend)
 
         Idx_Pairs, Names_Pairs = Indexing(Legend)
 
-        Plot_DynamicsAndPhasePlaneAndRate(Title, Data_SimStep[0], Data, Legend, Idx_Pairs, Names_Pairs)
+        Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
         return 0
 
@@ -212,7 +212,7 @@ def PlotData(Dataset):
     if CheckRateExpected:
         RateCheck(Data, Legend, Idx_Pairs, Names_Pairs)
 
-    Plot_DynamicsAndPhasePlaneAndRate(Title, Data_SimStep[0], Data, Legend, Idx_Pairs, Names_Pairs)
+    Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
 
 def RateCheck(Data, Legend, Idx_Pairs, Names_Pairs):
@@ -247,8 +247,8 @@ def RateCheck(Data, Legend, Idx_Pairs, Names_Pairs):
 
 # Potentially split point for another function
 
-def Plot_Dynamics(Title, SimStep, Data, Legend):
-    X = SimStep
+def Plot_Dynamics(Title, Time, Data, Legend):
+    X = Time
     Y = Data
 
     assert len(X) == Y.shape[-1]
@@ -308,7 +308,7 @@ def Indexing(Legend, Query=None):
 
     return PossiblePairs_Idx, PossiblePairs_Names
 
-def Plot_DynamicsAndPhasePlaneAndRate(Title, SimStep, Data, Legend, Idx_Pairs, Names_Pairs):
+def Plot_DynamicsAndPhasePlaneAndRate(Title, Time, Data, Legend, Idx_Pairs, Names_Pairs):
     fig = plt.figure()
     fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
@@ -324,11 +324,11 @@ def Plot_DynamicsAndPhasePlaneAndRate(Title, SimStep, Data, Legend, Idx_Pairs, N
         ax1 = fig.add_subplot(int(N_PossiblePairs), 2, 2 * n - 1)
         ax2 = fig.add_subplot(int(N_PossiblePairs), 2, 2 * n)
 
-        ax1.plot(X, 'r-', label=Legend[a])
-        ax1.plot(Y, 'b-', label=Legend[b])
+        ax1.plot(Time, X, 'r-', label=Legend[a])
+        ax1.plot(Time, Y, 'b-', label=Legend[b])
         ax1.set_title(Title + ' Dynamics')
-        ax1.set_xlabel('SimStep')
-        ax1.set_ylabel('Count')
+        ax1.set_xlabel('Time (s)')
+        ax1.set_ylabel('Concentration (a.u.)')
         ax1.legend(loc='upper left')
         ax1.grid()
 

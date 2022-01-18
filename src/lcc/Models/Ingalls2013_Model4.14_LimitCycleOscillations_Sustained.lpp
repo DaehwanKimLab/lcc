@@ -5,9 +5,9 @@
 // Model   4.10,    p.93
 // Figure  4.16,    p.95
 
-protein E1(S1In --> S1, k=8, E1=1, S1=1.5, S1In=1, Fixed=S1In);
-protein E2(S1 --> S2, k=1, Activator=S2, Mode=Allosteric, Ka=1, n=2.5, E2=1, S2=1);
-protein E3(S2 --> S2Out, k=5, E3=1, S2Out=0);
+protein E1(S1In --> S1, k=8, E1=_0__1, S1=_0__1.5, S1In=_0__1, Fixed=S1In);
+protein E2(S1 --> S2, k=1, Activator=S2, Mode=Allosteric, Ka=1, n=2.5, E2=_0__1, S2=_0__1);
+protein E3(S2 --> S2Out, k=5, E3=_0__1, S2Out=_0__0);
 
 
 

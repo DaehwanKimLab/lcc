@@ -7,8 +7,11 @@ def ConcToCount(Conc_Molecule, Volume):
 def CountToConc(Count_Molecule, Volume):
     return Count_Molecule / Volume
 
-def StandardEqn(Conc_Enzyme, Conc_Reactant, Conc_Product, k, krev):
-    return Conc_Enzyme * ((k * Conc_Reactant) - (krev * Conc_Product))
+def StandardEqn(Conc_Enzyme, Conc_Reactant_1, Conc_Reactant_2, Conc_Product_1, Conc_Product_2, k, krev):
+    return Conc_Enzyme * ((k * Conc_Reactant_1 * Conc_Reactant_2) - (krev * Conc_Product_1 * Conc_Product_2))
+
+# def StandardEqn(Conc_Enzyme, Conc_Reactant, Conc_Product, k, krev):
+#     return Conc_Enzyme * ((k * Conc_Reactant) - (krev * Conc_Product))
 
 def StandardEqn_Inhibition_Allosteric(Conc_Enzyme, Conc_Reactant, Conc_Product, Conc_Inhibitor, k, krev, Ki, n):
     return Conc_Enzyme * ((k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_Reactant) - (krev * Conc_Product))

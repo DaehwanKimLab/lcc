@@ -5,11 +5,11 @@
 // Model   4.1,    p.77
 // Figure  4.2,    p.78
 
-protein E1(S1In --> S1, k=20, Inhibitor=S2, Mode=Allosteric, Ki=1, n=4, E1=1, S1In=1, Fixed=S1In);
-protein E2(S2In --> S2, k=5, E2=1, S2In=1, Fixed=S2In);
-protein E3(S1 --> S1Out, k=5, E3=1, S1Out=0, Fixed=S1Out);
-protein E4(S2 --> S2Out, k=5, E4=1, S2Out=0, Fixed=S2Out);
-protein E5(S1 --> S2, k=2, E5=1);
+protein E1(S1In --> S1, k=20, Inhibitor=S2, Mode=Allosteric, Ki=1, n=4, E1=_0__1, S1In=_0__1, Fixed=S1In);
+protein E2(S2In --> S2, k=5, E2=_0__1, S2In=_0__1, Fixed=S2In);
+protein E3(S1 --> S1Out, k=5, E3=_0__1, S1Out=_0__0, Fixed=S1Out);
+protein E4(S2 --> S2Out, k=5, E4=_0__1, S2Out=_0__0, Fixed=S2Out);
+protein E5(S1 --> S2, k=2, E5=_0__1);
 
 
 
