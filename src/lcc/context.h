@@ -25,15 +25,15 @@ public:
 
 class FCount {
 public:
-    int Initial = -1;
+    float Initial = -1;
     bool Fixed = false;
     std::vector<std::pair<std::pair<float, float>, float>> Range;
 
     FCount() {}
 
-    FCount(const int InInitial, const bool InFixed=false) : Initial(InInitial), Fixed(InFixed) {}
+    FCount(const float InInitial, const bool InFixed=false) : Initial(InInitial), Fixed(InFixed) {}
 
-    FCount(const int InInitial, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Initial(InInitial), Range(InRange) {}
+    FCount(const float InInitial, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Initial(InInitial), Range(InRange) {}
     
     void Print(std::ostream& os) {
         os << "\t| Count" << "\t| InitialCount: " << Initial;
@@ -56,9 +56,6 @@ public:
 
     FCount Count;
 
-    //int InitialCount = -1;
-    //bool Fixed = false;
-
     FMolecule() {}
     virtual ~FMolecule() {}
 
@@ -66,14 +63,14 @@ public:
 
     FMolecule(const std::string& InName, const std::string& InId) : Name(InName), Id(InId) {}
 
-//    FMolecule(const std::string& InName, const int InInitialCount) : Name(InName), Id(InName), InitialCount(InInitialCount), Fixed(false) {}
+//    FMolecule(const std::string& InName, const float InInitialCount) : Name(InName), Id(InName), InitialCount(InInitialCount), Fixed(false) {}
 
-//    FMolecule(const std::string& InName, const int InInitialCount, const bool InFixed) : Name(InName), Id(InName), InitialCount(InInitialCount), Fixed(InFixed) {}
+//    FMolecule(const std::string& InName, const float InInitialCount, const bool InFixed) : Name(InName), Id(InName), InitialCount(InInitialCount), Fixed(InFixed) {}
 
     // with count object
-    FMolecule(const std::string& InName, const int InInitialCount, const bool InFixed=false) : Name(InName), Id(InName), Count(InInitialCount, InFixed) {}
+    FMolecule(const std::string& InName, const float InInitialCount, const bool InFixed=false) : Name(InName), Id(InName), Count(InInitialCount, InFixed) {}
 
-    FMolecule(const std::string& InName, const int InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Name(InName), Id(InName), Count(InInitialCount, InRange) {}
+    FMolecule(const std::string& InName, const float InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Name(InName), Id(InName), Count(InInitialCount, InRange) {}
 
     const std::string GetName() const {
         return Name;
@@ -105,11 +102,11 @@ public:
 
     FSmallMolecule(const std::string& InName) : FMolecule(InName) {}
 
-    FSmallMolecule(const std::string& InName, const int InInitialCount) : FMolecule(InName, InInitialCount) {}
+    FSmallMolecule(const std::string& InName, const float InInitialCount) : FMolecule(InName, InInitialCount) {}
 
-    FSmallMolecule(const std::string& InName, const int InInitialCount, const bool InFixed) : FMolecule(InName, InInitialCount, InFixed) {}
+    FSmallMolecule(const std::string& InName, const float InInitialCount, const bool InFixed) : FMolecule(InName, InInitialCount, InFixed) {}
     
-    FSmallMolecule(const std::string& InName, const int InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : FMolecule(InName, InInitialCount, InRange) {}
+    FSmallMolecule(const std::string& InName, const float InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : FMolecule(InName, InInitialCount, InRange) {}
 
     void Print(std::ostream& os) {
         os << "  Small Molecule Id: " << Id;
@@ -264,7 +261,7 @@ public:
     FEnzyme() {}
 
     // UPDATE TO FProtein(InName) when ID System is set up
-    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const int& InInitialCount, const bool Fixed=false)
+    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const float InInitialCount, const bool Fixed=false)
         : Type(InType), Substrate(InSubstrate), FMolecule(InName, InInitialCount, Fixed) {
             if (Type == 0) {
                 k = Ink1;	krev = Ink2;
@@ -273,7 +270,7 @@ public:
             }       
         }
 
-    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const int& InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange)
+    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const float InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange)
         : Type(InType), Substrate(InSubstrate), FMolecule(InName, InInitialCount, InRange) {
             if (Type == 0) {
                 k = Ink1;	krev = Ink2;
@@ -282,7 +279,7 @@ public:
             }       
         }
 
-    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const int& InInitialCount, const bool Fixed=false)
+    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const float InInitialCount, const bool Fixed=false)
         : Type(InType), Substrate(InSubstrate), Mode(InMode), FMolecule(InName, InInitialCount, Fixed) {
             if ((Type == 1) or (Type == 2)) {
                 k = Ink1; 	krev = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
@@ -295,7 +292,7 @@ public:
             }       
         }
 
-    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const int& InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange)
+    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const float InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange)
         : Type(InType), Substrate(InSubstrate), Mode(InMode), FMolecule(InName, InInitialCount, InRange) {
             if ((Type == 1) or (Type == 2)) {
                 k = Ink1; 	krev = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
@@ -490,9 +487,9 @@ public:
 
 
     int GetIdxByName_MoleculeList(std::string InputName);
-    int GetInitialCountByName_MoleculeList(std::string InputName);
+    float GetInitialCountByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
-    std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
+    // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
 
     std::vector<const FGene *> GetList_Gene_MoleculeList();
     std::vector<const FRNA *> GetList_RNA_MoleculeList();

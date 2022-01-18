@@ -657,7 +657,7 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
     return Index;
 }
 
-int FCompilerContext::GetInitialCountByName_MoleculeList(std::string InputName)
+float FCompilerContext::GetInitialCountByName_MoleculeList(std::string InputName)
 {
     for (auto& molecule : MoleculeList) {
         if (molecule->Name == InputName) {
@@ -954,17 +954,18 @@ std::vector<int> FCompilerContext::GetIdxByStrList_MoleculeList(std::vector<std:
     return IndexArray;
 }
 
-std::vector<int> FCompilerContext::GetInitialCountByStrList_MoleculeList(std::vector<std::string> StrList)
-{ 
-    std::vector<int> IndexArray;
-    int Index;
-
-    for (std::string Item : StrList){
-        Index = GetInitialCountByName_MoleculeList(Item);
-        IndexArray.push_back(Index);
-    }
-    return IndexArray;
-}
+//
+//std::vector<float> FCompilerContext::GetInitialCountByStrList_MoleculeList(std::vector<std::string> StrList)
+//{
+//    std::vector<int> IndexArray;
+//    int Index;
+//
+//    for (std::string Item : StrList){
+//        Index = GetInitialCountByName_MoleculeList(Item);
+//        IndexArray.push_back(Index);
+//    }
+//    return IndexArray;
+//}
 
 std::vector<int> FCompilerContext::GetIdxOfStrListFromStrList(std::vector<std::string> InputList, std::vector<std::string> RefList)
 {

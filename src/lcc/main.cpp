@@ -129,7 +129,7 @@ void TraversalNode(NBlock* InProgramBlock)
             float K = Float_Init; // Reduced regulatory kinetic constant
             float n = Float_Init; // Hill's coefficient
 
-            int InitialCount = Int_Init;
+            float InitialCount = Float_Init;
             bool Fixed = false;
             vector<pair<pair<float, float>, float>> Ranges;
 
@@ -193,7 +193,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     Utils::tokenize(Value, "_", Value_Parsed);
                     string MolName = Value_Parsed[0];
                     string Range = Value_Parsed[1];
-                    int Count = std::stoi(Value_Parsed[2]);
+                    float Count = std::stoi(Value_Parsed[2]);
                     os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
 
                     string Delimiter = "to";
@@ -315,7 +315,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 Coefficient = -1; // update when coeff is fully implemented in parser
                 os << "    Reactants: " << "(" << Coefficient << ") " << reactant->Name << ", " << endl;
                 Stoichiometry[reactant->Name]= Coefficient;
-                int InitialCount = Int_Init;
+                float InitialCount = Float_Init;
                 bool Fixed = false;
                 vector<pair<pair<float, float>, float>> Ranges;
 
@@ -332,7 +332,7 @@ void TraversalNode(NBlock* InProgramBlock)
                         Utils::tokenize(Value, "_", Value_Parsed);
                         string MolName = Value_Parsed[0];
                         string Range = Value_Parsed[1];
-                        int Count = std::stoi(Value_Parsed[2]);
+                        float Count = std::stoi(Value_Parsed[2]);
                         os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
     
                         string Delimiter = "to";
@@ -376,7 +376,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 Coefficient = 1; // update when coeff is fully implemented in parser
                 os << "    Products: " << "(" << Coefficient << ") " << product->Name << ", " << endl;
                 Stoichiometry[product->Name]= Coefficient;
-                int InitialCount = Int_Init;
+                float InitialCount = Float_Init;
                 bool Fixed = false;
 
                 const auto& propertylist = OverallReaction.Property;
@@ -392,7 +392,7 @@ void TraversalNode(NBlock* InProgramBlock)
                         Utils::tokenize(Value, "_", Value_Parsed);
                         string MolName = Value_Parsed[0];
                         string Range = Value_Parsed[1];
-                        int Count = std::stoi(Value_Parsed[2]);
+                        float Count = std::stoi(Value_Parsed[2]);
                         os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
     
                         string Delimiter = "to";
@@ -799,7 +799,7 @@ void CheckInitialCounts()
     std::vector<int> InitialCount_Molecules;
     for (auto& mol : Context.MoleculeList) {
         auto& count = mol->Count;
-        int InitialCount = count.Initial;
+        float InitialCount = count.Initial;
         if (InitialCount < 0) {
             for (auto& Pathway : Context.PathwayList) {
                 if (Pathway.Name == "TCA") {
@@ -1585,7 +1585,7 @@ void WriteSimModule()
     std::vector<int> InitialCount_Molecules;
     for (auto& mol : Context.MoleculeList) {
         auto& count = mol->Count;
-        int InitialCount = count.Initial;
+        float InitialCount = count.Initial;
 //        if (InitialCount < 0) {
 //            for (auto& Pathway : Context.PathwayList) {
 //                if (Pathway.Name == "TCA") {
