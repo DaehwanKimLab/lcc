@@ -1,11 +1,30 @@
 organism ecoli "E. coli K-12 MG1655";
 
-//@# Tricarboxylic Acid Cycle (TCA) or Citric Acid Cycle (CAC)
-//@
-//@![TCA_Image](TCA_Image.png)
-//@Reference: [Stryer Biochemistry 7ed](https://www.amazon.com/Biochemistry-Lubert-Stryer/dp/1319114679/ref=sr_1_1?keywords=Stryer+Biochemistry&qid=1636994919&s=books&sr=1-1).
-//@
-//@```
+// DNA Replication
+replication_origin origin1;
+replication_terminus terminus1;
+polymerase pol1(initiation: origin1, 
+               elongation: dna_{n} + dnt -->
+                           dna_{n+1} + ppi, 
+               termination: terminus1);
+
+// RNA Transcription
+polymerase rnap(initiation: promoter, 
+                elongation: rna_{n} + nt -->
+                           rna_{n+1} + ppi,
+                termination: taa);
+
+// Protein Synthesis
+ribosome_binding_site rbs1;
+translation_terminator tt1;
+ribosome r1(initiation: rbs1, 
+            elongation: peptide_{n} + aa -->
+                        peptide_{n+1} + H_{2}O, 
+            termination: tt1);
+
+
+// Tricarboxylic Acid Cycle (TCA) or Citric Acid Cycle (CAC)
+// Reference: [Stryer Biochemistry 7ed]
 protein GltA(oxaloacetate + acetyl-CoA + H2O --> citrate + CoA);
 protein AcnA(citrate --> isocitrate);
 protein Icd(isocitrate + NAD+ --> keto-glutarate + NADH + CO2);
@@ -27,50 +46,9 @@ protein Mdh(malate + NAD+ --> oxaloacetate + NADH + H+);
 
 //pathway TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> FUM --> Mdh; 
 pathway TCA = GltA --> AcnA --> Icd --> SucA --> SucD --> Sdh --> FumA --> Mdh; 
-//@```
-//@
 
-//@# DNA Replication
-//@
-//@```
-replication_origin origin1;
-replication_terminus terminus1;
-polymerase pol1(initiation: origin1, 
-               elongation: dna_{n} + dnt -->
-                           dna_{n+1} + ppi, 
-               termination: terminus1);
-//@```
-
-//@# RNA Transcription
-//@
-//@```
-polymerase rnap(initiation: promoter, 
-                elongation: rna_{n} + nt -->
-                           rna_{n+1} + ppi,
-                termination: taa);
-//@```
-
-//@# Protein Synthesis
-//@
-//@```
-ribosome_binding_site rbs1;
-translation_terminator tt1;
-ribosome r1(initiation: rbs1, 
-            elongation: peptide_{n} + aa -->
-                        peptide_{n+1} + H_{2}O, 
-            termination: tt1);
-//@```
-
-
-//@# Carbonic Anhydrase
-//@
-//@![CatalyticDomain](CarbonicAnhydrase_CatalyticDomain.png)
-//@
-//@<img src="CarbonicAnhydrase_Reaction.png" alt="Reaction" width="400"/>
-//@
-//@Reference: [Stryer Biochemistry 7ed](https://www.amazon.com/Biochemistry-Lubert-Stryer/dp/1319114679/ref=sr_1_1?keywords=Stryer+Biochemistry&qid=1636994919&s=books&sr=1-1).
-//@
-//@```
+// Carbonic Anhydrase
+// Reference: [Stryer Biochemistry 7ed]
 protein ca2(CO_{2} + H_{2}O --> OHCOO^{-} + H^{+})
 {
    cofactor co1(zn^{2+});
@@ -80,17 +58,9 @@ protein ca2(CO_{2} + H_{2}O --> OHCOO^{-} + H^{+})
    step step3(dom1-OHCOO^{-} --> dom1 + OHCOO^{-});
    sequence process1(step1, step2, step3);
 };
-//@```
-//@
 
-//@# Endocytosis
-//@
-//@<img src="Endocytosis_Image.png" alt="Endocytosis_Image.png" width="500"/>
-//@
-//@Courtesy of Xinxin Wang from UT Southwestern.
-//@
-//@
-//@```
+// Endocytosis
+// Courtesy of Xinxin Wang from UT Southwestern.
 protein clathrin()
 {
    PDB "1XI4";
@@ -105,4 +75,3 @@ process clathrin_endocytosis()
    step step2(clathrin.dom2 + clathrin.dom2 -->
                      clathrin.dom2-clathrin.dom2);
 };
-//@```
