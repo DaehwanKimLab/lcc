@@ -1,0 +1,14 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Two Component Signaling
+// Network  6.2,   p.151
+// Model   6.2,    p.151
+// Figure  6.3,    p.152
+
+protein E1(R + L --> RL, k=5, krev=1, R=_0__2, L=_1to3__3, E1=_0__1);
+protein E2(P + RL --> pP + RL, k=6, P=_0__8, E2=_0__1);
+protein E3(pP --> P, k=3, E3=_0__1);
+
+// P + pP needs to be constrained 
+
+

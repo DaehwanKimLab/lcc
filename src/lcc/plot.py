@@ -83,11 +83,12 @@ def PlotData(Dataset):
         Data = Data_Transposed[2:Cap] / Data_Vol
         Legend = Legend[2:Cap]
 
-        # Plot_Dynamics(Title, Data_Time[0], Data, Legend)
+        if 'RL' in Legend:
+            Plot_Dynamics(Title, Data_Time[0], Data, Legend)
 
-        Idx_Pairs, Names_Pairs = Indexing(Legend)
-
-        Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
+        else:
+            Idx_Pairs, Names_Pairs = Indexing(Legend)
+            Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
         return 0
 
@@ -288,6 +289,8 @@ def Indexing(Legend, Query=None):
             SelectedMolecules = ["S1", "S2"]
         elif ("A" in Legend) & ("B" in Legend):
             SelectedMolecules = ["A", "B"]
+        elif ("L" in Legend) & ("RL" in Legend) & ("pP" in Legend):
+            SelectedMolecules = ["L", "RL", "pP"]
         else:
             SelectedMolecules = Legend
 
