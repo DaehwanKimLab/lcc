@@ -193,7 +193,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     Utils::tokenize(Value, "_", Value_Parsed);
                     string MolName = Value_Parsed[0];
                     string Range = Value_Parsed[1];
-                    float Count = std::stoi(Value_Parsed[2]);
+                    float Count = std::stof(Value_Parsed[2]);
                     os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
 
                     string Delimiter = "to";
@@ -332,7 +332,7 @@ void TraversalNode(NBlock* InProgramBlock)
                         Utils::tokenize(Value, "_", Value_Parsed);
                         string MolName = Value_Parsed[0];
                         string Range = Value_Parsed[1];
-                        float Count = std::stoi(Value_Parsed[2]);
+                        float Count = std::stof(Value_Parsed[2]);
                         os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
     
                         string Delimiter = "to";
@@ -392,7 +392,7 @@ void TraversalNode(NBlock* InProgramBlock)
                         Utils::tokenize(Value, "_", Value_Parsed);
                         string MolName = Value_Parsed[0];
                         string Range = Value_Parsed[1];
-                        float Count = std::stoi(Value_Parsed[2]);
+                        float Count = std::stof(Value_Parsed[2]);
                         os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
     
                         string Delimiter = "to";
@@ -803,7 +803,7 @@ void CheckInitialCounts()
         if (InitialCount < 0) {
             for (auto& Pathway : Context.PathwayList) {
                 if (Pathway.Name == "TCA") {
-                    count.Initial = std::stoi(Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA));
+                    count.Initial = std::stof(Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA));
                     std::cout << "InitialCount Imported | Molecule: " << mol->Name << "\t| Count: " << InitialCount << endl;
                     }
                 }
@@ -1582,7 +1582,7 @@ void WriteSimModule()
 
     // Initialize all molecule counts
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
-    std::vector<int> InitialCount_Molecules;
+    std::vector<float> InitialCount_Molecules;
     for (auto& mol : Context.MoleculeList) {
         auto& count = mol->Count;
         float InitialCount = count.Initial;
@@ -1600,10 +1600,9 @@ void WriteSimModule()
         InitialCount_Molecules.push_back(InitialCount);
     }
     ofs << in+ in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
-    ofs << in+ in+ in+ "Count_Mol = np.asmatrix([" << JoinInt2Str_Idx(InitialCount_Molecules) << "])" << endl;
+    ofs << in+ in+ in+ "Count_Mol = np.asmatrix([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
     ofs << endl;
-
 
     ofs << in+ in+ "def ExportLegend(self):" << endl;
     // for legends
@@ -1936,8 +1935,10 @@ void WriteSimModule()
                 break;
             }
         }
-                // ofs << in+ in+ in+ "self.HillKinetics()" << endl;
+    } else {
+        ofs << in+ in+ in+ "pass" << endl;
     }
+    ofs << endl;
 
     if (!PolymeraseList.empty()) {
 
