@@ -9,8 +9,8 @@ polymerase pol1(initiation: origin1,
                termination: terminus1);
 
 // RNA Transcription
-rnap_binding_site promoter;
-transcription_terminator taa;
+// rnap_binding_site promoter;
+// transcription_terminator taa;
 polymerase rnap(initiation: promoter, 
                 elongation: rna_{n} + nt -->
                             rna_{n+1} + ppi,

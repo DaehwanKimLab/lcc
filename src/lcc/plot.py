@@ -2,6 +2,8 @@ import os, sys
 from argparse import ArgumentParser
 import csv
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 import numpy as np
 
 SaveFilename = ''
@@ -52,11 +54,11 @@ def PlotData(Dataset):
 
     # plot_TCACycle = True
     # plot_TCACycle_Reduced = True
-    # plot_PolymeraseReactions = True
+    plot_PolymeraseReactions = True
     # plot_Ecoli_NoTCA = True
     # plot_Ecoli_TCA = True
     # plot_ShowAll_DynamicsOnly = True
-    plot_ShowAll_DynamicsAndPhasePlain = True
+    # plot_ShowAll_DynamicsAndPhasePlain = True
 
     ### Debugging option ###
     CheckRateExpected = True
@@ -87,7 +89,14 @@ def PlotData(Dataset):
             Plot_Dynamics(Title, Data_Time[0], Data, Legend)
 
         else:
-            Idx_Pairs, Names_Pairs = Indexing(Legend)
+            Idx_Pairs = None
+            Names_Pairs = None
+
+            if 'oxaloacetate' in Legend:
+                Idx_Pairs, Names_Pairs = Indexing(Legend, 'TCA')
+            else:
+                Idx_Pairs, Names_Pairs = Indexing(Legend)
+
             Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
         return 0
@@ -350,6 +359,57 @@ def Plot_DynamicsAndPhasePlaneAndRate(Title, Time, Data, Legend, Idx_Pairs, Name
     else:
         plt.show()
 
+
+# def Plot_Dynamics_Animation(Title, Time, Data, Legend):
+#     X = Time
+#     Y = Data
+#
+#     assert len(X) == Y.shape[-1]
+#
+#     color = ['red', 'green', 'blue', 'orange']
+#
+#     fig = plt.figure()
+#     ax = plt.axes(xlim=(0, 600), ylim=(0, Y.max() * 1.2))
+#
+#     ax.set_ylabel('Amount (a.u.)')
+#     ax.set_xlabel('Time (s)')
+#     ax.set_title(Title + " over Time")
+#
+#     for i in range(len(Legend)):
+#         ax.plot(X, Y[i], label=Legend[i])
+#
+#     ax.legend(loc='upper left')
+#
+#     ani = FuncAnimation(fig, animate, frames=2000, interval=500)
+#     plt.show()
+#
+#
+#
+# lines = plt.plot([], 'b-', markersize=2)
+# line = lines[0]
+#
+# xanim = []
+# yanim = []
+#
+# # set data and just scroll through xlims..?
+# # line.set_data((x, y))
+# offset = 850
+#
+#
+# def animate(i):
+#     index = i + offset
+#     if index < len(x):
+#         xanim.append(x[index])
+#         yanim.append(y[index])
+#         ax.set_xlim(min(xanim), index + 10)
+#         ax.set_ylim(min(yanim) - 10, max(yanim) + 10)
+#
+#         line.set_data((xanim, yanim))
+#
+#
+# ani = FuncAnimation(fig, animate, frames=2000, interval=500)
+# plt.show()
+#
 
 def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM):
     return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + KM)

@@ -36,7 +36,12 @@ public:
     FCount(const float InInitial, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Initial(InInitial), Range(InRange) {}
     
     void Print(std::ostream& os) {
-        os << "\t| Count" << "\t| InitialCount: " << Initial;
+        if ((Initial >= 0) | (!Range.empty())) {
+            os << "\t| Count";
+        }
+        if (Initial >= 0) {
+            os << "\t| InitialCount: " << Initial;
+        }
         if (Fixed) {
             os << " (Fixed)";
         }
@@ -306,7 +311,7 @@ public:
         }
 
     void Print(std::ostream& os) {
-        os << "  Enzyme Id: " << Name << "\t| Substrate: " << Substrate << std::endl; 
+        os << "  Enzyme Id: " << Name << "\t| Substrate: " << Substrate; 
         if (KM > 0) {
             os << "\t| kcat:  " << std::to_string(kcat) << "\t| KM: " << std::to_string(KM);
         }

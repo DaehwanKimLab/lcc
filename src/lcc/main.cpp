@@ -83,7 +83,7 @@ void TraversalNode(NBlock* InProgramBlock)
     // Pseudomolecule (placeholder to support current version of matrix operation)
     // Idx = 0
     FMolecule * Molecule = new FMolecule("Pseudo", 1, true);
-    Molecule->Print(os);
+    // Molecule->Print(os);
     Context.AddToMoleculeList(Molecule);
 
 
@@ -358,11 +358,11 @@ void TraversalNode(NBlock* InProgramBlock)
                 // Add a new small molecule (small molecule is an assumption made on enzyme, but it may not always be true)
                 if (Ranges.empty()) {
                     FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Fixed);
-                    Molecule->Print(os);
+                    // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 } else {
                     FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Ranges); 
-                    Molecule->Print(os);
+                    // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 }
 
@@ -418,11 +418,11 @@ void TraversalNode(NBlock* InProgramBlock)
                 // Add a new small molecule (small molecule is an assumption made on enzyme, but it may not always be true)
                 if (Ranges.empty()) {
                     FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Fixed);
-                    Molecule->Print(os);
+                    // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 } else {
                     FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Ranges); 
-                    Molecule->Print(os);
+                    // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 }
             }
@@ -514,24 +514,24 @@ void TraversalNode(NBlock* InProgramBlock)
             for (const shared_ptr<NStatement>& stmt: N_Polymerase->Statements) {
                 if (Utils::is_class_of<NElongationStatement, NStatement>(stmt.get())) {
                     const shared_ptr<NElongationStatement> elongstmt = dynamic_pointer_cast<NElongationStatement>(stmt);
-                    os << "---This is an elongation statement of the polymerase stmt---" << endl;
-                    elongstmt->Print(os);
+                    // os << "---This is an elongation statement of the polymerase stmt---" << endl;
+                    // elongstmt->Print(os);
 
                     NReaction ElongationReaction = elongstmt->Reaction;
                     os << "  Elongation:";
-                    ElongationReaction.Print(os);
+                    // ElongationReaction.Print(os);
 
                     os << "-----------------" << endl;
                 } else if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
                     const shared_ptr<NInitiationStatement> initstmt = dynamic_pointer_cast<NInitiationStatement>(stmt);
-                    os << "---This is an initiation statement of the polymerase stmt---" << endl;
-                    initstmt->Print(os);
-                    os << "-----------------" << endl;
+                    // os << "---This is an initiation statement of the polymerase stmt---" << endl;
+                    // initstmt->Print(os);
+                    // os << "-----------------" << endl;
                 } else if (Utils::is_class_of<NTerminationStatement, NStatement>(stmt.get())) {
                     const shared_ptr<NTerminationStatement> termstmt = dynamic_pointer_cast<NTerminationStatement>(stmt);
-                    os << "---This is a termination statement of the polymerase stmt---" << endl;
-                    termstmt->Print(os);
-                    os << "-----------------" << endl;
+                    // os << "---This is a termination statement of the polymerase stmt---" << endl;
+                    // termstmt->Print(os);
+                    // os << "-----------------" << endl;
                 }
             }
 
@@ -625,10 +625,10 @@ void TraversalNode(NBlock* InProgramBlock)
         } else if (Utils::is_class_of<NElongationStatement, NNode>(node)) {
             auto N_Elongation = dynamic_cast<const NElongationStatement *>(node);
             std::string Name;
-
+            
             auto& ElongationReaction = N_Elongation->Reaction;
 
-            os << "  Elongation:"; ElongationReaction.Print(os);
+            os << "  Polymerase Reaction | Elongation:"; ElongationReaction.Print(os);
             map<string, int> Stoichiometry;
 			string Location = ElongationReaction.Location.Name;
             int Coefficient;
@@ -655,8 +655,8 @@ void TraversalNode(NBlock* InProgramBlock)
 
                 Stoichiometry[reactant->Name]= Coefficient;
 
-                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
-                Molecule->Print(os);
+                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);             
+                // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
 
@@ -669,7 +669,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 Stoichiometry[product->Name]= Coefficient;
 
                 FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
-                Molecule->Print(os);
+                // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
 
@@ -677,15 +677,19 @@ void TraversalNode(NBlock* InProgramBlock)
                 os << "    Location: " << Location << endl;
 			}
 
+            if (!BuildingBlocks.empty()){
+                os << "    BuildingBlocks: [";
+            }
             for (auto& BuildingBlock : BuildingBlocks) {
-                os << "BuildingBlock" << endl;
-                FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
-                Molecule->Print(os);
+                float InitialCount_BuildingBlock = 50000;
+                FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock, InitialCount_BuildingBlock);
+                os << Molecule->Name << ", ";
+                // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
-
+            os << "]" << endl;
             FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-            PolymeraseReaction->Print(os);
+            // PolymeraseReaction->Print(os);
             Context.AddToReactionList(PolymeraseReaction);
     
        
@@ -796,19 +800,19 @@ void ScanNodes(const NBlock* InProgramBlock)
 void CheckInitialCounts()
 {
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
-    std::vector<int> InitialCount_Molecules;
     for (auto& mol : Context.MoleculeList) {
         auto& count = mol->Count;
-        float InitialCount = count.Initial;
-        if (InitialCount < 0) {
+        if (count.Initial < 0) {
             for (auto& Pathway : Context.PathwayList) {
                 if (Pathway.Name == "TCA") {
-                    count.Initial = std::stof(Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA));
-                    std::cout << "InitialCount Imported | Molecule: " << mol->Name << "\t| Count: " << InitialCount << endl;
+                    if (!Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA).empty()) {
+                        count.Initial = std::stof(Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA));
+                        std::cout << "InitialCount Imported | Molecule: " << mol->Name << "\t| Count: " << count.Initial << endl;
                     }
                 }
             }
-        if (InitialCount < 0) {
+        }
+        if (count.Initial < 0) {
             count.Initial = 0;
         }
     }
@@ -1572,8 +1576,11 @@ void WriteSimModule()
             }
             
             // debugging
-
-            std::cout << Polymerase->Process << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Taret.size(): " << Idx_Target.size() << endl;
+            std::cout << Polymerase->Process; 
+            if (Polymerase->Process == "DNAReplication") {
+                std::cout << "\t";
+            }
+            std::cout << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Taret.size(): " << Idx_Target.size() << endl;
             assert (Idx_Template.size() == Idx_Target.size());   
  
             Print_SetUpPolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
@@ -1586,17 +1593,6 @@ void WriteSimModule()
     for (auto& mol : Context.MoleculeList) {
         auto& count = mol->Count;
         float InitialCount = count.Initial;
-//        if (InitialCount < 0) {
-//            for (auto& Pathway : Context.PathwayList) {
-//                if (Pathway.Name == "TCA") {
-//                    InitialCount = std::stoi(Context.QueryTable(mol->Name, "Count", Context.InitialCountTable_TCA));
-//                    std::cout << "InitialCount Imported | Molecule: " << mol->Name << "\t| Count: " << InitialCount << endl;
-//                    }
-//                }
-//            }
-//        if (InitialCount < 0) {
-//            InitialCount = 0;
-//        }
         InitialCount_Molecules.push_back(InitialCount);
     }
     ofs << in+ in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
@@ -2225,10 +2221,11 @@ int main(int argc, char *argv[])
         if (!Option.bParseOnly) {
 
             TraversalNode(ProgramBlock);
+//            Context.PrintInitialCounts(os);
             CheckInitialCounts();
 
             Context.PrintLists(os);
-            Context.PrintInitialCounts(os);
+//            Context.PrintInitialCounts(os);
         }
 
         delete ProgramBlock;

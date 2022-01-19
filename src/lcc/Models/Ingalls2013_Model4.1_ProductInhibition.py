@@ -76,15 +76,15 @@ class FModel():
 
         ax1.plot(X, 'r-', label="[S1]")
         ax1.plot(Y, 'b-', label="[S2]")
-        ax1.set_title('Dynamics')
+        ax1.set_title('Product Inhibition: Dynamics')
         ax1.set_xlabel('Time(a.u.)')
         ax1.set_ylabel('Concentration(a.u.)')
-        ax1.legend(loc='upper left')
+        ax1.legend(loc='upper right')
         ax1.grid()
 
         # Phase plane
         ax2.plot(X, Y, color="blue")
-        ax2.set_title('Phase plane')
+        ax2.set_title('Product Inhibition: Phase plane')
         ax2.set_xlabel("[S1]")
         ax2.set_ylabel("[S2]")
         ax2.grid()

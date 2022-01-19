@@ -161,7 +161,7 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
     for (auto& reaction : ReactionList) {
         if (reaction->Name == NewReaction->Name){
             Addition = false;
-            std::cout << "Redundant reaction (" << NewReaction->Name << " Found in ReactionList" << std::endl;
+//            std::cout << "Redundant reaction (" << NewReaction->Name << " Found in ReactionList" << std::endl;
             break;
         }
     }
@@ -591,11 +591,11 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type
                     for (auto& mol : MoleculeList) {
                         if (mol->Name == stoich.first) {
                             if (std::find(IdxList.begin(), IdxList.end(), MolIdx) == IdxList.end()) {
-std::cout << "New mol idx added for : " << stoich.first << endl;
+//std::cout << "New mol idx added for : " << stoich.first << endl;
                                 IdxList.push_back(MolIdx);
                                 break;
                             } else {
-std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
+//std::cout << "Redundant mol idx already exists for: " << stoich.first << endl;
                             }
                         }
                         MolIdx++;
