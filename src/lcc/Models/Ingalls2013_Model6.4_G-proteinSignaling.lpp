@@ -1,0 +1,11 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// G-protein Signaling
+// Network  6.4,   p.154
+// Model    6.4,   p.154
+// Figure   6.5,   p.154
+
+protein E1(R + L --> RL, k=2000000, krev=0.01, R=_0__4000, L=_100to700__0.000000001, E1=_0__1);
+protein E2(G + RL --> Ga + Gbg + RL, k=0.00001, P=_0__10000, E2=_0__1);
+protein E3(Ga --> Gd, k=0.004, E3=_0__1);
+protein E4(Gd + Gbg --> G, k=0.00001, E4=_0__1);

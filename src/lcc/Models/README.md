@@ -47,9 +47,54 @@
     Initial Concentrations:     S1 = 1, S2 = 3
     Kinetic Constants:          k1 = 20, k2 = 20, k3 = 5, k4 = 5, K1 = 1, K2 = 1, n1 = 4, n2 = 1 
 
-- [ProductInhibition.py](Ingalls2013_Model4.2_Stability.py)
-- [ProductInhibition.lpp](Ingalls2013_Model4.2_Stability.lpp)
+- [Stability.py](Ingalls2013_Model4.2_Stability.py)
+- [Stability.lpp](Ingalls2013_Model4.2_Stability.lpp)
 - Examples: 
+
+
+### 5. Oscillations (p.93)
+<img src="Ingalls2013_Model4.14_LimitCycleOscillations_Model.png" height="100"> 
+<img src="Ingalls2013_Model4.14_LimitCycleOscillations_Eqn.png" height="100">
+
+    Initial Concentrations:     S1 = 1.5, S2 = 1
+    Kinetic Constants:          k0 = 8, k1 = 1, k2 = 5, K = 1, n1 = [2, 2.5] 
+
+- [Oscillations_Damped.py](Ingalls2013_Model4.14_LimitCycleOscillations_Damped.py)
+- [Oscillations_Damped.lpp](Ingalls2013_Model4.14_LimitCycleOscillations_Damped.lpp)
+
+  
+- [Oscillations_Sustained.py](Ingalls2013_Model4.14_LimitCycleOscillations_Sustained.py)
+- [Oscillations_Sustained.lpp](Ingalls2013_Model4.14_LimitCycleOscillations_Sustained.lpp)
+- Examples: 
+
+
+### 6. Two Component Signaling (p.151)
+<img src="Ingalls2013_Model6.2_TwoComponentSignaling_Model.png" height="100"> 
+<img src="Ingalls2013_Model6.2_TwoComponentSignaling_Eqn.png" height="100">
+
+Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
+
+    Initial Concentrations:     R = 2, RL = 0, P = 8, pP = 0, L=0
+    Induced Concentrations:     L[1:3]=3
+    Kinetic Constants:          k1 = 5, krev1 = 1, k2 = 6, k3 = 5 
+
+- [TwoComponentSignaling.py](Ingalls2013_Model6.2_TwoComponentSignaling.py)
+- [TwoComponentSignaling.lpp](Ingalls2013_Model6.2_TwoComponentSignaling.lpp)
+- Examples: 
+
+### 7. G-protein Signaling (p.154)
+<img src="Ingalls2013_Model6.4_G-proteinSignaling_Model.png" height="100"> 
+
+Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
+
+    Initial Concentrations:     R = 2, RL = 0, P = 8, pP = 0, L=0
+    Induced Concentrations:     L[1:3]=3
+    Kinetic Constants:          k1 = 5, krev1 = 1, k2 = 6, k3 = 5 
+
+- [G-proteinSignaling.py](Ingalls2013_Model6.4_G-proteinSignaling.py)
+- [G-proteinSignaling.lpp](Ingalls2013_Model6.4_G-proteinSignaling.lpp)
+- Examples: 
+
 
 
 

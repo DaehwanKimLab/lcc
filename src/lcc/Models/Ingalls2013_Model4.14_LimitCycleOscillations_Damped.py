@@ -10,7 +10,6 @@ Figure  4.15,    p.94
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import numpy as np
 
 def dS1_NumericalSimulation(k0, k1, K, n, S1, S2):
     return k0 - (k1 * (1 + (S2 / K) ** n) * S1)
@@ -19,8 +18,7 @@ def dS2_NumericalSimulation(k1, k2, K, n, S1, S2):
     return (k1 * (1 + (S2 / K) ** n) * S1) - (k2 * S2)
 
 class FModel():
-    def __init__(self, InS1=1.5, InS2=1, Ink0=8, Ink1=1, Ink2=5, InK=1, Inn=2):   # Inn=2 is too strong
-    # def __init__(self, InS1=1.5, InS2=1, Ink0=8, Ink1=1, Ink2=11, InK=1, Inn=1):   # Inn=2 is too strong
+    def __init__(self, InS1=1.5, InS2=1, Ink0=8, Ink1=1, Ink2=5, InK=1, Inn=2):
         # Initial Concentrations
         self.S1 = InS1
         self.S2 = InS2
