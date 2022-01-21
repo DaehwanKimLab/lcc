@@ -299,7 +299,7 @@ void TraversalNode(NBlock* InProgramBlock)
 //            }
 
 
-            map<string, int> Stoichiometry;
+            std::vector<std::pair<std::string, int>> Stoichiometry;
 			string Location = OverallReaction.Location.Name;
 
             int Coefficient;
@@ -308,13 +308,23 @@ void TraversalNode(NBlock* InProgramBlock)
                     break;
                 }
 
+                // This may not always work with Michaelis Menten without database. Excluding common molecules will improve a chance.
                 if (Substrate.empty()) {
                     Substrate = reactant->Name;
                 }
 
                 Coefficient = -1; // update when coeff is fully implemented in parser
                 os << "    Reactants: " << "(" << Coefficient << ") " << reactant->Name << ", " << endl;
-                Stoichiometry[reactant->Name]= Coefficient;
+
+                // if also found in products, set the first stoichiometry coefficient as the sum of their coefficients.
+                for (const auto& product : OverallReaction.Products) {
+                    if (product->Name == reactant->Name) {
+                        Coefficient = 0; // TODO: use sum of the coefficients when coefficient node is implemented.
+                    }
+                } 
+                std::pair<std::string, int> Stoich(reactant->Name, Coefficient);
+                Stoichiometry.push_back(Stoich);
+
                 float InitialCount = Float_Init;
                 bool Fixed = false;
                 vector<pair<pair<float, float>, float>> Ranges;
@@ -375,7 +385,18 @@ void TraversalNode(NBlock* InProgramBlock)
 
                 Coefficient = 1; // update when coeff is fully implemented in parser
                 os << "    Products: " << "(" << Coefficient << ") " << product->Name << ", " << endl;
-                Stoichiometry[product->Name]= Coefficient;
+
+                bool SkipStoich = false;
+                for (const auto& reactant : OverallReaction.Reactants) {
+                    if (product->Name == reactant->Name) {
+                        SkipStoich = true;
+                    }
+                } 
+                std::pair<std::string, int> Stoich(product->Name, Coefficient);
+                if (!SkipStoich) {
+                    Stoichiometry.push_back(Stoich);
+                }
+
                 float InitialCount = Float_Init;
                 bool Fixed = false;
 
@@ -629,7 +650,7 @@ void TraversalNode(NBlock* InProgramBlock)
             auto& ElongationReaction = N_Elongation->Reaction;
 
             os << "  Polymerase Reaction | Elongation:"; ElongationReaction.Print(os);
-            map<string, int> Stoichiometry;
+            std::vector<std::pair<std::string, int>> Stoichiometry;
 			string Location = ElongationReaction.Location.Name;
             int Coefficient;
             std::vector<std::string> BuildingBlocks;
@@ -652,8 +673,8 @@ void TraversalNode(NBlock* InProgramBlock)
                     BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
                     continue;
                 }
-
-                Stoichiometry[reactant->Name]= Coefficient;
+                std::pair<std::string, int> Stoich(reactant->Name, Coefficient);
+                Stoichiometry.push_back(Stoich);
 
                 FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);             
                 // Molecule->Print(os);
@@ -666,7 +687,8 @@ void TraversalNode(NBlock* InProgramBlock)
                 if ((product->Name == "dna_{n+1}") | (product->Name == "rna_{n+1}") | (product->Name == "peptide_{n+1}")) {
                     continue;
                 }
-                Stoichiometry[product->Name]= Coefficient;
+                std::pair<std::string, int> Stoich(product->Name, Coefficient);
+                Stoichiometry.push_back(Stoich);
 
                 FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
                 // Molecule->Print(os);
@@ -931,9 +953,9 @@ void Print_SetUpEnzymeReaction_Standard(ofstream& ofs, std::vector<const FEnzyme
                 std::vector<int> Idx_Products;
                 for (auto& stoich : reaction->Stoichiometry) {
                     int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                    if (stoich.second < 0) {
+                    if (stoich.second <= 0) {
                         Idx_Reactants.push_back(Idx);
-                    } else if (stoich.second > 0) {
+                    } else if (stoich.second >= 0) {
                         Idx_Products.push_back(Idx);
                     } 
                 }
@@ -1038,9 +1060,9 @@ void Print_SetUpEnzymeReaction_Standard_Inhibition_Allosteric(ofstream& ofs, std
                 std::vector<int> Idx_Products;
                 for (auto& stoich : reaction->Stoichiometry) {
                     int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                    if (stoich.second < 0) {
+                    if (stoich.second <= 0) {
                         Idx_Reactants.push_back(Idx);
-                    } else if (stoich.second > 0) {
+                    } else if (stoich.second >= 0) {
                         Idx_Products.push_back(Idx);
                     }
                 }
@@ -1137,9 +1159,9 @@ void Print_SetUpEnzymeReaction_Standard_Activation_Allosteric(ofstream& ofs, std
                 std::vector<int> Idx_Products;
                 for (auto& stoich : reaction->Stoichiometry) {
                     int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                    if (stoich.second < 0) {
+                    if (stoich.second <= 0) {
                         Idx_Reactants.push_back(Idx);
-                    } else if (stoich.second > 0) {
+                    } else if (stoich.second >= 0) {
                         Idx_Products.push_back(Idx);
                     }
                 }
@@ -1226,9 +1248,9 @@ void Print_SetUpEnzymeReaction_MichaelisMenten(ofstream& ofs, std::vector<const 
                 std::vector<int> Idx_Products;
                 for (auto& stoich : reaction->Stoichiometry) {
                     int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
-                    if (stoich.second < 0) {
+                    if (stoich.second <= 0) {
                         Idx_Reactants.push_back(Idx);
-                    } else if (stoich.second > 0) {
+                    } else if (stoich.second >= 0) {
                         Idx_Products.push_back(Idx);
                     }
                 }
