@@ -394,7 +394,7 @@ public:
 class FPolymeraseReaction : public FReaction {
 public:
     std::string Polymerase;
-    std::vector<std::string> BuildingBlocks;
+    std::vector<std::string> BuildingBlocks; // may be moved to FPolymer
     // std::map<std::string, int> Stoichiometry;
 
     FPolymeraseReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry, const std::string& InPolymerase, const std::vector<std::string>& InBuildingBlocks)

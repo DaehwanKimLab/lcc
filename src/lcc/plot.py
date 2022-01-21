@@ -360,56 +360,49 @@ def Plot_DynamicsAndPhasePlaneAndRate(Title, Time, Data, Legend, Idx_Pairs, Name
         plt.show()
 
 
-# def Plot_Dynamics_Animation(Title, Time, Data, Legend):
-#     X = Time
-#     Y = Data
-#
-#     assert len(X) == Y.shape[-1]
-#
-#     color = ['red', 'green', 'blue', 'orange']
-#
-#     fig = plt.figure()
-#     ax = plt.axes(xlim=(0, 600), ylim=(0, Y.max() * 1.2))
-#
-#     ax.set_ylabel('Amount (a.u.)')
-#     ax.set_xlabel('Time (s)')
-#     ax.set_title(Title + " over Time")
-#
-#     for i in range(len(Legend)):
-#         ax.plot(X, Y[i], label=Legend[i])
-#
-#     ax.legend(loc='upper left')
-#
-#     ani = FuncAnimation(fig, animate, frames=2000, interval=500)
-#     plt.show()
-#
-#
-#
-# lines = plt.plot([], 'b-', markersize=2)
-# line = lines[0]
-#
-# xanim = []
-# yanim = []
-#
-# # set data and just scroll through xlims..?
-# # line.set_data((x, y))
-# offset = 850
-#
-#
-# def animate(i):
-#     index = i + offset
-#     if index < len(x):
-#         xanim.append(x[index])
-#         yanim.append(y[index])
-#         ax.set_xlim(min(xanim), index + 10)
-#         ax.set_ylim(min(yanim) - 10, max(yanim) + 10)
-#
-#         line.set_data((xanim, yanim))
-#
-#
-# ani = FuncAnimation(fig, animate, frames=2000, interval=500)
-# plt.show()
-#
+def Plot_Dynamics_Animation(Title, Time, Data, Legend):
+    X = Time
+    Y = Data
+
+    assert len(X) == Y.shape[-1]
+
+    color = ['red', 'green', 'blue', 'orange']
+
+    fig = plt.figure()
+    ax = plt.axes(xlim=(0, 600), ylim=(0, Y.max() * 1.2))
+
+    ax.set_ylabel('Amount (a.u.)')
+    ax.set_xlabel('Time (s)')
+    ax.set_title(Title + " over Time")
+
+    for i in range(len(Legend)):
+        ax.plot(X, Y[i], label=Legend[i])
+
+    ax.legend(loc='upper left')
+
+    lines = plt.plot([], 'b-', markersize=2)
+    line = lines[0]
+
+    xanim = []
+    yanim = []
+
+    # set data and just scroll through xlims..?
+    # line.set_data((x, y))
+    offset = 850
+
+    def animate(i):
+        index = i + offset
+        if index < len(X):
+            xanim.append(X[index])
+            yanim.append(Y[index])
+            ax.set_xlim(min(xanim), index + 10)
+            ax.set_ylim(min(yanim) - 10, max(yanim) + 10)
+
+            line.set_data((xanim, yanim))
+
+    ani = FuncAnimation(fig, animate, frames=2000, interval=500)
+    plt.show()
+
 
 def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM):
     return (kcat * Conc_Enzyme * Conc_Substrate) / (Conc_Substrate + KM)
@@ -543,7 +536,6 @@ yanim = []
 # set data and just scroll through xlims..?
 line.set_data((x, y))
 offset = 850
-
 
 def animate(i):
     index = i + offset

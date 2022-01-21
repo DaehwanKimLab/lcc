@@ -9,6 +9,7 @@ Figure  4.16,    p.95
 '''
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 def dS1_NumericalSimulation(k0, k1, K, n, S1, S2):
     return k0 - (k1 * (1 + (S2 / K) ** n) * S1)
@@ -63,6 +64,8 @@ class FModel():
                 break
             i += 1
 
+        return self.Data_S1, self.Data_S2
+
     def PlotData(self):
         X = self.Data_S1
         Y = self.Data_S2
@@ -74,12 +77,12 @@ class FModel():
         ax1 = fig.add_subplot(1, 2, 1)
         ax2 = fig.add_subplot(1, 2, 2)
 
-        ax1.plot(X, 'r-', label="[S1]")
-        ax1.plot(Y, 'b-', label="[S2]")
-        ax1.set_title('Dynamics')
-        ax1.set_xlabel('Time(a.u.)')
-        ax1.set_ylabel('Concentration(a.u.)')
-        ax1.legend(loc='upper left')
+        ax1.plot(X, 'b-', label="[S1]")
+        ax1.plot(Y, 'r-', label="[S2]")
+        ax1.set_title('Limit Cycle Oscillations (Sustained)')
+        ax1.set_xlabel('Time (a.u.)')
+        ax1.set_ylabel('Concentration (a.u.)')
+        ax1.legend(loc='upper right')
         ax1.grid()
 
         # Phase plane
@@ -99,3 +102,60 @@ def main():
 if __name__ == '__main__':
 
     main()
+
+
+# Animation option
+Animate = False
+# Animate = True
+
+PlotType = 1  # Dynamics
+# PlotType = 2 # PhasePlane
+
+if Animate:
+    Model = FModel()
+    X, Y = Model.Run()
+
+    assert len(X) == len(Y)
+    skip = 3
+
+    X = X[::skip]
+    Y = Y[::skip]
+
+    i_data = []
+    x_data = []
+    y_data = []
+
+    fig, ax = plt.subplots()
+    line1, = ax.plot(0, 0, label="[Substrate]", color='g')
+    line2, = ax.plot(0, 0, label="[Product]", color='r')
+    line3, = ax.plot(0, 0, color='b')
+
+    def animation_frame(i):
+        i_data.append(i)
+        x_data.append(X[i])
+        y_data.append(Y[i])
+
+        if PlotType == 1:
+            # dynamics
+            ax.set_xlim(0, i + 10)
+            ax.set_ylim(0, max(X) * 1.1)
+            ax.set_ylabel('Concentration (a.u.)')
+            ax.set_xlabel('Time (a.u.)')
+            ax.set_title('Persistent Oscillation: Dynamics')
+            ax.legend(loc='lower right')
+            line1.set_data(i_data, x_data)
+            line2.set_data(i_data, y_data)
+            return [line1, line2]
+
+        if PlotType == 2:
+            # phase plane
+            ax.set_xlim(0, max(X) * 1.1)
+            ax.set_ylim(0.5, max(Y) * 1.1)
+            line3.set_data(x_data, y_data)
+            ax.set_ylabel('[Substrate] (a.u.)')
+            ax.set_xlabel('[Product] (a.u.)')
+            ax.set_title('Persistent Oscillation: Phase Plane')
+            return line3,
+
+    animation = FuncAnimation(fig, animation_frame, frames=1000, interval=1)
+    plt.show()

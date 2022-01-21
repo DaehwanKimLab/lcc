@@ -28,8 +28,8 @@ def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM):
 def MichaelisMentenEqn_Inhibition_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n):
     return (kcat * Conc_Enzyme / (1 + (Conc_Inhibitor / Ki) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
 
-def MichaelisMentenEqn_Activation_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n):
-    return (kcat * Conc_Enzyme * (1 + (Conc_Inhibitor / Ki) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
+def MichaelisMentenEqn_Activation_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Activator, kcat, KM, Ka, n):
+    return (kcat * Conc_Enzyme * (1 + (Conc_Activator / Ka) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
 
 def MatrixMultiplication_Rev(Freq, Rate):
     return np.matmul(Rate, Freq)

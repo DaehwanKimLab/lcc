@@ -52,9 +52,9 @@ class FNetwork():
 
             plt.plot(X, Y, label="n = %s" % str(n+1))
             # plt.plot(np.log(X), Y, label="n = %s" % str(n+1))
-            # plt.set_title('Hill functions')
-            # plt.set_xlabel('X: Ligand concentration (a.u.)')
-            # plt.set_ylabel('Y: Fraction of Bound Protein')
+            plt.title('Hill functions')
+            plt.xlabel('X: Ligand concentration (a.u.)')
+            plt.ylabel('Y: Fraction of Bound Protein')
             plt.legend(loc='upper left')
             plt.grid()
 

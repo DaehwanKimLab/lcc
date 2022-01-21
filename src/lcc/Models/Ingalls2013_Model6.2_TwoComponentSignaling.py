@@ -9,6 +9,7 @@ Figure  6.3,    p.152
 '''
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 def dR_NumericalSimulation(k1, krev1, k2, k3, R, L, RL, P, pP):
     return -k1 * R * L + krev1 * RL
@@ -89,13 +90,13 @@ class FModel():
         # Dynamics
         ax1 = fig.add_subplot(1, 1, 1)
 
-        ax1.plot(X, 'r-', label="[L]")
-        ax1.plot(Y, 'b-', label="[RL]")
-        ax1.plot(Z, 'g-', label="[pP]")
-        ax1.set_title('Dynamics')
-        ax1.set_xlabel('Time(a.u.)')
-        ax1.set_ylabel('Concentration(a.u.)')
-        ax1.legend(loc='upper left')
+        ax1.plot(X, 'r-', label="[Ligand]") # L
+        ax1.plot(Y, 'b-', label="[Ligand-bound Receptor]") # RL
+        ax1.plot(Z, 'g-', label="[Phosphorylated Target Protein]")
+        ax1.set_title('Two Component Signaling')
+        ax1.set_xlabel('Time (a.u.)')
+        ax1.set_ylabel('Concentration (a.u.)')
+        ax1.legend(loc='upper right')
         ax1.grid()
 
         plt.show()
