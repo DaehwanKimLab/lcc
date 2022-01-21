@@ -384,7 +384,7 @@ std::vector<std::string> FCompilerContext::GetReactantNames_EnzymaticReactionLis
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
         for (auto& Stoich : item->Stoichiometry){
-            if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second < 0)){
+            if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second <= 0)){
                 StrList.push_back(Stoich.first);
             }
         }
@@ -397,7 +397,7 @@ std::vector<std::string> FCompilerContext::GetProductNames_EnzymaticReactionList
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
         for (auto& Stoich : item->Stoichiometry){
-            if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second > 0)){
+            if ((std::find(StrList.begin(), StrList.end(), Stoich.first) == StrList.end()) & (Stoich.second >= 0)){
                 StrList.push_back(Stoich.first);
             }
         }

@@ -360,18 +360,38 @@ public:
  class FReaction {
 public:
     std::string Name; // Name is equivalent to EnzymeName for now
-    std::map<std::string, int> Stoichiometry;
+    std::vector<std::pair<std::string, int>> Stoichiometry;
 
     virtual ~FReaction() {}
 
-    FReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry) 
+    FReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry) 
         : Name(InName), Stoichiometry(InStoichiometry) {}
 
-    bool CheckIfReactant(const std::string& Name) {
-        return (Stoichiometry[Name] < 0);
+    bool CheckIfReactant(const std::string& Query) {
+        for (auto& stoich : Stoichiometry) {
+           if (stoich.first == Query) {
+               if (stoich.second < 0) {
+                   return true;
+               } else {
+                   return false;
+               }
+           }
+        }
+        std::cout << "ERROR: Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
+        return false;
     }
-    bool CheckIfProduct(const std::string& Name) {
-        return (Stoichiometry[Name] > 0);
+    bool CheckIfProduct(const std::string& Query) {
+        for (auto& stoich : Stoichiometry) {
+           if (stoich.first == Query) {
+               if (stoich.second > 0) {
+                   return true;
+               } else {
+                   return false;
+               }
+           }
+        }
+        std::cout << "ERROR: Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
+        return false;
     }
 
     void Print(std::ostream& os) {
@@ -387,7 +407,7 @@ class FEnzymaticReaction : public FReaction {
 public:
     std::string Enzyme;
 
-    FEnzymaticReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry, const std::string& InEnzyme)
+    FEnzymaticReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InEnzyme)
         : Enzyme(InEnzyme), FReaction(InName, InStoichiometry) {}
 };
 
@@ -397,7 +417,7 @@ public:
     std::vector<std::string> BuildingBlocks;
     // std::map<std::string, int> Stoichiometry;
 
-    FPolymeraseReaction(const std::string& InName, const std::map<std::string, int>& InStoichiometry, const std::string& InPolymerase, const std::vector<std::string>& InBuildingBlocks)
+    FPolymeraseReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InPolymerase, const std::vector<std::string>& InBuildingBlocks)
         : Polymerase(InPolymerase), BuildingBlocks(InBuildingBlocks), FReaction(InName, InStoichiometry) {}
 };
 
