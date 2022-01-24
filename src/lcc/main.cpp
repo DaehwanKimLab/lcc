@@ -13,7 +13,7 @@
 
 #ifdef _MSC_VER
 #include <io.h>
-#include <sqlite3.h>
+//#include <sqlite3.h>
 
 #else
 #include <unistd.h>
@@ -145,39 +145,39 @@ void TraversalNode(NBlock* InProgramBlock)
                 } else if (Key == "krev") {
                     k2 = std::stof(Value);
                     Type = Standard; 
-                } else if ((Key == "kcat") or (Key == "kCat")) {
+                } else if ((Key == "kcat") || (Key == "kCat")) {
                     k1 = std::stof(Value);
                     Type = MichaelisMenten;
-                } else if ((Key == "KM") or (Key == "kM") or (Key == "km")) {
+                } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
                     k2 = std::stof(Value);
                     Type = MichaelisMenten;
 
-                } else if ((Key == "inhibitor") or (Key == "Inhibitor")) {
+                } else if ((Key == "inhibitor") || (Key == "Inhibitor")) {
                     Inhibitor = Value; // TODO: improve coding style
                     Regulator = Value;
-                } else if ((Key == "activator") or (Key == "Activator")) {
+                } else if ((Key == "activator") || (Key == "Activator")) {
                     Activator = Value; // TODO: improve coding style
                     Regulator = Value;
-                } else if ((Key == "mode") or (Key == "Mode")) {
+                } else if ((Key == "mode") || (Key == "Mode")) {
                     Mode = Value;
                     if (Type == Standard) {
                         if (!Inhibitor.empty() & Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = Standard_Inhibition_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = Standard_Inhibition_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
                         } else if (Inhibitor.empty() & !Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = Standard_Activation_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = Standard_Activation_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
                         }
                     } else if (Type == MichaelisMenten) {
                         if (!Inhibitor.empty() & Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = MichaelisMenten_Inhibition_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = MichaelisMenten_Inhibition_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
                         } else if (Inhibitor.empty() & !Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = MichaelisMenten_Activation_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = MichaelisMenten_Activation_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
                         }
                     }
-                } else if ((Key == "Ki") or (Key == "ki") or (Key == "Ka") or (Key == "ka")) {
+                } else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka")) {
                     K = std::stof(Value);
                 } else if (Key == "n") {
                     n = std::stof(Value);
@@ -459,7 +459,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
             // add new enzyme to the system
             if (Ranges.empty()) {
-                if ((Type == Standard) or (Type == MichaelisMenten)) {
+                if ((Type == Standard) || (Type == MichaelisMenten)) {
                     FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2, InitialCount, Fixed);
                     Enzyme->Print(os);
                     Context.AddToMoleculeList(Enzyme);
@@ -469,7 +469,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     Context.AddToMoleculeList(Enzyme);
                 }
             } else {
-                if ((Type == Standard) or (Type == MichaelisMenten)) {
+                if ((Type == Standard) || (Type == MichaelisMenten)) {
                     FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2, InitialCount, Ranges);
                     Enzyme->Print(os);
                     Context.AddToMoleculeList(Enzyme);
