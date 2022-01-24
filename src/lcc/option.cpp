@@ -21,6 +21,7 @@ enum {
 	ARG_SIMOUT,
     ARG_SIMIMP,
     ARG_SIMMODULE,
+    ARG_RUNOMVISIM
 };
 
 int FOption::Parse(int argc, char *argv[])
@@ -34,9 +35,10 @@ int FOption::Parse(int argc, char *argv[])
             {"output", required_argument, NULL, 'o'},
             {"debug", no_argument, NULL, ARG_DEBUG},
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
-	    {"simout", required_argument, NULL, ARG_SIMOUT},
-	    {"simimp", required_argument, NULL, ARG_SIMIMP},
+	        {"simout", required_argument, NULL, ARG_SIMOUT},
+    	    {"simimp", required_argument, NULL, ARG_SIMIMP},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
+            {"run-omvisim", no_argument, NULL, ARG_RUNOMVISIM},
             {NULL, 0, NULL, 0},
     };
 
@@ -96,6 +98,10 @@ int FOption::Parse(int argc, char *argv[])
                 SimModuleFile = std::string(optarg);
                 break;
 
+            case ARG_RUNOMVISIM:
+                bRunInOmVisim = true;
+                break;
+
             case '?':
             default:
                 return -1;
@@ -127,6 +133,7 @@ void FOption::Reset() {
     bSimPython = true;    
     SimModuleFile = "";
     SimResultFile = "";
+    bRunInOmVisim = false;
 }
 
 
@@ -165,6 +172,7 @@ void FOption::Usage(const char *argv0)
     os << "  " << "--simout <name>     Write simulation result to <name> file" << std::endl;
     os << "  " << "--simmodule <name>  Write simulation code to <name> file" << std::endl;
     os << "  " << "--simimp <mode>     Use <mode> simulation implementation. mode: python, c++" << std::endl;
+    os << "  " << "--run-omvisim" << std::endl;
 }
 
 void FOption::Dump()

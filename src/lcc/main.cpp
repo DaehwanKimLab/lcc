@@ -13,7 +13,7 @@
 
 #ifdef _MSC_VER
 #include <io.h>
-#include <sqlite3.h>
+//#include <sqlite3.h>
 
 #else
 #include <unistd.h>
@@ -116,7 +116,7 @@ void TraversalNode(NBlock* InProgramBlock)
             // Enzyme Information
             string Name = Id.Name;
 
-            EnzReactionType Type;
+            EnzReactionType Type = Standard;
 
             string Substrate;
             float k1 = Float_Init;
@@ -145,39 +145,39 @@ void TraversalNode(NBlock* InProgramBlock)
                 } else if (Key == "krev") {
                     k2 = std::stof(Value);
                     Type = Standard; 
-                } else if ((Key == "kcat") or (Key == "kCat")) {
+                } else if ((Key == "kcat") || (Key == "kCat")) {
                     k1 = std::stof(Value);
                     Type = MichaelisMenten;
-                } else if ((Key == "KM") or (Key == "kM") or (Key == "km")) {
+                } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
                     k2 = std::stof(Value);
                     Type = MichaelisMenten;
 
-                } else if ((Key == "inhibitor") or (Key == "Inhibitor")) {
+                } else if ((Key == "inhibitor") || (Key == "Inhibitor")) {
                     Inhibitor = Value; // TODO: improve coding style
                     Regulator = Value;
-                } else if ((Key == "activator") or (Key == "Activator")) {
+                } else if ((Key == "activator") || (Key == "Activator")) {
                     Activator = Value; // TODO: improve coding style
                     Regulator = Value;
-                } else if ((Key == "mode") or (Key == "Mode")) {
+                } else if ((Key == "mode") || (Key == "Mode")) {
                     Mode = Value;
                     if (Type == Standard) {
                         if (!Inhibitor.empty() & Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = Standard_Inhibition_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = Standard_Inhibition_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
                         } else if (Inhibitor.empty() & !Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = Standard_Activation_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = Standard_Activation_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
                         }
                     } else if (Type == MichaelisMenten) {
                         if (!Inhibitor.empty() & Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = MichaelisMenten_Inhibition_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = MichaelisMenten_Inhibition_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
                         } else if (Inhibitor.empty() & !Activator.empty()){
-                            if ((Mode == "allosteric") or ("Allosteric")) 	{ Type = MichaelisMenten_Activation_Allosteric; }
-                       else if ((Mode == "competitive") or ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
+                            if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = MichaelisMenten_Activation_Allosteric; }
+                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
                         }
                     }
-                } else if ((Key == "Ki") or (Key == "ki") or (Key == "Ka") or (Key == "ka")) {
+                } else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka")) {
                     K = std::stof(Value);
                 } else if (Key == "n") {
                     n = std::stof(Value);
@@ -459,7 +459,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
             // add new enzyme to the system
             if (Ranges.empty()) {
-                if ((Type == Standard) or (Type == MichaelisMenten)) {
+                if ((Type == Standard) || (Type == MichaelisMenten)) {
                     FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2, InitialCount, Fixed);
                     Enzyme->Print(os);
                     Context.AddToMoleculeList(Enzyme);
@@ -469,7 +469,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     Context.AddToMoleculeList(Enzyme);
                 }
             } else {
-                if ((Type == Standard) or (Type == MichaelisMenten)) {
+                if ((Type == Standard) || (Type == MichaelisMenten)) {
                     FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2, InitialCount, Ranges);
                     Enzyme->Print(os);
                     Context.AddToMoleculeList(Enzyme);
@@ -2136,7 +2136,9 @@ void WriteSimModule()
     // MAIN
     ofs << "if __name__ == '__main__':" << endl;
     ofs << in+ "main()" << endl;
-    ofs << in+ "plot.main()" << endl; // temporary for convenience
+    if (!Option.bRunInOmVisim) {
+        ofs << in + "plot.main()" << endl; // temporary for convenience
+    }
     ofs << endl;
 
     cout << "Simulation_Python module has been generated: ";
@@ -2168,59 +2170,61 @@ int main(int argc, char *argv[])
     {
         std::cout<< endl << "## Loading Database ##" << std::endl;
         Context.Init(Option);
-        vector<string> Keys;
-        Keys.emplace_back("symbol");
-        Keys.emplace_back("name");
-        Keys.emplace_back("id");
-        Keys.emplace_back("rnaId");
-        Context.GeneTable.Dump(Keys);
+        if (Option.Verbose) {
+            vector<string> Keys;
+            Keys.emplace_back("symbol");
+            Keys.emplace_back("name");
+            Keys.emplace_back("id");
+            Keys.emplace_back("rnaId");
+            Context.GeneTable.Dump(Keys);
 
-        Keys.clear();
-        Keys.emplace_back("id");
-        Keys.emplace_back("name");
-        Keys.emplace_back("type");
-        Keys.emplace_back("location");
-        Keys.emplace_back("geneId");
-        Keys.emplace_back("monomerId");
-        Context.RNATable.Dump(Keys);
+            Keys.clear();
+            Keys.emplace_back("id");
+            Keys.emplace_back("name");
+            Keys.emplace_back("type");
+            Keys.emplace_back("location");
+            Keys.emplace_back("geneId");
+            Keys.emplace_back("monomerId");
+            Context.RNATable.Dump(Keys);
 
-        Keys.clear();
-        Keys.emplace_back("id");
-        Keys.emplace_back("name");
-        Keys.emplace_back("location");
-        Keys.emplace_back("geneId");
-        Keys.emplace_back("rnaId");
-        Context.ProteinTable.Dump(Keys);
+            Keys.clear();
+            Keys.emplace_back("id");
+            Keys.emplace_back("name");
+            Keys.emplace_back("location");
+            Keys.emplace_back("geneId");
+            Keys.emplace_back("rnaId");
+            Context.ProteinTable.Dump(Keys);
 
-        Keys.clear();
-        Keys.emplace_back("reaction id");
-        Keys.emplace_back("stoichiometry");
-        Context.ReactionTable.Dump(Keys);
+            Keys.clear();
+            Keys.emplace_back("reaction id");
+            Keys.emplace_back("stoichiometry");
+            Context.ReactionTable.Dump(Keys);
 
-        Keys.clear();
-        Keys.emplace_back("Name");
-        Keys.emplace_back("Substrate");
-        Keys.emplace_back("kcat");
-        Keys.emplace_back("KM");
-        Keys.emplace_back("Inhibitor");
-        Keys.emplace_back("Ki");
-        os << "# EnzymeTable #" << endl;
-        Context.EnzymeTable.Dump(Keys);
+            Keys.clear();
+            Keys.emplace_back("Name");
+            Keys.emplace_back("Substrate");
+            Keys.emplace_back("kcat");
+            Keys.emplace_back("KM");
+            Keys.emplace_back("Inhibitor");
+            Keys.emplace_back("Ki");
+            os << "# EnzymeTable #" << endl;
+            Context.EnzymeTable.Dump(Keys);
 
-        Keys.clear();
-        Keys.emplace_back("Name");
-        Keys.emplace_back("Template");
-        Keys.emplace_back("Target");
-        Keys.emplace_back("Process");
-        Keys.emplace_back("Rate");
-        os << "# PolymeraseTable #" << endl;
-        Context.PolymeraseTable.Dump(Keys);
+            Keys.clear();
+            Keys.emplace_back("Name");
+            Keys.emplace_back("Template");
+            Keys.emplace_back("Target");
+            Keys.emplace_back("Process");
+            Keys.emplace_back("Rate");
+            os << "# PolymeraseTable #" << endl;
+            Context.PolymeraseTable.Dump(Keys);
 
-        Keys.clear();
-        Keys.emplace_back("Name");
-        Keys.emplace_back("Count");
-        os << "# InitialCountTable_TCA #" << endl;
-        Context.InitialCountTable_TCA.Dump(Keys);
+            Keys.clear();
+            Keys.emplace_back("Name");
+            Keys.emplace_back("Count");
+            os << "# InitialCountTable_TCA #" << endl;
+            Context.InitialCountTable_TCA.Dump(Keys);
+        }
     }
 
     for (const auto& SourceFile: Option.SourceFiles) {
@@ -2246,8 +2250,10 @@ int main(int argc, char *argv[])
 //            Context.PrintInitialCounts(os);
             CheckInitialCounts();
 
-            Context.PrintLists(os);
-//            Context.PrintInitialCounts(os);
+            if (Option.Verbose) {
+                Context.PrintLists(os);
+                //Context.PrintInitialCounts(os);
+            }
         }
 
         delete ProgramBlock;
