@@ -38,6 +38,7 @@ public:
     int Verbose;
     bool bShowHelp;
     bool bParseOnly;
+    bool bRunInOmVisim;
 };
 
 #endif //LCC_OPTION_H
