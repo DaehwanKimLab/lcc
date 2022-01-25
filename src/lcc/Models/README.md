@@ -53,7 +53,7 @@
 
 
 ### 5. Oscillations (p.93)
-<img src="Ingalls2013_Model4.14_LimitCycleOscillations_Model.png" height="100"> 
+<img src="Ingalls2013_Model4.14_LimitCycleOscillations_Model.png" height="50"> 
 <img src="Ingalls2013_Model4.14_LimitCycleOscillations_Eqn.png" height="100">
 
     Initial Concentrations:     S1 = 1.5, S2 = 1
@@ -69,8 +69,8 @@
 
 
 ### 6. Two Component Signaling (p.151)
-<img src="Ingalls2013_Model6.2_TwoComponentSignaling_Model.png" height="100"> 
-<img src="Ingalls2013_Model6.2_TwoComponentSignaling_Eqn.png" height="100">
+<img src="Ingalls2013_Model6.2_TwoComponentSignaling_Model.png" height="150"> 
+<img src="Ingalls2013_Model6.2_TwoComponentSignaling_Eqn.png" height="200">
 
 Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
 
@@ -81,9 +81,9 @@ Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
 - [TwoComponentSignaling.py](Ingalls2013_Model6.2_TwoComponentSignaling.py)
 - [TwoComponentSignaling.lpp](Ingalls2013_Model6.2_TwoComponentSignaling.lpp)
 - Examples: 
-
+<!-- 
 ### 7. G-protein Signaling (p.154)
-<img src="Ingalls2013_Model6.4_G-proteinSignaling_Model.png" height="100"> 
+<img src="Ingalls2013_Model6.4_G-proteinSignaling_Model.png" height="200"> 
 
 Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
 
@@ -93,7 +93,7 @@ Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
 
 - [G-proteinSignaling.py](Ingalls2013_Model6.4_G-proteinSignaling.py)
 - [G-proteinSignaling.lpp](Ingalls2013_Model6.4_G-proteinSignaling.lpp)
-- Examples: 
+- Examples:  -->
 
 
 
