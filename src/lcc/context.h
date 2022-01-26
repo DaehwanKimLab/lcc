@@ -36,7 +36,7 @@ public:
     FCount(const float InInitial, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Initial(InInitial), Range(InRange) {}
     
     void Print(std::ostream& os) {
-        if ((Initial >= 0) | (!Range.empty())) {
+        if ((Initial >= 0) || (!Range.empty())) {
             os << "\t| Count";
         }
         if (Initial >= 0) {
@@ -286,26 +286,26 @@ public:
 
     FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const float InInitialCount, const bool Fixed=false)
         : Type(InType), Substrate(InSubstrate), Mode(InMode), FMolecule(InName, InInitialCount, Fixed) {
-            if ((Type == 1) or (Type == 2)) {
+            if ((Type == 1) || (Type == 2)) {
                 k = Ink1; 	krev = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
-            } else if ((Type == 3) or (Type == 4)) {
+            } else if ((Type == 3) || (Type == 4)) {
                 k = Ink1; 	krev = Ink2; 	Activator = InRegulator;	Ka = InK; 	n_a = Inn;
-            } else if ((Type == 6) or (Type == 7)) {
+            } else if ((Type == 6) || (Type == 7)) {
                 kcat = Ink1; 	KM = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
-            } else if ((Type == 8) or (Type == 9)) {
+            } else if ((Type == 8) || (Type == 9)) {
                 kcat = Ink1; 	KM = Ink2; 	Activator = InRegulator;	Ka = InK; 	n_a = Inn;
             }       
         }
 
     FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2, const std::string& InRegulator, const std::string& InMode, const float& InK, const float& Inn, const float InInitialCount, const std::vector<std::pair<std::pair<float, float>, float>> InRange)
         : Type(InType), Substrate(InSubstrate), Mode(InMode), FMolecule(InName, InInitialCount, InRange) {
-            if ((Type == 1) or (Type == 2)) {
+            if ((Type == 1) || (Type == 2)) {
                 k = Ink1; 	krev = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
-            } else if ((Type == 3) or (Type == 4)) {
+            } else if ((Type == 3) || (Type == 4)) {
                 k = Ink1; 	krev = Ink2; 	Activator = InRegulator;	Ka = InK; 	n_a = Inn;
-            } else if ((Type == 6) or (Type == 7)) {
+            } else if ((Type == 6) || (Type == 7)) {
                 kcat = Ink1; 	KM = Ink2; 	Inhibitor = InRegulator;	Ki = InK; 	n_i = Inn;
-            } else if ((Type == 8) or (Type == 9)) {
+            } else if ((Type == 8) || (Type == 9)) {
                 kcat = Ink1; 	KM = Ink2; 	Activator = InRegulator;	Ka = InK; 	n_a = Inn;
             }       
         }

@@ -270,6 +270,8 @@ def Plot_Dynamics(Title, Time, Data, Legend):
     ax.set_title(Title + " over Time")
 
     for i in range(len(Legend)):
+        if Legend[i] == "Pseudo":
+            continue
         ax.plot(X, Y[i], label=Legend[i])
 
     ax.legend(loc='upper left')
