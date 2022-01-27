@@ -72,8 +72,6 @@
 <img src="Ingalls2013_Model6.2_TwoComponentSignaling_Model.png" height="125"> 
 <img src="Ingalls2013_Model6.2_TwoComponentSignaling_Eqn.png" height="150">
 
-Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
-
     Initial Concentrations:     R = 2, RL = 0, P = 8, pP = 0, L=0
     Induced Concentrations:     L[1:3]=3
     Kinetic Constants:          k1 = 5, krev1 = 1, k2 = 6, k3 = 5 
@@ -93,7 +91,19 @@ Ink1=5, Inkrev1=1, Ink2=6, Ink3=3, InRL=0, InTotal_R=2, InpP=0, InTotal_P=8
 - [G-proteinSignaling.lpp](Ingalls2013_Model6.4_G-proteinSignaling.lpp)
 - Examples:  -->
 
+<!-- 
+### 8. Bacterial Chemotaxis (p.154)
+<img src="Ingalls2013_Model6.13_BacterialChemotaxis_Model.png" height="200"> 
 
+    Initial Concentrations:     R = , Am = 0, AmL = 0, A = 1, AL = 0, B = 0.1, BP = 0
+    Induced Concentrations:     L[0:10] = 20, L[10:30] = 40, L[30:50] = 80
+    Kinetic Constants:          k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05, 
+                                krev1 = 1, krev2 = 1, krev3 = 1, krev4 = 1, krev5 = 0.005, 
+                                kM1 = 1, kM2 = 1
+
+- [BacterialChemotaxis.py](Ingalls2013_Model6.13_BacterialChemotaxis.py)
+- [BacterialChemotaxis.lpp](Ingalls2013_Model6.13_BacterialChemotaxis.lpp)
+- Examples:  -->
 
 
 

@@ -1,12 +1,12 @@
 '''
 Ingalls 2013 Mathematical Modelling in Systems Biology
 
-Two Component Signaling
+Activation-Inactivation Cycle
 Network  6.6,   p.156
 Model   6.1,    p.156
-Figure  6.7,    p.152
-
+Figure  6.7,    p.157
 '''
+
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import numpy as np
@@ -77,59 +77,3 @@ def main():
 if __name__ == '__main__':
 
     main()
-
-
-Model = FNetwork()
-X, Y, Z = Model.Dataset
-
-Title = 'Limit Cycle Oscillations (Damped)'
-
-Animate = True
-if Animate:
-    assert len(X) == len(Y)
-    everyskip = 3
-
-    X = X[::everyskip]
-    Y = Y[::everyskip]
-
-    i_data = []
-    x_data = []
-    y_data = []
-
-    fig, ax = plt.subplots()
-    line1, = ax.plot(0, 0, label="[Substrate]", color='g')
-    line2, = ax.plot(0, 0, label="[Product]", color='r')
-    line3, = ax.plot(0, 0, color='b')
-
-    # PlotType = 1 # Dynamics
-    PlotType = 2 # PhasePlane
-
-    def animation_frame(i):
-        i_data.append(i)
-        x_data.append(X[i])
-        y_data.append(Y[i])
-
-        if PlotType == 1:
-            # dynamics
-            ax.set_xlim(0, i + 10)
-            ax.set_ylim(0, max(X) * 1.1)
-            ax.set_ylabel('Concentration (a.u.)')
-            ax.set_xlabel('Time (a.u.)')
-            ax.set_title('Persistent Oscillation: Dynamics')
-            ax.legend(loc='lower right')
-            line1.set_data(i_data, x_data)
-            line2.set_data(i_data, y_data)
-            return [line1, line2]
-
-        if PlotType == 2:
-            # phase plane
-            ax.set_xlim(0, max(X) * 1.1)
-            ax.set_ylim(0.5, max(Y) * 1.1)
-            line3.set_data(x_data, y_data)
-            ax.set_ylabel('[Substrate] (a.u.)')
-            ax.set_xlabel('[Product] (a.u.)')
-            ax.set_title('Persistent Oscillation: Phase Plane')
-            return line3,
-
-    animation = FuncAnimation(fig, animation_frame, frames=1000, interval=1)
-    plt.show()

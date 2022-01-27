@@ -1,0 +1,15 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Network  6.13,   p.163
+// Model   6.12,    p.162
+// Figure  6.14,    p.164
+
+k1=200, k2=1, k3=1, k4=1, k5=0.05, krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005, kM1=1, kM2=1, L=20, R=5, Am=0, AmL=0, A=1, AL=0, B=0.1, BP=0
+
+protein BP(Am --> A, kcat=200, KM=1, BP=_0__1, Am=_0__1); // k1, KM1
+protein R(A --> Am, k=200, k=1, R=_0__5); // krev1
+// protein R(AL --> AmL, kcat=1, KM=1); // k2, KM2
+// protein BP(AmL --> AL, k=1); // krev2
+protein E1(Am + L --> AmL, k=1, krev=1, L=_0to10__20, L=_10to30__40, L=_30to50__80, E1=_0__1); // k3, krev3
+protein E2(A + L --> AL, k1, krev=1, E2=_0__1); // k4, krev4
+protein E3(B + Am --> BP, k=0.05, krev=0.005, E3=_0__1, B=_0__0.1); k5, krev5
