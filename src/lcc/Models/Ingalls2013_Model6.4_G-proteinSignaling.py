@@ -15,16 +15,16 @@ def dRL_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd)
     return kRL * R * L - kRLm * RL
 
 def dG_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd):
-    return -kGa * G * RL + kG1 * Gd * Gbg
+    return -kGa * G * RL + min(kG1 * Gd * Gbg, Gd, Gbg)
 
 def dGa_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd):
     return kGa * G * RL - kGd0 * Ga
 
 def dGbg_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd):
-    return kGa * G * RL - kG1 * Gd * Gbg
+    return kGa * G * RL - min(kG1 * Gd * Gbg, Gd, Gbg)
 
 def dGd_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd):
-    return kGd0 * Ga - kG1 * Gd * Gbg
+    return kGd0 * Ga - min(kG1 * Gd * Gbg, Gd, Gbg)
 
 
 """
@@ -32,20 +32,24 @@ kRL = 2×10−3nM−1 s−1, kRLm =10−2 s−1, kGa = 10−5 (molecules per cel
 The total G-protein population is 10000 molecules per cell, while the total receptor population is 4000 molecules per cell.
 """
 
+Mol2Count = 6.0221409e+23
+Count2Mol = 1.0 / Mol2Count
+
+
 class FModel():
-    def __init__(self, InkRL=2e6, InkRLm=1e-2, InkGa=1e-4, InkGd0=0.004e-9, InkG1=1e-9, InTotal_R=4000, InTotal_G=10000):
+    def __init__(self, InkRL=2e-3*1e9, InkRLm=1e-2, InkGa=1e-5, InkGd0=0.11, InkG1=1, InTotal_R=4000, InTotal_G=10000):
         self.Vol = 1
 
         # Initial Concentrations
-        self.Total_R = InTotal_R
-        self.Total_G = InTotal_G
+        self.Total_R = InTotal_R * Count2Mol
+        self.Total_G = InTotal_G * Count2Mol
 
         # Constants
         self.kRL = InkRL
         self.kRLm = InkRLm
-        self.kGa = InkGa
-        self.kGd0 = InkGd0
-        self.kG1 = InkG1
+        self.kGa = InkGa / Count2Mol
+        self.kGd0 = InkGd0 
+        self.kG1 = InkG1 / Count2Mol
 
         # Dataset
         self.Data_L = list()
@@ -69,7 +73,7 @@ class FModel():
         self.Data_Gbg.append(Gbg)
         self.Data_Gd.append(Gd)
 
-    def Run(self, SimSteps=1500, TimeResolution=1):
+    def Run(self, SimSteps=150000, TimeResolution=100):
         Flat = 0.000001 # Steady state threshold
 
         i = 0
@@ -90,15 +94,16 @@ class FModel():
             Gbg = self.Data_Gbg[-1] / self.Vol
             Gd = self.Data_Gd[-1] / self.Vol
 
-            if Time > 100:
-                print(RL, R, G, Ga, Gbg, Gd)
+            print(i, "RL:", RL, "R:", R, "L:", L, "G:", G, "Ga:", Ga, "Gbg:", Gbg, "Gd:", Gd)
 
             # Calculate delta Count (not concentration)
-            dRL = int(dRL_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution)
-            dG = int(dG_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution)
-            dGa = int(dGa_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution)
-            dGbg = int(dGbg_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution)
-            dGd = int(dGd_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution)
+            dRL = dRL_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
+            dG = dG_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
+            dGa = dGa_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
+            dGbg = dGbg_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
+            dGd = dGd_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
+
+            print(i, "dRL:", dRL, "dG:", dG, "dGa:", dGa, "dGbg:", dGbg, "dGd:", dGd)
 
             self.AppendData(L, self.Data_RL[-1] + dRL, self.Data_G[-1] + dG, self.Data_Ga[-1] + dGa, self.Data_Gbg[-1] + dGbg, self.Data_Gd[-1] + dGd)
 
@@ -106,8 +111,8 @@ class FModel():
 
     def PlotData(self):
         # X = self.Data_L
-        Y = self.Data_RL
-        Z = self.Data_Ga
+        Y = [c * Mol2Count for c in self.Data_RL]
+        Z = [c * Mol2Count for c in self.Data_Ga]
 
         fig = plt.figure()
         fig.subplots_adjust(wspace=0.2, hspace=0.3)
