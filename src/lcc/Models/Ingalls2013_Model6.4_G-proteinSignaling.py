@@ -73,7 +73,7 @@ class FModel():
         self.Data_Gbg.append(Gbg)
         self.Data_Gd.append(Gd)
 
-    def Run(self, SimSteps=150000, TimeResolution=100):
+    def Run(self, SimSteps=1500, TimeResolution=1):
         Flat = 0.000001 # Steady state threshold
 
         i = 0
