@@ -1,0 +1,6 @@
+// model
+protein HK1(Glucose --> G6P, k=1, krev=0.1);
+
+// input
+HK1[0] = 5; // concentration at time 0 (initial concentration)
+Glucose[:] = 5; // fixed concentration

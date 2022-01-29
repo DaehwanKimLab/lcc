@@ -1,0 +1,10 @@
+// model
+protein HK1(Glucose --> G6P, kcat=30s-1, KM=0.3mM, inhibitor=G6P, mode=allosteric, Ki=1.4mM, n=1.6);
+);
+
+// input
+HK1[0] = 5nM; // concentration at time 0 (initial concentration)
+Glucose[:] = 5mM; // fixed concentration
+
+// output
+float G6P_conc = G6P[0.8211]; // concentration at time 0.8211 s

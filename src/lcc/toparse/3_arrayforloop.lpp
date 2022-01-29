@@ -1,0 +1,24 @@
+array KM_list = [0.3mM, 1mM, 10mM];
+for (int i = 0; i < len(KM_list); i++)
+{
+	container tube
+	{
+		// ######## model ########
+		// Feedback inhibition of Hexokinase 1
+		protein HK1(Glucose --> G6P, kcat=30, KM=KM_list[i],
+	                             inhibitor=G6P, mode=allosteric, Ki=1.4, n=1.6);
+		protein E1(G6P --> X, k=5);
+
+		// ######## input ########
+		HK1[0] = 5; // count at time 0 (initial count)
+		Glucose[:] = 5; // fixed concentration
+		E1[0] = 1;
+		X[:] = 0; // optional
+
+
+		// ######## output ########
+		// Statistical analysis (directly supported by L++ syntax & functions)
+		// plot(G6P[10:20:0.1], X[10:20:0.1]);
+		// float G6P_conc = G6P[0.8211]; // concentration at time 0.8211 s
+	}
+}

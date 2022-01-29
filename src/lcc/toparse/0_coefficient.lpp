@@ -1,0 +1,5 @@
+// model
+protein P1(2 S1 + 3 S2 --> 1 C, k=1, krev=0.1, P1=_0__1, S1=_0__500, S2=_0__400);
+
+// currently accepted grammar
+// protein P1(S1 + S2 --> C,k=1, krev=0.1, P1=_0__1, S1=_0__500, S2=_0__400);

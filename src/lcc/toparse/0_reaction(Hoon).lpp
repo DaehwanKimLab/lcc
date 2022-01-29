@@ -1,0 +1,5 @@
+// model
+reaction R1(S1 + S2 --> C, k=1, krev=0.1, S1=_0__500, S2=_0__400);
+
+// currently accepted grammar
+protein P1(S3 + S4 --> C,k=1, krev=0.1, P1=_0__1, S3=_0__500, S4=_0__400);
