@@ -35,8 +35,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	int Token;
 }
 
-%token <Token> T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_ORGANISM T_PROCESS
-%token <Token> T_DESCRIPTION T_REACTION T_REACTION_ID
+%token <Token> T_REACTION T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_ORGANISM T_PROCESS
+%token <Token> T_DESCRIPTION T_REACTION_ID
 %token <Token> T_PROPERTY T_USING T_MODULE
 %token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE T_PDB
 %token <Token> T_POLYMERASE T_RIBOSOME
@@ -66,10 +66,12 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Block> pathway_block pathway_stmts
 %type <Block> protein_block protein_stmts
 %type <Block> process_block process_stmts
+%type <Stmt> reaction_decl
 %type <Stmt> protein_decl
 %type <Stmt> process_decl
 %type <MolVec> mol_expr
 %type <MolIdent> mol_ident
+%type <Reaction> reaction_decl_args
 %type <Reaction> protein_decl_args
 %type <Reaction> process_decl_args
 %type <Reaction> gen_reaction_decl_args step_decl_args
@@ -90,7 +92,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Stmt> property_stmt experiment_stmt
 
 %type <StmtVec> for_stmt if_stmt while_stmt
-%type <StmtVec> stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
+%type <StmtVec> stmt reaction_decl_stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl reaction_decls protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
 %type <Stmt> ribosome_arg polymerase_arg
 
@@ -114,7 +116,8 @@ stmts          : stmt { $$ = new NBlock(); $$->AddStatment($<StmtVec>1); }
                | stmts stmt { $1->AddStatment($<StmtVec>2); }
                ;
 
-stmt           : protein_decl_stmt T_SEMIC
+stmt           : reaction_decl_stmt T_SEMIC
+               | protein_decl_stmt T_SEMIC
                | protein_complex_decl T_SEMIC
                | pathway_decl T_SEMIC
                | process_decl_stmt T_SEMIC
@@ -376,6 +379,21 @@ chain_expr : gen_ident { $$ = new NChainReactionExpression(); $$->Add(*$1); dele
            | chain_expr T_PLUS gen_ident { $1->Add(*$3, 1); delete $3; }
            | chain_expr T_OR gen_ident { $1->Add(*$3, 2); delete $3; }
            ;
+
+reaction_decl_stmt  : T_REACTION reaction_decls { $$ = $2; }
+                    ;
+
+reaction_decls  : reaction_decl { $$ = NNodeUtil::InitStatementList($1); }
+                | reaction_decls T_COMMA reaction_decl { $1->emplace_back($3); }
+                ;
+
+reaction_decl   : ident { $$ = new NReactionDeclaration(*$1); delete $1; }
+                | ident T_LPAREN reaction_decl_args T_RPAREN { $$ = new NReactionDeclaration(*$1, *$3); delete $1; delete $3; }
+                ;
+
+reaction_decl_args : gen_reaction_decl_args { $$ = $1; }
+                   ;
+
 
 gen_reaction_decl_args : /* blank */ { $$ = new NReaction(); }
                        | gen_reaction_decl_reaction { $$ = $1; }

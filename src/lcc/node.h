@@ -13,6 +13,7 @@
 class NStatement;
 class NMoleculeIdentifier;
 class NIdentifier;
+class NReactionDeclaration;
 class NPathwayExpression;
 class NProteinDeclaration;
 class NPolymeraseDeclaration;
@@ -21,6 +22,7 @@ class NPropertyStatement;
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
 typedef std::vector<std::shared_ptr<NIdentifier>> IdentifierList;
+typedef std::vector<std::shared_ptr<NReactionDeclaration>> ReactionDeclList;
 typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
 typedef std::vector<std::shared_ptr<NProteinDeclaration>> ProteinDeclList;
 typedef std::vector<std::shared_ptr<NPolymeraseDeclaration>> PolymeraseDeclList;
@@ -239,6 +241,35 @@ public:
     virtual void Visit(FTraversalContext& Context) const override;
 };
 
+class NReactionDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+    NReaction OverallReaction;
+//    std::shared_ptr<NBlock> Block;
+
+//    NReactionDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction, NBlock* InBlock)
+//        : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
+
+    NReactionDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction)
+            : Id(InId), OverallReaction(InOverallReaction) {}
+
+    NReactionDeclaration(const NIdentifier& InId)
+            : Id(InId) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Reaction: {";
+        Id.Print(os); os << ", ";
+        OverallReaction.Print(os); os << ", ";
+//        if (Block) {
+//            for (const auto& stmt: Block->Statements) {
+//                stmt->Print(os); os << ", ";
+//            }
+//        }
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext &Context) const override;
+};
 
 class NProteinDeclaration : public NStatement {
 public:

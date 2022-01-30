@@ -38,6 +38,12 @@ void NReaction::Visit(FTraversalContext &Context) const {
 
 }
 
+void NReactionDeclaration::Visit(FTraversalContext &Context) const {
+//    Context.OutStream << "Reaction Declaration(" << Id.Name << ")" << std::endl;
+
+    Context.Queue.push(&OverallReaction);
+}
+
 void NProteinDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "Protein Declaration(" << Id.Name << ")" << std::endl;
 
