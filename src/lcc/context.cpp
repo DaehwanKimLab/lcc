@@ -327,6 +327,10 @@ std::vector<const FEnzyme *> FCompilerContext::GetSubList_EnzymeList(std::vector
             if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Mode.empty())) {
                 SubList.push_back(enzyme);
             }
+        } else if (Type == "MichaelisMenten_Inhibition_Competitive") {
+            if ((enzyme->KM >= 0) & (enzyme->k < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Competitive")) {
+                SubList.push_back(enzyme);
+            }
         } else if (Type == "MichaelisMenten_Inhibition_Allosteric") {
             if ((enzyme->KM >= 0) & (enzyme->k < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
                 SubList.push_back(enzyme);

@@ -70,6 +70,58 @@ float RandomNumber(float Min=0.0, float Max=1.0)
     return distr(eng);
 }
 
+void AddNewMolecule(std::string Name) {
+    FMolecule * Molecule = new FMolecule(Name);
+    // Molecule->Print(os);
+    Context.AddToMoleculeList(Molecule);
+}
+
+std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(NReaction& OverallReaction) {
+    std::vector<std::pair<std::string, int>> Stoichiometry;
+		string Location = OverallReaction.Location.Name;
+
+    int Coefficient;
+    for (const auto& reactant : OverallReaction.Reactants) {
+
+        Coefficient = -1; // update when coeff is fully implemented in parser
+        std::cout << "    Reactants: " << "(" << Coefficient << ") " << reactant->Name << ", " << std::endl;
+
+        // if also found in products, set the first stoichiometry coefficient as the sum of their coefficients.
+        for (const auto& product : OverallReaction.Products) {
+            if (product->Name == reactant->Name) {
+                Coefficient = 0; // TODO: use sum of the coefficients when coefficient node is implemented.
+            }
+        } 
+        std::pair<std::string, int> Stoich(reactant->Name, Coefficient);
+        Stoichiometry.push_back(Stoich);
+        AddNewMolecule(reactant->Name);
+    }
+
+    for (const auto& product : OverallReaction.Products) {
+
+        Coefficient = 1; // update when coeff is fully implemented in parser
+        std::cout << "    Products: " << "(" << Coefficient << ") " << product->Name << ", " << std::endl;
+
+        bool SkipStoich = false;
+        for (const auto& reactant : OverallReaction.Reactants) {
+            if (product->Name == reactant->Name) {
+                SkipStoich = true;
+            } 
+        } 
+        std::pair<std::string, int> Stoich(product->Name, Coefficient);
+        if (!SkipStoich) {
+            Stoichiometry.push_back(Stoich);
+        }
+
+        AddNewMolecule(product->Name);
+    }
+
+		if (!Location.empty()) {
+        std::cout << "    Location: " << Location << endl;
+		}
+    return Stoichiometry;
+}
+
 void TraversalNode(NBlock* InProgramBlock)
 {
     ostream& os = std::cout;
@@ -87,9 +139,25 @@ void TraversalNode(NBlock* InProgramBlock)
     // Molecule->Print(os);
     Context.AddToMoleculeList(Molecule);
 
-
     while(!tc.Queue.empty()) {
         const NNode* node = tc.Queue.front(); tc.Queue.pop();
+
+        if (Utils::is_class_of<NReactionDeclaration, NNode>(node)) {
+            auto N_Reaction = dynamic_cast<const NReactionDeclaration *>(node);
+            os << "Reaction Id: " << N_Reaction->Id.Name << endl;
+            // Reaction->Print(os);
+
+            auto& Id = N_Reaction->Id;	    
+            auto& OverallReaction = N_Reaction->OverallReaction;
+            // os << "  OverallReaction:" << endl;
+
+            // Reaction Information
+            string Name = Id.Name;
+        }
+
+
+
+
 
         // This is inteded for NEnzymeDeclaration, to be fixed later on.
         enum EnzReactionType {
@@ -455,7 +523,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
             // add new enzymatic reaction to the system
             FEnzymaticReaction *EnzymaticReaction = new FEnzymaticReaction(Name, Stoichiometry, Name);
-            EnzymaticReaction->Print(os);
+            EnzymaticReaction->Print_Stoichiometry(os);
             Context.AddToReactionList(EnzymaticReaction);
 
             // add new enzyme to the system

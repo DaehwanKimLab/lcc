@@ -357,7 +357,7 @@ public:
     FComplex(const std::string& InName) : FMolecule(InName) {}
 };
 
- class FReaction {
+class FReaction {
 public:
     std::string Name; // Name is equivalent to EnzymeName for now
     std::vector<std::pair<std::string, int>> Stoichiometry;
@@ -394,11 +394,47 @@ public:
         return false;
     }
 
-    void Print(std::ostream& os) {
+    void Print_Stoichiometry(std::ostream& os) {
         os << "  Reaction Id: " << Name << " | ";
         for (auto& Stoich : Stoichiometry) {
             os << "[" << Stoich.first << ", " << Stoich.second << "], ";
         }
+        os << std::endl;
+    }
+};
+
+class FStandardReaction : public FReaction {
+public:
+    float k;
+    float krev;
+
+    FStandardReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float Ink, const float Inkrev)
+        : k(Ink), krev(Inkrev), FReaction(InName, InStoichiometry) {}
+
+    void Print(std::ostream& os) {
+        os << "  [Standard Reaction]" << std::endl;
+        Print_Stoichiometry(os);
+        os << "   k: " << k << "\t| krev: " << krev << std::endl;
+        os << std::endl;
+    }
+};
+
+class FRegulatoryReaction : public FReaction {
+public:
+    float K;
+    float n; // if Allosteric
+    std::string Effect; // Activation or Inhibition
+
+    FRegulatoryReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InK, const float Inn, const std::string& InEffect)
+        : K(InK), n(Inn), Effect(InEffect), FReaction(InName, InStoichiometry) {}
+
+    void Print(std::ostream& os) {
+        os << "  [Regulatory Reaction]" << std::endl;
+        Print_Stoichiometry(os);
+        if 	(Effect == "Inhibition") 	{ os << "   Ki: "; } 
+        else if (Effect == "Activation") 	{ os << "   Ka: "; }
+        os << K;
+        if 	(n > 0) 			{ os << "\t| n: " << n; }
         os << std::endl;
     }
 };
