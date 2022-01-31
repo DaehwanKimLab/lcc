@@ -46,7 +46,6 @@ std::string in = "    ";
 int N_MoleculesAllowed = 3; // Set number of molecules accepted for reactants and products
 
 const char *VersionString = "1.0.0";
-using namespace std;
 
 void DumpNBlock(const NBlock* InProgramBlock) 
 {
@@ -70,56 +69,49 @@ float RandomNumber(float Min=0.0, float Max=1.0)
     return distr(eng);
 }
 
-void AddNewMolecule(std::string Name) {
-    FMolecule * Molecule = new FMolecule(Name);
-    // Molecule->Print(os);
-    Context.AddToMoleculeList(Molecule);
-}
+std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(const NReaction& OverallReaction) {
 
-std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(NReaction& OverallReaction) {
-    std::vector<std::pair<std::string, int>> Stoichiometry;
+    map<string, int> Stoichiometry;
 		string Location = OverallReaction.Location.Name;
 
+    std::string Name;
     int Coefficient;
     for (const auto& reactant : OverallReaction.Reactants) {
+        Name = reactant->Id.Name;
+        Coefficient = -reactant->Coeff; // update when coeff is fully implemented in parser
+        std::cout << "    Reactants: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+        Stoichiometry[Name] = Coefficient;
 
-        Coefficient = -1; // update when coeff is fully implemented in parser
-        std::cout << "    Reactants: " << "(" << Coefficient << ") " << reactant->Name << ", " << std::endl;
-
-        // if also found in products, set the first stoichiometry coefficient as the sum of their coefficients.
-        for (const auto& product : OverallReaction.Products) {
-            if (product->Name == reactant->Name) {
-                Coefficient = 0; // TODO: use sum of the coefficients when coefficient node is implemented.
-            }
-        } 
-        std::pair<std::string, int> Stoich(reactant->Name, Coefficient);
-        Stoichiometry.push_back(Stoich);
-        AddNewMolecule(reactant->Name);
     }
 
     for (const auto& product : OverallReaction.Products) {
-
-        Coefficient = 1; // update when coeff is fully implemented in parser
-        std::cout << "    Products: " << "(" << Coefficient << ") " << product->Name << ", " << std::endl;
-
-        bool SkipStoich = false;
-        for (const auto& reactant : OverallReaction.Reactants) {
-            if (product->Name == reactant->Name) {
-                SkipStoich = true;
-            } 
-        } 
-        std::pair<std::string, int> Stoich(product->Name, Coefficient);
-        if (!SkipStoich) {
-            Stoichiometry.push_back(Stoich);
+        Name = product->Id.Name;
+        Coefficient = product->Coeff; // update when coeff is fully implemented in parser
+        std::cout << "    Products: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+        if (Stoichiometry.count(Name) > 0) {
+            Coefficient += Stoichiometry[Name];
+            std::cout << "    Updated Stoichiometry: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
         }
-
-        AddNewMolecule(product->Name);
+        Stoichiometry[Name] = Coefficient;
     }
 
 		if (!Location.empty()) {
         std::cout << "    Location: " << Location << endl;
 		}
-    return Stoichiometry;
+
+    // convert stoichiometry map to vector of pairs and add new molecules to the system
+    std::vector<std::pair<std::string, int>> Stoichiometry_Ordered;
+
+    for (auto& stoich : Stoichiometry) {
+        std::pair<std::string, int> Stoich(stoich.first, stoich.second);
+        Stoichiometry_Ordered.push_back(Stoich);
+ 
+        FMolecule * Molecule = new FMolecule(Name);
+        // Molecule->Print(os);
+        Context.AddToMoleculeList(Molecule);
+    } 
+
+    return Stoichiometry_Ordered;
 }
 
 void TraversalNode(NBlock* InProgramBlock)
@@ -153,11 +145,65 @@ void TraversalNode(NBlock* InProgramBlock)
 
             // Reaction Information
             string Name = Id.Name;
+            std::vector<std::pair<std::string, int>> Stoichiometry = GetStoichFromOverallReaction(OverallReaction);
+
+            float k1 = Float_Init;
+            float k2 = Float_Init;
+            float K = Float_Init;
+            float n = Float_Init;
+            string Effect;
+
+            auto& bEffect = OverallReaction.bEffect;
+            const auto& propertylist = OverallReaction.Property;
+            for (auto& property :propertylist) {
+                auto& Key = property->Key;
+		auto& Value = property->Value;
+
+                if (Key == "k") {
+                    k1 = std::stof(Value);
+                } else if (Key == "krev") {
+                    k2 = std::stof(Value);
+                } else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka") || (Key == "K")) {
+                    K = std::stof(Value);
+                } else if (Key == "n") {
+                    n = std::stof(Value);
+                } else {
+//                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
+                }
+            }
+
+            // Effect
+            if ((!bEffect) & (K != Float_Init)) {
+                Effect = "Inhibition";
+            } else if ((bEffect) & (K != Float_Init)) {
+                Effect = "Activation";
+            } 
+
+            // Fill in presumably irreversible reaction kinetic values 
+            if ((k1 != Float_Init) & (k2 == Float_Init)) {
+                k2 = 0;
+            }
+
+            if ((k1 == Float_Init) & (k2 != Float_Init)) {
+                k1 = 0;
+            }
+
+            if ((K != Float_Init) & (n == Float_Init)) {
+                n = 1;
+            }
+
+            // add new reaction to the system
+            if ((k1 >= 0) & (k2 >= 0)) {
+                FStandardReaction *Reaction = new FStandardReaction(Name, Stoichiometry, k1, k2);
+                Reaction->Print(os);
+                Context.AddToReactionList(Reaction);
+            } else if (K >= 0) {
+                FRegulatoryReaction *Reaction = new FRegulatoryReaction(Name, Stoichiometry, K, n, Effect);
+                Reaction->Print(os);
+                Context.AddToReactionList(Reaction);
+            }
+
         }
-
-
-
-
 
         // This is inteded for NEnzymeDeclaration, to be fixed later on.
         enum EnzReactionType {

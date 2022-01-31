@@ -221,13 +221,18 @@ public:
     SubstrateList Reactants;
     SubstrateList Products;
 
-    bool bBiDirection;
+    bool bEffect; // positive: true, negative: false
+//    bool bBiDirection;
 	NIdentifier Location;
     PropertyList Property;
 
-    NReaction() : bBiDirection(false) {}
-    NReaction(const SubstrateList& InReactants, const SubstrateList& InProducts, bool bInBiDirection)
-    : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
+//    NReaction() : bBiDirection(false) {}
+//    NReaction(const SubstrateList& InReactants, const SubstrateList& InProducts, bool bInBiDirection)
+//    : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
+
+    NReaction() {}
+    NReaction(const SubstrateList& InReactants, const SubstrateList& InProducts, bool bInEffect)
+    : Reactants(InReactants), Products(InProducts), bEffect(bInEffect) {}
 
     void SetID(const NIdentifier& InId) {
         Id = InId;
@@ -261,7 +266,9 @@ public:
             item->Print(os); os << ", ";
         }
         os << "], ";
-        os << "BiDirection: " << bBiDirection;
+        os << "Effect: ";
+        if (bEffect)       { os << "positive" ; } 
+        else if (!bEffect) { os << "negative" ; }
         os << ", ";
 
         for (const auto& property: Property) {

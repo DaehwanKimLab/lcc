@@ -57,7 +57,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <String> T_NUMBER T_INTEGER T_DOUBLE T_IDENTIFIER
 
 %token <Token> T_LPAREN T_RPAREN T_LBRACE T_RBRACE T_COMMA T_DOT
-%token <Token> T_PLUS T_MINUS T_ARROW T_BIARROW
+%token <Token> T_PLUS T_MINUS T_ARROW T_INARROW T_BIARROW
 %token <Token> T_ASSIGN T_OR T_SEMIC T_COLON
 %token <Token> T_INC T_DEC
 
@@ -106,7 +106,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 
 %type <Expr> p_expr variable
 
-%right T_ARROW T_BIARROW
+%right T_ARROW T_INARROW T_BIARROW
 %left T_PLUS
 %left T_OR
 %start program
@@ -238,9 +238,10 @@ pathway_decl_args : chain_reaction_decl_args { $$ = $1; }
                   ;
 
 pathway_expr   : ident { $<Ident>$ = new NIdentifier(*$1); delete $1; }
-               | pathway_expr T_PLUS pathway_expr  { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
-               | pathway_expr T_OR pathway_expr    { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
-               | pathway_expr T_ARROW pathway_expr { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
+               | pathway_expr T_PLUS pathway_expr    { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
+               | pathway_expr T_OR pathway_expr      { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
+               | pathway_expr T_ARROW pathway_expr   { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
+               | pathway_expr T_INARROW pathway_expr { $$ = new NPathwayExpression($1, $3, $2); /* delete $1; delete $3; */}
                ;
 
 pathway_block  : T_LBRACE pathway_stmts T_RBRACE { $$ = $2; }
@@ -376,6 +377,7 @@ ident_list     : /* blank */ { $$ = new IdentifierList(); }
 chain_reaction_decl_args : /* blank */ { $$ = new NChainReaction(); }
                          | chain_expr { $$ = new NChainReaction(); $$->Add($1); }
                          | chain_reaction_decl_args T_ARROW chain_expr { $1->Add($3, 1); }
+                         | chain_reaction_decl_args T_INARROW chain_expr { $1->Add($3, 1); }
                          | chain_reaction_decl_args T_BIARROW chain_expr { $1->Add($3, 2); }
                          ;
 
@@ -405,7 +407,8 @@ gen_reaction_decl_args : /* blank */ { $$ = new NReaction(); }
 					   | gen_reaction_decl_reaction T_COMMA gen_reaction_decl_property_args { $$ = $1; $$->SetProperty(*$3); delete $3; }
 					   ;
 
-gen_reaction_decl_reaction : gen_reaction_expr T_ARROW gen_reaction_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
+gen_reaction_decl_reaction : gen_reaction_expr T_ARROW gen_reaction_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
+                           | gen_reaction_expr T_INARROW gen_reaction_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
                            | gen_reaction_expr T_BIARROW gen_reaction_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
                            ;
 

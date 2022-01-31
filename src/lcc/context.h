@@ -414,7 +414,7 @@ public:
     void Print(std::ostream& os) {
         os << "  [Standard Reaction]" << std::endl;
         Print_Stoichiometry(os);
-        os << "   k: " << k << "\t| krev: " << krev << std::endl;
+        os << "  k: " << k << "\t| krev: " << krev << std::endl;
         os << std::endl;
     }
 };

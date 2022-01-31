@@ -85,6 +85,7 @@
 "-"                           { return TOKEN(T_MINUS); }
 "--"                          { return TOKEN(T_DEC); }
 "-->"                         { return TOKEN(T_ARROW); }
+"--|"                         { return TOKEN(T_INARROW); }
 ","                           { return TOKEN(T_COMMA); }
 "."                           { return TOKEN(T_DOT); }
 "<-->"                        { return TOKEN(T_BIARROW); }
