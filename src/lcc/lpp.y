@@ -25,12 +25,14 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NPathwayExpression *PathwayExpr;
 	NChainReaction *ChainReaction;
 	NChainReactionExpression *ChainReactionExpr;
+    NSubstrate *Substrate;
 
 	std::vector<std::shared_ptr<NStatement>> *StmtVec;
 	std::vector<std::shared_ptr<NMoleculeIdentifier>> *MolVec;
 	std::vector<std::shared_ptr<NIdentifier>> *IdentVec;
 	std::vector<std::shared_ptr<NProteinDeclaration>> *ProteinDeclVec;
     std::vector<std::shared_ptr<NPropertyStatement>> *PropertyVec;
+    std::vector<std::shared_ptr<NSubstrate>> *SubstrateVec;
 	std::string *String;
 	int Token;
 }
@@ -87,6 +89,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <ChainReactionExpr> chain_expr
 %type <PropertyVec> gen_property_args gen_reaction_decl_property_args
 %type <Stmt> gen_property_arg
+%type <SubstrateVec> gen_reaction_expr
+%type <Substrate> gen_reaction_substrate
 
 %type <Block> experiment_block experiment_stmts
 %type <Stmt> property_stmt experiment_stmt
@@ -401,8 +405,8 @@ gen_reaction_decl_args : /* blank */ { $$ = new NReaction(); }
 					   | gen_reaction_decl_reaction T_COMMA gen_reaction_decl_property_args { $$ = $1; $$->SetProperty(*$3); delete $3; }
 					   ;
 
-gen_reaction_decl_reaction : gen_expr T_ARROW gen_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
-                           | gen_expr T_BIARROW gen_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
+gen_reaction_decl_reaction : gen_reaction_expr T_ARROW gen_reaction_expr { $$ = new NReaction(*$1, *$3, false); delete $1; delete $3; }
+                           | gen_reaction_expr T_BIARROW gen_reaction_expr { $$ = new NReaction(*$1, *$3, true); delete $1; delete $3; }
                            ;
 
 gen_reaction_decl_property_args : gen_property_args { $$ = $1; }
@@ -422,6 +426,14 @@ gen_value      : T_STRING_LITERAL
                | T_NUMBER
                | T_INTEGER
                ;
+
+gen_reaction_expr : gen_reaction_substrate { $$ = new SubstrateList(); $$->emplace_back($1); }
+                  | gen_reaction_expr T_PLUS gen_reaction_substrate { $$->emplace_back($3); }
+                  ;
+
+gen_reaction_substrate : gen_ident { $$ = new NSubstrate(*$1); delete $1; }
+                       | T_INTEGER gen_ident { $$ = new NSubstrate(*$2, *$1); delete $1; delete $2; }
+                       ;
 
 gen_expr       : gen_ident { $$ = new IdentifierList(); $$->emplace_back($<Ident>1); }
                | gen_expr T_PLUS gen_ident { $1->emplace_back($<Ident>3); }
