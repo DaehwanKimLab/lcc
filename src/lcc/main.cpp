@@ -305,25 +305,25 @@ void TraversalNode(NBlock* InProgramBlock)
 
             int Coefficient;
             for (const auto& reactant : OverallReaction.Reactants) {
-                if (reactant->Name == Name) {
+                if (reactant->Id.Name == Name) {
                     break;
                 }
 
                 // This may not always work with Michaelis Menten without database. Excluding common molecules will improve a chance.
                 if (Substrate.empty()) {
-                    Substrate = reactant->Name;
+                    Substrate = reactant->Id.Name;
                 }
 
-                Coefficient = -1; // update when coeff is fully implemented in parser
-                os << "    Reactants: " << "(" << Coefficient << ") " << reactant->Name << ", " << endl;
+                Coefficient = -reactant->Coeff; // update when coeff is fully implemented in parser
+                os << "    Reactants: " << "(" << Coefficient << ") " << reactant->Id.Name << ", " << endl;
 
                 // if also found in products, set the first stoichiometry coefficient as the sum of their coefficients.
                 for (const auto& product : OverallReaction.Products) {
-                    if (product->Name == reactant->Name) {
+                    if (product->Id.Name == reactant->Id.Name) {
                         Coefficient = 0; // TODO: use sum of the coefficients when coefficient node is implemented.
                     }
                 } 
-                std::pair<std::string, int> Stoich(reactant->Name, Coefficient);
+                std::pair<std::string, int> Stoich(reactant->Id.Name, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
                 float InitialCount = Float_Init;
@@ -332,7 +332,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                 const auto& propertylist = OverallReaction.Property;
                 for (auto& property :propertylist) {
-                    if (property->Key == reactant->Name) {
+                    if (property->Key == reactant->Id.Name) {
                         // temporary parsing code
     
                         // Value: [0]=0, currently replaced with _0__0
@@ -361,18 +361,18 @@ void TraversalNode(NBlock* InProgramBlock)
                             InitialCount = Count;
                             os << "\tInitial_Count: " << InitialCount << endl;
                         }
-                    } else if ((property->Key == "Fixed") & (property->Value == reactant->Name)) {
+                    } else if ((property->Key == "Fixed") & (property->Value == reactant->Id.Name)) {
                         Fixed = true;
                     }
                 }
 
                 // Add a new small molecule (small molecule is an assumption made on enzyme, but it may not always be true)
                 if (Ranges.empty()) {
-                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Fixed);
+                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Id.Name, InitialCount, Fixed);
                     // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 } else {
-                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name, InitialCount, Ranges); 
+                    FSmallMolecule * Molecule = new FSmallMolecule(reactant->Id.Name, InitialCount, Ranges); 
                     // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 }
@@ -380,20 +380,21 @@ void TraversalNode(NBlock* InProgramBlock)
             }
 
             for (const auto& product : OverallReaction.Products) {
-                if (product->Name == Name) {
+                const std::string& ProductName = product->Id.Name;
+                if (ProductName == Name) {
                     break;
                 }
 
-                Coefficient = 1; // update when coeff is fully implemented in parser
-                os << "    Products: " << "(" << Coefficient << ") " << product->Name << ", " << endl;
+                Coefficient = product->Coeff; // update when coeff is fully implemented in parser
+                os << "    Products: " << "(" << Coefficient << ") " << ProductName << ", " << endl;
 
                 bool SkipStoich = false;
                 for (const auto& reactant : OverallReaction.Reactants) {
-                    if (product->Name == reactant->Name) {
+                    if (ProductName == reactant->Id.Name) {
                         SkipStoich = true;
                     }
                 } 
-                std::pair<std::string, int> Stoich(product->Name, Coefficient);
+                std::pair<std::string, int> Stoich(ProductName, Coefficient);
                 if (!SkipStoich) {
                     Stoichiometry.push_back(Stoich);
                 }
@@ -403,7 +404,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                 const auto& propertylist = OverallReaction.Property;
                 for (auto& property :propertylist) {
-                    if (property->Key == product->Name) {
+                    if (property->Key == ProductName) {
                         // temporary parsing code
     
                         // Value: [0]=0, currently replaced with _0__0
@@ -432,18 +433,18 @@ void TraversalNode(NBlock* InProgramBlock)
                             InitialCount = Count;
                             os << "\tInitial_Count: " << InitialCount << endl;
                         }
-                    } else if ((property->Key == "Fixed") & (property->Value == product->Name)) {
+                    } else if ((property->Key == "Fixed") & (property->Value == ProductName)) {
                         Fixed = true;
                     }
                 }
 
                 // Add a new small molecule (small molecule is an assumption made on enzyme, but it may not always be true)
                 if (Ranges.empty()) {
-                    FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Fixed);
+                    FSmallMolecule * Molecule = new FSmallMolecule(ProductName, InitialCount, Fixed);
                     // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 } else {
-                    FSmallMolecule * Molecule = new FSmallMolecule(product->Name, InitialCount, Ranges); 
+                    FSmallMolecule * Molecule = new FSmallMolecule(ProductName, InitialCount, Ranges); 
                     // Molecule->Print(os);
                     Context.AddToMoleculeList(Molecule);
                 }
@@ -657,41 +658,43 @@ void TraversalNode(NBlock* InProgramBlock)
             std::vector<std::string> BuildingBlocks;
 
             for (const auto& reactant : ElongationReaction.Reactants) {
-                Coefficient = -1; // update when coeff is fully implemented in parser
-                os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
-                if ((reactant->Name == "dna_{n}") | (reactant->Name == "rna_{n}") | (reactant->Name == "peptide_{n}")) {
+                const std::string& ReactantName = reactant->Id.Name;
+                Coefficient = -reactant->Coeff;
+                os << "    Reactants: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
+                if ((ReactantName == "dna_{n}") | (ReactantName == "rna_{n}") | (ReactantName == "peptide_{n}")) {
                     continue;
-                } else if (reactant->Name == "dnt") {
+                } else if (ReactantName == "dnt") {
                     Name = "pol1";
                     BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
                     continue;
-                } else if (reactant->Name == "nt") {
+                } else if (ReactantName == "nt") {
                     Name = "rnap";
                     BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
                     continue;
-                } else if (reactant->Name == "aa") {
+                } else if (ReactantName == "aa") {
                     Name = "r1";
                     BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
                     continue;
                 }
-                std::pair<std::string, int> Stoich(reactant->Name, Coefficient);
+                std::pair<std::string, int> Stoich(ReactantName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);             
+                FSmallMolecule * Molecule = new FSmallMolecule(ReactantName);             
                 // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
 
             for (const auto& product : ElongationReaction.Products) {
-                Coefficient = 1; // update when coeff is fully implemented in parser
-                os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
-                if ((product->Name == "dna_{n+1}") | (product->Name == "rna_{n+1}") | (product->Name == "peptide_{n+1}")) {
+                const std::string ProductName = product->Id.Name;
+                Coefficient = product->Coeff;
+                os << "    Products: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
+                if ((ProductName == "dna_{n+1}") | (ProductName == "rna_{n+1}") | (ProductName == "peptide_{n+1}")) {
                     continue;
                 }
-                std::pair<std::string, int> Stoich(product->Name, Coefficient);
+                std::pair<std::string, int> Stoich(ProductName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+                FSmallMolecule * Molecule = new FSmallMolecule(ProductName);
                 // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }

@@ -16,6 +16,9 @@ void NMoleculeIdentifier::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "NMoleculeIdentifier(" << Name << ", " << Id << ")"<< std::endl;
 }
 
+void NSubstrate::Visit(FTraversalContext& Context) const {
+}
+
 void NBlock::Visit(FTraversalContext& Context) const {
     for (auto& stmt: Statements) {
         Context.Queue.push(static_cast<const NNode *>(stmt.get())); // Fixme

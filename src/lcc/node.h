@@ -18,6 +18,7 @@ class NPathwayExpression;
 class NProteinDeclaration;
 class NPolymeraseDeclaration;
 class NPropertyStatement;
+class NSubstrate;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
@@ -27,6 +28,7 @@ typedef std::vector<std::shared_ptr<NPathwayExpression>> PathwayExprList;
 typedef std::vector<std::shared_ptr<NProteinDeclaration>> ProteinDeclList;
 typedef std::vector<std::shared_ptr<NPolymeraseDeclaration>> PolymeraseDeclList;
 typedef std::vector<std::shared_ptr<NPropertyStatement>> PropertyList;
+typedef std::vector<std::shared_ptr<NSubstrate>> SubstrateList;
 
 class NNodeUtil {
 public:
@@ -101,6 +103,32 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "MolIdentifier: {";
         os << Name << ": " << Id;
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
+class NSubstrate : public NExpression {
+public:
+    int Coeff;
+    NIdentifier Id;
+
+    NSubstrate(NIdentifier& InId)
+        : Id(InId), Coeff(1) {};
+
+    NSubstrate(NIdentifier& InId, int InCoeff)
+        : Id(InId), Coeff(InCoeff) {};
+
+    NSubstrate(NIdentifier& InId, const std::string& InCoeff)
+        : Id(InId)
+    {
+        Coeff = std::stoi(InCoeff);
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        os << "NSubstrate: {";
+        os << Id.Name << ": " << Coeff;
         os << "}";
     }
 
@@ -187,14 +215,18 @@ public:
 class NReaction : public NStatement {
 public:
     NIdentifier Id;
-    IdentifierList Reactants;
-    IdentifierList Products;
+    //IdentifierList Reactants;
+    //IdentifierList Products;
+
+    SubstrateList Reactants;
+    SubstrateList Products;
+
     bool bBiDirection;
 	NIdentifier Location;
     PropertyList Property;
 
     NReaction() : bBiDirection(false) {}
-    NReaction(const IdentifierList& InReactants, const IdentifierList& InProducts, bool bInBiDirection)
+    NReaction(const SubstrateList& InReactants, const SubstrateList& InProducts, bool bInBiDirection)
     : Reactants(InReactants), Products(InProducts), bBiDirection(bInBiDirection) {}
 
     void SetID(const NIdentifier& InId) {
@@ -221,12 +253,12 @@ public:
         os << "Reaction: {";
         os << "Reactants: [";
         for (const auto& item: Reactants) {
-             os << item->Name << ", ";
+             item->Print(os); os << ", ";
         }
         os << "], ";
         os << "Products: [";
         for (const auto& item: Products) {
-            os << item->Name << ", ";
+            item->Print(os); os << ", ";
         }
         os << "], ";
         os << "BiDirection: " << bBiDirection;
