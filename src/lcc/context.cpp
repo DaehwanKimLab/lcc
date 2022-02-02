@@ -344,6 +344,56 @@ std::vector<const FEnzyme *> FCompilerContext::GetSubList_EnzymeList(std::vector
     return SubList;
 }
 
+std::vector<const FStandardReaction *> FCompilerContext::GetList_Standard_ReactionList(std::string ReactionType)
+{
+    std::vector<const FStandardReaction *> SubList;
+
+    std::vector<std::string> Inhibited = GetNames_ReactionList("Inhibited");
+    std::vector<std::string> Activated = GetNames_ReactionList("Activated");
+
+    for (const FReaction* Reaction: ReactionList) {
+        if (Utils::is_class_of<FStandardReaction, FReaction>(Reaction)) {
+            auto reaction = dynamic_cast<const FStandardReaction *>(Reaction);
+            if (ReactionType == "Standard_All") {
+                SubList.push_back(reaction);
+            } else if (ReactionType == "Standard_Unregulated") {       
+                if ((std::find(Inhibited.begin(), Inhibited.end(), reaction->Name) == Inhibited.end()) 
+                  & (std::find(Activated.begin(), Activated.end(), reaction->Name) == Activated.end())) {
+                    SubList.push_back(reaction);
+                }
+            } else if (ReactionType == "Standard_Inhibited") {
+                if (std::find(Inhibited.begin(), Inhibited.end(), reaction->Name) != Inhibited.end()) {
+                    SubList.push_back(reaction);
+                }
+            } else if (ReactionType == "Standard_Activated") {
+                if (std::find(Activated.begin(), Activated.end(), reaction->Name) != Activated.end()) {
+                    SubList.push_back(reaction);
+                }
+            }
+        }
+    }
+
+    return SubList;
+}
+
+std::vector<const FRegulatoryReaction *> FCompilerContext::GetList_Regulatory_ReactionList(std::string ReactionType)
+{
+    // Reaction Type is either "Inhibition" or "Activation"
+
+    std::vector<const FRegulatoryReaction *> SubList;
+
+    for (const FReaction* Reaction: ReactionList) {
+        if (Utils::is_class_of<FRegulatoryReaction, FReaction>(Reaction)) {
+            auto reaction = dynamic_cast<const FRegulatoryReaction *>(Reaction);
+            if (reaction->Effect == ReactionType) {
+                SubList.push_back(reaction);
+            }
+        }
+    }
+
+    return SubList;
+}
+
 std::vector<const FEnzymaticReaction *> FCompilerContext::GetList_Enzymatic_ReactionList()
 {
     std::vector<const FEnzymaticReaction *> SubList;
@@ -507,6 +557,43 @@ std::vector<std::string> FCompilerContext::GetBuildingBlockNames_PolymeraseReact
     for (auto& item : PolymeraseReactionList){
         for (auto& BuildingBlock : item->BuildingBlocks){
             StrList.push_back(BuildingBlock);
+        }
+    }
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetNames_ReactionList(std::string Type)
+{
+    std::vector<std::string> StrList;
+
+//    if (Type == "All") {
+//        for (auto& reaction : ReactionList){
+//            StrList.push_back(reaction->Name);       
+//        return StrList;
+//        }
+//
+//    std::vector<std::string> ReactionNames_All = GetNames_ReactionList("All"); // recursive
+   
+    for (auto& Reaction : ReactionList){
+        if (Utils::is_class_of<FRegulatoryReaction, FReaction>(Reaction)) {
+            auto reaction = dynamic_cast<const FRegulatoryReaction *>(Reaction);
+            if (Type == "Inhibited") {
+                if (reaction->Effect == "Inhibition") {
+                    for (auto& stoich : reaction->Stoichiometry) {
+                        if (stoich.second > 0) {
+                            StrList.push_back(stoich.first);
+                        }
+                    }
+                }
+            } else if (Type == "Activated") {
+                if (reaction->Effect == "Activation") {
+                    for (auto& stoich : reaction->Stoichiometry) {
+                        if (stoich.second > 0) {
+                            StrList.push_back(stoich.first);
+                        }
+                    }
+                }
+            }
         }
     }
     return StrList;

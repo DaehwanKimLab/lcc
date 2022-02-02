@@ -519,7 +519,7 @@ public:
     std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
     std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
 
-    std::vector<std::string> GetNames_ReactionList();
+    std::vector<std::string> GetNames_ReactionList(std::string);
     std::vector<std::string> GetSubstrateNames_ReactionList();
     std::vector<std::string> GetReactantNames_ReactionList();
     std::vector<std::string> GetProductNames_ReactionList();
@@ -558,8 +558,13 @@ public:
     std::vector<const FEnzyme *> GetList_Enzyme_MoleculeList();
     std::vector<const FPolymerase *> GetList_Polymerase_MoleculeList();
     std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
+
     std::vector<const FEnzymaticReaction *> GetList_Enzymatic_ReactionList();
     std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
+
+    std::vector<const FReaction *> GetList_ReactionList(std::string); // see if necessary for general purpose
+    std::vector<const FStandardReaction *> GetList_Standard_ReactionList(std::string Type);
+    std::vector<const FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
     
     std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
     std::vector<std::string> GetNameListFromMoleculeList(std::string FClassName);
