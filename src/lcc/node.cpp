@@ -135,3 +135,8 @@ void NIfStatement::Visit(FTraversalContext& Context) const {
 void NLoopStatement::Visit(FTraversalContext& Context) const {
     if (Body) Context.Queue.push(Body.get());
 }
+
+void NExpressionStatement::Visit(FTraversalContext& Context) const {
+    if (Expression) Context.Queue.push(Expression.get());
+
+}
