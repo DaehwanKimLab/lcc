@@ -26,6 +26,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NChainReaction *ChainReaction;
 	NChainReactionExpression *ChainReactionExpr;
     NSubstrate *Substrate;
+    NDeclaraionStatement *DeclStmt;
+    NInitializerExpression *InitExpr;
 
 	std::vector<std::shared_ptr<NStatement>> *StmtVec;
 	std::vector<std::shared_ptr<NMoleculeIdentifier>> *MolVec;
@@ -33,6 +35,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	std::vector<std::shared_ptr<NProteinDeclaration>> *ProteinDeclVec;
     std::vector<std::shared_ptr<NPropertyStatement>> *PropertyVec;
     std::vector<std::shared_ptr<NSubstrate>> *SubstrateVec;
+    std::vector<std::shared_ptr<NExpression>> *ExprVec;
 	std::string *String;
 	int Token;
 }
@@ -100,14 +103,20 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <StmtVec> stmt reaction_decl_stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl reaction_decls protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
 %type <StmtVec> container_stmt
-%type <StmtVec> p_expr_stmt
+%type <StmtVec> p_expr_stmt p_expr_decl_stmt
+%type <StmtVec> decl_stmt init_declarator_list
 %type <Stmt> ribosome_arg polymerase_arg
 
 %type <Stmt> gen_initiation_stmt gen_elongation_stmt gen_termination_stmt
 %type <Reaction> gen_elongation_decl_arg
 %type <StmtVec> ribosome_binding_site_stmt translation_terminator_stmt replication_origin_stmt replication_terminus_stmt
 
-%type <Expr> p_expr variable p_expr_range
+%type <Expr> p_expr variable p_range_expr p_const_expr
+%type <ExprVec> p_expr_list
+%type <DeclStmt> init_declarator
+%type <Ident> declarator
+%type <InitExpr> initializer initializer_list
+%type <Token> declaration_specifiers type_specifier
 
 %right T_ARROW T_INARROW T_BIARROW
 %left T_PLUS
@@ -146,13 +155,14 @@ stmt           : reaction_decl_stmt T_SEMIC
                | if_stmt T_SEMIC
                | if_stmt
                | p_expr_stmt T_SEMIC
+               | decl_stmt T_SEMIC
                ;
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
                | T_LBRACE T_RBRACE { $$ = new NBlock(); }
                ;
 
-for_stmt       : T_FOR T_LPAREN p_expr T_SEMIC p_expr T_SEMIC p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NLoopStatement($3, $5, $7, $9)); }
+for_stmt       : T_FOR T_LPAREN p_expr_decl_stmt T_SEMIC p_expr T_SEMIC p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NLoopStatement(*$3, $5, $7, $9)); delete $3; }
                ;
 
 if_stmt        : T_IF T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NIfStatement($3, $5)); }
@@ -165,7 +175,12 @@ while_stmt     : T_WHILE T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitSt
 container_stmt : T_CONTAINER ident block { $$ = NNodeUtil::InitStatementList(new NContainerStatement(*$2, $3)); delete $2; }
                ;
 
+p_expr_decl_stmt : p_expr_stmt
+                 | decl_stmt
+                 ;
+
 p_expr_stmt    : p_expr { $$ = NNodeUtil::InitStatementList(new NExpressionStatement($1)); }
+               | p_expr_stmt T_COMMA p_expr { $1->emplace_back(new NExpressionStatement($3)); }
                ;
 
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, *$3)); delete $2; delete $3; }
@@ -217,7 +232,7 @@ protein_step_stmt : T_STEP ident T_LPAREN step_decl_args T_RPAREN { $$ = new NSt
 protein_sequence_stmt : T_SEQUENCE ident T_LPAREN protein_sequence_decl_args T_RPAREN { $$ = new NProteinSequenceStatement(*$2, *$4); delete $2; delete $4; }
                       ;
 
-protein_pdb_stmt : T_PDB T_STRING_LITERAL { $$ = new NPropertyStatement("PDB", *$2); delete $2; }
+protein_pdb_stmt : T_PDB T_STRING_LITERAL { $$ = new NPropertyStatement("PDB", new NConstantExpression(*$2)); delete $2; }
                  ;
 
 protein_cofactor_decl_args : ident_list { $$ = $1; }
@@ -316,9 +331,9 @@ experiment_stmt : T_DESCRIPTION T_STRING_LITERAL T_SEMIC { $$ = new NDescription
                 | property_stmt T_SEMIC { $$ = $1; }
                 ;
 
-property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
-               | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, *$3); delete $2; delete $3; }
-               | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, $3->Name); delete $2, delete $3; }
+property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3)); delete $2; delete $3; }
+               | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3)); delete $2; delete $3; }
+               | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, new NVariableExpression(*$3)); delete $2, delete $3; }
                ;
 
 using_stmt     : T_USING T_MODULE ident { $$ = NNodeUtil::InitStatementList(new NUsingStatement($2, *$3)); delete $3; }
@@ -433,7 +448,7 @@ gen_property_args : gen_property_arg { $$ = new PropertyList(); $$->emplace_back
 
 gen_property_arg  : /* */ { $$ = new NPropertyStatement(); }
                   | ident { $$ = new NPropertyStatement($1->Name); delete $1; }
-                  | ident T_ASSIGN gen_value { $$ = new NPropertyStatement($1->Name, *$3); delete $1; delete $3; }
+                  | ident T_ASSIGN p_expr { $$ = new NPropertyStatement($1->Name, $3); delete $1; }
                   ;
 
 gen_value      : T_STRING_LITERAL
@@ -468,9 +483,12 @@ mol_ident      : T_MOLECULE { $$ = new NMoleculeIdentifier(T_MOLECULE, *$1); del
 ident          : T_IDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
                ;
 
-p_expr         : /* */ { $$ = new NExpression(); }
-               | T_NUMBER { $$ = new NConstantExpression(*$1); delete $1; }
+p_const_expr   : T_NUMBER { $$ = new NConstantExpression(*$1); delete $1; }
                | T_INTEGER { $$ = new NConstantExpression(*$1); delete $1; }
+               ;
+
+p_expr         : /* */ { $$ = new NExpression(); }
+               | p_const_expr { $$ = $1; }
                | variable { $$ = $1; }
                | variable T_ASSIGN p_expr { $$ = new NAExpression(T_ASSIGN, $1, $3); }
                | p_expr T_PLUS p_expr { $$ = new NAExpression(T_PLUS, $1, $3); }
@@ -483,16 +501,59 @@ p_expr         : /* */ { $$ = new NExpression(); }
                | p_expr T_GE p_expr { $$ = new NAExpression(T_GE, $1, $3); }
                | p_expr T_EQ p_expr { $$ = new NAExpression(T_EQ, $1, $3); }
                | p_expr T_NE p_expr { $$ = new NAExpression(T_NE, $1, $3); }
+               | p_expr T_LPAREN T_RPAREN { $$ = new NFunctionCallExpression($1); }
+               | p_expr T_LPAREN p_expr_list T_RPAREN { $$ = new NFunctionCallExpression($1, $3); }
                | T_LPAREN p_expr T_RPAREN { $$ = $2; }
                ;
 
 variable       : ident { $$ = new NVariableExpression(*$1); delete $1; }
-               | ident T_LBRACKET p_expr_range T_RBRACKET { $$ = new NVariableExpression(*$1, $3); delete $1; }
+               | ident T_LBRACKET p_range_expr T_RBRACKET { $$ = new NVariableExpression(*$1, $3); delete $1; }
                ;
 
-
-p_expr_range   : p_expr { $$ = new NRangeExpression($1, nullptr, nullptr); }
+p_range_expr   : p_expr { $$ = new NRangeExpression($1, nullptr, nullptr); }
                | p_expr T_COLON p_expr { $$ = new NRangeExpression($1, $3, nullptr); }
                | p_expr T_COLON p_expr T_COLON p_expr { $$ = new NRangeExpression($1, $3, $5); }
                ;
+
+p_expr_list    : p_expr { $$ = new ExpressionList(); $$->emplace_back($1); }
+               | p_expr_list T_COMMA p_expr { $1->emplace_back($3); }
+               ;
+
+/*
+declaration_list : declaration
+                 | declaration_list declaration
+                 ;
+*/
+
+decl_stmt      : declaration_specifiers init_declarator_list { NDeclaraionStatement::UpdateType($2, $1); $$ = $2; }
+               ;
+
+declaration_specifiers : type_specifier
+                       ;
+
+type_specifier : T_FLOAT
+               | T_INT
+               | T_ARRAY
+               | T_DICT
+               ;
+
+init_declarator_list : init_declarator { $$ = NNodeUtil::InitStatementList($1); }
+                     | init_declarator_list T_COMMA init_declarator { $1->emplace_back($3); }
+                     ;
+
+init_declarator : declarator { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); delete $1;}
+                | declarator T_ASSIGN initializer { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); $$->SetInitializer($3); delete $1; }
+                ;
+
+declarator     : ident
+               ;
+
+initializer    : p_expr { $$ = new NInitializerExpression($1); }
+               | T_LBRACKET initializer_list T_RBRACKET { $$ = $2; /* $$ = new NInitializerExpression($2); */ }
+               ;
+ 
+initializer_list : initializer { $$ = $1; }
+                 | initializer_list T_COMMA initializer { $1->Append($3); }
+                 ;
+               
 %%

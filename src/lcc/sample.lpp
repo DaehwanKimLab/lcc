@@ -84,3 +84,22 @@ e[1] = +10.0;
 e[2] = -11.0;
 e[3] = -1.23e99;
 e[4] = +9.999999999999e-99999;
+
+int a;
+float b;
+array c;
+int d, e, f, g;
+
+int a = 10;
+array f = [1, 2, 3];
+array g = [10, a];
+array h = [1];
+array i = [1, [2, 3]];
+
+func(b);
+func();
+func(1, 2, 3);
+
+for (i = 0; i < len(f); i=i+1) {
+    func(i);
+}

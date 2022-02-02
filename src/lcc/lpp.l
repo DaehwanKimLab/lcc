@@ -17,6 +17,7 @@
 %x C_COMMENT
 
 digit                         [0-9]
+
 %%
 
 

@@ -157,7 +157,7 @@ void TraversalNode(NBlock* InProgramBlock)
             const auto& propertylist = OverallReaction.Property;
             for (auto& property :propertylist) {
                 auto& Key = property->Key;
-		auto& Value = property->Value;
+                auto Value = property->Value->Evaluate();
 
                 if (Key == "k") {
                     k1 = std::stof(Value);
@@ -168,7 +168,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 } else if (Key == "n") {
                     n = std::stof(Value);
                 } else {
-//                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
+                    //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
                 }
             }
 
@@ -252,7 +252,7 @@ void TraversalNode(NBlock* InProgramBlock)
             const auto& propertylist = OverallReaction.Property;
             for (auto& property :propertylist) {
                 auto& Key = property->Key;
-		auto& Value = property->Value;
+                auto Value = property->Value->Evaluate();
 
                 if (Key == "k") {
                     k1 = std::stof(Value);
@@ -278,18 +278,18 @@ void TraversalNode(NBlock* InProgramBlock)
                     if (Type == Standard) {
                         if (!Inhibitor.empty() & Activator.empty()){
                             if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = Standard_Inhibition_Allosteric; }
-                       else if ((Mode == "competitive") || ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
+                            else if ((Mode == "competitive") || ("Competitive"))	{ Type = Standard_Inhibition_Competitive; }
                         } else if (Inhibitor.empty() & !Activator.empty()){
                             if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = Standard_Activation_Allosteric; }
-                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
+                            else if ((Mode == "competitive") || ("Competitive")) 	{ Type = Standard_Activation_Allosteric; }
                         }
                     } else if (Type == MichaelisMenten) {
                         if (!Inhibitor.empty() & Activator.empty()){
                             if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = MichaelisMenten_Inhibition_Allosteric; }
-                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
+                            else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Inhibition_Competitive; }
                         } else if (Inhibitor.empty() & !Activator.empty()){
                             if ((Mode == "allosteric") || ("Allosteric")) 	{ Type = MichaelisMenten_Activation_Allosteric; }
-                       else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
+                            else if ((Mode == "competitive") || ("Competitive")) 	{ Type = MichaelisMenten_Activation_Competitive; }
                         }
                     }
                 } else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka")) {
@@ -303,7 +303,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     // Value: [0]=0, currently replaced with _0__0
                     // Value: [1:3]=2, _1to3__2
 
-                    
+
                     std::vector<std::string> Value_Parsed;
                     Utils::tokenize(Value, "_", Value_Parsed);
                     string MolName = Value_Parsed[0];
@@ -331,9 +331,9 @@ void TraversalNode(NBlock* InProgramBlock)
                     if (Value == Name) {
                         Fixed = true;
                     }
-                
+
                 } else {
-//                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
+                    //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
                 }
             }
 
@@ -344,7 +344,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     os << "  Substrate imported from database: " << Substrate << endl;
                 }
             }
- 
+
             if (k1 == Float_Init) {
                 string kcat_Database = Context.QueryTable(Name, "kcat", Context.EnzymeTable);
                 if (!kcat_Database.empty()) {
@@ -368,54 +368,54 @@ void TraversalNode(NBlock* InProgramBlock)
             if ((k1 == Float_Init) & (k2 != Float_Init)) {
                 k1 = 0;
             }
-          
-//            if (Inhibitor.empty()) {
-//                Inhibitor = Context.QueryTable(Name, "Inhibitor", Context.EnzymeTable);
-//                if (!Inhibitor.empty()) {
-//                    os << "  Inhibitor imported from database: " << Substrate << endl;
-//                }
-//            }
-//
-//            if (Activator.empty()) {
-//                Activator = Context.QueryTable(Name, "Activator", Context.EnzymeTable);
-//                if (!Inhibitor.empty()) {
-//                    os << "  Activator imported from database: " << Substrate << endl;
-//                }
-//            }
-//
-//            if (Mode.empty()) {
-//                Mode = Context.QueryTable(Name, "Mode", Context.EnzymeTable);
-//                if (!Mode.empty()) {
-//                    os << "  Mode imported from database: " << Substrate << endl;
-//                }
-//            }
-//
-//            if (!Inhibitor.empty() and (K == Float_Init)) {
-//                string Ki_Database = Context.QueryTable(Name, "Ki", Context.EnzymeTable); // * RandomNumber();
-//                if (!Ki_Database.empty()) {
-//                    K = std::stof(Ki_Database);
-//                    os << "  Ki imported from database: " << Ki_Database << endl;
-//                }
-//            } else if (!Activator.empty() and (K == Float_Init)) {
-//                string Ka_Database = Context.QueryTable(Name, "Ka", Context.EnzymeTable); // * RandomNumber();
-//                if (!Ka_Database.empty()) {
-//                    K = std::stof(Ka_Database);
-//                    os << "  Ka imported from database: " << Ka_Database << endl;
-//                }
-//
-//            }
-//
-//            if (n == Float_Init) {
-//                string n_Database = Context.QueryTable(Name, "n", Context.EnzymeTable); // * RandomNumber();
-//                if (!n_Database.empty()) {
-//                    n = std::stof(n_Database);
-//                    os << "  n imported from database: " << n_Database << endl;
-//                }
-//            }
+
+            //            if (Inhibitor.empty()) {
+            //                Inhibitor = Context.QueryTable(Name, "Inhibitor", Context.EnzymeTable);
+            //                if (!Inhibitor.empty()) {
+            //                    os << "  Inhibitor imported from database: " << Substrate << endl;
+            //                }
+            //            }
+            //
+            //            if (Activator.empty()) {
+            //                Activator = Context.QueryTable(Name, "Activator", Context.EnzymeTable);
+            //                if (!Inhibitor.empty()) {
+            //                    os << "  Activator imported from database: " << Substrate << endl;
+            //                }
+            //            }
+            //
+            //            if (Mode.empty()) {
+            //                Mode = Context.QueryTable(Name, "Mode", Context.EnzymeTable);
+            //                if (!Mode.empty()) {
+            //                    os << "  Mode imported from database: " << Substrate << endl;
+            //                }
+            //            }
+            //
+            //            if (!Inhibitor.empty() and (K == Float_Init)) {
+            //                string Ki_Database = Context.QueryTable(Name, "Ki", Context.EnzymeTable); // * RandomNumber();
+            //                if (!Ki_Database.empty()) {
+            //                    K = std::stof(Ki_Database);
+            //                    os << "  Ki imported from database: " << Ki_Database << endl;
+            //                }
+            //            } else if (!Activator.empty() and (K == Float_Init)) {
+            //                string Ka_Database = Context.QueryTable(Name, "Ka", Context.EnzymeTable); // * RandomNumber();
+            //                if (!Ka_Database.empty()) {
+            //                    K = std::stof(Ka_Database);
+            //                    os << "  Ka imported from database: " << Ka_Database << endl;
+            //                }
+            //
+            //            }
+            //
+            //            if (n == Float_Init) {
+            //                string n_Database = Context.QueryTable(Name, "n", Context.EnzymeTable); // * RandomNumber();
+            //                if (!n_Database.empty()) {
+            //                    n = std::stof(n_Database);
+            //                    os << "  n imported from database: " << n_Database << endl;
+            //                }
+            //            }
 
 
             std::vector<std::pair<std::string, int>> Stoichiometry;
-			string Location = OverallReaction.Location.Name;
+            string Location = OverallReaction.Location.Name;
 
             int Coefficient;
             for (const auto& reactant : OverallReaction.Reactants) {
@@ -448,18 +448,18 @@ void TraversalNode(NBlock* InProgramBlock)
                 for (auto& property :propertylist) {
                     if (property->Key == reactant->Id.Name) {
                         // temporary parsing code
-    
+
                         // Value: [0]=0, currently replaced with _0__0
                         // Value: [1:3]=2, _1to3__2
-    
-                        string Value = property->Value;
+
+                        string Value = property->Value->Evaluate();
                         std::vector<std::string> Value_Parsed;
                         Utils::tokenize(Value, "_", Value_Parsed);
                         string MolName = Value_Parsed[0];
                         string Range = Value_Parsed[1];
                         float Count = std::stof(Value_Parsed[2]);
                         os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
-    
+
                         string Delimiter = "to";
                         if (Range.find(Delimiter) != string::npos) {
                             std::vector<std::string> Range_Parsed;
@@ -470,12 +470,12 @@ void TraversalNode(NBlock* InProgramBlock)
                             std::pair<float, float> Range(Range_Begin, Range_End);
                             std::pair<std::pair<float, float>, float> Range_Count(Range, Count);
                             Ranges.push_back(Range_Count);
-    
+
                         } else {
                             InitialCount = Count;
                             os << "\tInitial_Count: " << InitialCount << endl;
                         }
-                    } else if ((property->Key == "Fixed") & (property->Value == reactant->Id.Name)) {
+                    } else if ((property->Key == "Fixed") & (property->Value->Evaluate() == reactant->Id.Name)) {
                         Fixed = true;
                     }
                 }
@@ -520,18 +520,18 @@ void TraversalNode(NBlock* InProgramBlock)
                 for (auto& property :propertylist) {
                     if (property->Key == ProductName) {
                         // temporary parsing code
-    
+
                         // Value: [0]=0, currently replaced with _0__0
                         // Value: [1:3]=2, _1to3__2
-    
-                        string Value = property->Value;
+
+                        string Value = property->Value->Evaluate();
                         std::vector<std::string> Value_Parsed;
                         Utils::tokenize(Value, "_", Value_Parsed);
                         string MolName = Value_Parsed[0];
                         string Range = Value_Parsed[1];
                         float Count = std::stof(Value_Parsed[2]);
                         os << "\tValue_Parsed | MolName: " << MolName << "Range: " << Range << ", Count: " << Count << endl;
-    
+
                         string Delimiter = "to";
                         if (Range.find(Delimiter) != string::npos) {
                             std::vector<std::string> Range_Parsed;
@@ -542,12 +542,12 @@ void TraversalNode(NBlock* InProgramBlock)
                             std::pair<float, float> Range(Range_Begin, Range_End);
                             std::pair<std::pair<float, float>, float> Range_Count(Range, Count);
                             Ranges.push_back(Range_Count);
-    
+
                         } else {
                             InitialCount = Count;
                             os << "\tInitial_Count: " << InitialCount << endl;
                         }
-                    } else if ((property->Key == "Fixed") & (property->Value == ProductName)) {
+                    } else if ((property->Key == "Fixed") & (property->Value->Evaluate() == ProductName)) {
                         Fixed = true;
                     }
                 }
@@ -564,9 +564,9 @@ void TraversalNode(NBlock* InProgramBlock)
                 }
             }
 
-			if (!Location.empty()) {
+            if (!Location.empty()) {
                 os << "    Location: " << Location << endl;
-			}
+            }
 
             // add new enzymatic reaction to the system
             FEnzymaticReaction *EnzymaticReaction = new FEnzymaticReaction(Name, Stoichiometry, Name);
@@ -596,13 +596,13 @@ void TraversalNode(NBlock* InProgramBlock)
                 }
             }
             // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
-//            if (N_Enzyme->Block) {
-//                auto& Block = N_Enzyme->Block;
-//                for (auto& stmt: Block->Statements) {
-//                    os << "  "; stmt->Print(os);
-//                }
-//
-//            }
+            //            if (N_Enzyme->Block) {
+            //                auto& Block = N_Enzyme->Block;
+            //                for (auto& stmt: Block->Statements) {
+            //                    os << "  "; stmt->Print(os);
+            //                }
+            //
+            //            }
 
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
@@ -616,7 +616,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 auto& PathwayChainReaction = Pathway->PathwayChainReaction;
                 auto& Exprs = PathwayChainReaction->Exprs;
                 for (auto& expr: Exprs) {
-//                    os << "  "; expr->Print(os);
+                    //                    os << "  "; expr->Print(os);
                     auto& Identifiers = expr->Identifiers;
                     for (auto& Id: Identifiers) {
                         os << Id.Name << ", ";
@@ -635,7 +635,7 @@ void TraversalNode(NBlock* InProgramBlock)
             // N_Polymerase->Print(os);
 
             auto& Id = N_Polymerase->Id;
-	    
+
             string Name = Id.Name;
             string Template = Context.QueryTable(Name, "Template", Context.PolymeraseTable);
             string Target = Context.QueryTable(Name, "Target", Context.PolymeraseTable);
@@ -676,98 +676,98 @@ void TraversalNode(NBlock* InProgramBlock)
 
 #endif
 
-//            int i = 0;
-//
-//            for (const auto stmt : N_Polymerase->Statements) {
-//                stmt->Print(os);
-//                NStatement Statement = *stmt;
-//
-//                if (i == 1) {
-//                    auto Elongation = static_cast<NElongationStatement *>(&Statement);
-//                    NReaction EPickRandomNumberWithWeight>Reaction;
-//                    ElongationReaction.Print(os);
-//                    os << "AAAAAAAAAAA" << endl;
-//
-////                if (Utils::is_class_of<const NElongationStatement, const NStatement>(&Statement)) {
-////                    auto Elongation = static_cast<const NElongationStatement *>(&Statement);
-////                    NReaction ElongationReaction = Elongation->Reaction;
-//
-//                    os << "11111" << endl; 
-//
-//                    os << "  Elongation:"; ElongationReaction.Print(os);
-//                    map<string, int> Stoichiometry;
-//        			string Location = ElongationReaction.Location.Name;
-//                    int Coefficient;
-//                    std::vector<std::string> BuildingBlocks;
-//
-//                    for (const auto& reactant : ElongationReaction.Reactants) {
-//                        Coefficient = -1; // update when coeff is fully implemented in parser
-//                        os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
-//                        if ((reactant->Name == "dna_{n}") | (reactant->Name == "rna_{n}") | (reactant->Name == "peptide_{n}")) {
-//                            continue;
-//                        } else if (reactant->Name == "dnt") {
-//                            BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
-//                            continue;
-//                        } else if (reactant->Name == "nt") {
-//                            BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
-//                            continue;
-//                        } else if (reactant->Name == "nt") {
-//                            BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
-//                            continue;
-//                        }
-//        
-//                        Stoichiometry[reactant->Name]= Coefficient;
-//        
-//                        FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
-//                        Molecule->Print(os);
-//                        Context.AddToMoleculeList(Molecule);
-//                    }
-//
-//                    os << "2222" << endl;
-//                    for (const auto& product : ElongationReaction.Products) {
-//                        Coefficient = 1; // update when coeff is fully implemented in parser
-//                        os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
-//                        if (product->Name == "rna_{n+1}") {
-//                            continue;
-//                        }
-//                        Stoichiometry[product->Name]= Coefficient;
-//
-//                        FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
-//                        Molecule->Print(os);
-//                        Context.AddToMoleculeList(Molecule);
-//                    }
-//        
-//        			if (!Location.empty()) {
-//                        os << "    Location: " << Location << endl;
-//        			}
-//
-//                    os << "3333" << endl;
-//                    for (auto& BuildingBlock : BuildingBlocks) {
-//                        FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
-//                        Molecule->Print(os);
-//                        Context.AddToMoleculeList(Molecule);
-//                    }
-//
-//                    FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-//                    PolymeraseReaction->Print(os);
-//                    Context.AddToReactionList(PolymeraseReaction);
-//                } // if
-//            i++;
-//            }
+            //            int i = 0;
+            //
+            //            for (const auto stmt : N_Polymerase->Statements) {
+            //                stmt->Print(os);
+            //                NStatement Statement = *stmt;
+            //
+            //                if (i == 1) {
+            //                    auto Elongation = static_cast<NElongationStatement *>(&Statement);
+            //                    NReaction EPickRandomNumberWithWeight>Reaction;
+            //                    ElongationReaction.Print(os);
+            //                    os << "AAAAAAAAAAA" << endl;
+            //
+            ////                if (Utils::is_class_of<const NElongationStatement, const NStatement>(&Statement)) {
+            ////                    auto Elongation = static_cast<const NElongationStatement *>(&Statement);
+            ////                    NReaction ElongationReaction = Elongation->Reaction;
+            //
+            //                    os << "11111" << endl; 
+            //
+            //                    os << "  Elongation:"; ElongationReaction.Print(os);
+            //                    map<string, int> Stoichiometry;
+            //        			string Location = ElongationReaction.Location.Name;
+            //                    int Coefficient;
+            //                    std::vector<std::string> BuildingBlocks;
+            //
+            //                    for (const auto& reactant : ElongationReaction.Reactants) {
+            //                        Coefficient = -1; // update when coeff is fully implemented in parser
+            //                        os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
+            //                        if ((reactant->Name == "dna_{n}") | (reactant->Name == "rna_{n}") | (reactant->Name == "peptide_{n}")) {
+            //                            continue;
+            //                        } else if (reactant->Name == "dnt") {
+            //                            BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
+            //                            continue;
+            //                        } else if (reactant->Name == "nt") {
+            //                            BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
+            //                            continue;
+            //                        } else if (reactant->Name == "nt") {
+            //                            BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
+            //                            continue;
+            //                        }
+            //        
+            //                        Stoichiometry[reactant->Name]= Coefficient;
+            //        
+            //                        FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
+            //                        Molecule->Print(os);
+            //                        Context.AddToMoleculeList(Molecule);
+            //                    }
+            //
+            //                    os << "2222" << endl;
+            //                    for (const auto& product : ElongationReaction.Products) {
+            //                        Coefficient = 1; // update when coeff is fully implemented in parser
+            //                        os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
+            //                        if (product->Name == "rna_{n+1}") {
+            //                            continue;
+            //                        }
+            //                        Stoichiometry[product->Name]= Coefficient;
+            //
+            //                        FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
+            //                        Molecule->Print(os);
+            //                        Context.AddToMoleculeList(Molecule);
+            //                    }
+            //        
+            //        			if (!Location.empty()) {
+            //                        os << "    Location: " << Location << endl;
+            //        			}
+            //
+            //                    os << "3333" << endl;
+            //                    for (auto& BuildingBlock : BuildingBlocks) {
+            //                        FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
+            //                        Molecule->Print(os);
+            //                        Context.AddToMoleculeList(Molecule);
+            //                    }
+            //
+            //                    FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+            //                    PolymeraseReaction->Print(os);
+            //                    Context.AddToReactionList(PolymeraseReaction);
+            //                } // if
+            //            i++;
+            //            }
 
 
 
 
-        // Temporary PolymeraseReactionCode
+            // Temporary PolymeraseReactionCode
         } else if (Utils::is_class_of<NElongationStatement, NNode>(node)) {
             auto N_Elongation = dynamic_cast<const NElongationStatement *>(node);
             std::string Name;
-            
+
             auto& ElongationReaction = N_Elongation->Reaction;
 
             os << "  Polymerase Reaction | Elongation:"; ElongationReaction.Print(os);
             std::vector<std::pair<std::string, int>> Stoichiometry;
-			string Location = ElongationReaction.Location.Name;
+            string Location = ElongationReaction.Location.Name;
             int Coefficient;
             std::vector<std::string> BuildingBlocks;
 
@@ -813,9 +813,9 @@ void TraversalNode(NBlock* InProgramBlock)
                 Context.AddToMoleculeList(Molecule);
             }
 
-			if (!Location.empty()) {
+            if (!Location.empty()) {
                 os << "    Location: " << Location << endl;
-			}
+            }
 
             if (!BuildingBlocks.empty()){
                 os << "    BuildingBlocks: [";
@@ -831,8 +831,8 @@ void TraversalNode(NBlock* InProgramBlock)
             FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
             // PolymeraseReaction->Print(os);
             Context.AddToReactionList(PolymeraseReaction);
-    
-       
+
+
 
 
 
@@ -869,7 +869,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     }
                 } os << "done" << endl;
                 // os << endl;
-                
+
                 i = 0;
                 os << ">> RNAs being imported... : ";
                 for (auto& record : Context.RNATable.Records) {
@@ -885,7 +885,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     }
                 } os << "done" << endl;
                 // os << endl;
-                
+
                 i = 0;
                 os << ">> Proteins being imported... : ";
                 for (auto& record : Context.ProteinTable.Records) {
@@ -901,7 +901,7 @@ void TraversalNode(NBlock* InProgramBlock)
                     }
                 } os << "done" << endl;
                 // os << endl;
-                
+
             }
 
         } else if (Utils::is_class_of<NExperimentDeclaration, NNode>(node)) {
@@ -919,7 +919,7 @@ void TraversalNode(NBlock* InProgramBlock)
             Context.UsingModuleList.emplace_back(UsingStmt->Id.Name);
         }
 #if 0
-else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
+        else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
             auto Identifier = dynamic_cast<const NIdentifier *>(node);
             os << "Identifier: " << Identifier->Name  << endl;
             Context.IdentifierList.emplace_back(Identifier->Name);
@@ -927,8 +927,8 @@ else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
 #endif
 
         node->Visit(tc);
+        }
     }
-}
 
 void ScanNodes(const NBlock* InProgramBlock)
 {
