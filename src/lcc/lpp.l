@@ -16,7 +16,9 @@
 %option yylineno
 %x C_COMMENT
 
+digit                         [0-9]
 %%
+
 
 [ \t\n]                       { } /* White space */
 \"([^\\\"]|\\.)*\"            { yylval.String = new std::string(yytext + 1, yyleng - 2);  // remove first and last \", TODO: remove escape character
@@ -77,8 +79,8 @@
 "aa"|"AA"                     { SAVE_TOKEN; return T_MOLECULE; }
 "H_{2}O"                      { SAVE_TOKEN; return T_MOLECULE; }
 [a-zA-Z_][a-zA-Z0-9_\-+.\{\}\^]*    { SAVE_TOKEN; return T_IDENTIFIER; }
-[0-9]+                        { SAVE_TOKEN; return T_INTEGER; }
-("-"|"+")?[0-9]+("."[0-9]+)?  { SAVE_TOKEN; return T_NUMBER; }
+{digit}+                      { SAVE_TOKEN; return T_INTEGER; }
+[+-]?{digit}+("."{digit}+)?([Ee][+-]?{digit}+)?    { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }
 ")"                           { return TOKEN(T_RPAREN); }
 "+"                           { return TOKEN(T_PLUS); }
