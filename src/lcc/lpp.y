@@ -44,6 +44,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_POLYMERASE T_RIBOSOME
 %token <Token> T_REPLICATION_ORIGIN T_REPLICATION_TERMINUS T_RIBOSOME_BINDING_SITE T_TRANSLATION_TERMINATOR
 %token <Token> T_INITIATION T_ELONGATION T_TERMINATION
+%token <Token> T_CONTAINER
 %token <Token> T_FOR T_WHILE T_IF T_ELSE
 %token <Token> T_INT T_FLOAT T_ARRAY T_DICT T_AND T_L_OR T_NOT
 %token <Token> T_GT T_LT T_GE T_LE T_EQ T_NE
@@ -98,6 +99,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <StmtVec> for_stmt if_stmt while_stmt
 %type <StmtVec> stmt reaction_decl_stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl reaction_decls protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
+%type <StmtVec> container_stmt
 %type <Stmt> ribosome_arg polymerase_arg
 
 %type <Stmt> gen_initiation_stmt gen_elongation_stmt gen_termination_stmt
@@ -134,6 +136,8 @@ stmt           : reaction_decl_stmt T_SEMIC
 			   | translation_terminator_stmt T_SEMIC
 			   | replication_origin_stmt T_SEMIC
                | replication_terminus_stmt T_SEMIC
+               | container_stmt T_SEMIC
+               | container_stmt
                | for_stmt T_SEMIC
                | for_stmt
                | while_stmt T_SEMIC
@@ -154,6 +158,9 @@ if_stmt        : T_IF T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitState
                ;
 
 while_stmt     : T_WHILE T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NLoopStatement($3, $5)); }
+               ;
+
+container_stmt : T_CONTAINER ident block { $$ = NNodeUtil::InitStatementList(new NContainerStatement(*$2, $3)); delete $2; }
                ;
 
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, *$3)); delete $2; delete $3; }

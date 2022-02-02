@@ -64,6 +64,7 @@
 "initiation"                  { return TOKEN(T_INITIATION); }
 "elongation"                  { return TOKEN(T_ELONGATION); }
 "termination"                 { return TOKEN(T_TERMINATION); }
+"container"                   { return TOKEN(T_CONTAINER); }
 "dna_{n}"                     { SAVE_TOKEN; return T_MOLECULE; }
 "dna_{n+1}"                   { SAVE_TOKEN; return T_MOLECULE; }
 "dnt"|"DNT"|"dNTP"            { SAVE_TOKEN; return T_MOLECULE; }

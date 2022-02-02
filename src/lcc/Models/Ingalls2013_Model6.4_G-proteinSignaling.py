@@ -30,6 +30,9 @@ def dGd_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd)
 """
 kRL = 2×10−3nM−1 s−1, kRLm =10−2 s−1, kGa = 10−5 (molecules per cell)−1 s−1, kGd0 = 0.004 s−1, kG1 = 1 (molecules per cell)−1 s−1. 
 The total G-protein population is 10000 molecules per cell, while the total receptor population is 4000 molecules per cell.
+
+page 181, caption of Figure 6.5, the value of k_Gd0 should be 0.11
+(not 0.004 as printed)
 """
 
 Mol2Count = 6.0221409e+23

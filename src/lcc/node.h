@@ -855,6 +855,30 @@ public:
 
 };
 
+class NContainerStatement : public NStatement {
+public:
+    const NIdentifier Id;
+    std::shared_ptr<NBlock> Body;
+
+
+    NContainerStatement(const NIdentifier& InId, NBlock* InBody)
+        : Id(InId), Body(InBody) {};
+    NContainerStatement(const NIdentifier& InId)
+        : Id(InId) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Container: {";
+        Id.Print(os); os << ", ";
+        if (Body) {
+            for (const auto& stmt: Body->Statements) {
+                stmt->Print(os); os << ", ";
+            }
+        }
+        os << "}";
+    }
+
+};
+
 class NLoopStatement : public NStatement {
 public:
     std::shared_ptr<NExpression> InitExpression;

@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
+
 """
 Figure 6.14: Behavior of the chemotaxis signal transduction pathway. Starting at a low level of chemoattractant
 ligand ([L] = 20), the system responds to a doubling of ligand at time t = 10 with an immediate
@@ -18,6 +19,7 @@ drop in CheA activity (corresponding to a reduction in tumbling) followed by a r
 nominal activity level. A second doubling of ligand concentration at time t = 30 produces a similar effect.
 Parameter values are, (in time−1): k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05, k−1 = 1, k−2 = 1, k−3 = 1,
 k−4 = 1, k−5 = 0.005; (in concentration): kM1 = 1, kM2 = 1. Units are arbitrary.
+
 """
 
 def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
