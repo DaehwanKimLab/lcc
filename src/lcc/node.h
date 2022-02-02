@@ -1023,4 +1023,58 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
+class NRangeExpression : public NExpression {
+public:
+    std::shared_ptr<NExpression> Begin; /* Inclusive */
+    std::shared_ptr<NExpression> End;   /* Exclusive */
+    std::shared_ptr<NExpression> Step;
+
+    NRangeExpression()
+        : Begin(nullptr), End(nullptr), Step(nullptr) {};
+
+    NRangeExpression(NExpression* InBegin, NExpression* InEnd, NExpression* InStep)
+        : Begin(InBegin), End(InEnd), Step(InStep) {};
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Range: {";
+        if (Begin) {
+            os << "Begin: {";
+            Begin->Print(os);
+            os << "}, ";
+        }
+        if (End) {
+            os << "End: {";
+            End->Print(os);
+            os << "}, ";
+        }
+        if (Step) {
+            os << "Step: {";
+            Step->Print(os);
+            os << "}, ";
+        }
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NExpressionStatement : public NStatement {
+public:
+    std::shared_ptr<NExpression> Expression;
+
+    NExpressionStatement() {};
+    NExpressionStatement(NExpression* InExpression)
+        : Expression(InExpression) {};
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Expression: {";
+        Expression->Print(os);
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override;
+};
+
 #endif /* LCC_NODE_H */

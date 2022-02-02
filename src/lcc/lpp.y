@@ -100,13 +100,14 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <StmtVec> stmt reaction_decl_stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl reaction_decls protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
 %type <StmtVec> container_stmt
+%type <StmtVec> p_expr_stmt
 %type <Stmt> ribosome_arg polymerase_arg
 
 %type <Stmt> gen_initiation_stmt gen_elongation_stmt gen_termination_stmt
 %type <Reaction> gen_elongation_decl_arg
 %type <StmtVec> ribosome_binding_site_stmt translation_terminator_stmt replication_origin_stmt replication_terminus_stmt
 
-%type <Expr> p_expr variable
+%type <Expr> p_expr variable p_expr_range
 
 %right T_ARROW T_INARROW T_BIARROW
 %left T_PLUS
@@ -144,6 +145,7 @@ stmt           : reaction_decl_stmt T_SEMIC
                | while_stmt
                | if_stmt T_SEMIC
                | if_stmt
+               | p_expr_stmt T_SEMIC
                ;
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
@@ -161,6 +163,9 @@ while_stmt     : T_WHILE T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitSt
                ;
 
 container_stmt : T_CONTAINER ident block { $$ = NNodeUtil::InitStatementList(new NContainerStatement(*$2, $3)); delete $2; }
+               ;
+
+p_expr_stmt    : p_expr { $$ = NNodeUtil::InitStatementList(new NExpressionStatement($1)); }
                ;
 
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, *$3)); delete $2; delete $3; }
@@ -482,7 +487,12 @@ p_expr         : /* */ { $$ = new NExpression(); }
                ;
 
 variable       : ident { $$ = new NVariableExpression(*$1); delete $1; }
-               | ident T_LBRACKET p_expr T_RBRACKET { $$ = new NVariableExpression(*$1, $3); delete $1; }
+               | ident T_LBRACKET p_expr_range T_RBRACKET { $$ = new NVariableExpression(*$1, $3); delete $1; }
                ;
 
+
+p_expr_range   : p_expr { $$ = new NRangeExpression($1, nullptr, nullptr); }
+               | p_expr T_COLON p_expr { $$ = new NRangeExpression($1, $3, nullptr); }
+               | p_expr T_COLON p_expr T_COLON p_expr { $$ = new NRangeExpression($1, $3, $5); }
+               ;
 %%
