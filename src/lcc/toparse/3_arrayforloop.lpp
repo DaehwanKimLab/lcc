@@ -1,4 +1,4 @@
-array KM_list = [0.3mM, 1mM, 10mM];
+array KM_list = [0.3, 1, 10];
 for (int i = 0; i < len(KM_list); i++)
 {
 	container tube
