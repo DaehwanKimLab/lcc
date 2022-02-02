@@ -254,20 +254,20 @@ std::vector<std::string> FCompilerContext::GetSubstrateNames_EnzymeList(std::vec
 
 std::vector<float> FCompilerContext::Getkcats_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
 {
-    std::vector<float> FloatList;
+    std::vector<float> floatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->kcat);
+        floatList.push_back(item->kcat);
     }
-    return FloatList;
+    return floatList;
 }
 
 std::vector<float> FCompilerContext::GetKMs_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
 {
-    std::vector<float> FloatList;
+    std::vector<float> floatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->KM);
+        floatList.push_back(item->KM);
     }
-    return FloatList;
+    return floatList;
 }
 
 std::vector<std::string> FCompilerContext::GetInhibitorNames_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
@@ -281,29 +281,29 @@ std::vector<std::string> FCompilerContext::GetInhibitorNames_EnzymeList(std::vec
 
 std::vector<float> FCompilerContext::GetKis_EnzymeList(std::vector<const FEnzyme *> EnzymeList)
 {
-    std::vector<float> FloatList;
+    std::vector<float> floatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->Ki);
+        floatList.push_back(item->Ki);
     }
-    return FloatList;
+    return floatList;
 }
 
 std::vector<float> FCompilerContext::Getks_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
 {
-    std::vector<float> FloatList;
+    std::vector<float> floatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->k);
+        floatList.push_back(item->k);
     }
-    return FloatList;
+    return floatList;
 }
 
 std::vector<float> FCompilerContext::Getkrevs_EnzymeList(std::vector<const FEnzyme *> EnzymeList) 
 {
-    std::vector<float> FloatList;
+    std::vector<float> floatList;
     for (auto& item : EnzymeList){
-        FloatList.push_back(item->krev);
+        floatList.push_back(item->krev);
     }
-    return FloatList;
+    return floatList;
 }
 
 std::vector<const FEnzyme *> FCompilerContext::GetSubList_EnzymeList(std::vector<const FEnzyme*> EnzymeList, std::string Type)
@@ -479,11 +479,11 @@ std::vector<std::string> FCompilerContext::GetNames_PolymeraseList(std::vector<c
 
 std::vector<float> FCompilerContext::GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList)
 {
-    std::vector<float> FloatList;
+    std::vector<float> floatList;
     for (auto& item : PolymeraseList){
-        FloatList.push_back(item->Rate);
+        floatList.push_back(item->Rate);
     }
-    return FloatList;
+    return floatList;
 }
 
 std::vector<const FPolymeraseReaction *> FCompilerContext::GetList_Polymerase_ReactionList()

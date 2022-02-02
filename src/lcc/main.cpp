@@ -990,7 +990,9 @@ std::string JoinFloat2Str(std::vector<float> FloatList)
 {
    std::string JoinedStr;
    for (auto& Float : FloatList){
-       JoinedStr += std::to_string(Float) + ", ";
+       std::stringstream ss;
+       ss << std::scientific << Float;
+       JoinedStr += ss.str() + ", ";   // check digit control parameter
    }
    return JoinedStr;
 }
@@ -2051,9 +2053,10 @@ void WriteSimModule()
         }
     }
 
-    ofs << in+ in+ "def StandardReactions(self):" << endl;
     // Print SetUpEnzymeReaction for each Reaction Type 
     if (!StandardReactionList.empty()) {
+ 
+        ofs << in+ in+ "def StandardReactions(self):" << endl;
         for (auto& Type : StandardReactionTypes) {
             ofs << in+ in+ in+ "self.StandardReaction_" << Type << "()" << endl;
         }
@@ -2061,9 +2064,10 @@ void WriteSimModule()
     ofs << endl;
     
 
-    ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
     // Print SetUpEnzymeReaction for each Reaction Type 
     if (!EnzymeList.empty()) {
+
+        ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
         for (auto& Type : EnzReactionTypes) {
             ofs << in+ in+ in+ "self.EnzymaticReaction_" << Type << "()" << endl;
         }

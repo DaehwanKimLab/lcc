@@ -69,6 +69,21 @@ def PlotData(Dataset):
         plot_ShowAll_DynamicsOnly = False
         plot_Ecoli_TCA = True
 
+    # Filter out
+    Data_Transposed_Filtered = list()
+    Legend_Filtered = list()
+    Size = len(Data_Transposed[0])
+    for i, (Data_Row, Legend_Element) in enumerate(zip(Data_Transposed, Legend)):
+        if i == 1: # Skip Vol = 1
+            continue
+        if np.array_equal(Data_Row, np.ones(Size)):
+            continue
+        Data_Transposed_Filtered.append(Data_Row)
+        Legend_Filtered.append(Legend_Element)
+
+    Data_Transposed = np.array(Data_Transposed_Filtered)
+    Legend = Legend_Filtered
+
     # Show all
     if plot_ShowAll_DynamicsOnly:
         Cap = 50
