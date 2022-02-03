@@ -65,8 +65,6 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_ASSIGN T_OR T_SEMIC T_COLON
 %token <Token> T_INC T_DEC
 
-%type <String> gen_value
-
 %type <Ident> ident gen_ident
 %type <Block> program stmts block
 %type <Block> pathway_block pathway_stmts
@@ -117,6 +115,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <Ident> declarator
 %type <InitExpr> initializer initializer_list
 %type <Token> declaration_specifiers type_specifier
+%type <String> unit
 
 %right T_ARROW T_INARROW T_BIARROW
 %left T_PLUS
@@ -332,6 +331,7 @@ experiment_stmt : T_DESCRIPTION T_STRING_LITERAL T_SEMIC { $$ = new NDescription
                 ;
 
 property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3)); delete $2; delete $3; }
+               | T_PROPERTY ident T_NUMBER unit { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3, *$4)); delete $2; delete $3; delete $4; }
                | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3)); delete $2; delete $3; }
                | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, new NVariableExpression(*$3)); delete $2, delete $3; }
                ;
@@ -451,12 +451,6 @@ gen_property_arg  : /* */ { $$ = new NPropertyStatement(); }
                   | ident T_ASSIGN p_expr { $$ = new NPropertyStatement($1->Name, $3); delete $1; }
                   ;
 
-gen_value      : T_STRING_LITERAL
-               | T_IDENTIFIER
-               | T_NUMBER
-               | T_INTEGER
-               ;
-
 gen_reaction_expr : gen_reaction_substrate { $$ = new SubstrateList(); $$->emplace_back($1); }
                   | gen_reaction_expr T_PLUS gen_reaction_substrate { $$->emplace_back($3); }
                   ;
@@ -484,7 +478,9 @@ ident          : T_IDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
                ;
 
 p_const_expr   : T_NUMBER { $$ = new NConstantExpression(*$1); delete $1; }
+               | T_NUMBER unit { $$ = new NConstantExpression(*$1, *$2); delete $1; delete $2; }
                | T_INTEGER { $$ = new NConstantExpression(*$1); delete $1; }
+               | T_INTEGER unit { $$ = new NConstantExpression(*$1, *$2); delete $1; delete $2; }
                ;
 
 p_expr         : /* */ { $$ = new NExpression(); }
@@ -555,5 +551,8 @@ initializer    : p_expr { $$ = new NInitializerExpression($1); }
 initializer_list : initializer { $$ = $1; }
                  | initializer_list T_COMMA initializer { $1->Append($3); }
                  ;
+
+unit           : T_IDENTIFIER
+               ;
                
 %%

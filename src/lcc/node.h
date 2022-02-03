@@ -1006,12 +1006,18 @@ public:
 class NConstantExpression : public NExpression {
 public:
     std::string Value;
+    std::string Unit;
 
     NConstantExpression(const std::string& InValue)
         : Value(InValue) {}
+    NConstantExpression(const std::string& InValue, const std::string& InUnit)
+        : Value(InValue), Unit(InUnit) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Constant: " << Value;
+        if (!Unit.empty()) {
+            os << Unit;
+        }
     }
     virtual void Visit(FTraversalContext& Context) const override {};
 
