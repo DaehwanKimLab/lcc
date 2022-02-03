@@ -1016,7 +1016,7 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "Constant: " << Value;
         if (!Unit.empty()) {
-            os << Unit;
+            os << "(" << Unit << ")";
         }
     }
     virtual void Visit(FTraversalContext& Context) const override {};
