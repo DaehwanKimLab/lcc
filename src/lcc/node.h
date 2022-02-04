@@ -19,6 +19,8 @@ class NProteinDeclaration;
 class NPolymeraseDeclaration;
 class NPropertyStatement;
 class NSubstrate;
+class NExpression;
+class NDeclaraionStatement;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
@@ -29,6 +31,7 @@ typedef std::vector<std::shared_ptr<NProteinDeclaration>> ProteinDeclList;
 typedef std::vector<std::shared_ptr<NPolymeraseDeclaration>> PolymeraseDeclList;
 typedef std::vector<std::shared_ptr<NPropertyStatement>> PropertyList;
 typedef std::vector<std::shared_ptr<NSubstrate>> SubstrateList;
+typedef std::vector<std::shared_ptr<NExpression>> ExpressionList;
 
 class NNodeUtil {
 public:
@@ -68,6 +71,11 @@ class NExpression : public NNode {
 public:
     NExpression() {};
     virtual void Visit(FTraversalContext& Context) const override;
+
+    virtual std::string Evaluate() {
+        /* Temporary */
+        return "";
+    }
 };
 
 class NStatement : public NNode {
@@ -127,7 +135,7 @@ public:
     }
 
     virtual void Print(std::ostream& os) const override {
-        os << "NSubstrate: {";
+        os << "Substrate: {";
         os << Id.Name << ": " << Coeff;
         os << "}";
     }
@@ -196,16 +204,23 @@ public:
 class NPropertyStatement : public NStatement {
 public:
     const std::string Key;
-    const std::string Value;
+    //const std::string Value;
+    std::shared_ptr<NExpression> Value;
 
     NPropertyStatement() {}
     NPropertyStatement(const std::string& InKey)
         : Key(InKey) {}
-    NPropertyStatement(const std::string& InKey, const std::string& InValue)
+    NPropertyStatement(const std::string& InKey, NExpression* InValue)
         : Key(InKey), Value(InValue) {}
 
     virtual void Print(std::ostream& os) const override {
-        os << "Property: {" << Key << ": " << Value << "}";
+        os << "Property: {";
+        os << Key;
+        if (Value) {
+            os << ": ";
+            Value->Print(os);
+        }
+        os << "}";
     }
     virtual void Visit(FTraversalContext& Context) const override;
 
@@ -250,7 +265,7 @@ public:
         Property.emplace_back(InProperty);
     }
 
-    void AddProperty(const std::string& InName, const std::string& InValue) {
+    void AddProperty(const std::string& InName, NExpression* InValue) {
         Property.emplace_back(new NPropertyStatement(InName, InValue));
     }
 
@@ -881,15 +896,17 @@ public:
 
 class NLoopStatement : public NStatement {
 public:
-    std::shared_ptr<NExpression> InitExpression;
+    StatementList InitStatements;
+    //std::shared_ptr<NStatement> InitStatement;
+
     std::shared_ptr<NExpression> CondExpression;
     std::shared_ptr<NExpression> LoopExpression;
 
     std::shared_ptr<NBlock> Body;
 
     // for-statement
-    NLoopStatement(NExpression* InInitExpression, NExpression* InCondExpression, NExpression* InLoopExpression, NBlock* InBody)
-        : InitExpression(InInitExpression), CondExpression(InCondExpression), LoopExpression(InLoopExpression), Body(InBody) {}
+    NLoopStatement(StatementList& InInitStatements, NExpression* InCondExpression, NExpression* InLoopExpression, NBlock* InBody)
+        : InitStatements(InInitStatements), CondExpression(InCondExpression), LoopExpression(InLoopExpression), Body(InBody) {}
 
     // while-statement
     NLoopStatement(NExpression* InCondExpression, NBlock* InBody)
@@ -898,10 +915,13 @@ public:
 
     virtual void Print(std::ostream& os) const override {
         os << "Loop: {";
-        if (InitExpression) {
-            os << "Init: {";
-            InitExpression->Print(os);
-            os << "}, ";
+        if (InitStatements.size() > 0) {
+            os << "Init: [";
+            for (const auto& i: InitStatements) {
+                i->Print(os); os << ", ";
+            }
+            //InitStatement->Print(os);
+            os << "], ";
         }
         if (CondExpression) {
             os << "Cond: {";
@@ -986,14 +1006,24 @@ public:
 class NConstantExpression : public NExpression {
 public:
     std::string Value;
+    std::string Unit;
 
     NConstantExpression(const std::string& InValue)
         : Value(InValue) {}
+    NConstantExpression(const std::string& InValue, const std::string& InUnit)
+        : Value(InValue), Unit(InUnit) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Constant: " << Value;
+        if (!Unit.empty()) {
+            os << "(" << Unit << ")";
+        }
     }
     virtual void Visit(FTraversalContext& Context) const override {};
+
+    virtual std::string Evaluate() override {
+        return Value;
+    }
 };
 
 class NVariableExpression : public NExpression {
@@ -1021,6 +1051,10 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+
+    virtual std::string Evaluate() override {
+        return Id.Name;
+    }
 };
 
 class NRangeExpression : public NExpression {
@@ -1059,6 +1093,35 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
+class NFunctionCallExpression : public NExpression {
+public:
+    std::shared_ptr<NExpression> Name;
+    ExpressionList *Args;
+
+    NFunctionCallExpression(NExpression* InName)
+        : Name(InName), Args(nullptr) {};
+    NFunctionCallExpression(NExpression* InName, ExpressionList* InArgs)
+        : Name(InName), Args(InArgs) {};
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "FunctionCall: {";
+        os << "Name: {";
+        Name->Print(os);
+        os << "}, ";
+        if (Args) {
+            os << "Args: [";
+            for (const auto& arg: *Args) {
+                arg->Print(os); os << ", ";
+            }
+            os << "]";
+        }
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
 class NExpressionStatement : public NStatement {
 public:
     std::shared_ptr<NExpression> Expression;
@@ -1076,5 +1139,86 @@ public:
 
     virtual void Visit(FTraversalContext& Context) const override;
 };
+
+class NInitializerExpression : public NExpression {
+public:
+    std::vector<std::shared_ptr<NExpression>> ExpressionList;
+
+    NInitializerExpression() {};
+    NInitializerExpression(NExpression* InExpr) {
+        ExpressionList.emplace_back(InExpr);
+    }
+
+    void Append(NExpression* InExpr) {
+        ExpressionList.emplace_back(InExpr);
+    }
+
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Initializer: [";
+        for (const auto& item: ExpressionList) {
+            item->Print(os);
+            os << ", ";
+        }
+        os << "]";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+};
+
+class NDeclaraionStatement : public NStatement {
+public:
+    int Type;
+    NIdentifier Id;
+    std::shared_ptr<NInitializerExpression> Initializer;
+
+    NDeclaraionStatement() {};
+    NDeclaraionStatement(int InType, const NIdentifier& InId)
+        : Type(InType), Id(InId) {};
+    NDeclaraionStatement(int InType, const NIdentifier& InId, NExpression* InInit)
+        : Type(InType), Id(InId), Initializer(std::make_shared<NInitializerExpression>(InInit)) {};
+    NDeclaraionStatement(int InType, const NIdentifier& InId, NInitializerExpression* InInitList)
+        : Type(InType), Id(InId), Initializer(InInitList) {};
+
+
+    void SetType(int InType)
+    {
+        Type = InType;
+    }
+    void SetIdentifier(const NIdentifier& InId)
+    {
+        Id = InId;
+    }
+    void SetInitializer(NInitializerExpression* InInit)
+    {
+        Initializer = std::shared_ptr<NInitializerExpression>(InInit);
+    }
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Declaration: {";
+        os << "Type: " << Type << ", ";
+        os << "Name: "; Id.Print(os); os << ", ";
+        if (Initializer) {
+            os << "Value: [";
+            Initializer->Print(os);
+            os << "]";
+        }
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext& Context) const override {};
+
+
+    static void UpdateType(StatementList *Statements, int InType)
+    {
+        for (auto& stmt: *Statements) {
+            NDeclaraionStatement* DeclStmt = dynamic_cast<NDeclaraionStatement *>(stmt.get());
+            if (DeclStmt) {
+                DeclStmt->SetType(InType);
+            }
+        }
+    }
+};
+
 
 #endif /* LCC_NODE_H */
