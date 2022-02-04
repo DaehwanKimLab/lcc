@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 import numpy as np
 
 SaveFilename = ''
+NA = 6.0221409e+23
 
 def LoadRawData(Data_Dir):
     Datasets = dict()
@@ -39,6 +40,8 @@ def PlotData(Dataset):
 
     ### Default setting ###
     Title = ''
+    ExclusionString = 'NoPlot'
+    MolToCount = 'Discrete'
 
     plot_TCACycle = False
     plot_TCACycle_Reduced = False
@@ -78,6 +81,12 @@ def PlotData(Dataset):
             continue
         if np.array_equal(Data_Row, np.ones(Size)):
             continue
+        if np.array_equal(Data_Row, np.zeros(Size)):
+            continue
+        if ExclusionString in Legend_Element:
+            continue
+        if MolToCount in Legend_Element:
+            Data_Row *= NA
         Data_Transposed_Filtered.append(Data_Row)
         Legend_Filtered.append(Legend_Element)
 
@@ -88,8 +97,8 @@ def PlotData(Dataset):
     if plot_ShowAll_DynamicsOnly:
         Cap = 50
         Title = ''
-        Data = Data_Transposed[2:Cap] / Data_Vol
-        Legend = Legend[2:Cap]
+        Data = Data_Transposed[1:Cap] / Data_Vol
+        Legend = Legend[1:Cap]
 
         Plot_Dynamics(Title, Data_Time[0], Data, Legend)
         return 0
@@ -97,8 +106,8 @@ def PlotData(Dataset):
     if plot_ShowAll_DynamicsAndPhasePlain:
         Cap = 50
         Title = ''
-        Data = Data_Transposed[2:Cap] / Data_Vol
-        Legend = Legend[2:Cap]
+        Data = Data_Transposed[1:Cap] / Data_Vol
+        Legend = Legend[1:Cap]
 
         if 'RL' in Legend:
             Plot_Dynamics(Title, Data_Time[0], Data, Legend)

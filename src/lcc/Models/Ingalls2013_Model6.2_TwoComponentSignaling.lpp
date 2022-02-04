@@ -5,6 +5,14 @@
 // Model   6.2,    p.151
 // Figure  6.3,    p.152
 
-protein E1(R + L --> RL, k=5, krev=1, R=_0__2, L=_1to3__3, E1=_0__1);
-protein E2(P + RL --> pP + RL, k=6, P=_0__8, E2=_0__1);
-protein E3(pP --> P, k=3, E3=_0__1);
+protein E1(R + L --> RL, k=5, krev=1);
+protein E2(P + RL --> pP + RL, k=6);
+protein E3(pP --> P, k=3);
+
+R[0]=2;
+L[:]=0;
+L[1:3]=3;
+E1[0]=1;
+P[0]=8;
+E2[0]=1;
+E3[0]=1;

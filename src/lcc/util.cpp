@@ -55,4 +55,11 @@ bool CreatePaths(const char *Path)
     return true;
 }
 
+std::string SciFloat2Str (float Float)
+{
+   std::stringstream ss;
+   ss << std::scientific << Float;
+   return ss.str();
+}
+
 }

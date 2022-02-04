@@ -7,6 +7,7 @@
 
 #include "option.h"
 #include "node.h"
+#include "util.h"
 
 typedef std::map<std::string, std::string> FTableRecord;
 
@@ -25,12 +26,24 @@ public:
 
 class FCount {
 public:
+    // new 
+    std::string Name;
+    float Amount;   
+    float Begin;
+    float End;
+    float Step;
+
+    // old
     float Initial = -1;
     bool Fixed = false;
     std::vector<std::pair<std::pair<float, float>, float>> Range;
 
     FCount() {}
 
+    // new 
+    FCount(std::string InName, float InAmount, float InBegin, float InEnd, float InStep) : Name(InName), Amount(InAmount), Begin(InBegin), End(InEnd), Step(InStep) {}
+
+    // old
     FCount(const float InInitial, const bool InFixed=false) : Initial(InInitial), Fixed(InFixed) {}
 
     FCount(const float InInitial, const std::vector<std::pair<std::pair<float, float>, float>> InRange) : Initial(InInitial), Range(InRange) {}
@@ -313,16 +326,16 @@ public:
     void Print(std::ostream& os) {
         os << "  Enzyme Id: " << Name << "\t| Substrate: " << Substrate; 
         if (KM > 0) {
-            os << "\t| kcat:  " << std::to_string(kcat) << "\t| KM: " << std::to_string(KM);
+            os << "\t| kcat:  " << Utils::SciFloat2Str(kcat) << "\t| KM: " << Utils::SciFloat2Str(KM);
         }
         if (k > 0) {
-            os << "\t| k: " << std::to_string(k) << "\t| krev:  " << std::to_string(krev);
+            os << "\t| k: " << Utils::SciFloat2Str(k) << "\t| krev:  " << Utils::SciFloat2Str(krev);
         }
         if (!Inhibitor.empty()) {
-            os << "\t| Inhibitor: " << Inhibitor << "\t| Mode: " << Mode << "\t| Ki: " << std::to_string(Ki) << "\t| n_i: " << std::to_string(n_i);
+            os << "\t| Inhibitor: " << Inhibitor << "\t| Mode: " << Mode << "\t| Ki: " << Utils::SciFloat2Str(Ki) << "\t| n_i: " << Utils::SciFloat2Str(n_i);
         }        
         if (!Activator.empty()) {
-            os << "\t| Activator: " << Activator << "\t| Mode: " << Mode << "\t| Ka: " << std::to_string(Ka) << "\t| n_a: " << std::to_string(n_a);
+            os << "\t| Activator: " << Activator << "\t| Mode: " << Mode << "\t| Ka: " << Utils::SciFloat2Str(Ka) << "\t| n_a: " << Utils::SciFloat2Str(n_a);
         }
         Count.Print(os);
         os << std::endl;
@@ -346,7 +359,7 @@ public:
         : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "  Polymerase Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << std::to_string(Rate) << std::endl;
+        os << "  Polymerase Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
     }
 };
 
@@ -494,6 +507,7 @@ public:
     std::vector<FReaction*> 	ReactionList;
     std::vector<FPathway> 	PathwayList;
     std::vector<std::string> 	IdentifierList;
+    std::vector<FCount*>        CountList;
 
     void PrintLists(std::ostream& os);
     void PrintInitialCounts(std::ostream& os);
