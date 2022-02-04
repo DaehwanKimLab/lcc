@@ -1947,20 +1947,24 @@ void WriteSimModule()
     ofs << in+ in+ "def Run(self):" << endl;
     ofs << in+ in+ in+ "print('Simulation Run Begins...')" << endl;
     ofs << endl;
+
     ofs << in+ in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
     ofs << in+ in+ in+ in+ "self.SimStep += 1" << endl;
 
     ofs << in+ in+ in+ in+ "# Reset Substrate Count" << endl;
     ofs << in+ in+ in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
-    
+    ofs << endl;
+ 
     ofs << in+ in+ in+ in+ "# Run Reactions" << endl;
 
     if (!StandardReactionList.empty()){
         ofs << in+ in+ in+ in+ "self.StandardReactions()" << endl;
+        ofs << endl;
     }
 
     if (!EnzymeList.empty()){
         ofs << in+ in+ in+ in+ "self.EnzymaticReactions()" << endl;
+        ofs << endl;
     }
 
     // TODO: encapsulate this part with each polymerase to allow more process-specific customization
@@ -1968,6 +1972,7 @@ void WriteSimModule()
         ofs << in+ in+ in+ in+ "self.InitiationReactions()" << endl;
         ofs << in+ in+ in+ in+ "self.ElongationReactions()" << endl;
         ofs << in+ in+ in+ in+ "self.TerminationReactions()" << endl;
+        ofs << endl;
     }
                           
     ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
@@ -2190,7 +2195,10 @@ void WriteSimModule()
  
         ofs << in+ in+ "def StandardReactions(self):" << endl;
         for (auto& Type : StandardReactionTypes) {
-            ofs << in+ in+ in+ "self.StandardReaction_" << Type << "()" << endl;
+            std::vector<const FStandardReaction *> StandardReactionSubList = Context.GetList_Standard_ReactionList(Type);
+            if (!StandardReactionSubList.empty()) {
+                ofs << in+ in+ in+ "self.StandardReaction_" << Type << "()" << endl;
+            }
         }
     } 
     ofs << endl;

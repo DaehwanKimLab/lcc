@@ -8,6 +8,8 @@ import numpy as np
 
 SaveFilename = ''
 NA = 6.0221409e+23
+ExclusionString = 'NoPlot'
+MolToCount = 'Discrete'
 
 def LoadRawData(Data_Dir):
     Datasets = dict()
@@ -40,8 +42,7 @@ def PlotData(Dataset):
 
     ### Default setting ###
     Title = ''
-    ExclusionString = 'NoPlot'
-    MolToCount = 'Discrete'
+
 
     plot_TCACycle = False
     plot_TCACycle_Reduced = False
@@ -72,33 +73,15 @@ def PlotData(Dataset):
         plot_ShowAll_DynamicsOnly = False
         plot_Ecoli_TCA = True
 
-    # Filter out
-    Data_Transposed_Filtered = list()
-    Legend_Filtered = list()
-    Size = len(Data_Transposed[0])
-    for i, (Data_Row, Legend_Element) in enumerate(zip(Data_Transposed, Legend)):
-        if i == 1: # Skip Vol = 1
-            continue
-        if np.array_equal(Data_Row, np.ones(Size)):
-            continue
-        if np.array_equal(Data_Row, np.zeros(Size)):
-            continue
-        if ExclusionString in Legend_Element:
-            continue
-        if MolToCount in Legend_Element:
-            Data_Row *= NA
-        Data_Transposed_Filtered.append(Data_Row)
-        Legend_Filtered.append(Legend_Element)
 
-    Data_Transposed = np.array(Data_Transposed_Filtered)
-    Legend = Legend_Filtered
+    Legend_Processed, Data_Processed = ProcessDataToDisplay(Legend, Data)
 
     # Show all
     if plot_ShowAll_DynamicsOnly:
         Cap = 50
         Title = ''
-        Data = Data_Transposed[1:Cap] / Data_Vol
-        Legend = Legend[1:Cap]
+        Data = Data_Processed[1:Cap] / Data_Vol
+        Legend = Legend_Processed[1:Cap]
 
         Plot_Dynamics(Title, Data_Time[0], Data, Legend)
         return 0
@@ -106,22 +89,18 @@ def PlotData(Dataset):
     if plot_ShowAll_DynamicsAndPhasePlain:
         Cap = 50
         Title = ''
-        Data = Data_Transposed[1:Cap] / Data_Vol
-        Legend = Legend[1:Cap]
+        Data = Data_Processed[1:Cap] / Data_Vol
+        Legend = Legend_Processed[1:Cap]
 
-        if 'RL' in Legend:
-            Plot_Dynamics(Title, Data_Time[0], Data, Legend)
+        Idx_Pairs = None
+        Names_Pairs = None
 
+        if 'oxaloacetate' in Legend:
+            Idx_Pairs, Names_Pairs = Indexing(Legend, 'TCA')
         else:
-            Idx_Pairs = None
-            Names_Pairs = None
+            Idx_Pairs, Names_Pairs = Indexing(Legend)
 
-            if 'oxaloacetate' in Legend:
-                Idx_Pairs, Names_Pairs = Indexing(Legend, 'TCA')
-            else:
-                Idx_Pairs, Names_Pairs = Indexing(Legend)
-
-            Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
+        Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
         return 0
 
@@ -132,19 +111,19 @@ def PlotData(Dataset):
         Idx_Polymerase = 1 + Idx_Vol
         Idx_ReactionSubstrate = 1 + Idx_Polymerase
 
-        Data_SimStep = Data_Transposed[0:Idx_SimStep]
-        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-        Data_PolymeraseCounts = Data_Transposed[Idx_Vol:Idx_Polymerase]
-        Data_ReactionSubstrateCounts = Data_Transposed[Idx_Polymerase:Idx_ReactionSubstrate]
-        Data_BuildingBlockCounts = Data_Transposed[Idx_ReactionSubstrate:]
-        Data_AllSmallMoleculeCounts = Data_Transposed[Idx_Polymerase:]
+        Data_SimStep = Data_Processed[0:Idx_SimStep]
+        Data_Vol = Data_Processed[Idx_SimStep:Idx_Vol]
+        Data_PolymeraseCounts = Data_Processed[Idx_Vol:Idx_Polymerase]
+        Data_ReactionSubstrateCounts = Data_Processed[Idx_Polymerase:Idx_ReactionSubstrate]
+        Data_BuildingBlockCounts = Data_Processed[Idx_ReactionSubstrate:]
+        Data_AllSmallMoleculeCounts = Data_Processed[Idx_Polymerase:]
 
-        Legend_SimStep = Legend[0:Idx_SimStep]
-        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-        Legend_PolymeraseCounts = Legend[Idx_Vol:Idx_Polymerase]
-        Legend_ReactionSubstrateCounts = Legend[Idx_Polymerase:Idx_ReactionSubstrate]
-        Legend_BuildingBlockCounts = Legend[Idx_ReactionSubstrate:]
-        Legend_AllSmallMoleculeCounts = Legend[Idx_Polymerase:]
+        Legend_SimStep = Legend_Processed[0:Idx_SimStep]
+        Legend_Vol = Legend_Processed[Idx_SimStep:Idx_Vol]
+        Legend_PolymeraseCounts = Legend_Processed[Idx_Vol:Idx_Polymerase]
+        Legend_ReactionSubstrateCounts = Legend_Processed[Idx_Polymerase:Idx_ReactionSubstrate]
+        Legend_BuildingBlockCounts = Legend_Processed[Idx_ReactionSubstrate:]
+        Legend_AllSmallMoleculeCounts = Legend_Processed[Idx_Polymerase:]
 
         Title = 'PolymeraseReaction'
         Data = Data_BuildingBlockCounts
@@ -161,15 +140,15 @@ def PlotData(Dataset):
         Idx_Vol = 1 + Idx_SimStep
         Idx_Enzyme = 8 + Idx_Vol
 
-        Data_SimStep = Data_Transposed[0:Idx_SimStep]
-        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-        Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
-        Data_SubCounts = Data_Transposed[Idx_Enzyme:]
+        Data_SimStep = Data_Processed[0:Idx_SimStep]
+        Data_Vol = Data_Processed[Idx_SimStep:Idx_Vol]
+        Data_EnzCounts = Data_Processed[Idx_Vol:Idx_Enzyme]
+        Data_SubCounts = Data_Processed[Idx_Enzyme:]
 
-        Legend_SimStep = Legend[0:Idx_SimStep]
-        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-        Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
-        Legend_SubCounts = Legend[Idx_Enzyme:]
+        Legend_SimStep = Legend_Processed[0:Idx_SimStep]
+        Legend_Vol = Legend_Processed[Idx_SimStep:Idx_Vol]
+        Legend_EnzCounts = Legend_Processed[Idx_Vol:Idx_Enzyme]
+        Legend_SubCounts = Legend_Processed[Idx_Enzyme:]
 
         Title = 'TCA cycle'
         Data = Data_SubCounts
@@ -182,15 +161,15 @@ def PlotData(Dataset):
         Idx_Vol = 1 + Idx_SimStep
         Idx_Enzyme = 1 + Idx_Vol
 
-        Data_SimStep = Data_Transposed[0:Idx_SimStep]
-        Data_Vol = Data_Transposed[Idx_SimStep:Idx_Vol]
-        Data_EnzCounts = Data_Transposed[Idx_Vol:Idx_Enzyme]
-        Data_SubCounts = Data_Transposed[Idx_Enzyme:]
+        Data_SimStep = Data_Processed[0:Idx_SimStep]
+        Data_Vol = Data_Processed[Idx_SimStep:Idx_Vol]
+        Data_EnzCounts = Data_Processed[Idx_Vol:Idx_Enzyme]
+        Data_SubCounts = Data_Processed[Idx_Enzyme:]
 
-        Legend_SimStep = Legend[0:Idx_SimStep]
-        Legend_Vol = Legend[Idx_SimStep:Idx_Vol]
-        Legend_EnzCounts = Legend[Idx_Vol:Idx_Enzyme]
-        Legend_SubCounts = Legend[Idx_Enzyme:]
+        Legend_SimStep = Legend_Processed[0:Idx_SimStep]
+        Legend_Vol = Legend_Processed[Idx_SimStep:Idx_Vol]
+        Legend_EnzCounts = Legend_Processed[Idx_Vol:Idx_Enzyme]
+        Legend_SubCounts = Legend_Processed[Idx_Enzyme:]
 
         Title = 'TCA cycle_Reduced'
         Data = Data_SubCounts
@@ -207,8 +186,8 @@ def PlotData(Dataset):
         # Target = mRNABegins
         Target = ProteinBegins
 
-        Data = Data_Transposed[Target:Target+N_Species]
-        Legend = Legend[Target:Target+N_Species]
+        Data = Data_Processed[Target:Target+N_Species]
+        Legend = Legend_Processed[Target:Target+N_Species]
 
     elif plot_Ecoli_TCA:
 
@@ -236,17 +215,17 @@ def PlotData(Dataset):
         if Target == SmallMoleculesBegins:
             N_Species = GeneBegins - SmallMoleculesBegins - 1 # -1 For chromosome
 
-        Data = Data_Transposed[Target:Target+N_Species]
-        Legend = Legend[Target:Target+N_Species]
+        Data = Data_Processed[Target:Target+N_Species]
+        Legend = Legend_Processed[Target:Target+N_Species]
 
-
-    # All TCA Cases
-    Idx_Pairs, Names_Pairs = Indexing(Legend, Query="TCA")
-
-    if CheckRateExpected:
-        RateCheck(Data, Legend, Idx_Pairs, Names_Pairs)
-
-    Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
+    #
+    # # All TCA Cases
+    # Idx_Pairs, Names_Pairs = Indexing(Legend, Query="TCA")
+    #
+    # if CheckRateExpected:
+    #     RateCheck(Data, Legend, Idx_Pairs, Names_Pairs)
+    #
+    # Plot_DynamicsAndPhasePlaneAndRate(Title, Data_Time[0], Data, Legend, Idx_Pairs, Names_Pairs)
 
 
 def RateCheck(Data, Legend, Idx_Pairs, Names_Pairs):
@@ -304,6 +283,24 @@ def Plot_Dynamics(Title, Time, Data, Legend):
         plt.savefig(SaveFilename)
     else:
         plt.show()
+
+def ProcessDataToDisplay(Legend, Data):
+    Data_Processed = list()
+    Legend_Processed = list()
+    Size = len(Data[0])
+    for i, (Data_Row, Legend_Element) in enumerate(zip(Data, Legend)):
+        if Legend_Element == 'Vol':
+            continue
+        if np.array_equal(Data_Row, np.full_like(Data_Row, Data_Row[0])):
+            continue
+        if ExclusionString in Legend_Element:
+            continue
+        if MolToCount in Legend_Element:
+            Data_Row *= NA
+        Data_Processed.append(Data_Row)
+        Legend_Processed.append(Legend_Element)
+
+    return Legend_Processed, np.array(Data_Processed)
 
 def Indexing(Legend, Query=None):
     SelectedMolecules = list()
