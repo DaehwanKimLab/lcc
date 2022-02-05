@@ -74,7 +74,7 @@ def PlotData(Dataset):
         plot_Ecoli_TCA = True
 
 
-    Legend_Processed, Data_Processed = ProcessDataToDisplay(Legend, Data)
+    Legend_Processed, Data_Processed = ProcessDataToDisplay(Legend, Data_Transposed)
 
     # Show all
     if plot_ShowAll_DynamicsOnly:

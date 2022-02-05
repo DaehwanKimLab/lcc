@@ -562,9 +562,10 @@ public:
 
 
     int GetIdxByName_MoleculeList(std::string InputName);
-    float GetInitialCountByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
     // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
+
+    float GetInitialCountByName_CountList(std::string InputName);
 
     std::vector<const FGene *> GetList_Gene_MoleculeList();
     std::vector<const FRNA *> GetList_RNA_MoleculeList();

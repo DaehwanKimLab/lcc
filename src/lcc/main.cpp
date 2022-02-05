@@ -109,7 +109,7 @@ std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(const NRea
         std::pair<std::string, int> Stoich(stoich.first, stoich.second);
         Stoichiometry_Ordered.push_back(Stoich);
  
-        FMolecule * Molecule = new FMolecule(Name);
+        FMolecule * Molecule = new FMolecule(stoich.first);
         // Molecule->Print(os);
         Context.AddToMoleculeList(Molecule);
     } 
@@ -121,7 +121,7 @@ std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(const NRea
 void AddPseudoMolecule()
 {
     // int Idx = 0
-    FMolecule * Molecule = new FMolecule(Name_Pseudo, 1, true);   // old count input system
+    FMolecule * Molecule = new FMolecule(Name_Pseudo);   // old count input system
     // Molecule->Print(os);
     Context.AddToMoleculeList(Molecule);
 
@@ -220,7 +220,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
         }
 
-        // This is inteded for NEnzymeDeclaration, to be fixed later on.
+        // This is intended for NEnzymeDeclaration, to be fixed later on.
         enum EnzReactionType {
             Standard = 0,
             Standard_Inhibition_Allosteric,
@@ -808,7 +808,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 std::pair<std::string, int> Stoich(ReactantName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FSmallMolecule * Molecule = new FSmallMolecule(ReactantName);             
+                FMolecule * Molecule = new FMolecule(ReactantName);             
                 // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
@@ -823,7 +823,7 @@ void TraversalNode(NBlock* InProgramBlock)
                 std::pair<std::string, int> Stoich(ProductName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FSmallMolecule * Molecule = new FSmallMolecule(ProductName);
+                FMolecule * Molecule = new FMolecule(ProductName);
                 // Molecule->Print(os);
                 Context.AddToMoleculeList(Molecule);
             }
@@ -926,14 +926,12 @@ void TraversalNode(NBlock* InProgramBlock)
             AExpression->Print(os);
             os << endl;
 
+            // Count System
             if (AExpression->Oper == 323) { // T_ASSIGNMENT
                 if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
 
                     const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
                     const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB); 
-                    os << "##########" << endl;
-                    VarExp->Print(os); os << endl;
-                    VarAssigned->Print(os); os << endl;
 
                     // target info
                     std::string Name = VarExp->Id.Name;
@@ -944,7 +942,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                     // parse
                     float Amount = std::stof(VarAssigned->Value);
-                    os << "Amount: " << Amount << endl;
+                    // os << "Amount: " << Amount << endl;
 
                     auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->IndexExpression);
 
@@ -976,9 +974,9 @@ void TraversalNode(NBlock* InProgramBlock)
                     }
 
                     // categorizing
-                    if ((Begin <  0) & (End < 0)) { Begin = 0; End = -1;    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
-                    else if ((Begin >= 0) & (End < 0)) {            End = Begin;    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
-                    os << "Range | Begin: " << Begin << ", End: " << End << ", Step: " << Step << endl;
+                    if ((Begin <  0) & (End < 0)) { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
+                    else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
+//                    os << "Range | Begin: " << Begin << ", End: " << End << ", Step: " << Step << endl;
 
                     FCount * Count = new FCount(Name, Amount, Begin, End, Step);
                     Context.CountList.push_back(Count);
@@ -1245,7 +1243,7 @@ void Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type)
     ofs << in+ in+ in+ "self.Idx_Enz_" << Type << " = None" << endl;
 
     // Standard vs. MichaelisMenten
-    if (Type.find("Standard") != string::npos) {
+    if (Type.find("Enz_Standard") != string::npos) {
         ofs << in+ in+ in+ "self.Const_k_" << Type << " = None" << endl;
         ofs << in+ in+ in+ "self.Const_krev_" << Type << " = None" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
@@ -1255,7 +1253,7 @@ void Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type)
             ofs << in+ in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
         }
  
-    } else if (Type.find("MichaelisMenten") != string::npos) {
+    } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
         ofs << in+ in+ in+ "self.Const_kcat_" << Type << " = None" << endl;
         ofs << in+ in+ in+ "self.Const_KM_" << Type << " = None" << endl;
         ofs << in+ in+ in+ "self.Idx_EnzSub_" << Type << " = None" << endl;
@@ -1326,12 +1324,12 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type) // to be changed
     for (auto& enzyme : EnzymeList_Sub) {
         Idx_Enz.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
 
-        if (Type.find("Standard") != string::npos) {
+        if (Type.find("Enz_Standard") != string::npos) {
 
             k.push_back(enzyme->k);
             krev.push_back(enzyme->krev);
 
-        } else if (Type.find("MichaelisMenten") != string::npos) {
+        } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
 
             kcats.push_back(enzyme->kcat);
             KMs.push_back(enzyme->KM);
@@ -1391,7 +1389,7 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type) // to be changed
     ofs << in+ in+ in+ "self.Idx_Enz_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
 
     // Standard vs. MichaelisMenten
-    if (Type.find("Standard") != string::npos) {
+    if (Type.find("Enz_Standard") != string::npos) {
         ofs << in+ in+ in+ "self.Const_k_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
         ofs << in+ in+ in+ "self.Const_krev_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
@@ -1401,7 +1399,7 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type) // to be changed
             ofs << in+ in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
         }
  
-    } else if (Type.find("MichaelisMenten") != string::npos) {
+    } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
         ofs << in+ in+ in+ "self.Const_kcat_" << Type << " = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
         ofs << in+ in+ in+ "self.Const_KM_" << Type << " = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
         ofs << in+ in+ in+ "self.Idx_EnzSub_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
@@ -1630,13 +1628,13 @@ void WriteSimModule()
     if (!EnzymeList.empty()) {
         for (auto& enzyme : EnzymeList) {
             if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode.empty())) {
-                EnzReactionTypes.push_back("Standard");
+                EnzReactionTypes.push_back("Enz_Standard");
             } else if ((enzyme->k >= 0) & (enzyme->KM < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
-                EnzReactionTypes.push_back("Standard_Inhibition_Allosteric");
+                EnzReactionTypes.push_back("Enz_Standard_Inhibition_Allosteric");
             } else if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
-                EnzReactionTypes.push_back("Standard_Activation_Allosteric");
+                EnzReactionTypes.push_back("Enz_Standard_Activation_Allosteric");
             } else if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Mode.empty())) {
-                EnzReactionTypes.push_back("MichaelisMenten");
+                EnzReactionTypes.push_back("Enz_MichaelisMenten");
             } // add more types
         }
         // remove duplicates in the reaction types
@@ -1663,10 +1661,6 @@ void WriteSimModule()
             Print_InitializePolymeraseReaction(ofs, Polymerase);
         }
     }
-
-
-
-
 
     ofs << in+ in+ "def Initialize(self):" << endl;
     ofs << in+ in+ in+ "self.Vol = 1" << endl;
@@ -1768,19 +1762,9 @@ void WriteSimModule()
     // Initialize all molecule counts
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
     std::vector<float> InitialCount_Molecules;
-    for (auto& mol : Context.MoleculeList) {
-        std::string MolName = mol->Name;
-        bool Missing = true;
-        for (auto& count : Context.CountList) {
-            if ((count->Name == MolName) & (count->Begin == 0)) {
-                InitialCount_Molecules.push_back(count->Amount);
-                Missing = false;
-                break;
-            }
-        }
-        if (Missing) {
-            InitialCount_Molecules.push_back(0);
-        }
+    for (auto& molecule : Context.MoleculeList) {
+        float Count = Context.GetInitialCountByName_CountList(molecule->Name);
+        InitialCount_Molecules.push_back(Count);
     }
     ofs << in+ in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
     ofs << in+ in+ in+ "Count_Mol = np.asmatrix([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
@@ -1833,11 +1817,16 @@ void WriteSimModule()
     ofs << in+ in+ in+ "self.State = InState" << endl;
     ofs << in+ in+ in+ "self.Dataset = InDataset" << endl;
     ofs << in+ in+ in+ "self.DataManager = InDataManager" << endl;
+    ofs << endl;
 
     // Restore
     std::vector<std::string> Names;
     for (auto& count : Context.CountList) {
         std::string Name = count->Name;
+        // ignore if not relevant to the system
+	if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
+            continue;
+        }
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 ofs << in+ in+ in+ "self.Idx_Restore_" << Name << " = None" << endl;
@@ -1850,6 +1839,10 @@ void WriteSimModule()
     Names.clear();
     for (auto& count : Context.CountList) {
         std::string Name = count->Name;
+        // ignore if not relevant to the system
+        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
+            continue;
+        }
         if ((count->End >= 0) & (count->Begin != count->End)) {
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 ofs << in+ in+ in+ "self.Idx_Event_" << Name << " = None" << endl;
@@ -1884,6 +1877,14 @@ void WriteSimModule()
 //    }
     ofs << endl;
 
+    if (Option.bDebug) {
+        ofs << in+ in+ in+ "# Debugging" << endl;
+        ofs << in+ in+ in+ "self.Debug_Idx_Molecules = list()" << endl;
+        ofs << in+ in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
+        ofs << endl;
+
+    }
+
     ofs << in+ in+ "def Initialize(self, InN_SimSteps, InTimeResolution):" << endl;
     ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
     ofs << in+ in+ in+ "self.N_SimSteps = np.asmatrix([InN_SimSteps])" << endl;
@@ -1894,6 +1895,10 @@ void WriteSimModule()
     Names.clear();
     for (auto& count : Context.CountList) {
         std::string Name = count->Name;
+        // ignore if not relevant to the system
+        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
+            continue;
+        }
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
@@ -1907,6 +1912,10 @@ void WriteSimModule()
     Names.clear();
     for (auto& count : Context.CountList) {
         std::string Name = count->Name;
+        // ignore if not relevant to the system
+        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
+            continue;
+        }
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
@@ -1974,7 +1983,12 @@ void WriteSimModule()
         ofs << in+ in+ in+ in+ "self.TerminationReactions()" << endl;
         ofs << endl;
     }
-                          
+                        
+    if (Option.bDebug) {
+        ofs << in+ in+ in+ in+ "self.Debug_PrintCounts()" << endl;
+        ofs << endl;
+    }
+  
     ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
     ofs << in+ in+ in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
     ofs << endl;
@@ -2009,6 +2023,11 @@ void WriteSimModule()
     Names.clear();
     for (auto& count : Context.CountList) {
         std::string Name = count->Name;
+
+        // ignore if not relevant to the system
+        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
+            continue;
+        }
 
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
@@ -2048,6 +2067,12 @@ void WriteSimModule()
     Names.clear();    
     for (auto& count : Context.CountList) {
         std::string Name = count->Name;
+
+        // ignore if not relevant to the system
+        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
+            continue;
+        }
+
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             ofs << in+ in+ in+ "if (Time >= " << Utils::SciFloat2Str(count->Begin) << ") & (Time < " << Utils::SciFloat2Str(count->End) << "):" << endl;
             ofs << in+ in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << Name << ", " << Utils::SciFloat2Str(count->Amount) << ", axis=1)" << endl;
@@ -2123,14 +2148,14 @@ void WriteSimModule()
             // Enzyme
              ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_" << Type << "), self.State.Vol)" << endl;
             // Reactants and products or EnzSubstrate
-            if (Type.find("Standard") != std::string::npos) {
+            if (Type.find("Enz_Standard") != std::string::npos) {
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << in+ in+ in+ "Conc_Reactant_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_" << i << "_" << Type << "), self.State.Vol)" << endl;
                 } 
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << in+ in+ in+ "Conc_Product_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_" << i << "_" << Type << "), self.State.Vol)" << endl;
                 } 
-            } else if (Type.find("MichaelisMenten") != std::string::npos) {
+            } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
                 ofs << in+ in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_" << Type << "), self.State.Vol)" << endl;
             }
 
@@ -2143,17 +2168,17 @@ void WriteSimModule()
 
             // Calculate Rate
             // Eqn type and Enz
-            ofs << in+ in+ in+ "Rate = sim.Eqn_Enz_" << Type << "(Conc_Enz";
+            ofs << in+ in+ in+ "Rate = sim.Eqn_" << Type << "(Conc_Enz";
 
             // Reactants and products or EnzSubstrate
-            if (Type.find("Standard") != std::string::npos) {
+            if (Type.find("Enz_Standard") != std::string::npos) {
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << ", Conc_Reactant_" << i; 
                 }
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << ", Conc_Product_" << i; 
                 }
-            } else if (Type.find("MichaelisMenten") != std::string::npos) {
+            } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
                 ofs << ", Conc_EnzSub";
             }
 
@@ -2164,9 +2189,9 @@ void WriteSimModule()
                 ofs << in+ in+ in+ ", Conc_Activator";
             }
             // Reaction constants
-            if (Type.find("Standard") != std::string::npos) {
+            if (Type.find("Enz_Standard") != std::string::npos) {
                 ofs << ", self.State.Const_k_" << Type << ", self.State.Const_krev_" << Type;
-            } else if (Type.find("MichaelisMenten") != std::string::npos) {
+            } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
                 ofs << ", self.State.Const_kcat_" << Type << ", self.State.Const_KM_" << Type; 
             }
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
@@ -2236,10 +2261,10 @@ void WriteSimModule()
         }
     } 
 
-    if (EnzymeList.empty() & PolymeraseList.empty()) {
-            ofs << in+ in+ in+ "pass" << endl;
-            ofs << endl;
-    }
+//    if (EnzymeList.empty() & PolymeraseList.empty()) {
+//            ofs << in+ in+ in+ "pass" << endl;
+//            ofs << endl;
+//    }
     
     ofs << in+ in+ "# Useful routines" << endl;
     ofs << in+ in+ "def GetCount(self, Idx):" << endl;
@@ -2348,8 +2373,48 @@ void WriteSimModule()
     ofs << in+ in+ in+ "# N_Completed" << endl;
     
     ofs << in+ in+ in+ "return Len_Completed" << endl;
-   
     ofs << endl;
+
+    if (Option.bDebug) { 
+        ofs << in+ in+ "def Debug_SetIdxMoleculesToTrack(self):" << endl;
+        ofs << in+ in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
+        ofs << in+ in+ in+ "Debug_Names_Molecules = []" << endl; // TODO: take input from command line
+        ofs << endl;
+
+        ofs << in+ in+ in+ "if Debug_Names_Molecules:" << endl;
+        ofs << in+ in+ in+ in+ "for Name in Debug_Names_Molecules:" << endl;
+        ofs << in+ in+ in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.Legend.index(Name))" << endl;
+        ofs << in+ in+ in+ "else:" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_Idx_Molecules = list(range(len(self.State.ExportLegend())))" << endl;
+        ofs << endl;
+
+        ofs << in+ in+ "def Debug_PrintCounts(self):" << endl;
+
+        ofs << in+ in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_PrintCount(Idx)" << endl;
+        ofs << in+ in+ in+ in+ "print()" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_PrintdCount(Idx)" << endl;
+        ofs << in+ in+ in+ in+ "print()" << endl;
+        ofs << endl;
+
+        ofs << in+ in+ "def Debug_PrintSimStepTime(self):" << endl;
+        ofs << in+ in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
+        ofs << in+ in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end='\t| ')" << endl;
+        ofs << endl;
+
+        ofs << in+ in+ "def Debug_PrintCount(self, Idx):" << endl;
+        ofs << in+ in+ in+ "print(' ' + self.State.ExportLegend()[Idx], end=': ')" << endl;
+        ofs << in+ in+ in+ "print(self.State.Count()[0][Idx], end=' | ')" << endl;
+        ofs << endl;
+
+        ofs << in+ in+ "def Debug_PrintdCount(self, Idx):" << endl;
+        ofs << in+ in+ in+ "print('d' + self.State.ExportLegend()[Idx], end=': ')" << endl;
+        ofs << in+ in+ in+ "print(self.State.dCount()[0][Idx], end=' | ')" << endl;
+        ofs << endl;
+
+    }
 
     // class FDataManager
     ofs << in+ "class FDataManager:" << endl;
@@ -2505,10 +2570,10 @@ int main(int argc, char *argv[])
             TraversalNode(ProgramBlock);
 //            Context.PrintInitialCounts(os);
             ImportCountFromDatabase();
-
+ 
             if (Option.Verbose) {
                 Context.PrintLists(os);
-                //Context.PrintInitialCounts(os);
+                Context.PrintInitialCounts(os);
             }
         }
 

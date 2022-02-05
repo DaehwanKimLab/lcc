@@ -207,8 +207,8 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
     os << std::endl << "## Compiler Initial Counts ##" << std::endl;
     if (!MoleculeList.empty()) {
         for (auto& molecule : MoleculeList){
-            auto& count = molecule->Count;
-            os << molecule->Name << " : " << count.Initial << " | ";
+            float Count = GetInitialCountByName_CountList(molecule->Name);
+            os << molecule->Name << " : " << Count << "\t| ";
         }
         os << std::endl;
     }
@@ -311,31 +311,31 @@ std::vector<const FEnzyme *> FCompilerContext::GetSubList_EnzymeList(std::vector
     std::vector<const FEnzyme *> SubList;
     
     for (auto& enzyme : EnzymeList){
-        if (Type == "Standard") {
+        if (Type == "Enz_Standard") {
             if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Mode.empty())) {
                 SubList.push_back(enzyme);
             }
-        } else if (Type == "Standard_Inhibition_Allosteric") {
+        } else if (Type == "Enz_Standard_Inhibition_Allosteric") {
             if ((enzyme->k >= 0) & (enzyme->KM < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
                 SubList.push_back(enzyme);
             }
-        } else if (Type == "Standard_Activation_Allosteric") {
+        } else if (Type == "Enz_Standard_Activation_Allosteric") {
             if ((enzyme->k >= 0) & (enzyme->KM < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
                 SubList.push_back(enzyme);
             }
-        } else if (Type == "MichaelisMenten") {
+        } else if (Type == "Enz_MichaelisMenten") {
             if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Mode.empty())) {
                 SubList.push_back(enzyme);
             }
-        } else if (Type == "MichaelisMenten_Inhibition_Competitive") {
+        } else if (Type == "Enz_MichaelisMenten_Inhibition_Competitive") {
             if ((enzyme->KM >= 0) & (enzyme->k < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Competitive")) {
                 SubList.push_back(enzyme);
             }
-        } else if (Type == "MichaelisMenten_Inhibition_Allosteric") {
+        } else if (Type == "Enz_MichaelisMenten_Inhibition_Allosteric") {
             if ((enzyme->KM >= 0) & (enzyme->k < 0) & (!enzyme->Inhibitor.empty()) & (enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
                 SubList.push_back(enzyme);
             }
-        } else if (Type == "MichaelisMenten_Activation_Allosteric") {
+        } else if (Type == "Enz_MichaelisMenten_Activation_Allosteric") {
             if ((enzyme->KM >= 0) & (enzyme->k < 0) & (enzyme->Inhibitor.empty()) & (!enzyme->Activator.empty()) & (enzyme->Mode == "Allosteric")) {
                 SubList.push_back(enzyme);
             }
@@ -623,7 +623,7 @@ std::vector<std::string> FCompilerContext::GetSequences_PathwayList()
 
 std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::string Type)
 {
-    // Types: "MichaelisMenten", "Standard"
+    // Types: "Enz_MichaelisMenten", "Enz_Standard"
 
     std::vector<std::vector<int>> StoichMatrix;
     std::vector<int> Idx_Substrates = GetIdxForStoichiometryMatrix(Type);
@@ -649,7 +649,7 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
 				// std::cout << "Current Idx_Substrate: " << std::to_string(Idx_Substrate) << "\t| Idx_Substrate" << endl;
                         if (Idx_Substrate == MolIdx) {
                             CoeffArray[Idx_Local] = Coeff;
-				// std::cout << "Standard | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
+				// std::cout << "Enz_Standard | SubstrateName: " << SubstrateName << ", MolIdx: " << MolIdx << ", Idx_Local: " << Idx_Local << ", Coeff: " << Coeff << endl;
                         }
                         Idx_Local++;
                     }
@@ -665,7 +665,7 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
 
 std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type)
 {
-    // Types: "MichaelisMenten", "Standard"
+    // Types: "Enz_MichaelisMenten", "Enz_Standard"
     std::vector<int> IdxList;
 
     std::vector<const FEnzyme *> EnzymeList = GetList_Enzyme_MoleculeList();
@@ -748,14 +748,16 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
     return Index;
 }
 
-float FCompilerContext::GetInitialCountByName_MoleculeList(std::string InputName)
+float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)
 {
-    for (auto& molecule : MoleculeList) {
-        if (molecule->Name == InputName) {
-            auto& count = molecule->Count;
-            return count.Initial;
+// returns 0 if there is no initial count set
+    for (auto& count : CountList) {
+        if ((count->Name == MolName) & (count->Begin == 0)) {
+            return count->Amount;
+            break;
         }
     }
+    return 0;
 }
 
 std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()
