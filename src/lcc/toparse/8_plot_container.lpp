@@ -1,15 +1,15 @@
-array KM_list = [0.3, 1, 10];
-for (int i = 0; i < len(KM_list); i++)
+array S_list = [0.3, 1, 10];
+for (int i = 0; i < len(S_list); i++)
 {
     container tube
     {
         protein E(S --> P, k=1, krev=0.1);
 
         E[0]=1;
-        S[0]=10;
+        S[0]=S_list;
 
         plot(S, P, type=Dynamics, unit=molecule);
-        plot(Glucose, G6P, type=PhasePlane);
-        plot(Glucose, G6P, type=Dynamics&PhasePlane); // allow multiple types?
+        plot(S, P, type=PhasePlane);
+        plot(S, P, type=Dynamics&PhasePlane); // allow multiple types?
     }
 }

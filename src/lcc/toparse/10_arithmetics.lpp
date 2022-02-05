@@ -1,0 +1,8 @@
+// code below just for parsing
+
+float NA = 6.0221409e+23;
+
+protein E(S --> P, k=1 * 6.0221409e+23, krev=0.1 * NA);
+
+E[0]=1 * 6.0221409e+23;
+S[0]=10 * NA;
