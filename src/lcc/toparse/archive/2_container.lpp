@@ -1,0 +1,9 @@
+container tube
+{
+    // model
+    protein HK1(Glucose --> G6P, kcat=30s-1, KM=0.3mM);
+
+    // input
+    HK1[0] = 5 nM;
+    Glucose[0] = 5 mM;
+}

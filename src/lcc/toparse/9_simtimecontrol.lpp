@@ -1,0 +1,8 @@
+protein E(S --> P, k=1, krev=0.1);
+
+E1[0]=1;
+S[0]=10;
+
+Simulation(1000, res=10); // 1000 simulation steps, 10 time resolution per second
+Simulation(1000, res=10); // 1000 simulation steps, 10 time resolution per second
+Simulation(0, res=100); // 0 means compiler decides # of simulation steps
