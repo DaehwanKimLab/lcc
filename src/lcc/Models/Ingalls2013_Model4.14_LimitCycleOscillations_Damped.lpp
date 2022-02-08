@@ -5,17 +5,18 @@
 // Model   4.10,    p.93
 // Figure  4.15,    p.94
 
-protein E1(S1In --> S1, k=8);
-protein E2(S1 --> S2, k=1, Activator=S2, Mode=Allosteric, Ka=1, n=2);
-protein E3(S2 --> S2Out, k=5);
+reaction R1(S1In --> S1, k=8);
+reaction R2(S1 --> S2, k=1);
+reaction R3(S2 --> S2Out, k=5);
+reaction R4(S2 --> R2, Ka=1, n=2);
 
-E1[0]=1;
+// initial quantity
 S1[0]=1.5;
 S1In[:]=1;
-E2[0]=1;
 S2[0]=1;
-E3[0]=1;
 S2Out[:]=0;
+
+
 
 
 

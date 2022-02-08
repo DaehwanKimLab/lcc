@@ -10,6 +10,7 @@ SaveFilename = ''
 NA = 6.0221409e+23
 ExclusionString = 'NoPlot'
 MolToCount = 'Discrete'
+MolToConcentration = 'Conc'
 
 def LoadRawData(Data_Dir):
     Datasets = dict()
@@ -297,6 +298,8 @@ def ProcessDataToDisplay(Legend, Data):
             continue
         if MolToCount in Legend_Element:
             Data_Row *= NA
+        if MolToConcentration in Legend_Element:
+            Data_Row /= NA
         Data_Processed.append(Data_Row)
         Legend_Processed.append(Legend_Element)
 

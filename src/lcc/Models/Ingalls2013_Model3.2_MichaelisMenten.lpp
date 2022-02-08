@@ -10,7 +10,9 @@
 // k2 = 10;
 // KM = (krev1 + k2) / k1;
 
+// enzymatic reaction
 protein E(S --> P, kcat=10, KM=3.666667);
 
+// initial quantity
 E[0]=1;
 S[0]=5;
