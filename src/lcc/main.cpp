@@ -1191,7 +1191,7 @@ void Print_SetUpStandardReaction(ofstream& ofs, std::string Type)
         }
 
     // Check Idx lengths
-    void assert (Idx_Reactants.size() == Idx_Products.size());
+    assert (Idx_Reactants.size() == Idx_Products.size());
 
         for (auto& reg : RegulatoryReactionSubList) {
 
@@ -1383,7 +1383,7 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type) // to be changed
     }
  
     // Check Idx lengths
-    void assert (Idx_Reactants.size() == Idx_Products.size());
+    assert (Idx_Reactants.size() == Idx_Products.size());
 
     ofs << in+ in+ in+ "# " << Type << endl;
     ofs << in+ in+ in+ "self.Idx_Enz_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;

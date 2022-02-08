@@ -14,6 +14,7 @@
 
 %option noyywrap
 %option yylineno
+%option never-interactive
 %x C_COMMENT
 
 digit                         [0-9]

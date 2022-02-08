@@ -14,7 +14,7 @@ find_package(FLEX)
 find_package(BISON)
 
 if(WIN32)
-	set(FLEX_FLAGS "--wincompat")
+	set(FLEX_FLAGS "--nounistd")
 else()
 	set(FLEX_FLAGS "")
 endif()
