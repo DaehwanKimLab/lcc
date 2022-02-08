@@ -24,7 +24,7 @@ digit                         [0-9]
 [ \t\n]                       { } /* White space */
 \"([^\\\"]|\\.)*\"            { yylval.String = new std::string(yytext + 1, yyleng - 2);  // remove first and last \", TODO: remove escape character
                                 return T_STRING_LITERAL; } /* String literal */
-"//".*$                       { } /* Single line comment */
+"//"[^\n]*                    { } /* Single line comment */
 "/*"                          { BEGIN(C_COMMENT); }
 <C_COMMENT>"*/"               { BEGIN(INITIAL); }
 <C_COMMENT>.                  { }
@@ -95,6 +95,7 @@ digit                         [0-9]
 "<-->"                        { return TOKEN(T_BIARROW); }
 "="                           { return TOKEN(T_ASSIGN); }
 "|"                           { return TOKEN(T_OR); }
+"&"                           { return TOKEN(T_AND); }
 ";"                           { return TOKEN(T_SEMIC); }
 ":"                           { return TOKEN(T_COLON); }
 "{"                           { return TOKEN(T_LBRACE); }
