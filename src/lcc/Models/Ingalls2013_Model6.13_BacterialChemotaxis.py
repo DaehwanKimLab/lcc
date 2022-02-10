@@ -22,16 +22,16 @@ k−4 = 1, k−5 = 0.005; (in concentration): kM1 = 1, kM2 = 1. Units are arbitr
 """
 
 def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
-    return krev1 * R * A - (k1 * BP * Am) / (kM1 + Am) - k3 * Am * L + krev3 * AmL
+    return min(krev1 * R, A) - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
 
 def dAmL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
-    return krev2 * R * A - (k2 * BP * AmL) / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
-
+    return min(krev2 * R, AL) - (k2 * BP) * AmL / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
+    
 def dA_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
-    return -krev1 * R * A + (k1 * BP * Am) / (kM1 + Am) - k4 * A * L + krev4 * AL
-
+    return -min(krev1 * R, A) + (k1 * BP) * Am / (kM1 + Am) - k4 * A * L + krev4 * AL
+    
 def dAL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
-    return -krev2 * R * A + (k2 * BP * AmL) / (kM2 + AmL) + k4 * A * L - krev4 * AL
+    return -min(krev2 * R, AL) + (k2 * BP) * AmL / (kM2 + AmL) + k4 * A * L - krev4 * AL
 
 def dB_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return -k5 * Am * B + krev5 * BP
@@ -42,6 +42,9 @@ def dBP_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev
 
 class FModel():
     def __init__(self, k1=200, k2=1, k3=1, k4=1, k5=0.05, krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005, kM1=1, kM2=1, L=20, R=5, Am=0, AmL=0, A=1, AL=0, B=0.1, BP=0):
+        # DK - debugging purposes
+        A = 500
+        
         # Initial Concentrations
         self.L = L
         self.R = R
@@ -94,7 +97,7 @@ class FModel():
         self.Data_B.append(B)
         self.Data_BP.append(BP)
 
-    def Run(self, SimSteps=10000, TimeResolution=100):
+    def Run(self, SimSteps=100000, TimeResolution=100):
         Flat = 0.000001 # Steady state threshold
 
         self.TimeResolution = TimeResolution
@@ -104,7 +107,7 @@ class FModel():
             # Calculate new
 
             Time = i / self.TimeResolution
-            if ((Time == 10) or (Time == 30)):
+            if Time in [100, 300]:
                 self.L = self.L * 2
 
             L = self.L
@@ -129,7 +132,12 @@ class FModel():
 
     def PlotData(self):
         X = self.Data_L
-        Y = self.Data_Am
+        A = self.Data_A
+        Am = self.Data_Am
+        AL = self.Data_AL
+        AmL = self.Data_AmL
+        B = self.Data_B
+        BP = self.Data_BP
 
         T = list(np.array(range(len(X))) / self.TimeResolution)
 
@@ -137,15 +145,39 @@ class FModel():
         fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
         # Dynamics
-        ax1 = fig.add_subplot(1, 1, 1)
-
-        # ax1.plot(T, X, 'r-', label="[Ligand]") # L
-        ax1.plot(T, Y, 'b-', label="[Active CheA]") # RL
+        ax1 = fig.add_subplot(2, 2, 1)
+        ax1.plot(T[5000:], Am[5000:], 'b-', label="[Am]") # RL
         ax1.set_title('Bacterial Chemotaxis')
         ax1.set_xlabel('Time (a.u.)')
         ax1.set_ylabel('Concentration (a.u.)')
         ax1.legend(loc='upper right')
         ax1.grid()
+
+        ax2 = fig.add_subplot(2, 2, 2)
+        ax2.plot(T[5000:], Am[5000:], 'b-', label="[Am]") # RL
+        ax2.plot(T[5000:], A[5000:], 'r-', label="[A]") # RL
+        ax2.set_title('Bacterial Chemotaxis')
+        ax2.set_xlabel('Time (a.u.)')
+        ax2.set_ylabel('Concentration (a.u.)')
+        ax2.legend(loc='upper right')
+        ax2.grid()
+
+        ax3 = fig.add_subplot(2, 2, 3)
+        ax3.plot(T[5000:], AmL[5000:], 'b-', label="[AmL]") # RL
+        ax3.plot(T[5000:], AL[5000:], 'r-', label="[AL]") # RL
+        ax3.set_title('Bacterial Chemotaxis')
+        ax3.set_xlabel('Time (a.u.)')
+        ax3.set_ylabel('Concentration (a.u.)')
+        ax3.legend(loc='upper right')
+        ax3.grid()
+
+        ax4 = fig.add_subplot(2, 2, 4)
+        ax4.plot(T[5000:], BP[5000:], 'r-', label="[BP]") # RL
+        ax4.set_title('Bacterial Chemotaxis')
+        ax4.set_xlabel('Time (a.u.)')
+        ax4.set_ylabel('Concentration (a.u.)')
+        ax4.legend(loc='upper right')
+        ax4.grid()
 
         plt.show()
 
