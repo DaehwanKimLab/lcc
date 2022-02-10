@@ -342,7 +342,7 @@ experiment_stmt : T_DESCRIPTION T_STRING_LITERAL T_SEMIC { $$ = new NDescription
 property_stmt  : T_PROPERTY ident T_NUMBER { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3)); delete $2; delete $3; }
                | T_PROPERTY ident T_NUMBER unit { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3, *$4)); delete $2; delete $3; delete $4; }
                | T_PROPERTY ident T_STRING_LITERAL { $$ = new NPropertyStatement($2->Name, new NConstantExpression(*$3)); delete $2; delete $3; }
-               | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, new NVariableExpression(*$3)); delete $2, delete $3; }
+               | T_PROPERTY ident ident { $$ = new NPropertyStatement($2->Name, new NVariableExpression($3)); delete $2; }
                ;
 
 using_stmt     : T_USING T_MODULE ident { $$ = NNodeUtil::InitStatementList(new NUsingStatement($2, *$3)); delete $3; }
@@ -495,7 +495,7 @@ p_const_expr   : T_NUMBER { $$ = new NConstantExpression(*$1); delete $1; }
 p_expr         : /* */ { $$ = new NExpression(); }
                | p_const_expr { $$ = $1; }
                | variable { $$ = $1; }
-               | variable T_ASSIGN p_expr { $$ = new NAExpression(T_ASSIGN, $1, $3); }
+               | p_expr T_ASSIGN p_expr { $$ = new NAExpression(T_ASSIGN, $1, $3); }
                | p_expr T_PLUS p_expr { $$ = new NAExpression(T_PLUS, $1, $3); }
                | p_expr T_MINUS p_expr { $$ = new NAExpression(T_MINUS, $1, $3); }
                | p_expr T_STAR p_expr { $$ = new NAExpression(T_STAR, $1, $3); }
@@ -510,11 +510,11 @@ p_expr         : /* */ { $$ = new NExpression(); }
                | p_expr T_AND p_expr { $$ = new NAExpression(T_AND, $1, $3); }
                | p_expr T_LPAREN T_RPAREN { $$ = new NFunctionCallExpression($1); }
                | p_expr T_LPAREN p_expr_list T_RPAREN { $$ = new NFunctionCallExpression($1, $3); }
+               | p_expr T_LBRACKET p_range_expr T_RBRACKET { $$ = new NVariableExpression($1, $3); }
                | T_LPAREN p_expr T_RPAREN { $$ = $2; }
                ;
 
-variable       : ident { $$ = new NVariableExpression(*$1); delete $1; }
-               | ident T_LBRACKET p_range_expr T_RBRACKET { $$ = new NVariableExpression(*$1, $3); delete $1; }
+variable       : ident { $$ = new NVariableExpression($1); }
                ;
 
 p_range_expr   : p_expr { $$ = new NRangeExpression($1, nullptr, nullptr); }

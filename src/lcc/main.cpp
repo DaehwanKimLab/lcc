@@ -28,6 +28,8 @@
 #include "datamanager.h"
 #include "util.h"
 
+#include "lpp.y.hpp"
+
 extern NBlock* ProgramBlock;
 extern int yyparse();
 extern int yylex_destroy();
@@ -675,14 +677,14 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
             os << endl;
 
             // Count System
-            if (AExpression->Oper == 323) { // T_ASSIGNMENT
+            if (AExpression->Oper == T_ASSIGN) {
                 if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
 
                     const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
                     const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB); 
 
                     // target info
-                    std::string Name = VarExp->Id.Name;
+                    std::string Name = VarExp->Evaluate();
 
                     float InitialCount = Float_Init;
                     bool Fixed = false;
@@ -692,7 +694,7 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                     float Amount = std::stof(VarAssigned->Value);
                     // os << "Amount: " << Amount << endl;
 
-                    auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->IndexExpression);
+                    auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
 
                     float Begin = Float_Init;
                     float End = Float_Init;

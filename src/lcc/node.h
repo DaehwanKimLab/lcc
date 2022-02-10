@@ -72,7 +72,7 @@ public:
     NExpression() {};
     virtual void Visit(FTraversalContext& Context) const override;
 
-    virtual std::string Evaluate() {
+    virtual std::string Evaluate() const {
         /* Temporary */
         return "";
     }
@@ -96,6 +96,10 @@ public:
 
     virtual void Print(std::ostream &os) const override {
         os << "Id: " << Name;
+    }
+
+    virtual std::string Evaluate() const override {
+        return Name;
     }
 
     virtual void Visit(FTraversalContext &Context) const override;
@@ -1050,30 +1054,29 @@ public:
     }
     virtual void Visit(FTraversalContext& Context) const override {};
 
-    virtual std::string Evaluate() override {
+    virtual std::string Evaluate() const override {
         return Value;
     }
 };
 
 class NVariableExpression : public NExpression {
 public:
-    NIdentifier Id;
-    std::shared_ptr<NExpression> IndexExpression;
+    std::shared_ptr<NExpression> Variable;
+    std::shared_ptr<NExpression> Index;
 
-    NVariableExpression(const NIdentifier& InId)
-        : Id(InId) {}
-
-    NVariableExpression(const NIdentifier& InId, NExpression* InIndexExpr)
-        : Id(InId), IndexExpression(InIndexExpr) {}
-
+    NVariableExpression(NExpression* InVariableExpr)
+        : Variable(InVariableExpr) {}
+    NVariableExpression(NExpression* InVariableExpr, NExpression* InIndexExpr)
+        : Variable(InVariableExpr), Index(InIndexExpr) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Variable: {";
-        os << "Name: " << Id.Name;
-        if (IndexExpression) {
+        os << "Name: ";
+        Variable->Print(os);
+        if (Index) {
             os << ", ";
             os << "Index: {";
-            IndexExpression->Print(os);
+            Index->Print(os);
             os << "}";
         }
         os << "}";
@@ -1081,8 +1084,8 @@ public:
 
     virtual void Visit(FTraversalContext& Context) const override {};
 
-    virtual std::string Evaluate() override {
-        return Id.Name;
+    virtual std::string Evaluate() const override {
+        return Variable->Evaluate();
     }
 };
 
