@@ -2,6 +2,7 @@ import sys
 import pygame
 import math
 import random
+import Models.Ingalls2013_Model6_13_BacterialChemotaxis
 
 # Colors
 BLACK = (0, 0, 0)
@@ -29,12 +30,14 @@ Center = W_S / 2, H_S /2
 # ControlBoard = pygame.Surface(Screen_Size, pygame.SRCALPHA)
 # ControlBoard.fill((0, 0, 0, 255))
 
-
 Title = "Vis2D"
 pygame.display.set_caption(Title)
 
 Font_Sans = pygame.font.Font('freesansbold.ttf', 20)
 Font_Monospace = pygame.font.SysFont('monospace', 15, True)
+
+# Initialize model
+Model = Models.Ingalls2013_Model6_13_BacterialChemotaxis.FModel()
 
 class FEnvironment:
     def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.3, InThickness=5):
@@ -88,6 +91,10 @@ class FOrganism:
         self.Image_Rect = None
         self.LoadImage()
 
+        # Mechanistic Mode
+        self.Am = 0
+        self.MechanisticModeSwitch = False
+
     def LoadImage(self):
         if self.Species == 'Ecoli':
             self.Image = pygame.image.load('pygamelib/ecoli.png')
@@ -122,13 +129,23 @@ class FOrganism:
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
 
     def Chemotaxis(self, GlucoseLvl):
-        if GlucoseLvl > self.Glucose_Prev:
-            self.Move(self.Speed)
-        else:
-            self.Tumble()
+        if self.MechanisticModeSwitch:
+            self.Am = Model.Simulate(GlucoseLvl)
+            # print(self.Am)
+            if self.Am < 1.05:
+                self.Move(self.Speed)
+            else:
+                self.Tumble()
 
-        # Update
+        else:
+            if GlucoseLvl > self.Glucose_Prev:
+                self.Move(self.Speed)
+            else:
+                self.Tumble()
+
+            # Update
         self.Glucose_Prev = GlucoseLvl
+
 
     def Move(self, Distance):
         dX, dY = Displacement(Distance, self.A)
@@ -155,8 +172,6 @@ class FMolecule:
         self.X_Ori = InX
         self.Y_Ori = InY
         self.Max = Max
-        self.Amount_now = 0
-        self.Amount_prev = 0
 
         # Gradient Drawing
         self.GradLvl = 5
@@ -230,18 +245,23 @@ class FControl:
             'RIGHT' : 'Move Glucose RIGHTWARD',
             'UP'    : 'Move Glucose UPWARD',
             'DOWN'  : 'Move Glucose DOWNWARD',
+            '-'     : 'Glucose Level --',
+            '+'     : 'Glucose Level ++',
             '['     : 'Glucose Movement Resolution --',
             ']'     : 'Glucose Movement Resolution ++',
-            'M'     : 'Reposition Glucose Position',
+            'G'     : 'Reposition Glucose Position',
             'O'     : 'Reinitialize Ecoli Position',
             'R'     : 'Reverse Ecoli Tumbling Direction',
             ';'     : 'Ecoli Tumbling Angle --',
             '"'     : 'Ecoli Tumbling Angle ++',
             '<'     : 'Ecoli Speed --',
             '>'     : 'Ecoli Speed ++',
+            'M'     : 'Ecoli Mechanistic Mode Switch',
             'T'     : 'Display Trajectory Switch',
             'I'     : 'Display Instruction Switch',
             'S'     : 'Display Score Switch',
+            'A'     : 'Display Status Switch',
+
             # 'D'     : 'Transparency Display Switch',
         }
         self.InstructionText = ''
@@ -252,6 +272,8 @@ class FControl:
 
         self.Time = 0
         self.ScoreSwitch = False
+
+        self.StatusSwitch = False
 
         self.TransparencySwitch = False
 
@@ -265,7 +287,6 @@ class FControl:
     #     self.ControlBoard.fill((0, 0, 0, 255))
     #     # pygame.draw.rect(self.ControlBoard, (0, 0, 0, 255), (self.Radius, self.Radius), self.Radius)
 
-
     def SetInstructionText(self):
         self.InstructionText = 'Instructions\n'
         for Key, Value in self.Instructions.items():
@@ -276,8 +297,15 @@ class FControl:
         TextLines = self.InstructionText.splitlines()
         Height = Font_Monospace.get_linesize() + 2
         X, Y = Screen.get_rect().topleft
-        for i, TestLine in enumerate(TextLines):
-            Text = Font_Monospace.render(TestLine, True, BLACK)
+        Color = None
+        for i, TextLine in enumerate(TextLines):
+            if 'Glucose' in TextLine:
+                Color = BLUE
+            elif 'Ecoli' in TextLine:
+                Color = RED
+            else:
+                Color = BLACK
+            Text = Font_Monospace.render(TextLine, True, Color)
             Text_Rect = Text.get_rect()
             Text_Rect.topleft = (X, Y + Height * i)
             Screen.blit(Text, Text_Rect)
@@ -291,7 +319,7 @@ class FControl:
     def DisplayInput(self):
         Text = Font_Sans.render(self.Message, True, BLACK)
         Text_Rect = Text.get_rect()
-        Text_Rect.topright = Screen.get_rect().topright
+        Text_Rect.bottomleft = Screen.get_rect().bottomleft
         Screen.blit(Text, Text_Rect)
         self.MessageTimer -= 1
 
@@ -311,6 +339,26 @@ class FControl:
         Text_Rect.midtop = Screen.get_rect().midtop
         Screen.blit(Text, Text_Rect)
 
+    def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Am, switch=False):
+        StatusText = "   Total Glucose : " + str(Glucose_Total) + "\n  Glucose @ Ecoli :" + "{:.5f}".format(Glucose_Ecoli)
+        if switch:
+            StatusText += '\n[MECHANISTIC MODE]'
+            StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f}".format(Am)
+        else:
+            StatusText += '\n[SIMPLIFIED MODE]'
+        TextLines = StatusText.splitlines()
+        Height = Font_Monospace.get_linesize() + 2
+        X, Y = Screen.get_rect().topright
+        Color = BLACK
+        for i, TextLine in enumerate(TextLines):
+            if 'MODE' in TextLine:
+                Color = RED
+            Text = Font_Monospace.render(TextLine, True, Color)
+            Text_Rect = Text.get_rect()
+            Text_Rect.topright = (X, Y + Height * i)
+            Screen.blit(Text, Text_Rect)
+
+
 def Displacement(Distance, Angle):
     dX = Distance * math.sin(Angle)
     dY = Distance * math.cos(Angle)
@@ -319,6 +367,7 @@ def Displacement(Distance, Angle):
 def main():
     global TransparencySwitch
     Control = FControl()
+
 
     PetriDish = FEnvironment()
     Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 1000)
@@ -354,15 +403,21 @@ def main():
                     Glucose.Y_Ori += Control.MovementResolution
                     Glucose.Move(0, +Control.MovementResolution)
                     Control.Message = Control.SetMessage('DOWN')
+                elif event.key == pygame.K_KP_PLUS or event.key == pygame.K_EQUALS:
+                    Glucose.Max *= 2
+                    Control.Message = Control.SetMessage('+')
+                elif event.key == pygame.K_KP_MINUS or event.key == pygame.K_MINUS:
+                    Glucose.Max /= 2
+                    Control.Message = Control.SetMessage('-')
                 elif event.key == pygame.K_LEFTBRACKET:
                     Control.MovementResolution -= 1
                     Control.Message = Control.SetMessage('[')
                 elif event.key == pygame.K_RIGHTBRACKET:
                     Control.MovementResolution += 1
                     Control.Message = Control.SetMessage(']')
-                elif event.key == pygame.K_m:
+                elif event.key == pygame.K_g:
                     Glucose.Reposition()
-                    Control.Message = Control.SetMessage('M')
+                    Control.Message = Control.SetMessage('G')
 
                 # Ecoli Control
                 elif event.key == pygame.K_o:
@@ -386,6 +441,9 @@ def main():
                 elif event.key == pygame.K_t:
                     Ecoli.TrajectorySwitch = not Ecoli.TrajectorySwitch
                     Control.Message = Control.SetMessage('T')
+                elif event.key == pygame.K_m:
+                    Ecoli.MechanisticModeSwitch = not Ecoli.MechanisticModeSwitch
+                    Control.Message = Control.SetMessage('M')
 
                 # Control panel
                 elif event.key == pygame.K_i:
@@ -394,6 +452,9 @@ def main():
                 elif event.key == pygame.K_s:
                     Control.ScoreSwitch = not Control.ScoreSwitch
                     Control.Message = Control.SetMessage('S')
+                elif event.key == pygame.K_a:
+                    Control.StatusSwitch = not Control.StatusSwitch
+                    Control.Message = Control.SetMessage('A')
 
                 # # Irreversible transparency option disabled
                 # elif event.key == pygame.K_d:
@@ -448,6 +509,8 @@ def main():
             Control.DisplayScore()
             if Glucose_Now > (Glucose.Max * 0.999):
                 Glucose.Reposition()
+        if Control.StatusSwitch:
+            Control.DisplayStatus(Glucose.Max, Glucose_Now, Ecoli.Am, switch=Ecoli.MechanisticModeSwitch)
 
         Control.Time += 1
         Control.DisplayTime()
