@@ -33,8 +33,8 @@ Center = W_S / 2, H_S /2
 Title = "Vis2D"
 pygame.display.set_caption(Title)
 
-Font_Input = pygame.font.Font('freesansbold.ttf', 20)
-Font_Instruction = pygame.font.SysFont('monospace', 15, True)
+Font_Sans = pygame.font.Font('freesansbold.ttf', 20)
+Font_Monospace = pygame.font.SysFont('monospace', 15, True)
 
 class FEnvironment:
     def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.3, InThickness=5):
@@ -77,7 +77,7 @@ class FOrganism:
         self.Glucose_Prev = 0
 
         # Trajectory
-        self.TrajectorySwitch = True
+        self.TrajectorySwitch = False
         self.Trajectory = [(self.X_Ori, self.Y_Ori)]
 
         # Image
@@ -102,6 +102,11 @@ class FOrganism:
         # Rect = self.Image.get_rect()
         # self.Image.center = Rect.center
         pass
+
+    def Reinitialize(self):
+        self.X = self.X_Ori
+        self.Y = self.Y_Ori
+        self.Trajectory = [(self.X_Ori, self.Y_Ori)]
 
     def Draw(self):
         if self.Species == 'Ecoli':
@@ -132,6 +137,7 @@ class FOrganism:
 
     def Tumble(self):
         self.A += self.TumbleAngle
+        # self.Move(0)
         self.Move(self.Speed / 10)
         self.Trajectory.append((self.X, self.Y))
         if self.Species == 'Ecoli':
@@ -157,30 +163,56 @@ class FMolecule:
         self.BaseLvl = 50
 
         # Particle Drawing
-        self.Particle_N = 70
+        self.Particle_N = 100
         self.Particle_Radius = 2
-        self.Particle_SpreadFactor = 1.2
+        self.Particle_SpreadFactor = 1.11
+        self.Particle_XY_Static = []
+        self.InitializeStaticParticles()
 
-    def Draw(self, pattern='gradient'):
+    def InitializeStaticParticles(self):
+        for i in range(self.Particle_N):
+            X = self.X_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
+            Y = self.Y_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
+            self.Particle_XY_Static.append((X, Y))
+
+    def Reposition(self):
+        self.X_Ori = random.randint(W_S * 2 / 5, W_S * 3 / 5)
+        self.Y_Ori = random.randint(H_S * 2 / 5, H_S * 3 / 5)
+        self.Particle_XY_Static = []
+        self.InitializeStaticParticles()
+
+    def Move(self, dX, dY):
+        New_Particle_XY_Static = []
+        for (X, Y) in self.Particle_XY_Static:
+            X += dX
+            Y += dY
+            New_Particle_XY_Static.append((X, Y))
+        self.Particle_XY_Static = New_Particle_XY_Static
+
+    def Draw(self, pattern='gradient', dynamics='static'):
         if pattern == 'gradient':
             for i in range(self.GradLvl):
                 Color = (self.BaseLvl, self.BaseLvl, self.BaseLvl + (255 - self.BaseLvl) * ((i + 1) /self.GradLvl))
                 pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), 100 / (i + 1))
             pygame.draw.circle(Screen, BLUE, (self.X_Ori, self.Y_Ori), 5)
 
-        elif pattern == 'particle':
+        elif ((pattern == 'particle') & (dynamics == 'dynamic')):
             for i in range(self.Particle_N):
                 X = self.X_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
                 Y = self.Y_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
                 pygame.draw.circle(Screen, BLUE, (X, Y), self.Particle_Radius)
 
+        elif ((pattern == 'particle') & (dynamics == 'static')):
+            for XY in self.Particle_XY_Static:
+                pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
+
         else:
-            assert True, 'Unsupported Species for drawing: %s' % pattern
+            assert True, 'Unsupported molecule distribution pattern for drawing: %s' % pattern
 
     def GetAmount(self, X, Y):
         return self.Diffusion(X, Y)
 
-    # Diffusion will be updated to a dynamic version
+    # TODO:Diffusion will be updated to a dynamic version
     def Diffusion(self, X, Y):
         return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
 
@@ -188,7 +220,8 @@ class FControl:
     def __init__(self):
         # self.FPS = 30
         self.MovementResolution = 30
-        self.Message = 'Welcome to Bacterial Chemotaxis!'
+        self.MessageWelcome = 'Welcome to Bacterial Chemotaxis!'
+        self.Message = ''
         self.MessageTimer = 3000
 
         self.InstructionSwitch = False
@@ -197,22 +230,32 @@ class FControl:
             'RIGHT' : 'Move Glucose RIGHTWARD',
             'UP'    : 'Move Glucose UPWARD',
             'DOWN'  : 'Move Glucose DOWNWARD',
-            '['     : 'Reduce Glucose Movement Resolution',
-            ']'     : 'Increment Glucose Movement Resolution',
+            '['     : 'Glucose Movement Resolution --',
+            ']'     : 'Glucose Movement Resolution ++',
+            'M'     : 'Reposition Glucose Position',
             'O'     : 'Reinitialize Ecoli Position',
             'R'     : 'Reverse Ecoli Tumbling Direction',
-            ';'     : 'Reduce Ecoli Tumbling Angle',
-            '"'     : 'Increment Ecoli Tumbling Angle',
-            '<'     : 'Reduce Ecoli Speed',
-            '>'     : 'Increment Ecoli Speed',
-            'T'     : 'Trajectory Mode Switch',
-            'I'     : 'Instruction Display Switch',
-            'C'     : 'Transparency Display Switch',
+            ';'     : 'Ecoli Tumbling Angle --',
+            '"'     : 'Ecoli Tumbling Angle ++',
+            '<'     : 'Ecoli Speed --',
+            '>'     : 'Ecoli Speed ++',
+            'T'     : 'Display Trajectory Switch',
+            'I'     : 'Display Instruction Switch',
+            'S'     : 'Display Score Switch',
+            # 'D'     : 'Transparency Display Switch',
         }
         self.InstructionText = ''
         self.SetInstructionText()
 
+        self.Score = 0
+        self.ScoreSwitch = False
+
+        self.Time = 0
+        self.ScoreSwitch = False
+
         self.TransparencySwitch = False
+
+
     #
     #     self.ControlBoard = None
     #     self.InitializeControlBoard()
@@ -230,29 +273,43 @@ class FControl:
             self.InstructionText = self.InstructionText + "  " + Key + Space + ': ' + Value + '\n'
 
     def DisplayInstructions(self):
-        if self.MessageTimer > 0:
-            TextLines = self.InstructionText.splitlines()
-            Height = Font_Instruction.get_linesize() + 2
-            X, Y = Screen.get_rect().topleft
-            for i, TestLine in enumerate(TextLines):
-                Text = Font_Instruction.render(TestLine, True, BLACK)
-                Text_Rect = Text.get_rect()
-                Text_Rect.topleft = (X, Y + Height * i)
-                Screen.blit(Text, Text_Rect)
+        TextLines = self.InstructionText.splitlines()
+        Height = Font_Monospace.get_linesize() + 2
+        X, Y = Screen.get_rect().topleft
+        for i, TestLine in enumerate(TextLines):
+            Text = Font_Monospace.render(TestLine, True, BLACK)
+            Text_Rect = Text.get_rect()
+            Text_Rect.topleft = (X, Y + Height * i)
+            Screen.blit(Text, Text_Rect)
+
+    def DisplayWelcome(self):
+        Text = Font_Sans.render(self.MessageWelcome, True, BLACK, WHITE)
+        Text_Rect = Text.get_rect()
+        Text_Rect.center = Center
+        Screen.blit(Text, Text_Rect)
 
     def DisplayInput(self):
-        if self.MessageTimer > 0:
-            Text = Font_Input.render(self.Message, True, BLACK)
-            Text_Rect = Text.get_rect()
-            Text_Rect.topright = Screen.get_rect().topright
-            Screen.blit(Text, Text_Rect)
-            self.MessageTimer -= 1
-        if self.MessageTimer == 0:
-            self.Message = ''
+        Text = Font_Sans.render(self.Message, True, BLACK)
+        Text_Rect = Text.get_rect()
+        Text_Rect.topright = Screen.get_rect().topright
+        Screen.blit(Text, Text_Rect)
+        self.MessageTimer -= 1
 
     def SetMessage(self, Key):
         assert Key in self.Instructions
         return "Input '" + Key + "' : " + self.Instructions[Key] + "   "
+
+    def DisplayScore(self):
+        Text = Font_Sans.render('Score: ' + str(round(self.Score)), True, RED)
+        Text_Rect = Text.get_rect()
+        Text_Rect.midtop = tuple(map(lambda i, j: i + j, Screen.get_rect().midtop, (0, Text.get_height())))
+        Screen.blit(Text, Text_Rect)
+
+    def DisplayTime(self):
+        Text = Font_Sans.render('Time: ' + str(round(self.Time / 1000)), True, BLACK)
+        Text_Rect = Text.get_rect()
+        Text_Rect.midtop = Screen.get_rect().midtop
+        Screen.blit(Text, Text_Rect)
 
 def Displacement(Distance, Angle):
     dX = Distance * math.sin(Angle)
@@ -267,7 +324,8 @@ def main():
     Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 1000)
     Ecoli = FOrganism('A', W_S / 3, H_S / 3)
 
-    PetriDish.DrawTransparentArea()
+    if Control.TransparencySwitch:
+        PetriDish.DrawTransparentArea()
 
     SimState = True
     while SimState:
@@ -278,17 +336,23 @@ def main():
                 Control.MessageTimer = 5000
                 if event.key == pygame.K_x:
                     SimState = False
+
+                # Glucose Control
                 elif event.key == pygame.K_LEFT:
                     Glucose.X_Ori -= Control.MovementResolution
+                    Glucose.Move(-Control.MovementResolution, 0)
                     Control.Message = Control.SetMessage('LEFT')
                 elif event.key == pygame.K_RIGHT:
                     Glucose.X_Ori += Control.MovementResolution
+                    Glucose.Move(Control.MovementResolution, 0)
                     Control.Message = Control.SetMessage('RIGHT')
                 elif event.key == pygame.K_UP:
                     Glucose.Y_Ori -= Control.MovementResolution
+                    Glucose.Move(0, -Control.MovementResolution)
                     Control.Message = Control.SetMessage('UP')
                 elif event.key == pygame.K_DOWN:
                     Glucose.Y_Ori += Control.MovementResolution
+                    Glucose.Move(0, +Control.MovementResolution)
                     Control.Message = Control.SetMessage('DOWN')
                 elif event.key == pygame.K_LEFTBRACKET:
                     Control.MovementResolution -= 1
@@ -296,49 +360,57 @@ def main():
                 elif event.key == pygame.K_RIGHTBRACKET:
                     Control.MovementResolution += 1
                     Control.Message = Control.SetMessage(']')
+                elif event.key == pygame.K_m:
+                    Glucose.Reposition()
+                    Control.Message = Control.SetMessage('M')
+
+                # Ecoli Control
                 elif event.key == pygame.K_o:
-                    Ecoli.X = Ecoli.X_Ori
-                    Ecoli.Y = Ecoli.Y_Ori
-                    Ecoli.Trajectory = [(Ecoli.X_Ori, Ecoli.Y_Ori)]
+                    Ecoli.Reinitialize()
                     Control.Message = Control.SetMessage('O')
                 elif event.key == pygame.K_r:
                     Ecoli.TumbleAngle = -Ecoli.TumbleAngle
                     Control.Message = Control.SetMessage('R')
                 elif event.key == pygame.K_SEMICOLON:
-                    Ecoli.TumbleAngle -= pi/10
+                    Ecoli.TumbleAngle -= pi/50
                     Control.Message = Control.SetMessage(';')
                 elif event.key == pygame.K_QUOTE:
-                    Ecoli.TumbleAngle += pi/10
+                    Ecoli.TumbleAngle += pi/50
                     Control.Message = Control.SetMessage('"')
-                elif event.key == pygame.K_LESS:
+                elif event.key == pygame.K_COMMA:
                     Ecoli.Speed -= Ecoli.Speed_Max / 10
                     Control.Message = Control.SetMessage('<')
-                elif event.key == pygame.K_GREATER:
+                elif event.key == pygame.K_PERIOD:
                     Ecoli.Speed += Ecoli.Speed_Max / 10
                     Control.Message = Control.SetMessage('>')
                 elif event.key == pygame.K_t:
                     Ecoli.TrajectorySwitch = not Ecoli.TrajectorySwitch
                     Control.Message = Control.SetMessage('T')
+
+                # Control panel
                 elif event.key == pygame.K_i:
                     Control.InstructionSwitch = not Control.InstructionSwitch
                     Control.Message = Control.SetMessage('I')
+                elif event.key == pygame.K_s:
+                    Control.ScoreSwitch = not Control.ScoreSwitch
+                    Control.Message = Control.SetMessage('S')
 
-                # Irreversible
-                elif event.key == pygame.K_c:
-                    Control.TransparencySwitch = not Control.TransparencySwitch
-                    Control.Message = Control.SetMessage('C')
+                # # Irreversible transparency option disabled
+                # elif event.key == pygame.K_d:
+                #     Control.TransparencySwitch = not Control.TransparencySwitch
+                #     Control.Message = Control.SetMessage('D')
 
 
-        if Control.TransparencySwitch:
-            Screen.set_clip(None)
+        # if Control.TransparencySwitch:
+        #     Screen.set_clip(None)
 
         Screen.fill(WHITE)
 
-        if Control.TransparencySwitch:
-            Topleft = (PetriDish.X - PetriDish.Radius, PetriDish.Y - PetriDish.Radius)
-            ClipRect = pygame.Rect(Topleft, (PetriDish.Radius * 2, PetriDish.Radius * 2))
-            # ClipRect = pygame.Rect((0, 0), Screen_Size)
-            Screen.set_clip(ClipRect)
+        # if Control.TransparencySwitch:
+        #     Topleft = (PetriDish.X - PetriDish.Radius, PetriDish.Y - PetriDish.Radius)
+        #     ClipRect = pygame.Rect(Topleft, (PetriDish.Radius * 2, PetriDish.Radius * 2))
+        #     # ClipRect = pygame.Rect((0, 0), Screen_Size)
+        #     Screen.set_clip(ClipRect)
 
         PetriDish.Draw()
 
@@ -346,10 +418,11 @@ def main():
         # Glucose.Draw()
 
         # For Particle
-        Glucose.Draw(pattern='particle')
+        Glucose.Draw(pattern='particle', dynamics='static')
 
         Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
         Ecoli.Chemotaxis(Glucose_Now)
+
 
         # if PetriDish.CheckOutOfBound(Ecoli.X, Ecoli.Y):
         #     Ecoli.X = Ecoli.X_Prev
@@ -361,15 +434,23 @@ def main():
 
         Ecoli.Draw()
 
-        if Control.TransparencySwitch:
-            Screen.blit(PetriDish.TransparentCircleArea, Topleft)
+        # if Control.TransparencySwitch:
+        #     Screen.blit(PetriDish.TransparentCircleArea, Topleft)
 
+        if Control.Time < 3000:
+            Control.DisplayWelcome()
         if Control.MessageTimer > 0:
             Control.DisplayInput()
         if Control.InstructionSwitch:
             Control.DisplayInstructions()
+        if Control.ScoreSwitch:
+            Control.Score += Glucose_Now / 10
+            Control.DisplayScore()
+            if Glucose_Now > (Glucose.Max * 0.999):
+                Glucose.Reposition()
 
-
+        Control.Time += 1
+        Control.DisplayTime()
 
         pygame.display.update()
 
