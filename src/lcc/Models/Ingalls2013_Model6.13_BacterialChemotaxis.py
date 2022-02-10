@@ -144,9 +144,11 @@ class FModel():
         fig = plt.figure()
         fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
+        PlotBegin = 0
+
         # Dynamics
         ax1 = fig.add_subplot(2, 2, 1)
-        ax1.plot(T[5000:], Am[5000:], 'b-', label="[Am]") # RL
+        ax1.plot(T[PlotBegin:], Am[PlotBegin:], 'b-', label="[Am]") # RL
         ax1.set_title('Bacterial Chemotaxis')
         ax1.set_xlabel('Time (a.u.)')
         ax1.set_ylabel('Concentration (a.u.)')
@@ -154,8 +156,8 @@ class FModel():
         ax1.grid()
 
         ax2 = fig.add_subplot(2, 2, 2)
-        ax2.plot(T[5000:], Am[5000:], 'b-', label="[Am]") # RL
-        ax2.plot(T[5000:], A[5000:], 'r-', label="[A]") # RL
+        ax2.plot(T[PlotBegin:], Am[PlotBegin:], 'b-', label="[Am]") # RL
+        ax2.plot(T[PlotBegin:], A[PlotBegin:], 'r-', label="[A]") # RL
         ax2.set_title('Bacterial Chemotaxis')
         ax2.set_xlabel('Time (a.u.)')
         ax2.set_ylabel('Concentration (a.u.)')
@@ -163,8 +165,8 @@ class FModel():
         ax2.grid()
 
         ax3 = fig.add_subplot(2, 2, 3)
-        ax3.plot(T[5000:], AmL[5000:], 'b-', label="[AmL]") # RL
-        ax3.plot(T[5000:], AL[5000:], 'r-', label="[AL]") # RL
+        ax3.plot(T[PlotBegin:], AmL[PlotBegin:], 'b-', label="[AmL]") # RL
+        ax3.plot(T[PlotBegin:], AL[PlotBegin:], 'r-', label="[AL]") # RL
         ax3.set_title('Bacterial Chemotaxis')
         ax3.set_xlabel('Time (a.u.)')
         ax3.set_ylabel('Concentration (a.u.)')
@@ -172,7 +174,7 @@ class FModel():
         ax3.grid()
 
         ax4 = fig.add_subplot(2, 2, 4)
-        ax4.plot(T[5000:], BP[5000:], 'r-', label="[BP]") # RL
+        ax4.plot(T[PlotBegin:], BP[PlotBegin:], 'r-', label="[BP]") # RL
         ax4.set_title('Bacterial Chemotaxis')
         ax4.set_xlabel('Time (a.u.)')
         ax4.set_ylabel('Concentration (a.u.)')
