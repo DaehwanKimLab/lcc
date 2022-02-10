@@ -137,6 +137,7 @@ stmt           : reaction_decl_stmt T_SEMIC
                | pathway_decl T_SEMIC
                | process_decl_stmt T_SEMIC
                | organism_decl T_SEMIC
+               | organism_decl
                | experiment_decl T_SEMIC
                | using_stmt T_SEMIC
 			   | ribosome_decl_stmt T_SEMIC
@@ -189,7 +190,9 @@ p_expr_stmt    : p_expr { $$ = NNodeUtil::InitStatementList(new NExpressionState
                ;
 
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, *$3)); delete $2; delete $3; }
+               | T_ORGANISM ident block { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, $3)); delete $2; }
                ;
+
 experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL  { $$ = NNodeUtil::InitStatementList(new NExperimentDeclaration(*$2, *$3)); delete $2; delete $3; }
                 | T_EXPERIMENT ident experiment_block  { $$ = NNodeUtil::InitStatementList(new NExperimentDeclaration(*$2, $3)); delete $2; }
                 ;

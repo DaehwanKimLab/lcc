@@ -572,18 +572,29 @@ public:
 
 class NOrganismDeclaration : public NStatement {
 public:
-    const NIdentifier Id;
-    const std::string Description;
+    NIdentifier Id;
+    std::string Description;
+    std::shared_ptr<NBlock> Block;
+
 
     NOrganismDeclaration(const NIdentifier& InId, const std::string& InDescription)
         : Id(InId), Description(InDescription) {}
+    NOrganismDeclaration(const NIdentifier& InId, NBlock* InBlock)
+        : Id(InId), Block(InBlock) {}
     NOrganismDeclaration(const NIdentifier& InId)
         : Id(InId) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Organism: {";
-        Id.Print(os); os << ", ";
-        os << "Description: " << Description;
+        Id.Print(os);
+        if (Description.size() > 0) {
+            os << ", ";
+            os << "Description: " << Description;
+        }
+        if (Block) {
+            os << ", ";
+            Block->Print(os);
+        }
         os << "}";
     }
     virtual void Visit(FTraversalContext& Context) const override;
