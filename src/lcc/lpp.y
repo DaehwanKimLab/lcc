@@ -49,7 +49,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_INITIATION T_ELONGATION T_TERMINATION
 %token <Token> T_CONTAINER T_PETRIDISH
 %token <Token> T_FOR T_WHILE T_IF T_ELSE
-%token <Token> T_INT T_FLOAT T_ARRAY T_DICT T_AND T_L_OR T_NOT
+%token <Token> T_AND T_L_OR T_NOT
 %token <Token> T_GT T_LT T_GE T_LE T_EQ T_NE
 %token <Token> T_STAR T_DIV
 %token <Token> T_LBRACKET T_RBRACKET
@@ -59,6 +59,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <String> T_MOLECULE
 
 %token <String> T_NUMBER T_INTEGER T_DOUBLE T_IDENTIFIER
+%token <String> T_FLOAT T_INT T_DICT T_ARRAY
 
 %token <Token> T_LPAREN T_RPAREN T_LBRACE T_RBRACE T_COMMA T_DOT
 %token <Token> T_PLUS T_MINUS T_ARROW T_INARROW T_BIARROW
@@ -114,7 +115,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <DeclStmt> init_declarator
 %type <Ident> declarator
 %type <InitExpr> initializer initializer_list
-%type <Token> declaration_specifiers type_specifier
+%type <String> declaration_specifiers type_specifier
 %type <String> unit
 
 %right T_ARROW T_INARROW T_BIARROW
@@ -532,7 +533,7 @@ declaration_list : declaration
                  ;
 */
 
-decl_stmt      : declaration_specifiers init_declarator_list { NDeclaraionStatement::UpdateType($2, $1); $$ = $2; }
+decl_stmt      : declaration_specifiers init_declarator_list { NDeclaraionStatement::UpdateType($2, *$1); $$ = $2; delete $1; }
                ;
 
 declaration_specifiers : type_specifier
@@ -542,6 +543,7 @@ type_specifier : T_FLOAT
                | T_INT
                | T_ARRAY
                | T_DICT
+               | T_IDENTIFIER
                ;
 
 init_declarator_list : init_declarator { $$ = NNodeUtil::InitStatementList($1); }

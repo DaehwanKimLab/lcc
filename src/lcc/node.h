@@ -1200,20 +1200,20 @@ public:
 
 class NDeclaraionStatement : public NStatement {
 public:
-    int Type;
+    std::string Type;
     NIdentifier Id;
     std::shared_ptr<NInitializerExpression> Initializer;
 
     NDeclaraionStatement() {};
-    NDeclaraionStatement(int InType, const NIdentifier& InId)
+    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId)
         : Type(InType), Id(InId) {};
-    NDeclaraionStatement(int InType, const NIdentifier& InId, NExpression* InInit)
+    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId, NExpression* InInit)
         : Type(InType), Id(InId), Initializer(std::make_shared<NInitializerExpression>(InInit)) {};
-    NDeclaraionStatement(int InType, const NIdentifier& InId, NInitializerExpression* InInitList)
+    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId, NInitializerExpression* InInitList)
         : Type(InType), Id(InId), Initializer(InInitList) {};
 
 
-    void SetType(int InType)
+    void SetType(const std::string& InType)
     {
         Type = InType;
     }
@@ -1241,7 +1241,7 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 
 
-    static void UpdateType(StatementList *Statements, int InType)
+    static void UpdateType(StatementList *Statements, const std::string& InType)
     {
         for (auto& stmt: *Statements) {
             NDeclaraionStatement* DeclStmt = dynamic_cast<NDeclaraionStatement *>(stmt.get());
