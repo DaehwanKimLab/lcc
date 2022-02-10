@@ -875,7 +875,6 @@ public:
     const NIdentifier Id;
     std::shared_ptr<NBlock> Body;
 
-
     NContainerStatement(const NIdentifier& InId, NBlock* InBody)
         : Id(InId), Body(InBody) {};
     NContainerStatement(const NIdentifier& InId)
@@ -892,6 +891,25 @@ public:
         os << "}";
     }
 
+};
+
+class NPetridishStatement : public NContainerStatement {
+public:
+    NPetridishStatement(const NIdentifier& InId, NBlock* InBody)
+        : NContainerStatement(InId, InBody) {};
+    NPetridishStatement(const NIdentifier& InId)
+        : NContainerStatement(InId) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Petridish: {";
+        Id.Print(os); os << ", ";
+        if (Body) {
+            for (const auto& stmt: Body->Statements) {
+                stmt->Print(os); os << ", ";
+            }
+        }
+        os << "}";
+    }
 };
 
 class NLoopStatement : public NStatement {

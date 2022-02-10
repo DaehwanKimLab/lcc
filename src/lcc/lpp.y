@@ -47,7 +47,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_POLYMERASE T_RIBOSOME
 %token <Token> T_REPLICATION_ORIGIN T_REPLICATION_TERMINUS T_RIBOSOME_BINDING_SITE T_TRANSLATION_TERMINATOR
 %token <Token> T_INITIATION T_ELONGATION T_TERMINATION
-%token <Token> T_CONTAINER
+%token <Token> T_CONTAINER T_PETRIDISH
 %token <Token> T_FOR T_WHILE T_IF T_ELSE
 %token <Token> T_INT T_FLOAT T_ARRAY T_DICT T_AND T_L_OR T_NOT
 %token <Token> T_GT T_LT T_GE T_LE T_EQ T_NE
@@ -100,7 +100,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <StmtVec> for_stmt if_stmt while_stmt
 %type <StmtVec> stmt reaction_decl_stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl reaction_decls protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
-%type <StmtVec> container_stmt
+%type <StmtVec> container_stmt petridish_stmt
 %type <StmtVec> p_expr_stmt p_expr_decl_stmt
 %type <StmtVec> decl_stmt init_declarator_list
 %type <Stmt> ribosome_arg polymerase_arg
@@ -147,6 +147,8 @@ stmt           : reaction_decl_stmt T_SEMIC
                | replication_terminus_stmt T_SEMIC
                | container_stmt T_SEMIC
                | container_stmt
+               | petridish_stmt T_SEMIC
+               | petridish_stmt
                | for_stmt T_SEMIC
                | for_stmt
                | while_stmt T_SEMIC
@@ -159,6 +161,7 @@ stmt           : reaction_decl_stmt T_SEMIC
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
                | T_LBRACE T_RBRACE { $$ = new NBlock(); }
+               | /* empty */ { $$ = new NBlock(); }
                ;
 
 for_stmt       : T_FOR T_LPAREN p_expr_decl_stmt T_SEMIC p_expr T_SEMIC p_expr T_RPAREN block { $$ = NNodeUtil::InitStatementList(new NLoopStatement(*$3, $5, $7, $9)); delete $3; }
@@ -172,6 +175,9 @@ while_stmt     : T_WHILE T_LPAREN p_expr T_RPAREN block { $$ = NNodeUtil::InitSt
                ;
 
 container_stmt : T_CONTAINER ident block { $$ = NNodeUtil::InitStatementList(new NContainerStatement(*$2, $3)); delete $2; }
+               ;
+
+petridish_stmt : T_PETRIDISH ident block { $$ = NNodeUtil::InitStatementList(new NPetridishStatement(*$2, $3)); delete $2; }
                ;
 
 p_expr_decl_stmt : p_expr_stmt
