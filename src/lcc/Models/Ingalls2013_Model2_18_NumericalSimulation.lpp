@@ -1,0 +1,11 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Numerical Simulation
+// Network  2.18,   p.35
+// Model   2.19,   p.35
+
+reaction R1(A --> B, k=9, krev=12);
+reaction R2(B --> C, k=2);
+
+A[0]=0;
+B[0]=10;
