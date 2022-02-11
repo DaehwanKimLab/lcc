@@ -93,7 +93,8 @@
 
 
 ### 8. Bacterial Chemotaxis (p.163)
-<img src="Ingalls2013_Model6_13_BacterialChemotaxis_Model.png" height="200"> 
+<img src="Ingalls2013_Model6_13_BacterialChemotaxis_Model.png" height="250"> 
+<img src="Ingalls2013_Model6_13_BacterialChemotaxis_Eqn.png" height="300"> 
 
     Initial Concentrations:     R = 5, Am = 0, AmL = 0, A = 500, AL = 0, B = 0.1, BP = 0
     Induced Concentrations:     L[0:10] = 20, L[10:30] = 40, L[30:50] = 80
