@@ -8,7 +8,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 message(STATUS "Build configuration: " ${CMAKE_BUILD_TYPE})
 
-include_directories(${PROJECT_SOURCE_DIR})
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(FLEX)
 find_package(BISON)

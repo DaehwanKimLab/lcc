@@ -72,7 +72,7 @@ public:
     NExpression() {};
     virtual void Visit(FTraversalContext& Context) const override;
 
-    virtual std::string Evaluate() {
+    virtual std::string Evaluate() const {
         /* Temporary */
         return "";
     }
@@ -96,6 +96,10 @@ public:
 
     virtual void Print(std::ostream &os) const override {
         os << "Id: " << Name;
+    }
+
+    virtual std::string Evaluate() const override {
+        return Name;
     }
 
     virtual void Visit(FTraversalContext &Context) const override;
@@ -581,18 +585,29 @@ public:
 
 class NOrganismDeclaration : public NStatement {
 public:
-    const NIdentifier Id;
-    const std::string Description;
+    NIdentifier Id;
+    std::string Description;
+    std::shared_ptr<NBlock> Block;
+
 
     NOrganismDeclaration(const NIdentifier& InId, const std::string& InDescription)
         : Id(InId), Description(InDescription) {}
+    NOrganismDeclaration(const NIdentifier& InId, NBlock* InBlock)
+        : Id(InId), Block(InBlock) {}
     NOrganismDeclaration(const NIdentifier& InId)
         : Id(InId) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Organism: {";
-        Id.Print(os); os << ", ";
-        os << "Description: " << Description;
+        Id.Print(os);
+        if (Description.size() > 0) {
+            os << ", ";
+            os << "Description: " << Description;
+        }
+        if (Block) {
+            os << ", ";
+            Block->Print(os);
+        }
         os << "}";
     }
     virtual void Visit(FTraversalContext& Context) const override;
@@ -884,7 +899,6 @@ public:
     const NIdentifier Id;
     std::shared_ptr<NBlock> Body;
 
-
     NContainerStatement(const NIdentifier& InId, NBlock* InBody)
         : Id(InId), Body(InBody) {};
     NContainerStatement(const NIdentifier& InId)
@@ -901,6 +915,25 @@ public:
         os << "}";
     }
 
+};
+
+class NPetridishStatement : public NContainerStatement {
+public:
+    NPetridishStatement(const NIdentifier& InId, NBlock* InBody)
+        : NContainerStatement(InId, InBody) {};
+    NPetridishStatement(const NIdentifier& InId)
+        : NContainerStatement(InId) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Petridish: {";
+        Id.Print(os); os << ", ";
+        if (Body) {
+            for (const auto& stmt: Body->Statements) {
+                stmt->Print(os); os << ", ";
+            }
+        }
+        os << "}";
+    }
 };
 
 class NLoopStatement : public NStatement {
@@ -1030,30 +1063,29 @@ public:
     }
     virtual void Visit(FTraversalContext& Context) const override {};
 
-    virtual std::string Evaluate() override {
+    virtual std::string Evaluate() const override {
         return Value;
     }
 };
 
 class NVariableExpression : public NExpression {
 public:
-    NIdentifier Id;
-    std::shared_ptr<NExpression> IndexExpression;
+    std::shared_ptr<NExpression> Variable;
+    std::shared_ptr<NExpression> Index;
 
-    NVariableExpression(const NIdentifier& InId)
-        : Id(InId) {}
-
-    NVariableExpression(const NIdentifier& InId, NExpression* InIndexExpr)
-        : Id(InId), IndexExpression(InIndexExpr) {}
-
+    NVariableExpression(NExpression* InVariableExpr)
+        : Variable(InVariableExpr) {}
+    NVariableExpression(NExpression* InVariableExpr, NExpression* InIndexExpr)
+        : Variable(InVariableExpr), Index(InIndexExpr) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Variable: {";
-        os << "Name: " << Id.Name;
-        if (IndexExpression) {
+        os << "Name: ";
+        Variable->Print(os);
+        if (Index) {
             os << ", ";
             os << "Index: {";
-            IndexExpression->Print(os);
+            Index->Print(os);
             os << "}";
         }
         os << "}";
@@ -1061,8 +1093,8 @@ public:
 
     virtual void Visit(FTraversalContext& Context) const override {};
 
-    virtual std::string Evaluate() override {
-        return Id.Name;
+    virtual std::string Evaluate() const override {
+        return Variable->Evaluate();
     }
 };
 
@@ -1177,20 +1209,20 @@ public:
 
 class NDeclaraionStatement : public NStatement {
 public:
-    int Type;
+    std::string Type;
     NIdentifier Id;
     std::shared_ptr<NInitializerExpression> Initializer;
 
     NDeclaraionStatement() {};
-    NDeclaraionStatement(int InType, const NIdentifier& InId)
+    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId)
         : Type(InType), Id(InId) {};
-    NDeclaraionStatement(int InType, const NIdentifier& InId, NExpression* InInit)
+    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId, NExpression* InInit)
         : Type(InType), Id(InId), Initializer(std::make_shared<NInitializerExpression>(InInit)) {};
-    NDeclaraionStatement(int InType, const NIdentifier& InId, NInitializerExpression* InInitList)
+    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId, NInitializerExpression* InInitList)
         : Type(InType), Id(InId), Initializer(InInitList) {};
 
 
-    void SetType(int InType)
+    void SetType(const std::string& InType)
     {
         Type = InType;
     }
@@ -1218,7 +1250,7 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 
 
-    static void UpdateType(StatementList *Statements, int InType)
+    static void UpdateType(StatementList *Statements, const std::string& InType)
     {
         for (auto& stmt: *Statements) {
             NDeclaraionStatement* DeclStmt = dynamic_cast<NDeclaraionStatement *>(stmt.get());

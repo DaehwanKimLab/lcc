@@ -69,6 +69,7 @@ digit                         [0-9]
 "elongation"                  { return TOKEN(T_ELONGATION); }
 "termination"                 { return TOKEN(T_TERMINATION); }
 "container"                   { return TOKEN(T_CONTAINER); }
+"petridish"                   { return TOKEN(T_PETRIDISH); }
 "dna_{n}"                     { SAVE_TOKEN; return T_MOLECULE; }
 "dna_{n+1}"                   { SAVE_TOKEN; return T_MOLECULE; }
 "dnt"|"DNT"|"dNTP"            { SAVE_TOKEN; return T_MOLECULE; }
