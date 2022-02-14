@@ -196,8 +196,9 @@ protein_decls  : protein_decl { $$ = NNodeUtil::InitStatementList($1); }
                ;
 
 protein_decl   : ident { $$ = new NProteinDeclaration(*$1); delete $1; }
-               | ident T_LPAREN protein_decl_args T_RPAREN { $$ = new NProteinDeclaration(*$1, *$3); delete $1; delete $3; }
-               | ident T_LPAREN protein_decl_args T_RPAREN protein_block { $$ = new NProteinDeclaration(*$1, *$3, $5); delete $1; delete $3; }
+               | ident protein_block { $$ = new NProteinDeclaration(*$1, $2); delete $1; }
+               | ident T_LPAREN protein_decl_args T_RPAREN { $$ = new NProteinDeclaration(*$1, $3); delete $1; }
+               | ident T_LPAREN protein_decl_args T_RPAREN protein_block { $$ = new NProteinDeclaration(*$1, $3, $5); delete $1; }
                ;
 
 protein_decl_args : gen_reaction_decl_args { $$ = $1; }
@@ -296,8 +297,8 @@ process_decl_stmt : T_PROCESS process_decl { $$ = NNodeUtil::InitStatementList($
                   ;
 
 process_decl      : ident { $$ = new NProcessDeclaration(*$1); delete $1; }
-                  | ident T_LPAREN process_decl_args T_RPAREN { $$ = new NProcessDeclaration(*$1, *$3); delete $1; delete $3; }
-                  | ident T_LPAREN process_decl_args T_RPAREN process_block { $$ = new NProcessDeclaration(*$1, *$3, $5); delete $1; delete $3; }
+                  | ident T_LPAREN process_decl_args T_RPAREN { $$ = new NProcessDeclaration(*$1, $3); delete $1; }
+                  | ident T_LPAREN process_decl_args T_RPAREN process_block { $$ = new NProcessDeclaration(*$1, $3, $5); delete $1; }
                   ;
 
 process_decl_args : /* blank */ { $$ = new NReaction(); } /* gen_reaction_decl_args */
@@ -421,7 +422,7 @@ reaction_decls  : reaction_decl { $$ = NNodeUtil::InitStatementList($1); }
                 ;
 
 reaction_decl   : ident { $$ = new NReactionDeclaration(*$1); delete $1; }
-                | ident T_LPAREN reaction_decl_args T_RPAREN { $$ = new NReactionDeclaration(*$1, *$3); delete $1; delete $3; }
+                | ident T_LPAREN reaction_decl_args T_RPAREN { $$ = new NReactionDeclaration(*$1, $3); delete $1; }
                 ;
 
 reaction_decl_args : gen_reaction_decl_args { $$ = $1; }

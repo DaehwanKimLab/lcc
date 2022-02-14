@@ -298,13 +298,13 @@ public:
 class NReactionDeclaration : public NStatement {
 public:
     const NIdentifier Id;
-    NReaction OverallReaction;
+    const NReaction* OverallReaction;
 //    std::shared_ptr<NBlock> Block;
 
 //    NReactionDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction, NBlock* InBlock)
 //        : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
 
-    NReactionDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction)
+    NReactionDeclaration(const NIdentifier& InId, const NReaction* InOverallReaction)
             : Id(InId), OverallReaction(InOverallReaction) {}
 
     NReactionDeclaration(const NIdentifier& InId)
@@ -313,7 +313,9 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "Reaction: {";
         Id.Print(os); os << ", ";
-        OverallReaction.Print(os); os << ", ";
+        if (OverallReaction) {
+            OverallReaction->Print(os); os << ", ";
+        }
 //        if (Block) {
 //            for (const auto& stmt: Block->Statements) {
 //                stmt->Print(os); os << ", ";
@@ -328,14 +330,17 @@ public:
 class NProteinDeclaration : public NStatement {
 public:
     const NIdentifier Id;
-    NReaction OverallReaction;
+    const NReaction* OverallReaction;
     std::shared_ptr<NBlock> Block;
 
-    NProteinDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction, NBlock* InBlock)
+    NProteinDeclaration(const NIdentifier& InId, const NReaction* InOverallReaction, NBlock* InBlock)
         : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
 
-    NProteinDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction)
+    NProteinDeclaration(const NIdentifier& InId, const NReaction* InOverallReaction)
             : Id(InId), OverallReaction(InOverallReaction) {}
+
+    NProteinDeclaration(const NIdentifier& InId, NBlock* InBlock)
+        : Id(InId), Block(InBlock) {}
 
     NProteinDeclaration(const NIdentifier& InId)
             : Id(InId) {}
@@ -343,7 +348,9 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "Protein: {";
         Id.Print(os); os << ", ";
-        OverallReaction.Print(os); os << ", ";
+        if (OverallReaction) {
+            OverallReaction->Print(os); os << ", ";
+        }
         if (Block) {
             for (const auto& stmt: Block->Statements) {
                 stmt->Print(os); os << ", ";
@@ -378,13 +385,13 @@ public:
 class NProcessDeclaration : public NStatement {
 public:
     const NIdentifier Id;
-    NReaction OverallReaction;
+    const NReaction* OverallReaction;
     std::shared_ptr<NBlock> Block;
 
-    NProcessDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction, NBlock* InBlock)
+    NProcessDeclaration(const NIdentifier& InId, const NReaction* InOverallReaction, NBlock* InBlock)
         : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
 
-    NProcessDeclaration(const NIdentifier& InId, const NReaction& InOverallReaction)
+    NProcessDeclaration(const NIdentifier& InId, const NReaction* InOverallReaction)
         : Id(InId), OverallReaction(InOverallReaction) {}
 
     NProcessDeclaration(const NIdentifier& InId)
@@ -394,7 +401,9 @@ public:
         os << "Process: {";
         Id.Print(os);
         os << ", ";
-        OverallReaction.Print(os);
+        if (OverallReaction) {
+            OverallReaction->Print(os);
+        }
         if (Block) {
             os << ", ";
             Block->Print(os);
@@ -662,7 +671,7 @@ public:
 class NStepStatement : public NStatement {
 public:
     const NIdentifier Id;
-    NReaction Reaction;
+    const NReaction Reaction;
 
     NStepStatement(const NIdentifier& InId, const NReaction& InReaction)
     : Id(InId), Reaction(InReaction) {}

@@ -72,5 +72,7 @@ std::string str_join(Iterator Begin, Iterator End, const std::string& Sep)
 bool CreatePath(const char *Path);
 bool CreatePaths(const char *Path);
 std::string SciFloat2Str (float Float);
+void Assertion(bool Bool, std::string ErrorMessage);
+
 } // Namespace Utils
 #endif /* LCC_UTIL_H */

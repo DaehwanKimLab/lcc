@@ -211,38 +211,33 @@ public:
 
 class FEnzyme : public FMolecule { // update to FProtein when ID system is set up
 public:
-    int Type; // 0 : Enz_Standard
-              // 1 : Enz_MichaelisMenten
-
-    std::string Substrate;
-    float kcat = -1;
-    float KM = -1;
-
-    // standard chemical reaction rates
-    float k = -1;
-    float krev = -1;
-
-    std::string Mode;
+    // Kinetics is a vector of Substrate:(kcat, KM...) data. Maybe extended by adding temperature, pH, etc.
+    std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
 
     FEnzyme() {}
 
     // UPDATE TO FProtein(InName) when ID System is set up
-    FEnzyme(int InType, const std::string& InName, const std::string& InSubstrate, const float& Ink1, const float& Ink2)
-        : Type(InType), Substrate(InSubstrate), FMolecule(InName) {
-            if (Type == 0) {
-                k = Ink1;	krev = Ink2;
-            } else if (Type == 1) {
-                kcat = Ink1; 	KM = Ink2;           
-            }       
-        }
+    FEnzyme(const std::string& InName, const std::vector<std::pair<std::string, std::vector<float>>> InKinetics)
+        : Kinetics(InKinetics), FMolecule(InName) {}
+
+    FEnzyme(const std::string& InName)
+        : FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "  Enzyme Id: " << Name << "\t| Substrate: " << Substrate; 
-        if (Type == 0) {
-            os << "\t| k: " << Utils::SciFloat2Str(k) << "\t| krev:  " << Utils::SciFloat2Str(krev);
-        }
-        if (Type == 1) {
-            os << "\t| kcat:  " << Utils::SciFloat2Str(kcat) << "\t| KM: " << Utils::SciFloat2Str(KM);
+        os << "  Enzyme Id: " << Name; 
+        if (!Kinetics.empty()) {
+            for (auto kinetics : Kinetics) {
+                os << "\t| Substrate:  " << kinetics.first;
+                int i = 0;
+                for (auto Float: kinetics.second) {
+                    if (i == 0) {
+                        os << "\t| kcat: " << Utils::SciFloat2Str(Float);
+                    } else if (i == 1) {
+                        os << "\t| KM: " << Utils::SciFloat2Str(Float);
+                    }
+                    i++;
+                }
+            }
         }
         os << std::endl;
     }
@@ -288,7 +283,7 @@ public:
     FReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry) 
         : Name(InName), Stoichiometry(InStoichiometry) {}
 
-    bool CheckIfReactant(const std::string& Query) {
+    bool CheckIfReactant(const std::string& Query) const {
         for (auto& stoich : Stoichiometry) {
            if (stoich.first == Query) {
                if (stoich.second < 0) {
@@ -301,7 +296,7 @@ public:
         std::cout << "ERROR: Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
         return false;
     }
-    bool CheckIfProduct(const std::string& Query) {
+    bool CheckIfProduct(const std::string& Query) const {
         for (auto& stoich : Stoichiometry) {
            if (stoich.first == Query) {
                if (stoich.second > 0) {
@@ -369,6 +364,23 @@ public:
         : Enzyme(InEnzyme), FReaction(InName, InStoichiometry) {}
 };
 
+class FEnz_StandardReaction : public FEnzymaticReaction { // may have multiple inheritance (FStandardReaction) but it may complicate the logic for FStandardReaction
+public:
+    float k;
+    float krev;
+
+    FEnz_StandardReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InEnzyme, const float Ink, const float Inkrev)
+        : k(Ink), krev(Inkrev), FEnzymaticReaction(InName, InStoichiometry, InEnzyme) {}
+
+    void Print(std::ostream& os) {
+        os << "  [Enz_Standard Reaction]" << std::endl;
+        Print_Stoichiometry(os);
+        os << "  k: " << k << "\t| krev: " << krev << std::endl;
+        os << std::endl;
+    }
+
+};
+
 class FPolymeraseReaction : public FReaction {
 public:
     std::string Polymerase;
@@ -431,37 +443,17 @@ public:
     void AssignReactionTypesForReactionList();
     void MakeListsFromMoleculeList();
 
+    // Tables
     const std::string QueryTable(const std::string& Name, const std::string& Property, FTable Table);
 
-    std::vector<std::string> GetNames_MoleculeList();
-
-    // TODO: merge the below methods to return to have vector<string> and vector<float> functions, taking key strings. 
+    // EnzymeList
     const FEnzyme * GetEnzyme_EnzymeList(std::string Name);
-    std::vector<std::string> GetNames_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<std::string> GetSubstrateNames_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<float> Getkcats_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<float> GetKMs_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<float> Getks_EnzymeList(std::vector<const FEnzyme *>);
-    std::vector<float> Getkrevs_EnzymeList(std::vector<const FEnzyme *>);
+//    float GetFloatAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
+//    std::string GetStringAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
 
-    // new merged methods for EnzymeList
-    float GetFloatAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
-    std::string GetStringAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
-
+    // PolymeraseList - to be updated
     std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
     std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
-
-    std::vector<std::string> GetNames_ReactionList(std::string);
-    std::vector<std::string> GetSubstrateNames_ReactionList();
-    std::vector<std::string> GetReactantNames_ReactionList();
-    std::vector<std::string> GetProductNames_ReactionList();
-
-    // update by removing input data
-    std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
-    std::vector<std::string> GetSubstrateNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
-    std::vector<std::string> GetReactantNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
-    std::vector<std::string> GetProductNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
-    std::vector<std::string> GetEnzymeNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *>);
 
     std::vector<std::string> GetNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
     std::vector<std::string> GetSubstrateNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
@@ -479,13 +471,19 @@ public:
     std::vector<std::vector<int>> GetStoichiometryMatrix(std::string);
     std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *>);
 
+    // CountList
+    float GetInitialCountByName_CountList(std::string InputName);
 
-
+    // MoleculeList
+    std::vector<std::string> GetNames_MoleculeList();
     int GetIdxByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
     // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
 
-    float GetInitialCountByName_CountList(std::string InputName);
+    // useful?
+    std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
+    std::vector<std::string> GetNameListFromMoleculeList(std::string FClassName);
+    std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
 
     std::vector<const FGene *> GetList_Gene_MoleculeList();
     std::vector<const FRNA *> GetList_RNA_MoleculeList();
@@ -494,20 +492,19 @@ public:
     std::vector<const FPolymerase *> GetList_Polymerase_MoleculeList();
     std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
 
-    std::vector<const FEnzymaticReaction *> GetList_Enzymatic_ReactionList();
-    std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
 
+
+    // ReactionList
+    std::vector<std::string> GetNames_ReactionList(std::string);
     std::vector<const FReaction *> GetSubList_ReactionList(std::string); // useful for stoichiometry
     std::vector<const FStandardReaction *> GetList_Standard_ReactionList(std::string Type);
     std::vector<const FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
+    std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
+
+    // useful?
+    std::vector<const FEnzymaticReaction *> GetList_Enzymatic_ReactionList();
+    std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
     
-    std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
-    std::vector<std::string> GetNameListFromMoleculeList(std::string FClassName);
-
-    std::vector<int> GetIdx_EnzymeSubstrate_MoleculeList();
-//    std::vector<int> GetIdx_PolymeraseSubstrate_MoleculeList();
-
-    std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
 
     std::vector<int> GetIdxOfStrListFromStrList(std::vector<std::string> InputList, std::vector<std::string> RefList);
 //    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();

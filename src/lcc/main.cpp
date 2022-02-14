@@ -42,10 +42,15 @@ FDataset Dataset;
 FState State;
 FDataManager DataManager;
 
+ostream& os = std::cout;
+
 // additional global variables
 std::string in = "    ";
 int N_MoleculesAllowed = 3; // Set number of molecules accepted for reactants and products
 std::string Name_Pseudo = "Pseudo";
+
+float Float_Init = -0.09876723; // random initialized float
+int Int_Init = -128; // random initialized int 
 
 
 const char *VersionString = "1.0.0";
@@ -72,14 +77,14 @@ float RandomNumber(float Min=0.0, float Max=1.0)
     return distr(eng);
 }
 
-std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(const NReaction& OverallReaction, bool bProductIsReaction=false) {
+std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* Reaction, bool bProductIsReaction=false) {
 
     map<string, int> Stoichiometry;
-		string Location = OverallReaction.Location.Name;
+		string Location = Reaction->Location.Name;
 
     std::string Name;
     int Coefficient;
-    for (const auto& reactant : OverallReaction.Reactants) {
+    for (const auto& reactant : Reaction->Reactants) {
         Name = reactant->Id.Name;
         Coefficient = -reactant->Coeff; // update when coeff is fully implemented in parser
         std::cout << "    Reactants: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
@@ -87,7 +92,7 @@ std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(const NRea
 
     }
 
-    for (const auto& product : OverallReaction.Products) {
+    for (const auto& product : Reaction->Products) {
         Name = product->Id.Name;
         Coefficient = product->Coeff; // update when coeff is fully implemented in parser
         std::cout << "    Products: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
@@ -113,38 +118,145 @@ std::vector<std::pair<std::string, int>> GetStoichFromOverallReaction(const NRea
         if ((stoich.second > 0) & (bProductIsReaction)) {
             continue;
         }
-        FMolecule * Molecule = new FMolecule(stoich.first);
-        // Molecule->Print(os);
-        Context.AddToMoleculeList(Molecule);
+        FMolecule * NewMolecule = new FMolecule(stoich.first);
+        // NewMolecule->Print(os);
+        Context.AddToMoleculeList(NewMolecule);
     } 
 
     return Stoichiometry_Ordered;
+}
+            
+void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::string EnzymeName)
+{
+    float k = Float_Init;
+    float krev = Float_Init;
+
+    // properties
+    const auto& propertylist = Reaction->Property;
+    for (auto& property :propertylist) {
+        auto& Key = property->Key;
+        auto Value = property->Value->Evaluate();
+
+        if (Key == "k") {
+            k = std::stof(Value);
+        } else if (Key == "krev") {
+            krev = std::stof(Value);
+        }
+    }
+
+    std::vector<std::pair<std::string, int>> Stoichiometry = GetStoichFromReaction(Reaction);
+    string Location = Reaction->Location.Name;
+
+    // for Enz_Standard Reaction
+    // Fill in presumably irreversible reaction kinetic values 
+    if      ((k != Float_Init) & (krev == Float_Init))   { krev = 0; }
+    else if ((k == Float_Init) & (krev != Float_Init))   { k = 0; }
+
+    // add new enzymatic reaction to the system
+    if ((k >= 0) & (krev >= 0)) {
+        FEnz_StandardReaction *NewReaction = new FEnz_StandardReaction(ReactionName, Stoichiometry, EnzymeName, k, krev);
+        NewReaction->Print_Stoichiometry(os);
+        Context.AddToReactionList(NewReaction);
+
+    } else {
+        FEnzymaticReaction *NewReaction = new FEnzymaticReaction(ReactionName, Stoichiometry, EnzymeName);
+        NewReaction->Print_Stoichiometry(os);
+        Context.AddToReactionList(NewReaction);
+    }
+}
+
+std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName, const NReaction* Reaction)
+{
+    std::pair<std::string, std::vector<float>> SubConstPair;
+    std::string Substrate;
+    float kcat = Float_Init;
+    float KM = Float_Init;                
+
+    // properties
+    const auto& propertylist = Reaction->Property;
+    for (auto& property :propertylist) {
+        auto& Key = property->Key;
+        auto Value = property->Value->Evaluate();
+
+        if (Key == "Substrate") {
+            Substrate = std::stof(Value);
+        } else if ((Key == "kcat") || (Key == "kCat")) {
+            kcat = std::stof(Value);
+        } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
+            KM = std::stof(Value);
+        }
+    }
+     
+
+    // if Substrate not defined by user input, search the database            
+    if (Substrate.empty()) {
+        Substrate = Context.QueryTable(EnzymeName, "Substrate", Context.EnzymeTable);
+        if (!Substrate.empty()) {
+            os << "  Substrate imported from database: " << Substrate << endl;
+        }
+    }
+
+    // import constants from database
+    if (kcat == Float_Init) {
+        string kcat_Database = Context.QueryTable(EnzymeName, "kcat", Context.EnzymeTable);
+        if (!kcat_Database.empty()) {
+            kcat = std::stof(kcat_Database);
+            os << "  kcat imported from database: " << kcat_Database << endl;
+        }
+    }
+    if (KM == Float_Init) {
+        string KM_Database = Context.QueryTable(EnzymeName, "KM", Context.EnzymeTable);
+        if (!KM_Database.empty()) {
+            KM = std::stof(KM_Database);
+            os << "  KM imported from database: " << KM_Database << endl;
+        }
+    }
+
+    // Use first reactant as substrate for MichaelisMenten if still not assigned
+    // This may not always work with Michaelis Menten without database. Excluding common molecules will improve a chance.
+    if (Substrate.empty()) {
+        for (const auto& reactant : Reaction->Reactants) {
+            if (reactant->Id.Name == EnzymeName) {
+                continue;
+            }
+            Substrate = reactant->Id.Name;
+            break;
+        }
+    }
+
+    if ((kcat >= 0) & (KM >= 0)) {
+        std::vector<float> KConstants(kcat, KM);
+
+
+
+
+        SubConstPair = {Substrate, KConstants};
+    }
+    return SubConstPair;
 }
 
 // Pseudomolecule (placeholder to support current version of matrix operation)
 void AddPseudoMolecule()
 {
     // int Idx = 0
-    FMolecule * Molecule = new FMolecule(Name_Pseudo);   // old count input system
-    // Molecule->Print(os);
-    Context.AddToMoleculeList(Molecule);
+    FMolecule * NewMolecule = new FMolecule(Name_Pseudo);   // old count input system
+    // NewMolecule->Print(os);
+    Context.AddToMoleculeList(NewMolecule);
 
     float Amount = 1;
     float Begin = 0;
     float End = -1;
     float Step = 0;
 
-    FCount * Count = new FCount(Name_Pseudo, Amount, Begin, End, Step);
-    Context.CountList.push_back(Count);
+    FCount * NewCount = new FCount(Name_Pseudo, Amount, Begin, End, Step);
+    Context.CountList.push_back(NewCount);
 }
 
 void TraversalNode(NBlock* InProgramBlock)
 {
-    ostream& os = std::cout;
     FTraversalContext tc(std::cerr);
     tc.Queue.push(InProgramBlock);
-    float Float_Init = -0.09876723; // random initialized float
-    int Int_Init = -128; // random initialized int 
+
     // std::locale loc;
 
     os << endl << "## TraversalNode ##" << endl;
@@ -154,219 +266,212 @@ void TraversalNode(NBlock* InProgramBlock)
         const NNode* node = tc.Queue.front(); tc.Queue.pop();
 
         if (Utils::is_class_of<NReactionDeclaration, NNode>(node)) {
-    auto N_Reaction = dynamic_cast<const NReactionDeclaration *>(node);
-    os << "Reaction Id: " << N_Reaction->Id.Name << endl;
-    // Reaction->Print(os);
+            auto N_Reaction = dynamic_cast<const NReactionDeclaration *>(node);
+            os << "Reaction Id: " << N_Reaction->Id.Name << endl;
+            // Reaction->Print(os);
+        
+            auto& Id = N_Reaction->Id;	    
 
-    auto& Id = N_Reaction->Id;	    
-    auto& OverallReaction = N_Reaction->OverallReaction;
-    // os << "  OverallReaction:" << endl;
-
-    // Reaction Information
-    string Name = Id.Name;
-
-    enum ReactionType {
-	Standard = 0,
-	Regulatory = 1,
-    };
-
-    ReactionType Type;
-
-    std::vector<std::pair<std::string, int>> Stoichiometry;
-
-    // for Standard reactions
-    float k1 = Float_Init;
-    float k2 = Float_Init;
-
-    // for Regulatory reactions
-    float K = Float_Init;
-    float n = Float_Init; // TODO: Update how to indicate competitiveness. Temporarily, use n=-1 to indicate competitive mode for now
-    string Effect;
-    string Mode = "Allosteric"; // default setting
-
-    auto& bEffect = OverallReaction.bEffect;
-    bool bProductIsReaction;
-
-    const auto& propertylist = OverallReaction.Property;
-    for (auto& property :propertylist) {
-	auto& Key = property->Key;
-	auto Value = property->Value->Evaluate();
-
-	if (Key == "k") {
-	    k1 = std::stof(Value);
-	    Type = Standard;
-	} else if (Key == "krev") {
-	    k2 = std::stof(Value);
-	    Type = Standard;
-	} else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka") || (Key == "K")) {
-	    K = std::stof(Value);
-	    Type = Regulatory;
-	} else if (Key == "n") {
-	    n = std::stof(Value);
-					    // temporary code for competitive mode of inhibition regulation
-					    if (n == -1) {
-						Mode = "Competitive";
-	    }
-	} else {
-	    //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
-	}
-    }
-
-    // Effect
-    if ((!bEffect) & (K != Float_Init)) {
-	Effect = "Inhibition";
-    } else if ((bEffect) & (K != Float_Init)) {
-	Effect = "Activation";
-    } 
-
-    // Fill in presumably irreversible reaction kinetic values 
-    if ((k1 != Float_Init) & (k2 == Float_Init)) {
-	k2 = 0;
-    }
-
-    if ((k1 == Float_Init) & (k2 != Float_Init)) {
-	k1 = 0;
-    }
-
-    if ((K != Float_Init) & (n == Float_Init)) {
-	n = 1;
-    }
-
-    // Stoichiometry
-    if (Type == 0) {
-	Stoichiometry = GetStoichFromOverallReaction(OverallReaction, bProductIsReaction=false);
-    } else if (Type == 1) {
-	Stoichiometry = GetStoichFromOverallReaction(OverallReaction, bProductIsReaction=true); // do not add the product to the molecule list
-    }
-
-    // add new reaction to the system
-    if (Type == 0) {
-	FStandardReaction *Reaction = new FStandardReaction(Name, Stoichiometry, k1, k2);
-	Reaction->Print(os);
-	Context.AddToReactionList(Reaction);
-
-    } else if (Type == 1) {
-	FRegulatoryReaction *Reaction = new FRegulatoryReaction(Name, Stoichiometry, K, n, Effect, Mode);
-	Reaction->Print(os);
-	Context.AddToReactionList(Reaction);
-    }
-
-}
-
-// This is intended for NEnzymeDeclaration, to be fixed later on.
-
-
-if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
-    auto N_Enzyme = dynamic_cast<const NProteinDeclaration *>(node);
-            os << "Enzyme Id: " << N_Enzyme->Id.Name << endl;
-            // Enzyme->Print(os);
-
-            auto& Id = N_Enzyme->Id;	    
-            auto& OverallReaction = N_Enzyme->OverallReaction;
-            // os << "  OverallReaction:" << endl;
-
-            // Enzyme Information
+            // Reaction Information to extract
             string Name = Id.Name;
-
-            enum EnzReactionType {
-                Standard = 0,
-                MichaelisMenten = 1,
+        
+            enum ReactionType {
+        	Standard = 0,
+        	Regulatory = 1,
             };
-
-            EnzReactionType Type;
-
-            string Substrate;
+        
+            ReactionType Type;
+        
+            std::vector<std::pair<std::string, int>> Stoichiometry;
+        
+            // for Standard reactions
             float k1 = Float_Init;
             float k2 = Float_Init;
+        
+            // for Regulatory reactions
+            float K = Float_Init;
+            float n = Float_Init; // TODO: Update how to indicate competitiveness. Temporarily, use n=-1 to indicate competitive mode for now
+            string Effect;
+            string Mode = "Allosteric"; // default setting
 
-            //parse properties
-            const auto& propertylist = OverallReaction.Property;
+            // parse overall reaction
+            auto& Reaction = N_Reaction->OverallReaction;
+            // os << "  Reaction:" << endl;
+        
+            auto& bEffect = Reaction->bEffect;
+            bool bProductIsReaction;
+        
+            const auto& propertylist = Reaction->Property;
             for (auto& property :propertylist) {
-                auto& Key = property->Key;
-                auto Value = property->Value->Evaluate();
-
-                if (Key == "k") {
-                    k1 = std::stof(Value);
-                    Type = Standard;
-                } else if (Key == "krev") {
-                    k2 = std::stof(Value);
-                    Type = Standard; 
-                } else if ((Key == "kcat") || (Key == "kCat")) {
-                    k1 = std::stof(Value);
-                    Type = MichaelisMenten;
-                } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
-                    k2 = std::stof(Value);
-                    Type = MichaelisMenten;
-                }
+        	auto& Key = property->Key;
+        	auto Value = property->Value->Evaluate();
+        
+        	if (Key == "k") {
+        	    k1 = std::stof(Value);
+        	    Type = Standard;
+        	} else if (Key == "krev") {
+        	    k2 = std::stof(Value);
+        	    Type = Standard;
+        	} else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka") || (Key == "K")) {
+        	    K = std::stof(Value);
+        	    Type = Regulatory;
+        	} else if (Key == "n") {
+        	    n = std::stof(Value);
+        					    // temporary code for competitive mode of inhibition regulation
+        					    if (n == -1) {
+        						Mode = "Competitive";
+        	    }
+        	} else {
+        	    //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
+        	}
             }
-
-            // if not defined by user input, search the database            
-            if (Substrate.empty()) {
-                Substrate = Context.QueryTable(Name, "Substrate", Context.EnzymeTable);
-                if (!Substrate.empty()) {
-                    os << "  Substrate imported from database: " << Substrate << endl;
-                }
-            }
-
-            // import constants from database
-            if (k1 == Float_Init) {
-                string kcat_Database = Context.QueryTable(Name, "kcat", Context.EnzymeTable);
-                if (!kcat_Database.empty()) {
-                    k1 = std::stof(kcat_Database);
-                    os << "  kcat imported from database: " << kcat_Database << endl;
-                }
-            }
-            if (k2 == Float_Init) {
-                string KM_Database = Context.QueryTable(Name, "KM", Context.EnzymeTable);
-                if (!KM_Database.empty()) {
-                    k2 = std::stof(KM_Database);
-                    os << "  KM imported from database: " << KM_Database << endl;
-                }
-            }
-
+        
+            // Effect
+            if ((!bEffect) & (K != Float_Init))       { Effect = "Inhibition"; } 
+            else if ((bEffect) & (K != Float_Init))   { Effect = "Activation"; } 
+        
             // Fill in presumably irreversible reaction kinetic values 
-            if ((k1 != Float_Init) & (k2 == Float_Init)) {
-                k2 = 0;
+            if ((k1 != Float_Init) & (k2 == Float_Init)) { k2 = 0; }
+            if ((k1 == Float_Init) & (k2 != Float_Init)) { k1 = 0; }
+            if ((K != Float_Init) & (n == Float_Init))   { n = 1; }
+        
+            // Stoichiometry
+            if      (Type == 0) { Stoichiometry = GetStoichFromReaction(Reaction, bProductIsReaction=false); } 
+            else if (Type == 1) { Stoichiometry = GetStoichFromReaction(Reaction, bProductIsReaction=true); } // do not add the product to the molecule list
+        
+            // add new reaction to the system
+            if (Type == 0) {
+        	FStandardReaction *NewReaction = new FStandardReaction(Name, Stoichiometry, k1, k2);
+        	NewReaction->Print(os);
+        	Context.AddToReactionList(NewReaction);
+        
+            } else if (Type == 1) {
+        	FRegulatoryReaction *NewReaction = new FRegulatoryReaction(Name, Stoichiometry, K, n, Effect, Mode);
+        	NewReaction->Print(os);
+        	Context.AddToReactionList(NewReaction);
             }
+ 
+        // This is intended for NEnzymeDeclaration, to be fixed later on.
+        } else if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
+            auto N_Enzyme = dynamic_cast<const NProteinDeclaration *>(node);           
+            os << "Enzyme Id: " << N_Enzyme->Id.Name << endl;
+            // Enzyme->Print(os);
+  
+            auto& EnzymeName = N_Enzyme->Id.Name;	    
+            auto& Reaction = N_Enzyme->OverallReaction;
+            std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
+            // os << "  Reaction:" << endl;
 
-            if ((k1 == Float_Init) & (k2 != Float_Init)) {
-                k1 = 0;
-            }
+            if (Reaction) {   
+                // parse overall reaction.
+                // Note: Using enzyme name as reaction name for the overall reaction
+                AddEnzReaction(EnzymeName, Reaction, EnzymeName);
 
-            std::vector<std::pair<std::string, int>> Stoichiometry = GetStoichFromOverallReaction(OverallReaction);
-            string Location = OverallReaction.Location.Name;
-
-            // Use first reactant as substrate for MichaelisMenten if still not assigned
-            if ((Type == 1) & (Substrate.empty())) {
-                for (const auto& reactant : OverallReaction.Reactants) {
-                    if (reactant->Id.Name == Name) {
+                // Extract Substrate and MichaelisMenten Reaction Parameters
+                bool bGetEnzKinetics = false;
+                const auto& propertylist = Reaction->Property;
+                for (auto& property :propertylist) {
+                    auto& Key = property->Key;
+                    auto Value = property->Value->Evaluate();
+                    if ((Key == "Substrate") || (Key == "kcat") || (Key == "kCat") || (Key == "KM") || (Key == "kM") || (Key == "km")) {
+                        bGetEnzKinetics = true;
                         break;
                     }
-                // This may not always work with Michaelis Menten without database. Excluding common molecules will improve a chance.
-                    Substrate = reactant->Id.Name;
-
-                    break;
+                }
+                if (bGetEnzKinetics) {
+                    std::pair<std::string, std::vector<float>> SubConstPair = GetEnzKinetics(EnzymeName, Reaction);
+                    Kinetics.push_back(SubConstPair);
                 }
             }
+  
+            // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
 
-            // add new enzymatic reaction to the system
-            FEnzymaticReaction *EnzymaticReaction = new FEnzymaticReaction(Name, Stoichiometry, Name);
-            EnzymaticReaction->Print_Stoichiometry(os);
-            Context.AddToReactionList(EnzymaticReaction);
+            if (N_Enzyme->Block) {
+                auto& Block = N_Enzyme->Block;
+                int i_reaction = 0;
+                for (auto& stmt: Block->Statements) {
+                    os << "  "; stmt->Print(os);
+
+                    if (Utils::is_class_of<NProteinDeclaration, NNode>(stmt.get())) {
+
+                        auto N_Enzyme_InBlock = dynamic_pointer_cast<NProteinDeclaration>(stmt);
+                        os << "{In Block} Enzyme Id: " << N_Enzyme_InBlock->Id.Name << endl;
+                        // Enzyme->Print(os);
+
+                        const auto& Reaction = N_Enzyme_InBlock->OverallReaction;
+                        std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
+                        // os << "  Reaction:" << endl;
+            
+                        if (Reaction) {
+                            // parse overall reaction.
+                            std::string ReactionName = EnzymeName + std::to_string(i_reaction);
+                            AddEnzReaction(ReactionName, Reaction, EnzymeName);
+            
+                            // Extract Substrate and MichaelisMenten Reaction Parameters
+                            bool bGetEnzKinetics = false;
+                            const auto& propertylist = Reaction->Property;
+                            for (auto& property :propertylist) {
+                                auto& Key = property->Key;
+                                auto Value = property->Value->Evaluate();
+                                if ((Key == "Substrate") || (Key == "kcat") || (Key == "kCat") || (Key == "KM") || (Key == "kM") || (Key == "km")) {
+                                    bGetEnzKinetics = true;
+                                    break;
+                                }
+                            }
+                            if (bGetEnzKinetics) {
+                                std::pair<std::string, std::vector<float>> SubConstPair = GetEnzKinetics(EnzymeName, Reaction);
+                                Kinetics.push_back(SubConstPair);
+                            }
+                        }
+                    i_reaction++;
+
+                    } else if (Utils::is_class_of<NReactionDeclaration, NNode>(stmt.get())) {
+
+                        auto N_Reaction_InBlock = dynamic_pointer_cast<NReactionDeclaration>(stmt);
+                        os << "Reaction Id: " << N_Reaction_InBlock->Id.Name << endl;
+                        // Reaction->Print(os);
+
+                        const auto& Reaction = N_Reaction_InBlock->OverallReaction;
+                        // os << "  Reaction:" << endl;
+            
+                        if (Reaction) {
+                            // parse overall reaction.
+                            std::string ReactionName = N_Reaction_InBlock->Id.Name + std::to_string(i_reaction);
+                            AddEnzReaction(ReactionName, Reaction, EnzymeName);
+            
+                            // Extract Substrate and MichaelisMenten Reaction Parameters
+                            bool bGetEnzKinetics = false;
+                            const auto& propertylist = Reaction->Property;
+                            for (auto& property :propertylist) {
+                                auto& Key = property->Key;
+                                auto Value = property->Value->Evaluate();
+                                if ((Key == "Substrate") || (Key == "kcat") || (Key == "kCat") || (Key == "KM") || (Key == "kM") || (Key == "km")) {
+                                    bGetEnzKinetics = true;
+                                    break;
+                                }
+                            }
+                            if (bGetEnzKinetics) {
+                                std::pair<std::string, std::vector<float>> SubConstPair = GetEnzKinetics(EnzymeName, Reaction);
+                                Kinetics.push_back(SubConstPair);
+                            }
+                        }
+                    i_reaction++;
+                    }
+                } // closing for stmt loop
+                
+            } // closing if block
 
             // add new enzyme to the system
-            FEnzyme * Enzyme = new FEnzyme(Type, Name, Substrate, k1, k2);
-            Enzyme->Print(os);
-            Context.AddToMoleculeList(Enzyme);
-
-            // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
-            //            if (N_Enzyme->Block) {
-            //                auto& Block = N_Enzyme->Block;
-            //                for (auto& stmt: Block->Statements) {
-            //                    os << "  "; stmt->Print(os);
-            //                }
-            //
-            //            }
+            if (Kinetics.empty()) { 
+                FEnzyme * NewEnzyme = new FEnzyme(EnzymeName); 
+                NewEnzyme->Print(os);
+                Context.AddToMoleculeList(NewEnzyme);
+            } 
+            else { 
+                FEnzyme * NewEnzyme = new FEnzyme(EnzymeName, Kinetics); 
+                NewEnzyme->Print(os);
+                Context.AddToMoleculeList(NewEnzyme);
+            }
 
         } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
             auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
@@ -406,9 +511,9 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
             string Process = Context.QueryTable(Name, "Process", Context.PolymeraseTable);
             float Rate = std::stof(Context.QueryTable(Name, "Rate", Context.PolymeraseTable));
 
-            FPolymerase * Polymerase = new FPolymerase(Name, Template, Target, Process, Rate);
-            Polymerase->Print(os);
-            Context.AddToMoleculeList(Polymerase);
+            FPolymerase * NewPolymerase = new FPolymerase(Name, Template, Target, Process, Rate);
+            NewPolymerase->Print(os);
+            Context.AddToMoleculeList(NewPolymerase);
 
 
 #if 1
@@ -557,9 +662,9 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                 std::pair<std::string, int> Stoich(ReactantName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FMolecule * Molecule = new FMolecule(ReactantName);             
-                // Molecule->Print(os);
-                Context.AddToMoleculeList(Molecule);
+                FMolecule * NewMolecule = new FMolecule(ReactantName);             
+                // NewMolecule->Print(os);
+                Context.AddToMoleculeList(NewMolecule);
             }
 
             for (const auto& product : ElongationReaction.Products) {
@@ -572,9 +677,9 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                 std::pair<std::string, int> Stoich(ProductName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FMolecule * Molecule = new FMolecule(ProductName);
-                // Molecule->Print(os);
-                Context.AddToMoleculeList(Molecule);
+                FMolecule * NewMolecule = new FMolecule(ProductName);
+                // NewMolecule->Print(os);
+                Context.AddToMoleculeList(NewMolecule);
             }
 
             if (!Location.empty()) {
@@ -585,15 +690,15 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                 os << "    BuildingBlocks: [";
             }
             for (auto& BuildingBlock : BuildingBlocks) {
-                FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
-                os << Molecule->Name << ", ";
+                FSmallMolecule * NewSmallMolecule = new FSmallMolecule(BuildingBlock);
+                os << NewSmallMolecule->Name << ", ";
                 // Molecule->Print(os);
-                Context.AddToMoleculeList(Molecule);
+                Context.AddToMoleculeList(NewSmallMolecule);
             }
             os << "]" << endl;
-            FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-            // PolymeraseReaction->Print(os);
-            Context.AddToReactionList(PolymeraseReaction);
+            FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+            // NewReaction->Print(os);
+            Context.AddToReactionList(NewReaction);
 
 
 
@@ -611,8 +716,8 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
 
                 int ChromosomeSize = 4641652;
                 os << "Chromosome_I: " << std::to_string(ChromosomeSize) << "bp" << endl;
-                FChromosome * Chromosome = new FChromosome("ChI", ChromosomeSize);
-                Context.AddToMoleculeList(Chromosome);                
+                FChromosome * NewChromosome = new FChromosome("ChI", ChromosomeSize);
+                Context.AddToMoleculeList(NewChromosome);                
 
                 int i;
                 int i_cap = 5000;
@@ -621,8 +726,8 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                 os << ">> Genes being imported... : ";
                 for (auto& record : Context.GeneTable.Records) {
                     // os << record["symbol"] << ", ";
-                    FGene * Gene = new FGene(record["id"], record["symbol"]);
-                    Context.AddToMoleculeList(Gene);
+                    FGene * NewGene = new FGene(record["id"], record["symbol"]);
+                    Context.AddToMoleculeList(NewGene);
 
                     i++;
                     // temporary capping
@@ -637,8 +742,8 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                 os << ">> RNAs being imported... : ";
                 for (auto& record : Context.RNATable.Records) {
                     // os << record["id"] << ", ";
-                    FRNA * RNA = new FRNA(record["id"], record["type"]);
-                    Context.AddToMoleculeList(RNA);
+                    FRNA * NewRNA = new FRNA(record["id"], record["type"]);
+                    Context.AddToMoleculeList(NewRNA);
 
                     i++;
                     // temporary capping
@@ -653,8 +758,8 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                 os << ">> Proteins being imported... : ";
                 for (auto& record : Context.ProteinTable.Records) {
                     // os << record["id"] << ", ";
-                    FProtein * Protein = new FProtein(record["id"]);
-                    Context.AddToMoleculeList(Protein);
+                    FProtein * NewProtein = new FProtein(record["id"]);
+                    Context.AddToMoleculeList(NewProtein);
 
                     // temporary capping
                     i++;
@@ -701,19 +806,19 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                     if (IndexExpression->Begin) {
                         if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Begin.get())) {
                             Begin = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Begin)->Value);
-                            assert (Begin >= 0);
+                            Utils::Assertion(Begin >= 0, "Range input (beginning) cannot be negative. Molecule: " + Name);
                         }
                     }
                     if (IndexExpression->End) {
                         if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->End.get())) {
                             End = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->End)->Value);
-                            assert (End >= 0);
+                            Utils::Assertion(End > 0, "Range input (end) cannot be 0 or negative. Molecule: " + Name);
                         }
                     }
                     if (IndexExpression->Step) {
                         if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Step.get())) {
                             Step = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Step)->Value);
-                            assert (Step > 0);
+                            Utils::Assertion(Step > 0, "Range input (step) cannot not be 0 or negative. Molecule: " + Name);
                         }
                     }
 
@@ -725,8 +830,8 @@ if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
                     if ((Begin <  0) & (End < 0)) { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
                     else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
 
-                    FCount * Count = new FCount(Name, Amount, Begin, End, Step);
-                    Context.CountList.push_back(Count);
+                    FCount * NewCount = new FCount(Name, Amount, Begin, End, Step);
+                    Context.CountList.push_back(NewCount);
                 }                
             }
              
@@ -948,7 +1053,7 @@ void Print_SetUpStandardReaction(ofstream& ofs, std::string Type, std::vector<co
         }
 
         // Check Idx lengths
-        void assert (Idx_Reactants.size() == Idx_Products.size());
+        Utils::Assertion((Idx_Reactants.size() == Idx_Products.size()), "# of parsed reactants and products do not match" );
 
         if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
             for (auto &Reg: RegulatoryReactionSubList) {
@@ -1076,8 +1181,10 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
 
         // Enz_Standard
         if ((reaction->Type >= 10) & (reaction->Type < 20)) {
-            k.push_back(enzyme->k);
-            krev.push_back(enzyme->krev);
+            const auto& reaction = dynamic_cast<const FEnz_StandardReaction *>(Reaction);
+	    
+            k.push_back(reaction->k);
+            krev.push_back(reaction->krev);
 
             std::vector<int> Idx_Reactant;
             std::vector<int> Idx_Product;
@@ -1106,9 +1213,19 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
 
         // Enz_Michaelis Menten
         } else if ((reaction->Type >= 20) & (reaction->Type < 30)) {
-            kcats.push_back(enzyme->kcat);
-            KMs.push_back(enzyme->KM);
-            Idx_EnzSub.push_back(Context.GetIdxByName_MoleculeList(enzyme->Substrate));
+                
+            for (auto& kinetics : enzyme->Kinetics) {             
+                // get substrate, kcat, KM when enzyme's substrate is found as a reactant of the reaction 
+        
+                if (Reaction->CheckIfReactant(kinetics.first)) {
+                    Idx_EnzSub.push_back(Context.GetIdxByName_MoleculeList(kinetics.first));
+                    auto& constants = kinetics.second;
+
+                    kcats.push_back(constants[0]);
+                    KMs.push_back(constants[1]);
+                    break;
+                }
+            }
         }
 
         if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
@@ -1137,7 +1254,7 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
     }
  
     // Check Idx lengths
-    void assert (Idx_Reactants.size() == Idx_Products.size());
+    Utils::Assertion((Idx_Reactants.size() == Idx_Products.size()), "# of parsed reactants and products do not match");
 
     ofs << in+ in+ in+ "# " << Type << endl;
     ofs << in+ in+ in+ "self.Idx_Enz_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
@@ -1491,7 +1608,7 @@ void WriteSimModule()
                 std::cout << "\t";
             }
             std::cout << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Taret.size(): " << Idx_Target.size() << endl;
-            assert (Idx_Template.size() == Idx_Target.size());   
+            Utils::Assertion((Idx_Template.size() == Idx_Target.size()), "# of Target and Target do not match for Polymerase: " + PolymeraseName);   
  
             Print_SetUpPolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
         }
@@ -2234,8 +2351,6 @@ int main(int argc, char *argv[])
     if (Option.Verbose) {
         Option.Dump();
     }
-
-    ostream& os = std::cout;
 
     // Load genes.tsv
     if (!Option.bParseOnly)
