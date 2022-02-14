@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cassert>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -55,11 +56,19 @@ bool CreatePaths(const char *Path)
     return true;
 }
 
-std::string SciFloat2Str (float Float)
+std::string SciFloat2Str(float Float)
 {
    std::stringstream ss;
    ss << std::scientific << Float;
    return ss.str();
+}
+
+void Assertion(bool Bool, std::string ErrorMessage)
+{
+    if (!Bool) {
+        std::cout << "%%%%%%" << ErrorMessage << "%%%%%%" << std::endl;
+        assert(Bool);
+        }
 }
 
 }

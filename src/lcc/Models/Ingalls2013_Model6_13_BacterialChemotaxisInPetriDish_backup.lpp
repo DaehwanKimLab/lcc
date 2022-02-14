@@ -1,0 +1,70 @@
+# A(x, y, z)[t] = number mol/M/[empty]
+
+container petridish
+{
+  organism ecoli
+  {
+    protein BP(Am --> A, kcat=200, KM=1); // k1, KM1
+    protein R(A --> Am, k=200, k=1); // krev1
+    // protein R(AL --> AmL, kcat=1, KM=1); // k2, KM2
+    // protein BP(AmL --> AL, k=1); // krev2
+    protein E1(Am + L --> AmL, k=1, krev=1); // k3, krev3
+    protein E2(A + L --> AL, k1, krev=1); // k4, krev4
+    protein E3(B + Am --> BP, k=0.05, krev=0.005); // k5, krev5
+
+    E1 = 1 nM;
+    BP = 1 nM;
+    Am = 1 nM;
+    R = 5 nM;
+    E2 = 1 nM;
+    E3 = 1 nM;
+    B = 0.1 nM;
+  }
+  ecoli(10, 10, 0) = 1;
+  
+  glucose G;
+  G(1, 1, 0) = 1 mol;
+  
+  // G = 1 nM is equivalent to G[0] = 1 nM;
+  // G(1, 1, 0)[0] = 1 mol;
+  // G(1, 1, 0)[0] = 1 nM; // Wrong
+  // G(1:10, 1:10, 0)[0] = 1 mol;
+  // G(1:10, 1:10, 0)[0] = 1 nM;
+}
+
+
+
+
+// Polished version
+
+petridish P1
+{
+  organism ecoli
+  {
+    protein BP(Am --> A, kcat=200, KM=1);
+    protein R(A --> Am, k=200, k=1);
+    // protein R(AL --> AmL, kcat=1, KM=1);
+    // protein BP(AmL --> AL, k=1);
+    reaction R1(Am + L --> AmL, k=1, krev=1);
+    reaction R2(A + L --> AL, k1, krev=1);
+    reaction R3(B + Am --> BP, k=0.05, krev=0.005);
+
+    BP = 1 nM, Am = 1 nM, R = 5 nM, B = 0.1 nM;
+  }
+  ecoli(10, 10, 0) = 100;
+  
+  glucose G;
+  G(1, 1, 0) = 1 mol;
+}
+
+
+
+
+
+
+
+
+
+
+
+
