@@ -4,28 +4,21 @@
 // Model   6.12,    p.162
 // Figure  6.14,    p.164
 
-// k1=1, k2=1, k3=1, k4=1, k5=0.05, krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005, kM1=1, kM2=1, L=20
-// Guessed concentrations: R=1, Am=0, AmL=0, A=1, AL=0, B=0.1, BP=0
+    protein BP
+    {
+      reaction R1(Am --> A, kcat=200, KM=1);
+      reaction R2(AmL --> AL, kcat=1, KM=1);
+    };
 
+    protein R
+    {
+      reaction R1(A --> Am, k=1);
+      reaction R2(AL --> AmL, k=1);
+    };
 
-protein BP(Am --> A, kcat=1, KM=0.5); // k1, KM1
-protein R(A --> Am, k=1, k=1); // krev1
+    reaction R1(Am + L --> AmL, k=1, krev=1);
+    reaction R2(A + L --> AL, k=1, krev=1);
+    reaction R3(B + Am --> BP, k=0.05, krev=0.005);
 
-protein BP_(AmL --> AL, kcat=1, KM=1); // k2, KM2
-protein R_(AL --> AmL, k=1); // krev2
-
-reaction R1(Am + L_Conc --> AmL, k=1, krev=1); // k3, krev3
-reaction R2(A + L_Conc --> AL, k=1, krev=1); // k4, krev4
-reaction R3(B_NoPlot + Am --> BP, k=0.05, krev=0.005); // k5, krev5
-
-L_Conc[0:10]=20;
-L_Conc[10:30]=40;
-L_Conc[30:50]=80;
-R[0]=1;
-R_[0]=1;
-A[0]=1;
-B_NoPlot[0]=0.1;
-BP_[0]=0.01;
-
-plot
-vis
+//    A[0] = 500, R[0] = 5, B[0] = 0.1;
+//    L_Conc[0:10]=20, L_Conc[10:30]=40, L_Conc[30:50]=80;
