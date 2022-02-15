@@ -293,7 +293,7 @@ public:
         for (const auto& property: Property) {
             property->Print(os); os << ", ";
         }
-        os << "}";
+        os << "}" << std::endl;
     }
 
     virtual void Visit(FTraversalContext& Context) const override;
@@ -353,11 +353,11 @@ public:
         os << "Protein: {";
         Id.Print(os); os << ", ";
         if (OverallReaction) {
-            OverallReaction->Print(os); os << ", ";
+            OverallReaction->Print(os); os << ", " << std::endl;
         }
         if (Block) {
             for (const auto& stmt: Block->Statements) {
-                stmt->Print(os); os << ", ";
+                stmt->Print(os); os << ", " << std::endl;
             }
         }
         os << "}";
