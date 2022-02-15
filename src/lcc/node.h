@@ -344,10 +344,10 @@ public:
             : Id(InId), OverallReaction(InOverallReaction) {}
 
     NProteinDeclaration(const NIdentifier& InId, NBlock* InBlock)
-        : Id(InId), Block(InBlock) {}
+        : Id(InId), Block(InBlock), OverallReaction(nullptr) {}
 
     NProteinDeclaration(const NIdentifier& InId)
-            : Id(InId) {}
+            : Id(InId), OverallReaction(nullptr) {}
 
     virtual void Print(std::ostream& os) const override {
         os << "Protein: {";
