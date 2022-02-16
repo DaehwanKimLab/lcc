@@ -21,8 +21,8 @@ def Eqn_Standard_Activation_Allosteric(Conc_1, Conc_2, Conc_3, Conc_Activator, k
 
 # Enzymatic, standard reactions
 def Eqn_Enz_Standard_Unregulated(Conc_Enzyme, Conc_1, Conc_2, Conc_3, k):
-    return Conc_Enzyme * k
-    # return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3
+    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3
+    # return Conc_Enzyme * k (for saturation)
 
 def Eqn_Enz_Standard_Inhibition_Allosteric(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
     return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3

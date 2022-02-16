@@ -5,7 +5,7 @@
 // Figure  6.14,    p.164
 
 // N_SimSteps = 100000, SimStepTimeResolution = 100
-// Note: ligand induction time interval change
+// Note: ligand induction time interval change similar to the python model
 
     protein BP
     {
@@ -15,8 +15,13 @@
 
     protein R
     {
-      reaction R1(A --> Am, k=1);
-      reaction R2(AL --> AmL, k=1);
+      // original code according to the book, requiring explicit saturation conditioned simulation code
+      // reaction R1(A --> Am, k=1);
+      // reaction R2(AL --> AmL, k=1);
+
+      // updated code to use regular simulation code
+      reaction R1(A --> Am, kcat=1, KM=1.0e-10);
+      reaction R2(AL --> AmL, kcat=1, KM=1.0e-10);
     };
 
     reaction R1(Am + L --> AmL, k=1, krev=1);
