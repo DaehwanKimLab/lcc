@@ -1,33 +1,34 @@
 import numpy as np
 
-# Avogadro's number
-NA = 6.0221409e+23
-
 def ConcToCount(Conc_Molecule, Volume):
     return (Conc_Molecule) * Volume
 
 def CountToConc(Count_Molecule, Volume):
     return (Count_Molecule) / Volume
 
+def CheckRateAndConc(Rate, Conc_1, Conc_2, Conc_3):
+    return np.min((Rate, Conc_1, Conc_2, Conc_3), axis=0)
+
 # Standard reactions
-def Eqn_Standard_Unregulated(Conc_Reactant_1, Conc_Reactant_2, Conc_Reactant_3, Conc_Product_1, Conc_Product_2, Conc_Product_3, k, krev):
-    return (k * Conc_Reactant_1 * Conc_Reactant_2 * Conc_Reactant_3) - (krev * Conc_Product_1 * Conc_Product_2 * Conc_Product_3)
+def Eqn_Standard_Unregulated(Conc_1, Conc_2, Conc_3, k):
+    return k * Conc_1 * Conc_2 * Conc_3
 
-def Eqn_Standard_Inhibition_Allosteric(Conc_Reactant_1, Conc_Reactant_2, Conc_Reactant_3, Conc_Product_1, Conc_Product_2, Conc_Product_3, Conc_Inhibitor, k, krev, Ki, n):
-    return (k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_Reactant_1 * Conc_Reactant_2 * Conc_Reactant_3) - (krev * Conc_Product_1 * Conc_Product_2 * Conc_Product_3)
+def Eqn_Standard_Inhibition_Allosteric(Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
+    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
 
-def Eqn_Standard_Activation_Allosteric(Conc_Reactant_1, Conc_Reactant_2, Conc_Reactant_3, Conc_Product_1, Conc_Product_2, Conc_Product_3, Conc_Activator, k, krev, Ka, n):
-    return (k * (1 + (Conc_Activator / Ka) ** n) * Conc_Reactant_1 * Conc_Reactant_2 * Conc_Reactant_3) - (krev * Conc_Product_1 * Conc_Product_2 * Conc_Product_3)
+def Eqn_Standard_Activation_Allosteric(Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
+    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
 
 # Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated(Conc_Enzyme, Conc_Reactant_1, Conc_Reactant_2, Conc_Reactant_3, Conc_Product_1, Conc_Product_2, Conc_Product_3, k, krev):
-    return Conc_Enzyme * ((k * Conc_Reactant_1 * Conc_Reactant_2 * Conc_Reactant_3) - (krev * Conc_Product_1 * Conc_Product_2 * Conc_Product_3))
+def Eqn_Enz_Standard_Unregulated(Conc_Enzyme, Conc_1, Conc_2, Conc_3, k):
+    return Conc_Enzyme * k
+    # return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3
 
-def Eqn_Enz_Standard_Inhibition_Allosteric(Conc_Enzyme, Conc_Reactant_1, Conc_Reactant_2, Conc_Reactant_3, Conc_Product_1, Conc_Product_2, Conc_Product_3, Conc_Inhibitor, k, krev, Ki, n):
-    return Conc_Enzyme * ((k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_Reactant_1 * Conc_Reactant_2 * Conc_Reactant_3) - (krev * Conc_Product_1 * Conc_Product_2 * Conc_Product_3))
+def Eqn_Enz_Standard_Inhibition_Allosteric(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
+    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
 
-def Eqn_Enz_Standard_Activation_Allosteric(Conc_Enzyme, Conc_Reactant_1, Conc_Reactant_2, Conc_Reactant_3, Conc_Product_1, Conc_Product_2, Conc_Product_3, Conc_Activator, k, krev, Ka, n):
-    return Conc_Enzyme * ((k * (1 + (Conc_Activator / Ka) ** n) * Conc_Reactant_1 * Conc_Reactant_2 * Conc_Reactant_3) - (krev * Conc_Product_1 * Conc_Product_2 * Conc_Product_3))
+def Eqn_Enz_Standard_Activation_Allosteric(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
+    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
 
 # Enzymatic, Michaelis Menten reactions
 def Eqn_Enz_MichaelisMenten_Unregulated(Conc_Enzyme, Conc_Substrate, kcat, KM):

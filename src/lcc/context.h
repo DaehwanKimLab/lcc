@@ -67,7 +67,7 @@ public:
     }
 
     void Print(std::ostream& os) {
-        os << "  Molecule Id: " << Id << std::endl;
+        os << "[Molecule] Id: " << Id << std::endl;
         os << std::endl;
     }
 
@@ -89,7 +89,7 @@ public:
     FSmallMolecule(const std::string& InName) : FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "  Small Molecule Id: " << Id;
+        os << "[Small Molecule] Id: " << Id;
         os << std::endl;
     }
 };
@@ -165,7 +165,7 @@ public:
         : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
-        os << "  Gene Id: " << Name << std::endl;
+        os << "[Gene] Id: " << Name << std::endl;
     }
 };
 
@@ -185,7 +185,7 @@ public:
         : Type(InType), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
-        os << "  RNA Id: " << Name << std::endl;
+        os << "[RNA] Id: " << Name << std::endl;
     }
 };
  
@@ -205,7 +205,7 @@ public:
         : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
-        os << "  Protein Id: " << Name << std::endl;
+        os << "[Protein] Id: " << Name << std::endl;
     }
 };
 
@@ -224,16 +224,16 @@ public:
         : FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "  Enzyme Id: " << Name; 
+        os << "[Enzyme] Id: " << Name; 
         if (!Kinetics.empty()) {
             for (auto kinetics : Kinetics) {
                 os << "\t| Substrate:  " << kinetics.first;
                 int i = 0;
                 for (auto Float: kinetics.second) {
                     if (i == 0) {
-                        os << "\t| kcat: " << Utils::SciFloat2Str(Float);
+                        os << ", kcat: " << Utils::SciFloat2Str(Float);
                     } else if (i == 1) {
-                        os << "\t| KM: " << Utils::SciFloat2Str(Float);
+                        os << ", KM: " << Utils::SciFloat2Str(Float);
                     }
                     i++;
                 }
@@ -260,7 +260,7 @@ public:
         : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "  Polymerase Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+        os << "[Polymerase] Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
     }
 };
 
@@ -273,7 +273,7 @@ public:
 
 class FReaction {
 public:
-    std::string Name; // Name is equivalent to EnzymeName for now
+    std::string Name; 
     std::vector<std::pair<std::string, int>> Stoichiometry;
 
     int Type = -1; // default
@@ -287,35 +287,32 @@ public:
         for (auto& stoich : Stoichiometry) {
            if (stoich.first == Query) {
                if (stoich.second < 0) {
+// std::cout << "Found the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
                    return true;
-               } else {
-                   return false;
                }
            }
         }
-        std::cout << "ERROR: Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
+// std::cout << "Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
         return false;
     }
     bool CheckIfProduct(const std::string& Query) const {
         for (auto& stoich : Stoichiometry) {
            if (stoich.first == Query) {
                if (stoich.second > 0) {
+// std::cout << "Found the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
                    return true;
-               } else {
-                   return false;
                }
            }
         }
-        std::cout << "ERROR: Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
+// std::cout << "Unable to find the molecule '" << Query << "'in the reaction of '" << Name << "'" << std::endl;
         return false;
     }
 
-    void Print_Stoichiometry(std::ostream& os) {
+    void Print_IdStoichiometry(std::ostream& os) {
         os << "  Reaction Id: " << Name << " | ";
         for (auto& Stoich : Stoichiometry) {
             os << "[" << Stoich.first << ", " << Stoich.second << "], ";
         }
-        os << std::endl;
     }
 };
 
@@ -328,10 +325,9 @@ public:
         : k(Ink), krev(Inkrev), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
-        os << "  [Standard Reaction]" << std::endl;
-        Print_Stoichiometry(os);
-        os << "  k: " << k << "\t| krev: " << krev << std::endl;
-        os << std::endl;
+        os << "[Standard Reaction]" ;
+        Print_IdStoichiometry(os);
+        os << "  k: " << k << ", krev: " << krev << std::endl;
     }
 };
 
@@ -346,8 +342,8 @@ public:
         : K(InK), n(Inn), Effect(InEffect), Mode(InMode), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
-        os << "  [Regulatory Reaction]" << std::endl;
-        Print_Stoichiometry(os);
+        os << "[Regulatory Reaction]" ;
+        Print_IdStoichiometry(os);
         if 	(Effect == "Inhibition") 	{ os << "   Ki: "; } 
         else if (Effect == "Activation") 	{ os << "   Ka: "; }
         os << K;
@@ -362,6 +358,12 @@ public:
 
     FEnzymaticReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InEnzyme)
         : Enzyme(InEnzyme), FReaction(InName, InStoichiometry) {}
+
+    void Print(std::ostream& os) {
+        os << "[Enzymatic Reaction]" ;
+        Print_IdStoichiometry(os);
+        os << std::endl;
+    }
 };
 
 class FEnz_StandardReaction : public FEnzymaticReaction { // may have multiple inheritance (FStandardReaction) but it may complicate the logic for FStandardReaction
@@ -373,10 +375,9 @@ public:
         : k(Ink), krev(Inkrev), FEnzymaticReaction(InName, InStoichiometry, InEnzyme) {}
 
     void Print(std::ostream& os) {
-        os << "  [Enz_Standard Reaction]" << std::endl;
-        Print_Stoichiometry(os);
-        os << "  k: " << k << "\t| krev: " << krev << std::endl;
-        os << std::endl;
+        os << "[Enz_Standard Reaction]" ;
+        Print_IdStoichiometry(os);
+        os << "  k: " << k << ", krev: " << krev << std::endl;
     }
 
 };
@@ -389,6 +390,16 @@ public:
 
     FPolymeraseReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InPolymerase, const std::vector<std::string>& InBuildingBlocks)
         : Polymerase(InPolymerase), BuildingBlocks(InBuildingBlocks), FReaction(InName, InStoichiometry) {}
+
+    void Print(std::ostream& os) {
+        os << "[Polymerase Reaction]" ;
+        Print_IdStoichiometry(os);
+        os << "  Polymerase: " << Polymerase << "\t| BuildingBlocks: ";
+        for (auto& buildingblock : BuildingBlocks) {
+            os << buildingblock << ", ";
+        } 
+        os << std::endl;
+    }
 };
 
 class FModule {

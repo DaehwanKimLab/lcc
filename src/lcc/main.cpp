@@ -89,7 +89,7 @@ std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* 
     for (const auto& reactant : Reaction->Reactants) {
         Name = reactant->Id.Name;
         Coefficient = -reactant->Coeff; // update when coeff is fully implemented in parser
-        std::cout << "    Reactants: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+        std::cout << "    Reactant: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
         Stoichiometry[Name] = Coefficient;
 
     }
@@ -97,7 +97,7 @@ std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* 
     for (const auto& product : Reaction->Products) {
         Name = product->Id.Name;
         Coefficient = product->Coeff; // update when coeff is fully implemented in parser
-        std::cout << "    Products: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+        std::cout << "    Product: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
         if (Stoichiometry.count(Name) > 0) {
             Coefficient += Stoichiometry[Name];
             std::cout << "    Updated Stoichiometry: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
@@ -157,12 +157,12 @@ void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::st
     // add new enzymatic reaction to the system
     if ((k >= 0) & (krev >= 0)) {
         FEnz_StandardReaction *NewReaction = new FEnz_StandardReaction(ReactionName, Stoichiometry, EnzymeName, k, krev);
-        NewReaction->Print_Stoichiometry(os);
+        NewReaction->Print(os);
         Context.AddToReactionList(NewReaction);
 
     } else {
         FEnzymaticReaction *NewReaction = new FEnzymaticReaction(ReactionName, Stoichiometry, EnzymeName);
-        NewReaction->Print_Stoichiometry(os);
+        NewReaction->Print(os);
         Context.AddToReactionList(NewReaction);
     }
 }
@@ -226,14 +226,12 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
         }
     }
 
-    if ((kcat >= 0) & (KM >= 0)) {
-        std::vector<float> KConstants(kcat, KM);
-
-
-
-
-        SubConstPair = {Substrate, KConstants};
-    }
+    Utils::Assertion(((kcat >= 0) & (KM >= 0)), "Kinetic constants are not properly extracted: " + EnzymeName);
+ 
+    std::vector<float> KConstants{ kcat, KM };
+    std::cout << EnzymeName << ", " << Substrate << ", " << kcat << ", " << KM << std::endl;
+    SubConstPair = {Substrate, KConstants};
+    
     return SubConstPair;
 }
 
@@ -362,9 +360,9 @@ void TraversalNode(NBlock* InProgramBlock)
             auto& EnzymeName = N_Enzyme->Id.Name;	    
             auto& Reaction = N_Enzyme->OverallReaction;
             std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
-            // os << "  Reaction:" << endl;
 
             if (Reaction) {   
+
                 // parse overall reaction.
                 // Note: Using enzyme name as reaction name for the overall reaction
                 AddEnzReaction(EnzymeName, Reaction, EnzymeName);
@@ -388,57 +386,24 @@ void TraversalNode(NBlock* InProgramBlock)
   
             // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
 
+
             if (N_Enzyme->Block) {
+
                 auto& Block = N_Enzyme->Block;
                 int i_reaction = 0;
                 for (auto& stmt: Block->Statements) {
                     os << "  "; stmt->Print(os);
 
-                    if (Utils::is_class_of<NProteinDeclaration, NNode>(stmt.get())) {
+                    // WITHOUT overall reaction: enzyme takes care of multiple reactions
+                    if (!Reaction & (Utils::is_class_of<NReaction, NNode>(stmt.get()))) {
 
-                        auto N_Enzyme_InBlock = dynamic_pointer_cast<NProteinDeclaration>(stmt);
-                        os << "{In Block} Enzyme Id: " << N_Enzyme_InBlock->Id.Name << endl;
-                        // Enzyme->Print(os);
-
-                        const auto& Reaction = N_Enzyme_InBlock->OverallReaction;
-                        std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
-                        // os << "  Reaction:" << endl;
-            
-                        if (Reaction) {
-                            // parse overall reaction.
-                            std::string ReactionName = EnzymeName + std::to_string(i_reaction);
-                            AddEnzReaction(ReactionName, Reaction, EnzymeName);
-            
-                            // Extract Substrate and MichaelisMenten Reaction Parameters
-                            bool bGetEnzKinetics = false;
-                            const auto& propertylist = Reaction->Property;
-                            for (auto& property :propertylist) {
-                                auto& Key = property->Key;
-                                auto Value = property->Value->Evaluate();
-                                if ((Key == "Substrate") || (Key == "kcat") || (Key == "kCat") || (Key == "KM") || (Key == "kM") || (Key == "km")) {
-                                    bGetEnzKinetics = true;
-                                    break;
-                                }
-                            }
-                            if (bGetEnzKinetics) {
-                                std::pair<std::string, std::vector<float>> SubConstPair = GetEnzKinetics(EnzymeName, Reaction);
-                                Kinetics.push_back(SubConstPair);
-                            }
-                        }
-                    i_reaction++;
-
-                    } else if (Utils::is_class_of<NReactionDeclaration, NNode>(stmt.get())) {
-
-                        auto N_Reaction_InBlock = dynamic_pointer_cast<NReactionDeclaration>(stmt);
-                        os << "Reaction Id: " << N_Reaction_InBlock->Id.Name << endl;
+                        const auto Reaction = &*dynamic_pointer_cast<NReaction>(stmt);
+                        os << "Reaction Id: " << Reaction->Id.Name << endl;
                         // Reaction->Print(os);
 
-                        const auto& Reaction = N_Reaction_InBlock->OverallReaction;
-                        // os << "  Reaction:" << endl;
-            
                         if (Reaction) {
                             // parse overall reaction.
-                            std::string ReactionName = N_Reaction_InBlock->Id.Name + std::to_string(i_reaction);
+                            std::string ReactionName = EnzymeName + "_" + Reaction->Id.Name;
                             AddEnzReaction(ReactionName, Reaction, EnzymeName);
             
                             // Extract Substrate and MichaelisMenten Reaction Parameters
@@ -453,6 +418,7 @@ void TraversalNode(NBlock* InProgramBlock)
                                 }
                             }
                             if (bGetEnzKinetics) {
+std::cout << "Get EnzKinetics True" << std::endl;
                                 std::pair<std::string, std::vector<float>> SubConstPair = GetEnzKinetics(EnzymeName, Reaction);
                                 Kinetics.push_back(SubConstPair);
                             }
@@ -645,7 +611,7 @@ void TraversalNode(NBlock* InProgramBlock)
             for (const auto& reactant : ElongationReaction.Reactants) {
                 const std::string& ReactantName = reactant->Id.Name;
                 Coefficient = -reactant->Coeff;
-                os << "    Reactants: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
+                os << "    Reactant: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
                 if ((ReactantName == "dna_{n}") | (ReactantName == "rna_{n}") | (ReactantName == "peptide_{n}")) {
                     continue;
                 } else if (ReactantName == "dnt") {
@@ -672,7 +638,7 @@ void TraversalNode(NBlock* InProgramBlock)
             for (const auto& product : ElongationReaction.Products) {
                 const std::string ProductName = product->Id.Name;
                 Coefficient = product->Coeff;
-                os << "    Products: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
+                os << "    Product: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
                 if ((ProductName == "dna_{n+1}") | (ProductName == "rna_{n+1}") | (ProductName == "peptide_{n+1}")) {
                     continue;
                 }
@@ -699,7 +665,7 @@ void TraversalNode(NBlock* InProgramBlock)
             }
             os << "]" << endl;
             FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-            // NewReaction->Print(os);
+            NewReaction->Print(os);
             Context.AddToReactionList(NewReaction);
 
 
@@ -778,8 +744,11 @@ void TraversalNode(NBlock* InProgramBlock)
             auto AExpression = dynamic_cast<const NAExpression *>(node);
 //            auto VarExp = dynamic_pointer_cast<const NVariableExpression *>(AExpression->OpA);
 //            auto VarAssigned = dynamic_pointer_cast<const NExpression *>(AExpression->OpB); 
-            AExpression->Print(os);
-            os << endl;
+
+            if (Option.bDebug) {
+                AExpression->Print(os);
+                os << endl;
+            }
 
             // Count System
             if (AExpression->Oper == T_ASSIGN) {
@@ -974,8 +943,8 @@ void Print_InitializeStandardReaction(ofstream& ofs, std::string Type)
     ofs << in+ in+ in+ "# " << Type << endl;
 
     // Standard vs. MichaelisMenten
-    ofs << in+ in+ in+ "self.Const_k_" << Type << " = None" << endl;
-    ofs << in+ in+ in+ "self.Const_krev_" << Type << " = None" << endl;
+    ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
+    ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
         ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
     }
@@ -1085,8 +1054,8 @@ void Print_SetUpStandardReaction(ofstream& ofs, std::string Type, std::vector<co
  
     ofs << in+ in+ in+ "# " << Type << endl;
 
-    ofs << in+ in+ in+ "self.Const_k_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_krev_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
+    ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
         ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
     }
@@ -1115,8 +1084,8 @@ void Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type)
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
-        ofs << in+ in+ in+ "self.Const_k_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Const_krev_" << Type << " = None" << endl;
+        ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
+        ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
             ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
         }
@@ -1215,7 +1184,7 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
 
         // Enz_Michaelis Menten
         } else if ((reaction->Type >= 20) & (reaction->Type < 30)) {
-                
+            bool bSuccess = false;
             for (auto& kinetics : enzyme->Kinetics) {             
                 // get substrate, kcat, KM when enzyme's substrate is found as a reactant of the reaction 
         
@@ -1225,9 +1194,11 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
 
                     kcats.push_back(constants[0]);
                     KMs.push_back(constants[1]);
+                    bSuccess = true;
                     break;
                 }
             }
+            Utils::Assertion (bSuccess, "Unable to load kinetic constants for Michaelis Menten Reaction");
         }
 
         if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
@@ -1263,8 +1234,8 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
-        ofs << in+ in+ in+ "self.Const_k_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
-        ofs << in+ in+ in+ "self.Const_krev_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+        ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
+        ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
             ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
         }
@@ -1442,7 +1413,7 @@ void Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 void WriteSimModule()
 {
     // write simulation.py
-    cout << "Generating Simulation_Python module..." << endl;
+    std::cout << std::endl << "Generating Simulation_Python module..." << std::endl;
 
     std::ofstream ofs(Option.SimModuleFile.c_str());
     std::string endl = "\n";
@@ -1954,49 +1925,61 @@ void WriteSimModule()
     for (auto& Type : StandardReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
+            // Typing set up
+            std::map<std::string, std::string> Typing;
+            std::vector<std::string> SubstrateTypes { "Reactant", "Product" };
+            Typing.emplace("Reactant", Type);
+            Typing.emplace("Product", StandardReactionTypes[0]); // default type
 
             ofs << in+ in+ "def StandardReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Reactants and products
-            for (int i = 0; i < N_MoleculesAllowed; i++) {
-                ofs << in+ in+ in+ "Conc_Reactant_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_" << i << "_" << Type << "), self.State.Vol)" << endl;
-            } 
-            for (int i = 0; i < N_MoleculesAllowed; i++) {
-                ofs << in+ in+ in+ "Conc_Product_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_" << i << "_" << Type << "), self.State.Vol)" << endl;
-            } 
+            for (auto& substrate : SubstrateTypes) {
+                for (int i = 0; i < N_MoleculesAllowed; i++) {
+                    ofs << in+ in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                } 
+            }
 
             // Regulators 
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
                 ofs << in+ in+ in+ "Conc_Regulator = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
             } 
+
             // Calculate Rate
-            // Eqn type and Enz
-            ofs << in+ in+ in+ "Rate = sim.Eqn_" << Type << "(";
+            for (auto& substrate : SubstrateTypes) {
+                ofs << in+ in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(";
 
-            // Reactants and products or EnzSubstrate
-            for (int i = 0; i < N_MoleculesAllowed; i++) {
-                ofs << "Conc_Reactant_" << i << ", "; 
-            }
-            for (int i = 0; i < N_MoleculesAllowed; i++) {
-                ofs << "Conc_Product_" << i << ", "; 
+                for (int i = 0; i < N_MoleculesAllowed; i++) {
+                    ofs << "Conc_" << substrate << "_" << i << ", "; 
+                }
+
+                // Regulators
+                if (Typing[substrate] != StandardReactionTypes[0]) {
+                    ofs << "Conc_Regulator, ";
+                }
+                // Reaction constants
+                ofs << "self.State.Const_k_" << substrate << "_" << Type; // here
+                if (Typing[substrate] != StandardReactionTypes[0]) {
+                    ofs << ", self.State.Const_K_" << Type << ", ";             
+                    ofs << "self.State.Const_n_" << Type;
+                }
+                ofs << ")" << endl;
+
+                // Apply Time Resolution
+                ofs << in+ in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
+
+                // compare conc
+                ofs << in+ in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
+                for (int i = 0; i < N_MoleculesAllowed; i++) {
+                    ofs << ", Conc_" << substrate << "_" << i;
+                }
+                ofs << ")" << endl;
             }
 
-            // Regulators
-            if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << "Conc_Regulator, ";
-            }
-            // Reaction constants
-            ofs << "self.State.Const_k_" << Type << ", self.State.Const_krev_" << Type;
-            if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << ", self.State.Const_K_" << Type << ", ";             
-                ofs << "self.State.Const_n_" << Type;
-            }
-            ofs << ")" << endl;
+            // Tally Rates
+            ofs << in+ in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
 
-            // Apply TimeResolution to the rate
-            ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
-
-            // Apply stoichiometry 
+            // Apply stoichiometry
             ofs << in+ in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             // Convert to counts
             ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
@@ -2010,20 +1993,28 @@ void WriteSimModule()
     for (auto& Type : EnzReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
+
+            // Typing set up
+            std::map<std::string, std::string> Typing;
+            std::vector<std::string> SubstrateTypes { "Reactant", "Product" };
+            Typing.emplace("Reactant", Type);
+            Typing.emplace("Product", EnzReactionTypes[0]); // default type
+
             ofs << in+ in+ "def EnzymaticReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Enzyme
              ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_" << Type << "), self.State.Vol)" << endl;
             // Reactants and products or EnzSubstrate
             if (Type.find("Enz_Standard") != std::string::npos) {
-                for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << in+ in+ in+ "Conc_Reactant_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Reactant_" << i << "_" << Type << "), self.State.Vol)" << endl;
-                } 
-                for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << in+ in+ in+ "Conc_Product_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Product_" << i << "_" << Type << "), self.State.Vol)" << endl;
-                } 
+                for (auto& substrate : SubstrateTypes) {
+                    for (int i = 0; i < N_MoleculesAllowed; i++) {
+                        ofs << in+ in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                    } 
+                }
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
                 ofs << in+ in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_" << Type << "), self.State.Vol)" << endl;
+            } else {
+                Utils::Assertion(false, "Unsupported Enz Reaction Type: " + Type);
             }
 
             // Regulators 
@@ -2032,42 +2023,63 @@ void WriteSimModule()
             }
 
             // Calculate Rate
-            // Eqn type and Enz
-            ofs << in+ in+ in+ "Rate = sim.Eqn_" << Type << "(Conc_Enz";
-
-            // Reactants and products or EnzSubstrate
             if (Type.find("Enz_Standard") != std::string::npos) {
-                for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << ", Conc_Reactant_" << i; 
+                for (auto& substrate : SubstrateTypes) {
+                    ofs << in+ in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(Conc_Enz, ";
+    
+                    for (int i = 0; i < N_MoleculesAllowed; i++) {
+                        ofs << "Conc_" << substrate << "_" << i << ", "; 
+                    }
+    
+                    // Regulators
+                    if (Typing[substrate] != EnzReactionTypes[0]) {
+                        ofs << "Conc_Regulator, ";
+                    }
+                    // Reaction constants
+                    ofs << "self.State.Const_k_" << substrate << "_" << Type; // here
+                    if (Typing[substrate] != EnzReactionTypes[0]) {
+                        ofs << ", self.State.Const_K_" << Type << ", ";             
+                        ofs << "self.State.Const_n_" << Type;
+                    }
+                    ofs << ")" << endl;
+    
+                    // Apply Time Resolution
+                    ofs << in+ in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
+    
+                    // compare conc
+                    ofs << in+ in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
+                    for (int i = 0; i < N_MoleculesAllowed; i++) {
+                        ofs << ", Conc_" << substrate << "_" << i;
+                    }
+                    ofs << ")" << endl;
                 }
-                for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << ", Conc_Product_" << i; 
-                }
+    
+                // Tally Rates
+                ofs << in+ in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
+
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << ", Conc_EnzSub";
-            }
-
-            // Regulators
-            if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << ", Conc_Regulator";
-            }
-            // Reaction constants
-            if (Type.find("Enz_Standard") != std::string::npos) {
-                ofs << ", self.State.Const_k_" << Type << ", self.State.Const_krev_" << Type;
-            } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << ", self.State.Const_kcat_" << Type << ", self.State.Const_KM_" << Type; 
-            }
-            if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << ", self.State.Const_K_" << Type;             
-                if (Type.find("Allosteric") != std::string::npos) {
-                    ofs << ", self.State.Const_n_" << Type;
+                ofs << in+ in+ in+ "Rate = sim.Eqn_" << Type << "(Conc_Enz, Conc_EnzSub";
+    
+                // Regulators
+                if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
+                    ofs << ", Conc_Regulator";
                 }
+
+                // Reaction constants
+                ofs << ", self.State.Const_kcat_" << Type << ", self.State.Const_KM_" << Type;
+
+                if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
+                    ofs << ", self.State.Const_K_" << Type;             
+                    if (Type.find("Allosteric") != std::string::npos) {
+                        ofs << ", self.State.Const_n_" << Type;
+                    }
+                }
+                ofs << ")" << endl;
+    
+                // Apply TimeResolution to the rate
+                ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
+                // compare conc for michaelis menten?
             }
-            ofs << ")" << endl;
-
-            // Apply TimeResolution to the rate
-            ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
-
             // Apply stoichiometry 
             ofs << in+ in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             // Convert to counts
@@ -2437,7 +2449,7 @@ int main(int argc, char *argv[])
             TraversalNode(ProgramBlock);
             Context.Organize();
 
-            if (Option.Verbose) {
+            if (Option.bDebug) {
                 Context.PrintLists(os);
                 Context.PrintInitialCounts(os);
             }

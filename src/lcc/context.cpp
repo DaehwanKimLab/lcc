@@ -202,6 +202,7 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 
 void FCompilerContext::Organize() 
 {
+    std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
     MakeListsFromMoleculeList();
     // Dependency Note: AssignReactionTypes uses Lists made from above
     AssignReactionTypesForReactionList();
@@ -278,6 +279,7 @@ void FCompilerContext::AssignReactionType(FReaction *Reaction, int Regulation)
 
 void FCompilerContext::AssignReactionTypesForReactionList()
 {
+    std::cout << "Assigning Reaction Types..." << endl;
     // check if regulated
     int reg;
 
@@ -319,6 +321,7 @@ void FCompilerContext::AssignReactionTypesForReactionList()
 
 void FCompilerContext::MakeListsFromMoleculeList()
 {
+    std::cout << "Making Context Lists from Molecule List..." << std::endl;
     for (auto& molecule : MoleculeList) {
         if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
         auto enzyme = dynamic_cast<FEnzyme *>(molecule);
