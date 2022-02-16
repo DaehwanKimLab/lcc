@@ -31,7 +31,7 @@
 
 ### 3. Product Inhibition (p.78)
 <img src="Ingalls2013_Model4_1_ProductInhibition_Model.png" height="100"> 
-<img src="Ingalls2013_Model4_1_ProductInhibition_Eqn.png" height="100">
+<img src="Ingalls2013_Model4_1_ProductInhibition_Eqn.png" height="75">
 
     Initial Concentrations:     S1 = 0, S2 = 0
     Kinetic Constants:          k1 = 20, k2 = 5, k3 = 5, k4 = 5, k5 = 2, K = 1, n = 4 
@@ -42,7 +42,7 @@
 
 ### 4. Stability (p.82)
 <img src="Ingalls2013_Model4_2_Stability_Model.png" height="100"> 
-<img src="Ingalls2013_Model4_2_Stability_Eqn.png" height="100">
+<img src="Ingalls2013_Model4_2_Stability_Eqn.png" height="75">
 
     Initial Concentrations:     S1 = 1, S2 = 3
     Kinetic Constants:          k1 = 20, k2 = 20, k3 = 5, k4 = 5, K1 = 1, K2 = 1, n1 = 4, n2 = 1 
@@ -54,7 +54,7 @@
 
 ### 5. Oscillations (p.93)
 <img src="Ingalls2013_Model4_14_LimitCycleOscillations_Model.png" height="75"> 
-<img src="Ingalls2013_Model4_14_LimitCycleOscillations_Eqn.png" height="100">
+<img src="Ingalls2013_Model4_14_LimitCycleOscillations_Eqn.png" height="75">
 
     Initial Concentrations:     S1 = 1.5, S2 = 1
     Kinetic Constants:          k0 = 8, k1 = 1, k2 = 5, K = 1, n1 = [2, 2.5] 
@@ -81,7 +81,7 @@
 - Examples: 
  
 ### 7. G-protein Signaling (p.154)
-<img src="Ingalls2013_Model6_4_G-proteinSignaling_Model.png" height="200"> 
+<img src="Ingalls2013_Model6_4_G-proteinSignaling_Model.png" height="175"> 
 
     Initial Concentrations:     RL = 2e-3*1e9, RLm = 1e-2, R=4000, G=10000
     Induced Concentrations:     L[100:700]=1e-9
@@ -94,17 +94,16 @@
 
 ### 8. Bacterial Chemotaxis (p.163)
 <img src="Ingalls2013_Model6_13_BacterialChemotaxis_Model.png" height="250"> 
-<img src="Ingalls2013_Model6_13_BacterialChemotaxis_Eqn.png" height="300"> 
+<img src="Ingalls2013_Model6_13_BacterialChemotaxis_Eqn.png" height="250"> 
 
     Initial Concentrations:     R = 5, Am = 0, AmL = 0, A = 500, AL = 0, B = 0.1, BP = 0
-    Induced Concentrations:     L[0:10] = 20, L[10:30] = 40, L[30:50] = 80
+    Induced Concentrations:     L[0:100] = 20, L[100:300] = 40, L[300:500] = 80
     Kinetic Constants:          k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05, 
                                 krev1 = 1, krev2 = 1, krev3 = 1, krev4 = 1, krev5 = 0.005, 
                                 kM1 = 1, kM2 = 1
 
 - [BacterialChemotaxis.py](Ingalls2013_Model6_13_BacterialChemotaxis.py)
-
-[comment]: <> (- [BacterialChemotaxis.lpp]&#40;Ingalls2013_Model6_13_BacterialChemotaxis.lpp&#41;)
+- [BacterialChemotaxis.lpp](Ingalls2013_Model6_13_BacterialChemotaxis.lpp)
 - *[Pygame_BacterialChemotaxis.py](../BacterialChemotaxis.py)
 
 

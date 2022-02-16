@@ -4,6 +4,9 @@
 // Model   6.12,    p.162
 // Figure  6.14,    p.164
 
+// N_SimSteps = 100000, SimStepTimeResolution = 100
+// Note: ligand induction time interval change
+
     protein BP
     {
       reaction R1(Am --> A, kcat=200, KM=1);
@@ -20,5 +23,5 @@
     reaction R2(A + L --> AL, k=1, krev=1);
     reaction R3(B + Am --> BP, k=0.05, krev=0.005);
 
-//    A[0] = 500, R[0] = 5, B[0] = 0.1;
-//    L_Conc[0:10]=20, L_Conc[10:30]=40, L_Conc[30:50]=80;
+    A[0] = 500, R[0] = 5, B[0] = 0.1;
+    L[0:100]=20, L[100:300]=40, L[300:500]=80;

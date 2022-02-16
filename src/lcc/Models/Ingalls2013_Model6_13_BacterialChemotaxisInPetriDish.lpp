@@ -6,13 +6,13 @@ petridish P
     {
       reaction R1(Am --> A, kcat=200, KM=1);
       reaction R2(AmL --> AL, kcat=1, KM=1);
-    }
+    };
 
     protein R
     {
       reaction R1(A --> Am, k=1);
       reaction R2(AL --> AmL, k=1);
-    }
+    };
 
     reaction R1(Am + L --> AmL, k=1, krev=1);
     reaction R2(A + L --> AL, k1, krev=1);
