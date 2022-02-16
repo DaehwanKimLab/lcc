@@ -34,10 +34,10 @@ digit                         [0-9]
 "while"                       { return TOKEN(T_WHILE); }
 "if"                          { return TOKEN(T_IF); }
 "else"                        { return TOKEN(T_ELSE); }
-"int"                         { return TOKEN(T_INT); }
-"float"                       { return TOKEN(T_FLOAT); }
-"array"                       { return TOKEN(T_ARRAY); }
-"dict"                        { return TOKEN(T_DICT); }
+"int"                         { SAVE_TOKEN; return T_INT; }
+"float"                       { SAVE_TOKEN; return T_FLOAT; }
+"array"                       { SAVE_TOKEN; return T_ARRAY; }
+"dict"                        { SAVE_TOKEN; return T_DICT; }
 "and"                         { return TOKEN(T_AND); }
 "or"                          { return TOKEN(T_L_OR); }
 "not"                         { return TOKEN(T_NOT); }
@@ -81,9 +81,6 @@ digit                         [0-9]
 "peptide_{n+1}"               { SAVE_TOKEN; return T_MOLECULE; }
 "aa"|"AA"                     { SAVE_TOKEN; return T_MOLECULE; }
 "H_{2}O"                      { SAVE_TOKEN; return T_MOLECULE; }
-[a-zA-Z_][a-zA-Z0-9_\-+.\{\}\^]*    { SAVE_TOKEN; return T_IDENTIFIER; }
-{digit}+                      { SAVE_TOKEN; return T_INTEGER; }
-[+-]?{digit}+("."{digit}+)?([Ee][+-]?{digit}+)?    { SAVE_TOKEN; return T_NUMBER; }
 "("                           { return TOKEN(T_LPAREN); }
 ")"                           { return TOKEN(T_RPAREN); }
 "+"                           { return TOKEN(T_PLUS); }
@@ -112,6 +109,9 @@ digit                         [0-9]
 "/"                           { return TOKEN(T_DIV); }
 "["                           { return TOKEN(T_LBRACKET); }
 "]"                           { return TOKEN(T_RBRACKET); }
+[a-zA-Z_][a-zA-Z0-9_\-.\{\}\^]*    { SAVE_TOKEN; return T_IDENTIFIER; }
+{digit}+                      { SAVE_TOKEN; return T_INTEGER; }
+[+-]?{digit}+("."{digit}+)?([Ee][+-]?{digit}+)?    { SAVE_TOKEN; return T_NUMBER; }
 
 (([\(\[\{}]*\w+['\+\-\>']*[\)\]\}]*|[\(\[\{}]+['\+\-\>']+[\)\]\}])+?[\,\-]?\s?)+?	{ SAVE_TOKEN; return T_MOLECULE; } 	/*
 

@@ -663,6 +663,7 @@ const FEnzyme * FCompilerContext::GetEnzyme_EnzymeList(std::string Name)
     }
 
     Utils::Assertion (false, "Unable to find enzyme in the Context.EnzymeList: " + Name);
+    return nullptr;
 }
 
 // float FCompilerContext::GetFloatAttributeByName_EnzymeList(std::string Name, std::string Attribute)
@@ -795,6 +796,7 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
         Index++; 
     }
     std::cout << "Unable to find index in MoleculeList : " << InputName << std::endl;
+    return 0;
 }
 
 float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)

@@ -133,7 +133,9 @@ stmts          : stmt { $$ = new NBlock(); $$->AddStatment($<StmtVec>1); }
                ;
 
 stmt           : reaction_decl_stmt T_SEMIC
+               | reaction_decl_stmt
                | protein_decl_stmt T_SEMIC
+               | protein_decl_stmt
                | protein_complex_decl T_SEMIC
                | pathway_decl T_SEMIC
                | process_decl_stmt T_SEMIC
@@ -141,11 +143,11 @@ stmt           : reaction_decl_stmt T_SEMIC
                | organism_decl
                | experiment_decl T_SEMIC
                | using_stmt T_SEMIC
-			   | ribosome_decl_stmt T_SEMIC
-			   | polymerase_decl_stmt T_SEMIC
-			   | ribosome_binding_site_stmt T_SEMIC
-			   | translation_terminator_stmt T_SEMIC
-			   | replication_origin_stmt T_SEMIC
+               | ribosome_decl_stmt T_SEMIC
+               | polymerase_decl_stmt T_SEMIC
+               | ribosome_binding_site_stmt T_SEMIC
+               | translation_terminator_stmt T_SEMIC
+               | replication_origin_stmt T_SEMIC
                | replication_terminus_stmt T_SEMIC
                | container_stmt T_SEMIC
                | container_stmt
@@ -514,6 +516,8 @@ p_expr         : /* */ { $$ = new NExpression(); }
                | p_expr T_LPAREN p_expr_list T_RPAREN { $$ = new NFunctionCallExpression($1, $3); }
                | p_expr T_LBRACKET p_range_expr T_RBRACKET { $$ = new NVariableExpression($1, $3); }
                | T_LPAREN p_expr T_RPAREN { $$ = $2; }
+               | p_expr T_INC { $$ = new NAExpression(T_INC, $1); }
+               | p_expr T_DEC { $$ = new NAExpression(T_DEC, $1); }
                ;
 
 variable       : ident { $$ = new NVariableExpression($1); }
