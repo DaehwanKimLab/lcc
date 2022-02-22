@@ -805,10 +805,20 @@ float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)
     for (auto& count : CountList) {
         if ((count->Name == MolName) & (count->Begin == 0)) {
             return count->Amount;
-            break;
         }
     }
     return 0;
+}
+
+bool FCompilerContext::GetMolarityFactorByName_CountList(std::string MolName)
+{
+// returns 0 if there is no initial count set
+    for (auto& count : CountList) {
+        if ((count->Name == MolName) & (count->Begin == 0)) {
+            return count->bMolarity;
+        }
+    }
+    return false;
 }
 
 std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()

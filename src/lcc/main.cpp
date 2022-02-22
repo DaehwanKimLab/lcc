@@ -1594,14 +1594,20 @@ void WriteSimModule()
     // Initialize all molecule counts
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
     std::vector<float> InitialCount_Molecules;
+    std::vector<float> MolarityFactor_Molecules;
 
     for (auto& molecule : Context.MoleculeList) {
         float Count = Context.GetInitialCountByName_CountList(molecule->Name);
+        float MolarityFactor = Context.GetMolarityFactorByName_CountList(molecule->Name); 
         InitialCount_Molecules.push_back(Count);
+        MolarityFactor_Molecules.push_back(MolarityFactor);
     }
 
     ofs << in+ in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
-    ofs << in+ in+ in+ "Count_Mol = np.asmatrix([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
+    ofs << in+ in+ in+ "Count_Mol = np.array([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
+    ofs << in+ in+ in+ "MolarityFactor_Mol = np.array([" << JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
+    ofs << in+ in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
+    ofs << in+ in+ in+ "Count_Mol *= MolarityFactor_Mol" << endl;
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
     ofs << endl;
 
