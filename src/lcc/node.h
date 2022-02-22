@@ -1030,6 +1030,10 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "Arithmetic: {";
         os << "OpCode: " << Oper;
+        if (IsUnary()) {
+            os << ", ";
+            os << "Unary: True";
+        }
         if (OpA) {
             os << ", ";
             os << "OpA: {";
@@ -1045,6 +1049,10 @@ public:
         os << "}";
     }
     virtual void Visit(FTraversalContext& Context) const override {};
+
+    bool IsUnary() const {
+        return !OpB;
+    }
 };
 
 class NConstantExpression : public NExpression {
