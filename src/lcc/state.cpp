@@ -3,8 +3,6 @@
 
 using namespace std;
 
-extern FState State;
-
 void FState::SetVol(const int& InVol){
     Vol = InVol;
 }

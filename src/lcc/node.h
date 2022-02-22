@@ -7,6 +7,8 @@
 #include <memory>
 #include <cassert>
 
+#include "number.h"
+#include "util.h"
 //#include <llvm/IR/Value.h>
 
 
@@ -1064,7 +1066,11 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 
     virtual std::string Evaluate() const override {
-        return Value;
+        return Utils::SciFloat2Str(std::stof(Value) * Numbers::Unit2Value(Unit));
+    }
+
+    virtual bool Molarity() const {
+        return Numbers::CheckMolarity(Unit);
     }
 };
 

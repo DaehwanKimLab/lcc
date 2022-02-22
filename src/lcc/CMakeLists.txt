@@ -29,6 +29,7 @@ set(SOURCEFILE
 	option.cpp
 	context.cpp
 	util.cpp
+        number.cpp
 	simulation.cpp
 	state.cpp
 	${BISON_LPPParser_OUTPUTS}

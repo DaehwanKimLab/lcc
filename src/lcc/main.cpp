@@ -247,8 +247,9 @@ void AddPseudoMolecule()
     float Begin = 0;
     float End = -1;
     float Step = 0;
+    bool bMolarity = false;
 
-    FCount * NewCount = new FCount(Name_Pseudo, Amount, Begin, End, Step);
+    FCount * NewCount = new FCount(Name_Pseudo, Amount, Begin, End, Step, bMolarity);
     Context.CountList.push_back(NewCount);
 }
 
@@ -760,37 +761,40 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     // target info
                     std::string Name = VarExp->Evaluate();
 
-                    float InitialCount = Float_Init;
-                    bool Fixed = false;
-                    vector<pair<pair<float, float>, float>> Ranges;
-
                     // parse
-                    float Amount = std::stof(VarAssigned->Value);
+                    float Amount = std::stof(VarAssigned->Evaluate());
+                    bool bMolarity = VarAssigned->Molarity();
                     // os << "Amount: " << Amount << endl;
-
-                    auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
 
                     float Begin = Float_Init;
                     float End = Float_Init;
                     float Step = Float_Init;
 
-                    if (IndexExpression->Begin) {
-                        if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Begin.get())) {
-                            Begin = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Begin)->Value);
-                            Utils::Assertion(Begin >= 0, "Range input (beginning) cannot be negative. Molecule: " + Name);
+                    if (VarExp->Index) {
+                        auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
+    
+                        if (IndexExpression->Begin) {
+                            if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Begin.get())) {
+                                Begin = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Begin)->Evaluate());
+                                Utils::Assertion(Begin >= 0, "Range input (beginning) cannot be negative. Molecule: " + Name);
+                            }
                         }
-                    }
-                    if (IndexExpression->End) {
-                        if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->End.get())) {
-                            End = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->End)->Value);
-                            Utils::Assertion(End > 0, "Range input (end) cannot be 0 or negative. Molecule: " + Name);
+                        if (IndexExpression->End) {
+                            if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->End.get())) {
+                                End = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->End)->Evaluate());
+                                Utils::Assertion(End > 0, "Range input (end) cannot be 0 or negative. Molecule: " + Name);
+                            }
                         }
-                    }
-                    if (IndexExpression->Step) {
-                        if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Step.get())) {
-                            Step = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Step)->Value);
-                            Utils::Assertion(Step > 0, "Range input (step) cannot not be 0 or negative. Molecule: " + Name);
+                        if (IndexExpression->Step) {
+                            if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Step.get())) {
+                                Step = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Step)->Evaluate());
+                                Utils::Assertion(Step > 0, "Range input (step) cannot not be 0 or negative. Molecule: " + Name);
+                            }
                         }
+
+                    // default = [0]
+                    } else {
+                        Begin = 0;                   
                     }
 
                     if (Step < 0) {
@@ -798,10 +802,10 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     }
 
                     // categorizing
-                    if ((Begin <  0) & (End < 0)) { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
+                    if ((Begin <  0) & (End < 0))      { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
                     else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
 
-                    FCount * NewCount = new FCount(Name, Amount, Begin, End, Step);
+                    FCount * NewCount = new FCount(Name, Amount, Begin, End, Step, bMolarity);
                     Context.CountList.push_back(NewCount);
                 }                
             }

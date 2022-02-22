@@ -26,24 +26,26 @@ public:
 
 class FCount {
 public:
-    // new 
     std::string Name;
     float Amount;   
     float Begin;
     float End;
     float Step;
 
+    bool bMolarity;
+
     FCount() {}
 
-    // new 
-    FCount(std::string InName, float InAmount, float InBegin, float InEnd, float InStep) : Name(InName), Amount(InAmount), Begin(InBegin), End(InEnd), Step(InStep) {}
+    FCount(std::string InName, float InAmount, float InBegin, float InEnd, float InStep, bool InbMolarity) : Name(InName), Amount(InAmount), Begin(InBegin), End(InEnd), Step(InStep), bMolarity(InbMolarity) {}
 
     void Print(std::ostream& os) {
         os << "Name : " << Name << 
          "\t| Amount: " << Utils::SciFloat2Str(Amount) << 
          "\t| Begin: " << Utils::SciFloat2Str(Begin) << 
          "\t| End: " << Utils::SciFloat2Str(End) << 
-         "\t| Step: " << Utils::SciFloat2Str(Step) << std::endl;
+         "\t| Step: " << Utils::SciFloat2Str(Step);
+         if (bMolarity) { os << "\t| (Molarity)"; }
+         os << std::endl;
     }
 };
 
