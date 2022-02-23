@@ -19,6 +19,8 @@ bool CheckMolarity(std::string InUnit);
 float Prefix2Value(std::string InPrefix);
 float Suffix2Value(std::string InSuffix);
 float Unit2Value(std::string InUnit);
+float Unit2ValueWithPrefixOnly(std::string InUnit);
+std::pair<std::string, std::string> ParseUnit(std::string InUnit);
 float Count2Mol(float InCount);
 float Mol2Count(float InMol);
 

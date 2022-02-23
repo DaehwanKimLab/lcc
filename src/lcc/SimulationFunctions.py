@@ -1,10 +1,12 @@
 import numpy as np
 
+NA = 6.0221409e+23
+
 def ConcToCount(Conc_Molecule, Volume):
-    return (Conc_Molecule) * Volume
+    return (Conc_Molecule * NA) * Volume
 
 def CountToConc(Count_Molecule, Volume):
-    return (Count_Molecule) / Volume
+    return (Count_Molecule / NA) / Volume
 
 def CheckRateAndConc(Rate, Conc_1, Conc_2, Conc_3):
     return np.min((Rate, Conc_1, Conc_2, Conc_3), axis=0)

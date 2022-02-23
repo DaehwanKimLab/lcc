@@ -141,7 +141,9 @@ void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::st
     const auto& propertylist = Reaction->Property;
     for (auto& property :propertylist) {
         auto& Key = property->Key;
-        auto Value = property->Value->Evaluate();
+        // auto Value = property->Value->Evaluate();
+        const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+        auto Value = Value_Exp->EvaluateValueAndPrefix();
 
         if (Key == "k") {
             k = std::stof(Value);
@@ -182,13 +184,19 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
     const auto& propertylist = Reaction->Property;
     for (auto& property :propertylist) {
         auto& Key = property->Key;
-        auto Value = property->Value->Evaluate();
 
         if (Key == "Substrate") {
+            auto Value = property->Value->Evaluate();
             Substrate = std::stof(Value);
+
         } else if ((Key == "kcat") || (Key == "kCat")) {
+            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+            auto Value = Value_Exp->EvaluateValueAndPrefix();
             kcat = std::stof(Value);
+
         } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
+            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+            auto Value = Value_Exp->EvaluateValueAndPrefix();
             KM = std::stof(Value);
         }
     }
@@ -309,8 +317,10 @@ void TraversalNode(NBlock* InProgramBlock)
             const auto& propertylist = Reaction->Property;
             for (auto& property :propertylist) {
         	auto& Key = property->Key;
-        	auto Value = property->Value->Evaluate();
-        
+        	// auto Value = property->Value->Evaluate();
+                const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+                auto Value = Value_Exp->EvaluateValueAndPrefix();        
+
         	if (Key == "k") {
         	    k1 = std::stof(Value);
         	    Type = Standard;
@@ -377,7 +387,6 @@ void TraversalNode(NBlock* InProgramBlock)
                 const auto& propertylist = Reaction->Property;
                 for (auto& property :propertylist) {
                     auto& Key = property->Key;
-                    auto Value = property->Value->Evaluate();
                     if ((Key == "Substrate") || (Key == "kcat") || (Key == "kCat") || (Key == "KM") || (Key == "kM") || (Key == "km")) {
                         bGetEnzKinetics = true;
                         break;
@@ -416,7 +425,6 @@ void TraversalNode(NBlock* InProgramBlock)
                             const auto& propertylist = Reaction->Property;
                             for (auto& property :propertylist) {
                                 auto& Key = property->Key;
-                                auto Value = property->Value->Evaluate();
                                 if ((Key == "Substrate") || (Key == "kcat") || (Key == "kCat") || (Key == "KM") || (Key == "kM") || (Key == "km")) {
                                     bGetEnzKinetics = true;
                                     break;

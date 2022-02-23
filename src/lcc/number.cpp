@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "number.h"
 
 using namespace std;
@@ -41,9 +42,7 @@ namespace Numbers {
 
 bool CheckMolarity(std::string InUnit)
 {
-    // Note: case sensitivity: may need a distinction between meters and Molarity in the future. Cover Mega Molar unit
-    if (InUnit.rfind("M") != std::string::npos) { return true; }
-    else                                        { return false; }
+    return (InUnit.substr(InUnit.size() - 1) == "M");
 }
 
 float Prefix2Value(std::string InPrefix)
@@ -58,6 +57,23 @@ float Suffix2Value(std::string InSuffix)
 
 float Unit2Value(std::string InUnit)
 {
+    auto Unit_Parsed = ParseUnit(InUnit);
+    auto Prefix = Unit_Parsed.first;
+    auto Suffix = Unit_Parsed.second;
+
+    return (Prefix2Value(Prefix) * Suffix2Value(Suffix));
+}
+
+float Unit2ValueWithPrefixOnly(std::string InUnit)
+{
+    auto Unit_Parsed = ParseUnit(InUnit);
+    auto Prefix = Unit_Parsed.first;
+
+    return Prefix2Value(Prefix);
+}
+
+std::pair<std::string, std::string> ParseUnit(std::string InUnit)
+{
     std::string Prefix;
     std::string Suffix;
 
@@ -68,8 +84,15 @@ float Unit2Value(std::string InUnit)
         Prefix = InUnit.substr(0, InUnit.find("mol"));
         Suffix = "mol";
     } else if (CheckMolarity(InUnit)) { // Note: case sensitivity: may need a distinction between meters and Molarity in the future. Cover Mega Molar unit
-        Prefix = InUnit.substr(0, InUnit.find("M"));
         Suffix = "M";
+        if (InUnit.size() == 1) {
+            Prefix = "None";
+        } else {
+            Prefix = InUnit.substr(0, InUnit.find("M"));
+        }
+    } else if (InUnit.size() == 1) {
+        Prefix = "None";
+        Suffix = InUnit;
     } else if (InUnit.size() > 1) {
         Prefix = InUnit[0];
         Suffix = "Other";
@@ -78,7 +101,8 @@ float Unit2Value(std::string InUnit)
         Suffix = "Other";
     }
 
-    return (Prefix2Value(Prefix) * Suffix2Value(Suffix));
+    std::pair<std::string, std::string> Unit_Parsed(Prefix, Suffix);
+    return Unit_Parsed;
 }
 
 float Count2Mol(float InCount)

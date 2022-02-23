@@ -1077,6 +1077,10 @@ public:
         return Utils::SciFloat2Str(std::stof(Value) * Numbers::Unit2Value(Unit));
     }
 
+    virtual std::string EvaluateValueAndPrefix() const {
+        return Utils::SciFloat2Str(std::stof(Value) * Numbers::Unit2ValueWithPrefixOnly(Unit));
+    }
+
     virtual bool Molarity() const {
         return Numbers::CheckMolarity(Unit);
     }
