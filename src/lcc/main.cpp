@@ -54,6 +54,10 @@ std::string Name_Pseudo = "Pseudo";
 float Float_Init = -0.09876723; // random initialized float
 int Int_Init = -128; // random initialized int 
 
+// temporary simulation control parameters
+int Sim_Steps = 1000;
+int Sim_Resolution = 100;
+
 
 const char *VersionString = "1.0.0";
 
@@ -741,6 +745,17 @@ std::cout << "Get EnzKinetics True" << std::endl;
 
             }
 
+//        } else if (Utils::is_class_of<NFunctionCallExpression, NNode>(node)) {
+//            auto FCExpression = dynamic_cast<const NFunctionCallExpression *>(node);
+//
+//            if (Option.bDebug) {
+//                FCExpression->Print(os);
+//                os << endl;
+//            }
+//
+//            auto Name = dynamic_pointer_cast<const NExpression *>(FCExpression->Name);
+//            auto Parameters = dynamic_pointer_cast<const NExpressionList *>(FCExpression->Args); 
+//
         } else if (Utils::is_class_of<NAExpression, NNode>(node)) {
             auto AExpression = dynamic_cast<const NAExpression *>(node);
 //            auto VarExp = dynamic_pointer_cast<const NVariableExpression *>(AExpression->OpA);
@@ -751,7 +766,6 @@ std::cout << "Get EnzKinetics True" << std::endl;
                 os << endl;
             }
 
-            // Count System
             if (AExpression->Oper == T_ASSIGN) {
                 if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
 
@@ -759,54 +773,72 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB); 
 
                     // target info
-                    std::string Name = VarExp->Evaluate();
+                    auto VarName = VarExp->Evaluate();
+                    auto VarValue = VarAssigned->Evaluate();
 
-                    // parse
-                    float Amount = std::stof(VarAssigned->Evaluate());
-                    bool bMolarity = VarAssigned->Molarity();
-                    // os << "Amount: " << Amount << endl;
+                    // temporary simulation control system
+                    if (VarName == "SimSteps") {
+                        Sim_Steps = static_cast<int>(std::stof(VarValue));
+                        os << endl;
+                        os << "# Simulation Control" << endl;
+                        os << "SimSteps = " << Sim_Steps << endl;
+                    } else if (VarName == "SimRes") {
+                        Sim_Resolution = static_cast<int>(std::stof(VarValue));
+                        os << "SimResolution = " << Sim_Resolution << endl;
 
-                    float Begin = Float_Init;
-                    float End = Float_Init;
-                    float Step = Float_Init;
-
-                    if (VarExp->Index) {
-                        auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
-    
-                        if (IndexExpression->Begin) {
-                            if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Begin.get())) {
-                                Begin = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Begin)->Evaluate());
-                                Utils::Assertion(Begin >= 0, "Range input (beginning) cannot be negative. Molecule: " + Name);
-                            }
-                        }
-                        if (IndexExpression->End) {
-                            if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->End.get())) {
-                                End = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->End)->Evaluate());
-                                Utils::Assertion(End > 0, "Range input (end) cannot be 0 or negative. Molecule: " + Name);
-                            }
-                        }
-                        if (IndexExpression->Step) {
-                            if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Step.get())) {
-                                Step = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Step)->Evaluate());
-                                Utils::Assertion(Step > 0, "Range input (step) cannot not be 0 or negative. Molecule: " + Name);
-                            }
-                        }
-
-                    // default = [0]
                     } else {
-                        Begin = 0;                   
+
+                        // Count System 
+                        // target info
+                        std::string Name = VarName;
+    
+                        // parse
+                        float Amount = std::stof(VarValue);
+                        bool bMolarity = VarAssigned->Molarity();
+                        // os << "Amount: " << Amount << endl;
+    
+                        float Begin = Float_Init;
+                        float End = Float_Init;
+                        float Step = Float_Init;
+    
+                        if (VarExp->Index) {
+                            auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
+        
+                            if (IndexExpression->Begin) {
+                                if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Begin.get())) {
+                                    Begin = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Begin)->Evaluate());
+                                    Utils::Assertion(Begin >= 0, "Range input (beginning) cannot be negative. Molecule: " + Name);
+                                }
+                            }
+                            if (IndexExpression->End) {
+                                if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->End.get())) {
+                                    End = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->End)->Evaluate());
+                                    Utils::Assertion(End > 0, "Range input (end) cannot be 0 or negative. Molecule: " + Name);
+                                }
+                            }
+                            if (IndexExpression->Step) {
+                                if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Step.get())) {
+                                    Step = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Step)->Evaluate());
+                                    Utils::Assertion(Step > 0, "Range input (step) cannot not be 0 or negative. Molecule: " + Name);
+                                }
+                            }
+    
+                        // default = [0]
+                        } else {
+                            Begin = 0;                   
+                        }
+    
+                        if (Step < 0) {
+                            Step  = 0;   // default value
+                        }
+    
+                        // categorizing
+                        if ((Begin <  0) & (End < 0))      { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
+                        else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
+    
+                        FCount * NewCount = new FCount(Name, Amount, Begin, End, Step, bMolarity);
+                        Context.CountList.push_back(NewCount);
                     }
-
-                    if (Step < 0) {
-                        Step  = 0;   // default value
-                    }
-
-                    // categorizing
-                    if ((Begin <  0) & (End < 0))      { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
-                    else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
-
-                    FCount * NewCount = new FCount(Name, Amount, Begin, End, Step, bMolarity);
-                    Context.CountList.push_back(NewCount);
                 }                
             }
              
@@ -1437,8 +1469,8 @@ void WriteSimModule()
     ofs << endl;
 
     // user input
-    ofs << in+ "N_SimSteps = 1000" << endl;
-    ofs << in+ "SimStepTimeResolution = 100" << endl;
+    ofs << in+ "N_SimSteps = " << Sim_Steps << endl;
+    ofs << in+ "SimStepTimeResolution = " << Sim_Resolution << endl;
     ofs << endl;
 
     // class FState 

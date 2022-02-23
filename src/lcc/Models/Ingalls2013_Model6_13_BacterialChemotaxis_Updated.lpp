@@ -1,0 +1,33 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Network  6.13,   p.163
+// Model   6.12,    p.162
+// Figure  6.14,    p.164
+
+// N_SimSteps = 100000, SimStepTimeResolution = 100
+// Note: ligand induction time interval change similar to the python model
+
+// Protein amounts imported from Bitbol and Wingreen, 2015 Biophysical Journal. Fundamental Constraints on the Abundances of Chemotaxis Proteins.
+// CheA = 2.97 uM, CheY = 9.73 uM, CheZ = 3.80 uM, CheB = 0.28 uM, CheR = 0.17 uM, FliM = 1.43 uM, where 16% of FliM that are free are discounted.
+
+
+    protein BP
+    {
+      reaction R1(Am --> A, kcat=200, KM=1 uM);
+      reaction R2(AmL --> AL, kcat=1, KM=1 uM);
+    }
+
+    protein R
+    {
+      reaction R1(A --> Am, kcat=1, KM=1e-20 uM);
+      reaction R2(AL --> AmL, kcat=1, KM=1e-20 uM);
+    }
+
+    reaction R1(Am + L --> AmL, k=1, krev=1);
+    reaction R2(A + L --> AL, k=1, krev=1);
+    reaction R3(B + Am --> BP, k=1, krev=0.005);
+
+    A = 50 uM, R = 5 uM, B = 0.1 uM;
+    L[0:100]=20 uM, L[100:300]=40 uM, L[300:500]=80 uM;
+
+    SimSteps = 5000, SimRes = 10000;
