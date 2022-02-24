@@ -21,6 +21,10 @@ Parameter values are, (in time−1): k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05
 k−4 = 1, k−5 = 0.005; (in concentration): kM1 = 1, kM2 = 1. Units are arbitrary.
 """
 
+nM = 1e-9
+Mol2Count = 6.0221409e+23
+Count2Mol = 1.0 / Mol2Count
+
 def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return min(krev1 * R, A) - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
 
@@ -39,11 +43,12 @@ def dB_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5
 def dBP_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return k5 * Am * B - krev5 * BP
 
-
 class FModel():
-    def __init__(self, k1=200, k2=1, k3=1, k4=1, k5=0.05, krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005, kM1=1, kM2=1, L=20, R=5, Am=0, AmL=0, A=1, AL=0, B=0.1, BP=0):
-        # DK - debugging purposes
-        A = 500
+    def __init__(self,
+                 k1=200, k2=1, k3=1/nM, k4=1/nM, k5=0.05/nM, kM1=1*nM, kM2=1*nM,
+                 L=20*nM, R=5*nM, A=500*nM, B=0.1*nM,
+                 krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005,
+                 Am=0, AL=0, AmL=0, BP=0):
         
         # Initial Concentrations
         self.L = L
