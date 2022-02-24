@@ -42,7 +42,11 @@ namespace Numbers {
 
 bool CheckMolarity(std::string InUnit)
 {
-    return (InUnit.substr(InUnit.size() - 1) == "M");
+    if (InUnit.empty()) {
+        return false;
+    } else {
+        return (InUnit.substr(InUnit.size() - 1) == "M");
+    }
 }
 
 float Prefix2Value(std::string InPrefix)
