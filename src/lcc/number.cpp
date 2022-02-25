@@ -40,6 +40,11 @@ std::map<std::string, float> Suffix2ValueMap {
 
 namespace Numbers {
 
+float GetAvogadro() 
+{
+    return NA;
+}
+
 bool CheckMolarity(std::string InUnit)
 {
     if (InUnit.empty()) {

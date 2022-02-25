@@ -206,6 +206,7 @@ void FCompilerContext::Organize()
     MakeListsFromMoleculeList();
     // Dependency Note: AssignReactionTypes uses Lists made from above
     AssignReactionTypesForReactionList();
+    AdjustMolarity_PseudoMolecule();
 }
 
 enum ReactionTypeAssignment {
@@ -812,14 +813,43 @@ float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)
 
 bool FCompilerContext::GetMolarityFactorByName_CountList(std::string MolName)
 {
-// returns 0 if there is no initial count set
     for (auto& count : CountList) {
-        if ((count->Name == MolName) & (count->Begin == 0)) {
+        if (count->Name == MolName) {
             return count->bMolarity;
         }
     }
     return false;
 }
+
+bool FCompilerContext::CheckMolarityFactorTrueForAny_CountList()
+{
+    for (auto& count : CountList) {
+        if (count->bMolarity) {
+            return true; // note: PseudoMolecule Molarity is set to false by default.
+        }
+    }
+    return false;
+}
+
+void FCompilerContext::RevertMolarity_CountList(std::string InName)
+{
+    for (auto& count : CountList) {
+        if (count->Name == InName) {
+            // adjust amount by switching unit
+            if (count->bMolarity) { count->Amount /= Numbers::GetAvogadro(); }
+            else                  { count->Amount *= Numbers::GetAvogadro(); }
+            // revert molarity
+            count->bMolarity = !(count->bMolarity);
+        }
+    }
+}
+
+void FCompilerContext::AdjustMolarity_PseudoMolecule()
+{
+    if (CheckMolarityFactorTrueForAny_CountList()) {
+        RevertMolarity_CountList("Pseudo"); // Name for PseudoMolecule
+    }
+}    
 
 std::vector<const FGene *> FCompilerContext::GetList_Gene_MoleculeList()
 {

@@ -14,5 +14,4 @@
 protein E(S --> P, kcat=10, KM=3.666667);
 
 // initial quantity
-E[0]=1;
-S[0]=5;
+E=1M, S=5M;

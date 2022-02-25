@@ -247,7 +247,7 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
     return SubConstPair;
 }
 
-// Pseudomolecule (placeholder to support current version of matrix operation)
+// PseudoMolecule (placeholder to support current version of matrix operation)
 void AddPseudoMolecule()
 {
     // int Idx = 0
@@ -259,7 +259,7 @@ void AddPseudoMolecule()
     float Begin = 0;
     float End = -1;
     float Step = 0;
-    bool bMolarity = false;
+    bool bMolarity = false; // bMolarity gets reverted after traversal and data import if no molecule in the system has molarity unit
 
     FCount * NewCount = new FCount(Name_Pseudo, Amount, Begin, End, Step, bMolarity);
     Context.CountList.push_back(NewCount);
@@ -1919,9 +1919,10 @@ void WriteSimModule()
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 std::string Amount;
+                float MolarityFactor = Context.GetMolarityFactorByName_CountList(Name); 
 
-                if (Name == Name_Pseudo) { Amount = "self.State.Vol"; }
-                else                     { Amount = Utils::SciFloat2Str(count->Amount);   }
+                if (MolarityFactor)      { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
+                else                     { Amount = Utils::SciFloat2Str(count->Amount); }
 
                 ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Name << ", " << Amount << ", axis=1)" << endl;
                 Names.push_back(Name);
@@ -1960,9 +1961,16 @@ void WriteSimModule()
             continue;
         }
 
+        std::string Amount;
+        float MolarityFactor = Context.GetMolarityFactorByName_CountList(Name); 
+
+        if (MolarityFactor) { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
+        else                { Amount = Utils::SciFloat2Str(count->Amount); }
+
+
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             ofs << in+ in+ in+ "if (Time >= " << Utils::SciFloat2Str(count->Begin) << ") & (Time < " << Utils::SciFloat2Str(count->End) << "):" << endl;
-            ofs << in+ in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << Name << ", " << Utils::SciFloat2Str(count->Amount) << ", axis=1)" << endl;
+            ofs << in+ in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << Name << ", " << Amount << ", axis=1)" << endl;
             Names.push_back(Name);
         }
     }
@@ -1981,18 +1989,33 @@ void WriteSimModule()
             Typing.emplace("Reactant", Type);
             Typing.emplace("Product", StandardReactionTypes[0]); // default type
 
+            bool bMolaritySys = Context.CheckMolarityFactorTrueForAny_CountList();
+            std::string AmountTextStr;
+            if (bMolaritySys) { AmountTextStr = "Conc_"; }
+            else              { AmountTextStr = "Count_"; }
+
             ofs << in+ in+ "def StandardReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Reactants and products
             for (auto& substrate : SubstrateTypes) {
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << in+ in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                        ofs << in+ in+ in+ AmountTextStr << substrate << "_" << i << " = "; 
+                    if (bMolaritySys) {
+                        ofs << "sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                    } else {
+                        ofs << "np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << ")" << endl;
+                    }
                 } 
             }
 
             // Regulators 
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << in+ in+ in+ "Conc_Regulator = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
+                ofs << in+ in+ in+ AmountTextStr << "Regulator = ";
+                if (bMolaritySys) {
+                    ofs << "sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
+                } else {
+                    ofs << "np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << ")" << endl;
+                }
             } 
 
             // Calculate Rate
@@ -2000,12 +2023,12 @@ void WriteSimModule()
                 ofs << in+ in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(";
 
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << "Conc_" << substrate << "_" << i << ", "; 
+                    ofs << AmountTextStr << substrate << "_" << i << ", "; 
                 }
 
                 // Regulators
                 if (Typing[substrate] != StandardReactionTypes[0]) {
-                    ofs << "Conc_Regulator, ";
+                    ofs << AmountTextStr << "Regulator, ";
                 }
                 // Reaction constants
                 ofs << "self.State.Const_k_" << substrate << "_" << Type; // here
@@ -2021,7 +2044,7 @@ void WriteSimModule()
                 // compare conc
                 ofs << in+ in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << ", Conc_" << substrate << "_" << i;
+                    ofs << ", " << AmountTextStr << substrate << "_" << i;
                 }
                 ofs << ")" << endl;
             }
@@ -2029,17 +2052,22 @@ void WriteSimModule()
             // Tally Rates
             ofs << in+ in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
 
-            // Apply stoichiometry
-            ofs << in+ in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
-            // Convert to counts
-            ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+            if (bMolaritySys) {
+                // Apply stoichiometry
+                ofs << in+ in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                // Convert to counts
+                ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+            } else {
+                // Apply stoichiometry
+                ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+            }
             // Apply delta counts for molecules in the stoichiometry matrix
             ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
             ofs << endl;
         }
     }
 
-    // EnzReaction function
+    // EnzReaction function // TODO: Add bMolaritySys option as above
     for (auto& Type : EnzReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {

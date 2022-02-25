@@ -14,21 +14,22 @@
     protein BP
     {
       reaction R1(Am --> A, kcat=200, KM=1M);
-      reaction R2(AmL --> AL, kcat=100, KM=1M);
+      reaction R2(AmL --> AL, kcat=1, KM=1M);
     }
 
     protein R
     {
-      reaction R1(A --> Am, kcat=1, KM=1e-20M);
-      reaction R2(AL --> AmL, kcat=1, KM=1e-20M);
+      reaction R1(A --> Am, kcat=1, KM=0.001M); // seems correct
+      reaction R2(AL --> AmL, kcat=1, KM=0.001M); // seems correct
     }
 
-    reaction R1(Am + L --> AmL, k=1, krev=1);
-    reaction R2(A + L --> AL, k=1, krev=1);
-    reaction R3(B + Am --> BP, k=100, krev=0.005);
+    reaction R1(Am + L_NoPlot --> AmL, k=6e23, krev= 6e23);
+    reaction R2(A + L_NoPlot --> AL, k=6e23, krev= 6e23);
+    reaction R3(B + Am --> BP, k=5e22, krev= 5e21);
 
-    A = 500 uM, R = 5 uM, B = 100 uM;
-    L[0:100]=20 uM, L[100:300]=40 uM;
-    //L[300:500]=80 uM;
+    A = 500 M, R = 5 M, B = 0.1 M;
+    //L_NoPlot[0:100]= 1.244e25, L_NoPlot[100:300]= 2.488e25;
+    L_NoPlot[0:100]= 20e6 M, L_NoPlot[100:300]=40e6 M;
+    //L[300:500]=80 M;
 
-    SimSteps = 100000, SimRes = 500;
+    SimSteps = 2000, SimRes = 100;

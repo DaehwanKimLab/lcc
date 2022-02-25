@@ -487,6 +487,9 @@ public:
     // CountList
     float GetInitialCountByName_CountList(std::string InputName);
     bool GetMolarityFactorByName_CountList(std::string InputName);
+    bool CheckMolarityFactorTrueForAny_CountList();
+    void RevertMolarity_CountList(std::string InName); 
+    void AdjustMolarity_PseudoMolecule();
 
     // MoleculeList
     std::vector<std::string> GetNames_MoleculeList();

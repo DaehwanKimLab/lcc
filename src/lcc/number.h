@@ -15,6 +15,7 @@ namespace Numbers {
 // amount of substance	mole	mol
 // luminous intensity candela	cd
 
+float GetAvogadro();
 bool CheckMolarity(std::string InUnit);
 float Prefix2Value(std::string InPrefix);
 float Suffix2Value(std::string InSuffix);

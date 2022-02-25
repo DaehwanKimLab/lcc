@@ -16,9 +16,6 @@ reaction R5(S2 --| R1, Ki=1, n=4);
 reaction R6(S1 --| R2, Ki=1, n=1);
 
 // initial quantity
-S1[0] = 1;
-S1In[:] = 1;
-S2[0] = 3;
-S2In[:] = 1;
-S1Out[:] = 0;
-S2Out[:] = 0;
+
+S1In[:] = 1, S1 = 1, S1Out[:] = 0;
+S2In[:] = 1, S2 = 3, S2Out[:] = 0;
