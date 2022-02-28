@@ -173,8 +173,7 @@ class FModel():
         fig = plt.figure()
         fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
-        # PlotBegin = 5000
-        PlotBegin = 0
+        PlotBegin = 5000
 
         # Dynamics
         ax1 = fig.add_subplot(2, 2, 1)
