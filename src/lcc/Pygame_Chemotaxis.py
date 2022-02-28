@@ -19,12 +19,26 @@ CYAN = (0, 255, 255)
 # Global variables
 pi = math.pi
 
+# Utilities
+
+def GetColorGradient(Fade, baseColor=None):
+    assert Fade <= 255, 'ERROR: Fade factor is higher than 255!'
+    if baseColor == 'Blue':
+        return (Fade, Fade, 255)
+    else:  # Assumes White
+        return (Fade, Fade, Fade)
+
+def Displacement(Distance, Angle):
+    dX = Distance * math.sin(Angle)
+    dY = Distance * math.cos(Angle)
+    return dX, dY
+
 # pygame
 pygame.init()
 
 Screen_Size = W_S, H_S = 1200, 800
 Screen = pygame.display.set_mode(Screen_Size)
-Center = W_S / 2, H_S /2
+Center = W_S / 2, H_S / 2
 
 # # Transparent control board
 # ControlBoard = pygame.Surface(Screen_Size, pygame.SRCALPHA)
@@ -38,6 +52,7 @@ Font_Monospace = pygame.font.SysFont('monospace', 15, True)
 
 # Initialize model
 Model = Models.Ingalls2013_Model6_13_BacterialChemotaxis.FModel()
+
 
 class FEnvironment:
     def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.3, InThickness=5):
@@ -172,14 +187,22 @@ class FMolecule:
         self.X_Ori = InX
         self.Y_Ori = InY
         self.Max = Max
+        self.DiffusionFactor = 2
+        self.SpaceFactor = 50
 
         # Gradient Drawing
-        self.GradLvl = 5
+        self.GradLvl = 20
         self.BaseLvl = 50
+        self.Skew = 0   # Choose 0 or any number < or > 0
+        self.GradStep = self.GetGradientStep()
+        self.GradStepList = self.GetGradientStepList()
+        self.GradDensityList = self.GetGradientDensityList()
+        self.GradBaseColor = 'Blue'
+        self.GradColorList = self.GetGradientColorList(baseColor=self.GradBaseColor)
 
         # Particle Drawing
         self.Particle_N = 100
-        self.Particle_Radius = 2
+        self.Particle_Radius = 1
         self.Particle_SpreadFactor = 1.11
         self.Particle_XY_Static = []
         self.InitializeStaticParticles()
@@ -204,12 +227,60 @@ class FMolecule:
             New_Particle_XY_Static.append((X, Y))
         self.Particle_XY_Static = New_Particle_XY_Static
 
+    def GetGradientStep(self):
+        return math.floor(255 / self.GradLvl)
+
+    def GetGradientStepList(self):
+        StepList = list()
+        if self.Skew:
+            for i in range(self.GradLvl):
+                SkewedStep = None
+                if self.Skew > 0:   # positive Skew
+                    SkewedStep = self.Max / (i + 1)
+                else:   # negative Skew
+                    SkewedStep = 255 - (self.Max / (i + 1))
+                StepList.append(math.floor(SkewedStep))
+        else:
+            StepList = list(range(0, 255, self.GradStep))
+        return StepList
+
+    def GetGradientDensityList(self):
+        GradDensityList = list()
+        for gradStep in self.GradStepList:
+            GradDensityList.append(self.Max * gradStep / self.GradStepList[-1])
+        return GradDensityList
+
+    def GetGradientColorList(self, baseColor=None):
+        ColorList = list()
+        for gradient in self.GradStepList:
+            gradient_Scaled = math.floor((gradient / self.Max) * 255)
+            ColorList.append(GetColorGradient(255 - gradient, baseColor))
+            # ColorList.append(GetColorGradient(255 - gradient_Scaled, baseColor))
+        return ColorList
+
     def Draw(self, pattern='gradient', dynamics='static'):
+
         if pattern == 'gradient':
             for i in range(self.GradLvl):
-                Color = (self.BaseLvl, self.BaseLvl, self.BaseLvl + (255 - self.BaseLvl) * ((i + 1) /self.GradLvl))
-                pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), 100 / (i + 1))
-            pygame.draw.circle(Screen, BLUE, (self.X_Ori, self.Y_Ori), 5)
+                # Skip the first circle
+                if i == 0:
+                    continue
+                else:
+                    MoleculeDensity = self.GradDensityList[i]
+                    Radius = self.GetRadius(MoleculeDensity)
+                    Color = self.GradColorList[i]
+
+                    # The smallest visible radius
+                    # if Radius < 5:
+                    #     Radius = 5
+                    pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), Radius)
+
+        # # Old gradient
+        # elif pattern == 'gradient':
+        #     for i in range(self.GradLvl):
+        #         Color = (self.BaseLvl, self.BaseLvl, self.BaseLvl + (255 - self.BaseLvl) * ((i + 1) /self.GradLvl))
+        #         pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), 100 / (i + 1))
+        #     pygame.draw.circle(Screen, BLUE, (self.X_Ori, self.Y_Ori), 5)
 
         elif ((pattern == 'particle') & (dynamics == 'dynamic')):
             for i in range(self.Particle_N):
@@ -229,7 +300,12 @@ class FMolecule:
 
     # TODO:Diffusion will be updated to a dynamic version
     def Diffusion(self, X, Y):
-        return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
+        return self.Max / (((X - self.X_Ori) / self.SpaceFactor) ** self.DiffusionFactor + ((Y - self.Y_Ori) / self.SpaceFactor) ** self.DiffusionFactor)
+        # return self.Max / ((X - self.X_Ori) ** self.DiffusionFactor + (Y - self.Y_Ori) ** self.DiffusionFactor)
+
+    def GetRadius(self, Amount):
+        return ((self.Max / Amount) ** (1. / self.DiffusionFactor)) * self.SpaceFactor
+        # return (self.Max / Amount) ** (1. / self.DiffusionFactor)
 
 class FControl:
     def __init__(self):
@@ -358,12 +434,6 @@ class FControl:
             Text_Rect.topright = (X, Y + Height * i)
             Screen.blit(Text, Text_Rect)
 
-
-def Displacement(Distance, Angle):
-    dX = Distance * math.sin(Angle)
-    dY = Distance * math.cos(Angle)
-    return dX, dY
-
 def main():
     global TransparencySwitch
     Control = FControl()
@@ -476,10 +546,10 @@ def main():
         PetriDish.Draw()
 
         # For Gradient
-        # Glucose.Draw()
+        Glucose.Draw()
 
         # For Particle
-        Glucose.Draw(pattern='particle', dynamics='static')
+        # Glucose.Draw(pattern='particle', dynamics='static')
 
         Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
         Ecoli.Chemotaxis(Glucose_Now)
