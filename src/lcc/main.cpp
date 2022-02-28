@@ -780,17 +780,6 @@ std::cout << "Get EnzKinetics True" << std::endl;
                 }
             }
 
-//        } else if (Utils::is_class_of<NFunctionCallExpression, NNode>(node)) {
-//            auto FCExpression = dynamic_cast<const NFunctionCallExpression *>(node);
-//
-//            if (Option.bDebug) {
-//                FCExpression->Print(os);
-//                os << endl;
-//            }
-//
-//            auto Name = dynamic_pointer_cast<const NExpression *>(FCExpression->Name);
-//            auto Parameters = dynamic_pointer_cast<const NExpressionList *>(FCExpression->Args); 
-
         } else if (Utils::is_class_of<NAExpression, NNode>(node)) {
             auto AExpression = dynamic_cast<const NAExpression *>(node);
 //            auto VarExp = dynamic_pointer_cast<const NVariableExpression *>(AExpression->OpA);
@@ -802,6 +791,59 @@ std::cout << "Get EnzKinetics True" << std::endl;
             }
 
             if (AExpression->Oper == T_ASSIGN) {
+
+//                // info to seek
+//                std::string Name;
+//                float Amount, Begin, End, Step;
+//                bool bMolarity;
+//
+//                if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(AExpression->OpA.get())) {
+//                    const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(AExpression->OpA);
+//                    const auto FCAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB); 
+//
+//
+//
+//
+//            auto FCExpression = dynamic_cast<const NFunctionCallExpression *>(node);
+//
+//            if (Option.bDebug) {
+//                FCExpression->Print(os);
+//                os << endl;
+//            }
+//
+//            auto NameExp = dynamic_pointer_cast<const NExpression *>(FCExpression->Name);
+//
+//            //            std::vector<std::string> Parameters_Const;
+////            for (const auto& arg: * FCExpression->Args) {
+////                if (Utils::is_class_of<NConstantExpression, NExpression>(arg.get())) {
+////                    const auto& parameter = dynamic_cast<const NConstantExpression *>(arg.get());
+////                    Parameters_Const.push_back(parameter->Evaluate());
+////                }
+////            }
+//
+//            // location (it may require more precise logic in the future)
+//            bool bLocation;
+//            std::vector<float> Parameters_Const;
+//
+//            // see if parameters contain three consecutive numbers
+//            for (const auto& arg: * FCExpression->Args) {
+//                if (Utils::is_class_of<NConstantExpression, NExpression>(arg.get())) {
+//                    const auto& parameter = dynamic_cast<const NConstantExpression *>(arg.get());
+//                    Parameters_Const.push_back(std::stof(parameter->Evaluate()));
+//                } else {
+//                    break;
+//                }
+//            }
+//
+//            if (Parameters_Const.size() == 3) {
+//                FLocation * NewLocation = new FLocation(Name, Parameters_Const);
+//                Context.AddToLocationList(NewLocation);
+//            }
+
+
+
+
+
                 if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
 
                     const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);

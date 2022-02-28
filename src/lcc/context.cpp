@@ -138,6 +138,15 @@ void FCompilerContext::PrintLists(std::ostream& os)
         }
         os << std::endl;
         }
+    i = 0;
+    if (!ReactionList.empty()) {
+        os << "  ReactionList: " << std::endl << "  " << "  ";
+        for (auto& item : ReactionList){
+            os << "[" << i << "] " << item->Name << ", ";
+            i++;
+        }
+        os << std::endl;
+        }
 }
 
 void FCompilerContext::SaveUsingModuleList(const char* Filename)
@@ -224,19 +233,8 @@ void FCompilerContext::AddToCountList(FCount *NewCount)
 }
 
 void FCompilerContext::AddToLocationList(FLocation *NewLocation)
-{
-    bool Addition = true;
-//    std::cout<< "Checking if " << NewLocation->Name << "Exists in LocationList" << std::endl;
-    for (auto& location : LocationList) {
-        if (location->Name == NewLocation->Name) {
-            Addition = false;
-            std::cout << "Redundant location name found in LocationList :" + NewLocation->Name << std::endl;
-            break;
-        }
-    }
-    if (Addition) {
-        LocationList.push_back(NewLocation);
-    }
+{   // special: this one does not check redundant entries
+    LocationList.push_back(NewLocation);
 //        std::cout << "Location "<< NewLocation->Name << " has been added to the system" << std::endl;
 }
 
@@ -387,9 +385,29 @@ void FCompilerContext::MakeListsFromContainerList()
     }
 }
 
+void FCompilerContext::PrintLocations(std::ostream& os) 
+{
+    os << std::endl << "## Compiler Locations ##" << std::endl;
+    if (!LocationList.empty()) {
+        for (auto& location : LocationList){         
+            os << location->Name << " : (";
+
+            std::vector<float> Coords;
+            if (!location->Coord_Abs.empty())      { Coords = location->Coord_Abs; }            
+            else if (!location->Coord_Rel.empty()) { Coords = location->Coord_Rel; }
+
+            for (auto coord : Coords)    { os << coord << ", "; }
+            os << ")" << "\t| ";
+        }
+        os << std::endl;
+    }
+}
+
 void FCompilerContext::PrintInitialCounts(std::ostream& os) 
 {
     os << std::endl << "## Compiler Initial Counts ##" << std::endl;
+
+    // currently restricted to the molecules that are registered on the molecule list
     if (!MoleculeList.empty()) {
         for (auto& molecule : MoleculeList){
             float Count = GetInitialCountByName_CountList(molecule->Name);

@@ -628,6 +628,7 @@ public:
 
     void PrintLists(std::ostream& os);
     void PrintInitialCounts(std::ostream& os);
+    void PrintLocations(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
 
     void AddToMoleculeList(FMolecule *NewMolecule);
