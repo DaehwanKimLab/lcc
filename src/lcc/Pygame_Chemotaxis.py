@@ -2,6 +2,7 @@ import sys
 import pygame
 import math
 import random
+from datetime import datetime
 import Models.Ingalls2013_Model6_13_BacterialChemotaxis
 
 # Colors
@@ -128,9 +129,9 @@ class FOrganism:
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 7)
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
 
-    def Chemotaxis(self, GlucoseLvl):
+    def Chemotaxis(self, GlucoseLvl, SimUnitTime):
         if self.MechanisticModeSwitch:
-            self.Am = Model.Simulate(GlucoseLvl)
+            self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
             # print(self.Am)
             if self.Am < 1.05:
                 self.Move(self.Speed)
@@ -376,8 +377,16 @@ def main():
     if Control.TransparencySwitch:
         PetriDish.DrawTransparentArea()
 
+    SimUnitTime = 0.01
+    ElapsedTime = 0
+    PrevTime = datetime.now()
+
     SimState = True
     while SimState:
+        CurrTime = datetime.now()
+        ElapsedTime += (CurrTime - PrevTime).total_seconds()
+        PrevTime = CurrTime
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 SimState = False
@@ -481,8 +490,10 @@ def main():
         # For Particle
         Glucose.Draw(pattern='particle', dynamics='static')
 
-        Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
-        Ecoli.Chemotaxis(Glucose_Now)
+        while ElapsedTime >= SimUnitTime:
+            Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
+            Ecoli.Chemotaxis(Glucose_Now, SimUnitTime)
+            ElapsedTime -= SimUnitTime
 
 
         # if PetriDish.CheckOutOfBound(Ecoli.X, Ecoli.Y):

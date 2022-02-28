@@ -120,7 +120,7 @@ class FModel():
 
             i += 1
 
-    def Simulate(self, L):
+    def Simulate(self, L, SimUnitTime = None):
         R = self.R
         Am = self.Data_Am[-1]
         AmL = self.Data_AmL[-1]
@@ -129,24 +129,27 @@ class FModel():
         B = self.Data_B[-1]
         BP = self.Data_BP[-1]
 
+        if SimUnitTime == None:
+            SimUnitTime = 1.0 / self.TimeResolution
+
         dAm = dAm_NumericalSimulation(self.k1, self.k2, self.k3, self.k4, self.k5, self.krev1, self.krev2, self.krev3,
                                       self.krev4, self.krev5, self.kM1, self.kM2, L, R, Am, AmL, A, AL, B,
-                                      BP) / self.TimeResolution
+                                      BP) * SimUnitTime
         dAmL = dAmL_NumericalSimulation(self.k1, self.k2, self.k3, self.k4, self.k5, self.krev1, self.krev2, self.krev3,
                                         self.krev4, self.krev5, self.kM1, self.kM2, L, R, Am, AmL, A, AL, B,
-                                        BP) / self.TimeResolution
+                                        BP) * SimUnitTime
         dA = dA_NumericalSimulation(self.k1, self.k2, self.k3, self.k4, self.k5, self.krev1, self.krev2, self.krev3,
                                     self.krev4, self.krev5, self.kM1, self.kM2, L, R, Am, AmL, A, AL, B,
-                                    BP) / self.TimeResolution
+                                    BP) * SimUnitTime
         dAL = dAL_NumericalSimulation(self.k1, self.k2, self.k3, self.k4, self.k5, self.krev1, self.krev2, self.krev3,
                                       self.krev4, self.krev5, self.kM1, self.kM2, L, R, Am, AmL, A, AL, B,
-                                      BP) / self.TimeResolution
+                                      BP) * SimUnitTime
         dB = dB_NumericalSimulation(self.k1, self.k2, self.k3, self.k4, self.k5, self.krev1, self.krev2, self.krev3,
                                     self.krev4, self.krev5, self.kM1, self.kM2, L, R, Am, AmL, A, AL, B,
-                                    BP) / self.TimeResolution
+                                    BP) * SimUnitTime
         dBP = dBP_NumericalSimulation(self.k1, self.k2, self.k3, self.k4, self.k5, self.krev1, self.krev2, self.krev3,
                                       self.krev4, self.krev5, self.kM1, self.kM2, L, R, Am, AmL, A, AL, B,
-                                      BP) / self.TimeResolution
+                                      BP) * SimUnitTime
 
         self.AppendData(L, R, Am + dAm, AmL + dAmL, A + dA, AL + dAL, B + dB, BP + dBP)
 
