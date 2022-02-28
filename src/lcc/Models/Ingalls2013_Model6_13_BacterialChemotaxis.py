@@ -49,7 +49,7 @@ class FModel():
                  L=20*nM, R=5*nM, A=500*nM, B=0.1*nM,
                  krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005,
                  Am=0, AL=0, AmL=0, BP=0):
-        
+
         # Initial Concentrations
         self.L = L
         self.R = R
@@ -118,6 +118,10 @@ class FModel():
             L = self.L
             self.Simulate(L)
 
+            # DK - debugging purposes
+            Am = self.Data_Am[-1]
+            print("Time: {}, Steps: {}, Am: {}".format(Time, i, Am))
+
             i += 1
 
     def Simulate(self, L, SimUnitTime = None):
@@ -169,7 +173,8 @@ class FModel():
         fig = plt.figure()
         fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
-        PlotBegin = 5000
+        # PlotBegin = 5000
+        PlotBegin = 0
 
         # Dynamics
         ax1 = fig.add_subplot(2, 2, 1)

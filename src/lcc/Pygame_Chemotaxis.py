@@ -19,6 +19,7 @@ CYAN = (0, 255, 255)
 
 # Global variables
 pi = math.pi
+nM = 1e-9
 
 # pygame
 pygame.init()
@@ -79,6 +80,7 @@ class FOrganism:
 
         # Memory
         self.Glucose_Prev = 0
+        self.SimCount = 0
 
         # Trajectory
         self.TrajectorySwitch = False
@@ -133,23 +135,32 @@ class FOrganism:
         if self.MechanisticModeSwitch:
             self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
             # print(self.Am)
+            # 1.165 * nM
             if self.Am < 1.05:
                 self.Move(self.Speed)
             else:
                 self.Tumble()
 
         else:
+            # DK - debugging purposes
+            self.SimCount += 1
+            self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
+
+            # DK - debugging purposes
             if GlucoseLvl > self.Glucose_Prev:
                 self.Move(self.Speed)
+                print("{}: Move ({} > {}) (Am: {})".format(self.SimCount, GlucoseLvl, self.Glucose_Prev, self.Am))
+                
             else:
                 self.Tumble()
+                print("{}: Tumble ({} < {}) (Am: {})".format(self.SimCount, GlucoseLvl, self.Glucose_Prev, self.Am))
+                
 
             # Update
         self.Glucose_Prev = GlucoseLvl
 
-
     def Move(self, Distance):
-        dX, dY = Displacement(Distance, self.A)
+        dX, dY = self.Displacement(Distance, self.A)
         self.X += dX
         self.Y += dY
 
@@ -161,6 +172,11 @@ class FOrganism:
         if self.Species == 'Ecoli':
             self.RotateImage(math.degrees(self.TumbleAngle))
             self.CenterImage()
+
+    def Displacement(self, Distance, Angle):
+        dX = Distance * math.sin(Angle)
+        dY = Distance * math.cos(Angle)
+        return dX, dY
 
     def DrawTrajectory(self):
         TrajectoryPoints = self.Trajectory[:]
@@ -230,7 +246,14 @@ class FMolecule:
 
     # TODO:Diffusion will be updated to a dynamic version
     def Diffusion(self, X, Y):
-        return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
+        # DK - debugging purposes
+        Dist = math.sqrt(((X - self.X_Ori) / W_S) ** 2 + ((Y - self.Y_Ori) / H_S) ** 2)
+
+        # DK - debugging purposes
+        # print("DK:", Dist)
+
+        return self.Max / max(1, Dist * 30)
+        # return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
 
 class FControl:
     def __init__(self):
@@ -274,7 +297,9 @@ class FControl:
         self.Time = 0
         self.ScoreSwitch = False
 
-        self.StatusSwitch = False
+        # DK - debugging purposes
+        self.StatusSwitch = True
+        # self.StatusSwitch = False
 
         self.TransparencySwitch = False
 
@@ -360,18 +385,13 @@ class FControl:
             Screen.blit(Text, Text_Rect)
 
 
-def Displacement(Distance, Angle):
-    dX = Distance * math.sin(Angle)
-    dY = Distance * math.cos(Angle)
-    return dX, dY
-
 def main():
     global TransparencySwitch
     Control = FControl()
 
 
     PetriDish = FEnvironment()
-    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 1000)
+    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * nM)
     Ecoli = FOrganism('A', W_S / 3, H_S / 3)
 
     if Control.TransparencySwitch:
@@ -520,6 +540,8 @@ def main():
             Control.DisplayScore()
             if Glucose_Now > (Glucose.Max * 0.999):
                 Glucose.Reposition()
+
+        Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
         if Control.StatusSwitch:
             Control.DisplayStatus(Glucose.Max, Glucose_Now, Ecoli.Am, switch=Ecoli.MechanisticModeSwitch)
 
