@@ -693,64 +693,91 @@ std::cout << "Get EnzKinetics True" << std::endl;
             os << "Organism: " << Organism->Id.Name << endl;
             os << "  " << Organism->Description << endl;
 
-            if ((Organism->Id.Name == "ecoli") | (Organism->Description == "E. coli K-12 MG1655")) {
+            if (Utils::is_class_of<NEcoliStatement, NNode>(node)) {
+                auto Ecoli = dynamic_cast<const NEcoliStatement *>(node);
+                os << "Ecoli: " << Ecoli->Id.Name << endl;
 
-                int ChromosomeSize = 4641652;
-                os << "Chromosome_I: " << std::to_string(ChromosomeSize) << "bp" << endl;
-                FChromosome * NewChromosome = new FChromosome("ChI", ChromosomeSize);
-                Context.AddToMoleculeList(NewChromosome);                
+                std::string OrganismSpace = "Ecoli";
 
-                int i;
-                int i_cap = 5000;
-
-                i = 0;
-                os << ">> Genes being imported... : ";
-                for (auto& record : Context.GeneTable.Records) {
-                    // os << record["symbol"] << ", ";
-                    FGene * NewGene = new FGene(record["id"], record["symbol"]);
-                    Context.AddToMoleculeList(NewGene);
-
-                    i++;
-                    // temporary capping
-                    if (i == i_cap) {
-                        os << "Gene importing is capped at " <<  std::to_string(i_cap) << endl;
-                        break;
+                if (Ecoli->Block) {
+                    for(const auto& stmt : Ecoli->Block->Statements) {
+                        os << "  "; stmt->Print(os); os << endl;
+                        
                     }
-                } os << "done" << endl;
-                // os << endl;
+                }
 
-                i = 0;
-                os << ">> RNAs being imported... : ";
-                for (auto& record : Context.RNATable.Records) {
-                    // os << record["id"] << ", ";
-                    FRNA * NewRNA = new FRNA(record["id"], record["type"]);
-                    Context.AddToMoleculeList(NewRNA);
+                FOrganism * NewOrganism = new FOrganism(Ecoli->Id.Name, "Ecoli");
+                Context.AddToContainerList(NewOrganism);
 
-                    i++;
-                    // temporary capping
-                    if (i == i_cap) {
-                        os << "RNA importing is capped at " <<  std::to_string(i_cap) << endl;
-                        break;
-                    }
-                } os << "done" << endl;
-                // os << endl;
+            } else if (Organism->Id.Name == "ecoli") {
 
-                i = 0;
-                os << ">> Proteins being imported... : ";
-                for (auto& record : Context.ProteinTable.Records) {
-                    // os << record["id"] << ", ";
-                    FProtein * NewProtein = new FProtein(record["id"]);
-                    Context.AddToMoleculeList(NewProtein);
+                if (Organism->Description == "E. coli K-12 MG1655") {
+                    std::string Strain = "K-12 MG1655";
+    
+                    int ChromosomeSize = 4641652;
+                    os << "Chromosome_I: " << std::to_string(ChromosomeSize) << "bp" << endl;
+                    FChromosome * NewChromosome = new FChromosome("ChI", ChromosomeSize);
+                    Context.AddToMoleculeList(NewChromosome);                
+    
+                    int i;
+                    int i_cap = 5000;
+    
+                    i = 0;
+                    os << ">> Genes being imported... : ";
+                    for (auto& record : Context.GeneTable.Records) {
+                        // os << record["symbol"] << ", ";
+                        FGene * NewGene = new FGene(record["id"], record["symbol"]);
+                        Context.AddToMoleculeList(NewGene);
+    
+                        i++;
+                        // temporary capping
+                        if (i == i_cap) {
+                            os << "Gene importing is capped at " <<  std::to_string(i_cap) << endl;
+                            break;
+                        }
+                    } os << "done" << endl;
+                    // os << endl;
+    
+                    i = 0;
+                    os << ">> RNAs being imported... : ";
+                    for (auto& record : Context.RNATable.Records) {
+                        // os << record["id"] << ", ";
+                        FRNA * NewRNA = new FRNA(record["id"], record["type"]);
+                        Context.AddToMoleculeList(NewRNA);
+    
+                        i++;
+                        // temporary capping
+                        if (i == i_cap) {
+                            os << "RNA importing is capped at " <<  std::to_string(i_cap) << endl;
+                            break;
+                        }
+                    } os << "done" << endl;
+                    // os << endl;
+    
+                    i = 0;
+                    os << ">> Proteins being imported... : ";
+                    for (auto& record : Context.ProteinTable.Records) {
+                        // os << record["id"] << ", ";
+                        FProtein * NewProtein = new FProtein(record["id"]);
+                        Context.AddToMoleculeList(NewProtein);
+    
+                        // temporary capping
+                        i++;
+                        if (i == i_cap) {
+                            os << "Protein importing is capped at " <<  std::to_string(i_cap) << endl;
+                            break;
+                        }
+                    } os << "done" << endl;
+                    // os << endl;
 
-                    // temporary capping
-                    i++;
-                    if (i == i_cap) {
-                        os << "Protein importing is capped at " <<  std::to_string(i_cap) << endl;
-                        break;
-                    }
-                } os << "done" << endl;
-                // os << endl;
+                    FOrganism * NewOrganism = new FOrganism(Organism->Id.Name, Organism->Id.Name, Strain);
+                    Context.AddToContainerList(NewOrganism);
+    
+                } else { 
 
+                    FOrganism * NewOrganism = new FOrganism(Organism->Id.Name, Organism->Id.Name);
+                    Context.AddToContainerList(NewOrganism);
+                }
             }
 
 //        } else if (Utils::is_class_of<NFunctionCallExpression, NNode>(node)) {
@@ -763,7 +790,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
 //
 //            auto Name = dynamic_pointer_cast<const NExpression *>(FCExpression->Name);
 //            auto Parameters = dynamic_pointer_cast<const NExpressionList *>(FCExpression->Args); 
-//
+
         } else if (Utils::is_class_of<NAExpression, NNode>(node)) {
             auto AExpression = dynamic_cast<const NAExpression *>(node);
 //            auto VarExp = dynamic_pointer_cast<const NVariableExpression *>(AExpression->OpA);
@@ -845,11 +872,11 @@ std::cout << "Get EnzKinetics True" << std::endl;
                         else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
     
                         FCount * NewCount = new FCount(Name, Amount, Begin, End, Step, bMolarity);
-                        Context.CountList.push_back(NewCount);
+                        Context.AddToCountList(NewCount);
                     }
                 }                
             }
-             
+
         } else if (Utils::is_class_of<NExperimentDeclaration, NNode>(node)) {
             auto Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
             os << "Experiment: " << Experiment->Id.Name << endl;

@@ -616,6 +616,25 @@ public:
 
 };
 
+class NEcoliStatement : public NOrganismDeclaration {
+public:
+    NEcoliStatement(const NIdentifier& InId, NBlock* InBlock)
+        : NOrganismDeclaration(InId, InBlock) {};
+    NEcoliStatement(const NIdentifier& InId)
+        : NOrganismDeclaration(InId) {};
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Ecoli: {";
+        Id.Print(os); os << ", ";
+        if (Block) {
+            for (const auto& stmt: Block->Statements) {
+                stmt->Print(os); os << ", ";
+            }
+        }
+        os << "}";
+    }
+};
+
 class NExperimentDeclaration : public NStatement {
 public:
     const NIdentifier Id;

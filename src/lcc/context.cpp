@@ -170,7 +170,7 @@ void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 {
     bool Addition = true;   
     // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
-    for (auto& molecule :MoleculeList) {
+    for (auto& molecule : MoleculeList) {
         if (molecule->Name == NewMolecule->Name) {
             Addition = false; 
             std::cout << "Redundant molecule name found in MoleculeList :" + NewMolecule->Name << std::endl;
@@ -185,19 +185,59 @@ void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 
 void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 {
-    bool Addition = true;
-    // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
+    bool Addition = true;   
+    // std::cout<< "Checking if " << NewReaction->Name << "Exists in ReactionList" << std::endl;
     for (auto& reaction : ReactionList) {
         if (reaction->Name == NewReaction->Name) {
+            Addition = false; 
+            std::cout << "Redundant molecule name found in ReactionList :" + NewReaction->Name << std::endl;
+            break;
+        }
+    }
+    if (Addition) { 
+        ReactionList.push_back(NewReaction);
+    }
+//        std::cout << "Reaction "<< NewReaction->Name << " has been added to the system" << std::endl;
+}
+
+void FCompilerContext::AddToContainerList(FContainer *NewContainer)
+{
+    bool Addition = true;   
+    // std::cout<< "Checking if " << NewContainer->Name << "Exists in ContainerList" << std::endl;
+    for (auto& container : ContainerList) {
+        if (container->Name == NewContainer->Name) {
+            Addition = false; 
+            std::cout << "Redundant molecule name found in ContainerList :" + NewContainer->Name << std::endl;
+            break;
+        }
+    }
+    if (Addition) { 
+        ContainerList.push_back(NewContainer);
+    }
+//        std::cout << "Container "<< NewContainer->Name << " has been added to the system" << std::endl;
+}
+
+void FCompilerContext::AddToCountList(FCount *NewCount)
+{   // special: this one does not check redundant entries
+    CountList.push_back(NewCount);
+//        std::cout << "Count "<< NewCount->Name << " has been added to the system" << std::endl;
+}
+
+void FCompilerContext::AddToLocationList(FLocation *NewLocation)
+{
+    bool Addition = true;
+//    std::cout<< "Checking if " << NewLocation->Name << "Exists in LocationList" << std::endl;
+    for (auto& location : LocationList) {
+        if (location->Name == NewLocation->Name) {
             Addition = false;
-            std::cout << "Redundant reaction name found in ReactionList :" + NewReaction->Name << std::endl;
+            std::cout << "Redundant location name found in LocationList :" + NewLocation->Name << std::endl;
             break;
         }
     }
     if (Addition) {
-        ReactionList.push_back(NewReaction);
+        LocationList.push_back(NewLocation);
     }
-//        std::cout << "Reaction "<< NewReaction->Name << " has been added to the system" << std::endl;
+//        std::cout << "Location "<< NewLocation->Name << " has been added to the system" << std::endl;
 }
 
 void FCompilerContext::Organize() 
@@ -205,6 +245,7 @@ void FCompilerContext::Organize()
     std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
     MakeListsFromMoleculeList();
     // Dependency Note: AssignReactionTypes uses Lists made from above
+    MakeListsFromContainerList();
     AssignReactionTypesForReactionList();
     AdjustMolarity_PseudoMolecule();
 }
@@ -325,7 +366,7 @@ void FCompilerContext::MakeListsFromMoleculeList()
     std::cout << "Making Context Lists from Molecule List..." << std::endl;
     for (auto& molecule : MoleculeList) {
         if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
-        auto enzyme = dynamic_cast<FEnzyme *>(molecule);
+            auto enzyme = dynamic_cast<FEnzyme *>(molecule);
             EnzymeList.push_back(enzyme);
 // add more as needed
 //        } else if {
@@ -333,6 +374,18 @@ void FCompilerContext::MakeListsFromMoleculeList()
     }
 }
 
+void FCompilerContext::MakeListsFromContainerList()
+{
+    std::cout << "Making Context Lists from Container List..." << std::endl;
+    for (auto& container : ContainerList) {
+        if (Utils::is_class_of<FOrganism, FContainer>(container)) {
+            auto organism = dynamic_cast<FOrganism *>(container);
+            OrganismList.push_back(organism);
+// add more as needed
+//        } else if {
+        }
+    }
+}
 
 void FCompilerContext::PrintInitialCounts(std::ostream& os) 
 {

@@ -48,6 +48,7 @@ digit                         [0-9]
 "process"                     { return TOKEN(T_PROCESS); }
 "experiment"                  { return TOKEN(T_EXPERIMENT); }
 "organism"                    { return TOKEN(T_ORGANISM); }
+"ecoli"                       { return TOKEN(T_ECOLI); }
 "description"                 { return TOKEN(T_DESCRIPTION); }
 "reaction_id"                 { return TOKEN(T_REACTION_ID); }
 "reaction"                    { return TOKEN(T_REACTION); }

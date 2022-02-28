@@ -40,7 +40,8 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	int Token;
 }
 
-%token <Token> T_REACTION T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_ORGANISM T_PROCESS
+%token <Token> T_REACTION T_PROTEIN T_PROTEIN_COMPLEX T_PATHWAY T_EXPERIMENT T_PROCESS
+%token <Token> T_ORGANISM T_ECOLI
 %token <Token> T_DESCRIPTION T_REACTION_ID
 %token <Token> T_PROPERTY T_USING T_MODULE
 %token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE T_PDB
@@ -101,6 +102,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <StmtVec> for_stmt if_stmt while_stmt
 %type <StmtVec> stmt reaction_decl_stmt protein_decl_stmt protein_complex_decl pathway_decl organism_decl using_stmt experiment_decl reaction_decls protein_decls ribosome_decl_stmt polymerase_decl_stmt process_decl_stmt
 %type <StmtVec> ribosome_decl_args ribosome_args polymerase_decl_args polymerase_args
+%type <StmtVec> ecoli_stmt
 %type <StmtVec> container_stmt petridish_stmt
 %type <StmtVec> p_expr_stmt p_expr_decl_stmt
 %type <StmtVec> decl_stmt init_declarator_list
@@ -141,6 +143,8 @@ stmt           : reaction_decl_stmt T_SEMIC
                | process_decl_stmt T_SEMIC
                | organism_decl T_SEMIC
                | organism_decl
+               | ecoli_stmt T_SEMIC
+               | ecoli_stmt
                | experiment_decl T_SEMIC
                | using_stmt T_SEMIC
                | ribosome_decl_stmt T_SEMIC
@@ -195,6 +199,9 @@ p_expr_stmt    : p_expr { $$ = NNodeUtil::InitStatementList(new NExpressionState
 organism_decl  : T_ORGANISM ident T_STRING_LITERAL { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, *$3)); delete $2; delete $3; }
                | T_ORGANISM ident block { $$ = NNodeUtil::InitStatementList(new NOrganismDeclaration(*$2, $3)); delete $2; }
                ;
+
+ecoli_stmt : T_ECOLI ident block { $$ = NNodeUtil::InitStatementList(new NEcoliStatement(*$2, $3)); delete $2; }
+           ;
 
 experiment_decl : T_EXPERIMENT ident T_STRING_LITERAL  { $$ = NNodeUtil::InitStatementList(new NExperimentDeclaration(*$2, *$3)); delete $2; delete $3; }
                 | T_EXPERIMENT ident experiment_block  { $$ = NNodeUtil::InitStatementList(new NExperimentDeclaration(*$2, $3)); delete $2; }

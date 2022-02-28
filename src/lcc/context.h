@@ -11,17 +11,195 @@
 
 typedef std::map<std::string, std::string> FTableRecord;
 
+class FContainerSpace {
+public:
+    std::vector<std::string> Names;
+
+    FContainerSpace() {}
+
+    void Print(std::ostream& os) {
+        os << "Compartments: ";
+        if (!Names.empty()) {
+            for (auto name: Names) {
+                os << name << ", ";
+            }
+            os << std::endl;
+        } else {
+            os << "None" << std::endl;
+        }
+    }
+};
+
 class FExperiment {
 public:
     std::string Name;
     std::string Description;
+
+    FExperiment() {}
 };
 
-class FOrganism {
+class FLocation {
 public:
     std::string Name;
-    std::string Description;
+    std::vector<float> Coord_Abs;
+    std::vector<float> Coord_Rel; // when all values < 1 
+    float Angle; // to be expanded 
 
+    FLocation() {}
+
+    FLocation(const std::string InName, const std::vector<float> InCoord) : Name(InName) {
+    // if all values > 1, then make it absolute
+        bool Abs = false;
+        for (auto& coord : InCoord) {
+            if (coord > 1) {
+                Abs = true;
+            }
+        }
+        if (Abs) {
+            for (auto& coord : InCoord) {
+                Coord_Abs.push_back(coord);
+            }
+        } else     {
+            for (auto& coord : InCoord) {
+                Coord_Rel.push_back(coord);
+            }
+        }
+    }
+
+};
+
+class FComposition {
+public:
+    std::string Name;
+    std::vector<std::pair<std::string, float>> Constituent_Surface; // material name and percentage: if single name provided, assume 100%
+    std::vector<std::pair<std::string, float>> Constituent_Core; // material name and percentage: if single name provided, assume 100%
+    int Pattern_Surface = 0; // 0: well-mixed, 1: linear, 2: radial, etc.
+    int Pattern_Core = 0;
+
+    FComposition() {}
+
+    FComposition(const std::string InName) : Name(InName) {}
+
+    FComposition(const std::string InName, const std::string InSurface, const std::string InCore) : Name(InName) {
+        std::pair <std::string, float> S(InSurface, 100); 
+        Constituent_Surface.push_back(S);
+        std::pair <std::string, float> C(InCore, 100 );
+        Constituent_Core.push_back(C); 
+    }
+
+    FComposition(const std::string InName, const std::vector<std::pair<std::string, float>> InSurface, const std::vector<std::pair<std::string, float>> InCore) 
+        : Name(InName), Constituent_Surface(InSurface), Constituent_Core(InCore) {}
+};
+
+class FContainer {
+public:
+    std::string Name;
+
+    FContainer() {}
+    virtual ~FContainer() {}
+
+    FContainer(const std::string InName) : Name(InName) {}
+
+};
+
+class FCompartment : public FContainer { // spatial container
+public:
+    std::string Shape; // rod(bacilli), sphere(cocci), spiral, filamentous, box, comma(vibrio), amoeba
+    std::vector<float> Dimension; // width, height, depth: if single provided, assume isotropy, like a diameter
+
+    float pH = -1; // -1 as default
+    float Temp = -1; // -1 as default
+    
+    FCompartment() {}
+
+    FCompartment(const std::string InName) 
+        : Shape("Sphere"), FContainer(InName) {} // sphere as default
+
+    FCompartment(const std::string InName, const std::string InShape) 
+        : Shape(InShape), FContainer(InName) {}
+
+    FCompartment(const std::string InName, const std::string InShape, const float InDimension) 
+        : Shape(InShape), Dimension{InDimension}, FContainer(InName) {}
+
+    FCompartment(const std::string InName, const std::string InShape, const std::vector<float> InDimension) 
+        : Shape(InShape), Dimension(InDimension), FContainer(InName) {}
+
+};
+
+class FNonBiologicalCompartment : public FCompartment {
+public:
+    std::string Description;
+};
+
+class FBiologicalCompartment : public FCompartment {
+public:
+    std::string Type;
+
+    FBiologicalCompartment() {}
+
+    FBiologicalCompartment(const std::string InName) : FCompartment(InName) {} 
+
+    FBiologicalCompartment(const std::string InName, const std::string InType) : Type(InType), FCompartment(InName) {} 
+
+};
+
+class FOrganism : public FBiologicalCompartment {
+public:
+    std::string Species; // special type set aside for organism
+    std::string Strain;
+ 
+    FOrganism() {}
+
+    FOrganism(const std::string InName) : FBiologicalCompartment(InName) {} 
+
+    FOrganism(const std::string InName, const std::string InSpecies) : Species(InSpecies), FBiologicalCompartment(InName) {}
+
+    FOrganism(const std::string InName, const std::string InSpecies, const std::string InStrain) : Species(InSpecies), Strain(InStrain), FBiologicalCompartment(InName) {}
+};
+
+class FOrganSystem : public FBiologicalCompartment {
+public:
+    std::string Type;
+};
+
+class FOrgan : public FBiologicalCompartment {
+public:
+    std::string Type;
+
+};
+
+class FTissue : public FBiologicalCompartment {
+public:
+
+};
+
+class FCell : public FBiologicalCompartment {
+public:
+
+};
+
+class FOrganelle : public FBiologicalCompartment {
+public:
+
+};
+
+
+class FProkaryote : public FOrganism, public FCell { // Note multiple inheritance
+public:
+    bool Gram;
+
+    FProkaryote() {}
+
+    FProkaryote(const std::string InName) : FOrganism(InName) {} 
+
+    FProkaryote(const std::string InName, const std::string InSpecies) : FOrganism(InName, InSpecies) {} 
+    
+};
+
+class FEukaryote : public FOrganism {
+public:
+    bool Multicellularity;
+    
 };
 
 class FCount {
@@ -42,7 +220,7 @@ public:
         os << "Name : " << Name << 
          "\t| Amount: " << Utils::SciFloat2Str(Amount) << 
          "\t| Begin: " << Utils::SciFloat2Str(Begin) << 
-         "\t| End: " << Utils::SciFloat2Str(End) << 
+         "\t| End: " << Utils::SciFloat2Str(End) <<
          "\t| Step: " << Utils::SciFloat2Str(Step);
          if (bMolarity) { os << "\t| (Molarity)"; }
          os << std::endl;
@@ -81,7 +259,7 @@ public:
     std::vector<std::string> Sequence;
 
     FPathway(const std::string& InName, std::vector<std::string>& InSequence)
-        : Name(InName), Sequence(InSequence) {};
+        : Name(InName), Sequence(InSequence) {}
 };
 
 class FSmallMolecule : public FMolecule {
@@ -433,28 +611,38 @@ public:
     FTable PathwayTable;
 	    FTable InitialCountTable_TCA;
 
-    std::vector<std::string> 	UsingModuleList;
-    std::vector<FMolecule*> 	MoleculeList;
-    std::vector<FGene*> 	GeneList;
-    std::vector<FRNA*>		RNAList;
-    std::vector<FProtein*>	ProteinList;
+    std::vector<std::string>    UsingModuleList;
+    std::vector<FMolecule*>     MoleculeList;
+    std::vector<FGene*>         GeneList;
+    std::vector<FRNA*>	        RNAList;
+    std::vector<FProtein*>      ProteinList;
     std::vector<FEnzyme*>       EnzymeList;
-    std::vector<FReaction*> 	ReactionList;
-    std::vector<FPathway> 	PathwayList;
-    std::vector<std::string> 	IdentifierList;
+    std::vector<FReaction*>     ReactionList;
+    std::vector<FPathway>       PathwayList;
+    std::vector<std::string>    IdentifierList;
+    std::vector<FContainer*>    ContainerList;
+    std::vector<FOrganism*>     OrganismList;
     std::vector<FCount*>        CountList;
+    std::vector<FLocation*>     LocationList;
+    std::vector<FComposition*>  CompositionList;
 
     void PrintLists(std::ostream& os);
     void PrintInitialCounts(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
+
     void AddToMoleculeList(FMolecule *NewMolecule);
     void AddToReactionList(FReaction *NewReaction);
+    void AddToContainerList(FContainer *NewContainer);
+    void AddToCountList(FCount *NewCount);
+    void AddToLocationList(FLocation *NewLocation);
+//    void AddToCompositionList(FComposition *NewComposition);
 
     // Compiler organization
     void Organize();
     void AssignReactionType(FReaction *Reaction, int Regulation);
     void AssignReactionTypesForReactionList();
     void MakeListsFromMoleculeList();
+    void MakeListsFromContainerList();
 
     // Tables
     const std::string QueryTable(const std::string& Name, const std::string& Property, FTable Table);
@@ -530,5 +718,6 @@ public:
     std::vector<float> GetFreqMatrixForRNAs();
     std::vector<float> GetFreqMatrixForProteins();
 };
+
 
 #endif /* LCC_CONTEXT_H */
