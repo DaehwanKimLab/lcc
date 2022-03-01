@@ -92,6 +92,9 @@ class FModel():
     def InitializeSimStepZero(self):
         self.AppendData(self.L, self.R, self.Am, self.AmL, self.A, self.AL, self.B, self.BP)
 
+    def SetLigandInitialConcentration(self, Input):
+        self.L = Input
+
     def AppendData(self, L, R, Am, AmL, A, AL, B, BP):
         self.Data_L.append(L)
         self.Data_R.append(R)
@@ -102,20 +105,29 @@ class FModel():
         self.Data_B.append(B)
         self.Data_BP.append(BP)
 
-    def Run(self, SimSteps=100000, TimeResolution=100):
+    def Run(self, SimSteps=60000, TimeResolution=100):
         Flat = 0.000001 # Steady state threshold
 
         self.TimeResolution = TimeResolution
 
         i = 0
+        # Debugging purposes
+        TimeToChangeLigand = [100, 300]
+        LigandFoldChange = 2
+        # TimeToChangeLigand = [range(100, 300)]
+        # LigandFoldChange = 1.001
+        # self.SetLigandInitialConcentration(0.1 * nM)
+        # self.SetLigandInitialConcentration(1 * nM)
+        # self.SetLigandInitialConcentration(10 * nM)
+
         while i < SimSteps:
             # Calculate new
 
             Time = i / self.TimeResolution
-            if Time in [100, 300]:
+            if Time in TimeToChangeLigand:
                 # DK - debugging purposes
                 # self.L = self.L * 1.001
-                self.L = self.L * 2
+                self.L = self.L * LigandFoldChange
 
             L = self.L
             self.Simulate(L)

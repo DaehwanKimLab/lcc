@@ -8,7 +8,7 @@ import Models.Ingalls2013_Model6_13_BacterialChemotaxis
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GRAY1 = (150, 150, 150)
+GRAY1 = (200, 200, 200)
 GRAY2 = (100, 100, 100)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -31,8 +31,8 @@ def GetColorGradient(Fade, baseColor=None):
         return (Fade, Fade, Fade)
 
 def Displacement(Distance, Angle):
-    dX = Distance * math.sin(Angle)
-    dY = Distance * math.cos(Angle)
+    dX = Distance * math.cos(Angle)
+    dY = - Distance * math.sin(Angle)
     return dX, dY
 
 # pygame
@@ -79,11 +79,11 @@ class FEnvironment:
         pass
 
 class FOrganism:
-    def __init__(self, InSpecies, InX, InY, InA=0, InSpeedMax=0.05):
+    def __init__(self, InSpecies, InX, InY, InAngle=0, InSpeedMax=0.05):
         self.Species = InSpecies
         self.X_Ori = InX
         self.Y_Ori = InY
-        self.A = InA   # Angle
+        self.Angle = InAngle
         self.X = self.X_Ori
         self.Y = self.Y_Ori
         self.X_Prev = None
@@ -142,10 +142,10 @@ class FOrganism:
             # Image = pygame.surface.Surface((100, 100))
             Screen.blit(self.Image, (self.X - self.Image_Size_X / 2, self.Y - self.Image_Size_Y / 2))
         else:
-            Color = YELLOW
+            Color = MAGENTA
             # pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)
-            dX = math.sin(self.A) * -13
-            dY = math.cos(self.A) * -13
+            dX = math.cos(self.Angle) * -13
+            dY = - math.sin(self.Angle) * -13
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 7)
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
 
@@ -156,7 +156,7 @@ class FOrganism:
             # GlucoseLvl += self.SimCount / 1000000 * nM
             # At homeostasis, Am: 1.1653948157952327e-09
             self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
-            print("Chemotaxis{}: Glucose:{}, delta:{:.4f}%, Am: {}, (X:{}, Y:{}, degree:{})".format(self.SimCount, GlucoseLvl, (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100, self.Am, self.X, self.Y, self.A))
+            print("Chemotaxis{}: Glucose:{}, delta:{:.4f}%, Am: {}, (X:{}, Y:{}, degree:{})".format(self.SimCount, GlucoseLvl, (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100, self.Am, self.X, self.Y, self.Angle))
             # print(self.Am)
             if self.Am < 1.165 * nM:
                 self.Move(self.Speed)
@@ -184,27 +184,35 @@ class FOrganism:
         self.Glucose_Prev = GlucoseLvl
 
 
-    def Move(self, Distance):
-        dX, dY = self.Displacement(Distance, self.A)
+    def Move(self, Distance, Angle=None):
+        if not Angle:
+            Angle = self.Angle
+        dX, dY = self.Displacement(Distance, Angle)
         self.X += dX
         self.Y += dY
 
     def Tumble(self):
-        self.A += self.TumbleAngle
-        while self.A < 0:
-            self.A += 2 * pi
+        self.Angle += self.TumbleAngle
+        while self.Angle < 0:
+            self.Angle += 2 * pi
 
         # self.Move(0)
         self.Move(self.Speed / 10)
+        # self.RandomMovement()
         self.Trajectory.append((self.X, self.Y))
         if self.Species == 'Ecoli':
             self.RotateImage(math.degrees(self.TumbleAngle))
             self.CenterImage()
 
     def Displacement(self, Distance, Angle):
-        dX = Distance * math.sin(Angle)
-        dY = Distance * math.cos(Angle)
+        dX = Distance * math.cos(Angle)
+        dY = - Distance * math.sin(Angle)
         return dX, dY
+
+    def RandomMovement(self):
+        Distance = random.random() * (self.Speed / 10)
+        Angle = random.randint(0, 100) * self.Angle
+        self.Move(Distance, Angle)
 
     def DrawTrajectory(self):
         TrajectoryPoints = self.Trajectory[:]
@@ -227,6 +235,7 @@ class FMolecule:
         self.GradStep = self.GetGradientStep()
         self.GradStepList = self.GetGradientStepList()
         self.GradDensityList = self.GetGradientDensityList()
+        self.DensityLimit = 5 * nM
         self.GradBaseColor = 'Blue'
         self.GradColorList = self.GetGradientColorList(baseColor=self.GradBaseColor)
 
@@ -288,7 +297,7 @@ class FMolecule:
             # ColorList.append(GetColorGradient(255 - gradient_Scaled, baseColor))
         return ColorList
 
-    def Draw(self, pattern='gradient', dynamics='static'):
+    def Draw(self, pattern='particle', dynamics='static'):
 
         if pattern == 'gradient':
             for i in range(self.GradLvl):
@@ -296,13 +305,13 @@ class FMolecule:
                 if i == 0:
                     continue
                 else:
-                    MoleculeDensity = self.GradDensityList[i]
-                    Radius = self.GetRadius(MoleculeDensity)
-                    Color = self.GradColorList[i]
+                    Density = self.GradDensityList[i]
+                    Radius = self.GetRadius(Density)
 
-                    # The smallest visible radius
-                    # if Radius < 5:
-                    #     Radius = 5
+                    if Density < self.DensityLimit:
+                        continue
+
+                    Color = self.GradColorList[i]
                     pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), Radius)
 
         # # Old gradient
@@ -335,14 +344,8 @@ class FMolecule:
         return self.Max / max(1, Dist * 30)
         # return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
 
-    def GetRadius(self, Amount):
-        Factor = None
-        if (self.Max / Amount) < 1:
-            Factor = 1
-        else:
-            Factor = 30
-        return (self.Max / Amount) * Factor
-        # return (self.Max / Amount) ** (1. / self.DiffusionFactor)
+    def GetRadius(self, Amount):   # Need to be updated according to the diffusion equation
+        return (self.Max / Amount) ** (1. / self.DiffusionFactor)
 
 class FControl:
     def __init__(self):
@@ -379,6 +382,9 @@ class FControl:
         }
         self.InstructionText = ''
         self.SetInstructionText()
+
+        self.MoleculeGradientText = ''
+        self.MoleculeGradientColor = list()
 
         self.Score = 0
         self.ScoreSwitch = False
@@ -477,12 +483,15 @@ class FControl:
         Text_Rect.midtop = Screen.get_rect().midtop
         Screen.blit(Text, Text_Rect)
 
-    def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Am, switch=False):
-        StatusText = "   Total Glucose : " + "{:.2f}".format(Glucose_Total / nM) + " nM" + "\n  Glucose @ Ecoli :" + "{:.2f}".format(Glucose_Ecoli/ nM) + " nM"
+    def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am, switch=False):
+        dGlucose = (Glucose_Ecoli - Glucose_Prev_Ecoli) / Glucose_Total * 100
+        StatusText = "   Total Glucose : " + "{:.2f}".format(Glucose_Total / nM) + " nM" + "\n" \
+                     + " Glucose @ Ecoli :" + "{:.2f}".format(Glucose_Ecoli/ nM) + " nM" + "\n" \
+                     + " dGlucose @ Ecoli : " + ["", "+"][dGlucose > 0] + "{:.5f}".format(dGlucose) + " %"
         # StatusText = "   Total Glucose : " + str(Glucose_Total) + "\n  Glucose @ Ecoli :" + "{:.5f}".format(Glucose_Ecoli)
         if switch:
             StatusText += '\n[MECHANISTIC MODE]'
-            StatusText = StatusText + "\nAm level of Ecoli : " + "{:.15f}".format(Am)
+            StatusText = StatusText + "\nAm level of Ecoli : " + "{:.2f}".format(Am / nM) + " nM"
             # StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f}".format(Am)
         else:
             StatusText += '\n[SIMPLIFIED MODE]'
@@ -620,12 +629,7 @@ def main():
         #     Screen.set_clip(ClipRect)
 
         PetriDish.Draw()
-
-        # For Gradient
         Glucose.Draw()
-
-        # For Particle
-        # Glucose.Draw(pattern='particle', dynamics='static')
 
         while ElapsedTime >= SimUnitTime:
             Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
@@ -660,11 +664,11 @@ def main():
 
         Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
         if Control.StatusSwitch:
-            Control.DisplayStatus(Glucose.Max, Glucose_Now, Ecoli.Am, switch=Ecoli.MechanisticModeSwitch)
+            Control.DisplayStatus(Glucose.Max, Glucose_Now, Ecoli.Glucose_Prev, Ecoli.Am, switch=Ecoli.MechanisticModeSwitch)
 
         Control.Time += 1
         Control.DisplayTime()
-        Control.DisplayMoleculeGradient()
+        # Control.DisplayMoleculeGradient()
 
         pygame.display.update()
 
