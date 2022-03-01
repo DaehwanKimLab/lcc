@@ -111,7 +111,10 @@ class FOrganism:
 
         # Mechanistic Mode
         self.Am = 0
-        self.MechanisticModeSwitch = False
+
+        # DK - debugging purposes
+        self.MechanisticModeSwitch = True
+        # self.MechanisticModeSwitch = False
 
     def LoadImage(self):
         if self.Species == 'Ecoli':
@@ -148,31 +151,38 @@ class FOrganism:
 
     def Chemotaxis(self, GlucoseLvl, SimUnitTime):
         if self.MechanisticModeSwitch:
+            # DK - debugging purposes
+            self.SimCount += 1
+            # GlucoseLvl += self.SimCount / 1000000 * nM
+            # At homeostasis, Am: 1.1653948157952327e-09
             self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
+            print("Chemotaxis{}: Glucose:{}, delta:{:.4f}%, Am: {}, (X:{}, Y:{}, degree:{})".format(self.SimCount, GlucoseLvl, (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100, self.Am, self.X, self.Y, self.A))
             # print(self.Am)
-            # 1.165 * nM
-            if self.Am < 1.05:
+            if self.Am < 1.165 * nM:
                 self.Move(self.Speed)
             else:
                 self.Tumble()
 
         else:
-            # DK - debugging purposes
-            self.SimCount += 1
-            self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
-
-            # DK - debugging purposes
             if GlucoseLvl > self.Glucose_Prev:
                 self.Move(self.Speed)
-                print("{}: Move ({} > {}) (Am: {})".format(self.SimCount, GlucoseLvl, self.Glucose_Prev, self.Am))
-                
             else:
                 self.Tumble()
-                print("{}: Tumble ({} < {}) (Am: {})".format(self.SimCount, GlucoseLvl, self.Glucose_Prev, self.Am))
                 
-
-            # Update
+        # Update
         self.Glucose_Prev = GlucoseLvl
+
+    def Homeostasis(self, GlucoseLvl, SimUnitTime):
+        while True:
+            self.SimCount += 1
+            PrevAm = Model.Simulate(GlucoseLvl, SimUnitTime)
+            if PrevAm > 0 and abs(self.Am - PrevAm) / PrevAm < 1e-7:
+                break
+            self.Am = PrevAm
+            print("Homeostasis {}: Glucose: {}, Am: {}".format(self.SimCount, GlucoseLvl, self.Am))
+
+        self.Glucose_Prev = GlucoseLvl
+
 
     def Move(self, Distance):
         dX, dY = self.Displacement(Distance, self.A)
@@ -181,6 +191,9 @@ class FOrganism:
 
     def Tumble(self):
         self.A += self.TumbleAngle
+        while self.A < 0:
+            self.A += 2 * pi
+        
         # self.Move(0)
         self.Move(self.Speed / 10)
         self.Trajectory.append((self.X, self.Y))
@@ -319,10 +332,6 @@ class FMolecule:
     def Diffusion(self, X, Y):
         # DK - debugging purposes
         Dist = math.sqrt(((X - self.X_Ori) / W_S) ** 2 + ((Y - self.Y_Ori) / H_S) ** 2)
-
-        # DK - debugging purposes
-        # print("DK:", Dist)
-
         return self.Max / max(1, Dist * 30)
         # return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
 
@@ -463,15 +472,17 @@ def main():
     global TransparencySwitch
     Control = FControl()
 
+    SimUnitTime = 0.01
 
     PetriDish = FEnvironment()
     Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * nM)
     Ecoli = FOrganism('A', W_S / 3, H_S / 3)
+    Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
+    Ecoli.Homeostasis(Glucose_Now, SimUnitTime)
 
     if Control.TransparencySwitch:
         PetriDish.DrawTransparentArea()
-
-    SimUnitTime = 0.01
+    
     ElapsedTime = 0
     PrevTime = datetime.now()
 
