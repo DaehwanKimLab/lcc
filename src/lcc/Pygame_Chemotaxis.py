@@ -79,7 +79,7 @@ class FEnvironment:
         pass
 
 class FOrganism:
-    def __init__(self, InSpecies, InX, InY, InA=0, InSpeedMax=0.05):
+    def __init__(self, InSpecies, InX, InY, InA=0, InSpeedMax=2):
         self.Species = InSpecies
         self.X_Ori = InX
         self.Y_Ori = InY
@@ -149,16 +149,14 @@ class FOrganism:
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 7)
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
 
-    def Chemotaxis(self, GlucoseLvl, SimUnitTime):
+    def Chemotaxis(self, GlucoseLvl):
         if self.MechanisticModeSwitch:
-            # DK - debugging purposes
             # At homeostasis, Am: 1.1653948157952327e-09
-            GlucoseLvl += self.SimCount / 1000000 * nM
 
             # Perform 100 simulations
             for _ in range(100):
                 self.SimCount += 1            
-                self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
+                self.Am = Model.Simulate(GlucoseLvl)
 
             Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
             print("[Chemotaxis  {:06d}] Glucose:{:.6f}nM ({}{:.4f}%) Am:{:.6f}nM (X:{:.2f} Y:{:.2f} {:3.1f} degree)".format
@@ -178,10 +176,10 @@ class FOrganism:
         # Update
         self.Glucose_Prev = GlucoseLvl
 
-    def Homeostasis(self, GlucoseLvl, SimUnitTime):
+    def Homeostasis(self, GlucoseLvl):
         while True:
             self.SimCount += 1
-            PrevAm = Model.Simulate(GlucoseLvl, SimUnitTime)
+            PrevAm = Model.Simulate(GlucoseLvl)
             if PrevAm > 0 and abs(self.Am - PrevAm) / PrevAm < 1e-7:
                 break
             self.Am = PrevAm
@@ -478,13 +476,13 @@ def main():
     global TransparencySwitch
     Control = FControl()
 
-    SimUnitTime = 0.01
+    SimUnitTime = 0.1
 
     PetriDish = FEnvironment()
     Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * nM)
     Ecoli = FOrganism('A', W_S / 3, H_S / 3)
     Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
-    Ecoli.Homeostasis(Glucose_Now, SimUnitTime)
+    Ecoli.Homeostasis(Glucose_Now)
 
     if Control.TransparencySwitch:
         PetriDish.DrawTransparentArea()
@@ -603,9 +601,8 @@ def main():
 
         while ElapsedTime >= SimUnitTime:
             Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
-            Ecoli.Chemotaxis(Glucose_Now, SimUnitTime)
+            Ecoli.Chemotaxis(Glucose_Now)
             ElapsedTime -= SimUnitTime
-
 
         # if PetriDish.CheckOutOfBound(Ecoli.X, Ecoli.Y):
         #     Ecoli.X = Ecoli.X_Prev
@@ -620,7 +617,7 @@ def main():
         # if Control.TransparencySwitch:
         #     Screen.blit(PetriDish.TransparentCircleArea, Topleft)
 
-        if Control.Time < 3000:
+        if Control.Time < 300:
             Control.DisplayWelcome()
         if Control.MessageTimer > 0:
             Control.DisplayInput()
