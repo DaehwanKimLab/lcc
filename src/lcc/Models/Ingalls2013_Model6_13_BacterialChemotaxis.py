@@ -113,14 +113,16 @@ class FModel():
 
             Time = i / self.TimeResolution
             if Time in [100, 300]:
+                # DK - debugging purposes
+                # self.L = self.L * 1.001
                 self.L = self.L * 2
 
             L = self.L
             self.Simulate(L)
 
             # DK - debugging purposes
-            Am = self.Data_Am[-1]
-            print("Time: {}, Steps: {}, Am: {}".format(Time, i, Am))
+            # Am = self.Data_Am[-1]
+            # print("Time: {}, Steps: {}, Am: {}".format(Time, i, Am))
 
             i += 1
 

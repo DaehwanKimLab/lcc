@@ -8,7 +8,7 @@ import Models.Ingalls2013_Model6_13_BacterialChemotaxis
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GRAY1 = (200, 200, 200)
+GRAY1 = (150, 150, 150)
 GRAY2 = (100, 100, 100)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -111,7 +111,10 @@ class FOrganism:
 
         # Mechanistic Mode
         self.Am = 0
-        self.MechanisticModeSwitch = False
+
+        # DK - debugging purposes
+        self.MechanisticModeSwitch = True
+        # self.MechanisticModeSwitch = False
 
     def LoadImage(self):
         if self.Species == 'Ecoli':
@@ -139,7 +142,7 @@ class FOrganism:
             # Image = pygame.surface.Surface((100, 100))
             Screen.blit(self.Image, (self.X - self.Image_Size_X / 2, self.Y - self.Image_Size_Y / 2))
         else:
-            Color = GREEN
+            Color = YELLOW
             # pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)
             dX = math.sin(self.A) * -13
             dY = math.cos(self.A) * -13
@@ -148,42 +151,51 @@ class FOrganism:
 
     def Chemotaxis(self, GlucoseLvl, SimUnitTime):
         if self.MechanisticModeSwitch:
+            # DK - debugging purposes
+            self.SimCount += 1
+            # GlucoseLvl += self.SimCount / 1000000 * nM
+            # At homeostasis, Am: 1.1653948157952327e-09
             self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
+            print("Chemotaxis{}: Glucose:{}, delta:{:.4f}%, Am: {}, (X:{}, Y:{}, degree:{})".format(self.SimCount, GlucoseLvl, (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100, self.Am, self.X, self.Y, self.A))
             # print(self.Am)
-            # 1.165 * nM
             if self.Am < 1.165 * nM:
-            # if self.Am < 1.05:
-                self.Run(self.Speed)
+                self.Move(self.Speed)
             else:
                 self.Tumble()
 
         else:
-            # DK - debugging purposes
-            self.SimCount += 1
-            self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
-
-            # DK - debugging purposes
             if GlucoseLvl > self.Glucose_Prev:
-                self.Run(self.Speed)
-                print("{}: Run ({} > {}) (Am: {})".format(self.SimCount, GlucoseLvl, self.Glucose_Prev, self.Am))
-                
+                self.Move(self.Speed)
             else:
                 self.Tumble()
-                print("{}: Tumble ({} < {}) (Am: {})".format(self.SimCount, GlucoseLvl, self.Glucose_Prev, self.Am))
                 
-
-            # Update
+        # Update
         self.Glucose_Prev = GlucoseLvl
 
-    def Run(self, Distance):
+    def Homeostasis(self, GlucoseLvl, SimUnitTime):
+        while True:
+            self.SimCount += 1
+            PrevAm = Model.Simulate(GlucoseLvl, SimUnitTime)
+            if PrevAm > 0 and abs(self.Am - PrevAm) / PrevAm < 1e-7:
+                break
+            self.Am = PrevAm
+            print("Homeostasis {}: Glucose: {}, Am: {}".format(self.SimCount, GlucoseLvl, self.Am))
+
+        self.Glucose_Prev = GlucoseLvl
+
+
+    def Move(self, Distance):
         dX, dY = self.Displacement(Distance, self.A)
         self.X += dX
         self.Y += dY
 
     def Tumble(self):
         self.A += self.TumbleAngle
-        # self.Run(0)
-        self.Run(self.Speed / 10)
+        while self.A < 0:
+            self.A += 2 * pi
+
+        # self.Move(0)
+        self.Move(self.Speed / 10)
         self.Trajectory.append((self.X, self.Y))
         if self.Species == 'Ecoli':
             self.RotateImage(math.degrees(self.TumbleAngle))
@@ -215,7 +227,6 @@ class FMolecule:
         self.GradStep = self.GetGradientStep()
         self.GradStepList = self.GetGradientStepList()
         self.GradDensityList = self.GetGradientDensityList()
-        self.DensityLimit = 10 * nM
         self.GradBaseColor = 'Blue'
         self.GradColorList = self.GetGradientColorList(baseColor=self.GradBaseColor)
 
@@ -287,11 +298,11 @@ class FMolecule:
                 else:
                     MoleculeDensity = self.GradDensityList[i]
                     Radius = self.GetRadius(MoleculeDensity)
-
-                    if MoleculeDensity < self.DensityLimit:
-                        continue
-
                     Color = self.GradColorList[i]
+
+                    # The smallest visible radius
+                    # if Radius < 5:
+                    #     Radius = 5
                     pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), Radius)
 
         # # Old gradient
@@ -321,10 +332,6 @@ class FMolecule:
     def Diffusion(self, X, Y):
         # DK - debugging purposes
         Dist = math.sqrt(((X - self.X_Ori) / W_S) ** 2 + ((Y - self.Y_Ori) / H_S) ** 2)
-
-        # DK - debugging purposes
-        # print("DK:", Dist)
-
         return self.Max / max(1, Dist * 30)
         # return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
 
@@ -373,9 +380,6 @@ class FControl:
         self.InstructionText = ''
         self.SetInstructionText()
 
-        self.MoleculeGradientText = ''
-        self.MoleculeGradientColor = list()
-
         self.Score = 0
         self.ScoreSwitch = False
 
@@ -387,8 +391,6 @@ class FControl:
         # self.StatusSwitch = False
 
         self.TransparencySwitch = False
-
-
 
 
     #
@@ -415,7 +417,7 @@ class FControl:
             if 'Glucose' in TextLine:
                 Color = BLUE
             elif 'Ecoli' in TextLine:
-                Color = GREEN
+                Color = RED
             else:
                 Color = BLACK
             Text = Font_Monospace.render(TextLine, True, Color)
@@ -447,7 +449,7 @@ class FControl:
             Screen.blit(Text, Text_Rect)
 
     def DisplayWelcome(self):
-        Text = Font_Sans.render(self.MessageWelcome, True, WHITE, BLACK)
+        Text = Font_Sans.render(self.MessageWelcome, True, BLACK, WHITE)
         Text_Rect = Text.get_rect()
         Text_Rect.center = Center
         Screen.blit(Text, Text_Rect)
@@ -500,18 +502,19 @@ def main():
     global TransparencySwitch
     Control = FControl()
 
-    OFFSET = 15
+    SimUnitTime = 0.01
 
     PetriDish = FEnvironment()
-    Glucose = FMolecule(W_S * 3 / 5 - OFFSET, H_S * 2 / 5 + OFFSET, 100 * nM)
+    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * nM)
     Ecoli = FOrganism('A', W_S / 3, H_S / 3)
+    Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
+    Ecoli.Homeostasis(Glucose_Now, SimUnitTime)
 
     Control.SetMoleculeGradient(Glucose, 'Glucose')
 
     if Control.TransparencySwitch:
         PetriDish.DrawTransparentArea()
 
-    SimUnitTime = 0.01
     ElapsedTime = 0
     PrevTime = datetime.now()
 
