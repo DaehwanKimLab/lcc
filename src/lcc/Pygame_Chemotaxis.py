@@ -144,19 +144,25 @@ class FOrganism:
         else:
             Color = YELLOW
             # pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)
-            dX = math.sin(self.A) * -13
-            dY = math.cos(self.A) * -13
+            dX =  math.cos(self.A) * -13
+            dY = -math.sin(self.A) * -13
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 7)
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
 
     def Chemotaxis(self, GlucoseLvl, SimUnitTime):
         if self.MechanisticModeSwitch:
             # DK - debugging purposes
-            self.SimCount += 1
-            # GlucoseLvl += self.SimCount / 1000000 * nM
             # At homeostasis, Am: 1.1653948157952327e-09
-            self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
-            print("Chemotaxis{}: Glucose:{}, delta:{:.4f}%, Am: {}, (X:{}, Y:{}, degree:{})".format(self.SimCount, GlucoseLvl, (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100, self.Am, self.X, self.Y, self.A))
+            GlucoseLvl += self.SimCount / 1000000 * nM
+
+            # Perform 100 simulations
+            for _ in range(100):
+                self.SimCount += 1            
+                self.Am = Model.Simulate(GlucoseLvl, SimUnitTime)
+
+            Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
+            print("[Chemotaxis  {:06d}] Glucose:{:.6f}nM ({}{:.4f}%) Am:{:.6f}nM (X:{:.2f} Y:{:.2f} {:3.1f} degree)".format
+                  (self.SimCount, GlucoseLvl / nM, ("+" if Delta >= 0 else ""), Delta, self.Am / nM, self.X, self.Y, self.A / pi * 180))
             # print(self.Am)
             if self.Am < 1.165 * nM:
                 self.Move(self.Speed)
@@ -179,7 +185,7 @@ class FOrganism:
             if PrevAm > 0 and abs(self.Am - PrevAm) / PrevAm < 1e-7:
                 break
             self.Am = PrevAm
-            print("Homeostasis {}: Glucose: {}, Am: {}".format(self.SimCount, GlucoseLvl, self.Am))
+            print("[Homeostasis {:06d}] Glucose:{:.6f}nM Am:{:.6f}nM".format(self.SimCount, GlucoseLvl / nM, self.Am / nM))
 
         self.Glucose_Prev = GlucoseLvl
 
@@ -202,8 +208,8 @@ class FOrganism:
             self.CenterImage()
 
     def Displacement(self, Distance, Angle):
-        dX = Distance * math.sin(Angle)
-        dY = Distance * math.cos(Angle)
+        dX =  Distance * math.cos(Angle)
+        dY = -Distance * math.sin(Angle)
         return dX, dY
 
     def DrawTrajectory(self):
