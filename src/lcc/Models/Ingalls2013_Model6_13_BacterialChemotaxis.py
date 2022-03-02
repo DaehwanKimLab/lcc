@@ -21,6 +21,13 @@ Parameter values are, (in time−1): k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05
 k−4 = 1, k−5 = 0.005; (in concentration): kM1 = 1, kM2 = 1. Units are arbitrary.
 """
 
+'''
+Protein amounts imported from Bitbol and Wingreen, 2015 Biophysical Journal. Fundamental Constraints on the Abundances of Chemotaxis Proteins.
+CheA = 2.97 uM, CheY = 9.73 uM, CheZ = 3.80 uM, CheB = 0.28 uM, CheR = 0.17 uM, FliM = 1.43 uM, where 16% of FliM that are free are discounted.
+'''
+
+
+uM = 1e-6
 nM = 1e-9
 Mol2Count = 6.0221409e+23
 Count2Mol = 1.0 / Mol2Count
@@ -45,8 +52,9 @@ def dBP_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev
 
 class FModel():
     def __init__(self,
-                 k1=200, k2=1, k3=1/nM, k4=1/nM, k5=0.05/nM, kM1=1*nM, kM2=1*nM,
-                 L=20*nM, R=5*nM, A=500*nM, B=0.1*nM,
+                 k1=200, k2=1, k3=1/uM, k4=1/uM, k5=0.05/uM, kM1=1*uM, kM2=1*uM,
+                 L=10*uM, R=0.17*uM, A=5.97*uM, B=0.28*uM, # for pygame chemotaxis with physiological conditions
+                 # L=20*uM, R=5*uM, A=500*uM, B=0.1*uM, # for Ingalls model
                  krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005,
                  Am=0, AL=0, AmL=0, BP=0):
 
@@ -105,7 +113,7 @@ class FModel():
         self.Data_B.append(B)
         self.Data_BP.append(BP)
 
-    def Run(self, SimSteps=60000, TimeResolution=100):
+    def Run(self, SimSteps=100000, TimeResolution=100):
         Flat = 0.000001 # Steady state threshold
 
         self.TimeResolution = TimeResolution
@@ -116,6 +124,8 @@ class FModel():
         LigandFoldChange = 2
         # TimeToChangeLigand = [range(100, 300)]
         # LigandFoldChange = 1.001
+
+        # Testing different homeostasis levels by ligand level change
         # self.SetLigandInitialConcentration(0.1 * nM)
         # self.SetLigandInitialConcentration(1 * nM)
         # self.SetLigandInitialConcentration(10 * nM)
@@ -133,8 +143,8 @@ class FModel():
             self.Simulate(L)
 
             # DK - debugging purposes
-            # Am = self.Data_Am[-1]
-            # print("Time: {}, Steps: {}, Am: {}".format(Time, i, Am))
+            Am = self.Data_Am[-1]
+            print("Time: {}, Steps: {}, Am: {}".format(Time, i, Am))
 
             i += 1
 
