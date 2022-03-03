@@ -3,7 +3,16 @@ import pygame
 import math
 import random
 from datetime import datetime
-import Models.Ingalls2013_Model6_13_BacterialChemotaxis
+import BacterialChemotaxis_Sim
+
+# Good for random walk demonstrations
+
+# Set 1
+ThresholdFactor = 0.9999999999
+# random.seed(6)
+# random.seed(10)
+random.seed(12)
+# random.seed(14)
 
 # Colors
 BLACK = (0, 0, 0)
@@ -11,6 +20,8 @@ WHITE = (255, 255, 255)
 GRAY1 = (230, 230, 230)
 GRAY2 = (210, 210, 210)
 GRAY3 = (150, 150, 150)
+GRAY4 = (100, 100, 100)
+YELLOW_FAINT = (200, 200, 150)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
@@ -22,9 +33,16 @@ CYAN = (0, 255, 255)
 pi = math.pi
 uM = 1e-6
 nM = 1e-9
+UnitTxt = ''
+
+# Determine global unit
+Unit = nM
+if Unit == nM:
+    UnitTxt = 'nM'
+elif Unit == uM:
+    UnitTxt = 'uM'
 
 # Utilities
-
 def GetColorGradient(Fade, baseColor=None):
     assert Fade <= 255, 'ERROR: Fade factor is higher than 255!'
     if baseColor == 'Blue':
@@ -42,7 +60,27 @@ pygame.init()
 
 Screen_Size = W_S, H_S = 1200, 800
 Screen = pygame.display.set_mode(Screen_Size)
-Center = W_S / 2, H_S / 2
+
+LEFT = 0
+MID_X = W_S / 2
+RIGHT = W_S
+
+TOP = 0
+MID_Y = H_S / 2
+BOTTOM = H_S
+
+CenterTop = (MID_X, TOP)
+Center = (MID_X, MID_Y)
+
+def AddPos(A, B):
+    X_A, Y_A = A
+    X_B, Y_B = B
+    return (X_A + X_B, Y_A + Y_B)
+
+def GetMidPoint(A, B):
+    X_A, Y_A = A
+    X_B, Y_B = B
+    return ((X_A + X_B) / 2, (Y_A + Y_B) / 2)
 
 # # Transparent control board
 # ControlBoard = pygame.Surface(Screen_Size, pygame.SRCALPHA)
@@ -55,7 +93,7 @@ Font_Sans = pygame.font.Font('freesansbold.ttf', 20)
 Font_Monospace = pygame.font.SysFont('monospace', 15, True)
 
 # Initialize model
-Model = Models.Ingalls2013_Model6_13_BacterialChemotaxis.FModel()
+Model = BacterialChemotaxis_Sim.FModel()
 
 
 class FEnvironment:
@@ -69,8 +107,8 @@ class FEnvironment:
 
     def Draw(self, shape='circle'):
         if shape == 'circle':
-            pygame.draw.circle(Screen, GRAY3, (self.X, self.Y), self.Radius)
-            pygame.draw.circle(Screen, BLACK, (self.X, self.Y), self.Radius, self.Thickness)
+            pygame.draw.circle(Screen, YELLOW_FAINT, (self.X, self.Y), self.Radius)
+            pygame.draw.circle(Screen, GRAY4, (self.X, self.Y), self.Radius, self.Thickness)
 
     def DrawTransparentArea(self):
         self.TransparentCircleArea = pygame.Surface((self.Radius * 2, self.Radius * 2), pygame.SRCALPHA)
@@ -81,7 +119,7 @@ class FEnvironment:
         pass
 
 class FOrganism:
-    def __init__(self, InSpecies, InX, InY, InAngle=0, InSpeedMax=5):
+    def __init__(self, InSpecies, InX, InY, InAngle=pi/2, InSpeedMax=5):
         self.Species = InSpecies
         self.X_Ori = InX
         self.Y_Ori = InY
@@ -148,9 +186,9 @@ class FOrganism:
         else:
             Color = YELLOW
             # pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)
-            dX =  math.cos(self.Angle) * -13
-            dY = -math.sin(self.Angle) * -13
-            pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 7)
+            dX =  math.cos(self.Angle) * -20
+            dY = -math.sin(self.Angle) * -20
+            pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 10)
             pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
 
     def Chemotaxis(self, GlucoseLvl):
@@ -164,7 +202,7 @@ class FOrganism:
 
             Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
             print("[Chemotaxis  {:06d}] Glucose:{:.6f}uM ({}{:.4f}%) Am:{:.6f}uM (X:{:.2f} Y:{:.2f} {:3.1f} degree)".format
-                  (self.SimCount, GlucoseLvl / uM, ("+" if Delta >= 0 else ""), Delta, self.Am / uM, self.X, self.Y, self.Angle / pi * 180))
+                  (self.SimCount, GlucoseLvl / Unit, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit, self.X, self.Y, self.Angle / pi * 180))
             # print(self.Am)
             if self.Am < self.AmThreshold:
             # if self.Am < 1.165 * uM:
@@ -188,8 +226,9 @@ class FOrganism:
             if PrevAm > 0 and abs(self.Am - PrevAm) / PrevAm < 1e-7:
                 break
             self.Am = PrevAm
-            self.AmThreshold = PrevAm * 0.999
-            print("[Homeostasis {:06d}] Glucose:{:.6f}uM Am:{:.6f}uM".format(self.SimCount, GlucoseLvl / uM, self.Am / uM))
+            self.AmThreshold = PrevAm * ThresholdFactor
+            # self.AmThreshold = PrevAm * 0.999 # good for physiological condition
+            print("[Homeostasis {:06d}] Glucose:{:.6f}{} Am:{:.6f}{}".format(self.SimCount, GlucoseLvl / Unit, UnitTxt, self.Am / Unit, UnitTxt))
 
         self.Glucose_Prev = GlucoseLvl
 
@@ -208,7 +247,7 @@ class FOrganism:
             self.Angle += 2 * pi
 
         # self.Move(0)
-        self.Move(self.Speed / 10)
+        self.Move(self.Speed / 3)
         # self.RandomMovement()
         self.Trajectory.append((self.X, self.Y))
         if self.Species == 'Ecoli':
@@ -246,22 +285,24 @@ class FMolecule:
         self.GradStep = self.GetGradientStep()
         self.GradStepList = self.GetGradientStepList()
         self.GradDensityList = self.GetGradientDensityList()
-        self.DensityLimit = 5 * uM
+        self.DensityLimit = 5 * Unit
         self.GradBaseColor = 'Blue'
         self.GradColorList = self.GetGradientColorList(baseColor=self.GradBaseColor)
 
         # Particle Drawing
-        self.Particle_N = 100
+        self.Particle_N = 200
+        self.Particle_PerLayer = 2
         self.Particle_Radius = 2
         self.Particle_SpreadFactor = 1.11
         self.Particle_XY_Static = []
         self.InitializeStaticParticles()
 
     def InitializeStaticParticles(self):
-        for i in range(self.Particle_N):
-            X = self.X_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
-            Y = self.Y_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
-            self.Particle_XY_Static.append((X, Y))
+        for i in range(int(self.Particle_N / self.Particle_PerLayer)):
+            for j in range(self.Particle_PerLayer):
+                X = self.X_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
+                Y = self.Y_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
+                self.Particle_XY_Static.append((X, Y))
 
     def Reposition(self):
         self.X_Ori = random.randint(W_S * 2 / 5, W_S * 3 / 5)
@@ -364,6 +405,7 @@ class FControl:
         # self.FPS = 30
         self.MovementResolution = 30
         self.MessageWelcome = 'Welcome to Bacterial Chemotaxis!'
+        self.Pos_Welcome = GetMidPoint(Center, CenterTop)
         self.Message = ''
         self.MessageTimer = 3000
 
@@ -450,7 +492,7 @@ class FControl:
         for Density, Color in zip(Molecule.GradDensityList, Molecule.GradColorList):
             if Density < Molecule.DensityLimit:
                 continue
-            self.MoleculeGradientText = self.MoleculeGradientText + "{:.2f}".format(Density/uM) + 'uM' + '\n'
+            self.MoleculeGradientText = self.MoleculeGradientText + "{:.2f}".format(Density/Unit) + UnitTxt + '\n'
             self.MoleculeGradientColor.append(Color)
 
         self.MoleculeGradientColor.reverse()
@@ -469,7 +511,7 @@ class FControl:
     def DisplayWelcome(self):
         Text = Font_Sans.render(self.MessageWelcome, True, BLACK, WHITE)
         Text_Rect = Text.get_rect()
-        Text_Rect.center = Center
+        Text_Rect.center = self.Pos_Welcome
         Screen.blit(Text, Text_Rect)
 
     def DisplayInput(self):
@@ -497,13 +539,13 @@ class FControl:
 
     def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am, switch=False):
         dGlucose = (Glucose_Ecoli - Glucose_Prev_Ecoli) / Glucose_Total * 100
-        StatusText = "   Total Glucose : " + "{:.2f}".format(Glucose_Total / uM) + " uM" + "\n" \
-                     + " Glucose @ Ecoli :" + "{:.2f}".format(Glucose_Ecoli/ uM) + " uM" + "\n" \
+        StatusText = "   Total Glucose : " + "{:.2f} ".format(Glucose_Total / Unit) + UnitTxt + "\n" \
+                     + " Glucose @ Ecoli :" + "{:.2f} ".format(Glucose_Ecoli/ Unit) + UnitTxt + "\n" \
                      + " dGlucose @ Ecoli : " + ["", "+"][dGlucose > 0] + "{:.5f}".format(dGlucose) + " %"
         # StatusText = "   Total Glucose : " + str(Glucose_Total) + "\n  Glucose @ Ecoli :" + "{:.5f}".format(Glucose_Ecoli)
         if switch:
             StatusText += '\n[MECHANISTIC MODE]'
-            StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f}".format(Am / uM) + " uM"
+            StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f} ".format(Am / Unit) + UnitTxt
             # StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f}".format(Am)
         else:
             StatusText += '\n[ALGORITHMIC MODE]'
@@ -526,15 +568,15 @@ def main():
     SimUnitTime = 0.1
 
     PetriDish = FEnvironment()
-    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * uM)
-    Ecoli = FOrganism('A', W_S / 3, H_S / 3)
+    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * Unit)
+    Ecoli = FOrganism('A', W_S / 3, H_S / 2)
     Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
     Ecoli.Homeostasis(Glucose_Now)
 
     # Control.SetMoleculeGradient(Glucose, 'Glucose')
 
-    if Control.TransparencySwitch:
-        PetriDish.DrawTransparentArea()
+    # if Control.TransparencySwitch:
+    #     PetriDish.DrawTransparentArea()
 
     ElapsedTime = 0
     PrevTime = datetime.now()
@@ -661,7 +703,7 @@ def main():
         # if Control.TransparencySwitch:
         #     Screen.blit(PetriDish.TransparentCircleArea, Topleft)
 
-        if Control.Time < 300:
+        if Control.Time < 500:
             Control.DisplayWelcome()
         if Control.MessageTimer > 0:
             Control.DisplayInput()
