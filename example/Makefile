@@ -6,7 +6,7 @@ LDFLAGS= -L$(LIBS)
 
 SRCS=ecoli.lpp
 
-TARGET=mkcell
+TARGET=cell
 
 $(TARGET).py: $(SRCS)
 	$(CC) $(LDFLAGS) -o $(TARGET) $(SRCS)

@@ -21,6 +21,12 @@ Parameter values are, (in time−1): k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05
 k−4 = 1, k−5 = 0.005; (in concentration): kM1 = 1, kM2 = 1. Units are arbitrary.
 """
 
+'''
+Protein amounts imported from Bitbol and Wingreen, 2015 Biophysical Journal. Fundamental Constraints on the Abundances of Chemotaxis Proteins.
+CheA = 2.97 uM, CheY = 9.73 uM, CheZ = 3.80 uM, CheB = 0.28 uM, CheR = 0.17 uM, FliM = 1.43 uM, where 16% of FliM that are free are discounted.
+'''
+
+
 uM = 1e-6
 nM = 1e-9
 
@@ -29,40 +35,30 @@ Unit = nM
 Mol2Count = 6.0221409e+23
 Count2Mol = 1.0 / Mol2Count
 
-
-def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
-                            BP):
+def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return min(krev1 * R, A) - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
 
-
-def dAmL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
-                             BP):
+def dAmL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return min(krev2 * R, AL) - (k2 * BP) * AmL / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
-
-
-def dA_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
-                           BP):
+    
+def dA_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return -min(krev1 * R, A) + (k1 * BP) * Am / (kM1 + Am) - k4 * A * L + krev4 * AL
-
-
-def dAL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
-                            BP):
+    
+def dAL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return -min(krev2 * R, AL) + (k2 * BP) * AmL / (kM2 + AmL) + k4 * A * L - krev4 * AL
 
-
-def dB_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
-                           BP):
+def dB_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return -k5 * Am * B + krev5 * BP
 
-
-def dBP_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
-                            BP):
+def dBP_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return k5 * Am * B - krev5 * BP
 
 class FModel():
     def __init__(self,
-                 k1=200, k2=1, k3=1 / Unit, k4=1 / Unit, k5=0.05 / Unit, kM1=1 * Unit, kM2=1 * Unit,  # for Ingalls model
+                 k1=200, k2=1, k3=1 / Unit, k4=1 / Unit, k5=0.05 / Unit, kM1=1 * Unit, kM2=1 * Unit, # for Ingalls model
                  L=20 * Unit, R=5 * Unit, A=500 * Unit, B=0.1 * Unit,  # for Ingalls model
+                 # k1=200, k2=1, k3=1/Unit, k4=1/Unit, k5=0.05/Unit, kM1=1*Unit, kM2=1*Unit,
+                 # L=0.1*Unit, R=0.17*Unit, A=5.97*Unit, B=0.28*Unit, # for pygame chemotaxis with physiological conditions
                  krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005,
                  Am=0, AL=0, AmL=0, BP=0):
 
@@ -326,10 +322,12 @@ class FModel():
 
         plt.show()
 
+
 def main():
     Model = FModel()
     Model.Run()
     Model.PlotData()
 
 if __name__ == '__main__':
+
     main()
