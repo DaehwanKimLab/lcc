@@ -41,31 +41,20 @@ public:
 class FLocation {
 public:
     std::string Name;
-    std::vector<float> Coord_Abs;
-    std::vector<float> Coord_Rel; // when all values < 1 
-    float Angle; // to be expanded 
+    std::vector<float> Coord;
+    float Angle; // to be expanded
 
     FLocation() {}
 
-    FLocation(const std::string InName, const std::vector<float> InCoord) : Name(InName) {
-    // if all values > 1, then make it absolute
-        bool Abs = false;
-        for (auto& coord : InCoord) {
-            if (coord > 1) {
-                Abs = true;
-            }
-        }
-        if (Abs) {
-            for (auto& coord : InCoord) {
-                Coord_Abs.push_back(coord);
-            }
-        } else     {
-            for (auto& coord : InCoord) {
-                Coord_Rel.push_back(coord);
-            }
-        }
-    }
+    FLocation(const std::string InName, const std::vector<float> InCoord) : Name(InName), Coord(InCoord) {}
 
+    void Print(std::ostream& os) {
+        os << "[Location] ";
+        os << Name << " : (";
+        for (auto coord : Coord) {
+        	os << Utils::SciFloat2Str(coord) << ", ";
+        } os << ")" << std::endl;
+    }
 };
 
 class FComposition {
@@ -214,10 +203,16 @@ public:
 
     FCount() {}
 
-    FCount(std::string InName, float InAmount, float InBegin, float InEnd, float InStep, bool InbMolarity) : Name(InName), Amount(InAmount), Begin(InBegin), End(InEnd), Step(InStep), bMolarity(InbMolarity) {}
+    FCount(std::string InName, float InAmount, std::vector<float> InRange, bool InbMolarity) : Name(InName), Amount(InAmount), bMolarity(InbMolarity) {
+        Utils::Assertion((InRange.size() == 3), "Range requires three float values");
+        Begin = InRange[0];
+        End   = InRange[1];
+        Step  = InRange[2];
+    }
 
     void Print(std::ostream& os) {
-        os << "Name : " << Name << 
+        os << "[Count] "
+         "Name : " << Name <<
          "\t| Amount: " << Utils::SciFloat2Str(Amount) << 
          "\t| Begin: " << Utils::SciFloat2Str(Begin) << 
          "\t| End: " << Utils::SciFloat2Str(End) <<
@@ -628,7 +623,7 @@ public:
 
     void PrintLists(std::ostream& os);
     void PrintInitialCounts(std::ostream& os);
-    void PrintLocations(std::ostream& os);
+    void PrintInitialLocations(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
 
     void AddToMoleculeList(FMolecule *NewMolecule);
@@ -672,6 +667,9 @@ public:
     std::vector<int> GetCoefficientArray(const FReaction *, std::vector<int>);
     std::vector<std::vector<int>> GetStoichiometryMatrix(std::string);
     std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *>);
+
+    // LocationList
+    std::vector<float> GetLocationByName_LocationList(std::string MolName);
 
     // CountList
     float GetInitialCountByName_CountList(std::string InputName);

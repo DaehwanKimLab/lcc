@@ -4,8 +4,9 @@
 
 using namespace std;
 
-// avogadro's number
-float NA = 6.0221409e+23;
+float NA = 6.0221409e+23; // avogadro's number
+float Float_Default = -0.09876723; // random initialized float
+int Int_Default= -128; // random initialized int
 
 std::map<std::string, float> Prefix2ValueMap {
    { "None", 1 },    // Default 1
@@ -40,9 +41,19 @@ std::map<std::string, float> Suffix2ValueMap {
 
 namespace Numbers {
 
-float GetAvogadro() 
+float GetAvogadro()
 {
     return NA;
+}
+
+float GetFloatDefault()
+{
+    return Float_Default;
+}
+
+float GetIntDefault()
+{
+    return Int_Default;
 }
 
 bool CheckMolarity(std::string InUnit)

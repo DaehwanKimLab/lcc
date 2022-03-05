@@ -50,14 +50,12 @@ ostream& os = std::cout;
 std::string in = "    ";
 int N_MoleculesAllowed = 3; // Set number of molecules accepted for reactants and products
 std::string Name_Pseudo = "Pseudo";
-
-float Float_Init = -0.09876723; // random initialized float
-int Int_Init = -128; // random initialized int 
+float Float_Init = Numbers::GetFloatDefault(); // random initialized float
+int Int_Init = Numbers::GetIntDefault(); // random initialized int
 
 // temporary simulation control parameters
 int Sim_Steps = 1000;
 int Sim_Resolution = 100;
-
 
 const char *VersionString = "1.0.0";
 
@@ -83,6 +81,63 @@ float RandomNumber(float Min=0.0, float Max=1.0)
     return distr(eng);
 }
 
+// Utils for string expression
+std::string JoinStr2Str(std::vector<std::string> StringList)
+{
+   std::string JoinedStr;
+   for (auto& Str : StringList){
+       JoinedStr += "'" + Str + "'" + ", ";
+   }
+   return JoinedStr;
+}
+
+std::string JoinInt2Str(std::vector<int> IntList) 
+{
+   std::string JoinedStr;
+   for (auto& Int : IntList){
+       JoinedStr += std::to_string(Int) + ", ";
+   }
+   return JoinedStr;
+}
+
+std::string JoinInt2Str_Idx(std::vector<int> IntList) 
+{
+   std::string JoinedStr;
+   for (auto& Int : IntList){
+       JoinedStr += std::to_string(Int) + ", ";
+   }
+   return JoinedStr;
+}
+
+std::string JoinFloat2Str(std::vector<float> FloatList)
+{
+   std::string JoinedStr;
+   for (auto& Float : FloatList){
+       JoinedStr += Utils::SciFloat2Str(Float) + ", ";
+   }
+   return JoinedStr;
+}
+
+std::string Matrix2Str(std::vector<std::vector<int>> Matrix) 
+{
+    std::string MatrixStr;
+    int N_Rows;
+    int N_Columns;
+
+    N_Rows = Matrix.size();
+    for (auto& Row : Matrix) {
+        MatrixStr += "[";
+        N_Columns = Row.size();
+        for (auto& Item : Row) {
+            MatrixStr += std::to_string(Item) + ", ";
+        }
+        MatrixStr += "], ";
+    }
+    return MatrixStr;
+}
+
+
+// Node parsing routines
 std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* Reaction, bool bProductIsReaction=false) {
 
     map<string, int> Stoichiometry;
@@ -125,7 +180,7 @@ std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* 
             continue;
         }
         FMolecule * NewMolecule = new FMolecule(stoich.first);
-        // NewMolecule->Print(os);
+        if (Option.bDebug) { NewMolecule->Print(os); }
         Context.AddToMoleculeList(NewMolecule);
     } 
 
@@ -163,12 +218,12 @@ void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::st
     // add new enzymatic reaction to the system
     if ((k >= 0) & (krev >= 0)) {
         FEnz_StandardReaction *NewReaction = new FEnz_StandardReaction(ReactionName, Stoichiometry, EnzymeName, k, krev);
-        NewReaction->Print(os);
+        if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
 
     } else {
         FEnzymaticReaction *NewReaction = new FEnzymaticReaction(ReactionName, Stoichiometry, EnzymeName);
-        NewReaction->Print(os);
+        if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
     }
 }
@@ -247,22 +302,26 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
     return SubConstPair;
 }
 
+std::vector<float> ParseLocationFromVariable(const NVariableExpression * Variable)
+{
+
+}
+
 // PseudoMolecule (placeholder to support current version of matrix operation)
 void AddPseudoMolecule()
 {
     // int Idx = 0
     FMolecule * NewMolecule = new FMolecule(Name_Pseudo);   // old count input system
-    // NewMolecule->Print(os);
+    if (Option.bDebug) { NewMolecule->Print(os); }
     Context.AddToMoleculeList(NewMolecule);
 
     float Amount = 1;
-    float Begin = 0;
-    float End = -1;
-    float Step = 0;
+    std::vector<float> Range = {0, -1, 0};
     bool bMolarity = false; // bMolarity gets reverted after traversal and data import if no molecule in the system has molarity unit
 
-    FCount * NewCount = new FCount(Name_Pseudo, Amount, Begin, End, Step, bMolarity);
-    Context.CountList.push_back(NewCount);
+    FCount * NewCount = new FCount(Name_Pseudo, Amount, Range, bMolarity);
+    if (Option.bDebug) { NewCount->Print(os); }
+    Context.AddToCountList(NewCount);
 }
 
 void TraversalNode(NBlock* InProgramBlock)
@@ -357,12 +416,12 @@ void TraversalNode(NBlock* InProgramBlock)
             // add new reaction to the system
             if (Type == 0) {
         	FStandardReaction *NewReaction = new FStandardReaction(Name, Stoichiometry, k1, k2);
-        	NewReaction->Print(os);
+        	if (Option.bDebug) { NewReaction->Print(os); }
         	Context.AddToReactionList(NewReaction);
         
             } else if (Type == 1) {
         	FRegulatoryReaction *NewReaction = new FRegulatoryReaction(Name, Stoichiometry, K, n, Effect, Mode);
-        	NewReaction->Print(os);
+            if (Option.bDebug) { NewReaction->Print(os); }
         	Context.AddToReactionList(NewReaction);
             }
  
@@ -431,7 +490,6 @@ void TraversalNode(NBlock* InProgramBlock)
                                 }
                             }
                             if (bGetEnzKinetics) {
-std::cout << "Get EnzKinetics True" << std::endl;
                                 std::pair<std::string, std::vector<float>> SubConstPair = GetEnzKinetics(EnzymeName, Reaction);
                                 Kinetics.push_back(SubConstPair);
                             }
@@ -444,13 +502,13 @@ std::cout << "Get EnzKinetics True" << std::endl;
 
             // add new enzyme to the system
             if (Kinetics.empty()) { 
-                FEnzyme * NewEnzyme = new FEnzyme(EnzymeName); 
-                NewEnzyme->Print(os);
+                FEnzyme * NewEnzyme = new FEnzyme(EnzymeName);
+                if (Option.bDebug) { NewEnzyme->Print(os); }
                 Context.AddToMoleculeList(NewEnzyme);
             } 
             else { 
-                FEnzyme * NewEnzyme = new FEnzyme(EnzymeName, Kinetics); 
-                NewEnzyme->Print(os);
+                FEnzyme * NewEnzyme = new FEnzyme(EnzymeName, Kinetics);
+                if (Option.bDebug) { NewEnzyme->Print(os); }
                 Context.AddToMoleculeList(NewEnzyme);
             }
 
@@ -493,7 +551,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
             float Rate = std::stof(Context.QueryTable(Name, "Rate", Context.PolymeraseTable));
 
             FPolymerase * NewPolymerase = new FPolymerase(Name, Template, Target, Process, Rate);
-            NewPolymerase->Print(os);
+            if (Option.bDebug) { NewPolymerase->Print(os); }
             Context.AddToMoleculeList(NewPolymerase);
 
 
@@ -643,8 +701,8 @@ std::cout << "Get EnzKinetics True" << std::endl;
                 std::pair<std::string, int> Stoich(ReactantName, Coefficient);
                 Stoichiometry.push_back(Stoich);
 
-                FMolecule * NewMolecule = new FMolecule(ReactantName);             
-                // NewMolecule->Print(os);
+                FMolecule * NewMolecule = new FMolecule(ReactantName);
+                if (Option.bDebug) { NewMolecule->Print(os); }
                 Context.AddToMoleculeList(NewMolecule);
             }
 
@@ -659,7 +717,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
                 Stoichiometry.push_back(Stoich);
 
                 FMolecule * NewMolecule = new FMolecule(ProductName);
-                // NewMolecule->Print(os);
+                if (Option.bDebug) { NewMolecule->Print(os); }
                 Context.AddToMoleculeList(NewMolecule);
             }
 
@@ -673,20 +731,13 @@ std::cout << "Get EnzKinetics True" << std::endl;
             for (auto& BuildingBlock : BuildingBlocks) {
                 FSmallMolecule * NewSmallMolecule = new FSmallMolecule(BuildingBlock);
                 os << NewSmallMolecule->Name << ", ";
-                // Molecule->Print(os);
+//                if (Option.bDebug) { NewSmallMolecule->Print(os); }
                 Context.AddToMoleculeList(NewSmallMolecule);
             }
             os << "]" << endl;
             FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-            NewReaction->Print(os);
+            if (Option.bDebug) { NewReaction->Print(os); }
             Context.AddToReactionList(NewReaction);
-
-
-
-
-
-
-
 
         } else if (Utils::is_class_of<NOrganismDeclaration, NNode>(node)) {
             auto Organism = dynamic_cast<const NOrganismDeclaration *>(node);
@@ -707,6 +758,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
                 }
 
                 FOrganism * NewOrganism = new FOrganism(Ecoli->Id.Name, "Ecoli");
+//                if (Option.bDebug) { NewOrganism->Print(os); }
                 Context.AddToContainerList(NewOrganism);
 
             } else if (Organism->Id.Name == "ecoli") {
@@ -717,6 +769,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     int ChromosomeSize = 4641652;
                     os << "Chromosome_I: " << std::to_string(ChromosomeSize) << "bp" << endl;
                     FChromosome * NewChromosome = new FChromosome("ChI", ChromosomeSize);
+//                    if (Option.bDebug) { NewChromosome->Print(os); }
                     Context.AddToMoleculeList(NewChromosome);                
     
                     int i;
@@ -727,6 +780,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     for (auto& record : Context.GeneTable.Records) {
                         // os << record["symbol"] << ", ";
                         FGene * NewGene = new FGene(record["id"], record["symbol"]);
+//                        if (Option.bDebug) { NewGene->Print(os); }
                         Context.AddToMoleculeList(NewGene);
     
                         i++;
@@ -743,6 +797,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     for (auto& record : Context.RNATable.Records) {
                         // os << record["id"] << ", ";
                         FRNA * NewRNA = new FRNA(record["id"], record["type"]);
+//                        if (Option.bDebug) { NewRNA->Print(os); }
                         Context.AddToMoleculeList(NewRNA);
     
                         i++;
@@ -759,6 +814,7 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     for (auto& record : Context.ProteinTable.Records) {
                         // os << record["id"] << ", ";
                         FProtein * NewProtein = new FProtein(record["id"]);
+//                        if (Option.bDebug) { NewProtein->Print(os); }
                         Context.AddToMoleculeList(NewProtein);
     
                         // temporary capping
@@ -771,11 +827,13 @@ std::cout << "Get EnzKinetics True" << std::endl;
                     // os << endl;
 
                     FOrganism * NewOrganism = new FOrganism(Organism->Id.Name, Organism->Id.Name, Strain);
+//                    if (Option.bDebug) { NewOrganism->Print(os); }
                     Context.AddToContainerList(NewOrganism);
     
                 } else { 
 
                     FOrganism * NewOrganism = new FOrganism(Organism->Id.Name, Organism->Id.Name);
+//                    if (Option.bDebug) { NewOrganism->Print(os); }
                     Context.AddToContainerList(NewOrganism);
                 }
             }
@@ -792,132 +850,102 @@ std::cout << "Get EnzKinetics True" << std::endl;
 
             if (AExpression->Oper == T_ASSIGN) {
 
-//                // info to seek
-//                std::string Name;
-//                float Amount, Begin, End, Step;
-//                bool bMolarity;
-//
-//                if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(AExpression->OpA.get())) {
-//                    const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(AExpression->OpA);
-//                    const auto FCAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB); 
-//
-//
-//
-//
-//            auto FCExpression = dynamic_cast<const NFunctionCallExpression *>(node);
-//
-//            if (Option.bDebug) {
-//                FCExpression->Print(os);
-//                os << endl;
-//            }
-//
-//            auto NameExp = dynamic_pointer_cast<const NExpression *>(FCExpression->Name);
-//
-//            //            std::vector<std::string> Parameters_Const;
-////            for (const auto& arg: * FCExpression->Args) {
-////                if (Utils::is_class_of<NConstantExpression, NExpression>(arg.get())) {
-////                    const auto& parameter = dynamic_cast<const NConstantExpression *>(arg.get());
-////                    Parameters_Const.push_back(parameter->Evaluate());
-////                }
-////            }
-//
-//            // location (it may require more precise logic in the future)
-//            bool bLocation;
-//            std::vector<float> Parameters_Const;
-//
-//            // see if parameters contain three consecutive numbers
-//            for (const auto& arg: * FCExpression->Args) {
-//                if (Utils::is_class_of<NConstantExpression, NExpression>(arg.get())) {
-//                    const auto& parameter = dynamic_cast<const NConstantExpression *>(arg.get());
-//                    Parameters_Const.push_back(std::stof(parameter->Evaluate()));
-//                } else {
-//                    break;
-//                }
-//            }
-//
-//            if (Parameters_Const.size() == 3) {
-//                FLocation * NewLocation = new FLocation(Name, Parameters_Const);
-//                Context.AddToLocationList(NewLocation);
-//            }
+                // info to seek
+                std::string Name;
+                float Amount = Float_Init;
+                std::vector<float> Range, Location;
+                bool bMolarity = false;
 
-
-
-
-
-                if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
-
-                    const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
+                // get count from OpB
+                if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExpression->OpB.get())) {
                     const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB); 
 
-                    // target info
-                    auto VarName = VarExp->Evaluate();
-                    auto VarValue = VarAssigned->Evaluate();
+                    Amount = std::stof(VarAssigned->Evaluate());
+                    bMolarity = VarAssigned->Molarity();
 
-                    // temporary simulation control system
-                    if (VarName == "SimSteps") {
-                        Sim_Steps = static_cast<int>(std::stof(VarValue));
-                        os << endl;
-                        os << "# Simulation Control" << endl;
-                        os << "SimSteps = " << Sim_Steps << endl;
-                    } else if (VarName == "SimRes") {
-                        Sim_Resolution = static_cast<int>(std::stof(VarValue));
-                        os << "SimResolution = " << Sim_Resolution << endl;
+                } else if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpB.get())) {
+                    const auto VarAssigned = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpB); 
+                    // TODO: Evaluate may not work yet
+//                    Amount = std::stof(VarAssigned->Evaluate());
+//                    bMolarity = VarAssigned->Molarity();
+                }
 
-                    } else {
+                // get else from OpA
+                if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
+                    const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
 
-                        // Count System 
-                        // target info
-                        std::string Name = VarName;
-    
-                        // parse
-                        float Amount = std::stof(VarValue);
-                        bool bMolarity = VarAssigned->Molarity();
-                        // os << "Amount: " << Amount << endl;
-    
-                        float Begin = Float_Init;
-                        float End = Float_Init;
-                        float Step = Float_Init;
-    
-                        if (VarExp->Index) {
-                            auto IndexExpression = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
-        
-                            if (IndexExpression->Begin) {
-                                if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Begin.get())) {
-                                    Begin = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Begin)->Evaluate());
-                                    Utils::Assertion(Begin >= 0, "Range input (beginning) cannot be negative. Molecule: " + Name);
-                                }
-                            }
-                            if (IndexExpression->End) {
-                                if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->End.get())) {
-                                    End = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->End)->Evaluate());
-                                    Utils::Assertion(End > 0, "Range input (end) cannot be 0 or negative. Molecule: " + Name);
-                                }
-                            }
-                            if (IndexExpression->Step) {
-                                if (Utils::is_class_of<NConstantExpression, NExpression>(IndexExpression->Step.get())) {
-                                    Step = std::stof(dynamic_pointer_cast<const NConstantExpression>(IndexExpression->Step)->Evaluate());
-                                    Utils::Assertion(Step > 0, "Range input (step) cannot not be 0 or negative. Molecule: " + Name);
-                                }
-                            }
-    
-                        // default = [0]
-                        } else {
-                            Begin = 0;                   
-                        }
-    
-                        if (Step < 0) {
-                            Step  = 0;   // default value
-                        }
-    
-                        // categorizing
-                        if ((Begin <  0) & (End < 0))      { Begin = 0; End = -1;} //    os << "Begin<0 & End<0: " << Name << endl;} // fixed amount
-                        else if ((Begin >= 0) & (End < 0)) {            End = Begin;} //    os << "Begin>=0 & End<0: " << Name << endl; } // single step event treated the same as range for now
-    
-                        FCount * NewCount = new FCount(Name, Amount, Begin, End, Step, bMolarity);
-                        Context.AddToCountList(NewCount);
+                    // parsing VarExp (may be made into a function in the future)
+
+                    Name = VarExp->GetName();
+
+                    if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(VarExp->Variable.get())) {
+                        const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(VarExp->Variable);
+
+                        Location = FCExp->GetParameters("Location");
                     }
-                }                
-            }
+
+                    // VarExp->Index, for time info
+                    if (VarExp->Index) {
+                        if (Utils::is_class_of<const NRangeExpression, const NExpression>(VarExp->Index.get())) {
+                            const auto RangeExp = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
+
+                            Range = RangeExp->GetBeginEndStep();
+                        }
+                    }
+
+                } else if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(AExpression->OpA.get())) {
+                    const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(AExpression->OpA);
+
+                    Name = FCExp->GetName();
+                    Location = FCExp->GetParameters("Location");
+                }
+
+                if (Option.bDebug) {
+                    os << "@ AExpression parsing result" << endl;
+                    os << "Name : " << Name << ", ";
+                    os << "Amount: " << Utils::SciFloat2Str(Amount) << ", ";
+                    os << "Range: [";
+                    if (!Range.empty()) { os << JoinFloat2Str(Range) << "], "; }
+                    else                { os << "None to [0], "; }
+                    os << "bMolarity: "; if (bMolarity) { os << "true, ";  }
+                                         else           { os << "false, "; }
+                    os << "Location: ";
+                    if (!Location.empty()) { os << "(" << JoinFloat2Str(Location) << ")"; }
+                    else                   { os << "None"; }
+                    os << endl;
+                }
+
+                // No range provided assumes [0] as input by default
+                if (Range.empty()) {
+                    Range = {0, 0, 0};
+                }
+                
+					// temporary simulation control system
+					if (Name == "SimSteps") {
+					    Sim_Steps = static_cast<int>(Amount);
+					    os << endl;
+					    os << "# Simulation Control" << endl;
+					    os << "SimSteps = " << Sim_Steps << endl;
+					    continue;
+					
+					} else if (Name == "SimRes") {
+					    Sim_Resolution = static_cast<int>(Amount);
+					    os << "SimResolution = " << Sim_Resolution << endl;
+					    continue;
+					}
+
+                // Add to Count and location
+                FCount * NewCount = new FCount(Name, Amount, Range, bMolarity);
+                if (Option.bDebug) { NewCount->Print(os); }
+                Context.AddToCountList(NewCount);
+
+                if (!Location.empty()) {
+                    FLocation * NewLocation = new FLocation(Name, Location);
+                    if (Option.bDebug) { NewLocation->Print(os); }
+                    Context.AddToLocationList(NewLocation);
+                }
+
+            } // end of AExpression
 
         } else if (Utils::is_class_of<NExperimentDeclaration, NNode>(node)) {
             auto Experiment = dynamic_cast<const NExperimentDeclaration *>(node);
@@ -943,8 +971,9 @@ std::cout << "Get EnzKinetics True" << std::endl;
 #endif
 
         node->Visit(tc);
-        }
     }
+}
+
 
 void ScanNodes(const NBlock* InProgramBlock)
 {
@@ -983,61 +1012,6 @@ void ImportCountFromDatabase()
 //            }
 //        }
     
-}
-
-// Utils for string expression
-std::string JoinStr2Str(std::vector<std::string> StringList)
-{
-   std::string JoinedStr;
-   for (auto& Str : StringList){
-       JoinedStr += "'" + Str + "'" + ", ";
-   }
-   return JoinedStr;
-}
-
-std::string JoinInt2Str(std::vector<int> IntList) 
-{
-   std::string JoinedStr;
-   for (auto& Int : IntList){
-       JoinedStr += std::to_string(Int) + ", ";
-   }
-   return JoinedStr;
-}
-
-std::string JoinInt2Str_Idx(std::vector<int> IntList) 
-{
-   std::string JoinedStr;
-   for (auto& Int : IntList){
-       JoinedStr += std::to_string(Int) + ", ";
-   }
-   return JoinedStr;
-}
-
-std::string JoinFloat2Str(std::vector<float> FloatList)
-{
-   std::string JoinedStr;
-   for (auto& Float : FloatList){
-       JoinedStr += Utils::SciFloat2Str(Float) + ", ";
-   }
-   return JoinedStr;
-}
-
-std::string Matrix2Str(std::vector<std::vector<int>> Matrix) 
-{
-    std::string MatrixStr;
-    int N_Rows;
-    int N_Columns;
-
-    N_Rows = Matrix.size();
-    for (auto& Row : Matrix) {
-        MatrixStr += "[";
-        N_Columns = Row.size();
-        for (auto& Item : Row) {
-            MatrixStr += std::to_string(Item) + ", ";
-        }
-        MatrixStr += "], ";
-    }
-    return MatrixStr;
 }
 
 std::string GetRegType(std::string Type)
@@ -2183,7 +2157,7 @@ void WriteSimModule()
                         ofs << "Conc_Regulator, ";
                     }
                     // Reaction constants
-                    ofs << "self.State.Const_k_" << substrate << "_" << Type; // here
+                    ofs << "self.State.Const_k_" << substrate << "_" << Type; 
                     if (Typing[substrate] != EnzReactionTypes[0]) {
                         ofs << ", self.State.Const_K_" << Type << ", ";             
                         ofs << "self.State.Const_n_" << Type;
@@ -2598,7 +2572,10 @@ int main(int argc, char *argv[])
 
             if (Option.bDebug) {
                 Context.PrintLists(os);
+
+                // initial conditions
                 Context.PrintInitialCounts(os);
+                Context.PrintInitialLocations(os);
             }
         }
 

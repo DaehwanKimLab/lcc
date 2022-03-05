@@ -1133,6 +1133,8 @@ public:
     virtual std::string Evaluate() const override {
         return Variable->Evaluate();
     }
+
+    virtual std::string GetName() const;
 };
 
 class NRangeExpression : public NExpression {
@@ -1169,6 +1171,8 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+
+    virtual std::vector<float> GetBeginEndStep() const;
 };
 
 class NFunctionCallExpression : public NExpression {
@@ -1198,6 +1202,9 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+
+    virtual std::string        GetName() const;
+    virtual std::vector<float> GetParameters(std::string Type) const;
 };
 
 class NExpressionStatement : public NStatement {

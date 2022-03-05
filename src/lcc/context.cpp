@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include <map>
+//#include <map>
 #include <algorithm>
-#include <iterator>
+//#include <iterator>
 #include <vector>
 
 #include "context.h"
@@ -104,7 +104,7 @@ void FCompilerContext::Init(const FOption& InOption)
 
 void FCompilerContext::PrintLists(std::ostream& os) 
 {
-    os << std::endl << "## Compiler Context Lists ##" << std::endl;
+    os << std::endl << "## Compiler Data Entries ##" << std::endl;
     int i = 0;
     if (!MoleculeList.empty()) {
         os << "  MoleculeList: " << std::endl << "  " << "  ";
@@ -129,6 +129,7 @@ void FCompilerContext::PrintLists(std::ostream& os)
 //        os << item.Name << ", ";
 //    };
 //    os << std::endl;
+
     i = 0;
     if (!ReactionList.empty()) {
         os << "  ReactionList: " << std::endl << "  " << "  ";
@@ -138,10 +139,31 @@ void FCompilerContext::PrintLists(std::ostream& os)
         }
         os << std::endl;
         }
+
     i = 0;
-    if (!ReactionList.empty()) {
-        os << "  ReactionList: " << std::endl << "  " << "  ";
-        for (auto& item : ReactionList){
+    if (!ContainerList.empty()) {
+        os << "  ContainerList: " << std::endl << "  " << "  ";
+        for (auto& item : ContainerList){
+            os << "[" << i << "] " << item->Name << ", ";
+            i++;
+        }
+        os << std::endl;
+        }
+
+    i = 0;
+    if (!CountList.empty()) {
+        os << "  CountList: " << std::endl << "  " << "  ";
+        for (auto& item : CountList){
+            os << "[" << i << "] " << item->Name << ", ";
+            i++;
+        }
+        os << std::endl;
+        }
+
+    i = 0;
+    if (!LocationList.empty()) {
+        os << "  LocationList: " << std::endl << "  " << "  ";
+        for (auto& item : LocationList){
             os << "[" << i << "] " << item->Name << ", ";
             i++;
         }
@@ -385,35 +407,33 @@ void FCompilerContext::MakeListsFromContainerList()
     }
 }
 
-void FCompilerContext::PrintLocations(std::ostream& os) 
+void FCompilerContext::PrintInitialLocations(std::ostream& os) // TODO: NEEDS UPDATE
 {
-    os << std::endl << "## Compiler Locations ##" << std::endl;
+    os << std::endl << "## Compiler Initial Locations ##" << std::endl;
     if (!LocationList.empty()) {
-        for (auto& location : LocationList){         
+        int i = 0;
+        for (auto& location : LocationList){
+            os << "[" << i << "] ";
             os << location->Name << " : (";
-
-            std::vector<float> Coords;
-            if (!location->Coord_Abs.empty())      { Coords = location->Coord_Abs; }            
-            else if (!location->Coord_Rel.empty()) { Coords = location->Coord_Rel; }
-
-            for (auto coord : Coords)    { os << coord << ", "; }
-            os << ")" << "\t| ";
+            for (auto coord : location->Coord) {
+                os << Utils::SciFloat2Str(coord) << ", ";
+            } os << ")" << std::endl;
+            i++;
         }
         os << std::endl;
     }
 }
 
-void FCompilerContext::PrintInitialCounts(std::ostream& os) 
+void FCompilerContext::PrintInitialCounts(std::ostream& os)
 {
     os << std::endl << "## Compiler Initial Counts ##" << std::endl;
-
     // currently restricted to the molecules that are registered on the molecule list
     if (!MoleculeList.empty()) {
+        int i = 0;
         for (auto& molecule : MoleculeList){
             float Count = GetInitialCountByName_CountList(molecule->Name);
-            os << molecule->Name << " : " << Count << "\t| ";
+            os << "[ " << i << "] " << molecule->Name << " : " << Count << std::endl;
         }
-        os << std::endl;
     }
 }
 
@@ -783,9 +803,9 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::stri
 
     // for matrix generation
     std::vector<int> Idx_Substrates = GetIdxForStoichiometryMatrix(Type);
-    std::vector<const FReaction *> ReactionList = GetSubList_ReactionList(Type);
+    std::vector<const FReaction *> reactionList = GetSubList_ReactionList(Type);
 
-    for (auto& reaction : ReactionList) {
+    for (auto& reaction : reactionList) {
         StoichMatrix.push_back(GetCoefficientArray(reaction, Idx_Substrates));
     }
 
@@ -811,9 +831,9 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::string Type
     //        "Enz_MichaelisMenten_Unregulated", "Enz_MichaelisMenten_Inhibition_Allosteric", "Enz_MichaelisMenten_Inhibition_Competitive", "Enz_MichaelisMenten_Inhibition_Competitive"
 
     std::vector<int> IdxList;
-    std::vector<const FReaction *> ReactionList = GetSubList_ReactionList(Type);
+    std::vector<const FReaction *> reactionList = GetSubList_ReactionList(Type);
 
-    for (auto& reaction : ReactionList) {
+    for (auto& reaction : reactionList) {
         IdxList = AddUniqueSubstrateIdxToIdxList(reaction, IdxList);
     }
 
@@ -871,9 +891,24 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
     return 0;
 }
 
+std::vector<float> FCompilerContext::GetLocationByName_LocationList(std::string MolName)
+{
+    std::vector<float> coord;
+    for (auto& location : LocationList) {
+        if (location->Name == MolName) {
+            return location->Coord;
+        }
+    }
+    if (coord.empty()) {
+        coord = {0, 0, 0};
+        std::cout << "No location info found: " << MolName << std::endl;
+    }
+
+    return coord;
+}
 float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)
 {
-// returns 0 if there is no initial count set
+    // returns 0 if there is no initial count set
     for (auto& count : CountList) {
         if ((count->Name == MolName) & (count->Begin == 0)) {
             return count->Amount;
