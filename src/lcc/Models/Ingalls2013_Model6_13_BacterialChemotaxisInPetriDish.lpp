@@ -1,39 +1,32 @@
 petridish P
 {
-  organism ecoli
+  ecoli E
   {
-    protein BP
-    {
-      reaction R1(Am --> A, kcat=200, KM=1);
-      reaction R2(AmL --> AL, kcat=1, KM=1);
-    };
-
     protein R
     {
       reaction R1(A --> Am, k=1);
       reaction R2(AL --> AmL, k=1);
     };
 
+    protein BP
+    {
+      reaction R1(Am --> A, kcat=200, KM=1);
+      reaction R2(AmL --> AL, kcat=1, KM=1);
+    };
+
+    protein Am
+    {
+      reaction R(B + Am --> BP, k=0.05, krev=0.005);
+    };
+
     reaction R1(Am + L --> AmL, k=1, krev=1);
     reaction R2(A + L --> AL, k1, krev=1);
-    reaction R3(B + Am --> BP, k=0.05, krev=0.005);
 
-    BP = 1, Am = 500, R = 5, B = 0.1;
+    BP = 1, Am = 500nm, R = 5, B = 0.1;
   }
-  ecoli(10, 10, 0) = 100;
-  
+  E(10, 10, 0) = 1;
+
   glucose G;
-  G(1, 1, 0) = 1 mol;
+  G(1, 1, 0) = 1nmol;
 }
-
-
-
-
-
-
-
-
-
-
-
 
