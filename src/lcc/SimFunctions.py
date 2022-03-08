@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 NA = 6.0221409e+23
 
@@ -87,3 +88,49 @@ def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
     Bool_LenCumsum = np.logical_and(Bool_LenCumsumGreaterThanZero, Bool_LenCumsumLessThanOrEqualToCountOfIndices)
     Bin_Len_Selected = np.logical_and(Bool_LenAvailable, Bool_LenCumsum).astype(int)
     return Len + Bin_Len_Selected
+
+
+# Spatial simulation functions
+
+def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount):
+    Dist_Init = np.zeros((Width, Height))
+    for X in range(Width):
+        for Y in range(Height):
+            Dist_Init[X][Y] = InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, MaxAmount)
+    return Dist_Init
+
+def InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max):
+    Dist = math.sqrt(((X - X_Ori) / Width) ** 2 + ((Y - Y_Ori) / Height) ** 2)
+    return Max / max(1, Dist * 30)
+
+def Eqn_Diffusion(D, Amount_Source, Amount_Neighbor):
+    return D * (Amount_Neighbor - Amount_Source)
+
+def Eqn_Diffusion_Spatial(Distribution, D):
+    Row_Zero = np.zeros((1, Distribution.shape[1]))
+    Column_Zero = np.zeros((Distribution.shape[0], 1))
+
+    # expanded version for readability
+    # Roll
+    Upward = np.roll(Distribution, -1, axis=0)
+    Downward = np.roll(Distribution, 1, axis=0)
+    Leftward = np.roll(Distribution, -1, axis=1)
+    Rightward = np.roll(Distribution, 1, axis=1)
+
+    # Diffuse
+    Diffusion_Upward = Eqn_Diffusion(D, Distribution, Upward)
+    Diffusion_Downward = Eqn_Diffusion(D, Distribution, Downward)
+    Diffusion_Leftward = Eqn_Diffusion(D, Distribution, Leftward)
+    Diffusion_Rightward = Eqn_Diffusion(D, Distribution, Rightward)
+
+    # Correction by Slicing and Adding back zeros for flows from null direction
+    Upward_Corrected = np.concatenate((Diffusion_Upward[:-1, :], Row_Zero), axis=0)
+    Downward_Corrected = np.concatenate((Row_Zero, Diffusion_Downward[1:, :]), axis=0)
+    Leftward_Corrected = np.concatenate((Diffusion_Leftward[:, :-1], Column_Zero), axis=1)
+    Rightward_Corrected = np.concatenate((Column_Zero, Diffusion_Rightward[:, 1:]), axis=1)
+
+    return Upward_Corrected + Downward_Corrected + Leftward_Corrected + Rightward_Corrected
+
+def DiffuseDistribution(Distribution, D=0.01, dTime=1):
+    Distribution_Updated = Distribution + Eqn_Diffusion_Spatial(Distribution, D) * dTime
+    return Distribution_Updated
