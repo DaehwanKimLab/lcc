@@ -4,32 +4,57 @@
 // Model   6.12,    p.162
 // Figure  6.14,    p.164
 
-// N_SimSteps = 100000, SimStepTimeResolution = 100
+// N_SimSteps = 30000, SimStepTimeResolution = 100
 // Note: ligand induction time interval change similar to the python model
 
 // Protein amounts imported from Bitbol and Wingreen, 2015 Biophysical Journal. Fundamental Constraints on the Abundances of Chemotaxis Proteins.
 // CheA = 2.97 uM, CheY = 9.73 uM, CheZ = 3.80 uM, CheB = 0.28 uM, CheR = 0.17 uM, FliM = 1.43 uM, where 16% of FliM that are free are discounted.
 
 
-    protein BP
-    {
-      reaction R1(Am --> A, kcat=200, KM=1M);
-      reaction R2(AmL --> AL, kcat=1, KM=1M);
-    }
+petridish P
+{
+}
+
+  ecoli E
+  {
+  E(10, 10, 0) = 1;
+  }
 
     protein R
     {
-      reaction R1(A --> Am, kcat=1, KM=0.001M); // seems correct
-      reaction R2(AL --> AmL, kcat=1, KM=0.001M); // seems correct
+      reaction R1(A --> Am, kcat=1, KM=1e-10nM);
+      reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
     }
 
-    reaction R1(Am + L_NoPlot --> AmL, k=6e23, krev= 6e23);
-    reaction R2(A + L_NoPlot --> AL, k=6e23, krev= 6e23);
-    reaction R3(B + Am --> BP, k=5e22, krev= 5e21);
+    protein BP
+    {
+      reaction R1(Am --> A, kcat=200, KM=1nM);
+      reaction R2(AmL --> AL, kcat=1, KM=1nM);
+    }
 
-    A = 500 M, R = 5 M, B = 0.1 M;
-    //L_NoPlot[0:100]= 1.244e25, L_NoPlot[100:300]= 2.488e25;
-    L_NoPlot[0:100]= 20e6 M, L_NoPlot[100:300]=40e6 M;
-    //L[300:500]=80 M;
+    protein Am
+    {
+      reaction R(B --> BP, k=0.05e9, krev=0.005);
+    }
 
-    SimSteps = 2000, SimRes = 100;
+    reaction R1(Am + L --> AmL, k=1e9, krev=1);
+    reaction R2(A + L --> AL, k=1e9, krev=1);
+
+    R = 5nM, B = 0.1nM, Am = 500nM;
+    L[0:100] = 20nM, L[100:200] = 40nM, L[200:300] = 80nM;
+
+  glucose G;
+  G(1, 1, 0) = 1nmol;
+
+
+    SimSteps = 30000, SimRes = 100;
+
+
+
+
+    //L[0:50]= 20 nM, L[50:100]= 25 nM, L[100:150]= 30 nM;
+
+    //L[:] = 0 nM, L[25:50] = 10 nM, L[75:100] = 1 uM, L[125:150] = 1 mM, L[175:200]= 2 nM, L[200:225]= 3 nM, L[225:250]= 3 nM;
+    //L[0:50]= 20 nM, L[50:100]= 40 nM, L[100:150]= 80 nM;
+    //L_NoPlot[0:100]= 20 uM, L_NoPlot[100:300]= 40 uM, L_NoPlot[300:500]= 80 uM;
+
