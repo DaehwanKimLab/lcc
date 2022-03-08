@@ -299,6 +299,11 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override;
+
+//    virtual std::vector<std::pair<std::string, int>> GetStoichFromReaction(bool bProductIsReaction) const;
+//    virtual void AddEnzReaction(std::string ReactionName, std::string EnzymeName) const;
+//    virtual std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName) const;
+// here
 };
 
 class NReactionDeclaration : public NStatement {

@@ -102,7 +102,7 @@ void FCompilerContext::Init(const FOption& InOption)
     }
 }
 
-void FCompilerContext::PrintLists(std::ostream& os) 
+void FCompilerContext::PrintLists(std::ostream& os)
 {
     os << std::endl << "## Compiler Data Entries ##" << std::endl;
     int i = 0;
@@ -116,7 +116,7 @@ void FCompilerContext::PrintLists(std::ostream& os)
     }
 
     i = 0;
-    if (!PathwayList.empty()) { 
+    if (!PathwayList.empty()) {
         os << "  PathwayList: " << std::endl << "  " << "  ";
         for (auto& item : PathwayList){
             os << "[" << i << "] " << item.Name << ", ";
@@ -179,7 +179,7 @@ void FCompilerContext::SaveUsingModuleList(const char* Filename)
         cerr << "Can't open file: " << Filename << endl;
         return;
     }
-    
+
     vector<string> Headers;
     Headers.push_back("ProcessName");
 
@@ -199,16 +199,24 @@ void FCompilerContext::SaveUsingModuleList(const char* Filename)
 
 void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 {
-    bool Addition = true;   
+    bool Addition = true;
     // std::cout<< "Checking if " << NewMolecule->Name << "Exists in MoleculeList" << std::endl;
     for (auto& molecule : MoleculeList) {
         if (molecule->Name == NewMolecule->Name) {
-            Addition = false; 
+            Addition = false;
             std::cout << "Redundant molecule name found in MoleculeList :" + NewMolecule->Name << std::endl;
+
+            // overwrite if higher molecule class (TODO::cover more molecule classes)
+            if ((!Utils::is_class_of<FEnzyme, FMolecule>(molecule)) &
+               ( Utils::is_class_of<FEnzyme, FMolecule>(NewMolecule))) {
+                molecule = NewMolecule;
+                std::cout << "\tOverwritten in MoleculeList :" + NewMolecule->Name << std::endl;
+            }
+
             break;
         }
     }
-    if (Addition) { 
+    if (Addition) {
         MoleculeList.push_back(NewMolecule);
     }
 //        std::cout << "Molecule "<< NewMolecule->Name << " has been added to the system" << std::endl;
@@ -216,16 +224,16 @@ void FCompilerContext::AddToMoleculeList(FMolecule *NewMolecule)
 
 void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 {
-    bool Addition = true;   
+    bool Addition = true;
     // std::cout<< "Checking if " << NewReaction->Name << "Exists in ReactionList" << std::endl;
     for (auto& reaction : ReactionList) {
         if (reaction->Name == NewReaction->Name) {
-            Addition = false; 
+            Addition = false;
             std::cout << "Redundant molecule name found in ReactionList :" + NewReaction->Name << std::endl;
             break;
         }
     }
-    if (Addition) { 
+    if (Addition) {
         ReactionList.push_back(NewReaction);
     }
 //        std::cout << "Reaction "<< NewReaction->Name << " has been added to the system" << std::endl;
@@ -233,16 +241,16 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
 
 void FCompilerContext::AddToContainerList(FContainer *NewContainer)
 {
-    bool Addition = true;   
+    bool Addition = true;
     // std::cout<< "Checking if " << NewContainer->Name << "Exists in ContainerList" << std::endl;
     for (auto& container : ContainerList) {
         if (container->Name == NewContainer->Name) {
-            Addition = false; 
+            Addition = false;
             std::cout << "Redundant molecule name found in ContainerList :" + NewContainer->Name << std::endl;
             break;
         }
     }
-    if (Addition) { 
+    if (Addition) {
         ContainerList.push_back(NewContainer);
     }
 //        std::cout << "Container "<< NewContainer->Name << " has been added to the system" << std::endl;
@@ -260,7 +268,7 @@ void FCompilerContext::AddToLocationList(FLocation *NewLocation)
 //        std::cout << "Location "<< NewLocation->Name << " has been added to the system" << std::endl;
 }
 
-void FCompilerContext::Organize() 
+void FCompilerContext::Organize()
 {
     std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
     MakeListsFromMoleculeList();
@@ -285,7 +293,7 @@ enum ReactionTypeAssignment {
     Enz_MichaelisMenten_Unregulated = 20,
     Enz_MichaelisMenten_Inhibition_Allosteric = 21,
     Enz_MichaelisMenten_Inhibition_Competitive = 22,
-    Enz_MichaelisMenten_Activation_Allosteric = 23,  
+    Enz_MichaelisMenten_Activation_Allosteric = 23,
 
     // Regulatory Reactions
     Regulatory_Inhibition_Allosteric = 100,
@@ -349,7 +357,7 @@ void FCompilerContext::AssignReactionTypesForReactionList()
     std::vector<std::string> Inhibition_Allosteric = GetNames_ReactionList("Regulatory_Inhibition_Allosteric");
     std::vector<std::string> Inhibition_Competitive = GetNames_ReactionList("Regulatory_Inhibition_Competitive");
     std::vector<std::string> Activation_Allosteric = GetNames_ReactionList("Regulatory_Activation_Allosteric");
-   
+
     for (auto& reaction : ReactionList) {
 
         // skip if assigned already
@@ -369,7 +377,7 @@ void FCompilerContext::AssignReactionTypesForReactionList()
 
         // Inhibition_Competitive
         } else if (std::find(Inhibition_Competitive.begin(), Inhibition_Competitive.end(), reaction->Name) != Inhibition_Competitive.end()) {
-            reg = 2; 
+            reg = 2;
 
         // Activation_Allosteric
         } else if (std::find(Activation_Allosteric.begin(), Activation_Allosteric.end(), reaction->Name) != Activation_Allosteric.end()) {

@@ -70,13 +70,13 @@ public:
     FComposition(const std::string InName) : Name(InName) {}
 
     FComposition(const std::string InName, const std::string InSurface, const std::string InCore) : Name(InName) {
-        std::pair <std::string, float> S(InSurface, 100); 
+        std::pair <std::string, float> S(InSurface, 100);
         Constituent_Surface.push_back(S);
         std::pair <std::string, float> C(InCore, 100 );
-        Constituent_Core.push_back(C); 
+        Constituent_Core.push_back(C);
     }
 
-    FComposition(const std::string InName, const std::vector<std::pair<std::string, float>> InSurface, const std::vector<std::pair<std::string, float>> InCore) 
+    FComposition(const std::string InName, const std::vector<std::pair<std::string, float>> InSurface, const std::vector<std::pair<std::string, float>> InCore)
         : Name(InName), Constituent_Surface(InSurface), Constituent_Core(InCore) {}
 };
 
@@ -98,19 +98,19 @@ public:
 
     float pH = -1; // -1 as default
     float Temp = -1; // -1 as default
-    
+
     FCompartment() {}
 
-    FCompartment(const std::string InName) 
+    FCompartment(const std::string InName)
         : Shape("Sphere"), FContainer(InName) {} // sphere as default
 
-    FCompartment(const std::string InName, const std::string InShape) 
+    FCompartment(const std::string InName, const std::string InShape)
         : Shape(InShape), FContainer(InName) {}
 
-    FCompartment(const std::string InName, const std::string InShape, const float InDimension) 
+    FCompartment(const std::string InName, const std::string InShape, const float InDimension)
         : Shape(InShape), Dimension{InDimension}, FContainer(InName) {}
 
-    FCompartment(const std::string InName, const std::string InShape, const std::vector<float> InDimension) 
+    FCompartment(const std::string InName, const std::string InShape, const std::vector<float> InDimension)
         : Shape(InShape), Dimension(InDimension), FContainer(InName) {}
 
 };
@@ -126,9 +126,9 @@ public:
 
     FBiologicalCompartment() {}
 
-    FBiologicalCompartment(const std::string InName) : FCompartment(InName) {} 
+    FBiologicalCompartment(const std::string InName) : FCompartment(InName) {}
 
-    FBiologicalCompartment(const std::string InName, const std::string InType) : Type(InType), FCompartment(InName) {} 
+    FBiologicalCompartment(const std::string InName, const std::string InType) : Type(InType), FCompartment(InName) {}
 
 };
 
@@ -136,10 +136,10 @@ class FOrganism : public FBiologicalCompartment {
 public:
     std::string Species; // special type set aside for organism
     std::string Strain;
- 
+
     FOrganism() {}
 
-    FOrganism(const std::string InName) : FBiologicalCompartment(InName) {} 
+    FOrganism(const std::string InName) : FBiologicalCompartment(InName) {}
 
     FOrganism(const std::string InName, const std::string InSpecies) : Species(InSpecies), FBiologicalCompartment(InName) {}
 
@@ -179,22 +179,22 @@ public:
 
     FProkaryote() {}
 
-    FProkaryote(const std::string InName) : FOrganism(InName) {} 
+    FProkaryote(const std::string InName) : FOrganism(InName) {}
 
-    FProkaryote(const std::string InName, const std::string InSpecies) : FOrganism(InName, InSpecies) {} 
-    
+    FProkaryote(const std::string InName, const std::string InSpecies) : FOrganism(InName, InSpecies) {}
+
 };
 
 class FEukaryote : public FOrganism {
 public:
     bool Multicellularity;
-    
+
 };
 
 class FCount {
 public:
     std::string Name;
-    float Amount;   
+    float Amount;
     float Begin;
     float End;
     float Step;
@@ -213,8 +213,8 @@ public:
     void Print(std::ostream& os) {
         os << "[Count] "
          "Name : " << Name <<
-         "\t| Amount: " << Utils::SciFloat2Str(Amount) << 
-         "\t| Begin: " << Utils::SciFloat2Str(Begin) << 
+         "\t| Amount: " << Utils::SciFloat2Str(Amount) <<
+         "\t| Begin: " << Utils::SciFloat2Str(Begin) <<
          "\t| End: " << Utils::SciFloat2Str(End) <<
          "\t| Step: " << Utils::SciFloat2Str(Step);
          if (bMolarity) { os << "\t| (Molarity)"; }
@@ -277,9 +277,9 @@ public:
 
     FPolymer(const std::string& InName) : FMolecule(InName) {}
 
-    FPolymer(const std::string& InName, std::map<std::string, float> InComposition) 
+    FPolymer(const std::string& InName, std::map<std::string, float> InComposition)
         : Composition(InComposition), FMolecule(InName) {}
- 
+
 };
 
 class FPolymer_Static : public FPolymer {
@@ -288,35 +288,35 @@ public:
 
     FPolymer_Static() {}
 
-    FPolymer_Static(const std::string& InName) 
+    FPolymer_Static(const std::string& InName)
         : FPolymer(InName) {}
 
-    FPolymer_Static(const std::string& InName, int InSize) 
+    FPolymer_Static(const std::string& InName, int InSize)
         : Size(InSize), FPolymer(InName) {}
 
-    FPolymer_Static(const std::string& InName, const std::map<std::string, float> InComposition) 
+    FPolymer_Static(const std::string& InName, const std::map<std::string, float> InComposition)
         : FPolymer(InName, InComposition) {}
 
-    FPolymer_Static(const std::string& InName, const std::map<std::string, float> InComposition, int InSize) 
+    FPolymer_Static(const std::string& InName, const std::map<std::string, float> InComposition, int InSize)
         : Size(InSize), FPolymer(InName, InComposition) {}
 };
 
-class FChromosome : public FPolymer_Static {   
+class FChromosome : public FPolymer_Static {
 public:
     std::string Symbol; // roman numeral? such as ChI, ChII?
-    
+
     FChromosome() {}
 
-    FChromosome(const std::string& InName) 
+    FChromosome(const std::string& InName)
         : FPolymer_Static(InName) {}
 
-    FChromosome(const std::string& InName, const std::string& InSymbol) 
+    FChromosome(const std::string& InName, const std::string& InSymbol)
         : Symbol(InSymbol), FPolymer_Static(InName) {}
 
-    FChromosome(const std::string& InName, int InSize) 
+    FChromosome(const std::string& InName, int InSize)
         : FPolymer_Static(InName, InSize) {}
 
-    FChromosome(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InSymbol) 
+    FChromosome(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InSymbol)
         : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
@@ -330,13 +330,13 @@ public:
 
     FGene() {}
 
-    FGene(const std::string& InName) 
+    FGene(const std::string& InName)
         : FPolymer_Static(InName) {}
 
-    FGene(const std::string& InName, const std::string& InSymbol) 
+    FGene(const std::string& InName, const std::string& InSymbol)
         : Symbol(InSymbol), FPolymer_Static(InName) {}
 
-    FGene(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InSymbol) 
+    FGene(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InSymbol)
         : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
@@ -350,33 +350,33 @@ public:
 
     FRNA() {}
 
-    FRNA(const std::string& InName) 
+    FRNA(const std::string& InName)
         : FPolymer_Static(InName) {}
 
-    FRNA(const std::string& InName, const std::string& InType) 
+    FRNA(const std::string& InName, const std::string& InType)
         : Type(InType), FPolymer_Static(InName) {}
 
-    FRNA(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InType) 
+    FRNA(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InType)
         : Type(InType), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
         os << "[RNA] Id: " << Name << std::endl;
     }
 };
- 
+
 class FProtein : public FPolymer_Static {
 public:
     std::string Symbol;
 
-    FProtein() {}  
+    FProtein() {}
 
-    FProtein(const std::string& InName) 
+    FProtein(const std::string& InName)
         : FPolymer_Static(InName) {}
 
-    FProtein(const std::string& InName, const std::string& InSymbol) 
+    FProtein(const std::string& InName, const std::string& InSymbol)
         : Symbol(InSymbol), FPolymer_Static(InName) {}
 
-    FProtein(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InSymbol) 
+    FProtein(const std::string& InName, const std::map<std::string, float> InComposition, int InSize, const std::string& InSymbol)
         : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
 
     void Print(std::ostream& os) {
@@ -399,7 +399,7 @@ public:
         : FMolecule(InName) {}
 
     void Print(std::ostream& os) {
-        os << "[Enzyme] Id: " << Name; 
+        os << "[Enzyme] Id: " << Name;
         if (!Kinetics.empty()) {
             for (auto kinetics : Kinetics) {
                 os << "\t| Substrate:  " << kinetics.first;
@@ -427,10 +427,10 @@ public:
 
     FPolymerase() {}
 
-    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const float& InRate) 
+    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const float& InRate)
         : Template(InTemplate), Target(InTarget), Rate(InRate), FMolecule(InName) {}
 
-    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const std::string& InProcess, const float& InRate) 
+    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const std::string& InProcess, const float& InRate)
 //        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
         : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FMolecule(InName) {}
 
@@ -448,14 +448,14 @@ public:
 
 class FReaction {
 public:
-    std::string Name; 
+    std::string Name;
     std::vector<std::pair<std::string, int>> Stoichiometry;
 
     int Type = -1; // default
 
     virtual ~FReaction() {}
 
-    FReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry) 
+    FReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry)
         : Name(InName), Stoichiometry(InStoichiometry) {}
 
     bool CheckIfReactant(const std::string& Query) const {
@@ -519,7 +519,7 @@ public:
     void Print(std::ostream& os) {
         os << "[Regulatory Reaction]" ;
         Print_IdStoichiometry(os);
-        if 	(Effect == "Inhibition") 	{ os << "   Ki: "; } 
+        if 	(Effect == "Inhibition") 	{ os << "   Ki: "; }
         else if (Effect == "Activation") 	{ os << "   Ka: "; }
         os << K;
         if 	(n > 0) 			{ os << "\t| n: " << n; }
@@ -572,7 +572,7 @@ public:
         os << "  Polymerase: " << Polymerase << "\t| BuildingBlocks: ";
         for (auto& buildingblock : BuildingBlocks) {
             os << buildingblock << ", ";
-        } 
+        }
         os << std::endl;
     }
 };

@@ -149,6 +149,170 @@ void NExpressionStatement::Visit(FTraversalContext& Context) const {
 }
 
 // parsing routines
+//std::vector<std::pair<std::string, int>> NReaction::GetStoichFromReaction(bool bProductIsReaction=false) {
+//
+//    map<string, int> Stoichiometry;
+//		string Location = Reaction->Location.Name;
+//
+//    std::string Name;
+//    int Coefficient;
+//    for (const auto& reactant : Reaction->Reactants) {
+//        Name = reactant->Id.Name;
+//        Coefficient = -reactant->Coeff; // update when coeff is fully implemented in parser
+//        std::cout << "    Reactant: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+//        Stoichiometry[Name] = Coefficient;
+//
+//    }
+//
+//    for (const auto& product : Reaction->Products) {
+//        Name = product->Id.Name;
+//        Coefficient = product->Coeff; // update when coeff is fully implemented in parser
+//        std::cout << "    Product: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+//        if (Stoichiometry.count(Name) > 0) {
+//            Coefficient += Stoichiometry[Name];
+//            std::cout << "    Updated Stoichiometry: " << "(" << Coefficient << ") " << Name << ", " << std::endl;
+//        }
+//        Stoichiometry[Name] = Coefficient;
+//    }
+//
+//		if (!Location.empty()) {
+//        std::cout << "    Location: " << Location << endl;
+//		}
+//
+//    // convert stoichiometry map to vector of pairs and add new molecules to the system
+//    std::vector<std::pair<std::string, int>> Stoichiometry_Ordered;
+//
+//    for (auto& stoich : Stoichiometry) {
+//        std::pair<std::string, int> Stoich(stoich.first, stoich.second);
+//        Stoichiometry_Ordered.push_back(Stoich);
+//
+//        // Do not add new molecule if the product is a reaction name
+//        if ((stoich.second > 0) & (bProductIsReaction)) {
+//            continue;
+//        }
+//        FMolecule * NewMolecule = new FMolecule(stoich.first);
+//        if (Option.bDebug) { NewMolecule->Print(os); }
+//        Context.AddToMoleculeList(NewMolecule);
+//    } 
+//
+//    return Stoichiometry_Ordered;
+//}
+//            
+//void NReaction::AddEnzReaction(std::string ReactionName, std::string EnzymeName)
+//{
+//    float k = Float_Init;
+//    float krev = Float_Init;
+//
+//    // properties
+//    const auto& propertylist = Reaction->Property;
+//    for (auto& property :propertylist) {
+//        auto& Key = property->Key;
+//        // auto Value = property->Value->Evaluate();
+//        const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+//        auto Value = Value_Exp->EvaluateValueAndPrefix();
+//
+//        if (Key == "k") {
+//            k = std::stof(Value);
+//        } else if (Key == "krev") {
+//            krev = std::stof(Value);
+//        }
+//    }
+//
+//    std::vector<std::pair<std::string, int>> Stoichiometry = GetStoichFromReaction(Reaction);
+//    string Location = Reaction->Location.Name;
+//
+//    // for Enz_Standard Reaction
+//    // Fill in presumably irreversible reaction kinetic values 
+//    if      ((k != Float_Init) & (krev == Float_Init))   { krev = 0; }
+//    else if ((k == Float_Init) & (krev != Float_Init))   { k = 0; }
+//
+//    // add new enzymatic reaction to the system
+//    if ((k >= 0) & (krev >= 0)) {
+//        FEnz_StandardReaction *NewReaction = new FEnz_StandardReaction(ReactionName, Stoichiometry, EnzymeName, k, krev);
+//        if (Option.bDebug) { NewReaction->Print(os); }
+//        Context.AddToReactionList(NewReaction);
+//
+//    } else {
+//        FEnzymaticReaction *NewReaction = new FEnzymaticReaction(ReactionName, Stoichiometry, EnzymeName);
+//        if (Option.bDebug) { NewReaction->Print(os); }
+//        Context.AddToReactionList(NewReaction);
+//    }
+//}
+//
+//std::pair<std::string, std::vector<float>> NReaction::GetEnzKinetics(std::string EnzymeName)
+//{
+//    std::pair<std::string, std::vector<float>> SubConstPair;
+//    std::string Substrate;
+//    float kcat = Float_Init;
+//    float KM = Float_Init;                
+//
+//    // properties
+//    const auto& propertylist = Reaction->Property;
+//    for (auto& property :propertylist) {
+//        auto& Key = property->Key;
+//
+//        if (Key == "Substrate") {
+//            auto Value = property->Value->Evaluate();
+//            Substrate = std::stof(Value);
+//
+//        } else if ((Key == "kcat") || (Key == "kCat")) {
+//            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+//            auto Value = Value_Exp->EvaluateValueAndPrefix();
+//            kcat = std::stof(Value);
+//
+//        } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
+//            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+//            auto Value = Value_Exp->EvaluateValueAndPrefix();
+//            KM = std::stof(Value);
+//        }
+//    }
+//     
+//
+//    // if Substrate not defined by user input, search the database            
+//    if (Substrate.empty()) {
+//        Substrate = Context.QueryTable(EnzymeName, "Substrate", Context.EnzymeTable);
+//        if (!Substrate.empty()) {
+//            os << "  Substrate imported from database: " << Substrate << endl;
+//        }
+//    }
+//
+//    // import constants from database
+//    if (kcat == Float_Init) {
+//        string kcat_Database = Context.QueryTable(EnzymeName, "kcat", Context.EnzymeTable);
+//        if (!kcat_Database.empty()) {
+//            kcat = std::stof(kcat_Database);
+//            os << "  kcat imported from database: " << kcat_Database << endl;
+//        }
+//    }
+//    if (KM == Float_Init) {
+//        string KM_Database = Context.QueryTable(EnzymeName, "KM", Context.EnzymeTable);
+//        if (!KM_Database.empty()) {
+//            KM = std::stof(KM_Database);
+//            os << "  KM imported from database: " << KM_Database << endl;
+//        }
+//    }
+//
+//    // Use first reactant as substrate for MichaelisMenten if still not assigned
+//    // This may not always work with Michaelis Menten without database. Excluding common molecules will improve a chance.
+//    if (Substrate.empty()) {
+//        for (const auto& reactant : Reaction->Reactants) {
+//            if (reactant->Id.Name == EnzymeName) {
+//                continue;
+//            }
+//            Substrate = reactant->Id.Name;
+//            break;
+//        }
+//    }
+//
+//    Utils::Assertion(((kcat >= 0) & (KM >= 0)), "Kinetic constants are not properly extracted: " + EnzymeName);
+// 
+//    std::vector<float> KConstants{ kcat, KM };
+//    std::cout << EnzymeName << ", " << Substrate << ", " << kcat << ", " << KM << std::endl;
+//    SubConstPair = {Substrate, KConstants};
+//    
+//    return SubConstPair;
+//}
+
 std::string NVariableExpression::GetName() const {
     std::string Name_Out;
 

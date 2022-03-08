@@ -729,10 +729,10 @@ void TraversalNode(NBlock* InProgramBlock)
                 os << "    BuildingBlocks: [";
             }
             for (auto& BuildingBlock : BuildingBlocks) {
-                FSmallMolecule * NewSmallMolecule = new FSmallMolecule(BuildingBlock);
-                os << NewSmallMolecule->Name << ", ";
-//                if (Option.bDebug) { NewSmallMolecule->Print(os); }
-                Context.AddToMoleculeList(NewSmallMolecule);
+                FMolecule * NewMolecule = new FMolecule(BuildingBlock);
+                os << NewMolecule->Name << ", ";
+//                if (Option.bDebug) { NewMolecule->Print(os); }
+                Context.AddToMoleculeList(NewMolecule);
             }
             os << "]" << endl;
             FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
@@ -904,8 +904,8 @@ void TraversalNode(NBlock* InProgramBlock)
                     os << "@ AExpression parsing result" << endl;
                     os << "Name : " << Name << ", ";
                     os << "Amount: " << Utils::SciFloat2Str(Amount) << ", ";
-                    os << "Range: [";
-                    if (!Range.empty()) { os << JoinFloat2Str(Range) << "], "; }
+                    os << "Range: ";
+                    if (!Range.empty()) { os << "[" << JoinFloat2Str(Range) << "], "; }
                     else                { os << "None to [0], "; }
                     os << "bMolarity: "; if (bMolarity) { os << "true, ";  }
                                          else           { os << "false, "; }
@@ -923,14 +923,12 @@ void TraversalNode(NBlock* InProgramBlock)
 					// temporary simulation control system
 					if (Name == "SimSteps") {
 					    Sim_Steps = static_cast<int>(Amount);
-					    os << endl;
-					    os << "# Simulation Control" << endl;
-					    os << "SimSteps = " << Sim_Steps << endl;
+					    os << "# Temp Sim Control: SimSteps = " << Sim_Steps << endl;
 					    continue;
 					
 					} else if (Name == "SimRes") {
 					    Sim_Resolution = static_cast<int>(Amount);
-					    os << "SimResolution = " << Sim_Resolution << endl;
+					    os << "# Temp Sim Control: SimResolution = " << Sim_Resolution << endl;
 					    continue;
 					}
 
@@ -1499,8 +1497,8 @@ void Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 
 void WriteSimModule()
 {
-    // write simulation.py
-    std::cout << std::endl << "Generating Simulation_Python module..." << std::endl;
+    // write SimModule.py
+    std::cout << std::endl << "Generating SimModule..." << std::endl;
 
     std::ofstream ofs(Option.SimModuleFile.c_str());
     std::string endl = "\n";
@@ -1511,7 +1509,8 @@ void WriteSimModule()
     // ofs << "import tensorflow as tf" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
-    ofs << "import SimulationFunctions as sim" << endl;
+    ofs << "import SimFunctions as sim" << endl;
+    // ofs << "import SimIdx as idx" << endl;
     ofs << "import plot" << endl;
     ofs << endl;
 
@@ -1531,6 +1530,13 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ in+ in+ "# State Arrays" << endl;
+
+    ofs << in+ in+ in+ "# Temporary legend attribute" << endl;
+    ofs << in+ in+ in+ "self.MolNames = list()" << endl;
+    ofs << in+ in+ in+ "self.Legends = list()" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
     ofs << in+ in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
     ofs << in+ in+ in+ "self.dCount_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
     ofs << endl;
@@ -1667,12 +1673,18 @@ void WriteSimModule()
             if (Polymerase->Process == "DNAReplication") {
                 std::cout << "\t";
             }
-            std::cout << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Taret.size(): " << Idx_Target.size() << endl;
+            std::cout << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Target.size(): " << Idx_Target.size() << endl;
             Utils::Assertion((Idx_Template.size() == Idx_Target.size()), "# of Target and Target do not match for Polymerase: " + PolymeraseName);   
  
             Print_SetUpPolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
         }
     }
+
+    // for legends
+    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
+    ofs << in+ in+ in+ "self.MolNames = [" << JoinStr2Str(MolNames) << "]" << endl;
+    ofs << in+ in+ in+ "self.Legends = ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
+    ofs << endl;
 
     // Initialize all molecule counts
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
@@ -1694,11 +1706,12 @@ void WriteSimModule()
     ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
     ofs << endl;
 
+    ofs << in+ in+ "def GetMolNames(self):" << endl;
+    ofs << in+ in+ in+ "return self.MolNames" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "def ExportLegend(self):" << endl;
-    // for legends
-    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
-    // std::cout << "Legend_MoleNames: " << JoinStr2Str(MolNames) << endl;
-    ofs << in+ in+ in+ "return ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
+    ofs << in+ in+ in+ "return self.Legends" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def ExportData(self, Time):" << endl;
@@ -1800,14 +1813,11 @@ void WriteSimModule()
 //    }
     ofs << endl;
 
-    if (Option.bDebug) {
-        ofs << in+ in+ in+ "# Debugging" << endl;
-        ofs << in+ in+ in+ "self.Debug_Idx_Molecules = list()" << endl;
-        ofs << in+ in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
-        ofs << endl;
-    }
+    ofs << in+ in+ in+ "# Debugging" << endl;
+    ofs << in+ in+ in+ "self.Debug_Idx_Molecules = list()" << endl;
+    ofs << endl;
 
-    ofs << in+ in+ "def Initialize(self, InN_SimSteps, InTimeResolution):" << endl;
+    ofs << in+ in+ "def Initialize(self, InN_SimSteps=1000, InTimeResolution=100):" << endl;
     ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
     ofs << in+ in+ in+ "self.N_SimSteps = np.asmatrix([InN_SimSteps])" << endl;
     ofs << in+ in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
@@ -1870,9 +1880,59 @@ void WriteSimModule()
     ofs << in+ in+ in+ "# Legend Export" << endl;
     ofs << in+ in+ in+ "self.Dataset.Legend = self.State.ExportLegend()" << endl;
     ofs << in+ in+ in+ "self.DataManager.SetLegend(self.Dataset.Legend)" << endl;
+    ofs << endl;
 
     ofs << in+ in+ in+ "# Data Export" << endl;
     ofs << in+ in+ in+ "self.ExportData()" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def SimLoop(self):" << endl;
+    ofs << in+ in+ in+ "# Reset Substrate Count" << endl;
+    ofs << in+ in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Run Reactions" << endl;
+
+    for (auto& Type : StandardReactionTypes) {
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
+        if (!ReactionSubList.empty()) {
+            ofs << in+ in+ in+ "self.StandardReactions()" << endl;
+            ofs << endl;
+            break;
+        }
+    }
+
+    for (auto& Type : EnzReactionTypes) {
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
+        if (!ReactionSubList.empty()) {
+            ofs << in+ in+ in+ "self.EnzymaticReactions()" << endl;
+            ofs << endl;
+            break;
+        }
+    }
+
+    // TODO: encapsulate this part with each polymerase to allow more process-specific customization
+    if (!PolymeraseList.empty()){
+        ofs << in+ in+ in+ "self.InitiationReactions()" << endl;
+        ofs << in+ in+ in+ "self.ElongationReactions()" << endl;
+        ofs << in+ in+ in+ "self.TerminationReactions()" << endl;
+        ofs << endl;
+    }
+
+    if (Option.bDebug) {
+        ofs << in+ in+ in+ "self.Debug_PrintCounts()" << endl;
+        ofs << endl;
+    }
+
+    ofs << in+ in+ in+ "# Update Substrate Count" << endl;
+    ofs << in+ in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "# Restore Substrate Count for Sustained Substrate Influx" << endl;
+    ofs << in+ in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def Run(self):" << endl;
@@ -1882,50 +1942,7 @@ void WriteSimModule()
     ofs << in+ in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
     ofs << in+ in+ in+ in+ "self.SimStep += 1" << endl;
 
-    ofs << in+ in+ in+ in+ "# Reset Substrate Count" << endl;
-    ofs << in+ in+ in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
-    ofs << endl;
- 
-    ofs << in+ in+ in+ in+ "# Run Reactions" << endl;
-
-    for (auto& Type : StandardReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
-        if (!ReactionSubList.empty()) {
-            ofs << in+ in+ in+ in+ "self.StandardReactions()" << endl;
-            ofs << endl;
-            break;
-        }
-    }
-
-    for (auto& Type : EnzReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
-        if (!ReactionSubList.empty()) {
-            ofs << in+ in+ in+ in+ "self.EnzymaticReactions()" << endl;
-            ofs << endl;
-            break;
-        }
-    }
-
-    // TODO: encapsulate this part with each polymerase to allow more process-specific customization
-    if (!PolymeraseList.empty()){
-        ofs << in+ in+ in+ in+ "self.InitiationReactions()" << endl;
-        ofs << in+ in+ in+ in+ "self.ElongationReactions()" << endl;
-        ofs << in+ in+ in+ in+ "self.TerminationReactions()" << endl;
-        ofs << endl;
-    }
-                        
-    if (Option.bDebug) {
-        ofs << in+ in+ in+ in+ "self.Debug_PrintCounts()" << endl;
-        ofs << endl;
-    }
-  
-    ofs << in+ in+ in+ in+ "# Update Substrate Count" << endl;
-    ofs << in+ in+ in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ in+ in+ "# Restore Substrate Count for Sustained Substrate Influx" << endl;
-    ofs << in+ in+ in+ in+ "self.RestoreMoleculeCount()" << endl;
-    ofs << endl;
+    ofs << in+ in+ in+ in+ "self.SimLoop()" << endl;
 
     ofs << in+ in+ in+ in+ "# Trigger Event on Substrate Count" << endl;
     ofs << in+ in+ in+ in+ "self.TriggerEventMoleculeCount()" << endl;
@@ -2268,9 +2285,18 @@ void WriteSimModule()
 //            ofs << in+ in+ in+ "pass" << endl;
 //            ofs << endl;
 //    }
-    
+
     ofs << in+ in+ "# Useful routines" << endl;
+
+    ofs << in+ in+ "def GetSimTime(self):" << endl;
+    ofs << in+ in+ in+ "return self.SimStep / self.SimTimeResolutionPerSecond" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "def GetCount(self, Idx):" << endl;
+    ofs << in+ in+ in+ "return sim.CountToConc(np.take(self.State.Count_All, Idx))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def GetConcentration(self, Idx):" << endl;
     ofs << in+ in+ in+ "return np.take(self.State.Count_All, Idx)" << endl;
     ofs << endl;
 
@@ -2280,6 +2306,21 @@ void WriteSimModule()
     ofs << in+ in+ in+ "dCount_All_New = self.State.dCount_All + dCountToAdd" << endl;
     ofs << in+ in+ in+ "ZeroTest = dCount_All_New + self.State.Count_All" << endl;
     ofs << in+ in+ in+ "self.State.dCount_All =  np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
+    ofs << endl;
+
+    // TODO: Use SimIdx in the future
+    ofs << in+ in+ "# Temporary routines" << endl;
+
+    ofs << in+ in+ "def GetMolIdx(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.State.GetMolNames().index(Name)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def GetCountByName(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.GetCount(self.GetMolIdx(Name))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "def GetConcentrationByName(self, Name):" << endl;
+    ofs << in+ in+ in+ "return self.GetConcentration(self.GetMolIdx(Name))" << endl;
     ofs << endl;
 
     ofs << in+ in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
@@ -2386,35 +2427,35 @@ void WriteSimModule()
 
         ofs << in+ in+ in+ "if Debug_Names_Molecules:" << endl;
         ofs << in+ in+ in+ in+ "for Name in Debug_Names_Molecules:" << endl;
-        ofs << in+ in+ in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.Legend.index(Name))" << endl;
+        ofs << in+ in+ in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.GetMolNames().index(Name))" << endl;
         ofs << in+ in+ in+ "else:" << endl;
-        ofs << in+ in+ in+ in+ "self.Debug_Idx_Molecules = list(range(len(self.State.ExportLegend())))" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_Idx_Molecules = list(range(len(self.State.GetMolNames())))" << endl;
         ofs << endl;
 
         ofs << in+ in+ "def Debug_PrintCounts(self):" << endl;
-
+        ofs << in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
         ofs << in+ in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
-        ofs << in+ in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
         ofs << in+ in+ in+ in+ "self.Debug_PrintCount(Idx)" << endl;
-        ofs << in+ in+ in+ in+ "print()" << endl;
-        ofs << in+ in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+        ofs << in+ in+ in+ "print()" << endl;
+        ofs << in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+        ofs << in+ in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
         ofs << in+ in+ in+ in+ "self.Debug_PrintdCount(Idx)" << endl;
-        ofs << in+ in+ in+ in+ "print()" << endl;
+        ofs << in+ in+ in+ "print()" << endl;
         ofs << endl;
 
         ofs << in+ in+ "def Debug_PrintSimStepTime(self):" << endl;
-        ofs << in+ in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
+        ofs << in+ in+ in+ "Time = self.GetSimTime()" << endl;
         ofs << in+ in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end='\t| ')" << endl;
         ofs << endl;
 
         ofs << in+ in+ "def Debug_PrintCount(self, Idx):" << endl;
-        ofs << in+ in+ in+ "print(' ' + self.State.ExportLegend()[Idx], end=': ')" << endl;
-        ofs << in+ in+ in+ "print(self.State.Count()[0][Idx], end=' | ')" << endl;
+        ofs << in+ in+ in+ "print(' ' + self.State.GetMolNames()[Idx], end=': ')" << endl;
+        ofs << in+ in+ in+ "print('{:010e}'.format(self.State.Count_All[0][Idx]), end=' | ')" << endl;
         ofs << endl;
 
         ofs << in+ in+ "def Debug_PrintdCount(self, Idx):" << endl;
-        ofs << in+ in+ in+ "print('d' + self.State.ExportLegend()[Idx], end=': ')" << endl;
-        ofs << in+ in+ in+ "print(self.State.dCount()[0][Idx], end=' | ')" << endl;
+        ofs << in+ in+ in+ "print('d' + self.State.GetMolNames()[Idx], end=': ')" << endl;
+        ofs << in+ in+ in+ "print('{:010e}'.format(self.State.dCount_All[0][Idx]), end=' | ')" << endl;
         ofs << endl;
 
     }
@@ -2500,7 +2541,7 @@ int main(int argc, char *argv[])
             Keys.emplace_back("rnaId");
             Context.GeneTable.Dump(Keys);
 
-            Keys.clear();
+            Keys.clear();   
             Keys.emplace_back("id");
             Keys.emplace_back("name");
             Keys.emplace_back("type");
@@ -2595,6 +2636,7 @@ int main(int argc, char *argv[])
 
     if (Option.bSimPython) {
 
+        WriteSimIdx();
         WriteSimModule();
 
         cout << Option.SimModuleFile << endl;
