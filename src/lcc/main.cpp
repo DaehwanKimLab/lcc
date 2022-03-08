@@ -2639,7 +2639,7 @@ int main(int argc, char *argv[])
 
     if (Option.bSimPython) {
 
-        WriteSimIdx();
+//        WriteSimIdx();
         WriteSimModule();
 
         cout << Option.SimModuleFile << endl;
