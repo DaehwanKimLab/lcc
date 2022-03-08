@@ -1025,28 +1025,28 @@ std::string GetRegType(std::string Type)
 }
 void Print_InitializeStandardReaction(ofstream& ofs, std::string Type)
 {
-    ofs << in+ in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "# " << Type << endl;
 
     // Standard vs. MichaelisMenten
-    ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
-    ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
     }
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
     }
     ofs << endl;
 
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ in+ "self.Const_K_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Const_n_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_K_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_n_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
     }
     ofs << endl;
      
-    ofs << in+ in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
     ofs << endl;
 }
 
@@ -1137,63 +1137,63 @@ void Print_SetUpStandardReaction(ofstream& ofs, std::string Type, std::vector<co
         }
     }
  
-    ofs << in+ in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "# " << Type << endl;
 
-    ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+    ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
+    ofs << in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
     }
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
     }
  
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
-        ofs << in+ in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
-        ofs << in+ in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+        ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
+        ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
     }
     ofs << endl;
     
-    ofs << in+ in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
     ofs << endl;
 }
 
 void Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type)
 {
-    ofs << in+ in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "# " << Type << endl;
 
-    ofs << in+ in+ in+ "self.Idx_Enz_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Enz_" << Type << " = None" << endl;
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
-        ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
+            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
         }
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
+            ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
         }
  
     } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
-        ofs << in+ in+ in+ "self.Const_kcat_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Const_KM_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Idx_EnzSub_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_kcat_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_KM_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_EnzSub_" << Type << " = None" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ in+ "self.Const_K_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Const_n_" << Type << " = None" << endl;
-        ofs << in+ in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_K_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_n_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
     }
     ofs << endl;
     
-    ofs << in+ in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
     ofs << endl;
 }
 
@@ -1314,49 +1314,49 @@ void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<cons
     // Check Idx lengths
     Utils::Assertion((Idx_Reactants.size() == Idx_Products.size()), "# of parsed reactants and products do not match");
 
-    ofs << in+ in+ in+ "# " << Type << endl;
-    ofs << in+ in+ in+ "self.Idx_Enz_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
+    ofs << in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "self.Idx_Enz_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
-        ofs << in+ in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
-        ofs << in+ in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+        ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
+        ofs << in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
+            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
         }
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
+            ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
         }
  
     } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
-        ofs << in+ in+ in+ "self.Const_kcat_" << Type << " = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
-        ofs << in+ in+ in+ "self.Const_KM_" << Type << " = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
-        ofs << in+ in+ in+ "self.Idx_EnzSub_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
+        ofs << in+ in+ "self.Const_kcat_" << Type << " = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
+        ofs << in+ in+ "self.Const_KM_" << Type << " = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
+        ofs << in+ in+ "self.Idx_EnzSub_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
-        ofs << in+ in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
-        ofs << in+ in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+        ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
+        ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
     }
     ofs << endl;
     
-    ofs << in+ in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
-    ofs << in+ in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
     ofs << endl;
 }
 
 void Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
-    ofs << in+ in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = None" << endl;
+    ofs << in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = None" << endl;
 
     // Initiation
-    ofs << in+ in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_Template_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_TemplateSubset" << Polymerase->Process << " = None" << endl; // local indexing within the template population for mRNA in RNA for protein translation
-    		ofs << in+ in+ in+ "self.Weight_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Template_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_TemplateSubset" << Polymerase->Process << " = None" << endl; // local indexing within the template population for mRNA in RNA for protein translation
+    		ofs << in+ in+ "self.Weight_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = None" << endl;
     ofs << endl;
 
     // Check if template exists as a target of any polymerases in the system
@@ -1370,31 +1370,31 @@ void Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polyme
     } 
 
     if (!TemplateExists) {
-        ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = None" << endl;
+        ofs << in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = None" << endl;
     }
 
     // Elongation
-    ofs << in+ in+ in+ "# " << Polymerase->Process << " Initialize ElongationReaction" << endl;
-    ofs << in+ in+ in+ "self.Rate_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = None" << endl;
-    ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = None" << endl;
+    ofs << in+ in+ "# " << Polymerase->Process << " Initialize ElongationReaction" << endl;
+    ofs << in+ in+ "self.Rate_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = None" << endl;
+    ofs << in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = None" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = None" << endl; 
+    ofs << in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = None" << endl;
     ofs << endl;
 }
 
 void Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold)
 {
-    ofs << in+ in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << FreqBBFileName << "'))" << endl;
+    ofs << in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << FreqBBFileName << "'))" << endl;
 
     // Initiation
-    ofs << in+ in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Idx_Pol) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Template_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Template) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_TemplateSubset_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_TemplateSubset) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Target_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Target) << "])" << endl;
-    		ofs << in+ in+ in+ "self.Weight_" << Polymerase->Process << " = np.array([" << "1" << "])" << endl;
+    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Idx_Pol) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Template_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Template) << "])" << endl;
+    ofs << in+ in+ "self.Idx_TemplateSubset_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_TemplateSubset) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Target_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Target) << "])" << endl;
+    		ofs << in+ in+ "self.Weight_" << Polymerase->Process << " = np.array([" << "1" << "])" << endl;
     ofs << endl;
 
     // Check if template exists as a target of any polymerases in the system
@@ -1407,7 +1407,7 @@ void Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase,
     } 
 
     if (!TemplateExists) {
-        ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
+        ofs << in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
         ofs << endl;
     }
 
@@ -1419,47 +1419,47 @@ void Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase,
     else    				                        {Template_Min = 0; Template_Max = 1; Target_Min = 0; Target_Max = 1;} // improve exception handling
         
 
-    ofs << in+ in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = " << std::to_string(Threshold) << endl;
+    ofs << in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = " << std::to_string(Threshold) << endl;
     ofs << endl;
-    ofs << in+ in+ in+ "Count_Template_" << Polymerase->Process << " = np.random.randint(" << std::to_string(Template_Min) << ", high=" << std::to_string(Template_Max) << ", size=self.Idx_Template_" << Polymerase->Process << ".shape[1])" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Template_" << Polymerase->Process << ", Count_Template_" << Polymerase->Process << ", axis=1)" << endl;
+    ofs << in+ in+ "Count_Template_" << Polymerase->Process << " = np.random.randint(" << std::to_string(Template_Min) << ", high=" << std::to_string(Template_Max) << ", size=self.Idx_Template_" << Polymerase->Process << ".shape[1])" << endl;
+    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Template_" << Polymerase->Process << ", Count_Template_" << Polymerase->Process << ", axis=1)" << endl;
     ofs << endl; 
 
-    ofs << in+ in+ in+ "Count_Target_" << Polymerase->Process << " = np.random.randint(" << std::to_string(Target_Min) << ", high=" << std::to_string(Target_Max) << ", size=self.Idx_Target_" << Polymerase->Process << ".shape[1])" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Target_" << Polymerase->Process << ", Count_Target_" << Polymerase->Process << ", axis=1)" << endl;
+    ofs << in+ in+ "Count_Target_" << Polymerase->Process << " = np.random.randint(" << std::to_string(Target_Min) << ", high=" << std::to_string(Target_Max) << ", size=self.Idx_Target_" << Polymerase->Process << ".shape[1])" << endl;
+    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Target_" << Polymerase->Process << ", Count_Target_" << Polymerase->Process << ", axis=1)" << endl;
     ofs << endl; 
 
 
     // Elongation
-    ofs << in+ in+ in+ "# " << Polymerase->Process << " SetUp ElongationReaction" << endl;
-    ofs << in+ in+ in+ "self.Rate_" << Polymerase->Process << " = " << std::to_string(int(Rate)) << endl;
-    ofs << in+ in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << MaxLenFileName << "'))" << endl;
-    ofs << in+ in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
+    ofs << in+ in+ "# " << Polymerase->Process << " SetUp ElongationReaction" << endl;
+    ofs << in+ in+ "self.Rate_" << Polymerase->Process << " = " << std::to_string(int(Rate)) << endl;
+    ofs << in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << MaxLenFileName << "'))" << endl;
+    ofs << in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Context.GetIdxByName_MoleculeList(Polymerase->Name)) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_PolSub) << "])" << endl;
-    ofs << in+ in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_PolBB) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Context.GetIdxByName_MoleculeList(Polymerase->Name)) << "])" << endl;
+    ofs << in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_PolSub) << "])" << endl;
+    ofs << in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_PolBB) << "])" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Count_Pol_" << Polymerase->Process << " = np.asmatrix(np.full(len(self.Idx_Pol_" << Polymerase->Process << "), 100))" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Pol_" << Polymerase->Process << ", Count_Pol_" << Polymerase->Process << ", axis=1)" << endl;
+    ofs << in+ in+ "Count_Pol_" << Polymerase->Process << " = np.asmatrix(np.full(len(self.Idx_Pol_" << Polymerase->Process << "), 100))" << endl;
+    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Pol_" << Polymerase->Process << ", Count_Pol_" << Polymerase->Process << ", axis=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Count_PolSub_" << Polymerase->Process << " = np.asmatrix(np.full(len(self.Idx_PolSub_" << Polymerase->Process << "), 1000))" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolSub_" << Polymerase->Process << ", Count_PolSub_" << Polymerase->Process << ", axis=1)" << endl;
+    ofs << in+ in+ "Count_PolSub_" << Polymerase->Process << " = np.asmatrix(np.full(len(self.Idx_PolSub_" << Polymerase->Process << "), 1000))" << endl;
+    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolSub_" << Polymerase->Process << ", Count_PolSub_" << Polymerase->Process << ", axis=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Count_PolBB_" << Polymerase->Process << " = np.random.randint(4000, high=5000, size=self.Freq_BB_" << Polymerase->Target << "s.shape[1])" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolBB_" << Polymerase->Process << ", Count_PolBB_" << Polymerase->Process << ", axis=1)" << endl;
+    ofs << in+ in+ "Count_PolBB_" << Polymerase->Process << " = np.random.randint(4000, high=5000, size=self.Freq_BB_" << Polymerase->Target << "s.shape[1])" << endl;
+    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolBB_" << Polymerase->Process << ", Count_PolBB_" << Polymerase->Process << ", axis=1)" << endl;
     ofs << endl; 
 
 }
 
 void Print_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
-    ofs << in+ in+ in+ "# " << Polymerase->Process << endl;
-    ofs << in+ in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Initiation(";
+    ofs << in+ in+ "# " << Polymerase->Process << endl;
+    ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Initiation(";
                        ofs << "self.State.Len_Nascent" << Polymerase->Template << "s, ";
                        ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
                        ofs << "self.State.Idx_Pol_" << Polymerase->Process << ", ";
@@ -1472,8 +1472,8 @@ void Print_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 
 void Print_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
-    ofs << in+ in+ in+ "# " << Polymerase->Process << endl;
-    ofs << in+ in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Elongation(";
+    ofs << in+ in+ "# " << Polymerase->Process << endl;
+    ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Elongation(";
                        ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
                        ofs << "self.State.MaxLen_Nascent" << Polymerase->Target << "s, ";
                        ofs << "self.State.Rate_" << Polymerase->Process << ", ";
@@ -1486,8 +1486,8 @@ void Print_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 
 void Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
-    ofs << in+ in+ in+ "# " << Polymerase->Process << endl;
-    ofs << in+ in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Termination(";
+    ofs << in+ in+ "# " << Polymerase->Process << endl;
+    ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Termination(";
                        ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
                        ofs << "self.State.MaxLen_Nascent" << Polymerase->Target << "s, ";
                        ofs << "self.State.Idx_Target_" << Polymerase->Process << ")" << endl;
@@ -1514,31 +1514,27 @@ void WriteSimModule()
     ofs << "import plot" << endl;
     ofs << endl;
 
-    // BODY
-    ofs << "def main():   # add verbose" << endl;
-    ofs << endl;
-
     // user input
-    ofs << in+ "N_SimSteps = " << Sim_Steps << endl;
-    ofs << in+ "SimStepTimeResolution = " << Sim_Resolution << endl;
+    ofs << "N_SimSteps = " << Sim_Steps << endl;
+    ofs << "SimStepTimeResolution = " << Sim_Resolution << endl;
     ofs << endl;
 
     // class FState 
-    ofs << in+ "class FState:" << endl;
-    ofs << in+ in+ "def __init__(self):" << endl;
-    ofs << in+ in+ in+ "self.Vol = 0" << endl;
+    ofs << "class FState:" << endl;
+    ofs << in+ "def __init__(self):" << endl;
+    ofs << in+ in+ "self.Vol = 0" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# State Arrays" << endl;
+    ofs << in+ in+ "# State Arrays" << endl;
 
-    ofs << in+ in+ in+ "# Temporary legend attribute" << endl;
-    ofs << in+ in+ in+ "self.MolNames = list()" << endl;
-    ofs << in+ in+ in+ "self.Legends = list()" << endl;
+    ofs << in+ in+ "# Temporary legend attribute" << endl;
+    ofs << in+ in+ "self.MolNames = list()" << endl;
+    ofs << in+ in+ "self.Legends = list()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
-    ofs << in+ in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
-    ofs << in+ in+ in+ "self.dCount_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ "self.dCount_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
     ofs << endl;
 
     // for standard reactions
@@ -1583,8 +1579,8 @@ void WriteSimModule()
         }
     }
 
-    ofs << in+ in+ "def Initialize(self):" << endl;
-    ofs << in+ in+ in+ "self.Vol = 1" << endl;
+    ofs << in+ "def Initialize(self):" << endl;
+    ofs << in+ in+ "self.Vol = 1" << endl;
     ofs << endl;
 
     // Print SetUpStandardReaction for each Reaction Type 
@@ -1682,8 +1678,8 @@ void WriteSimModule()
 
     // for legends
     std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
-    ofs << in+ in+ in+ "self.MolNames = [" << JoinStr2Str(MolNames) << "]" << endl;
-    ofs << in+ in+ in+ "self.Legends = ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
+    ofs << in+ in+ "self.MolNames = [" << JoinStr2Str(MolNames) << "]" << endl;
+    ofs << in+ in+ "self.Legends = ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
     // Initialize all molecule counts
@@ -1698,61 +1694,61 @@ void WriteSimModule()
         MolarityFactor_Molecules.push_back(MolarityFactor);
     }
 
-    ofs << in+ in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
-    ofs << in+ in+ in+ "Count_Mol = np.array([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
-    ofs << in+ in+ in+ "MolarityFactor_Mol = np.array([" << JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
-    ofs << in+ in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
-    ofs << in+ in+ in+ "Count_Mol *= MolarityFactor_Mol" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
+    ofs << in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
+    ofs << in+ in+ "Count_Mol = np.array([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
+    ofs << in+ in+ "MolarityFactor_Mol = np.array([" << JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
+    ofs << in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
+    ofs << in+ in+ "Count_Mol *= MolarityFactor_Mol" << endl;
+    ofs << in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def GetMolNames(self):" << endl;
-    ofs << in+ in+ in+ "return self.MolNames" << endl;
+    ofs << in+ "def GetMolNames(self):" << endl;
+    ofs << in+ in+ "return self.MolNames" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def ExportLegend(self):" << endl;
-    ofs << in+ in+ in+ "return self.Legends" << endl;
+    ofs << in+ "def ExportLegend(self):" << endl;
+    ofs << in+ in+ "return self.Legends" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def ExportData(self, Time):" << endl;
-    ofs << in+ in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
+    ofs << in+ "def ExportData(self, Time):" << endl;
+    ofs << in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
     int i = 0;
     int i_SimStep = i + 1;
-    ofs << in+ in+ in+ "Data[0, " << i << ":" << i_SimStep << "] = Time" << endl;
+    ofs << in+ in+ "Data[0, " << i << ":" << i_SimStep << "] = Time" << endl;
 
     int i_Vol = i_SimStep + 1;
-    ofs << in+ in+ in+ "Data[0, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
+    ofs << in+ in+ "Data[0, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
 
     int i_Count_Mol = i_Vol + MolNames.size();
-    ofs << in+ in+ in+ "Data[0, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
+    ofs << in+ in+ "Data[0, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
 
-    ofs << in+ in+ in+ "return Data" << endl;
+    ofs << in+ in+ "return Data" << endl;
     ofs << endl;
     
     // class FDataset
-    ofs << in+ "class FDataset:" << endl;
-    ofs << in+ in+ "def __init__(self):" << endl;
-    ofs << in+ in+ in+ "self.Legend = list()" << endl;
-    ofs << in+ in+ in+ "self.Data = None" << endl;
+    ofs << "class FDataset:" << endl;
+    ofs << in+ "def __init__(self):" << endl;
+    ofs << in+ in+ "self.Legend = list()" << endl;
+    ofs << in+ in+ "self.Data = None" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def PrintLegend(self):" << endl;
-    ofs << in+ in+ in+ "print(self.Legend)" << endl;
+    ofs << in+ "def PrintLegend(self):" << endl;
+    ofs << in+ in+ "print(self.Legend)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def PrintData(self):" << endl;
-    ofs << in+ in+ in+ "print(self.Data)" << endl;
+    ofs << in+ "def PrintData(self):" << endl;
+    ofs << in+ in+ "print(self.Data)" << endl;
     ofs << endl;
 
     // class FSimulation
-    ofs << in+ "class FSimulation:" << endl;
-    ofs << in+ in+ "def __init__(self, InState, InDataset, InDataManager):" << endl;
-    ofs << in+ in+ in+ "self.N_SimSteps = 0" << endl;
-    ofs << in+ in+ in+ "self.SimStep = 0" << endl;
-    ofs << in+ in+ in+ "self.SimTimeResolutionPerSecond = 0" << endl;
-    ofs << in+ in+ in+ "self.State = InState" << endl;
-    ofs << in+ in+ in+ "self.Dataset = InDataset" << endl;
-    ofs << in+ in+ in+ "self.DataManager = InDataManager" << endl;
+    ofs << "class FSimulation:" << endl;
+    ofs << in+ "def __init__(self, InState, InDataset, InDataManager):" << endl;
+    ofs << in+ in+ "self.N_SimSteps = 0" << endl;
+    ofs << in+ in+ "self.SimStep = 0" << endl;
+    ofs << in+ in+ "self.SimTimeResolutionPerSecond = 0" << endl;
+    ofs << in+ in+ "self.State = InState" << endl;
+    ofs << in+ in+ "self.Dataset = InDataset" << endl;
+    ofs << in+ in+ "self.DataManager = InDataManager" << endl;
     ofs << endl;
 
     // Restore
@@ -1765,7 +1761,7 @@ void WriteSimModule()
         }
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                ofs << in+ in+ in+ "self.Idx_Restore_" << Name << " = None" << endl;
+                ofs << in+ in+ "self.Idx_Restore_" << Name << " = None" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1781,7 +1777,7 @@ void WriteSimModule()
         }
         if ((count->End >= 0) & (count->Begin != count->End)) {
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                ofs << in+ in+ in+ "self.Idx_Event_" << Name << " = None" << endl;
+                ofs << in+ in+ "self.Idx_Event_" << Name << " = None" << endl;
                 Names.push_back(Name);            
             }
         }
@@ -1793,7 +1789,7 @@ void WriteSimModule()
 //    for (auto& molecule : Context.MoleculeList) {
 //        auto& count = molecule->Count;
 //        if (count.Fixed) {
-//            ofs << in+ in+ in+ "self.Idx_Restore_" << molecule->Name << " = None" << endl;
+//            ofs << in+ in+ "self.Idx_Restore_" << molecule->Name << " = None" << endl;
 //        }
 //    }
 //
@@ -1807,20 +1803,20 @@ void WriteSimModule()
 //    if (!Context.PathwayList.empty()){
 //        for (auto& Pathway : Context.PathwayList) {
 //            if (Pathway.Name == "TCA") {
-//                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = None" << endl;
+//                ofs << in+ in+ "self.Idx_Restore_" << Pathway.Name << " = None" << endl;
 //            }
 //        }
 //    }
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Debugging" << endl;
-    ofs << in+ in+ in+ "self.Debug_Idx_Molecules = list()" << endl;
+    ofs << in+ in+ "# Debugging" << endl;
+    ofs << in+ in+ "self.Debug_Idx_Molecules = list()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def Initialize(self, InN_SimSteps=1000, InTimeResolution=100):" << endl;
-    ofs << in+ in+ in+ "print('Simulation Initialized...')" << endl;
-    ofs << in+ in+ in+ "self.N_SimSteps = np.asmatrix([InN_SimSteps])" << endl;
-    ofs << in+ in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
+    ofs << in+ "def Initialize(self, InN_SimSteps=1000, InTimeResolution=100):" << endl;
+    ofs << in+ in+ "print('Simulation Initialized...')" << endl;
+    ofs << in+ in+ "self.N_SimSteps = np.asmatrix([InN_SimSteps])" << endl;
+    ofs << in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
     ofs << endl;
 
     // Restore
@@ -1834,7 +1830,7 @@ void WriteSimModule()
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ in+ "self.Idx_Restore_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+                ofs << in+ in+ "self.Idx_Restore_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1851,7 +1847,7 @@ void WriteSimModule()
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ in+ "self.Idx_Event_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+                ofs << in+ in+ "self.Idx_Event_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1865,41 +1861,41 @@ void WriteSimModule()
 //
 //                MoleculeToRestore = "acetyl-CoA";
 //                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
-//                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
+//                ofs << in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
 //
 //	                MoleculeToRestore.clear();
 //                MoleculeToRestore = "malate";
 //                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
-//                ofs << in+ in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
+//                ofs << in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
 //            }
 //        }
 //    }
-    ofs << in+ in+ in+ "self.State.Initialize()" << endl;
+    ofs << in+ in+ "self.State.Initialize()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Legend Export" << endl;
-    ofs << in+ in+ in+ "self.Dataset.Legend = self.State.ExportLegend()" << endl;
-    ofs << in+ in+ in+ "self.DataManager.SetLegend(self.Dataset.Legend)" << endl;
+    ofs << in+ in+ "# Legend Export" << endl;
+    ofs << in+ in+ "self.Dataset.Legend = self.State.ExportLegend()" << endl;
+    ofs << in+ in+ "self.DataManager.SetLegend(self.Dataset.Legend)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Data Export" << endl;
-    ofs << in+ in+ in+ "self.ExportData()" << endl;
+    ofs << in+ in+ "# Data Export" << endl;
+    ofs << in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
+    ofs << in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def SimLoop(self):" << endl;
-    ofs << in+ in+ in+ "# Reset Substrate Count" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << in+ "def SimLoop(self):" << endl;
+    ofs << in+ in+ "# Reset Substrate Count" << endl;
+    ofs << in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Run Reactions" << endl;
+    ofs << in+ in+ "# Run Reactions" << endl;
 
     for (auto& Type : StandardReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            ofs << in+ in+ in+ "self.StandardReactions()" << endl;
+            ofs << in+ in+ "self.StandardReactions()" << endl;
             ofs << endl;
             break;
         }
@@ -1908,7 +1904,7 @@ void WriteSimModule()
     for (auto& Type : EnzReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            ofs << in+ in+ in+ "self.EnzymaticReactions()" << endl;
+            ofs << in+ in+ "self.EnzymaticReactions()" << endl;
             ofs << endl;
             break;
         }
@@ -1916,56 +1912,56 @@ void WriteSimModule()
 
     // TODO: encapsulate this part with each polymerase to allow more process-specific customization
     if (!PolymeraseList.empty()){
-        ofs << in+ in+ in+ "self.InitiationReactions()" << endl;
-        ofs << in+ in+ in+ "self.ElongationReactions()" << endl;
-        ofs << in+ in+ in+ "self.TerminationReactions()" << endl;
+        ofs << in+ in+ "self.InitiationReactions()" << endl;
+        ofs << in+ in+ "self.ElongationReactions()" << endl;
+        ofs << in+ in+ "self.TerminationReactions()" << endl;
         ofs << endl;
     }
 
     if (Option.bDebug) {
-        ofs << in+ in+ in+ "self.Debug_PrintCounts()" << endl;
+        ofs << in+ in+ "self.Debug_PrintCounts()" << endl;
         ofs << endl;
     }
 
-    ofs << in+ in+ in+ "# Update Substrate Count" << endl;
-    ofs << in+ in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
+    ofs << in+ in+ "# Update Substrate Count" << endl;
+    ofs << in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Restore Substrate Count for Sustained Substrate Influx" << endl;
-    ofs << in+ in+ in+ "self.RestoreMoleculeCount()" << endl;
+    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate Influx" << endl;
+    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def Run(self):" << endl;
-    ofs << in+ in+ in+ "print('Simulation Run Begins...')" << endl;
+    ofs << in+ "def Run(self):" << endl;
+    ofs << in+ in+ "print('Simulation Run Begins...')" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
-    ofs << in+ in+ in+ in+ "self.SimStep += 1" << endl;
+    ofs << in+ in+ "while self.SimStep < self.N_SimSteps:" << endl;
+    ofs << in+ in+ in+ "self.SimStep += 1" << endl;
 
-    ofs << in+ in+ in+ in+ "self.SimLoop()" << endl;
+    ofs << in+ in+ in+ "self.SimLoop()" << endl;
 
-    ofs << in+ in+ in+ in+ "# Trigger Event on Substrate Count" << endl;
-    ofs << in+ in+ in+ in+ "self.TriggerEventMoleculeCount()" << endl;
+    ofs << in+ in+ in+ "# Trigger Event on Substrate Count" << endl;
+    ofs << in+ in+ in+ "self.TriggerEventMoleculeCount()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ in+ "# Save and Export Data" << endl;
-    ofs << in+ in+ in+ in+ "self.ExportData()" << endl;
+    ofs << in+ in+ in+ "# Save and Export Data" << endl;
+    ofs << in+ in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "print('Simulation Run Completed')" << endl;
+    ofs << in+ in+ "print('Simulation Run Completed')" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def ExportData(self):" << endl;    
-    ofs << in+ in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
-    ofs << in+ in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
+    ofs << in+ "def ExportData(self):" << endl;
+    ofs << in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
+    ofs << in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def ApplySimTimeResolution(self, Rate):" << endl;    
-    ofs << in+ in+ in+ "return Rate / self.SimTimeResolutionPerSecond" << endl;
+    ofs << in+ "def ApplySimTimeResolution(self, Rate):" << endl;
+    ofs << in+ in+ "return Rate / self.SimTimeResolutionPerSecond" << endl;
     ofs << endl;
 
     // Restore
-    ofs << in+ in+ "def RestoreMoleculeCount(self):" << endl;    
+    ofs << in+ "def RestoreMoleculeCount(self):" << endl;
     
     Names.clear();
     for (auto& count : Context.CountList) {
@@ -1984,14 +1980,14 @@ void WriteSimModule()
                 if (MolarityFactor)      { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
                 else                     { Amount = Utils::SciFloat2Str(count->Amount); }
 
-                ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Name << ", " << Amount << ", axis=1)" << endl;
+                ofs << in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Name << ", " << Amount << ", axis=1)" << endl;
                 Names.push_back(Name);
             }
         }
     }
    
     if (Names.empty()) {
-        ofs << in+ in+ in+ "pass" << endl;
+        ofs << in+ in+ "pass" << endl;
     }
 
 
@@ -2000,7 +1996,7 @@ void WriteSimModule()
 //            if (Pathway.Name == "TCA") {
 //                std::string MoleculeToRestore = "acetyl-CoA";
 //                int Count = 446331; 
-//                ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Pathway.Name << ", " << std::to_string(Count) << ", axis=1)   # " << MoleculeToRestore << endl;
+//                ofs << in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Pathway.Name << ", " << std::to_string(Count) << ", axis=1)   # " << MoleculeToRestore << endl;
 //                Pass = false;
 //            }
 //        }
@@ -2008,8 +2004,8 @@ void WriteSimModule()
     ofs << endl;
 
     // Event
-    ofs << in+ in+ "def TriggerEventMoleculeCount(self):" << endl;
-    ofs << in+ in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
+    ofs << in+ "def TriggerEventMoleculeCount(self):" << endl;
+    ofs << in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
     bool ElseSwitch = false;
 
     Names.clear();    
@@ -2029,15 +2025,15 @@ void WriteSimModule()
 
 
         if ((count->End >= 0) & (count->Begin != count->End)) { //
-            ofs << in+ in+ in+ "if (Time >= " << Utils::SciFloat2Str(count->Begin) << ") & (Time < " << Utils::SciFloat2Str(count->End) << "):" << endl;
-            ofs << in+ in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << Name << ", " << Amount << ", axis=1)" << endl;
+            ofs << in+ in+ "if (Time >= " << Utils::SciFloat2Str(count->Begin) << ") & (Time < " << Utils::SciFloat2Str(count->End) << "):" << endl;
+            ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << Name << ", " << Amount << ", axis=1)" << endl;
             Names.push_back(Name);
         }
     }
 
     ofs << endl;
 
-    ofs << in+ in+ "# Biochemical Reaction related routines" << endl;
+    ofs << in+ "# Biochemical Reaction related routines" << endl;
 
     // StandardReaction function
     for (auto& Type : StandardReactionTypes) {
@@ -2054,12 +2050,12 @@ void WriteSimModule()
             if (bMolaritySys) { AmountTextStr = "Conc_"; }
             else              { AmountTextStr = "Count_"; }
 
-            ofs << in+ in+ "def StandardReaction_" << Type << "(self):" << endl;
+            ofs << in+ "def StandardReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Reactants and products
             for (auto& substrate : SubstrateTypes) {
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
-                        ofs << in+ in+ in+ AmountTextStr << substrate << "_" << i << " = "; 
+                        ofs << in+ in+ AmountTextStr << substrate << "_" << i << " = ";
                     if (bMolaritySys) {
                         ofs << "sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
                     } else {
@@ -2070,7 +2066,7 @@ void WriteSimModule()
 
             // Regulators 
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << in+ in+ in+ AmountTextStr << "Regulator = ";
+                ofs << in+ in+ AmountTextStr << "Regulator = ";
                 if (bMolaritySys) {
                     ofs << "sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
                 } else {
@@ -2080,7 +2076,7 @@ void WriteSimModule()
 
             // Calculate Rate
             for (auto& substrate : SubstrateTypes) {
-                ofs << in+ in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(";
+                ofs << in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(";
 
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << AmountTextStr << substrate << "_" << i << ", "; 
@@ -2099,10 +2095,10 @@ void WriteSimModule()
                 ofs << ")" << endl;
 
                 // Apply Time Resolution
-                ofs << in+ in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
+                ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                 // compare conc
-                ofs << in+ in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
+                ofs << in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << ", " << AmountTextStr << substrate << "_" << i;
                 }
@@ -2110,19 +2106,19 @@ void WriteSimModule()
             }
 
             // Tally Rates
-            ofs << in+ in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
+            ofs << in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
 
             if (bMolaritySys) {
                 // Apply stoichiometry
-                ofs << in+ in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
                 // Convert to counts
-                ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             } else {
                 // Apply stoichiometry
-                ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             }
             // Apply delta counts for molecules in the stoichiometry matrix
-            ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
+            ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
             ofs << endl;
         }
     }
@@ -2138,32 +2134,32 @@ void WriteSimModule()
             Typing.emplace("Reactant", Type);
             Typing.emplace("Product", EnzReactionTypes[0]); // default type
 
-            ofs << in+ in+ "def EnzymaticReaction_" << Type << "(self):" << endl;
+            ofs << in+ "def EnzymaticReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Enzyme
-             ofs << in+ in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_" << Type << "), self.State.Vol)" << endl;
+             ofs << in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_" << Type << "), self.State.Vol)" << endl;
             // Reactants and products or EnzSubstrate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
-                        ofs << in+ in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                        ofs << in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
                     } 
                 }
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << in+ in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_" << Type << "), self.State.Vol)" << endl;
+                ofs << in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_" << Type << "), self.State.Vol)" << endl;
             } else {
                 Utils::Assertion(false, "Unsupported Enz Reaction Type: " + Type);
             }
 
             // Regulators 
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << in+ in+ in+ "Conc_Regulator = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
+                ofs << in+ in+ "Conc_Regulator = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
             }
 
             // Calculate Rate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
-                    ofs << in+ in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(Conc_Enz, ";
+                    ofs << in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "(Conc_Enz, ";
     
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << "Conc_" << substrate << "_" << i << ", "; 
@@ -2182,10 +2178,10 @@ void WriteSimModule()
                     ofs << ")" << endl;
     
                     // Apply Time Resolution
-                    ofs << in+ in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
+                    ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
     
                     // compare conc
-                    ofs << in+ in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
+                    ofs << in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc(Rate_" << substrate;
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << ", Conc_" << substrate << "_" << i;
                     }
@@ -2193,10 +2189,10 @@ void WriteSimModule()
                 }
     
                 // Tally Rates
-                ofs << in+ in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
+                ofs << in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
 
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << in+ in+ in+ "Rate = sim.Eqn_" << Type << "(Conc_Enz, Conc_EnzSub";
+                ofs << in+ in+ "Rate = sim.Eqn_" << Type << "(Conc_Enz, Conc_EnzSub";
     
                 // Regulators
                 if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
@@ -2215,66 +2211,66 @@ void WriteSimModule()
                 ofs << ")" << endl;
     
                 // Apply TimeResolution to the rate
-                ofs << in+ in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
+                ofs << in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
                 // compare conc for michaelis menten?
             }
             // Apply stoichiometry 
-            ofs << in+ in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+            ofs << in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             // Convert to counts
-            ofs << in+ in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+            ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             // Apply delta counts for molecules in the stoichiometry matrix
-            ofs << in+ in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
+            ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
             ofs << endl;
         }
     }
 
     // Print StandardReaction for each Reaction Type 
-    ofs << in+ in+ "def StandardReactions(self):" << endl;
+    ofs << in+ "def StandardReactions(self):" << endl;
     bool PassSwitch = true;
     for (auto& Type : StandardReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            ofs << in+ in+ in+ "self.StandardReaction_" << Type << "()" << endl;
+            ofs << in+ in+ "self.StandardReaction_" << Type << "()" << endl;
             PassSwitch = false;
         }
     } 
     if (PassSwitch) {
-        ofs << in+ in+ in+ "pass" << endl;
+        ofs << in+ in+ "pass" << endl;
     }
     ofs << endl;
     
 
     // Print EnzymeReaction for each Reaction Type 
-    ofs << in+ in+ "def EnzymaticReactions(self):" << endl;
+    ofs << in+ "def EnzymaticReactions(self):" << endl;
     PassSwitch = true;
     for (auto& Type : EnzReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            ofs << in+ in+ in+ "self.EnzymaticReaction_" << Type << "()" << endl;
+            ofs << in+ in+ "self.EnzymaticReaction_" << Type << "()" << endl;
             PassSwitch = false;
         }
     } 
     if (PassSwitch) {
-        ofs << in+ in+ in+ "pass" << endl;
+        ofs << in+ in+ "pass" << endl;
     }
     ofs << endl;
 
     if (!PolymeraseList.empty()) {
 
-        ofs << in+ in+ "def InitiationReactions(self):" << endl;
+        ofs << in+ "def InitiationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
             
             Print_InitiationReaction(ofs, Polymerase);
         }
 
 
-        ofs << in+ in+ "def ElongationReactions(self):" << endl;
+        ofs << in+ "def ElongationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
             
             Print_ElongationReaction(ofs, Polymerase);
         }
 
-        ofs << in+ in+ "def TerminationReactions(self):" << endl;
+        ofs << in+ "def TerminationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
             
             Print_TerminationReaction(ofs, Polymerase);
@@ -2282,206 +2278,213 @@ void WriteSimModule()
     } 
 
 //    if (EnzymeList.empty() & PolymeraseList.empty()) {
-//            ofs << in+ in+ in+ "pass" << endl;
+//            ofs << in+ in+ "pass" << endl;
 //            ofs << endl;
 //    }
 
-    ofs << in+ in+ "# Useful routines" << endl;
+    ofs << in+ "# Useful routines" << endl;
 
-    ofs << in+ in+ "def GetSimTime(self):" << endl;
-    ofs << in+ in+ in+ "return self.SimStep / self.SimTimeResolutionPerSecond" << endl;
+    ofs << in+ "def GetSimTime(self):" << endl;
+    ofs << in+ in+ "return self.SimStep / self.SimTimeResolutionPerSecond" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def GetCount(self, Idx):" << endl;
-    ofs << in+ in+ in+ "return sim.CountToConc(np.take(self.State.Count_All, Idx))" << endl;
+    ofs << in+ "def GetCount(self, Idx):" << endl;
+    ofs << in+ in+ "return sim.CountToConc(np.take(self.State.Count_All, Idx))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def GetConcentration(self, Idx):" << endl;
-    ofs << in+ in+ in+ "return np.take(self.State.Count_All, Idx)" << endl;
+    ofs << in+ "def GetConcentration(self, Idx):" << endl;
+    ofs << in+ in+ "return np.take(self.State.Count_All, Idx)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def AddTodCount(self, Idx, Values):" << endl;
-    ofs << in+ in+ in+ "dCountToAdd = np.zeros_like(self.State.dCount_All)" << endl;
-    ofs << in+ in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
-    ofs << in+ in+ in+ "dCount_All_New = self.State.dCount_All + dCountToAdd" << endl;
-    ofs << in+ in+ in+ "ZeroTest = dCount_All_New + self.State.Count_All" << endl;
-    ofs << in+ in+ in+ "self.State.dCount_All =  np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
+    ofs << in+ "def AddTodCount(self, Idx, Values):" << endl;
+    ofs << in+ in+ "dCountToAdd = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
+    ofs << in+ in+ "dCount_All_New = self.State.dCount_All + dCountToAdd" << endl;
+    ofs << in+ in+ "ZeroTest = dCount_All_New + self.State.Count_All" << endl;
+    ofs << in+ in+ "self.State.dCount_All =  np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
     ofs << endl;
 
     // TODO: Use SimIdx in the future
-    ofs << in+ in+ "# Temporary routines" << endl;
+    ofs << in+ "# Temporary routines" << endl;
 
-    ofs << in+ in+ "def GetMolIdx(self, Name):" << endl;
-    ofs << in+ in+ in+ "return self.State.GetMolNames().index(Name)" << endl;
+    ofs << in+ "def GetMolIdx(self, Name):" << endl;
+    ofs << in+ in+ "return self.State.GetMolNames().index(Name)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def GetCountByName(self, Name):" << endl;
-    ofs << in+ in+ in+ "return self.GetCount(self.GetMolIdx(Name))" << endl;
+    ofs << in+ "def GetCountByName(self, Name):" << endl;
+    ofs << in+ in+ "return self.GetCount(self.GetMolIdx(Name))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def GetConcentrationByName(self, Name):" << endl;
-    ofs << in+ in+ in+ "return self.GetConcentration(self.GetMolIdx(Name))" << endl;
+    ofs << in+ "def GetConcentrationByName(self, Name):" << endl;
+    ofs << in+ in+ "return self.GetConcentration(self.GetMolIdx(Name))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
-    ofs << in+ in+ in+ "Len_Over = np.where(Len_Elongated > Max, Len_Elongated - Max, 0)" << endl;
-    ofs << in+ in+ in+ "return Len_Elongated - Len_Over" << endl;
+
+    ofs << in+ "# Temporary routines" << endl;
+
+    ofs << in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
+    ofs << in+ in+ "Len_Over = np.where(Len_Elongated > Max, Len_Elongated - Max, 0)" << endl;
+    ofs << in+ in+ "return Len_Elongated - Len_Over" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
-    ofs << in+ in+ in+ "Raw = sim.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
-    ofs << in+ in+ in+ "Rounded = np.around(Raw)" << endl;
+    ofs << in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
+    ofs << in+ in+ "Raw = sim.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ "Rounded = np.around(Raw)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Discrepancy handling" << endl;
-    ofs << in+ in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
-    ofs << in+ in+ in+ "Discrepancy = np.sum(Rounded) - N_Elongated" << endl;
+    ofs << in+ in+ "# Discrepancy handling" << endl;
+    ofs << in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ "Discrepancy = np.sum(Rounded) - N_Elongated" << endl;
 
-    ofs << in+ in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
-    ofs << in+ in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
-    ofs << in+ in+ in+ "return Rounded + np.ones(NUniq_BuildingBlocks) * np.int32(Sets) + np.concatenate((np.ones(np.int32(np.round(Remainder))), np.zeros(np.int32(np.around(NUniq_BuildingBlocks - Remainder)))))" << endl;
+    ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
+    ofs << in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
+    ofs << in+ in+ "return Rounded + np.ones(NUniq_BuildingBlocks) * np.int32(Sets) + np.concatenate((np.ones(np.int32(np.round(Remainder))), np.zeros(np.int32(np.around(NUniq_BuildingBlocks - Remainder)))))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# Polymerase Reaction related" << endl;
-    ofs << in+ in+ "def Initiation(self, Len_Template, Len_Target, Idx_Pol, Idx_Template, Idx_TemplateSubset, Weight, PolThreshold):" << endl;
-    ofs << in+ in+ in+ "# Get available, active polymerase count - TO BE UPDATED with more regulatory algorithms" << endl;
-    ofs << in+ in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
-    ofs << in+ in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol, 2).astype(int)" << endl;
-    ofs << in+ in+ in+ "Count_Pol_Occupied = np.count_nonzero(np.where(Len_Target != -1, 1, 0)) * PolThreshold" << endl;
-    ofs << in+ in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
-    ofs << in+ in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
-    ofs << in+ in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)[0, 0]" << endl;
+    ofs << in+ "# Polymerase Reaction related" << endl;
+    ofs << in+ "def Initiation(self, Len_Template, Len_Target, Idx_Pol, Idx_Template, Idx_TemplateSubset, Weight, PolThreshold):" << endl;
+    ofs << in+ in+ "# Get available, active polymerase count - TO BE UPDATED with more regulatory algorithms" << endl;
+    ofs << in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
+    ofs << in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol, 2).astype(int)" << endl;
+    ofs << in+ in+ "Count_Pol_Occupied = np.count_nonzero(np.where(Len_Target != -1, 1, 0)) * PolThreshold" << endl;
+    ofs << in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
+    ofs << in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
+    ofs << in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)[0, 0]" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Get final initiation weight by applying initiation site count" << endl;
-    ofs << in+ in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
-    ofs << in+ in+ in+ "Count_Template_Nascent = np.count_nonzero(np.where(Len_Template != -1, 1, 0), axis=0)   # Assumption: each nascent template has one highly efficient initiation site" << endl;
-    ofs << in+ in+ in+ "Count_TemplateSubset_Nascent = np.take(Count_Template_Nascent, Idx_TemplateSubset)" << endl;
-    ofs << in+ in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_TemplateSubset_Nascent" << endl;
-    ofs << in+ in+ in+ "Weight_Initiation = Count_InitiationSite * Weight " << endl;
+    ofs << in+ in+ "# Get final initiation weight by applying initiation site count" << endl;
+    ofs << in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
+    ofs << in+ in+ "Count_Template_Nascent = np.count_nonzero(np.where(Len_Template != -1, 1, 0), axis=0)   # Assumption: each nascent template has one highly efficient initiation site" << endl;
+    ofs << in+ in+ "Count_TemplateSubset_Nascent = np.take(Count_Template_Nascent, Idx_TemplateSubset)" << endl;
+    ofs << in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_TemplateSubset_Nascent" << endl;
+    ofs << in+ in+ "Weight_Initiation = Count_InitiationSite * Weight " << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Get randomly selected target indices" << endl;
-    ofs << in+ in+ in+ "Idx_Selected = sim.PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
-    ofs << in+ in+ in+ "Len_Target_Initiated = sim.InsertZeroIntoNegOneElementInLenMatrix(Len_Target, Idx_Selected)" << endl;
-    ofs << in+ in+ in+ "# Export Data" << endl;
-    ofs << in+ in+ in+ "# N_Initiated" << endl;
+    ofs << in+ in+ "# Get randomly selected target indices" << endl;
+    ofs << in+ in+ "Idx_Selected = sim.PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
+    ofs << in+ in+ "Len_Target_Initiated = sim.InsertZeroIntoNegOneElementInLenMatrix(Len_Target, Idx_Selected)" << endl;
+    ofs << in+ in+ "# Export Data" << endl;
+    ofs << in+ in+ "# N_Initiated" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "return Len_Target_Initiated" << endl;
+    ofs << in+ in+ "return Len_Target_Initiated" << endl;
     ofs << endl;
  
-    ofs << in+ in+ "def Elongation(self, Len, Max, Rate, Weight, Freq, Idx_PolSub, Idx_BB):" << endl;
-    ofs << in+ in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
-    ofs << in+ in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
+    ofs << in+ "def Elongation(self, Len, Max, Rate, Weight, Freq, Idx_PolSub, Idx_BB):" << endl;
+    ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
+    ofs << in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
     ofs << endl;
 
-//    ofs << in+ in+ in+ "dLength = np.matmul(SMatrix,Rate)
-    ofs << in+ in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
-    ofs << in+ in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, Len)" << endl;
+//    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
+    ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
+    ofs << in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, Len)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Len_Trimmed = self.OverElongationCorrection(Len_Elongated, Max)" << endl;
+    ofs << in+ in+ "Len_Trimmed = self.OverElongationCorrection(Len_Elongated, Max)" << endl;
 
-    ofs << in+ in+ in+ "N_Elongated_PerSpecies = np.asmatrix(np.sum(Len_Trimmed - Len, axis=0))   # This step loses shape for some reason, hence apply matrix again" << endl;
-    ofs << in+ in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ "N_Elongated_PerSpecies = np.asmatrix(np.sum(Len_Trimmed - Len, axis=0))   # This step loses shape for some reason, hence apply matrix again" << endl;
+    ofs << in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated_PerSpecies)" << endl;
    
-    ofs << in+ in+ in+ "# Update dCount for BuildingBlocks" << endl;
-    ofs << in+ in+ in+ "self.AddTodCount(Idx_BB, -Consumed_BB)" << endl;
+    ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
+    ofs << in+ in+ "self.AddTodCount(Idx_BB, -Consumed_BB)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Update dCount for Polymerase Reaction Substrates (To be updated by the reaction matrix form" << endl;
-    ofs << in+ in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated)" << endl;
+    ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates (To be updated by the reaction matrix form" << endl;
+    ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Export Data" << endl;
-    ofs << in+ in+ in+ "# N_Elongated" << endl;
+    ofs << in+ in+ "# Export Data" << endl;
+    ofs << in+ in+ "# N_Elongated" << endl;
     
-    ofs << in+ in+ in+ "return Len_Trimmed" << endl;
+    ofs << in+ in+ "return Len_Trimmed" << endl;
     ofs << endl; 
 
-    ofs << in+ in+ "def Termination(self, Len, Max, Idx_Target):   # Some polymerization process may not have max" << endl;
-    ofs << in+ in+ in+ "Bool_Completed = (Len == Max)" << endl;
-    ofs << in+ in+ in+ "N_Completed_PerSpecies = np.sum(Bool_Completed, axis=0)" << endl;
-    ofs << in+ in+ in+ "N_Completed = np.sum(N_Completed_PerSpecies)" << endl;
-    ofs << in+ in+ in+ "Len_Completed = np.where(Bool_Completed, -1, Len)" << endl;
+    ofs << in+ "def Termination(self, Len, Max, Idx_Target):   # Some polymerization process may not have max" << endl;
+    ofs << in+ in+ "Bool_Completed = (Len == Max)" << endl;
+    ofs << in+ in+ "N_Completed_PerSpecies = np.sum(Bool_Completed, axis=0)" << endl;
+    ofs << in+ in+ "N_Completed = np.sum(N_Completed_PerSpecies)" << endl;
+    ofs << in+ in+ "Len_Completed = np.where(Bool_Completed, -1, Len)" << endl;
 
-    ofs << in+ in+ in+ "# Update dCount for BuildingBlocks" << endl;
-    ofs << in+ in+ in+ "self.AddTodCount(Idx_Target, N_Completed_PerSpecies)" << endl;
+    ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
+    ofs << in+ in+ "self.AddTodCount(Idx_Target, N_Completed_PerSpecies)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ in+ "# Export Data" << endl;
-    ofs << in+ in+ in+ "# N_Completed" << endl;
+    ofs << in+ in+ "# Export Data" << endl;
+    ofs << in+ in+ "# N_Completed" << endl;
     
-    ofs << in+ in+ in+ "return Len_Completed" << endl;
+    ofs << in+ in+ "return Len_Completed" << endl;
     ofs << endl;
 
     if (Option.bDebug) { 
-        ofs << in+ in+ "def Debug_SetIdxMoleculesToTrack(self):" << endl;
-        ofs << in+ in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
-        ofs << in+ in+ in+ "Debug_Names_Molecules = []" << endl; // TODO: take input from command line
+        ofs << in+ "def Debug_SetIdxMoleculesToTrack(self):" << endl;
+        ofs << in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
+        ofs << in+ in+ "Debug_Names_Molecules = []" << endl; // TODO: take input from command line
         ofs << endl;
 
-        ofs << in+ in+ in+ "if Debug_Names_Molecules:" << endl;
-        ofs << in+ in+ in+ in+ "for Name in Debug_Names_Molecules:" << endl;
-        ofs << in+ in+ in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.GetMolNames().index(Name))" << endl;
-        ofs << in+ in+ in+ "else:" << endl;
-        ofs << in+ in+ in+ in+ "self.Debug_Idx_Molecules = list(range(len(self.State.GetMolNames())))" << endl;
+        ofs << in+ in+ "if Debug_Names_Molecules:" << endl;
+        ofs << in+ in+ in+ "for Name in Debug_Names_Molecules:" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.GetMolNames().index(Name))" << endl;
+        ofs << in+ in+ "else:" << endl;
+        ofs << in+ in+ in+ "self.Debug_Idx_Molecules = list(range(len(self.State.GetMolNames())))" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "def Debug_PrintCounts(self):" << endl;
-        ofs << in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-        ofs << in+ in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
-        ofs << in+ in+ in+ in+ "self.Debug_PrintCount(Idx)" << endl;
-        ofs << in+ in+ in+ "print()" << endl;
-        ofs << in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-        ofs << in+ in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
-        ofs << in+ in+ in+ in+ "self.Debug_PrintdCount(Idx)" << endl;
-        ofs << in+ in+ in+ "print()" << endl;
+        ofs << in+ "def Debug_PrintCounts(self):" << endl;
+        ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+        ofs << in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
+        ofs << in+ in+ in+ "self.Debug_PrintCount(Idx)" << endl;
+        ofs << in+ in+ "print()" << endl;
+        ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+        ofs << in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
+        ofs << in+ in+ in+ "self.Debug_PrintdCount(Idx)" << endl;
+        ofs << in+ in+ "print()" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "def Debug_PrintSimStepTime(self):" << endl;
-        ofs << in+ in+ in+ "Time = self.GetSimTime()" << endl;
-        ofs << in+ in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end='\t| ')" << endl;
+        ofs << in+ "def Debug_PrintSimStepTime(self):" << endl;
+        ofs << in+ in+ "Time = self.GetSimTime()" << endl;
+        ofs << in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end='\t| ')" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "def Debug_PrintCount(self, Idx):" << endl;
-        ofs << in+ in+ in+ "print(' ' + self.State.GetMolNames()[Idx], end=': ')" << endl;
-        ofs << in+ in+ in+ "print('{:010e}'.format(self.State.Count_All[0][Idx]), end=' | ')" << endl;
+        ofs << in+ "def Debug_PrintCount(self, Idx):" << endl;
+        ofs << in+ in+ "print(' ' + self.State.GetMolNames()[Idx], end=': ')" << endl;
+        ofs << in+ in+ "print('{:010e}'.format(self.State.Count_All[0][Idx]), end=' | ')" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "def Debug_PrintdCount(self, Idx):" << endl;
-        ofs << in+ in+ in+ "print('d' + self.State.GetMolNames()[Idx], end=': ')" << endl;
-        ofs << in+ in+ in+ "print('{:010e}'.format(self.State.dCount_All[0][Idx]), end=' | ')" << endl;
+        ofs << in+ "def Debug_PrintdCount(self, Idx):" << endl;
+        ofs << in+ in+ "print('d' + self.State.GetMolNames()[Idx], end=': ')" << endl;
+        ofs << in+ in+ "print('{:010e}'.format(self.State.dCount_All[0][Idx]), end=' | ')" << endl;
         ofs << endl;
 
     }
 
     // class FDataManager
-    ofs << in+ "class FDataManager:" << endl;
-    ofs << in+ in+ "def __init__(self):" << endl;
-    ofs << in+ in+ in+ "self.Legend = list()" << endl;
-    ofs << in+ in+ in+ "self.DataBuffer = list()" << endl;
+    ofs << "class FDataManager:" << endl;
+    ofs << in+ "def __init__(self):" << endl;
+    ofs << in+ in+ "self.Legend = list()" << endl;
+    ofs << in+ in+ "self.DataBuffer = list()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def SetLegend(self, InLegend):" << endl;
-    ofs << in+ in+ in+ "self.Legend = InLegend" << endl;
+    ofs << in+ "def SetLegend(self, InLegend):" << endl;
+    ofs << in+ in+ "self.Legend = InLegend" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def Add(self, InData):" << endl;
-    ofs << in+ in+ in+ "self.DataBuffer.append(InData)" << endl;
+    ofs << in+ "def Add(self, InData):" << endl;
+    ofs << in+ in+ "self.DataBuffer.append(InData)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def SaveToFile(self, InFileName):" << endl;
-    ofs << in+ in+ in+ "with open(InFileName, 'w', newline='', encoding='utf-8') as OutFile:" << endl;
-    ofs << in+ in+ in+ in+ "TsvWriter = csv.writer(OutFile, delimiter='\\t')" << endl;
-    ofs << in+ in+ in+ in+ "if self.Legend:" << endl;
-    ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(self.Legend)" << endl;
-    ofs << in+ in+ in+ in+ "for Row in self.DataBuffer:" << endl;
-    ofs << in+ in+ in+ in+ in+ "TsvWriter.writerow(np.array(Row).flatten().tolist())" << endl;
+    ofs << in+ "def SaveToFile(self, InFileName):" << endl;
+    ofs << in+ in+ "with open(InFileName, 'w', newline='', encoding='utf-8') as OutFile:" << endl;
+    ofs << in+ in+ in+ "TsvWriter = csv.writer(OutFile, delimiter='\\t')" << endl;
+    ofs << in+ in+ in+ "if self.Legend:" << endl;
+    ofs << in+ in+ in+ in+ "TsvWriter.writerow(self.Legend)" << endl;
+    ofs << in+ in+ in+ "for Row in self.DataBuffer:" << endl;
+    ofs << in+ in+ in+ in+ "TsvWriter.writerow(np.array(Row).flatten().tolist())" << endl;
+    ofs << endl;
+
+    // BODY
+    ofs << "def main():   # add verbose" << endl;
     ofs << endl;
 
     // Instantiate Objects
