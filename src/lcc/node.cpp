@@ -331,7 +331,7 @@ std::string NVariableExpression::GetName() const {
 }
 
 std::vector<float> NRangeExpression::GetBeginEndStep() const {
-    float fBegin, fEnd, fStep = Numbers::GetFloatDefault();
+    float fBegin = Numbers::GetFloatDefault(), fEnd = Numbers::GetFloatDefault(), fStep = Numbers::GetFloatDefault();
 
     if (Begin) {
         if (Utils::is_class_of<NConstantExpression, NExpression>(Begin.get())) {
