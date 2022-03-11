@@ -42,18 +42,19 @@ class FLocation {
 public:
     std::string Name;
     std::vector<float> Coord;
-    float Angle; // to be expanded
+    float Angle; // initial angle not connected to simulation yet
 
     FLocation() {}
 
-    FLocation(const std::string InName, const std::vector<float> InCoord) : Name(InName), Coord(InCoord) {}
+    FLocation(const std::string InName, const std::vector<float> InCoord) : Name(InName), Coord(InCoord), Angle(0) {}
 
     void Print(std::ostream& os) {
         os << "[Location] ";
         os << Name << " : (";
         for (auto coord : Coord) {
         	os << Utils::SciFloat2Str(coord) << ", ";
-        } os << ")" << std::endl;
+        } os << ")";
+        os << "(Angle: " << Utils::SciFloat2Str(Angle) << ")";
     }
 };
 
@@ -670,6 +671,9 @@ public:
 
     // LocationList
     std::vector<float> GetLocationByName_LocationList(std::string MolName);
+    std::vector<const FLocation *> GetSubList_LocationList(std::string Type);
+    std::vector<std::string> GetNames_LocationList(std::string Type);
+
 
     // CountList
     float GetInitialCountByName_CountList(std::string InputName);
@@ -696,11 +700,13 @@ public:
     std::vector<const FPolymerase *> GetList_Polymerase_MoleculeList();
     std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
 
-
+    // ContainerList
+    std::vector<const FContainer *> GetSubList_ContainerList(std::string Type);
+    std::vector<std::string> GetNames_ContainerList(std::string Type);
 
     // ReactionList
-    std::vector<std::string> GetNames_ReactionList(std::string);
-    std::vector<const FReaction *> GetSubList_ReactionList(std::string); // useful for stoichiometry
+    std::vector<std::string> GetNames_ReactionList(std::string Type);
+    std::vector<const FReaction *> GetSubList_ReactionList(std::string Type); // useful for stoichiometry
     std::vector<const FStandardReaction *> GetList_Standard_ReactionList(std::string Type);
     std::vector<const FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
     std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);

@@ -659,6 +659,33 @@ std::vector<std::string> FCompilerContext::GetBuildingBlockNames_PolymeraseReact
     return StrList;
 }
 
+std::vector<std::string> FCompilerContext::GetNames_ContainerList(std::string Type)
+{
+    std::vector<const FContainer *> SubList = GetSubList_ContainerList(Type);
+    std::vector<std::string> StrList;
+
+    for (auto& container : SubList) {
+        StrList.push_back(container->Name);
+    }
+
+    return StrList;
+}
+
+std::vector<const FContainer *> FCompilerContext::GetSubList_ContainerList(std::string Type)
+{
+    std::vector<const FContainer *> SubList;
+
+    if (Type == "Compartment") {
+        for (auto& container : ContainerList) {
+            if (Utils::is_class_of<FCompartment, FContainer>(container)) {
+                SubList.push_back(container);
+            }
+        }
+    }
+ 
+    return SubList;
+}
+
 std::vector<std::string> FCompilerContext::GetNames_ReactionList(std::string Type)
 {
     std::vector<std::string> StrList;
@@ -914,6 +941,47 @@ std::vector<float> FCompilerContext::GetLocationByName_LocationList(std::string 
 
     return coord;
 }
+
+std::vector<const FLocation *> FCompilerContext::GetSubList_LocationList(std::string Type)
+{
+    std::vector<const FLocation *> SubList;
+    std::vector<std::string> Names;
+
+    if (Type == "Molecule") {
+        Names = GetNames_MoleculeList();
+        for (auto& location : LocationList) {
+            if (std::find(Names.begin(), Names.end(), location->Name) != Names.end()) {
+                SubList.push_back(location);
+            }
+        }
+    } else if (Type == "Compartment") {
+        Names = GetNames_ContainerList(Type);
+        for (auto& location : LocationList) {
+            if (std::find(Names.begin(), Names.end(), location->Name) != Names.end()) {
+                SubList.push_back(location);
+            }    
+        }
+    } else {
+        for (auto& location : LocationList) {
+            SubList.push_back(location);
+        }
+    }
+
+    return SubList;
+}
+
+std::vector<std::string> FCompilerContext::GetNames_LocationList(std::string Type)
+{
+    std::vector<const FLocation *> SubList = GetSubList_LocationList(Type);
+    std::vector<std::string> names; 
+
+    for (auto& location : SubList) {
+        names.push_back(location->Name);
+    }
+
+    return names;
+}
+
 float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)
 {
     // returns 0 if there is no initial count set
