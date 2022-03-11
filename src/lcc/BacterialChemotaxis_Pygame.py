@@ -201,8 +201,8 @@ class FOrganism:
                 self.Am = Model.Simulate(GlucoseLvl)
 
             Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
-            print("[Chemotaxis  {:06d}] Glucose:{:.6f}uM ({}{:.4f}%) Am:{:.6f}uM (X:{:.2f} Y:{:.2f} {:3.1f} degree)".format
-                  (self.SimCount, GlucoseLvl / Unit, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit, self.X, self.Y, self.Angle / pi * 180))
+            print("[Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f} Y:{:.2f} {:3.1f} degree)".format
+                  (self.SimCount, GlucoseLvl / Unit, UnitTxt, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit, UnitTxt, self.X, self.Y, self.Angle / pi * 180))
             # print(self.Am)
             if self.Am < self.AmThreshold:
             # if self.Am < 1.165 * uM:
