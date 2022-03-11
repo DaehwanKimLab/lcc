@@ -16,6 +16,8 @@ namespace Numbers {
 // luminous intensity candela	cd
 
 float GetAvogadro();
+float MultiplyByAvogadro(float InFloat);
+std::string GetAvogadroStr();
 float GetFloatDefault();
 float GetIntDefault();
 bool CheckMolarity(std::string InUnit);

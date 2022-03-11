@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "number.h"
+#include "util.h"
 
 using namespace std;
 
@@ -44,6 +45,16 @@ namespace Numbers {
 float GetAvogadro()
 {
     return NA;
+}
+
+float MultiplyByAvogadro(float InFloat)
+{
+    return InFloat * NA;
+}
+
+std::string GetAvogadroStr()
+{
+    return Utils::SciFloat2Str(NA);
 }
 
 float GetFloatDefault()
