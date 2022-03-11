@@ -41,20 +41,10 @@ petridish P
     reaction R2(A + L --> AL, k=1e9, krev=1);
 
     R = 5nM, B = 0.1nM, Am = 500nM;
-    L[0:100] = 20nM, L[100:200] = 40nM, L[200:300] = 80nM;
 
-  glucose G;
-  G(1, 1, 0) = 1nmol;
-
-
-    SimSteps = 30000, SimRes = 100;
+glucose G;
+G(1, 1, 0) = 1nmol;
 
 
-
-
-    //L[0:50]= 20 nM, L[50:100]= 25 nM, L[100:150]= 30 nM;
-
-    //L[:] = 0 nM, L[25:50] = 10 nM, L[75:100] = 1 uM, L[125:150] = 1 mM, L[175:200]= 2 nM, L[200:225]= 3 nM, L[225:250]= 3 nM;
-    //L[0:50]= 20 nM, L[50:100]= 40 nM, L[100:150]= 80 nM;
-    //L_NoPlot[0:100]= 20 uM, L_NoPlot[100:300]= 40 uM, L_NoPlot[300:500]= 80 uM;
+SimSteps = 30000, SimRes = 100;
 
