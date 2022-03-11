@@ -15,36 +15,36 @@ petridish P
 {
 }
 
-  ecoli E
-  {
-  E(10, 10, 0) = 1;
-  }
+ecoli E
+{
+}
+E(400, 400, 0) = 1;
 
-    protein R
-    {
-      reaction R1(A --> Am, kcat=1, KM=1e-10nM);
-      reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
-    }
+protein R
+{
+  reaction R1(A --> Am, kcat=1, KM=1e-10nM);
+  reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
+}
 
-    protein BP
-    {
-      reaction R1(Am --> A, kcat=200, KM=1nM);
-      reaction R2(AmL --> AL, kcat=1, KM=1nM);
-    }
+protein BP
+{
+  reaction R1(Am --> A, kcat=200, KM=1nM);
+  reaction R2(AmL --> AL, kcat=1, KM=1nM);
+}
 
-    protein Am
-    {
-      reaction R(B --> BP, k=0.05e9, krev=0.005);
-    }
+protein Am
+{
+  reaction R(B --> BP, k=0.05e9, krev=0.005);
+}
 
-    reaction R1(Am + L --> AmL, k=1e9, krev=1);
-    reaction R2(A + L --> AL, k=1e9, krev=1);
+reaction R1(Am + L --> AmL, k=1e9, krev=1);
+reaction R2(A + L --> AL, k=1e9, krev=1);
 
-    R = 5nM, B = 0.1nM, Am = 500nM;
+R = 5nM, B = 0.1nM, Am = 500nM;
 
-glucose G;
-G(1, 1, 0) = 1nmol;
+glucose L;
+L(800, 500, 0) = 100nmol;
 
 
-SimSteps = 30000, SimRes = 100;
+SimRes = 100;
 

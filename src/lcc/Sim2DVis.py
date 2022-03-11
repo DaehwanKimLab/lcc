@@ -107,10 +107,12 @@ class FEnvironment:
         self.Thickness = InThickness
         self.TransparentCircleArea = None
 
-    def Draw(self, shape='circle'):
+    def Draw(self, shape=None):
         if shape == 'circle':
             pygame.draw.circle(Screen, YELLOW_FAINT, (self.X, self.Y), self.Radius)
             pygame.draw.circle(Screen, GRAY4, (self.X, self.Y), self.Radius, self.Thickness)
+        else:
+            pygame.draw.rect(Screen, YELLOW_FAINT, ((0, 0), (W_S, H_S)))
 
     def DrawTransparentArea(self):
         self.TransparentCircleArea = pygame.Surface((self.Radius * 2, self.Radius * 2), pygame.SRCALPHA)
@@ -211,10 +213,12 @@ class FOrganism:
     def ReportStatus(self):
         # for debugging
         self.Am = Sim.GetCountByName(HomeostasisMolName)
+        self.SimCount += 1
         GlucoseLvl = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
+        SimStep = Sim.GetSimStep()
         Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
-        print("[Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)".format
-              (self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))
+        print("SimStep {:06d} [Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)".format
+              (SimStep, self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))
         self.Glucose_Prev = GlucoseLvl
 
     # def HomeostasisMessage(self):
@@ -261,7 +265,7 @@ class FMolecule:
         self.GradColorList = self.GetGradientColorList(baseColor=self.GradBaseColor)
 
         # Particle Drawing
-        self.Particle_N = 200
+        self.Particle_N = 300
         self.Particle_PerLayer = 2
         self.Particle_Radius = 2
         self.Particle_SpreadFactor = 1.11
@@ -334,8 +338,8 @@ class FMolecule:
                     pygame.draw.rect(Screen, color, ((x, y), (ReductionFactor, ReductionFactor)))
 
         elif pattern == 'particle':
-            pass
-
+            for XY in self.Particle_XY_Static:
+                pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
 
 
         # legacy
@@ -548,7 +552,7 @@ def main():
     PetriDish = FEnvironment()
 
     # TODO: Communicate to initialize in Sim
-    Glucose = FMolecule(GlucoseName)
+    Glucose = FMolecule(GlucoseName, 800, 500)
     Ecoli = FOrganism(EcoliName, 400, 400)
     # Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * Unit)
     # Ecoli = FOrganism('A', W_S / 3, H_S / 2)
@@ -665,7 +669,7 @@ def main():
         #     Screen.set_clip(ClipRect)
 
         PetriDish.Draw()
-        Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
+        Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
 
         while ElapsedTime >= SimUnitTime:
 
@@ -693,7 +697,7 @@ def main():
 
         Glucose_Now = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
 
-        if Control.Time < 20:
+        if Control.Time < 500:
             Control.DisplayWelcome()
         if Control.MessageTimer > 0:
             Control.DisplayInput()

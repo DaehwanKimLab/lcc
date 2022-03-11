@@ -2285,7 +2285,7 @@ void WriteSimModule()
         ofs << in+ in+ in+ in+ "bNotHomeostasis_" << name << " = False" << endl;
         ofs << in+ in+ in+ in+ "self.State.Pos_Threshold[" << Idx_Pos << "] = " << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
         ofs << in+ in+ in+ in+ "print('Homeostasis achieved for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
-        ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(self.State.Pos_Threshold[" << Idx_Pos << "])), self.UnitTxt)" << endl;
+        ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
         ofs << in+ in+ in+ "self.Homeostasis_Prev_" << name << " = Homeostasis_Now_" << name << endl;
     }
     ofs << endl;
@@ -2612,6 +2612,10 @@ void WriteSimModule()
 //    }
 
     ofs << in+ "# Useful routines" << endl;
+
+    ofs << in+ "def GetSimStep(self):" << endl;
+    ofs << in+ in+ "return self.SimStep" << endl;
+    ofs << endl;
 
     ofs << in+ "def GetSimTime(self):" << endl;
     ofs << in+ in+ "return self.SimStep / self.SimTimeResolutionPerSecond" << endl;
