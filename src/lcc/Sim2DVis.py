@@ -1,6 +1,5 @@
 import sys
 import pygame
-import math
 import random
 from datetime import datetime
 import SimModule
@@ -46,11 +45,6 @@ def GetColorGradient(Fade, baseColor=None):
         return (Fade, Fade, 255)
     else:  # Assumes White
         return (Fade, Fade, Fade)
-
-def Displacement(Distance, Angle):
-    dX = Distance * math.sin(Angle)
-    dY = Distance * math.cos(Angle)
-    return dX, dY
 
 # pygame
 pygame.init()
@@ -123,78 +117,41 @@ class FEnvironment:
         pass
 
 class FOrganism:
-    def __init__(self, InName, InSpecies=None, InX= W_S / 3, InY = H_S / 2, InAngle=pi/2, InSpeedMax=5):
+    def __init__(self, InName, InSpecies):
         self.Name = InName
         self.Species = InSpecies
-        self.X_Ori = InX
-        self.Y_Ori = InY
-        self.Angle = InAngle
-        self.X = self.X_Ori
-        self.Y = self.Y_Ori
-        self.X_Prev = None
-        self.Y_Prev = None
-        self.Speed = InSpeedMax
-        self.Speed_Max = InSpeedMax
-        self.TumbleAngle = -pi/4
-        self.FlagellaLength = 10
+        self.X = None
+        self.Y = None
+        self.Angle = None
 
-        # Memory
+        self.BodyLength = 20
+        self.BodyThickness = 10
+        self.FlagellaLength = 40
+        self.FlagellaThickness = 3
+
+        # Memory for display & debugging
         self.Glucose_Prev = 0
+        self.Am = 0
         self.SimCount = 0
 
         # Trajectory
         self.TrajectorySwitch = True
-        self.Trajectory = [(self.X_Ori, self.Y_Ori)]
-
-        # Image
-        self.Image = None
-        self.Image_ScaleFactor = 50
-        self.Image_Size_X = 500 / 550 * self.Image_ScaleFactor
-        self.Image_Size_Y = 556 / 556 * self.Image_ScaleFactor
-        self.Image_Rect = None
-        self.LoadImage()
-
-        # Mechanistic Mode
-        self.Am = 0
-        self.AmThreshold = 0
-        # self.AmThreshold = 1.165
-
-        # DK - debugging purposes
-        self.MechanisticModeSwitch = True
-        # self.MechanisticModeSwitch = False
-
-    def LoadImage(self):
-        if self.Species == 'Ecoli':
-            self.Image = pygame.image.load('pygamelib/ecoli.png')
-            self.Image = pygame.transform.scale(self.Image, (self.Image_Size_X, self.Image_Size_Y))
-            self.Image_Rect = self.Image.get_rect()
-            self.RotateImage(220)
-
-    def RotateImage(self, AngleInDegree):
-        self.Image = pygame.transform.rotate(self.Image, AngleInDegree)
-
-    def CenterImage(self):
-        # Rect = self.Image.get_rect()
-        # self.Image.center = Rect.center
-        pass
-
-    def Reinitialize(self):
-        self.X = self.X_Ori
-        self.Y = self.Y_Ori
-        self.Trajectory = [(self.X_Ori, self.Y_Ori)]
+        self.Trajectory = dict()
+        self.TrajectoryColor = list()
 
     def Draw(self):
         if self.Species == 'Ecoli':
-            # BlitRotate2(Screen, self.Image, self.Image.topleft, math.degrees(self.TumbleAngle))
-            # Image = pygame.surface.Surface((100, 100))
-            Screen.blit(self.Image, (self.X - self.Image_Size_X / 2, self.Y - self.Image_Size_Y / 2))
-        else:
             Color = YELLOW
             # pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)
             dX =  np.cos(self.Angle) * -20
             dY = -np.sin(self.Angle) * -20
-            pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + dX, self.Y + dY), 10)
-            pygame.draw.line(Screen, Color, (self.X, self.Y), (self.X + 2 * dX, self.Y + 2 * dY), 3)
+            X_BodyEnd = self.X + dX
+            Y_BodyEnd = self.Y + dY
+            X_TailEnd = self.X + 2 * dX
+            Y_TailEnd = self.Y + 2 * dY
+            for i in range(self.X.size):
+                pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_BodyEnd[0, i], Y_BodyEnd[0, i]), 10)
+                pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_TailEnd[0, i], Y_TailEnd[0, i]), 3)
 
     def SetPosition(self, Position):
         self.X = Position[0]
@@ -217,8 +174,8 @@ class FOrganism:
         GlucoseLvl = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
         SimStep = Sim.GetSimStep()
         Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
-        print("SimStep {:06d} [Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)".format
-              (SimStep, self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))
+        # print("SimStep {:06d} [Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)".format
+        #       (SimStep, self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))
         self.Glucose_Prev = GlucoseLvl
 
     # def HomeostasisMessage(self):
@@ -228,60 +185,51 @@ class FOrganism:
         Sim.Homeostasis()   # Input 'Am' here
         self.Glucose_Prev = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
         self.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))
+        self.InitializeTrajectory()
         self.ReportStatus()
 
-    def Displacement(self, Distance, Angle):
-        dX =  Distance * math.cos(Angle)
-        dY = -Distance * math.sin(Angle)
-        return dX, dY
+    def InitializeTrajectory(self):
+        for i, (X, Y) in enumerate(zip(self.X[0], self.Y[0])):
+            self.Trajectory[i] = [(X, Y)]
+            self.TrajectoryColor.append(tuple(np.random.randint(0, 255, 3)))
 
-    def AddTrajectory(self):
-        self.Trajectory.append((self.X, self.Y))
+    def AddToTrajectory(self):
+        for i, (X, Y) in enumerate(zip(self.X[0], self.Y[0])):
+            self.Trajectory[i].append((X, Y))
 
     def DrawTrajectory(self):
-        TrajectoryPoints = self.Trajectory[:]
-        TrajectoryPoints.append((self.X, self.Y))
-
-        pygame.draw.aalines(Screen, RED, False, TrajectoryPoints)
+        for i in range(len(self.Trajectory)):
+            pygame.draw.aalines(Screen, self.TrajectoryColor[i], False, self.Trajectory[i])
 
 class FMolecule:
-    def __init__(self, InName, InX = W_S * 3 / 5 , InY = H_S * 2 / 5, Max = 100 * Unit * NA):
+    def __init__(self, InName, InX, InY):
         self.Name = InName
-        self.X_Ori = InX
-        self.Y_Ori = InY
-        self.Max = Max
+        self.X = InX
+        self.Y = InY
         self.DiffusionFactor = 2
         self.SpaceFactor = 50
 
-        # Gradient Drawing
-        self.GradLvl = 20
-        self.BaseLvl = 50
-        self.Skew = 0   # Choose 0 or any number < or > 0
-        self.GradStep = self.GetGradientStep()
-        self.GradStepList = self.GetGradientStepList()
-        self.GradDensityList = self.GetGradientDensityList()
-        self.DensityLimit = 5 * Unit * NA
-        self.GradBaseColor = 'Blue'
-        self.GradColorList = self.GetGradientColorList(baseColor=self.GradBaseColor)
+        # Heatmap Drawing
+        self.ReductionFactor = 5
 
         # Particle Drawing
         self.Particle_N = 300
-        self.Particle_PerLayer = 2
+        self.Particle_PerLayer = 3
         self.Particle_Radius = 2
-        self.Particle_SpreadFactor = 1.11
+        self.Particle_SpreadFactor = 1.2
         self.Particle_XY_Static = []
         self.InitializeStaticParticles()
 
     def InitializeStaticParticles(self):
         for i in range(int(self.Particle_N / self.Particle_PerLayer)):
             for j in range(self.Particle_PerLayer):
-                X = self.X_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
-                Y = self.Y_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
+                X = self.X + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
+                Y = self.Y + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
                 self.Particle_XY_Static.append((X, Y))
 
     def Reposition(self):
-        self.X_Ori = random.randint(W_S * 2 / 5, W_S * 3 / 5)
-        self.Y_Ori = random.randint(H_S * 2 / 5, H_S * 3 / 5)
+        self.X = random.randint(W_S * 2 / 5, W_S * 3 / 5)
+        self.Y = random.randint(H_S * 2 / 5, H_S * 3 / 5)
         self.Particle_XY_Static = []
         self.InitializeStaticParticles()
 
@@ -293,94 +241,24 @@ class FMolecule:
             New_Particle_XY_Static.append((X, Y))
         self.Particle_XY_Static = New_Particle_XY_Static
 
-    def GetGradientStep(self):
-        return math.floor(255 / self.GradLvl)
-
-    def GetGradientStepList(self):
-        StepList = list()
-        if self.Skew:
-            for i in range(self.GradLvl):
-                SkewedStep = None
-                if self.Skew > 0:   # positive Skew
-                    SkewedStep = self.Max / (i + 1)
-                else:   # negative Skew
-                    SkewedStep = 255 - (self.Max / (i + 1))
-                StepList.append(math.floor(SkewedStep))
-        else:
-            StepList = list(range(0, 255, self.GradStep))
-        return StepList
-
-    def GetGradientDensityList(self):
-        GradDensityList = list()
-        for gradStep in self.GradStepList:
-            GradDensityList.append(self.Max * gradStep / self.GradStepList[-1])
-        return GradDensityList
-
-    def GetGradientColorList(self, baseColor=None):
-        ColorList = list()
-        for gradient in self.GradStepList:
-            gradient_Scaled = math.floor((gradient / self.Max) * 255)
-            ColorList.append(GetColorGradient(255 - gradient, baseColor))
-            # ColorList.append(GetColorGradient(255 - gradient_Scaled, baseColor))
-        return ColorList
-
     def Draw(self, Data, pattern='heatmap'):
     # def Draw(self, pattern='particle', dynamics='static'):
 
         if pattern == 'heatmap':
             Max = np.max(Data)
-            ReductionFactor = 5
-            for x in range(0, Data.shape[0], ReductionFactor):
-                for y in range(0, Data.shape[1], ReductionFactor):
+            for x in range(0, Data.shape[0], self.ReductionFactor):
+                for y in range(0, Data.shape[1], self.ReductionFactor):
                     intensity = (Data[x][y] / Max) * 255
                     # print(x, y, intensity)
                     color = (255 - intensity, 255 - intensity, 255)
-                    pygame.draw.rect(Screen, color, ((x, y), (ReductionFactor, ReductionFactor)))
+                    pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))
 
         elif pattern == 'particle':
             for XY in self.Particle_XY_Static:
                 pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
 
-
-        # legacy
-        elif pattern == 'gradient':
-            for i in range(self.GradLvl):
-                # Skip the first circle
-                if i == 0:
-                    continue
-                else:
-                    Density = self.GradDensityList[i]
-                    Radius = self.GetRadius(Density)
-
-                    if Density < self.DensityLimit:
-                        continue
-
-                    Color = self.GradColorList[i]
-                    pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), Radius)
-
-        # # Old gradient
-        # elif pattern == 'gradient':
-        #     for i in range(self.GradLvl):
-        #         Color = (self.BaseLvl, self.BaseLvl, self.BaseLvl + (255 - self.BaseLvl) * ((i + 1) /self.GradLvl))
-        #         pygame.draw.circle(Screen, Color, (self.X_Ori, self.Y_Ori), 100 / (i + 1))
-        #     pygame.draw.circle(Screen, BLUE, (self.X_Ori, self.Y_Ori), 5)
-
-        # elif ((pattern == 'particle') & (dynamics == 'dynamic')):
-        #     for i in range(self.Particle_N):
-        #         X = self.X_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
-        #         Y = self.Y_Ori + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))
-        #         pygame.draw.circle(Screen, BLUE, (X, Y), self.Particle_Radius)
-        #
-        # elif ((pattern == 'particle') & (dynamics == 'static')):
-        #     for XY in self.Particle_XY_Static:
-        #         pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
-
         else:
             assert True, 'Unsupported molecule distribution pattern for drawing: %s' % pattern
-
-    def GetRadius(self, Amount):   # Need to be updated according to the diffusion equation
-        return ((self.Max / Amount) ** (1. / self.DiffusionFactor)) * self.SpaceFactor
-        # return (self.Max / Amount) ** (1. / self.DiffusionFactor)
 
 class FControl:
     def __init__(self):
@@ -434,16 +312,6 @@ class FControl:
 
         self.TransparencySwitch = False
 
-
-    #
-    #     self.ControlBoard = None
-    #     self.InitializeControlBoard()
-    #
-    # def InitializeControlBoard(self):
-    #     self.ControlBoard = pygame.Surface(Screen_Size, pygame.SRCALPHA)
-    #     self.ControlBoard.fill((0, 0, 0, 255))
-    #     # pygame.draw.rect(self.ControlBoard, (0, 0, 0, 255), (self.Radius, self.Radius), self.Radius)
-
     def SetInstructionText(self):
         self.InstructionText = 'Instructions\n'
         for Key, Value in self.Instructions.items():
@@ -465,29 +333,6 @@ class FControl:
             Text = Font_Monospace.render(TextLine, True, Color)
             Text_Rect = Text.get_rect()
             Text_Rect.topleft = (X, Y + Height * i)
-            Screen.blit(Text, Text_Rect)
-
-    def SetMoleculeGradient(self, Molecule, MolName='Molecule'):
-        self.MoleculeGradientText = '%s\n' % MolName
-        self.MoleculeGradientColor.append(WHITE)
-
-        for Density, Color in zip(Molecule.GradDensityList, Molecule.GradColorList):
-            if Density < Molecule.DensityLimit:
-                continue
-            self.MoleculeGradientText = self.MoleculeGradientText + "{:.2f}".format(Density / Unit / NA) + UnitTxt + '\n'
-            self.MoleculeGradientColor.append(Color)
-
-        self.MoleculeGradientColor.reverse()
-
-    def DisplayMoleculeGradient(self):
-        TextLines = self.MoleculeGradientText.splitlines()
-        TextLines.reverse()
-        Height = Font_Sans.get_linesize() + 2
-        X, Y = Screen.get_rect().bottomright
-        for i, (TextLine, Color) in enumerate(zip(TextLines, self.MoleculeGradientColor)):
-            Text = Font_Sans.render(TextLine, True, BLACK, Color)
-            Text_Rect = Text.get_rect()
-            Text_Rect.bottomright = (X, Y - Height * i)
             Screen.blit(Text, Text_Rect)
 
     def DisplayWelcome(self):
@@ -519,6 +364,7 @@ class FControl:
         Text_Rect.midtop = Screen.get_rect().midtop
         Screen.blit(Text, Text_Rect)
 
+    # TODO: Update display status
     def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am, switch=False):
         dGlucose = (Glucose_Ecoli - Glucose_Prev_Ecoli) / Glucose_Total * 100
         StatusText = "   Total Glucose : " + "{:.2f} ".format(Glucose_Total / Unit/ NA) + UnitTxt + "\n" \
@@ -544,7 +390,6 @@ class FControl:
             Screen.blit(Text, Text_Rect)
 
 def main():
-    global TransparencySwitch
     Control = FControl()
 
     SimUnitTime = 0.1
@@ -553,16 +398,9 @@ def main():
 
     # TODO: Communicate to initialize in Sim
     Glucose = FMolecule(GlucoseName, 800, 500)
-    Ecoli = FOrganism(EcoliName, 400, 400)
-    # Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * Unit)
-    # Ecoli = FOrganism('A', W_S / 3, H_S / 2)
+    Ecoli = FOrganism(EcoliName, 'Ecoli')
 
     Ecoli.Homeostasis(HomeostasisMolName)
-
-    # Control.SetMoleculeGradient(Glucose, 'Glucose')
-
-    # if Control.TransparencySwitch:
-    #     PetriDish.DrawTransparentArea()
 
     ElapsedTime = 0
     PrevTime = datetime.now()
@@ -583,26 +421,26 @@ def main():
 
                 # Glucose Control
                 elif event.key == pygame.K_LEFT:
-                    Glucose.X_Ori -= Control.MovementResolution
+                    Glucose.X -= Control.MovementResolution
                     Glucose.Move(-Control.MovementResolution, 0)
                     Control.Message = Control.SetMessage('LEFT')
                 elif event.key == pygame.K_RIGHT:
-                    Glucose.X_Ori += Control.MovementResolution
+                    Glucose.X += Control.MovementResolution
                     Glucose.Move(Control.MovementResolution, 0)
                     Control.Message = Control.SetMessage('RIGHT')
                 elif event.key == pygame.K_UP:
-                    Glucose.Y_Ori -= Control.MovementResolution
+                    Glucose.Y -= Control.MovementResolution
                     Glucose.Move(0, -Control.MovementResolution)
                     Control.Message = Control.SetMessage('UP')
                 elif event.key == pygame.K_DOWN:
-                    Glucose.Y_Ori += Control.MovementResolution
+                    Glucose.Y += Control.MovementResolution
                     Glucose.Move(0, +Control.MovementResolution)
                     Control.Message = Control.SetMessage('DOWN')
                 elif event.key == pygame.K_KP_PLUS or event.key == pygame.K_EQUALS:
-                    Glucose.Max *= 2
+                    # Glucose.Max *= 2
                     Control.Message = Control.SetMessage('+')
                 elif event.key == pygame.K_KP_MINUS or event.key == pygame.K_MINUS:
-                    Glucose.Max /= 2
+                    # Glucose.Max /= 2
                     Control.Message = Control.SetMessage('-')
                 elif event.key == pygame.K_LEFTBRACKET:
                     Control.MovementResolution -= 1
@@ -616,7 +454,7 @@ def main():
 
                 # Ecoli Control
                 elif event.key == pygame.K_o:
-                    Ecoli.Reinitialize()
+                    # Ecoli.Reinitialize()
                     Control.Message = Control.SetMessage('O')
                 elif event.key == pygame.K_r:
                     Ecoli.TumbleAngle = -Ecoli.TumbleAngle
@@ -628,10 +466,10 @@ def main():
                     Ecoli.TumbleAngle += pi/50
                     Control.Message = Control.SetMessage('"')
                 elif event.key == pygame.K_COMMA:
-                    Ecoli.Speed -= Ecoli.Speed_Max / 10
+                    # Ecoli.Speed -= Ecoli.Speed_Max / 10
                     Control.Message = Control.SetMessage('<')
                 elif event.key == pygame.K_PERIOD:
-                    Ecoli.Speed += Ecoli.Speed_Max / 10
+                    # Ecoli.Speed += Ecoli.Speed_Max / 10
                     Control.Message = Control.SetMessage('>')
                 elif event.key == pygame.K_t:
                     Ecoli.TrajectorySwitch = not Ecoli.TrajectorySwitch
@@ -651,22 +489,7 @@ def main():
                     Control.StatusSwitch = not Control.StatusSwitch
                     Control.Message = Control.SetMessage('A')
 
-                # # Irreversible transparency option disabled
-                # elif event.key == pygame.K_d:
-                #     Control.TransparencySwitch = not Control.TransparencySwitch
-                #     Control.Message = Control.SetMessage('D')
-
-
-        # if Control.TransparencySwitch:
-        #     Screen.set_clip(None)
-
         Screen.fill(GRAY1)
-
-        # if Control.TransparencySwitch:
-        #     Topleft = (PetriDish.X - PetriDish.Radius, PetriDish.Y - PetriDish.Radius)
-        #     ClipRect = pygame.Rect(Topleft, (PetriDish.Radius * 2, PetriDish.Radius * 2))
-        #     # ClipRect = pygame.Rect((0, 0), Screen_Size)
-        #     Screen.set_clip(ClipRect)
 
         PetriDish.Draw()
         Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
@@ -681,19 +504,10 @@ def main():
             ElapsedTime -= SimUnitTime
 
 
-        # if PetriDish.CheckOutOfBound(Ecoli.X, Ecoli.Y):
-        #     Ecoli.X = Ecoli.X_Prev
-        #     Ecoli.Y = Ecoli.Y_Prev
-        #     Ecoli.Tumble()
-
-        Ecoli.AddTrajectory()
         if Ecoli.TrajectorySwitch:
+            Ecoli.AddToTrajectory()
             Ecoli.DrawTrajectory()
-
         Ecoli.Draw()
-
-        # if Control.TransparencySwitch:
-        #     Screen.blit(PetriDish.TransparentCircleArea, Topleft)
 
         Glucose_Now = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
 
@@ -706,8 +520,8 @@ def main():
         if Control.ScoreSwitch:
             Control.Score += Glucose_Now / 10
             Control.DisplayScore()
-            if Glucose_Now > (Glucose.Max * 0.999):
-                Glucose.Reposition()
+            # if Glucose_Now > (Glucose.Max * 0.999):
+            #     Glucose.Reposition()
 
         # if Control.StatusSwitch:
         #     Control.DisplayStatus(Glucose.Max, Glucose_Now, Ecoli.Glucose_Prev, Ecoli.Am, switch=Ecoli.MechanisticModeSwitch)
@@ -723,34 +537,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-"""
-def BlitRotate1(Surface, Image, X, Y, X_Ori, Y_Ori, AngleInDegree):
-    # offset from pivot to center
-    Image_Rect = Image.get_rect(topleft = (X - X_Ori, Y - Y_Ori))
-    OffCenterToPivot = pygame.math.Vector2([X, Y]) - Image_Rect.center
-
-    # rotated offset from pivot to center
-    RotatedOffSet = OffCenterToPivot.rotate(-AngleInDegree)
-
-    # rotated image center
-    RotatedImage_Center = (X - RotatedOffSet.y, Y - RotatedOffSet.y)
-
-    # get a rotated image
-    RotatedImage = pygame.transform.rotate(Image,AngleInDegree)
-    RotatedImage_Rect = RotatedImage.get_rect()
-
-    # rotate and blit the image
-    Surface.blit(RotatedImage, RotatedImage_Rect)
-    pygame.draw.rect(Surface, (255, 255, 0), (*RotatedImage_Rect.topleft, *RotatedImage.get_size()), 2)
-
-def BlitRotate2(Surface, Image, Topleft, AngleInDegree):
-    # get a rotated image
-    RotatedImage = pygame.transform.rotate(Image,AngleInDegree)
-    RotatedImage_Rect = RotatedImage.get_rect(center = Image.get_rect(topleft=Topleft).center)
-
-    # rotate and blit the image
-    Surface.blit(RotatedImage, RotatedImage_Rect.topleft)
-    pygame.draw.rect(Surface, (255, 255, 0), RotatedImage_Rect, 2)
-
-"""

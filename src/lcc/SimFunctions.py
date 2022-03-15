@@ -227,7 +227,7 @@ def Displacement_2D(Distance, Angle):
 # Temporary chemotaxis simulation functions. 
 def BacterialChemotaxis(ThresholdSubject, X, Y, Angle, Threshold):
     # optimize the following code into additions and subtractions
-    Decision = int(ThresholdSubject < Threshold)
+    Decision = ThresholdSubject.transpose() < Threshold
     X_Run, Y_Run, Angle_Run  = Chemotaxis_Run(X, Y, Angle)
     X_Tumble, Y_Tumble, Angle_Tumble = Chemotaxis_Tumble(X, Y, Angle)
     X_New = np.where(Decision, X_Run, X_Tumble)
@@ -241,7 +241,7 @@ def Chemotaxis_Run(X, Y, Angle, Distance = 15):
 
 def Chemotaxis_Tumble(X, Y, Angle, Distance = 5):
     dX, dY = Displacement_2D(Distance, Angle)
-    NewAngle = random.random() * 2 * pi
+    NewAngle = np.random.random_sample(Angle.size) * 2 * pi
     return X + dX, Y + dY, NewAngle
 
 

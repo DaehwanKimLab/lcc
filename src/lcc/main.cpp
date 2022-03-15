@@ -1510,6 +1510,7 @@ void Print_Initialize_SpatialSimulation(ofstream& ofs)
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
+    auto Organisms = Context.OrganismList;
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
@@ -1520,8 +1521,11 @@ void Print_Initialize_SpatialSimulation(ofstream& ofs)
     ofs << endl;
 
     ofs << in+ in+ "self.Pos_Names = list()" << endl;
-    for (auto& location : ObjLoc) {
-        ofs << in+ in+ "self.Idx_Pos_" << location->Name << " = None" << endl;
+    ofs << in+ in+ "self.Pos_Name2Idx = dict()" << endl;
+
+    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+    for (auto& UniqueName : ObjUniqueNames) {
+        ofs << in+ in+ "self.Idx_Pos_" << UniqueName << " = None" << endl;
     }
     ofs << in+ in+ "self.Pos_X = None" << endl;
     ofs << in+ in+ "self.Pos_Y = None" << endl;
@@ -1555,14 +1559,22 @@ void Print_SetUp_SpatialSimulation(ofstream& ofs)
         i++;
     }
     ofs << endl;
-
+    
     ofs << in+ in+ "self.Pos_Names = [" << JoinStr2Str(Context.GetNames_LocationList("Compartment")) << "]" << endl;
-    // these indices are not used yet
+
     i = 0;
-    for (auto location : ObjLoc) {
-        ofs << in+ in+ "self.Idx_Pos_" << location->Name << " = np.asmatrix([" << i << "])" << endl;
+    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+    for (auto& UniqueName : ObjUniqueNames) {
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
+        ofs << in+ in+ "self.Idx_Pos_" << UniqueName << " = np.asmatrix([";
+        for (int j = i; j < (Count); j++) {
+            ofs << j << ", ";
+        }
+        ofs << "])" << endl;
+        ofs << in+ in+ "self.Pos_Name2Idx['" << UniqueName << "'] = self.Idx_Pos_" << UniqueName << endl;
         i++;
     }
+
     ofs << in+ in+ "# Currently support X, Y, Angle, Threshold" << endl;
     ofs << in+ in+  "self.Pos_X = np.array([";
     for (auto location: ObjLoc) {
@@ -1579,15 +1591,14 @@ void Print_SetUp_SpatialSimulation(ofstream& ofs)
     ofs << "]) " << endl;
 
     ofs << in+ in+  "self.Pos_Angle = np.array([";
-    for (auto location: ObjLoc) { ofs << "90.0, ";
+    for (auto location: ObjLoc) { ofs << "0.0, ";
     }
     ofs << "]) " << endl;
 
-    ofs << in+ in+  "self.Pos_Threshold = np.array([";
+    ofs << in+ in+  "self.Pos_Threshold = np.asmatrix([";
     for (auto location: ObjLoc) {
-//        ofs << "0.0, ";
+        ofs << "0.0, ";
 //        ofs << Numbers::MultiplyByAvogadro(0.983405e-9) << ", ";
-        ofs << Utils::SciFloat2Str(5.905192e+14 * 0.999999) << ", "; // TODO: Make it dynamic from Simulation.Homeostasis
     }
     ofs << "]) " << endl;
     ofs << endl;
@@ -1631,12 +1642,19 @@ void WriteSimModule()
 
     ofs << in+ in+ "# Temporary legend attribute" << endl;
     ofs << in+ in+ "self.Mol_Names = list()" << endl;
+    ofs << in+ in+ "self.Mol_Name2Idx = dict()" << endl;
     ofs << in+ in+ "self.Legends = list()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
-    ofs << in+ in+ "self.Count_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
-    ofs << in+ in+ "self.dCount_All = np.zeros([1, " << Context.MoleculeList.size() << "])" << endl;
+    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    auto ObjLoc = Context.GetSubList_LocationList("Compartment");
+
+    int MatrixSize = 1;
+    if (!ObjLoc.empty()) { 
+        MatrixSize = ObjLoc.size();
+    }
+    ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
     ofs << endl;
 
     if (!Context.LocationList.empty()) {
@@ -1790,6 +1808,11 @@ void WriteSimModule()
     // for legends
     std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
     ofs << in+ in+ "self.Mol_Names = [" << JoinStr2Str(MolNames) << "]" << endl;
+    int i = 0;
+    for (auto MolName : MolNames) {
+        ofs << in+ in+ "self.Mol_Name2Idx['" << MolName << "'] = np.asmatrix([" << i << "])" <<endl;
+        i++;
+    }
     ofs << in+ in+ "self.Legends = ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
@@ -1805,8 +1828,27 @@ void WriteSimModule()
         MolarityFactor_Molecules.push_back(MolarityFactor);
     }
 
-    ofs << in+ in+ "Idx_Mol = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol) << "])" << endl;
-    ofs << in+ in+ "Count_Mol = np.array([" << JoinFloat2Str(InitialCount_Molecules) << "])" << endl;
+    
+    ofs << in+ in+ "Idx_Mol = np.asmatrix([";
+    if (ObjLoc.empty()) {
+        ofs << JoinInt2Str_Idx(Idx_Mol);
+    } else {
+        for (auto objLoc : ObjLoc) {
+            ofs << "[" << JoinInt2Str_Idx(Idx_Mol) << "], ";
+        }
+    }
+    ofs << "])" << endl;
+
+    ofs << in+ in+ "Count_Mol = np.array([";
+    if (ObjLoc.empty()) {
+        ofs << JoinFloat2Str(InitialCount_Molecules);
+    } else {
+        for (auto objLoc : ObjLoc) {
+            ofs << "[" << JoinFloat2Str(InitialCount_Molecules) << "], ";
+        }
+    }
+    ofs << "])" << endl;
+
     ofs << in+ in+ "MolarityFactor_Mol = np.array([" << JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
     ofs << in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
     ofs << in+ in+ "Count_Mol *= MolarityFactor_Mol" << endl;
@@ -1831,15 +1873,15 @@ void WriteSimModule()
 
     ofs << in+ "def ExportData(self, Time):" << endl;
     ofs << in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
-    int i = 0;
+    i = 0;
     int i_SimStep = i + 1;
-    ofs << in+ in+ "Data[0, " << i << ":" << i_SimStep << "] = Time" << endl;
+    ofs << in+ in+ "Data[:, " << i << ":" << i_SimStep << "] = Time" << endl;
 
     int i_Vol = i_SimStep + 1;
-    ofs << in+ in+ "Data[0, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
+    ofs << in+ in+ "Data[:, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
 
     int i_Count_Mol = i_Vol + MolNames.size();
-    ofs << in+ in+ "Data[0, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
+    ofs << in+ in+ "Data[:, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
 
     ofs << in+ in+ "return Data" << endl;
     ofs << endl;
@@ -1874,8 +1916,6 @@ void WriteSimModule()
 
     // Distribution to Count
     // Update spatial distribution to a specific coord values --> to LocationList method
-    auto MolLoc = Context.GetSubList_LocationList("Molecule");
-    auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
     if (!MolLoc.empty()) {
         for (auto molLoc : MolLoc) {
@@ -1966,7 +2006,7 @@ void WriteSimModule()
     if (!MolLoc.empty()) {
         for (auto molLoc : MolLoc) {
             int Idx = Context.GetIdxByName_MoleculeList(molLoc->Name);
-            ofs << in+ in+ "self.Idx_DistToCoord_" << molLoc->Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+            ofs << in+ in+ "self.Idx_DistToCoord_" << molLoc->Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
         i++;
         }
     }
@@ -2009,9 +2049,9 @@ void WriteSimModule()
     // Homeostasis
     for (auto& name : HomeostasisList) {
         int Idx = Context.GetIdxByName_MoleculeList(name);
-        ofs << in+ in+ "self.Idx_Count_Homeostasis_" << name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Count_Homeostasis_" << name << " = np.array([" << std::to_string(Idx) << "])" << endl;
         Idx = 0; // Get index of "E" ihe location list? Use MolName to connect to "E"
-        ofs << in+ in+ "self.Idx_Pos_Homeostasis_" << name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Pos_Homeostasis_" << name << " = np.array([" << std::to_string(Idx) << "])" << endl;
         ofs << in+ in+ "self.Homeostasis_Prev_" << name << " = 0" << endl;
     }
     ofs << endl;
@@ -2144,9 +2184,14 @@ void WriteSimModule()
     ofs << in+ in+ "print('Simulation Run_WithoutSpatialSimulation Completed')" << endl;
     ofs << endl;
 
+    // TODO: scale up exporting
     ofs << in+ "def ExportData(self):" << endl;
-    ofs << in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
-    ofs << in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
+    if (Context.LocationList.empty()) {
+        ofs << in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
+        ofs << in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
+    } else {
+        ofs << in+ in+ "pass" << endl;
+    }
     ofs << endl;
 
     ofs << in+ "def ApplySimTimeResolution(self, Rate):" << endl;
@@ -2160,13 +2205,17 @@ void WriteSimModule()
     // get idx for 'L'
     // Update count at idx
 
+
+    // here
     ofs << in+ "def DistributionToCount(self):" << endl;
-    if (!MolLoc.empty()) {
-        for (auto molLoc: MolLoc) {
-            ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'E'"
-                << ")" << endl;
-            ofs << in + in + "np.put_along_axis(self.State.Count_All, self.Idx_DistToCoord_" << molLoc->Name
-                << ", Count, axis=1)" << endl;
+    if (!MolLoc.empty() & !ObjLoc.empty()) {
+        for (auto molLoc : MolLoc) {
+            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+            for (auto UniqueName : ObjUniqueNames) {
+                ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+                    << "] = Count.transpose()" << endl;
+            }
         }
     } else {
         ofs << in+ in+ "pass" << endl;
@@ -2254,7 +2303,6 @@ void WriteSimModule()
         ofs << name << ", ";
     }
     ofs << "')" << endl;
-    ofs << endl;
 
     for (auto& name : HomeostasisList) {
         ofs << in + in + "bNotHomeostasis_" << name << " = True" << endl;
@@ -2279,13 +2327,16 @@ void WriteSimModule()
         std::string Prev = "self.Homeostasis_Prev_" + name;
         std::string Idx_Count = "self.Idx_Count_Homeostasis_" + name;
         std::string Idx_Pos = "self.Idx_Pos_Homeostasis_" + name;
+        std::string Threshold = "self.State.Pos_Threshold[" + Idx_Pos + "]";
 
         ofs << in+ in+ in+ Now << " = self.GetCountByName('" << name << "')" << endl;
-        ofs << in+ in+ in+ "if " << Now << " > 0 and abs(" << Now <<  " - " << Prev << ") / " << Now << " < " << Utils::SciFloat2Str(HomeostasisFactor) << ":" << endl;
+        ofs << in+ in+ in+ "if np.all(" << Now << " > 0) and np.all(abs(" << Now <<  " - " << Prev << ") / " << Now << " < " << Utils::SciFloat2Str(HomeostasisFactor) << "):" << endl;
         ofs << in+ in+ in+ in+ "bNotHomeostasis_" << name << " = False" << endl;
-        ofs << in+ in+ in+ in+ "self.State.Pos_Threshold[" << Idx_Pos << "] = " << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
-        ofs << in+ in+ in+ in+ "print('Homeostasis achieved for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
-        ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
+        ofs << in+ in+ in+ in+ "self.State.Pos_Threshold[" << Idx_Pos << ", :] = (" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ").transpose()"<< endl;
+        ofs << in+ in+ in+ in+ "print('[Homeostasis] achieved for      : " << name << " @', self.Debug_ApplyUnit(" << Now << ").transpose(), self.UnitTxt)" << endl;
+        ofs << in+ in+ in+ in+ "print('[Homeostasis] threshold set for : " << name << " @', self.Debug_ApplyUnit(" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ").transpose(), self.UnitTxt)" << endl;
+        //ofs << in+ in+ in+ in+ "print('Homeostasis achieved for      : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
+        //ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ")), self.UnitTxt)" << endl;
         ofs << in+ in+ in+ "self.Homeostasis_Prev_" << name << " = Homeostasis_Now_" << name << endl;
     }
     ofs << endl;
@@ -2320,15 +2371,7 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ "def SpatialLocation(self):" << endl;
-    // hardcoded
     ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis_Am)" << endl; // TODO:set up dynamic indexing
-    if (Option.bDebug) {
-        ofs << in+ in+ "Decision = int(HomeostasisMolecule < self.State.Pos_Threshold[0])" << endl;
-        ofs << in+ in+ "if Decision:" << endl;
-        ofs << in+ in+ in+ "print('Run   ', end=' : ')" << endl;
-        ofs << in+ in+ "else:" << endl;
-        ofs << in+ in+ in+ "print('Tumble', end=' : ')" << endl;
-    }
     ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = sim.BacterialChemotaxis(np.array(HomeostasisMolecule), self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Pos_Threshold)" << endl;
     ofs << endl;
 
@@ -2386,9 +2429,9 @@ void WriteSimModule()
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << in+ in+ AmountTextStr << substrate << "_" << i << " = ";
                     if (bMolaritySys) {
-                        ofs << "sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                        ofs << "sim.CountToConc(self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "], self.State.Vol)" << endl;
                     } else {
-                        ofs << "np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << ")" << endl;
+                        ofs << "self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "]" << endl;
                     }
                 } 
             }
@@ -2397,9 +2440,9 @@ void WriteSimModule()
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
                 ofs << in+ in+ AmountTextStr << "Regulator = ";
                 if (bMolaritySys) {
-                    ofs << "sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
+                    ofs << "sim.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
                 } else {
-                    ofs << "np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << ")" << endl;
+                    ofs << "self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "]" << endl;
                 }
             } 
 
@@ -2466,23 +2509,23 @@ void WriteSimModule()
             ofs << in+ "def EnzymaticReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Enzyme
-             ofs << in+ in+ "Conc_Enz = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Enz_" << Type << "), self.State.Vol)" << endl;
+             ofs << in+ in+ "Conc_Enz = sim.CountToConc(self.State.Count_All[:, self.State.Idx_Enz_" << Type << "], self.State.Vol)" << endl;
             // Reactants and products or EnzSubstrate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
-                        ofs << in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_" << substrate << "_" << i << "_" << Type << "), self.State.Vol)" << endl;
+                        ofs << in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "], self.State.Vol)" << endl;
                     } 
                 }
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << in+ in+ "Conc_EnzSub = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_EnzSub_" << Type << "), self.State.Vol)" << endl;
+                ofs << in+ in+ "Conc_EnzSub = sim.CountToConc(self.State.Count_All[:, self.State.Idx_EnzSub_" << Type << "], self.State.Vol)" << endl;
             } else {
                 Utils::Assertion(false, "Unsupported Enz Reaction Type: " + Type);
             }
 
             // Regulators 
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << in+ in+ "Conc_Regulator = sim.CountToConc(np.take(self.State.Count_All, self.State.Idx_Regulator_" << Type << "), self.State.Vol)" << endl;
+                ofs << in+ in+ "Conc_Regulator = sim.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
             }
 
             // Calculate Rate
@@ -2626,11 +2669,11 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ "def GetCount(self, Idx):" << endl;
-    ofs << in+ in+ "return np.take(self.State.Count_All, Idx)" << endl;
+    ofs << in+ in+ "return self.State.Count_All[:, Idx]" << endl;
     ofs << endl;
 
     ofs << in+ "def GetConcentration(self, Idx):" << endl;
-    ofs << in+ in+ "return sim.CountToConc(np.take(self.State.Count_All, Idx))" << endl;
+    ofs << in+ in+ "return sim.CountToConc(self.State.Count_All[:, Idx])" << endl;
     ofs << endl;
 
     ofs << in+ "def GetDistribution(self, Idx):" << endl;
@@ -2656,7 +2699,7 @@ void WriteSimModule()
     ofs << in+ "# Temporary routines" << endl;
 
     ofs << in+ "def GetMolIdx(self, Name):" << endl;
-    ofs << in+ in+ "return self.State.GetMolNames().index(Name)" << endl;
+    ofs << in+ in+ "return self.State.Mol_Name2Idx[Name]" << endl;
     ofs << endl;
 
     ofs << in+ "def GetCountByName(self, Name):" << endl;
@@ -2668,7 +2711,7 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ "def GetPosIdx(self, Name):" << endl;
-    ofs << in+ in+ "return self.State.GetPosNames().index(Name)" << endl;
+    ofs << in+ in+ "return self.State.Pos_Name2Idx[Name]" << endl;
     ofs << endl;
 
     ofs << in+ "def GetPositionXY(self, Idx):" << endl;
@@ -2699,7 +2742,7 @@ void WriteSimModule()
     ofs << endl;
 
     ofs << in+ "def GetCountFromDistribution(self, Dist, X, Y):" << endl;
-    ofs << in+ in+ "return Dist[int(X)][int(Y)]" << endl;
+    ofs << in+ in+ "return Dist[X.astype(int), Y.astype(int)]" << endl;
 //    ofs << in+ in+ "return np.take(Dist, ([X,Y]))" << endl;
     ofs << endl;
 
@@ -2746,7 +2789,7 @@ void WriteSimModule()
     ofs << in+ in+ "# Get final initiation weight by applying initiation site count" << endl;
     ofs << in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
     ofs << in+ in+ "Count_Template_Nascent = np.count_nonzero(np.where(Len_Template != -1, 1, 0), axis=0)   # Assumption: each nascent template has one highly efficient initiation site" << endl;
-    ofs << in+ in+ "Count_TemplateSubset_Nascent = np.take(Count_Template_Nascent, Idx_TemplateSubset)" << endl;
+    ofs << in+ in+ "Count_TemplateSubset_Nascent = np.take(Count_Template_Nascent, Idx_TemplateSubset)   # May need to update np.take with fancy indexing [:, idx]" << endl;
     ofs << in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_TemplateSubset_Nascent" << endl;
     ofs << in+ in+ "Weight_Initiation = Count_InitiationSite * Weight " << endl;
     ofs << endl;
