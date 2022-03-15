@@ -681,7 +681,18 @@ std::vector<const FContainer *> FCompilerContext::GetSubList_ContainerList(std::
                 SubList.push_back(container);
             }
         }
+    } else if (Type == "Organism") {
+        for (auto& container : ContainerList) {
+            if (Utils::is_class_of<FOrganism, FContainer>(container)) {
+                SubList.push_back(container);
+            }
+        }
+    } else if (Type == "All") {
+        for (auto& container : ContainerList) {
+            SubList.push_back(container);
+        }
     }
+    
  
     return SubList;
 }
@@ -942,28 +953,41 @@ std::vector<float> FCompilerContext::GetLocationByName_LocationList(std::string 
     return coord;
 }
 
+bool FCompilerContext::CheckDuplicates_List(std::string Type, std::string Name)
+{
+    bool Duplicate = false;
+    std::vector<std::string> Names;
+
+    if      (Type == "CountList")     { Names = GetNames_CountList("All"); }
+    else if (Type == "LocationList")  { Names = GetNames_LocationList("All"); }
+    else if (Type == "ContainerList") { Names = GetNames_ContainerList("All"); }
+    
+    if (std::find(Names.begin(), Names.end(), Name) != Names.end()) {
+        Duplicate = true;
+    }
+
+    return Duplicate;
+}
+
 std::vector<const FLocation *> FCompilerContext::GetSubList_LocationList(std::string Type)
 {
     std::vector<const FLocation *> SubList;
     std::vector<std::string> Names;
 
-    if (Type == "Molecule") {
-        Names = GetNames_MoleculeList();
-        for (auto& location : LocationList) {
-            if (std::find(Names.begin(), Names.end(), location->Name) != Names.end()) {
-                SubList.push_back(location);
+    if      (Type == "Molecule")    { Names = GetNames_MoleculeList(); }
+    else if (Type == "Compartment") { Names = GetNames_ContainerList(Type); }
+    else if (Type == "Organism")    { Names = GetNames_ContainerList(Type); }
+    else if (Type == "All")         {}
+
+    if (!Names.empty()) {
+        for (auto& item : LocationList) {
+            if (std::find(Names.begin(), Names.end(), item->Name) != Names.end()) {
+                SubList.push_back(item);
             }
         }
-    } else if (Type == "Compartment") {
-        Names = GetNames_ContainerList(Type);
-        for (auto& location : LocationList) {
-            if (std::find(Names.begin(), Names.end(), location->Name) != Names.end()) {
-                SubList.push_back(location);
-            }    
-        }
     } else {
-        for (auto& location : LocationList) {
-            SubList.push_back(location);
+        for (auto& item : LocationList) {
+            SubList.push_back(item);
         }
     }
 
@@ -973,24 +997,75 @@ std::vector<const FLocation *> FCompilerContext::GetSubList_LocationList(std::st
 std::vector<std::string> FCompilerContext::GetNames_LocationList(std::string Type)
 {
     std::vector<const FLocation *> SubList = GetSubList_LocationList(Type);
-    std::vector<std::string> names; 
+    std::vector<std::string> StrList; 
 
     for (auto& location : SubList) {
-        names.push_back(location->Name);
+        StrList.push_back(location->Name);
     }
 
-    return names;
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetUniqueNames_LocationList(std::string Type)
+{
+    std::vector<const FLocation *> SubList = GetSubList_LocationList(Type);
+    std::vector<std::string> StrList; 
+
+    for (auto& location : SubList) {
+        if (std::find(StrList.begin(), StrList.end(), location->Name) == StrList.end()) {
+            StrList.push_back(location->Name);
+        }
+    }
+
+    return StrList;
+}
+
+std::vector<std::string> FCompilerContext::GetNames_CountList(std::string Type)
+{
+    std::vector<const FCount *> SubList = GetSubList_CountList(Type);
+    std::vector<std::string> StrList;
+
+    for (auto& item : SubList){
+        StrList.push_back(item->Name);
+    }
+    return StrList;
+}
+
+std::vector<const FCount *> FCompilerContext::GetSubList_CountList(std::string Type)
+{
+    std::vector<const FCount *> SubList;
+    std::vector<std::string> Names;
+
+    if      (Type == "Molecule")    { Names = GetNames_MoleculeList(); }
+    else if (Type == "Compartment") { Names = GetNames_ContainerList(Type); }
+    else if (Type == "Organism")    { Names = GetNames_ContainerList(Type); }
+    else if (Type == "All")         {}
+
+    if (!Names.empty()) {
+        for (auto& item : CountList) {
+            if (std::find(Names.begin(), Names.end(), item->Name) != Names.end()) {
+                SubList.push_back(item);
+            }
+        }
+    } else {
+        for (auto& item : CountList) {
+            SubList.push_back(item);
+        }
+    }
+
+    return SubList;
 }
 
 float FCompilerContext::GetInitialCountByName_CountList(std::string MolName)
 {
     // returns 0 if there is no initial count set
+    float sum = 0;
     for (auto& count : CountList) {
         if ((count->Name == MolName) & (count->Begin == 0)) {
-            return count->Amount;
+            sum += count->Amount;
         }
     }
-    return 0;
+    return sum;
 }
 
 bool FCompilerContext::GetMolarityFactorByName_CountList(std::string MolName)

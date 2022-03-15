@@ -673,9 +673,11 @@ public:
     std::vector<float> GetLocationByName_LocationList(std::string MolName);
     std::vector<const FLocation *> GetSubList_LocationList(std::string Type);
     std::vector<std::string> GetNames_LocationList(std::string Type);
-
+    std::vector<std::string> GetUniqueNames_LocationList(std::string Type);
 
     // CountList
+    std::vector<std::string> GetNames_CountList(std::string Type);
+    std::vector<const FCount *> GetSubList_CountList(std::string Type);
     float GetInitialCountByName_CountList(std::string InputName);
     bool GetMolarityFactorByName_CountList(std::string InputName);
     bool CheckMolarityFactorTrueForAny_CountList();
@@ -692,6 +694,7 @@ public:
     std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
     std::vector<std::string> GetNameListFromMoleculeList(std::string FClassName);
     std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
+    bool CheckDuplicates_List(std::string ListType, std::string Name);
 
     std::vector<const FGene *> GetList_Gene_MoleculeList();
     std::vector<const FRNA *> GetList_RNA_MoleculeList();
