@@ -1901,6 +1901,10 @@ void WriteSimModule()
     ofs << in+ in+ "print(self.Data)" << endl;
     ofs << endl;
 
+    ofs << in+ "def ExportDataAsList(self):" << endl;
+    ofs << in+ in+ "return np.array(self.Data).flatten().tolist()" << endl;
+    ofs << endl;
+
     // class FSimulation
     ofs << "class FSimulation:" << endl;
     ofs << in+ "def __init__(self, InState, InDataset, InDataManager):" << endl;
