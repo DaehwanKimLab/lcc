@@ -9,26 +9,14 @@
 
 // Protein amounts imported from Bitbol and Wingreen, 2015 Biophysical Journal. Fundamental Constraints on the Abundances of Chemotaxis Proteins.
 // CheA = 2.97 uM, CheY = 9.73 uM, CheZ = 3.80 uM, CheB = 0.28 uM, CheR = 0.17 uM, FliM = 1.43 uM, where 16% of FliM that are free are discounted.
+SimRes = 100;
+
 
 
 petridish P
 {
-}
   ecoli E
   {
-
-  }
-  E(400, 400, 0) = 1;
-  E(400, 500, 0) = 1;
-  E(400, 600, 0) = 1;
-  E(500, 400, 0) = 1;
-  E(500, 500, 0) = 1;
-  E(500, 600, 0) = 1;
-  E(600, 600, 0) = 1;
-  E(600, 500, 0) = 1;
-  E(600, 400, 0) = 1;
-
-
     protein R
     {
       reaction R1(A --> Am, kcat=1, KM=1e-10nM);
@@ -50,9 +38,16 @@ petridish P
     reaction R2(A + L --> AL, k=1e9, krev=1);
 
     R = 5nM, B = 0.1nM, A = 500nM;
+  }
+
+  for (i = 0; i < 10; i = i + 1)
+  {
+    E(rand(400, 600), rand(400, 600), 0) = 1;
+  }
 
   glucose L;
   L(800, 500, 0) = 100nmol;
+}
 
-SimSteps = 30000, SimRes = 100;
+
 
