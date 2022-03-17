@@ -81,7 +81,7 @@ Title = "Vis2D"
 pygame.display.set_caption(Title)
 
 Font_Sans = pygame.font.Font('freesansbold.ttf', 20)
-Font_Monospace = pygame.font.SysFont('monospace', 15, True)
+Font_Monospace = pygame.font.SysFont('monospace', 18, True)
 
 # Load model
 State = SimModule.FState()
@@ -126,7 +126,7 @@ class FOrganism:
 
         self.BodyLength = 20
         self.BodyThickness = 10
-        self.FlagellaLength = 40
+        self.FlagellaLength_Fold = 2
         self.FlagellaThickness = 3
 
         # Memory for display & debugging
@@ -143,15 +143,18 @@ class FOrganism:
         if self.Species == 'Ecoli':
             Color = YELLOW
             # pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)
-            dX =  np.cos(self.Angle) * -20
-            dY = -np.sin(self.Angle) * -20
+            dX =  np.cos(self.Angle) * -self.BodyLength
+            dY = -np.sin(self.Angle) * -self.BodyLength
             X_BodyEnd = self.X + dX
             Y_BodyEnd = self.Y + dY
-            X_TailEnd = self.X + 2 * dX
-            Y_TailEnd = self.Y + 2 * dY
+            X_TailEnd = self.X + self.FlagellaLength_Fold * dX
+            Y_TailEnd = self.Y + self.FlagellaLength_Fold * dY
             for i in range(self.X.size):
-                pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_BodyEnd[0, i], Y_BodyEnd[0, i]), 10)
-                pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_TailEnd[0, i], Y_TailEnd[0, i]), 3)
+                if i == self.X.size - 1:
+                    Color = RED
+                pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_BodyEnd[0, i], Y_BodyEnd[0, i]), self.BodyThickness)
+                pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_TailEnd[0, i], Y_TailEnd[0, i]), self.FlagellaThickness)
+
 
     def SetPosition(self, Position):
         self.X = Position[0]
@@ -176,7 +179,6 @@ class FOrganism:
         Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
         # print("SimStep {:06d} [Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)".format
         #       (SimStep, self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ("+" if Delta >= 0 else ""), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))
-        self.Glucose_Prev = GlucoseLvl
 
     # def HomeostasisMessage(self):
     #     print("[Homeostasis {:06d}] Glucose:{:.6f}{} Am:{:.6f}{}".format(self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, self.Am / Unit / NA, UnitTxt))
@@ -359,30 +361,30 @@ class FControl:
         Screen.blit(Text, Text_Rect)
 
     def DisplayTime(self):
-        Text = Font_Sans.render('Time: ' + str(round(self.Time / 1000)), True, BLACK)
+        Text = Font_Sans.render('Simulation Time: ' + str(round(self.Time)), True, BLACK)
         Text_Rect = Text.get_rect()
         Text_Rect.midtop = Screen.get_rect().midtop
         Screen.blit(Text, Text_Rect)
 
     # TODO: Update display status
-    def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am, switch=False):
-        dGlucose = (Glucose_Ecoli - Glucose_Prev_Ecoli) / Glucose_Total * 100
-        StatusText = "   Total Glucose : " + "{:.2f} ".format(Glucose_Total / Unit/ NA) + UnitTxt + "\n" \
-                     + " Glucose @ Ecoli :" + "{:.2f} ".format(Glucose_Ecoli/ Unit / NA) + UnitTxt + "\n" \
-                     + " dGlucose @ Ecoli : " + ("+" if dGlucose >= 0 else "") + "{:.5f}".format(dGlucose) + " %"
-        # StatusText = "   Total Glucose : " + str(Glucose_Total) + "\n  Glucose @ Ecoli :" + "{:.5f}".format(Glucose_Ecoli)
-        if switch:
-            StatusText += '\n[MECHANISTIC MODE]'
-            StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f} ".format(Am / Unit / NA) + UnitTxt
-            # StatusText = StatusText + "\nAm level of Ecoli : " + "{:.5f}".format(Am)
-        else:
-            StatusText += '\n[ALGORITHMIC MODE]'
+    # def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am):
+    def DisplayStatus(self, Glucose_Ecoli, Glucose_Prev_Ecoli, Am_Ecoli):
+        Glucose_Now = Glucose_Ecoli[0, -1]
+        Glucose_Prev = Glucose_Prev_Ecoli[0, -1]
+        Am = Am_Ecoli[-1, 0, 0]
+        dGlucose = (Glucose_Now - Glucose_Prev) / Glucose_Now * 100
+
+        # StatusText = "   Total Glucose : " + "{:.2f} ".format(Glucose_Total / Unit/ NA) + UnitTxt + "\n" \
+        StatusText = " Glucose @ Ecoli :" + "{:.2f} ".format(Glucose_Now/ Unit / NA) + UnitTxt + "\n" \
+                     + " dGlucose @ Ecoli : " + ("+" if dGlucose >= 0 else "") + "{:.5f}".format(dGlucose) + " %" \
+                     + "\nAm level of Ecoli : " + "{:.5f} ".format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info
+
         TextLines = StatusText.splitlines()
         Height = Font_Monospace.get_linesize() + 2
         X, Y = Screen.get_rect().topright
         Color = BLACK
         for i, TextLine in enumerate(TextLines):
-            if 'MODE' in TextLine:
+            if 'Ecoli' in TextLine:
                 Color = RED
             Text = Font_Monospace.render(TextLine, True, Color)
             Text_Rect = Text.get_rect()
@@ -524,8 +526,11 @@ def main():
             # if Glucose_Now > (Glucose.Max * 0.999):
             #     Glucose.Reposition()
 
-        # if Control.StatusSwitch:
-        #     Control.DisplayStatus(Glucose.Max, Glucose_Now, Ecoli.Glucose_Prev, Ecoli.Am, switch=Ecoli.MechanisticModeSwitch)
+        if Control.StatusSwitch:
+            Control.DisplayStatus(Glucose_Now, Ecoli.Glucose_Prev, Ecoli.Am)
+
+        # Update Glucose Prev
+        Ecoli.Glucose_Prev = Glucose_Now
 
         Control.Time += 1
         Control.DisplayTime()
