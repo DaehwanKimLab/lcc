@@ -3,7 +3,7 @@ import pygame
 import math
 import random
 from datetime import datetime
-import BacterialChemotaxis_Sim
+import Ingalls2013_Model6_13_BacterialChemotaxis_SimForVis
 
 # Good for random walk demonstrations
 
@@ -93,7 +93,7 @@ Font_Sans = pygame.font.Font('freesansbold.ttf', 20)
 Font_Monospace = pygame.font.SysFont('monospace', 15, True)
 
 # Initialize model
-Model = BacterialChemotaxis_Sim.FModel()
+Model = Ingalls2013_Model6_13_BacterialChemotaxis_SimForVis.FModel()
 
 
 class FEnvironment:
@@ -160,7 +160,7 @@ class FOrganism:
 
     def LoadImage(self):
         if self.Species == 'Ecoli':
-            self.Image = pygame.image.load('pygamelib/ecoli.png')
+            self.Image = pygame.image.load('../pygamelib/ecoli.png')
             self.Image = pygame.transform.scale(self.Image, (self.Image_Size_X, self.Image_Size_Y))
             self.Image_Rect = self.Image.get_rect()
             self.RotateImage(220)

@@ -103,8 +103,8 @@
                                 kM1 = 1, kM2 = 1
 
 - [BacterialChemotaxis.py](Ingalls2013_Model6_13_BacterialChemotaxis.py)
-- [BacterialChemotaxis.lpp](Ingalls2013_Model6_13_BacterialChemotaxis.lpp)
-- *[Pygame_BacterialChemotaxis.py](../BacterialChemotaxis.py)
+- *[BacterialChemotaxis_Vis.py](Ingalls2013_Model6_13_BacterialChemotaxis_Vis.py)
+- [BacterialChemotaxis.lpp](Ingalls2013_Model6_13_BacterialChemotaxis_ForSimVis.lpp)
 
 
 
