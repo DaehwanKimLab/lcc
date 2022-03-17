@@ -389,7 +389,13 @@ std::vector<float> NFunctionCallExpression::GetParameters(std::string Type = "")
             const auto& parameter = dynamic_cast<const NConstantExpression *>(arg.get());
             Parameters.push_back(std::stof(parameter->Evaluate()));
         // Other NExpression classes may be added for parsing
-//        } else if () {
+        } else if (Utils::is_class_of<NFunctionCallExpression, NExpression>(arg.get())) {
+            const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(arg);
+            if ((FCExp->GetName() == "random") || (FCExp->GetName() == "rand")) {
+                for (auto value : FCExp->RandomNumbers()) {
+                    Parameters.push_back(value);
+                }
+            }
         }
     }
 
@@ -399,5 +405,43 @@ std::vector<float> NFunctionCallExpression::GetParameters(std::string Type = "")
 
     return Parameters;
 }
+
+std::vector<float> NFunctionCallExpression::RandomNumbers() const {
+   Utils::Assertion(((GetName() == "random") || (GetName() == "rand")), "Not a random function" + GetName());
+
+   std::vector<float> RandomNumberArray;
+   float begin = Numbers::GetFloatDefault();
+   float end = Numbers::GetFloatDefault();
+   int size = Numbers::GetIntDefault();
+
+   int i = 0;
+   for (auto arg : *Args) {
+       if (Utils::is_class_of<NConstantExpression, NExpression>(arg.get())) {
+           auto Value = std::stof(dynamic_pointer_cast<NConstantExpression>(arg)->Evaluate());
+           if      (i == 0) { begin = Value; }
+           else if (i == 1) { end   = Value; }
+           else if (i == 2) { Utils::Assertion((Value > 0), "The size of random array must be greater than 0");
+                              size  = Value; }
+       }
+       i++;
+   }
+
+   // default value setting
+   if (begin == Numbers::GetFloatDefault()) { begin = 0; }
+   if (end   == Numbers::GetFloatDefault()) { end   = 1; }
+   if (size  == Numbers::GetIntDefault()  ) { size  = 1; }
+
+   for (i = 0; i < size; i++) {
+       RandomNumberArray.push_back(Numbers::RandomNumber(begin, end));
+   }
+
+   return RandomNumberArray;
+}
+
+
+
+
+
+
 
 

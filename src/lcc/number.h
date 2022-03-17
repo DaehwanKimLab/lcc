@@ -18,6 +18,7 @@ namespace Numbers {
 float GetAvogadro();
 float MultiplyByAvogadro(float InFloat);
 std::string GetAvogadroStr();
+float RandomNumber(float Min, float Max);
 float GetFloatDefault();
 float GetIntDefault();
 bool CheckMolarity(std::string InUnit);

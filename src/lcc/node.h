@@ -1101,8 +1101,16 @@ public:
         return Utils::SciFloat2Str(std::stof(Value) * Numbers::Unit2Value(Unit));
     }
 
+    virtual float EvaluateInFloat() const {
+        return std::stof(Value) * Numbers::Unit2Value(Unit);
+    }
+
     virtual std::string EvaluateValueAndPrefix() const {
         return Utils::SciFloat2Str(std::stof(Value) * Numbers::Unit2ValueWithPrefixOnly(Unit));
+    }
+
+    virtual float EvaluateValueAndPrefixInFloat() const {
+        return std::stof(Value) * Numbers::Unit2ValueWithPrefixOnly(Unit);
     }
 
     virtual bool Molarity() const {
@@ -1210,6 +1218,7 @@ public:
 
     virtual std::string        GetName() const;
     virtual std::vector<float> GetParameters(std::string Type) const;
+    virtual std::vector<float> RandomNumbers() const;
 };
 
 class NExpressionStatement : public NStatement {

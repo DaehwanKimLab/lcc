@@ -2,6 +2,7 @@
 #include <string>
 #include "number.h"
 #include "util.h"
+#include <random>
 
 using namespace std;
 
@@ -55,6 +56,15 @@ float MultiplyByAvogadro(float InFloat)
 std::string GetAvogadroStr()
 {
     return Utils::SciFloat2Str(NA);
+}
+
+float RandomNumber(float Min=0.0, float Max=1.0)
+{
+    std::random_device rd;
+    std::default_random_engine eng(rd());
+    std::uniform_real_distribution<float> distr(Min, Max);
+
+    return distr(eng);
 }
 
 float GetFloatDefault()
