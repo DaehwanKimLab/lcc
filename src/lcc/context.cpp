@@ -272,7 +272,8 @@ void FCompilerContext::Organize()
 {
     std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
     MakeListsFromMoleculeList();
-    // Dependency Note: AssignReactionTypes uses Lists made from above
+    // Dependency Note: Assign
+    // ReactionTypes uses Lists made from above
     MakeListsFromContainerList();
     AssignReactionTypesForReactionList();
     AdjustMolarity_PseudoMolecule();
@@ -468,7 +469,8 @@ std::vector<std::string> FCompilerContext::GetNames_MoleculeList()
 
 std::vector<const FReaction *> FCompilerContext::GetSubList_ReactionList(std::string Type)
 {
-    int ReactionType;
+
+    int ReactionType = Numbers::GetIntDefault();
 
     //Standard Reactions
   
@@ -493,7 +495,9 @@ std::vector<const FReaction *> FCompilerContext::GetSubList_ReactionList(std::st
     else if (Type == "Regulatory_Activation_Allosteric")    { ReactionType = 102; }
 
     else {
-//        std::cout << "Unable to find the reaction type for requested Reaction Type: " + Type << std:: endl;
+        if (Option.bDebug) {
+            std::cout << "Unable to find the reaction type for requested Reaction Type: " + Type << std:: endl;
+        }
     }
 
     std::vector<const FReaction *> SubList;
@@ -933,7 +937,9 @@ int FCompilerContext::GetIdxByName_MoleculeList(std::string InputName)
         }
         Index++; 
     }
-    std::cout << "Unable to find index in MoleculeList : " << InputName << std::endl;
+    if (Option.bDebug) {
+        std::cout << "Unable to find index in MoleculeList : " << InputName << std::endl;
+    }
     return 0;
 }
 

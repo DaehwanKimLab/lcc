@@ -425,8 +425,8 @@ void TraversalNode_Core(NNode * node)
         string Name = Id.Name;
 
         enum ReactionType {
-        Standard = 0,
-        Regulatory = 1,
+            Standard = 0,
+            Regulatory = 1,
         };
 
         ReactionType Type;
