@@ -492,7 +492,8 @@ def main():
         Screen.fill(GRAY1)
 
         PetriDish.Draw()
-        Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
+        Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
+        # Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
 
         while ElapsedTime >= SimUnitTime:
 
