@@ -1820,6 +1820,7 @@ void WriteSimModule()
     ofs << "import SimFunctions as sim" << endl;
     // ofs << "import SimIdx as idx" << endl;
     ofs << "import plot" << endl;
+    ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
 
     //TODO: Take options from SimModule cmd line
@@ -3156,10 +3157,11 @@ void WriteSimModule()
 
     // MAIN
     ofs << "if __name__ == '__main__':" << endl;
-    ofs << in+ "main()" << endl;
-    if (!Option.bRunInOmVisim) {
-        ofs << in + "plot.main()" << endl; // temporary for convenience
-    }
+    ofs << in + "parser = ArgumentParser()" << endl;
+    ofs << in + "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
+    ofs << in + "args = parser.parse_args()" << endl;
+    ofs << in + "main()" << endl;
+    ofs << in + "plot.main(args.save_fname)" << endl;
     ofs << endl;
 
     cout << "Simulation_Python module has been generated: ";

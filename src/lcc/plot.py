@@ -6,7 +6,7 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.animation as animation
 import numpy as np
 
-SaveFilename = ''
+SaveFilename = None
 NA = 6.0221409e+23
 ExclusionString = 'NoPlot'
 MolToCount = 'Discrete'
@@ -442,7 +442,11 @@ def MichaelisMentenEqn(Conc_Enzyme, Conc_Substrate, kcat, KM):
 
 
 
-def main():
+def main(SaveToFile = None):
+    global SaveFilename
+    if SaveToFile is not None:
+        SaveFilename = SaveToFile
+
     Data_Dir = '.'
     Datasets = LoadRawData(Data_Dir)
     for FileName, Dataset in Datasets.items():
@@ -451,17 +455,14 @@ def main():
 
 if __name__ == '__main__':
     parser = ArgumentParser(description = 'LCC plot')
-    parser.add_argument('--save-png',
-            dest='save_png',
+    parser.add_argument('--save-fig',
+            dest='save_fname',
             type=str,
-            help='Plot image file')
-
+            help='Save figure to file')
 
     args = parser.parse_args()
-    if args.save_png:
-        SaveFilename = args.save_png
 
-    main()
+    main(args.save_fname)
 
 
 # SavePath = 'lccsave/'
