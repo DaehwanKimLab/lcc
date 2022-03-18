@@ -215,7 +215,7 @@ def Eqn_Diffusion_Spatial(Distribution, D):
     return Upward_Corrected + Downward_Corrected + Leftward_Corrected + Rightward_Corrected
 
 def DiffuseDistribution(Distribution, D=0.00001, dTime=1):
-    Distribution_Updated = Distribution + Eqn_Diffusion_Spatial(Distribution, D) * dTime
+    # Distribution_Updated = Distribution + Eqn_Diffusion_Spatial(Distribution, D) * dTime
     return Distribution
     # return Distribution_Updated
 
