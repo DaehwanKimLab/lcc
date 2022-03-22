@@ -9,6 +9,9 @@
 
 syn keyword lppTodo contained TODO FIXME XXX NOTE
 syn keyword lppTopKeyword organism experiment protein pathway protein_complex
+
+syn keyword lppTopKeyword ecoli petridish glucose
+
 syn keyword lppTopKeyword description reaction_id reaction
 syn keyword lppTopKeyword property using module 
 syn keyword lppTopKeyword cofactor domain step sequence

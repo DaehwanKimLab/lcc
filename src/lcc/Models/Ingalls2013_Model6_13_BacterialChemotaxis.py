@@ -311,7 +311,7 @@ class FModel():
         # Dynamics
         ax1 = plt.axes()
         ax1.set_ylim(min(Am[PlotBegin:]) * 0.2, max(Am[PlotBegin:]) * 1.3)
-        ax1.plot(T[PlotBegin:], Am[PlotBegin:], 'b-', label="[Am]")  # RL
+        ax1.plot(T[PlotBegin:], Am[PlotBegin:], 'r-', label="[Am]")  # RL
         ax1.set_title('Bacterial Chemotaxis')
         ax1.set_xlabel('Time (s)')
         ax1.set_ylabel('AM Concentration ' + UnitTxt)
@@ -320,7 +320,7 @@ class FModel():
 
         ax1T = ax1.twinx()
         ax1T.set_ylim(min(L[PlotBegin:]) * 0.5, max(L[PlotBegin:]) * 4)
-        ax1T.plot(T[PlotBegin:], L[PlotBegin:], 'r-', label="[Glucose]")  # RL
+        ax1T.plot(T[PlotBegin:], L[PlotBegin:], 'b-', label="[Glucose]")  # RL
         ax1T.set_ylabel('Glucose Concentration ' + UnitTxt)
         ax1T.legend(loc='lower right')
 
