@@ -93,7 +93,7 @@ Sim = SimModule.FSimulation(State, Data, DataManager)
 Sim.Initialize()
 
 class FEnvironment:
-    def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.3, InThickness=5):
+    def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.5, InThickness=10):
         self.X = InX
         self.Y = InY
         self.Shape = InShape
@@ -104,6 +104,9 @@ class FEnvironment:
     def Draw(self, shape=None):
         if shape == 'circle':
             pygame.draw.circle(Screen, YELLOW_FAINT, (self.X, self.Y), self.Radius)
+            pygame.draw.circle(Screen, GRAY4, (self.X, self.Y), self.Radius, self.Thickness)
+        elif shape == 'lining':
+            # pygame.draw.circle(Screen, YELLOW_FAINT, (self.X, self.Y), self.Radius)
             pygame.draw.circle(Screen, GRAY4, (self.X, self.Y), self.Radius, self.Thickness)
         else:
             pygame.draw.rect(Screen, YELLOW_FAINT, ((0, 0), (W_S, H_S)))
@@ -243,7 +246,7 @@ class FMolecule:
             New_Particle_XY_Static.append((X, Y))
         self.Particle_XY_Static = New_Particle_XY_Static
 
-    def Draw(self, Data, pattern='heatmap'):
+    def Draw(self, Data, pattern='default'):
     # def Draw(self, pattern='particle', dynamics='static'):
 
         if pattern == 'heatmap':
@@ -252,10 +255,24 @@ class FMolecule:
                 for y in range(0, Data.shape[1], self.ReductionFactor):
                     intensity = (Data[x][y] / Max) * 255
                     # print(x, y, intensity)
-                    color = (255 - intensity, 255 - intensity, 255)
+                    # color = (255 - intensity, 255 - intensity, 255) # Blue shade
+                    color = (200, 200, 255 - intensity) # Yellow shade
                     pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))
 
         elif pattern == 'particle':
+            for XY in self.Particle_XY_Static:
+                pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
+
+        elif pattern == 'default':
+            Max = np.max(Data)
+            for x in range(0, Data.shape[0], self.ReductionFactor):
+                for y in range(0, Data.shape[1], self.ReductionFactor):
+                    intensity = (Data[x][y] / Max) * 200
+                    # print(x, y, intensity)
+                    # color = (255 - intensity, 255 - intensity, 255) # Blue shade
+                    color = (200, 200, 200 - intensity) # Yellow shade
+                    pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))
+
             for XY in self.Particle_XY_Static:
                 pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
 
@@ -379,7 +396,7 @@ class FControl:
 
         # StatusText = "   Total Glucose : " + "{:.2f} ".format(Glucose_Total / Unit/ NA) + UnitTxt + "\n" \
         StatusText = " Glucose @ Ecoli :" + "{:.2f} ".format(Glucose_Now/ Unit / NA) + UnitTxt + "\n" \
-                     + " dGlucose @ Ecoli : " + ("+" if dGlucose >= 0 else "") + "{:.5f}".format(dGlucose) + " %" \
+                     + " dGlucose @ Ecoli : " + ("+" if dGlucose >= 0 else "") + "{:.5f}".format(dGlucose) + " % " \
                      + "\nAm level of Ecoli : " + "{:.5f} ".format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info
 
         TextLines = StatusText.splitlines()
@@ -508,9 +525,12 @@ def main():
 
         Screen.fill(GRAY1)
 
-        PetriDish.Draw()
-        Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
+        # PetriDish.Draw()
+        # PetriDish.Draw(shape='circle')
+
+        # Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
         # Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
+        Glucose.Draw(Sim.GetDistributionByName(GlucoseName))
 
 
         if Control.PauseSwitch:
@@ -532,6 +552,7 @@ def main():
             Ecoli.DrawTrajectory()
 
         Ecoli.Draw()
+        PetriDish.Draw(shape='lining')
 
         Glucose_Now = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
 

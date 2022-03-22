@@ -2324,10 +2324,10 @@ void WriteSimModule()
 
     ofs << in+ in+ "# Run Reactions" << endl;
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
-    if (Option.bDebug) {
-        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-        ofs << endl;
-    }
+
+    ofs << in+ in;
+    if (!Option.bDebug) { ofs << "#" ;}
+    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Update Substrate Count" << endl;
@@ -2346,9 +2346,10 @@ void WriteSimModule()
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
-    if (Option.bDebug) {
-        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-    }
+
+    ofs << in+ in;
+    if (!Option.bDebug) { ofs << "#" ;}
+    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "self.UpdateCounts()" << endl;
@@ -2360,10 +2361,12 @@ void WriteSimModule()
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
-    if (Option.bDebug) {
-        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-        ofs << endl;
-    }
+
+    ofs << in+ in;
+    if (!Option.bDebug) { ofs << "#" ;}
+    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
