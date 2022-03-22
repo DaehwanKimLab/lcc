@@ -442,6 +442,7 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
         for (auto& molecule : MoleculeList){
             float Count = GetInitialCountByName_CountList(molecule->Name);
             os << "[ " << i << "] " << molecule->Name << " : " << Count << std::endl;
+            i++;
         }
     }
 }

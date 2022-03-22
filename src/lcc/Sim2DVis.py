@@ -191,13 +191,13 @@ class FOrganism:
         self.ReportStatus()
 
     def InitializeTrajectory(self):
-        for i, (X, Y) in enumerate(zip(self.X[0], self.Y[0])):
-            self.Trajectory[i] = [(X, Y)]
+        for i in range(self.X.size):
+            self.Trajectory[i] = [(self.X[0, i], self.Y[0, i])]
             self.TrajectoryColor.append(tuple(np.random.randint(0, 255, 3)))
 
     def AddToTrajectory(self):
-        for i, (X, Y) in enumerate(zip(self.X[0], self.Y[0])):
-            self.Trajectory[i].append((X, Y))
+        for i in range(self.X.size):
+            self.Trajectory[i].append((self.X[0, i], self.Y[0, i]))
 
     def DrawTrajectory(self):
         for i in range(len(self.Trajectory)):
@@ -293,6 +293,7 @@ class FControl:
             'I'     : 'Display Instruction Switch',
             'S'     : 'Display Score Switch',
             'A'     : 'Display Status Switch',
+            'P'     : 'Pause Visualization',
 
             # 'D'     : 'Transparency Display Switch',
         }
@@ -312,7 +313,9 @@ class FControl:
         self.StatusSwitch = True
         # self.StatusSwitch = False
 
-        self.TransparencySwitch = False
+        # Pause
+        self.MessagePause = 'PAUSE'
+        self.PauseSwitch = False
 
     def SetInstructionText(self):
         self.InstructionText = 'Instructions\n'
@@ -391,6 +394,13 @@ class FControl:
             Text_Rect.topright = (X, Y + Height * i)
             Screen.blit(Text, Text_Rect)
 
+    def DisplayPause(self):
+        Text = Font_Sans.render(self.MessagePause, True, BLACK, WHITE)
+        Text_Rect = Text.get_rect()
+        Text_Rect.center = self.Pos_Welcome
+        Screen.blit(Text, Text_Rect)
+
+
 def main():
     Control = FControl()
 
@@ -409,9 +419,11 @@ def main():
 
     SimState = True
     while SimState:
-        CurrTime = datetime.now()
-        ElapsedTime += (CurrTime - PrevTime).total_seconds()
-        PrevTime = CurrTime
+
+        if not Control.PauseSwitch:
+            CurrTime = datetime.now()
+            ElapsedTime += (CurrTime - PrevTime).total_seconds()
+            PrevTime = CurrTime
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -490,6 +502,9 @@ def main():
                 elif event.key == pygame.K_a:
                     Control.StatusSwitch = not Control.StatusSwitch
                     Control.Message = Control.SetMessage('A')
+                elif event.key == pygame.K_p:
+                    Control.PauseSwitch = not Control.PauseSwitch
+                    Control.Message = Control.SetMessage('P')
 
         Screen.fill(GRAY1)
 
@@ -497,24 +512,30 @@ def main():
         Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
         # Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
 
-        while ElapsedTime >= SimUnitTime:
 
-            # Previously Ecoli.Chemotaxis, now without decision making
-            Ecoli.Receptivity()
-            Ecoli.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))
-            Ecoli.ReportStatus()
+        if Control.PauseSwitch:
+            Control.DisplayPause()
 
-            ElapsedTime -= SimUnitTime
+        else:
+            while ElapsedTime >= SimUnitTime:
 
+                # Previously Ecoli.Chemotaxis, now without decision making
+                Ecoli.Receptivity()
+                Ecoli.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))
+                Ecoli.ReportStatus()
+
+                ElapsedTime -= SimUnitTime
+                Control.Time += 1
 
         if Ecoli.TrajectorySwitch:
             Ecoli.AddToTrajectory()
             Ecoli.DrawTrajectory()
+
         Ecoli.Draw()
 
         Glucose_Now = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
 
-        if Control.Time < 500:
+        if Control.Time < 50:
             Control.DisplayWelcome()
         if Control.MessageTimer > 0:
             Control.DisplayInput()
@@ -532,9 +553,9 @@ def main():
         # Update Glucose Prev
         Ecoli.Glucose_Prev = Glucose_Now
 
-        Control.Time += 1
         Control.DisplayTime()
         # Control.DisplayMoleculeGradient()
+
 
         pygame.display.update()
 

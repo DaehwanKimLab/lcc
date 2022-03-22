@@ -1772,29 +1772,46 @@ void Print_SetUp_SpatialSimulation(ofstream& ofs)
         i++;
     }
 
+    i = 0;
     ofs << in+ in+ "# Currently support X, Y, Angle, Threshold" << endl;
-    ofs << in+ in+  "self.Pos_X = np.array([";
-    for (auto location: ObjLoc) {
-        auto Coord = location->Coord;
-        ofs << Coord[0] << ", ";
+    ofs << in+ in+  "self.Pos_X = np.asmatrix([";
+    for (auto& UniqueName : ObjUniqueNames) {
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
+        for (int j = i; j < (Count); j++) {
+            auto Coord = ObjLoc[j]->Coord;
+            ofs << Coord[0] << ", ";
+        }
     }
     ofs << "]) " << endl;
 
-    ofs << in+ in+  "self.Pos_Y = np.array([";
-    for (auto location: ObjLoc) {
-        auto Coord = location->Coord;
-        ofs << Coord[1] << ", ";
+    i = 0;
+    ofs << in+ in+  "self.Pos_Y = np.asmatrix([";
+    for (auto& UniqueName : ObjUniqueNames) {
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
+        for (int j = i; j < (Count); j++) {
+            auto Coord = ObjLoc[j]->Coord;
+            ofs << Coord[1] << ", ";
+        }
     }
     ofs << "]) " << endl;
 
-    ofs << in+ in+  "self.Pos_Angle = np.array([";
-    for (auto location: ObjLoc) { ofs << "0.0, ";
+    i = 0;
+    ofs << in+ in+  "self.Pos_Angle = np.asmatrix([";
+    for (auto& UniqueName : ObjUniqueNames) {
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
+        for (int j = i; j < (Count); j++) {
+            ofs << "0.0, ";
+        }
     }
     ofs << "]) " << endl;
 
+    i = 0;
     ofs << in+ in+  "self.Pos_Threshold = np.asmatrix([";
-    for (auto location: ObjLoc) {
-        ofs << "0.0, ";
+    for (auto& UniqueName : ObjUniqueNames) {
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
+        for (int j = i; j < (Count); j++) {
+            ofs << "0.0, ";
+        }
 //        ofs << Numbers::MultiplyByAvogadro(0.983405e-9) << ", ";
     }
     ofs << "]) " << endl;
@@ -1848,8 +1865,13 @@ void WriteSimModule()
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
     int MatrixSize = 1;
-    if (!ObjLoc.empty()) { 
-        MatrixSize = ObjLoc.size();
+    if (!ObjLoc.empty()) {
+        MatrixSize = 0;
+        std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+        for (auto UniqueName : ObjUniqueNames) {
+            int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
+            MatrixSize += Count;
+        }
     }
     ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
     ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
@@ -3269,13 +3291,13 @@ int main(int argc, char *argv[])
             TraversalNode(ProgramBlock);
             Context.Organize();
 
-            if (Option.bDebug) {
+//            if (Option.bDebug) {
                 Context.PrintLists(os);
 
                 // initial conditions
                 Context.PrintInitialCounts(os);
                 Context.PrintInitialLocations(os);
-            }
+//            }
         }
 
         delete ProgramBlock;
