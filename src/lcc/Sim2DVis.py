@@ -197,6 +197,7 @@ class FOrganism:
         for i in range(self.X.size):
             self.Trajectory[i] = [(self.X[0, i], self.Y[0, i])]
             self.TrajectoryColor.append(tuple(np.random.randint(0, 255, 3)))
+        self.TrajectoryColor[-1] = MAGENTA
 
     def AddToTrajectory(self):
         for i in range(self.X.size):

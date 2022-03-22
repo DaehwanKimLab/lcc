@@ -66,7 +66,7 @@ std::string SciFloat2Str(float Float)
 void Assertion(bool Bool, std::string ErrorMessage)
 {
     if (!Bool) {
-        std::cout << "%%%%%%" << ErrorMessage << "%%%%%%" << std::endl;
+        std::cout << "%%%%%%  " << ErrorMessage << "  %%%%%%" << std::endl;
         assert(Bool);
         }
 }
