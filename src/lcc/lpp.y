@@ -275,8 +275,12 @@ protein_complex_decl : T_PROTEIN_COMPLEX ident T_ASSIGN protein_complex_decl_arg
 protein_complex_decl_args : gen_expr { $$ = $1; }
                           ;
 
-pathway_decl   : T_PATHWAY ident T_ASSIGN pathway_decl_args { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $4)); delete $2; }
+pathway_decl   : T_PATHWAY ident { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2)); delete $2; }
+               | T_PATHWAY ident T_LPAREN gen_reaction_decl_args T_RPAREN { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $4)); delete $2; }
+               | T_PATHWAY ident T_LPAREN gen_reaction_decl_args T_RPAREN pathway_block { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $4, $6)); delete $2; }
                | T_PATHWAY ident pathway_block { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $3)); delete $2; }
+
+               | T_PATHWAY ident T_ASSIGN pathway_decl_args { $$ = NNodeUtil::InitStatementList(new NPathwayDeclaration(*$2, $4)); delete $2; }
                ;
 
 
@@ -421,8 +425,7 @@ ident_list     : /* blank */ { $$ = new IdentifierList(); }
                | ident_list T_COMMA ident { $1->emplace_back($<Ident>3); }
                ;
 
-chain_reaction_decl_args : /* blank */ { $$ = new NChainReaction(); }
-                         | chain_expr { $$ = new NChainReaction(); $$->Add($1); }
+chain_reaction_decl_args : chain_expr { $$ = new NChainReaction(); $$->Add($1); }
                          | chain_reaction_decl_args T_ARROW chain_expr { $1->Add($3, 1); }
                          | chain_reaction_decl_args T_INARROW chain_expr { $1->Add($3, 1); }
                          | chain_reaction_decl_args T_BIARROW chain_expr { $1->Add($3, 2); }

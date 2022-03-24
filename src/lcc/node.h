@@ -509,12 +509,18 @@ class NPathwayDeclaration : public NStatement {
 public:
     const NIdentifier Id;
 
-    std::shared_ptr<NPathwayExpression> PathwayExpression;
+    const NReaction* OverallReaction;
     std::shared_ptr<NBlock> Block;
     std::shared_ptr<NChainReaction> PathwayChainReaction;
 
-    NPathwayDeclaration(const NIdentifier& InId, NPathwayExpression* InPathwayExpression)
-        : Id(InId), PathwayExpression(InPathwayExpression) {}
+    NPathwayDeclaration(const NIdentifier& InId)
+            : Id(InId) {}
+
+    NPathwayDeclaration(const NIdentifier& InId, NReaction* InOverallReaction)
+        : Id(InId), OverallReaction(InOverallReaction) {}
+
+    NPathwayDeclaration(const NIdentifier& InId, NReaction* InOverallReaction, NBlock* InBlock)
+        : Id(InId), OverallReaction(InOverallReaction), Block(InBlock) {}
 
     /* New */
     NPathwayDeclaration(const NIdentifier& InId, NBlock* InBlock)
@@ -526,9 +532,9 @@ public:
     virtual void Print(std::ostream& os) const override {
         os << "PathwayDeclaration: {";
         Id.Print(os);
-        if (PathwayExpression) {
+        if (OverallReaction) {
             os << ", ";
-            PathwayExpression->Print(os);
+            OverallReaction->Print(os);
         }
         if (Block) {
             os << ", ";

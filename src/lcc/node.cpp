@@ -79,7 +79,7 @@ void NPathwayExpression::Visit(FTraversalContext &Context) const {
 void NPathwayDeclaration::Visit(FTraversalContext &Context) const {
 //    Context.OutStream << "PathwayDeclaration(" << Id.Name << ")" << std::endl;
 
-    if (PathwayExpression) Context.Queue.push(PathwayExpression.get());
+    if (OverallReaction) Context.Queue.push(OverallReaction);
     if (Block) Context.Queue.push(Block.get());
 }
 
