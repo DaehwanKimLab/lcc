@@ -21,6 +21,7 @@ enum {
 	ARG_SIMOUT,
     ARG_SIMIMP,
     ARG_SIMMODULE,
+    ARG_SIMVIS2D,
     ARG_RUNOMVISIM
 };
 
@@ -38,6 +39,7 @@ int FOption::Parse(int argc, char *argv[])
 	        {"simout", required_argument, NULL, ARG_SIMOUT},
     	    {"simimp", required_argument, NULL, ARG_SIMIMP},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
+            {"simvis2d", required_argument, NULL, ARG_SIMVIS2D},
             {"run-omvisim", no_argument, NULL, ARG_RUNOMVISIM},
             {NULL, 0, NULL, 0},
     };
@@ -98,6 +100,10 @@ int FOption::Parse(int argc, char *argv[])
                 SimModuleFile = std::string(optarg);
                 break;
 
+            case ARG_SIMVIS2D:
+                SimVis2DFile = std::string(optarg);
+                break;
+
             case ARG_RUNOMVISIM:
                 bRunInOmVisim = true;
                 break;
@@ -132,6 +138,7 @@ void FOption::Reset() {
     bSimCpp = false;
     bSimPython = true;    
     SimModuleFile = "";
+    SimVis2DFile = "";
     SimResultFile = "";
     bRunInOmVisim = false;
 }
@@ -203,5 +210,6 @@ void FOption::PreferredSetting()
 {
     bSimPython = true;
     SimModuleFile = "SimModule.py";
+    SimVis2DFile = "SimVis2D.py";
     SimResultFile = "SimOut.tsv";
 }

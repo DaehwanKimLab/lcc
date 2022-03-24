@@ -29,6 +29,7 @@ public:
 
     std::string SimResultFile = "SimOut.tsv";
     std::string SimModuleFile = "SimModule.py";
+    std::string SimVis2DFile = "SimVis2D.py";
 
     bool bSimCpp;
     bool bSimPython = true;
