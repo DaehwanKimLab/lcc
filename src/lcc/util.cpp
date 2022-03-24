@@ -63,6 +63,60 @@ std::string SciFloat2Str(float Float)
    return ss.str();
 }
 
+std::string JoinStr2Str(std::vector<std::string> StringList)
+{
+    std::string JoinedStr;
+    for (auto& Str : StringList){
+        JoinedStr += "'" + Str + "'" + ", ";
+    }
+    return JoinedStr;
+}
+
+std::string JoinInt2Str(std::vector<int> IntList)
+{
+    std::string JoinedStr;
+    for (auto& Int : IntList){
+        JoinedStr += std::to_string(Int) + ", ";
+    }
+    return JoinedStr;
+}
+
+std::string JoinInt2Str_Idx(std::vector<int> IntList)
+{
+    std::string JoinedStr;
+    for (auto& Int : IntList){
+        JoinedStr += std::to_string(Int) + ", ";
+    }
+    return JoinedStr;
+}
+
+std::string JoinFloat2Str(std::vector<float> FloatList)
+{
+    std::string JoinedStr;
+    for (auto& Float : FloatList){
+        JoinedStr += Utils::SciFloat2Str(Float) + ", ";
+    }
+    return JoinedStr;
+}
+
+std::string Matrix2Str(std::vector<std::vector<int>> Matrix)
+{
+    std::string MatrixStr;
+    int N_Rows;
+    int N_Columns;
+
+    N_Rows = Matrix.size();
+    for (auto& Row : Matrix) {
+        MatrixStr += "[";
+        N_Columns = Row.size();
+        for (auto& Item : Row) {
+            MatrixStr += std::to_string(Item) + ", ";
+        }
+        MatrixStr += "], ";
+    }
+    return MatrixStr;
+}
+
 void Assertion(bool Bool, std::string ErrorMessage)
 {
     if (!Bool) {

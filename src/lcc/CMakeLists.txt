@@ -30,9 +30,8 @@ set(SOURCEFILE
 	context.cpp
 	util.cpp
         number.cpp
-	simulation.cpp
-	state.cpp
-	${BISON_LPPParser_OUTPUTS}
+		writer.cpp
+		${BISON_LPPParser_OUTPUTS}
 	${FLEX_LPPScanner_OUTPUTS}
 )
 
