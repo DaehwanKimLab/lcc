@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 import SimModule
 import numpy as np
+import math
 
 # Colors
 BLACK = (0, 0, 0)
@@ -104,7 +105,6 @@ class FEnvironment:
     def Draw(self, shape=None):
         if shape == 'circle':
             pygame.draw.circle(Screen, YELLOW_FAINT, (self.X, self.Y), self.Radius)
-            pygame.draw.circle(Screen, GRAY4, (self.X, self.Y), self.Radius, self.Thickness)
         elif shape == 'lining':
             # pygame.draw.circle(Screen, YELLOW_FAINT, (self.X, self.Y), self.Radius)
             pygame.draw.circle(Screen, GRAY4, (self.X, self.Y), self.Radius, self.Thickness)
@@ -186,7 +186,7 @@ class FOrganism:
     # def HomeostasisMessage(self):
     #     print("[Homeostasis {:06d}] Glucose:{:.6f}{} Am:{:.6f}{}".format(self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, self.Am / Unit / NA, UnitTxt))
 
-    def Homeostasis(self, MolNme):
+    def Homeostasis(self, MolName):
         Sim.Homeostasis()   # Input 'Am' here
         self.Glucose_Prev = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)
         self.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))
@@ -217,6 +217,8 @@ class FMolecule:
 
         # Heatmap Drawing
         self.ReductionFactor = 5
+        self.Max = 0
+        self.InitializeHeatmapMax()
 
         # Particle Drawing
         self.Particle_N = 300
@@ -225,6 +227,9 @@ class FMolecule:
         self.Particle_SpreadFactor = 1.2
         self.Particle_XY_Static = []
         self.InitializeStaticParticles()
+
+    def InitializeHeatmapMax(self):
+        self.Max = np.max(Sim.GetDistributionByName(GlucoseName))
 
     def InitializeStaticParticles(self):
         for i in range(int(self.Particle_N / self.Particle_PerLayer)):
@@ -251,29 +256,17 @@ class FMolecule:
     # def Draw(self, pattern='particle', dynamics='static'):
 
         if pattern == 'heatmap':
-            Max = np.max(Data)
             for x in range(0, Data.shape[0], self.ReductionFactor):
                 for y in range(0, Data.shape[1], self.ReductionFactor):
-                    intensity = (Data[x][y] / Max) * 255
-                    # print(x, y, intensity)
-                    # color = (255 - intensity, 255 - intensity, 255) # Blue shade
-                    color = (200, 200, 255 - intensity) # Yellow shade
+                    PercentMolLevel = Data[x][y] / self.Max
+                    intensity = math.floor(PercentMolLevel * 200)
+                    if intensity > 200:
+                        intensity = 200
+                    color = (200, 200, 200 - intensity) # Yellow shade
+                    # color = (200 - intensity, 200 - intensity, 200) # Blue shade
                     pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))
 
         elif pattern == 'particle':
-            for XY in self.Particle_XY_Static:
-                pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
-
-        elif pattern == 'default':
-            Max = np.max(Data)
-            for x in range(0, Data.shape[0], self.ReductionFactor):
-                for y in range(0, Data.shape[1], self.ReductionFactor):
-                    intensity = (Data[x][y] / Max) * 200
-                    # print(x, y, intensity)
-                    # color = (255 - intensity, 255 - intensity, 255) # Blue shade
-                    color = (200, 200, 200 - intensity) # Yellow shade
-                    pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))
-
             for XY in self.Particle_XY_Static:
                 pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)
 
@@ -397,8 +390,8 @@ class FControl:
 
         # StatusText = "   Total Glucose : " + "{:.2f} ".format(Glucose_Total / Unit/ NA) + UnitTxt + "\n" \
         StatusText = " Glucose @ Ecoli :" + "{:.2f} ".format(Glucose_Now/ Unit / NA) + UnitTxt + "\n" \
-                     + " dGlucose @ Ecoli : " + ("+" if dGlucose >= 0 else "") + "{:.5f}".format(dGlucose) + " % " \
-                     + "\nAm level of Ecoli : " + "{:.5f} ".format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info
+                     + "dGlucose @ Ecoli : " + ("+" if dGlucose >= 0 else "") + "{:.5f}".format(dGlucose) + " % \n" \
+                     + "Am level of Ecoli : " + "{:.5f} ".format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info
 
         TextLines = StatusText.splitlines()
         Height = Font_Monospace.get_linesize() + 2
@@ -527,11 +520,11 @@ def main():
         Screen.fill(GRAY1)
 
         # PetriDish.Draw()
-        # PetriDish.Draw(shape='circle')
+        PetriDish.Draw(shape='circle')
 
-        # Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
+        Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')
         # Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')
-        Glucose.Draw(Sim.GetDistributionByName(GlucoseName))
+        # Glucose.Draw(Sim.GetDistributionByName(GlucoseName))
 
 
         if Control.PauseSwitch:
@@ -552,7 +545,7 @@ def main():
             Ecoli.AddToTrajectory()
             Ecoli.DrawTrajectory()
 
-        Ecoli.Draw()
+        # Ecoli.Draw()
         PetriDish.Draw(shape='lining')
 
         Glucose_Now = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)

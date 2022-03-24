@@ -1,5 +1,4 @@
 import numpy as np
-import math
 import random
 
 NA = 6.0221409e+23
@@ -186,38 +185,49 @@ def InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max):
     Dist = np.sqrt(((X - X_Ori) / Width) ** 2 + ((Y - Y_Ori) / Height) ** 2)
     return Max / max(1, Dist * 30)
 
-def Eqn_Diffusion(D, Amount_Source, Amount_Neighbor):
-    return D * (Amount_Neighbor - Amount_Source)
+def Eqn_Diffusion_Spatial_4Cell(Distribution, D):
+    # von Neumann neighborhood
+    Diffusion_Quantity = Distribution * D
+    Diffusion_Padded = np.pad(Diffusion_Quantity, (1, 1))
 
-def Eqn_Diffusion_Spatial(Distribution, D):
-    Row_Zero = np.zeros((1, Distribution.shape[1]))
-    Column_Zero = np.zeros((Distribution.shape[0], 1))
+    # roll diffusion quantity
+    Upward = np.roll(Diffusion_Padded, -1, axis=0)
+    Downward = np.roll(Diffusion_Padded, 1, axis=0)
+    Leftward = np.roll(Diffusion_Padded, -1, axis=1)
+    Rightward = np.roll(Diffusion_Padded, 1, axis=1)
 
-    # expanded version for readability
-    # Roll
-    Upward = np.roll(Distribution, -1, axis=0)
-    Downward = np.roll(Distribution, 1, axis=0)
-    Leftward = np.roll(Distribution, -1, axis=1)
-    Rightward = np.roll(Distribution, 1, axis=1)
+    Distribution_Diffused = (Upward + Downward + Leftward + Rightward)[1:-1, 1:-1] - 4 * Diffusion_Quantity
 
-    # Diffuse
-    Diffusion_Upward = Eqn_Diffusion(D, Distribution, Upward)
-    Diffusion_Downward = Eqn_Diffusion(D, Distribution, Downward)
-    Diffusion_Leftward = Eqn_Diffusion(D, Distribution, Leftward)
-    Diffusion_Rightward = Eqn_Diffusion(D, Distribution, Rightward)
+    return Distribution_Diffused
 
-    # Correction by Slicing and Adding back zeros for flows from null direction
-    Upward_Corrected = np.concatenate((Diffusion_Upward[:-1, :], Row_Zero), axis=0)
-    Downward_Corrected = np.concatenate((Row_Zero, Diffusion_Downward[1:, :]), axis=0)
-    Leftward_Corrected = np.concatenate((Diffusion_Leftward[:, :-1], Column_Zero), axis=1)
-    Rightward_Corrected = np.concatenate((Column_Zero, Diffusion_Rightward[:, 1:]), axis=1)
+def Eqn_Diffusion_Spatial_8Cell(Distribution, D):
+    # Moore neighborhood
+    Diffusion_Quantity = Distribution * D
+    Diffusion_Padded = np.pad(Diffusion_Quantity, (1, 1))
 
-    return Upward_Corrected + Downward_Corrected + Leftward_Corrected + Rightward_Corrected
+    # roll diffusion quantity
+    Upward = np.roll(Diffusion_Padded, -1, axis=0)
+    Downward = np.roll(Diffusion_Padded, 1, axis=0)
+    Leftward = np.roll(Diffusion_Padded, -1, axis=1)
+    Rightward = np.roll(Diffusion_Padded, 1, axis=1)
+    UpLeftward = np.roll(Upward, -1, axis=1)
+    UpRightward = np.roll(Upward, 1, axis=1)
+    DownLeftward = np.roll(Downward, -1, axis=1)
+    DownRightward = np.roll(Downward, 1, axis=1)
 
-def DiffuseDistribution(Distribution, D=0.00001, dTime=1):
-    # Distribution_Updated = Distribution + Eqn_Diffusion_Spatial(Distribution, D) * dTime
-    return Distribution
-    # return Distribution_Updated
+    Distribution_Diffused = (Upward + Downward + Leftward + Rightward + UpLeftward + UpRightward + DownLeftward + DownRightward)[1:-1, 1:-1] - 8 * Diffusion_Quantity
+
+    return Distribution_Diffused
+
+def DiffuseDistribution_4Cell(Distribution, D=0.2, dTime=1):
+    Distribution_Updated = Distribution + Eqn_Diffusion_Spatial_4Cell(Distribution, D) * dTime
+    # return Distribution
+    return Distribution_Updated
+
+def DiffuseDistribution_8Cell(Distribution, D=0.2, dTime=1):
+    Distribution_Updated = Distribution + Eqn_Diffusion_Spatial_8Cell(Distribution, D) * dTime
+    # return Distribution
+    return Distribution_Updated
 
 def Displacement_2D(Distance, Angle):
     dX =  Distance * np.cos(Angle)
