@@ -119,7 +119,7 @@ void FCompilerContext::PrintLists(std::ostream& os)
     if (!PathwayList.empty()) {
         os << "  PathwayList: " << std::endl << "  " << "  ";
         for (auto& item : PathwayList){
-            os << "[" << i << "] " << item.Name << ", ";
+            os << "[" << i << "] " << item->Name << ", ";
             i++;
         }
         os << std::endl;
@@ -237,6 +237,23 @@ void FCompilerContext::AddToReactionList(FReaction *NewReaction)
         ReactionList.push_back(NewReaction);
     }
 //        std::cout << "Reaction "<< NewReaction->Name << " has been added to the system" << std::endl;
+}
+
+void FCompilerContext::AddToPathwayList(FPathway *NewPathway)
+{
+    bool Addition = true;
+    // std::cout<< "Checking if " << NewReaction->Name << "Exists in ReactionList" << std::endl;
+    for (auto& reaction : ReactionList) {
+        if (reaction->Name == NewPathway->Name) {
+            Addition = false;
+            std::cout << "Redundant pathway name found in NewPathway :" + NewPathway->Name << std::endl;
+            break;
+        }
+    }
+    if (Addition) {
+        PathwayList.push_back(NewPathway);
+    }
+//        std::cout << "Pathway "<< NewPathway->Name << " has been added to the system" << std::endl;
 }
 
 void FCompilerContext::AddToContainerList(FContainer *NewContainer)
@@ -754,7 +771,7 @@ std::vector<std::string> FCompilerContext::GetNames_PathwayList()
 {
     std::vector<std::string> StrList;
     for (auto& item : PathwayList){
-        StrList.push_back(item.Name);
+        StrList.push_back(item->Name);
     }
     return StrList;
 }
@@ -763,7 +780,7 @@ std::vector<std::string> FCompilerContext::GetSequences_PathwayList()
 {
     std::vector<std::string> StrList;
     for (auto& item : PathwayList){
-        for (auto& subitem : item.Sequence){
+        for (auto& subitem : item->Sequence){
             if (std::find(StrList.begin(), StrList.end(), subitem) == StrList.end()) {
                 StrList.push_back(subitem);
             }

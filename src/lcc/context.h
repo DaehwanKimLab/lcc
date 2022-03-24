@@ -254,8 +254,18 @@ public:
     std::string Name;
     std::vector<std::string> Sequence;
 
+    FPathway(const std::string& InName)
+        : Name(InName) {}
     FPathway(const std::string& InName, std::vector<std::string>& InSequence)
         : Name(InName), Sequence(InSequence) {}
+
+    void Print(std::ostream& os) {
+        os << "[Pathway] Id: " << Name;
+        if (!Sequence.empty()) {
+            os << ", Sequence: [" << Utils::JoinStr2Str(Sequence) << "]";
+        }
+        os << std::endl;
+    }
 };
 
 class FSmallMolecule : public FMolecule {
@@ -614,7 +624,7 @@ public:
     std::vector<FProtein*>      ProteinList;
     std::vector<FEnzyme*>       EnzymeList;
     std::vector<FReaction*>     ReactionList;
-    std::vector<FPathway>       PathwayList;
+    std::vector<FPathway*>      PathwayList;
     std::vector<std::string>    IdentifierList;
     std::vector<FContainer*>    ContainerList;
     std::vector<FOrganism*>     OrganismList;
@@ -629,6 +639,7 @@ public:
 
     void AddToMoleculeList(FMolecule *NewMolecule);
     void AddToReactionList(FReaction *NewReaction);
+    void AddToPathwayList(FPathway *NewPathway);
     void AddToContainerList(FContainer *NewContainer);
     void AddToCountList(FCount *NewCount);
     void AddToLocationList(FLocation *NewLocation);

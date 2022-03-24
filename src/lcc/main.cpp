@@ -128,7 +128,86 @@ std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* 
 
     return Stoichiometry_Ordered;
 }
-            
+
+void AddReaction(std::string ReactionName, const NReaction* Reaction)
+{
+    enum ReactionType {
+        Standard = 0,
+        Regulatory = 1,
+    };
+
+    ReactionType Type;
+
+    std::vector<std::pair<std::string, int>> Stoichiometry;
+
+    // for Standard reactions
+    float k1 = Float_Init;
+    float k2 = Float_Init;
+
+    // for Regulatory reactions
+    float K = Float_Init;
+    float n = Float_Init; // TODO: Update how to indicate competitiveness. Temporarily, use n=-1 to indicate competitive mode for now
+    string Effect;
+    string Mode = "Allosteric"; // default setting
+
+    // parse overall reaction
+
+    auto& bEffect = Reaction->bEffect;
+    bool bProductIsReaction;
+
+    const auto& propertylist = Reaction->Property;
+    for (auto& property :propertylist) {
+        auto& Key = property->Key;
+        // auto Value = property->Value->Evaluate();
+        const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+        auto Value = Value_Exp->EvaluateValueAndPrefix();
+
+        if (Key == "k") {
+            k1 = std::stof(Value);
+            Type = Standard;
+        } else if (Key == "krev") {
+            k2 = std::stof(Value);
+            Type = Standard;
+        } else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka") || (Key == "K")) {
+            K = std::stof(Value);
+            Type = Regulatory;
+        } else if (Key == "n") {
+            n = std::stof(Value);
+            // temporary code for competitive mode of inhibition regulation
+            if (n == -1) {
+                Mode = "Competitive";
+            }
+        } else {
+            //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
+        }
+    }
+
+    // Effect
+    if ((!bEffect) & (K != Float_Init))       { Effect = "Inhibition"; }
+    else if ((bEffect) & (K != Float_Init))   { Effect = "Activation"; }
+
+    // Fill in presumably irreversible reaction kinetic values
+    if ((k1 != Float_Init) & (k2 == Float_Init)) { k2 = 0; }
+    if ((k1 == Float_Init) & (k2 != Float_Init)) { k1 = 0; }
+    if ((K != Float_Init) & (n == Float_Init))   { n = 1; }
+
+    // Stoichiometry
+    if      (Type == 0) { Stoichiometry = GetStoichFromReaction(Reaction, bProductIsReaction=false); }
+    else if (Type == 1) { Stoichiometry = GetStoichFromReaction(Reaction, bProductIsReaction=true); } // do not add the product to the molecule list
+
+    // add new reaction to the system
+    if (Type == 0) {
+        FStandardReaction *NewReaction = new FStandardReaction(ReactionName, Stoichiometry, k1, k2);
+        if (Option.bDebug) { NewReaction->Print(os); }
+        Context.AddToReactionList(NewReaction);
+
+    } else if (Type == 1) {
+        FRegulatoryReaction *NewReaction = new FRegulatoryReaction(ReactionName, Stoichiometry, K, n, Effect, Mode);
+        if (Option.bDebug) { NewReaction->Print(os); }
+        Context.AddToReactionList(NewReaction);
+    }
+}
+
 void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::string EnzymeName)
 {
     float k = Float_Init;
@@ -365,83 +444,8 @@ void TraversalNode_Core(NNode * node)
         // Reaction Information to extract
         string Name = Id.Name;
 
-        enum ReactionType {
-            Standard = 0,
-            Regulatory = 1,
-        };
-
-        ReactionType Type;
-
-        std::vector<std::pair<std::string, int>> Stoichiometry;
-
-        // for Standard reactions
-        float k1 = Float_Init;
-        float k2 = Float_Init;
-
-        // for Regulatory reactions
-        float K = Float_Init;
-        float n = Float_Init; // TODO: Update how to indicate competitiveness. Temporarily, use n=-1 to indicate competitive mode for now
-        string Effect;
-        string Mode = "Allosteric"; // default setting
-
-        // parse overall reaction
         auto& Reaction = N_Reaction->OverallReaction;
-        // os << "  Reaction:" << endl;
-
-        auto& bEffect = Reaction->bEffect;
-        bool bProductIsReaction;
-
-        const auto& propertylist = Reaction->Property;
-        for (auto& property :propertylist) {
-        auto& Key = property->Key;
-        // auto Value = property->Value->Evaluate();
-            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
-            auto Value = Value_Exp->EvaluateValueAndPrefix();
-
-        if (Key == "k") {
-            k1 = std::stof(Value);
-            Type = Standard;
-        } else if (Key == "krev") {
-            k2 = std::stof(Value);
-            Type = Standard;
-        } else if ((Key == "Ki") || (Key == "ki") || (Key == "Ka") || (Key == "ka") || (Key == "K")) {
-            K = std::stof(Value);
-            Type = Regulatory;
-        } else if (Key == "n") {
-            n = std::stof(Value);
-                            // temporary code for competitive mode of inhibition regulation
-                            if (n == -1) {
-                            Mode = "Competitive";
-            }
-        } else {
-            //                    os << "Unsupported reaction parameter: '" << property->Key << "' for the protein '" << Name << "'" << endl;
-        }
-        }
-
-        // Effect
-        if ((!bEffect) & (K != Float_Init))       { Effect = "Inhibition"; }
-        else if ((bEffect) & (K != Float_Init))   { Effect = "Activation"; }
-
-        // Fill in presumably irreversible reaction kinetic values
-        if ((k1 != Float_Init) & (k2 == Float_Init)) { k2 = 0; }
-        if ((k1 == Float_Init) & (k2 != Float_Init)) { k1 = 0; }
-        if ((K != Float_Init) & (n == Float_Init))   { n = 1; }
-
-        // Stoichiometry
-        if      (Type == 0) { Stoichiometry = GetStoichFromReaction(Reaction, bProductIsReaction=false); }
-        else if (Type == 1) { Stoichiometry = GetStoichFromReaction(Reaction, bProductIsReaction=true); } // do not add the product to the molecule list
-
-        // add new reaction to the system
-        if (Type == 0) {
-        FStandardReaction *NewReaction = new FStandardReaction(Name, Stoichiometry, k1, k2);
-        if (Option.bDebug) { NewReaction->Print(os); }
-        Context.AddToReactionList(NewReaction);
-
-        } else if (Type == 1) {
-        FRegulatoryReaction *NewReaction = new FRegulatoryReaction(Name, Stoichiometry, K, n, Effect, Mode);
-        if (Option.bDebug) { NewReaction->Print(os); }
-        Context.AddToReactionList(NewReaction);
-        }
+        AddReaction(Name, Reaction);
 
     // This is intended for NEnzymeDeclaration, to be fixed later on.
     } else if (Utils::is_class_of<NProteinDeclaration, NNode>(node)) {
@@ -531,15 +535,14 @@ void TraversalNode_Core(NNode * node)
         }
 
     } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
-        auto Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
-        os << "Pathway: " << Pathway->Id.Name << endl;
+        auto N_Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
+        os << "Pathway: " << N_Pathway->Id.Name << endl;
 
-        string Name = Pathway->Id.Name;
+        string Name = N_Pathway->Id.Name;
         vector<string> Sequence;
 
-        os << "  Enzymes: ";
-        if (Pathway->PathwayChainReaction) {
-            auto& PathwayChainReaction = Pathway->PathwayChainReaction;
+        if (N_Pathway->PathwayChainReaction) {
+            auto& PathwayChainReaction = N_Pathway->PathwayChainReaction;
             auto& Exprs = PathwayChainReaction->Exprs;
             for (auto& expr: Exprs) {
                 //                    os << "  "; expr->Print(os);
@@ -550,10 +553,39 @@ void TraversalNode_Core(NNode * node)
                 }
             }
         }
-        os << endl;
 
-        FPathway Pathway_New(Name, Sequence); // Fixme
-        Context.PathwayList.emplace_back(Pathway_New);
+        if (N_Pathway->OverallReaction) {
+            auto Reaction = N_Pathway->OverallReaction;
+            // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
+
+            os << "Reaction Id: " << Reaction->Id.Name << endl;
+            // Reaction->Print(os);
+
+            if (Reaction) {
+                // parse overall reaction.
+                std::string ReactionName = Name + "_" + Reaction->Id.Name;
+                AddReaction(ReactionName, Reaction);
+            }
+        }
+
+        if (N_Pathway->Block) {
+
+            auto& Block = N_Pathway->Block;
+            int i_reaction = 0;
+            for (auto& stmt: Block->Statements) {
+                os << "  "; stmt->Print(os);
+
+                // WITHOUT overall reaction: enzyme takes care of multiple reactions
+                if (!N_Pathway->OverallReaction & (Utils::is_class_of<NReaction, NNode>(stmt.get()))) {
+                    TraversalNode_Core(stmt.get());
+                }
+            } // closing for stmt loop
+
+        } // closing if block
+
+        FPathway * NewPathway = new FPathway(Name); // Fixme
+        if (Option.bDebug) { NewPathway->Print(os); }
+        Context.AddToPathwayList(NewPathway);
 
     } else if (Utils::is_class_of<NPolymeraseDeclaration, NNode>(node)) {
         auto N_Polymerase = dynamic_cast<const NPolymeraseDeclaration *>(node);
