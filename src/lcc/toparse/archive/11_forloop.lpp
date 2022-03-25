@@ -6,7 +6,7 @@ pathway P2 {}
 
 pathway P3 (A --> B, k=1, krev=1);
 
-pathway P3 (A --> B, k=1, krev=1)
+pathway P4 (A --> B, k=1, krev=1)
 {
   protein R
   {
