@@ -39,7 +39,7 @@ std::string GetRegType(std::string Type)
     return RegType;
 }
 
-void FWriter::Print_InitializeStandardReaction(ofstream& ofs, std::string Type)
+void FWriter::Initialize_StandardReaction(ofstream& ofs, std::string Type)
 {
     ofs << in+ in+ "# " << Type << endl;
 
@@ -66,7 +66,7 @@ void FWriter::Print_InitializeStandardReaction(ofstream& ofs, std::string Type)
     ofs << endl;
 }
 
-void FWriter::Print_SetUpStandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList)
+void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList)
 {
     // Types allowed: "Standard_Unregulated", "Standard_Inhibition", "Standard_Activation"
     // TODO: Multiplexing for regulation
@@ -177,7 +177,7 @@ void FWriter::Print_SetUpStandardReaction(ofstream& ofs, std::string Type, std::
     ofs << endl;
 }
 
-void FWriter::Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type)
+void FWriter::Initialize_EnzymeReaction(ofstream& ofs, std::string Type)
 {
     ofs << in+ in+ "# " << Type << endl;
 
@@ -213,7 +213,7 @@ void FWriter::Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type)
     ofs << endl;
 }
 
-void FWriter::Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList) // to be changed with reaction list
+void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList) // to be changed with reaction list
 {
     // TODO: Multiplexing for regulation
     std::string RegType = GetRegType(Type);
@@ -363,7 +363,7 @@ void FWriter::Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::ve
     ofs << endl;
 }
 
-void FWriter::Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase)
+void FWriter::Initialize_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
     ofs << in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = None" << endl;
 
@@ -401,7 +401,7 @@ void FWriter::Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymeras
     ofs << endl;
 }
 
-void FWriter::Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold)
+void FWriter::SetUp_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold)
 {
     ofs << in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << FreqBBFileName << "'))" << endl;
 
@@ -472,7 +472,7 @@ void FWriter::Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Po
 
 }
 
-void FWriter::Print_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase)
+void FWriter::Polymerase_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
     ofs << in+ in+ "# " << Polymerase->Process << endl;
     ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Initiation(";
@@ -486,7 +486,7 @@ void FWriter::Print_InitiationReaction(ofstream& ofs, const FPolymerase* Polymer
     ofs << endl;
 }
 
-void FWriter::Print_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase)
+void FWriter::Polymerase_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
     ofs << in+ in+ "# " << Polymerase->Process << endl;
     ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Elongation(";
@@ -500,7 +500,7 @@ void FWriter::Print_ElongationReaction(ofstream& ofs, const FPolymerase* Polymer
     ofs << endl;
 }
 
-void FWriter::Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase)
+void FWriter::Polymerase_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase)
 {
     ofs << in+ in+ "# " << Polymerase->Process << endl;
     ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Termination(";
@@ -510,7 +510,7 @@ void FWriter::Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polyme
     ofs << endl;
 }
 
-void FWriter::Print_Initialize_SpatialSimulation(ofstream& ofs)
+void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 {
     ofs << in+ in+ "# Spatial Simulation" << endl;
 
@@ -520,7 +520,7 @@ void FWriter::Print_Initialize_SpatialSimulation(ofstream& ofs)
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
-    ofs << in+ in+ "self.Dist_All = list()" << endl;
+    ofs << in+ in+ "self.Dist_All = np.array()" << endl;
     for (auto& location : MolLoc) {
         ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = None" << endl;
     }
@@ -540,7 +540,7 @@ void FWriter::Print_Initialize_SpatialSimulation(ofstream& ofs)
     ofs << endl;
 }
 
-void FWriter::Print_SetUp_SpatialSimulation(ofstream& ofs)
+void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 {
     int Map_Width = 1200;
     int Map_Height = 800;
@@ -687,7 +687,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     if (!pContext->LocationList.empty()) {
-        Print_Initialize_SpatialSimulation(ofs);
+        Initialize_SpatialSimulation(ofs);
     }
 
     // for standard reactions
@@ -698,7 +698,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     for (auto& Type : ReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            Print_InitializeStandardReaction(ofs, Type);
+            Initialize_StandardReaction(ofs, Type);
         }
     }
 
@@ -717,7 +717,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     for (auto& Type : ReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            Print_InitializeEnzymeReaction(ofs, Type);
+            Initialize_EnzymeReaction(ofs, Type);
         }
     }
 
@@ -728,7 +728,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     if (!PolymeraseList.empty()) {
         for (auto& Polymerase : PolymeraseList) {
-            Print_InitializePolymeraseReaction(ofs, Polymerase);
+            Initialize_PolymeraseReaction(ofs, Polymerase);
         }
     }
 
@@ -738,22 +738,22 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Print SetUp_SpatialReaction for all spatial simulation (to be updated)
     if (!pContext->LocationList.empty()) {
-        Print_SetUp_SpatialSimulation(ofs);
+        SetUp_SpatialSimulation(ofs);
     }
 
-    // Print SetUpStandardReaction for each Reaction Type
+    // Print SetUp_StandardReaction for each Reaction Type
     for (auto& Type : StandardReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            Print_SetUpStandardReaction(ofs, Type, ReactionSubList);
+            SetUp_StandardReaction(ofs, Type, ReactionSubList);
         }
     }
 
-    // Print SetUpEnzymeReaction for each Reaction Type
+    // Print SetUp_EnzymeReaction for each Reaction Type
     for (auto& Type : EnzReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
-            Print_SetUpEnzymeReaction(ofs, Type, ReactionSubList);
+            SetUp_EnzymeReaction(ofs, Type, ReactionSubList);
         }
     }
 
@@ -830,7 +830,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             std::cout << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Target.size(): " << Idx_Target.size() << endl;
             Utils::Assertion((Idx_Template.size() == Idx_Target.size()), "# of Target and Target do not match for Polymerase: " + PolymeraseName);
 
-            Print_SetUpPolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
+            SetUp_PolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
         }
     }
 
@@ -1439,9 +1439,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // TODO: encapsulate this part with each polymerase to allow more process-specific customization
     if (!PolymeraseList.empty()){
-        ofs << in+ in+ "self.InitiationReactions()" << endl;
-        ofs << in+ in+ "self.ElongationReactions()" << endl;
-        ofs << in+ in+ "self.TerminationReactions()" << endl;
+        ofs << in+ in+ "self.Polymerase_InitiationReactions()" << endl;
+        ofs << in+ in+ "self.Polymerase_ElongationReactions()" << endl;
+        ofs << in+ in+ "self.Polymerase_TerminationReactions()" << endl;
     }
 
     ofs << in+ in+ "pass" << endl;
@@ -1670,23 +1670,23 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     if (!PolymeraseList.empty()) {
 
-        ofs << in+ "def InitiationReactions(self):" << endl;
+        ofs << in+ "def Polymerase_InitiationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
 
-            Print_InitiationReaction(ofs, Polymerase);
+            Polymerase_InitiationReaction(ofs, Polymerase);
         }
 
 
-        ofs << in+ "def ElongationReactions(self):" << endl;
+        ofs << in+ "def Polymerase_ElongationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
 
-            Print_ElongationReaction(ofs, Polymerase);
+            Polymerase_ElongationReaction(ofs, Polymerase);
         }
 
-        ofs << in+ "def TerminationReactions(self):" << endl;
+        ofs << in+ "def Polymerase_TerminationReactions(self):" << endl;
         for (auto& Polymerase : PolymeraseList) {
 
-            Print_TerminationReaction(ofs, Polymerase);
+            Polymerase_TerminationReaction(ofs, Polymerase);
         }
     }
 

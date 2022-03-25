@@ -30,20 +30,30 @@ public:
 
     FWriter() {}
 
+    // Initialize
     void LinkOptionContext(FOption * InpOption, FCompilerContext * InpContext) { pOption = InpOption; pContext = InpContext; }
     void SetUpDefaultVariables(int InN_MoleculesAllowed, std::string InName_Pseudo, float InFloat_Default, int InInt_Default);
 
-    void Print_InitializeStandardReaction(ofstream& ofs, std::string Type);
-    void Print_SetUpStandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
-    void Print_InitializeEnzymeReaction(ofstream& ofs, std::string Type);
-    void Print_SetUpEnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
-    void Print_InitializePolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void Print_SetUpPolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold);
-    void Print_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void Print_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void Print_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void Print_Initialize_SpatialSimulation(ofstream& ofs);
-    void Print_SetUp_SpatialSimulation(ofstream& ofs);
+    // StandardReaction
+    void Initialize_StandardReaction(ofstream& ofs, std::string Type);
+    void SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
+
+    // EnzymeReaction
+    void Initialize_EnzymeReaction(ofstream& ofs, std::string Type);
+    void SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
+
+    // Polymerase
+    void Initialize_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase);
+    void SetUp_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold);
+    void Polymerase_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase);
+    void Polymerase_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase);
+    void Polymerase_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase);
+
+    // Spatial Simulation
+    void Initialize_SpatialSimulation(ofstream& ofs);
+    void SetUp_SpatialSimulation(ofstream& ofs);
+
+    // Simulation
     void SimIdx();
     void SimModule(int Sim_Steps, int Sim_Resolution);
     void SimVis2D();
