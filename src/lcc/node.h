@@ -1276,6 +1276,8 @@ public:
     NInitializerExpression(NExpression* InExpr) {
         ExpressionList.emplace_back(InExpr);
     }
+    NInitializerExpression(std::vector<std::shared_ptr<NExpression>>& InExpressionList)
+        : ExpressionList(InExpressionList) {};
 
     void Append(NExpression* InExpr) {
         ExpressionList.emplace_back(InExpr);

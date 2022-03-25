@@ -168,6 +168,8 @@ stmt           : reaction_decl_stmt T_SEMIC
                | if_stmt
                | p_expr_stmt T_SEMIC
                | decl_stmt T_SEMIC
+               | property_stmt T_SEMIC { $$ = NNodeUtil::InitStatementList($1); }
+               | property_stmt { $$ = NNodeUtil::InitStatementList($1); }
                ;
 
 block          : T_LBRACE stmts T_RBRACE { $$ = $2; }
@@ -564,6 +566,7 @@ init_declarator_list : init_declarator { $$ = NNodeUtil::InitStatementList($1); 
                      ;
 
 init_declarator : declarator { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); delete $1;}
+                | declarator T_LPAREN p_expr_list T_RPAREN { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); $$->SetInitializer(new NInitializerExpression(*$3)); delete $3; delete $1; }
                 | declarator T_ASSIGN initializer { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); $$->SetInitializer($3); delete $1; }
                 ;
 
