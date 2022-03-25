@@ -1,0 +1,19 @@
+// Request: please make an example for loop  logic in compiler and sim module
+
+pathway P1;
+
+pathway P2 {}
+
+pathway P3 (A --> B, k=1, krev=1);
+
+pathway P3 (A --> B, k=1, krev=1)
+{
+  protein R
+  {
+    reaction R1(A --> Am, kcat=1, KM=1e-10nM);
+    reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
+  }
+
+  reaction R1(Am + L --> AmL, k=1e9, krev=1);
+}
+
