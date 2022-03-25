@@ -520,7 +520,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
-    ofs << in+ in+ "self.Dist_All = np.array()" << endl;
+    ofs << in+ in+ "self.Dist_All = list()" << endl;
     for (auto& location : MolLoc) {
         ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = None" << endl;
     }
@@ -1145,6 +1145,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ "# Update Spatially Distributed Molecules On Count" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
+    ofs << in+ in+ "self.CountToDistribution()" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate Influx" << endl;
@@ -1179,6 +1180,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
+    ofs << in+ in+ "self.CountToDistribution()" << endl;
     ofs << endl;
 
     ofs << in+ "def Run(self, Spatial=0):" << endl;
@@ -1245,6 +1247,21 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // here
     ofs << in+ "def DistributionToCount(self):" << endl;
+    if (!MolLoc.empty() & !ObjLoc.empty()) {
+        for (auto molLoc : MolLoc) {
+            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+            for (auto UniqueName : ObjUniqueNames) {
+                ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+                    << "] = Count.transpose()" << endl;
+            }
+        }
+    } else {
+        ofs << in+ in+ "pass" << endl;
+    }
+    ofs << endl;
+
+    ofs << in+ "def CountToDistribution(self):" << endl;
     if (!MolLoc.empty() & !ObjLoc.empty()) {
         for (auto molLoc : MolLoc) {
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
@@ -1784,7 +1801,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def GetCountFromDistribution(self, Dist, X, Y):" << endl;
     ofs << in+ in+ "return Dist[X.astype(int), Y.astype(int)]" << endl;
-//    ofs << in+ in+ "return np.take(Dist, ([X,Y]))" << endl;
     ofs << endl;
 
     ofs << in+ "def GetCountFromDistributionByNameAndPos(self, NameOfDist, NameOfPos):" << endl;
@@ -1792,8 +1808,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "X, Y = self.GetPositionXYByName(NameOfPos)" << endl;
     ofs << in+ in+ "Dist = self.GetDistributionByName(NameOfDist)" << endl;
     ofs << in+ in+ "return self.GetCountFromDistribution(Dist, X, Y)" << endl;
-//    ofs << in+ in+ "return np.take(Dist, ([X,Y]))" << endl;
     ofs << endl;
+
+    ofs << in+ "def ApplyCountToDistribution(self, Dist, X, Y, Count):" << endl;
+    ofs << in+ in+ "Dist[X.astype(int), Y.astype(int)] += Count" << endl;
+    ofs << endl;
+
+    ofs << in+ "def ApplyCountToDistributionByNameAndPos(self, NameOfDist, NameOfPos):" << endl;
+    ofs << in+ in+ "Count = self.GetCountByName" << endl;
+    ofs << endl;
+
 
     ofs << in+ "# Temporary routines" << endl;
 
