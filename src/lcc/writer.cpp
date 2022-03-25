@@ -77,7 +77,7 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
     std::vector<float> krev;
 
     // common variables
-    int Idx_Pseudo = pContext->GetIdxByName_MoleculeList(Name_Pseudo);
+    int Idx_Pseudo = Context.GetIdxByName_MoleculeList(Name_Pseudo);
     std::vector<std::vector<int>> Idx_Reactants(N_MoleculesAllowed);
     std::vector<std::vector<int>> Idx_Products(N_MoleculesAllowed);
 
@@ -87,11 +87,11 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
     std::vector<int> Idx_Regulator; // reactant of the regulatory reaction
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = pContext->GetIdxForStoichiometryMatrix(Type); // TODO: Add new type
-    std::vector<std::vector<int>> StoichMatrix = pContext->GetStoichiometryMatrix(Type); // TODO: Add new type
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(Type); // TODO: Add new type
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(Type); // TODO: Add new type
 
     // relevant reaction lists
-    std::vector<const FReaction *> RegulatoryReactionSubList = pContext->GetSubList_ReactionList(RegType);
+    std::vector<const FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);
 
     for (auto Reaction : ReactionSubList) {
         const auto& reaction = dynamic_cast<const FStandardReaction *>(Reaction);
@@ -103,7 +103,7 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
         std::vector<int> Idx_Product;
 
         for (auto& stoich : reaction->Stoichiometry) {
-            int Idx = pContext->GetIdxByName_MoleculeList(stoich.first);
+            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
             if (stoich.second <= 0) {
                 Idx_Reactant.push_back(Idx);
             } else if (stoich.second >= 0) {
@@ -143,7 +143,7 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
                     }
                 }
                 if (Import) {
-                    Idx_Regulator.push_back(pContext->GetIdxByName_MoleculeList(reactant_reg));
+                    Idx_Regulator.push_back(Context.GetIdxByName_MoleculeList(reactant_reg));
 
                     K.push_back(reg->K);
                     n.push_back(reg->n);
@@ -228,7 +228,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     std::vector<int> Idx_EnzSub;
 
     // common variables
-    int Idx_Pseudo = pContext->GetIdxByName_MoleculeList(Name_Pseudo);
+    int Idx_Pseudo = Context.GetIdxByName_MoleculeList(Name_Pseudo);
     std::vector<int> Idx_Enz; // for Enzyme where En is not included in the reaction
     std::vector<std::vector<int>> Idx_Reactants(N_MoleculesAllowed);
     std::vector<std::vector<int>> Idx_Products(N_MoleculesAllowed);
@@ -239,17 +239,17 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     std::vector<int> Idx_Regulator;
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = pContext->GetIdxForStoichiometryMatrix(Type);
-    std::vector<std::vector<int>> StoichMatrix = pContext->GetStoichiometryMatrix(Type);
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(Type);
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(Type);
 
     // relevant reaction lists
-    std::vector<const FReaction *> RegulatoryReactionSubList = pContext->GetSubList_ReactionList(RegType);
+    std::vector<const FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);
 
     for (auto& Reaction : ReactionSubList) {
         const auto& reaction = dynamic_cast<const FEnzymaticReaction *>(Reaction);
-        const auto& enzyme = pContext->GetEnzyme_EnzymeList(reaction->Enzyme);
+        const auto& enzyme = Context.GetEnzyme_EnzymeList(reaction->Enzyme);
 
-        Idx_Enz.push_back(pContext->GetIdxByName_MoleculeList(enzyme->Name));
+        Idx_Enz.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
 
         // Enz_Standard
         if ((reaction->Type >= 10) & (reaction->Type < 20)) {
@@ -262,7 +262,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
             std::vector<int> Idx_Product;
 
             for (auto& stoich : reaction->Stoichiometry) {
-                int Idx = pContext->GetIdxByName_MoleculeList(stoich.first);
+                int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
                 if (stoich.second <= 0) {
                     Idx_Reactant.push_back(Idx);
                 } else if (stoich.second >= 0) {
@@ -290,7 +290,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
                 // get substrate, kcat, KM when enzyme's substrate is found as a reactant of the reaction
 
                 if (Reaction->CheckIfReactant(kinetics.first)) {
-                    Idx_EnzSub.push_back(pContext->GetIdxByName_MoleculeList(kinetics.first));
+                    Idx_EnzSub.push_back(Context.GetIdxByName_MoleculeList(kinetics.first));
                     auto& constants = kinetics.second;
 
                     kcats.push_back(constants[0]);
@@ -318,7 +318,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
                     }
                 }
                 if (Import) {
-                    Idx_Regulator.push_back(pContext->GetIdxByName_MoleculeList(reactant_reg));
+                    Idx_Regulator.push_back(Context.GetIdxByName_MoleculeList(reactant_reg));
                     K.push_back(reg->K);
                     n.push_back(reg->n);
                     break;
@@ -377,8 +377,8 @@ void FWriter::Initialize_PolymeraseReaction(ofstream& ofs, const FPolymerase* Po
 
     // Check if template exists as a target of any polymerases in the system
     bool TemplateExists = false;
-//    auto& PolymeraseList = pContext->GetList_PolymeraseMoleculeList
-    for (auto& PolymeraseInSystem : pContext->GetList_Polymerase_MoleculeList()) {
+//    auto& PolymeraseList = Context.GetList_PolymeraseMoleculeList
+    for (auto& PolymeraseInSystem : Context.GetList_Polymerase_MoleculeList()) {
         if (PolymeraseInSystem->Target == Polymerase->Template) {
             TemplateExists = true;
             break;
@@ -415,7 +415,7 @@ void FWriter::SetUp_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymer
 
     // Check if template exists as a target of any polymerases in the system
     bool TemplateExists = false;
-    for (auto& PolymeraseInSystem : pContext->GetList_Polymerase_MoleculeList()){
+    for (auto& PolymeraseInSystem : Context.GetList_Polymerase_MoleculeList()){
         if (PolymeraseInSystem->Target == Polymerase->Template){
             TemplateExists = true;
             break;
@@ -453,7 +453,7 @@ void FWriter::SetUp_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymer
     ofs << in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(pContext->GetIdxByName_MoleculeList(Polymerase->Name)) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Context.GetIdxByName_MoleculeList(Polymerase->Name)) << "])" << endl;
     ofs << in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_PolSub) << "])" << endl;
     ofs << in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_PolBB) << "])" << endl;
     ofs << endl;
@@ -514,9 +514,9 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 {
     ofs << in+ in+ "# Spatial Simulation" << endl;
 
-    auto MolLoc = pContext->GetSubList_LocationList("Molecule");
-    auto ObjLoc = pContext->GetSubList_LocationList("Compartment");
-    auto Organisms = pContext->OrganismList;
+    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    auto ObjLoc = Context.GetSubList_LocationList("Compartment");
+    auto Organisms = Context.OrganismList;
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
@@ -529,7 +529,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
     ofs << in+ in+ "self.Pos_Names = list()" << endl;
     ofs << in+ in+ "self.Pos_Name2Idx = dict()" << endl;
 
-    std::vector<std::string> ObjUniqueNames = pContext->GetUniqueNames_LocationList("Compartment");
+    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
     for (auto& UniqueName : ObjUniqueNames) {
         ofs << in+ in+ "self.Idx_Pos_" << UniqueName << " = None" << endl;
     }
@@ -545,19 +545,19 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     int Map_Width = 1200;
     int Map_Height = 800;
 
-    auto MolLoc = pContext->GetSubList_LocationList("Molecule");
-    auto ObjLoc = pContext->GetSubList_LocationList("Compartment");
+    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
     for (auto& location : MolLoc) {
         ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = None" << endl;
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Dist_Names = [" << JoinStr2Str(pContext->GetNames_LocationList("Molecule")) << "]" << endl;
+    ofs << in+ in+ "self.Dist_Names = [" << JoinStr2Str(Context.GetNames_LocationList("Molecule")) << "]" << endl;
     int i = 0;
     for (auto location : MolLoc) {
         auto Coord = location->Coord;
-        auto Amount = pContext->GetInitialCountByName_CountList(location->Name);
+        auto Amount = Context.GetInitialCountByName_CountList(location->Name);
         ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = np.asmatrix([" << i << "])" << endl;
         ofs << in+ in+ "Dist = sim.InitializeDistribution(" << Map_Width << ", " << Map_Height << ", " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
         // TODO: update to 3d array
@@ -566,12 +566,12 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Pos_Names = [" << JoinStr2Str(pContext->GetNames_LocationList("Compartment")) << "]" << endl;
+    ofs << in+ in+ "self.Pos_Names = [" << JoinStr2Str(Context.GetNames_LocationList("Compartment")) << "]" << endl;
 
     i = 0;
-    std::vector<std::string> ObjUniqueNames = pContext->GetUniqueNames_LocationList("Compartment");
+    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
     for (auto& UniqueName : ObjUniqueNames) {
-        int Count = int(pContext->GetInitialCountByName_CountList(UniqueName));
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         ofs << in+ in+ "self.Idx_Pos_" << UniqueName << " = np.asmatrix([";
         for (int j = i; j < (Count); j++) {
             ofs << j << ", ";
@@ -585,7 +585,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     ofs << in+ in+ "# Currently support X, Y, Angle, Threshold" << endl;
     ofs << in+ in+  "self.Pos_X = np.asmatrix([";
     for (auto& UniqueName : ObjUniqueNames) {
-        int Count = int(pContext->GetInitialCountByName_CountList(UniqueName));
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
             auto Coord = ObjLoc[j]->Coord;
             ofs << Coord[0] << ", ";
@@ -596,7 +596,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     i = 0;
     ofs << in+ in+  "self.Pos_Y = np.asmatrix([";
     for (auto& UniqueName : ObjUniqueNames) {
-        int Count = int(pContext->GetInitialCountByName_CountList(UniqueName));
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
             auto Coord = ObjLoc[j]->Coord;
             ofs << Coord[1] << ", ";
@@ -607,7 +607,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     i = 0;
     ofs << in+ in+  "self.Pos_Angle = np.asmatrix([";
     for (auto& UniqueName : ObjUniqueNames) {
-        int Count = int(pContext->GetInitialCountByName_CountList(UniqueName));
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
             ofs << "0.0, ";
         }
@@ -617,7 +617,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     i = 0;
     ofs << in+ in+  "self.Pos_Threshold = np.asmatrix([";
     for (auto& UniqueName : ObjUniqueNames) {
-        int Count = int(pContext->GetInitialCountByName_CountList(UniqueName));
+        int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
             ofs << "0.0, ";
         }
@@ -634,7 +634,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     std::cout << "Generating SimModule..." << std::endl;
 
     // write SimModule.py
-    std::ofstream ofs(pOption->SimModuleFile.c_str());
+    std::ofstream ofs(Option.SimModuleFile.c_str());
     std::string endl = "\n";
 
     // IMPORT
@@ -670,23 +670,23 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Legends = list()" << endl;
     ofs << endl;
 
-    auto MolLoc = pContext->GetSubList_LocationList("Molecule");
-    auto ObjLoc = pContext->GetSubList_LocationList("Compartment");
+    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
     int MatrixSize = 1;
     if (!ObjLoc.empty()) {
         MatrixSize = 0;
-        std::vector<std::string> ObjUniqueNames = pContext->GetUniqueNames_LocationList("Compartment");
+        std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
         for (auto UniqueName : ObjUniqueNames) {
-            int Count = int(pContext->GetInitialCountByName_CountList(UniqueName));
+            int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
             MatrixSize += Count;
         }
     }
-    ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << pContext->MoleculeList.size() << "])" << endl;
-    ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << pContext->MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
+    ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
     ofs << endl;
 
-    if (!pContext->LocationList.empty()) {
+    if (!Context.LocationList.empty()) {
         Initialize_SpatialSimulation(ofs);
     }
 
@@ -696,7 +696,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     std::vector<std::string> StandardReactionTypes = ReactionTypes; // to reuse later
 
     for (auto& Type : ReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             Initialize_StandardReaction(ofs, Type);
         }
@@ -715,16 +715,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     std::vector<std::string> EnzReactionTypes = ReactionTypes; // to reuse later
 
     for (auto& Type : ReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             Initialize_EnzymeReaction(ofs, Type);
         }
     }
 
     // for polymerase reactions (Template-based)
-    std::vector<const FPolymerase *> PolymeraseList = pContext->GetList_Polymerase_MoleculeList();
-//    std::vector<std::string> PolymeraseNames = pContext->GetNames_PolymeraseList(PolymeraseList);
-    std::vector<const FPolymeraseReaction *> PolymeraseReactionList = pContext->GetList_Polymerase_ReactionList();
+    std::vector<const FPolymerase *> PolymeraseList = Context.GetList_Polymerase_MoleculeList();
+//    std::vector<std::string> PolymeraseNames = Context.GetNames_PolymeraseList(PolymeraseList);
+    std::vector<const FPolymeraseReaction *> PolymeraseReactionList = Context.GetList_Polymerase_ReactionList();
 
     if (!PolymeraseList.empty()) {
         for (auto& Polymerase : PolymeraseList) {
@@ -737,13 +737,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     // Print SetUp_SpatialReaction for all spatial simulation (to be updated)
-    if (!pContext->LocationList.empty()) {
+    if (!Context.LocationList.empty()) {
         SetUp_SpatialSimulation(ofs);
     }
 
     // Print SetUp_StandardReaction for each Reaction Type
     for (auto& Type : StandardReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             SetUp_StandardReaction(ofs, Type, ReactionSubList);
         }
@@ -751,7 +751,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Print SetUp_EnzymeReaction for each Reaction Type
     for (auto& Type : EnzReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             SetUp_EnzymeReaction(ofs, Type, ReactionSubList);
         }
@@ -761,33 +761,33 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         for (auto& Polymerase : PolymeraseList) {
             std::string PolymeraseName = Polymerase->Name;
             float Rate = Polymerase->Rate;
-            int Idx_Pol = pContext->GetIdxByName_MoleculeList(PolymeraseName);
+            int Idx_Pol = Context.GetIdxByName_MoleculeList(PolymeraseName);
             std::vector<int> Idx_Template;
             std::vector<int> Idx_Target;
             std::vector<int> Idx_TemplateSubset;
-            std::vector<int> Idx_PolSub = pContext->GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(PolymeraseName);
+            std::vector<int> Idx_PolSub = Context.GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(PolymeraseName);
             std::vector<int> Idx_PolBB;
             std::vector<std::string> BuildingBlockNames;
             std::string MaxLenFileName;
             std::string FreqBBFileName;
             int Threshold;
 
-            for (auto& reaction : pContext->GetList_Polymerase_ReactionList()){
+            for (auto& reaction : Context.GetList_Polymerase_ReactionList()){
                 if (reaction->Name == PolymeraseName){
                     for (auto& BuildingBlock : reaction->BuildingBlocks){
                         BuildingBlockNames.push_back(BuildingBlock);
                     }
-                    Idx_PolBB = pContext->GetIdxByStrList_MoleculeList(BuildingBlockNames);
+                    Idx_PolBB = Context.GetIdxByStrList_MoleculeList(BuildingBlockNames);
                 }
             }
 
-            std::vector<std::vector<int>> StoichMatrix_PolymeraseReaction = pContext->GetStoichiometryMatrix_PolymeraseReaction(PolymeraseReactionList);
+            std::vector<std::vector<int>> StoichMatrix_PolymeraseReaction = Context.GetStoichiometryMatrix_PolymeraseReaction(PolymeraseReactionList);
 
             if (Polymerase->Process == "DNAReplication") {
                 MaxLenFileName = "./Database/Len_ChromosomesInGenome.npy";
                 FreqBBFileName = "./Database/Freq_NTsInChromosomesInGenome.npy";
-                Idx_Template   = pContext->GetIdxListFromMoleculeList("Chromosome");
-                Idx_Target     = pContext->GetIdxListFromMoleculeList("Chromosome");
+                Idx_Template   = Context.GetIdxListFromMoleculeList("Chromosome");
+                Idx_Target     = Context.GetIdxListFromMoleculeList("Chromosome");
                 Threshold      = 50;  // The number of polymerases required for a functional unit to initiate the polymerase reaction
 
                 // Idx_TemplateSubset
@@ -799,8 +799,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             else if (Polymerase->Process == "RNATranscription") {
                 MaxLenFileName = "./Database/Len_RNAs.npy";
                 FreqBBFileName = "./Database/Freq_NTsInRNAs.npy";
-                Idx_Template   = pContext->GetIdxListFromMoleculeList("Gene");
-                Idx_Target     = pContext->GetIdxListFromMoleculeList("RNA"); // update to link gene to RNA matching when importing and generating this list
+                Idx_Template   = Context.GetIdxListFromMoleculeList("Gene");
+                Idx_Target     = Context.GetIdxListFromMoleculeList("RNA"); // update to link gene to RNA matching when importing and generating this list
                 Threshold      = 1;
 
                 // Idx_TemplateSubset
@@ -812,11 +812,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             else if (Polymerase->Process == "ProteinTranslation") {
                 MaxLenFileName = "./Database/Len_Proteins.npy";
                 FreqBBFileName = "./Database/Freq_AAsInProteins.npy";
-                Idx_Template   = pContext->GetIdxListFromMoleculeList("mRNA");
-                Idx_Target     = pContext->GetIdxListFromMoleculeList("Protein"); // update to link mRNA to protein matching
+                Idx_Template   = Context.GetIdxListFromMoleculeList("mRNA");
+                Idx_Target     = Context.GetIdxListFromMoleculeList("Protein"); // update to link mRNA to protein matching
                 Threshold      = 1;
 
-                Idx_TemplateSubset = pContext->GetIdxOfStrListFromStrList(pContext->GetNameListFromMoleculeList("mRNA"), pContext->GetNameListFromMoleculeList("RNA"));
+                Idx_TemplateSubset = Context.GetIdxOfStrListFromStrList(Context.GetNameListFromMoleculeList("mRNA"), Context.GetNameListFromMoleculeList("RNA"));
             }
 
             else { // add exception handling
@@ -835,7 +835,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     // for legends
-    std::vector<std::string> MolNames = pContext->GetNames_MoleculeList();
+    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
     ofs << in+ in+ "self.Mol_Names = [" << JoinStr2Str(MolNames) << "]" << endl;
     int i = 0;
     for (auto MolName : MolNames) {
@@ -846,13 +846,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     // Initialize all molecule counts
-    std::vector<int> Idx_Mol = pContext->GetIdxListFromMoleculeList("Molecule");
+    std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
     std::vector<float> InitialCount_Molecules;
     std::vector<float> MolarityFactor_Molecules;
 
-    for (auto& molecule : pContext->MoleculeList) {
-        float Count = pContext->GetInitialCountByName_CountList(molecule->Name);
-        float MolarityFactor = pContext->GetMolarityFactorByName_CountList(molecule->Name);
+    for (auto& molecule : Context.MoleculeList) {
+        float Count = Context.GetInitialCountByName_CountList(molecule->Name);
+        float MolarityFactor = Context.GetMolarityFactorByName_CountList(molecule->Name);
         InitialCount_Molecules.push_back(Count);
         MolarityFactor_Molecules.push_back(MolarityFactor);
     }
@@ -958,7 +958,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Restore --> to CountList method
     std::vector<std::string> Names;
-    for (auto& count : pContext->CountList) {
+    for (auto& count : Context.CountList) {
         std::string Name = count->Name;
         // ignore if not relevant to the system
         if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
@@ -974,7 +974,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Event --> to CountList method
     Names.clear();
-    for (auto& count : pContext->CountList) {
+    for (auto& count : Context.CountList) {
         std::string Name = count->Name;
         // ignore if not relevant to the system
         if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
@@ -991,7 +991,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // Homeostasis --> to SimModule cmd option
     std::vector<std::string> HomeostasisList = {"Am"};// TODO: take user input from cmd line
     for (auto& name : HomeostasisList) {
-        int Idx = pContext->GetIdxByName_MoleculeList(name);
+        int Idx = Context.GetIdxByName_MoleculeList(name);
         ofs << in+ in+ "self.Idx_Count_Homeostasis_" << name << " = None" << endl;
         ofs << in+ in+ "self.Idx_Pos_Homeostasis_" << name << " = None" << endl;
         ofs << in+ in+ "self.Homeostasis_Prev_" << name << " = None" << endl;
@@ -1000,7 +1000,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
 //    old
 //    // Restore
-//    for (auto& molecule : pContext->MoleculeList) {
+//    for (auto& molecule : Context.MoleculeList) {
 //        auto& count = molecule->Count;
 //        if (count.Fixed) {
 //            ofs << in+ in+ "self.Idx_Restore_" << molecule->Name << " = None" << endl;
@@ -1008,14 +1008,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //    }
 //
 //    // Event
-//    for (auto& count : pContext->CountList) {
+//    for (auto& count : Context.CountList) {
 //        if (Begin != 0) {
 //            }
 //        }
 //    }
 
-//    if (!pContext->PathwayList.empty()){
-//        for (auto& Pathway : pContext->PathwayList) {
+//    if (!Context.PathwayList.empty()){
+//        for (auto& Pathway : Context.PathwayList) {
 //            if (Pathway.Name == "TCA") {
 //                ofs << in+ in+ "self.Idx_Restore_" << Pathway.Name << " = None" << endl;
 //            }
@@ -1038,7 +1038,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     i = 0;
     if (!MolLoc.empty()) {
         for (auto molLoc : MolLoc) {
-            int Idx = pContext->GetIdxByName_MoleculeList(molLoc->Name);
+            int Idx = Context.GetIdxByName_MoleculeList(molLoc->Name);
             ofs << in+ in+ "self.Idx_DistToCoord_" << molLoc->Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
             i++;
         }
@@ -1046,7 +1046,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Restore --> to CountList method
     Names.clear();
-    for (auto& count : pContext->CountList) {
+    for (auto& count : Context.CountList) {
         std::string Name = count->Name;
         // ignore if not relevant to the system
         if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
@@ -1054,7 +1054,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                int Idx = pContext->GetIdxByName_MoleculeList(Name);
+                int Idx = Context.GetIdxByName_MoleculeList(Name);
                 ofs << in+ in+ "self.Idx_Restore_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
                 Names.push_back(Name);
             }
@@ -1063,7 +1063,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Event --> to CountList method
     Names.clear();
-    for (auto& count : pContext->CountList) {
+    for (auto& count : Context.CountList) {
         std::string Name = count->Name;
         // ignore if not relevant to the system
         if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
@@ -1071,7 +1071,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                int Idx = pContext->GetIdxByName_MoleculeList(Name);
+                int Idx = Context.GetIdxByName_MoleculeList(Name);
                 ofs << in+ in+ "self.Idx_Event_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
                 Names.push_back(Name);
             }
@@ -1081,7 +1081,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Homeostasis
     for (auto& name : HomeostasisList) {
-        int Idx = pContext->GetIdxByName_MoleculeList(name);
+        int Idx = Context.GetIdxByName_MoleculeList(name);
         ofs << in+ in+ "self.Idx_Count_Homeostasis_" << name << " = np.array([" << std::to_string(Idx) << "])" << endl;
         Idx = 0; // Get index of "E" ihe location list? Use MolName to connect to "E"
         ofs << in+ in+ "self.Idx_Pos_Homeostasis_" << name << " = np.array([" << std::to_string(Idx) << "])" << endl;
@@ -1089,19 +1089,19 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
     ofs << endl;
 
-//    if (!pContext->PathwayList.empty()){
-//        for (auto& Pathway : pContext->PathwayList) {
+//    if (!Context.PathwayList.empty()){
+//        for (auto& Pathway : Context.PathwayList) {
 //            if (Pathway.Name == "TCA") {
 //                std::string MoleculeToRestore;
 //                int Idx;
 //
 //                MoleculeToRestore = "acetyl-CoA";
-//                Idx = pContext->GetIdxByName_MoleculeList(MoleculeToRestore);
+//                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
 //                ofs << in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
 //
 //	                MoleculeToRestore.clear();
 //                MoleculeToRestore = "malate";
-//                Idx = pContext->GetIdxByName_MoleculeList(MoleculeToRestore);
+//                Idx = Context.GetIdxByName_MoleculeList(MoleculeToRestore);
 //                ofs << in+ in+ "self.Idx_Restore_" << Pathway.Name << " = np.asmatrix([" << Idx << "]) # " << MoleculeToRestore << endl;
 //            }
 //        }
@@ -1135,7 +1135,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in;
-    if (!pOption->bDebug) { ofs << "#" ;}
+    if (!Option.bDebug) { ofs << "#" ;}
     ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
@@ -1157,7 +1157,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in;
-    if (!pOption->bDebug) { ofs << "#" ;}
+    if (!Option.bDebug) { ofs << "#" ;}
     ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
@@ -1172,7 +1172,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in;
-    if (!pOption->bDebug) { ofs << "#" ;}
+    if (!Option.bDebug) { ofs << "#" ;}
     ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
@@ -1223,7 +1223,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // TODO: scale up exporting
     ofs << in+ "def ExportData(self):" << endl;
-    if (pContext->LocationList.empty()) {
+    if (Context.LocationList.empty()) {
         ofs << in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
         ofs << in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
     } else {
@@ -1247,7 +1247,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def DistributionToCount(self):" << endl;
     if (!MolLoc.empty() & !ObjLoc.empty()) {
         for (auto molLoc : MolLoc) {
-            std::vector<std::string> ObjUniqueNames = pContext->GetUniqueNames_LocationList("Compartment");
+            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto UniqueName : ObjUniqueNames) {
                 ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
                 ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
@@ -1263,7 +1263,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def RestoreMoleculeCount(self):" << endl;
 
     Names.clear();
-    for (auto& count : pContext->CountList) {
+    for (auto& count : Context.CountList) {
         std::string Name = count->Name;
 
         // ignore if not relevant to the system
@@ -1274,7 +1274,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 std::string Amount;
-                float MolarityFactor = pContext->GetMolarityFactorByName_CountList(Name);
+                float MolarityFactor = Context.GetMolarityFactorByName_CountList(Name);
 
                 if (MolarityFactor)      { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
                 else                     { Amount = Utils::SciFloat2Str(count->Amount); }
@@ -1290,8 +1290,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
 
-//    if (!pContext->PathwayList.empty()){
-//        for (auto& Pathway : pContext->PathwayList) {
+//    if (!Context.PathwayList.empty()){
+//        for (auto& Pathway : Context.PathwayList) {
 //            if (Pathway.Name == "TCA") {
 //                std::string MoleculeToRestore = "acetyl-CoA";
 //                int Count = 446331;
@@ -1308,7 +1308,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     bool ElseSwitch = false;
 
     Names.clear();
-    for (auto& count : pContext->CountList) {
+    for (auto& count : Context.CountList) {
         std::string Name = count->Name;
 
         // ignore if not relevant to the system
@@ -1317,7 +1317,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
 
         std::string Amount;
-        float MolarityFactor = pContext->GetMolarityFactorByName_CountList(Name);
+        float MolarityFactor = Context.GetMolarityFactorByName_CountList(Name);
 
         if (MolarityFactor) { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
         else                { Amount = Utils::SciFloat2Str(count->Amount); }
@@ -1359,7 +1359,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     for (auto& name : HomeostasisList) {
-        int Idx = pContext->GetIdxByName_MoleculeList(name);
+        int Idx = Context.GetIdxByName_MoleculeList(name);
         std::string Now = "Homeostasis_Now_" + name;
         std::string Prev = "self.Homeostasis_Prev_" + name;
         std::string Idx_Count = "self.Idx_Count_Homeostasis_" + name;
@@ -1387,7 +1387,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
-    if (!pContext->LocationList.empty()) {
+    if (!Context.LocationList.empty()) {
         ofs << in+ "# Spatial Simulation related routines" << endl;
         ofs << in + "def SpatialSimulation(self):" << endl;
         ofs << in + in + "self.SpatialDiffusion()" << endl;
@@ -1397,7 +1397,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def SpatialDiffusion(self):" << endl;
     if (!MolLoc.empty()) {
-        int N_Dist = pContext->GetNames_LocationList("Molecule").size();
+        int N_Dist = Context.GetNames_LocationList("Molecule").size();
         // TODO: update to 3d array
         for (int i = 0; i < N_Dist; i++) {
             ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
@@ -1417,7 +1417,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def NonSpatialSimulation(self):" << endl;
     if (!StandardReactionTypes.empty()) {
         for (auto &Type: StandardReactionTypes) {
-            std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+            std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
                 ofs << in + in + "self.StandardReactions()" << endl;
                 ofs << endl;
@@ -1428,7 +1428,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     if (!EnzReactionTypes.empty()) {
         for (auto &Type: EnzReactionTypes) {
-            std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+            std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
                 ofs << in + in + "self.EnzymaticReactions()" << endl;
                 ofs << endl;
@@ -1450,7 +1450,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "# Biochemical Reaction related routines" << endl;
     // StandardReaction function
     for (auto& Type : StandardReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             // Typing set up
             std::map<std::string, std::string> Typing;
@@ -1458,7 +1458,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             Typing.emplace("Reactant", Type);
             Typing.emplace("Product", StandardReactionTypes[0]); // default type
 
-            bool bMolaritySys = pContext->CheckMolarityFactorTrueForAny_CountList();
+            bool bMolaritySys = Context.CheckMolarityFactorTrueForAny_CountList();
             std::string AmountTextStr;
             if (bMolaritySys) { AmountTextStr = "Conc_"; }
             else              { AmountTextStr = "Count_"; }
@@ -1538,7 +1538,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // EnzReaction function // TODO: Add bMolaritySys option as above
     for (auto& Type : EnzReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
 
             // Typing set up
@@ -1641,7 +1641,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def StandardReactions(self):" << endl;
     bool PassSwitch = true;
     for (auto& Type : StandardReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             ofs << in+ in+ "self.StandardReaction_" << Type << "()" << endl;
             PassSwitch = false;
@@ -1657,7 +1657,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def EnzymaticReactions(self):" << endl;
     PassSwitch = true;
     for (auto& Type : EnzReactionTypes) {
-        std::vector<const FReaction *> ReactionSubList = pContext->GetSubList_ReactionList(Type);
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             ofs << in+ in+ "self.EnzymaticReaction_" << Type << "()" << endl;
             PassSwitch = false;
@@ -1988,7 +1988,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "Simulation.Initialize(N_SimSteps, SimStepTimeResolution)" << endl;
     ofs << in+ "Simulation.Run(Spatial=0) # 0: WithoutSpatialSimulation, 1: WithSpatialSimulation" << endl;
     ofs << endl;
-    ofs << in+ "DataManager.SaveToFile('" << pOption->SimResultFile.c_str() << "')" << endl;
+    ofs << in+ "DataManager.SaveToFile('" << Option.SimResultFile.c_str() << "')" << endl;
     ofs << endl;
 
     // MAIN
@@ -2008,7 +2008,7 @@ void FWriter::SimVis2D()
     std::cout << "Generating SimVis2D..." << std::endl;
 
     // write SimVis2D.py
-    std::ofstream ofs(pOption->SimVis2DFile.c_str());
+    std::ofstream ofs(Option.SimVis2DFile.c_str());
     std::string endl = "\n";
 
     ofs << "import sys" << endl;

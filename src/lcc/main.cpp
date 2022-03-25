@@ -1318,16 +1318,16 @@ int main(int argc, char *argv[])
 
     if (Option.bSimPython) {
 
-        Writer.LinkOptionContext(pOption, pContext);
+        Writer.LinkOptionContext(Option, Context);
         Writer.SetUpDefaultVariables(N_MoleculesAllowed, Name_Pseudo, Float_Init, Int_Init);
 
 //        WriteSimIdx();
         Writer.SimModule(Sim_Steps, Sim_Resolution);
-        cout << Option.SimModuleFile << endl;
+        cout << Option.SimModuleFile << std::endl;
 
         if (!Context.LocationList.empty()) {
             Writer.SimVis2D();
-            cout << Option.SimVis2DFile << endl;
+            cout << Option.SimVis2DFile << std::endl;
         }
 
     }

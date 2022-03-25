@@ -19,8 +19,8 @@ using namespace std;
 
 class FWriter {
 public:
-    FOption * pOption;
-    FCompilerContext * pContext;
+    FOption Option;
+    FCompilerContext Context;
 
     std::string in;
     int N_MoleculesAllowed;
@@ -31,7 +31,7 @@ public:
     FWriter() {}
 
     // Initialize
-    void LinkOptionContext(FOption * InpOption, FCompilerContext * InpContext) { pOption = InpOption; pContext = InpContext; }
+    void LinkOptionContext(FOption InOption, FCompilerContext InContext) { Option = InOption; Context = InContext; }
     void SetUpDefaultVariables(int InN_MoleculesAllowed, std::string InName_Pseudo, float InFloat_Default, int InInt_Default);
 
     // StandardReaction
