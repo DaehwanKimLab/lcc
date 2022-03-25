@@ -1,0 +1,30 @@
+W = 1200, H = 800;
+
+// example 1
+container Dish{}
+Dish D(shape=circle, radius=200);
+D(3, 5, 1) = 1; // location
+
+Dish D2;
+D2.shape=circle;
+D2.radius= H / 2;
+
+// example 2
+container Plate
+{
+   property shape = rectangle;
+   property width = W;
+}
+Plate P(2, 5, 0) = 1;
+
+// example 3
+petridish P1 (shape=rectangle, width=W, height=0) {}
+P1.height = H;
+P1(0, 0, 0) = 1;
+
+petridish P2 {}
+P2.shape=rectangle;
+P2.width=W;
+P2.height=H;
+
+// likewise for other container nodes like organisms (similar to container), ecoli (similar to petridish), etc.
