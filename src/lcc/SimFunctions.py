@@ -196,6 +196,12 @@ def Eqn_Diffusion_Spatial_4Cell(Distribution, D):
     Leftward = np.roll(Diffusion_Padded, -1, axis=1)
     Rightward = np.roll(Diffusion_Padded, 1, axis=1)
 
+    # Flow back from the edges
+    Upward[1, :] += Upward[0, :]
+    Downward[-2, :] += Downward[-1, :]
+    Leftward[:, 1] += Leftward[:, 0]
+    Rightward[:, -2] += Rightward[:, -1]
+
     Distribution_Diffused = (Upward + Downward + Leftward + Rightward)[1:-1, 1:-1] - 4 * Diffusion_Quantity
 
     return Distribution_Diffused
@@ -237,7 +243,7 @@ def Displacement_2D(Distance, Angle):
 # Temporary chemotaxis simulation functions. 
 def BacterialChemotaxis(ThresholdSubject, X, Y, Angle, Threshold):
     # optimize the following code into additions and subtractions
-    Decision = ThresholdSubject.transpose() < Threshold
+    Decision = ThresholdSubject < Threshold
     X_Run, Y_Run, Angle_Run  = Chemotaxis_Run(X, Y, Angle)
     X_Tumble, Y_Tumble, Angle_Tumble = Chemotaxis_Tumble(X, Y, Angle)
     X_New = np.where(Decision, X_Run, X_Tumble)
@@ -251,7 +257,7 @@ def Chemotaxis_Run(X, Y, Angle, Distance = 15):
 
 def Chemotaxis_Tumble(X, Y, Angle, Distance = 5):
     dX, dY = Displacement_2D(Distance, Angle)
-    NewAngle = np.random.random_sample(Angle.size) * 2 * pi
+    NewAngle = np.random.random_sample(Angle.shape) * 2 * pi
     return X + dX, Y + dY, NewAngle
 
 
