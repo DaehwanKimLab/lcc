@@ -502,6 +502,20 @@ public:
     }
 };
 
+class FFluxReaction : public FReaction {
+public:
+    float D;
+
+    FFluxReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InD)
+            : D(InD), FReaction(InName, InStoichiometry) {}
+
+    void Print(std::ostream& os) {
+        os << "[Flux Reaction]" ;
+        Print_IdStoichiometry(os);
+        os << "  D: " << D << std::endl;
+    }
+};
+
 class FStandardReaction : public FReaction {
 public:
     float k;

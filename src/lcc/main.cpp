@@ -536,7 +536,7 @@ void TraversalNode_Core(NNode * node)
 
     } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
         auto N_Pathway = dynamic_cast<const NPathwayDeclaration *>(node);
-        os << "Pathway: " << N_Pathway->Id.Name << endl;
+        // os << "Pathway: " << N_Pathway->Id.Name << endl;
 
         string Name = N_Pathway->Id.Name;
         vector<string> Sequence;
@@ -578,7 +578,10 @@ void TraversalNode_Core(NNode * node)
                 // WITHOUT overall reaction: enzyme takes care of multiple reactions
                 if (!N_Pathway->OverallReaction & (Utils::is_class_of<NReaction, NNode>(stmt.get()))) {
                     TraversalNode_Core(stmt.get());
+                } else if (!N_Pathway->OverallReaction & (Utils::is_class_of<NDeclarationStatement, NNode>(stmt.get()))) {
+                    TraversalNode_Core(stmt.get());
                 }
+
             } // closing for stmt loop
 
         } // closing if block
@@ -968,7 +971,63 @@ void TraversalNode_Core(NNode * node)
         auto UsingStmt = dynamic_cast<const NUsingStatement *>(node);
         os << "Using(" << UsingStmt->Type << "): " << UsingStmt->Id.Name << endl;
         Context.UsingModuleList.emplace_back(UsingStmt->Id.Name);
+
+    } else if (Utils::is_class_of<NDeclarationStatement, NNode>(node)) {
+        auto DeclStmt = dynamic_cast<const NDeclarationStatement *>(node);
+
+        // temporary flux syntax parsing
+        if (DeclStmt->Type == "flux") {
+
+            // extract the following info
+            std::string Name;
+            std::vector<std::pair<std::string, int>> Stoichiometry;
+            float D = Float_Init;
+
+            // parsing
+            Name = DeclStmt->Id.Name;
+
+            std::string MolName; // for Stoich
+
+            if (DeclStmt->Initializer) {
+                auto Inits = dynamic_cast<const NInitializerExpression *>(DeclStmt->Initializer.get());
+                for (const auto Exp : Inits->ExpressionList) {
+                    if (Utils::is_class_of<NVariableExpression, NExpression>(Exp.get())) {
+                        auto VarExp = dynamic_pointer_cast<NVariableExpression>(Exp);
+                        MolName = VarExp->GetName();
+                    } else if (Utils::is_class_of<NAExpression, NExpression>(Exp.get())) {
+                        auto AExp = dynamic_pointer_cast<NAExpression>(Exp);
+                        if (AExp->Oper == T_ASSIGN) {
+                            if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExp->OpA.get())) {
+                                const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
+                                std::string KeyName = VarExp->GetName();
+                                Utils::Assertion(KeyName == "D", "Flux syntax currently takes 'D' as a parameter key");
+                            }
+                            if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExp->OpB.get())) {
+                                const auto ConstExp = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
+                                D = ConstExp->EvaluateInFloat();
+                            }
+                        }
+                    }
+                }
+            }
+
+//            if (Option.bDebug) {
+                os << "@ Flux Expression parsing result" << endl;
+                os << "Flux Reaction Name : " << Name      << ", ";
+                os << "Target Molecule: "                  << MolName     << ", ";
+                os << "Diffusion Rate: "                   << D << ", ";
+//            }
+
+            std::pair<std::string, int> Stoich(MolName, 1);
+            Stoichiometry.push_back(Stoich);
+
+            // add flux object
+            FFluxReaction * NewReaction = new FFluxReaction(Name, Stoichiometry, D);
+            if (Option.bDebug) { NewReaction->Print(os); }
+            Context.AddToReactionList(NewReaction);
+        }
     }
+
 #if 0
     else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
         auto Identifier = dynamic_cast<const NIdentifier *>(node);
