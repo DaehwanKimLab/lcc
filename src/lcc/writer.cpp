@@ -512,7 +512,13 @@ void FWriter::Polymerase_TerminationReaction(ofstream& ofs, const FPolymerase* P
 
 void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 {
+    int Map_Width = 1200;
+    int Map_Height = 800;
+
     ofs << in+ in+ "# Spatial Simulation" << endl;
+
+    ofs << in+ in+ "self.Dimension_X = " << Map_Width << endl;
+    ofs << in+ in+ "self.Dimension_Y = " << Map_Height << endl;
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
@@ -520,7 +526,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
-    ofs << in+ in+ "self.Dist_All = list()" << endl;
+    ofs << in+ in+ "self.Dist_All = np.zeros((" << MolLoc.size() << ", self.Dimension_X , self.Dimension_Y))" << endl;
     for (auto& location : MolLoc) {
         ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = None" << endl;
     }
@@ -542,16 +548,8 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 
 void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 {
-    int Map_Width = 1200;
-    int Map_Height = 800;
-
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
-
-    for (auto& location : MolLoc) {
-        ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = None" << endl;
-    }
-    ofs << endl;
 
     ofs << in+ in+ "self.Dist_Names = [" << JoinStr2Str(Context.GetNames_LocationList("Molecule")) << "]" << endl;
     int i = 0;
@@ -559,9 +557,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
         auto Coord = location->Coord;
         auto Amount = Context.GetInitialCountByName_CountList(location->Name);
         ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = np.asmatrix([" << i << "])" << endl;
-        ofs << in+ in+ "Dist = sim.InitializeDistribution(" << Map_Width << ", " << Map_Height << ", " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
-        // TODO: update to 3d array
-        ofs << in+ in+ "self.Dist_All.append(Dist)" << endl;
+        ofs << in+ in+ "self.Dist_All[" << i << "] = sim.InitializeDistribution(self.Dimension_X, self.Dimension_Y, " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
         i++;
     }
     ofs << endl;
@@ -580,6 +576,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
         ofs << in+ in+ "self.Pos_Name2Idx['" << UniqueName << "'] = self.Idx_Pos_" << UniqueName << endl;
         i++;
     }
+    ofs << endl;
 
     i = 0;
     ofs << in+ in+ "# Currently support X, Y, Angle, Threshold" << endl;
@@ -654,6 +651,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "SimStepTimeResolution = " << Sim_Resolution << endl;
     ofs << "DisplayCount = 0   # 0: Display Counts only, 1: Display both Counts & dCounts" << endl;
     ofs << "Unit = 'nM'   # nM or uM supported for now" << endl;
+    ofs << endl;
+
+    ofs << "def ListToStr(List, Delimiter):" << endl;
+    ofs << in+ "List_Str = ''" << endl;
+    ofs << in+ "if List:" << endl;
+    ofs << in+ in+ "for item in List:" << endl;
+    ofs << in+ in+ in+ "List_Str += item + '_'" << endl;
+    ofs << in+ "return List_Str" << endl;
     ofs << endl;
 
     // class FState
@@ -837,11 +842,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // for legends
     std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
     ofs << in+ in+ "self.Mol_Names = [" << JoinStr2Str(MolNames) << "]" << endl;
+    ofs << in+ in+ "self.Mol_Name2Idx = {";
     int i = 0;
     for (auto MolName : MolNames) {
-        ofs << in+ in+ "self.Mol_Name2Idx['" << MolName << "'] = np.asmatrix([" << i << "])" <<endl;
+        ofs << "'" << MolName << "' : np.asmatrix([" << i << "]), ";
         i++;
-    }
+    } ofs << "}" << endl;
     ofs << in+ in+ "self.Legends = ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
@@ -989,13 +995,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     // Homeostasis --> to SimModule cmd option
-    std::vector<std::string> HomeostasisList = {"Am"};// TODO: take user input from cmd line
-    for (auto& name : HomeostasisList) {
-        int Idx = Context.GetIdxByName_MoleculeList(name);
-        ofs << in+ in+ "self.Idx_Count_Homeostasis_" << name << " = None" << endl;
-        ofs << in+ in+ "self.Idx_Pos_Homeostasis_" << name << " = None" << endl;
-        ofs << in+ in+ "self.Homeostasis_Prev_" << name << " = None" << endl;
-    }
+    ofs << in+ in+ "self.Count_Prev = 0" << endl;
+    ofs << in+ in+ "self.Idx_Count_Homeostasis = None" << endl;
+    ofs << in+ in+ "self.Idx_Pos_Homeostasis = None" << endl;
     ofs << endl;
 
 //    old
@@ -1079,16 +1081,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
     ofs << endl;
 
-    // Homeostasis
-    for (auto& name : HomeostasisList) {
-        int Idx = Context.GetIdxByName_MoleculeList(name);
-        ofs << in+ in+ "self.Idx_Count_Homeostasis_" << name << " = np.array([" << std::to_string(Idx) << "])" << endl;
-        Idx = 0; // Get index of "E" ihe location list? Use MolName to connect to "E"
-        ofs << in+ in+ "self.Idx_Pos_Homeostasis_" << name << " = np.array([" << std::to_string(Idx) << "])" << endl;
-        ofs << in+ in+ "self.Homeostasis_Prev_" << name << " = 0" << endl;
-    }
-    ofs << endl;
-
 //    if (!Context.PathwayList.empty()){
 //        for (auto& Pathway : Context.PathwayList) {
 //            if (Pathway.Name == "TCA") {
@@ -1121,6 +1113,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "# Debugging" << endl;
     ofs << in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
     ofs << in+ in+ "self.Debug_SetUnit(Unit)" << endl;
+    ofs << endl;
+
+    // homeostasis--threshold index setting
+    ofs << in+ "def SetIdxForHomeostasis(self, MoleculeNameList):" << endl;
+    ofs << in+ in+ "if MoleculeNameList:" << endl;
+    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.asmatrix([self.GetMolIdx(Name)[0, 0] for Name in MoleculeNameList])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.asmatrix(range(len(MoleculeNameList)))" << endl;
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.asmatrix(range(self.State.Count_All.shape[1]))" << endl;
+    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.asmatrix(range(self.State.Count_All.shape[1]))" << endl;
     ofs << endl;
 
     // regular simloop
@@ -1231,6 +1233,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     } else {
         ofs << in+ in+ "pass" << endl;
     }
+    ofs << endl;
+
+    ofs << in+ "def SaveState(self, FileName):" << endl;
+    ofs << in+ in+ "self.DataManager.SaveToNpyFile(self.GetCount_All(), FileName)" << endl;
     ofs << endl;
 
     ofs << in+ "def ApplySimTimeResolution(self, Rate):" << endl;
@@ -1348,60 +1354,53 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
     ofs << endl;
 
-    ofs << in + "def Homeostasis(self):" << endl;
+    ofs << in + "def SetThreshold(self):" << endl;
+    float ThresholdFactor = 0.99999;
+    ofs << in+ in+ "Threshold = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
+    ofs << in+ in+ "self.State.Pos_Threshold[self.Idx_Pos_Homeostasis] = Threshold"<< endl;
+    ofs << endl;
+
+    ofs << in + "def Homeostasis(self, MoleculeNames=None):" << endl;
     // TODO: Get homeostasis info from FPathway,
     float HomeostasisFactor = 1e-7;
-    float ThresholdFactor = 0.99999;
-    ofs << in+ in+ "print('Running simulation to achieve homeostasis for : ";
-    for (auto& name : HomeostasisList) {
-        ofs << name << ", ";
-    }
-    ofs << "')" << endl;
+    ofs << in+ in+ "bNotHomeostasis = True" << endl;
+    ofs << in+ in+ "self.SetIdxForHomeostasis(MoleculeNames)" << endl;
+    ofs << in+ in+ "MoleculeNames_Str = ListToStr(MoleculeNames, '_')" << endl;
 
-    for (auto& name : HomeostasisList) {
-        ofs << in + in + "bNotHomeostasis_" << name << " = True" << endl;
-    }
+    ofs << in+ in+ "# Temporary homeostasis save file" << endl;
+    ofs << in+ in+ "FileName_Homeostasis = 'SimSave_Homeostasis_%s" << int(Numbers::RandomNumber(0, 1000)) << "' % MoleculeNames_Str" << endl;
     ofs << endl;
+    ofs << in+ in+ "if os.path.exists('%s.npy' % FileName_Homeostasis):" << endl;
+    ofs << in+ in+ in+ "print('[Homeostasis] Loading previous steady state...')" << endl;
+    ofs << in+ in+ in+ "self.State.Count_All = np.load('%s.npy' % FileName_Homeostasis)" << endl;
+    ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been achieved!')" << endl;
+    ofs << in+ in+ in+ "if MoleculeNames:" << endl;
+    ofs << in+ in+ in+ in+ "self.SetThreshold()" << endl;
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "print('[Homeostasis] Running simulation to achieve steady state...')" << endl;
 
-    ofs << in+ in+ "while (";
-    for (auto& name : HomeostasisList) {
-        ofs << "bNotHomeostasis_" << name;
-        if (name != HomeostasisList.back()) {
-            ofs << " and ";
-        }
-    }
-    ofs << "):" << endl;
-
-    ofs << in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
+    ofs << in+ in+ in+ "while (bNotHomeostasis):" << endl;
+    ofs << in+ in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
+    ofs << in+ in+ in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis]" << endl;
+    ofs << in+ in+ in+ in+ "if np.all(Count_Now > 0) and np.all(abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << "):" << endl;
+    ofs << in+ in+ in+ in+ in+ "bNotHomeostasis = False" << endl;
+    ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been achieved.')" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.SaveState(FileName_Homeostasis)" << endl;
+    ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been saved: %s' % FileName_Homeostasis)" << endl;
+    ofs << in+ in+ in+ in+ in+ "if MoleculeNames:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "self.SetThreshold()" << endl;
+//    ofs << in+ in+ in+ in+ "print('[Homeostasis] achieved  : " << name << " @', self.Debug_ApplyUnit(Current), self.UnitTxt)" << endl;
+//    ofs << in+ in+ in+ in+ "print('[Homeostasis] threshold : " << name << " @', self.Debug_ApplyUnit(Threshold), self.UnitTxt)" << endl;
+    //ofs << in+ in+ in+ in+ "print('Homeostasis achieved for      : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
+    //ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ")), self.UnitTxt)" << endl;
+    ofs << in+ in+ in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.Count_Prev = Count_Now" << endl;
     ofs << endl;
-
-    for (auto& name : HomeostasisList) {
-        int Idx = Context.GetIdxByName_MoleculeList(name);
-        std::string Now = "Homeostasis_Now_" + name;
-        std::string Prev = "self.Homeostasis_Prev_" + name;
-        std::string Idx_Count = "self.Idx_Count_Homeostasis_" + name;
-        std::string Idx_Pos = "self.Idx_Pos_Homeostasis_" + name;
-        std::string Threshold = "self.State.Pos_Threshold[" + Idx_Pos + "]";
-
-        ofs << in+ in+ in+ Now << " = self.GetCountByName('" << name << "')" << endl;
-        ofs << in+ in+ in+ "if np.all(" << Now << " > 0) and np.all(abs(" << Now <<  " - " << Prev << ") / " << Now << " < " << Utils::SciFloat2Str(HomeostasisFactor) << "):" << endl;
-        ofs << in+ in+ in+ in+ "bNotHomeostasis_" << name << " = False" << endl;
-        ofs << in+ in+ in+ in+ "self.State.Pos_Threshold[" << Idx_Pos << ", :] = (" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ").transpose()"<< endl;
-        ofs << in+ in+ in+ in+ "print('[Homeostasis] achieved for      : " << name << " @', self.Debug_ApplyUnit(" << Now << ").transpose(), self.UnitTxt)" << endl;
-        ofs << in+ in+ in+ in+ "print('[Homeostasis] threshold set for : " << name << " @', self.Debug_ApplyUnit(" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ").transpose(), self.UnitTxt)" << endl;
-        //ofs << in+ in+ in+ in+ "print('Homeostasis achieved for      : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
-        //ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ")), self.UnitTxt)" << endl;
-        ofs << in+ in+ in+ "self.Homeostasis_Prev_" << name << " = Homeostasis_Now_" << name << endl;
-    }
+    ofs << in+ in+ in+ in+ in+ "# Trigger Event on Substrate Count" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.TriggerEventMoleculeCount()" << endl;
     ofs << endl;
-    //    print("[Homeostasis {:06d}] Glucose:{:.6f}{} Am:{:.6f}{}".format(self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, self.Am / Unit / NA, UnitTxt))
-
-    ofs << in+ in+ in+ "# Trigger Event on Substrate Count" << endl;
-    ofs << in+ in+ in+ "self.TriggerEventMoleculeCount()" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ in+ "# Save and Export Data" << endl;
-    ofs << in+ in+ in+ "self.ExportData()" << endl;
+    ofs << in+ in+ in+ in+ in+ "# Save and Export Data" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
     if (!Context.LocationList.empty()) {
@@ -1427,8 +1426,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def SpatialLocation(self):" << endl;
-    ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis_Am)" << endl; // TODO:set up dynamic indexing
+    ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()[0]" << endl; // TODO:set up dynamic indexing
     ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = sim.BacterialChemotaxis(np.array(HomeostasisMolecule), self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Pos_Threshold)" << endl;
+    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y = sim.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
     ofs << endl;
 
     ofs << in+ "def NonSpatialSimulation(self):" << endl;
@@ -1730,6 +1730,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.State.Count_All[:, Idx]" << endl;
     ofs << endl;
 
+    ofs << in+ "def GetCount_All(self):" << endl;
+    ofs << in+ in+ "return np.copy(self.State.Count_All)" << endl;
+    ofs << endl;
+
     ofs << in+ "def GetConcentration(self, Idx):" << endl;
     ofs << in+ in+ "return sim.CountToConc(self.State.Count_All[:, Idx])" << endl;
     ofs << endl;
@@ -1743,12 +1747,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
     ofs << in+ in+ "dCount_All_New = self.State.dCount_All + dCountToAdd" << endl;
     ofs << in+ in+ "ZeroTest = dCount_All_New + self.State.Count_All" << endl;
-    ofs << in+ in+ "self.State.dCount_All =  np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
+    ofs << in+ in+ "self.State.dCount_All = np.where(ZeroTest < 0, dCount_All_New - ZeroTest, dCount_All_New)" << endl;
     ofs << endl;
 
     ofs << in+ "def UpdateCounts(self):" << endl;
     ofs << in+ in+ "self.State.Count_All += self.State.dCount_All" << endl;
     ofs << in+ in+ "self.CleardCounts()" << endl;
+    ofs << endl;
 
     ofs << in+ "def CleardCounts(self):" << endl;
     ofs << in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
@@ -1765,7 +1770,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetConcentrationByName(self, Name):" << endl;
-    ofs << in+ in+ "return self.GetConcentration(self.GetMolIdx(Name))" << endl;
+    ofs << in+ in+ "return self.GetConcentration(self.GetMolIdx(Name), self.State.Vol)" << endl;
     ofs << endl;
 
     ofs << in+ "def GetPosIdx(self, Name):" << endl;
@@ -1976,9 +1981,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // class FDataManager
     ofs << "class FDataManager:" << endl;
     ofs << in+ "def __init__(self):" << endl;
+    ofs << in+ in+ "# SimOut" << endl;
     ofs << in+ in+ "self.Legend = list()" << endl;
     ofs << in+ in+ "self.DataBuffer = list()" << endl;
-    ofs << endl;
 
     ofs << in+ "def SetLegend(self, InLegend):" << endl;
     ofs << in+ in+ "self.Legend = InLegend" << endl;
@@ -1988,13 +1993,21 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.DataBuffer.append(InData)" << endl;
     ofs << endl;
 
-    ofs << in+ "def SaveToFile(self, InFileName):" << endl;
+    ofs << in+ "def SaveToTsvFile(self, Legend, Data, InFileName):" << endl;
     ofs << in+ in+ "with open(InFileName, 'w', newline='', encoding='utf-8') as OutFile:" << endl;
     ofs << in+ in+ in+ "TsvWriter = csv.writer(OutFile, delimiter='\\t')" << endl;
-    ofs << in+ in+ in+ "if self.Legend:" << endl;
-    ofs << in+ in+ in+ in+ "TsvWriter.writerow(self.Legend)" << endl;
-    ofs << in+ in+ in+ "for Row in self.DataBuffer:" << endl;
+    ofs << in+ in+ in+ "if Legend:" << endl;
+    ofs << in+ in+ in+ in+ "TsvWriter.writerow(Legend)" << endl;
+    ofs << in+ in+ in+ "for Row in Data:" << endl;
     ofs << in+ in+ in+ in+ "TsvWriter.writerow(np.array(Row).flatten().tolist())" << endl;
+    ofs << endl;
+
+    ofs << in+ "def SaveToNpyFile(self, Data, InFileName):" << endl;
+    ofs << in+ in+ "np.save('%s.npy' % InFileName, Data)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def SaveCountToFile(self, InFileName):" << endl;
+    ofs << in+ in+ "self.SaveToTsvFile(self.Legend, self.DataBuffer, InFileName)" << endl;
     ofs << endl;
 
     // BODY
@@ -2012,7 +2025,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "Simulation.Initialize(N_SimSteps, SimStepTimeResolution)" << endl;
     ofs << in+ "Simulation.Run(Spatial=0) # 0: WithoutSpatialSimulation, 1: WithSpatialSimulation" << endl;
     ofs << endl;
-    ofs << in+ "DataManager.SaveToFile('" << Option.SimResultFile.c_str() << "')" << endl;
+    ofs << in+ "DataManager.SaveCountToFile('" << Option.SimResultFile.c_str() << "')" << endl;
     ofs << endl;
 
     // MAIN
@@ -2226,7 +2239,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
     ofs << endl;
     ofs << in+ "def Homeostasis(self, MolName):" << endl;
-    ofs << in+ in+ "Sim.Homeostasis()   # Input 'Am' here" << endl;
+    ofs << in+ in+ "Sim.Homeostasis([MolName])   # Input 'Am' here" << endl;
     ofs << in+ in+ "self.Glucose_Prev = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)" << endl;
     ofs << in+ in+ "self.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))" << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
