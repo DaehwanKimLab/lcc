@@ -260,5 +260,10 @@ def Chemotaxis_Tumble(X, Y, Angle, Distance = 5):
     NewAngle = np.random.random_sample(Angle.shape) * 2 * pi
     return X + dX, Y + dY, NewAngle
 
-
+def CorrectOutOfBounds(X, Y, Width, Height):
+    X_Corrected = np.where(X < np.array([0]), 0, X)
+    X_Corrected = np.where(X_Corrected >= np.array([Width]), Width - 1, X_Corrected)
+    Y_Corrected = np.where(Y < np.array([0]), 0, Y)
+    Y_Corrected = np.where(Y_Corrected >= np.array([Height]), Height - 1, Y_Corrected)
+    return X_Corrected, Y_Corrected
 
