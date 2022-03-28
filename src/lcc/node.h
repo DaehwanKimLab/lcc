@@ -295,7 +295,7 @@ public:
         for (const auto& property: Property) {
             property->Print(os); os << ", ";
         }
-        os << "}" << std::endl;
+        os << "}";
     }
 
     virtual void Visit(FTraversalContext& Context) const override;
@@ -358,13 +358,15 @@ public:
 
     virtual void Print(std::ostream& os) const override {
         os << "Protein: {";
-        Id.Print(os); os << ", ";
+        Id.Print(os);
         if (OverallReaction) {
-            OverallReaction->Print(os); os << ", " << std::endl;
+            os << ", ";
+            OverallReaction->Print(os);
         }
         if (Block) {
             for (const auto& stmt: Block->Statements) {
-                stmt->Print(os); os << ", " << std::endl;
+                os << ", ";
+                stmt->Print(os);
             }
         }
         os << "}";
@@ -455,7 +457,7 @@ public:
     }
 };
 
-class NChainReaction : public NExpression {
+class NChainReaction : public NStatement {
 public:
     std::vector<std::shared_ptr<NChainReactionExpression>> Exprs;
     std::vector<int> Operators;
@@ -482,7 +484,28 @@ public:
         os << "]";
         os << "}";
     }
+};
 
+class NChainReactionDeclaration : public NStatement {
+public:
+    const NIdentifier Id;
+    std::shared_ptr<NChainReaction> ChainReaction;
+
+    NChainReactionDeclaration(NChainReaction* InChainReaction)
+        : ChainReaction(InChainReaction) {}
+    NChainReactionDeclaration(const NIdentifier& InId, NChainReaction* InChainReaction) 
+        : Id(InId), ChainReaction(InChainReaction) {}
+
+    virtual void Print(std::ostream& os) const override {
+        os << "Reaction: {";
+        Id.Print(os); os << ", ";
+        if (ChainReaction) {
+            ChainReaction->Print(os);
+        }
+        os << "}";
+    }
+
+    virtual void Visit(FTraversalContext &Context) const override {};
 };
 
 class NPathwayExpression : public NExpression {
@@ -514,7 +537,7 @@ public:
     std::shared_ptr<NChainReaction> PathwayChainReaction;
 
     NPathwayDeclaration(const NIdentifier& InId)
-            : Id(InId) {}
+        : Id(InId), OverallReaction(nullptr) {}
 
     NPathwayDeclaration(const NIdentifier& InId, NReaction* InOverallReaction)
         : Id(InId), OverallReaction(InOverallReaction) {}
@@ -524,10 +547,10 @@ public:
 
     /* New */
     NPathwayDeclaration(const NIdentifier& InId, NBlock* InBlock)
-        : Id(InId), Block(InBlock) {};
+        : Id(InId), OverallReaction(nullptr), Block(InBlock) {};
 
     NPathwayDeclaration(const NIdentifier& InId, NChainReaction* InChainReaction)
-    : Id(InId), PathwayChainReaction(InChainReaction) {};
+        : Id(InId), OverallReaction(nullptr), PathwayChainReaction(InChainReaction) {};
 
     virtual void Print(std::ostream& os) const override {
         os << "PathwayDeclaration: {";
@@ -1253,6 +1276,8 @@ public:
     NInitializerExpression(NExpression* InExpr) {
         ExpressionList.emplace_back(InExpr);
     }
+    NInitializerExpression(std::vector<std::shared_ptr<NExpression>>& InExpressionList)
+        : ExpressionList(InExpressionList) {};
 
     void Append(NExpression* InExpr) {
         ExpressionList.emplace_back(InExpr);

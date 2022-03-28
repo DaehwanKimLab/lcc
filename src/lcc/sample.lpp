@@ -1,5 +1,5 @@
 /* Define template organism */
-organism ecoli "E-coli K-12 MG1655";
+//organism ecoli "E-coli K-12 MG1655";
 
 /* Define experiment environment */
 /* TODO */
@@ -25,6 +25,7 @@ protein SucB();
 protein Fume();
 protein Mdh(malate --> oxaloacetate);
 protein_complex Sdh = SdhA + SdhB + SdhC + SdhD + SdhE;
+/*
 protein CA2(CO2 + H2O --> H+ + OHCOO-) {
 	cofactor co1(Zn2+);
 	domain dom1(co1-his, co1-his, co1-his);
@@ -34,6 +35,7 @@ protein CA2(CO2 + H2O --> H+ + OHCOO-) {
 	sequence steps(step1, step2, step3);
 	PDB "xxxx";
 };
+*/
 
 // TCA
 pathway OLD_TCA = GltA --> AcnA | AcnB --> Icd --> SucA + SucB --> SucD + SucC --> Sdh --> Fume <--> Mdh --> GltA;
@@ -100,6 +102,6 @@ func(b);
 func();
 func(1, 2, 3);
 
-for (i = 0; i < len(f); i=i+1) {
+for (i = 0; i < len(f); i= i + 1) {
     func(i);
 }

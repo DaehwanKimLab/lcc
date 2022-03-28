@@ -12,13 +12,13 @@ D2.radius= H / 2;
 // example 2
 container Plate
 {
-   property shape = rectangle;
-   property width = W;
+   property shape rectangle;
+   property width W;
 }
-Plate P(2, 5, 0) = 1;
+//Plate P(2, 5, 0) = 1;
 
 // example 3
-petridish P1 (shape=rectangle, width=W, height=0) {}
+//petridish P1 (shape=rectangle, width=W, height=0) {}
 P1.height = H;
 P1(0, 0, 0) = 1;
 
