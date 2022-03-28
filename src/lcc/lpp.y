@@ -26,7 +26,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 	NChainReaction *ChainReaction;
 	NChainReactionExpression *ChainReactionExpr;
     NSubstrate *Substrate;
-    NDeclaraionStatement *DeclStmt;
+    NDeclarationStatement *DeclStmt;
     NInitializerExpression *InitExpr;
 
 	std::vector<std::shared_ptr<NStatement>> *StmtVec;
@@ -548,7 +548,7 @@ declaration_list : declaration
                  ;
 */
 
-decl_stmt      : declaration_specifiers init_declarator_list { NDeclaraionStatement::UpdateType($2, *$1); $$ = $2; delete $1; }
+decl_stmt      : declaration_specifiers init_declarator_list { NDeclarationStatement::UpdateType($2, *$1); $$ = $2; delete $1; }
                ;
 
 declaration_specifiers : type_specifier
@@ -565,9 +565,9 @@ init_declarator_list : init_declarator { $$ = NNodeUtil::InitStatementList($1); 
                      | init_declarator_list T_COMMA init_declarator { $1->emplace_back($3); }
                      ;
 
-init_declarator : declarator { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); delete $1;}
-                | declarator T_LPAREN p_expr_list T_RPAREN { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); $$->SetInitializer(new NInitializerExpression(*$3)); delete $3; delete $1; }
-                | declarator T_ASSIGN initializer { $$ = new NDeclaraionStatement(); $$->SetIdentifier(*$1); $$->SetInitializer($3); delete $1; }
+init_declarator : declarator { $$ = new NDeclarationStatement(); $$->SetIdentifier(*$1); delete $1;}
+                | declarator T_LPAREN p_expr_list T_RPAREN { $$ = new NDeclarationStatement(); $$->SetIdentifier(*$1); $$->SetInitializer(new NInitializerExpression(*$3)); delete $3; delete $1; }
+                | declarator T_ASSIGN initializer { $$ = new NDeclarationStatement(); $$->SetIdentifier(*$1); $$->SetInitializer($3); delete $1; }
                 ;
 
 declarator     : ident

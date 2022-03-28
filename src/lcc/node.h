@@ -22,7 +22,7 @@ class NPolymeraseDeclaration;
 class NPropertyStatement;
 class NSubstrate;
 class NExpression;
-class NDeclaraionStatement;
+class NDeclarationStatement;
 
 typedef std::vector<std::shared_ptr<NStatement>> StatementList;
 typedef std::vector<std::shared_ptr<NMoleculeIdentifier>> MoleculeList;
@@ -1296,18 +1296,18 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 };
 
-class NDeclaraionStatement : public NStatement {
+class NDeclarationStatement : public NStatement {
 public:
     std::string Type;
     NIdentifier Id;
     std::shared_ptr<NInitializerExpression> Initializer;
 
-    NDeclaraionStatement() {};
-    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId)
+    NDeclarationStatement() {};
+    NDeclarationStatement(const std::string& InType, const NIdentifier& InId)
         : Type(InType), Id(InId) {};
-    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId, NExpression* InInit)
+    NDeclarationStatement(const std::string& InType, const NIdentifier& InId, NExpression* InInit)
         : Type(InType), Id(InId), Initializer(std::make_shared<NInitializerExpression>(InInit)) {};
-    NDeclaraionStatement(const std::string& InType, const NIdentifier& InId, NInitializerExpression* InInitList)
+    NDeclarationStatement(const std::string& InType, const NIdentifier& InId, NInitializerExpression* InInitList)
         : Type(InType), Id(InId), Initializer(InInitList) {};
 
 
@@ -1342,7 +1342,7 @@ public:
     static void UpdateType(StatementList *Statements, const std::string& InType)
     {
         for (auto& stmt: *Statements) {
-            NDeclaraionStatement* DeclStmt = dynamic_cast<NDeclaraionStatement *>(stmt.get());
+            NDeclarationStatement* DeclStmt = dynamic_cast<NDeclarationStatement *>(stmt.get());
             if (DeclStmt) {
                 DeclStmt->SetType(InType);
             }
