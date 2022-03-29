@@ -313,6 +313,12 @@ enum ReactionTypeAssignment {
     Enz_MichaelisMenten_Inhibition_Competitive = 22,
     Enz_MichaelisMenten_Activation_Allosteric = 23,
 
+    // Transporter Reactions
+    Transporter_Unregulated = 40,
+    Transporter_Inhibition_Allosteric = 41,
+    Transporter_Inhibition_Competitive = 41,
+    Transporter_Activation_Allosteric = 43,
+
     // Regulatory Reactions
     Regulatory_Inhibition_Allosteric = 100,
     Regulatory_Inhibition_Competitive = 101,
@@ -358,6 +364,13 @@ void FCompilerContext::AssignReactionType(FReaction *Reaction, int Regulation)
         else if (Regulation == 1) { Type = Standard_Inhibition_Allosteric; }
         else if (Regulation == 3) { Type = Standard_Activation_Allosteric; }
 
+    } else if (Utils::is_class_of<FTransporterReaction, FReaction>(Reaction)) {
+
+        if      (Regulation == 0) { Type = Transporter_Unregulated; }
+        else if (Regulation == 1) { Type = Transporter_Inhibition_Allosteric; }
+        else if (Regulation == 2) { Type = Transporter_Inhibition_Competitive; }
+        else if (Regulation == 3) { Type = Transporter_Activation_Allosteric; }
+
     } else {
         Type = Unassigned; // keep the default value
     }
@@ -368,6 +381,7 @@ void FCompilerContext::AssignReactionType(FReaction *Reaction, int Regulation)
 void FCompilerContext::AssignReactionTypesForReactionList()
 {
     std::cout << "Assigning Reaction Types..." << endl;
+    int i = 0;
     // check if regulated
     int reg;
 
@@ -402,8 +416,10 @@ void FCompilerContext::AssignReactionTypesForReactionList()
             reg = 3;
         }
 
-        std::cout << reaction->Name << " | Regulation mechanism :" << reg;
+        std::cout << "[" << i << "] " << reaction->Name << "\t| Regulation mechanism :" << reg;
         AssignReactionType(reaction, reg);
+
+        i++;
     }
 }
 
@@ -507,6 +523,12 @@ std::vector<const FReaction *> FCompilerContext::GetSubList_ReactionList(std::st
     else if (Type == "Enz_MichaelisMenten_Inhibition_Competitive") { ReactionType = 22; }
     else if (Type == "Enz_MichaelisMenten_Activation_Allosteric")  { ReactionType = 23; }
 
+    // Transporter Reactions
+    else if (Type == "Transporter_Unregulated")            { ReactionType = 40; }
+    else if (Type == "Transporter_Inhibition_Allosteric")  { ReactionType = 41; }
+    else if (Type == "Transporter_Inhibition_Competitive") { ReactionType = 42; }
+    else if (Type == "Transporter_Activation_Allosteric")  { ReactionType = 43; }
+
     // Regulatory Reactions
     else if (Type == "Regulatory_Inhibition_Allosteric")    { ReactionType = 100; }
     else if (Type == "Regulatory_Inhibition_Competitive")   { ReactionType = 101; }
@@ -561,17 +583,16 @@ std::vector<const FRegulatoryReaction *> FCompilerContext::GetList_Regulatory_Re
     return SubList;
 }
 
-std::vector<const FEnzymaticReaction *> FCompilerContext::GetList_Enzymatic_ReactionList()
+const FMolecule * FCompilerContext::GetMolecule_MoleculeList(std::string Name)
 {
-    std::vector<const FEnzymaticReaction *> SubList;
-
-    for (const FReaction* Reaction: ReactionList) {
-        if (Utils::is_class_of<FEnzymaticReaction, FReaction>(Reaction)) {
-            auto EnzymaticReaction = dynamic_cast<const FEnzymaticReaction* >(Reaction);
-            SubList.push_back(EnzymaticReaction);
+    for (auto& molecule : MoleculeList) {
+        if (molecule->Name == Name) {
+            return molecule;
         }
     }
-    return SubList;
+
+    Utils::Assertion (false, "Unable to find enzyme in the Context.MoleculeList: " + Name);
+    return nullptr;
 }
 
 std::vector<std::string> FCompilerContext::GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)

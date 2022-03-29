@@ -510,6 +510,83 @@ void FWriter::Polymerase_TerminationReaction(ofstream& ofs, const FPolymerase* P
     ofs << endl;
 }
 
+void FWriter::Initialize_TransporterReaction(ofstream& ofs, std::string Type)
+{
+    ofs << in+ in+ "# " << Type << endl;
+
+    ofs << in+ in+ "self.Idx_Cargo_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Transporter_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_ki_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_ko_" << Type << " = None" << endl;
+
+//    // Inhibition vs. Activation (improve with number of accepted regulators implemented)
+//    if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
+//        ofs << in+ in+ "self.Const_K_" << Type << " = None" << endl;
+//        ofs << in+ in+ "self.Const_n_" << Type << " = None" << endl;
+//        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
+//    }
+//    ofs << endl;
+
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
+    ofs << endl;
+}
+
+void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList)
+{
+    int Idx_Pseudo = Context.GetIdxByName_MoleculeList(Name_Pseudo);
+    std::vector<int> Idx_Cargo;
+    std::vector<int> Idx_Transporter;
+    std::vector<float> ki;
+    std::vector<float> ko;
+
+//    // for regulatory mechanisms
+//    std::vector<float> K;
+//    std::vector<float> n;
+//    std::vector<int> Idx_Regulator;
+
+    // for stoichiometry matrix
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(Type);
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(Type);
+
+//    // relevant reaction lists
+//    std::vector<const FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);
+
+    for (auto& Reaction : ReactionSubList) {
+        const auto &reaction = dynamic_cast<const FTransporterReaction *>(Reaction);
+
+        const auto& molecule = Context.GetMolecule_MoleculeList(reaction->Transporter);
+        const auto& Transporter = dynamic_cast<const FTransporter *>(molecule);
+
+        Idx_Transporter.push_back(Context.GetIdxByName_MoleculeList(Transporter->Name));
+        ki.push_back(Transporter->ki);
+        ko.push_back(Transporter->ko);
+
+        for (auto &stoich: reaction->Stoichiometry) {
+            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+            Idx_Cargo.push_back(Idx);
+        }
+    }
+
+    ofs << in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "self.Idx_Cargo_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Transporter) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Transporter_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Transporter) << "])" << endl;
+    ofs << in+ in+ "self.Const_ki_" << Type << " = np.array([" << JoinFloat2Str(ki) << "])" << endl;
+    ofs << in+ in+ "self.Const_ko_" << Type << " = np.array([" << JoinFloat2Str(ki) << "])" << endl;
+
+//    // Inhibition vs. Activation (improve with number of accepted regulators implemented)
+//    if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
+//        ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
+//        ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
+//        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+//    }
+//    ofs << endl;
+
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
+    ofs << endl;
+}
+
 void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 {
     int Map_Width = 1200;
@@ -696,7 +773,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     // for standard reactions
-    std::vector<std::string> ReactionTypes {"Standard_Unregulated", "Standard_Inhibition_Allosteric", "Standard_Activation_Allosteric"};
+    std::vector<std::string> ReactionTypes;
+    ReactionTypes.emplace_back("Standard_Unregulated");
+    ReactionTypes.emplace_back("Standard_Inhibition_Allosteric");
+    ReactionTypes.emplace_back("Standard_Activation_Allosteric");
 
     std::vector<std::string> StandardReactionTypes = ReactionTypes; // to reuse later
 
@@ -734,6 +814,22 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!PolymeraseList.empty()) {
         for (auto& Polymerase : PolymeraseList) {
             Initialize_PolymeraseReaction(ofs, Polymerase);
+        }
+    }
+
+    // for Transporter reactions
+    ReactionTypes.clear();
+    ReactionTypes.push_back("Transporter_Unregulated");
+    ReactionTypes.push_back("Transporter_Inhibition_Allosteric");
+    ReactionTypes.push_back("Transporter_Inhibition_Competitive");
+    ReactionTypes.push_back("Transporter_Activation_Allosteric");
+
+    std::vector<std::string> TransporterReactionTypes = ReactionTypes; // to reuse later
+
+    for (auto& Type : ReactionTypes) {
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
+        if (!ReactionSubList.empty()) {
+            Initialize_TransporterReaction(ofs, Type);
         }
     }
 
@@ -839,6 +935,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
+    // Print SetUp_TransporterReaction for each Reaction Type
+    for (auto& Type : TransporterReactionTypes) {
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
+        if (!ReactionSubList.empty()) {
+            SetUp_TransporterReaction(ofs, Type, ReactionSubList);
+        }
+    }
+
     // for legends
     std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
     ofs << in+ in+ "self.Mol_Names = [" << JoinStr2Str(MolNames) << "]" << endl;
@@ -862,7 +966,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         InitialCount_Molecules.push_back(Count);
         MolarityFactor_Molecules.push_back(MolarityFactor);
     }
-
 
     ofs << in+ in+ "Idx_Mol = np.asmatrix([";
     if (ObjLoc.empty()) {
@@ -1150,7 +1253,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.CountToDistribution()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate Influx" << endl;
+    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << endl;
 
@@ -1407,6 +1510,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ "# Spatial Simulation related routines" << endl;
         ofs << in + "def SpatialSimulation(self):" << endl;
         ofs << in + in + "self.SpatialDiffusion()" << endl;
+        ofs << in + in + "#self.TransporterReaction()" << endl;
         ofs << in + in + "self.SpatialLocation()" << endl;
         ofs << endl;
     }
@@ -1415,7 +1519,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!MolLoc.empty()) {
         int N_Dist = Context.GetNames_LocationList("Molecule").size();
         // TODO: update to 3d array
-        for (int i = 0; i < N_Dist; i++) {
+        for (i = 0; i < N_Dist; i++) {
             ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
             // Future implementation
             // ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;
@@ -1424,6 +1528,75 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "pass" << endl;
     }
     ofs << endl;
+
+    // TransporterReaction function
+    for (auto& Type : TransporterReactionTypes) {
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
+        if (!ReactionSubList.empty()) {
+            bool bMolaritySys = Context.CheckMolarityFactorTrueForAny_CountList();
+            std::string AmountTextStr;
+            if (bMolaritySys) { AmountTextStr = "Conc_"; }
+            else              { AmountTextStr = "Count_"; }
+
+            ofs << in+ "def TransporterReaction(self):" << endl;
+
+            std::string Amount_Inside = AmountTextStr + "Inside";
+            std::string Amount_Outside = AmountTextStr + "Outside";
+
+            // Get Concentrations
+            ofs << in+ in+ Amount_Inside << " = ";
+            std::string Line = "self.State.Count_All[:, self.State.Idx_" + Type + "]";
+            if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
+            ofs << Line << endl;
+
+            ofs << in+ in+ Amount_Outside << " = ";
+            Line = "self.GetCountfromDistribution(self.State.Idx_" + Type + ", self.State.Pos_X, self.State.Pos_Y)";
+            if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
+            ofs << Line << endl;
+
+//            // Regulators
+//            if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
+//                ofs << in+ in+ AmountTextStr << "Regulator = ";
+//                if (bMolaritySys) {
+//                    ofs << "sim.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
+//                } else {
+//                    ofs << "self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "]" << endl;
+//                }
+//            }
+
+            // Calculate Rate
+            ofs << in+ in+ "Rate = sim.Eqn_" << Type << "(" << Amount_Inside << ", " << Amount_Outside << ", " << "self.State.Const_D_" << Type << ")" << endl;
+
+//            // Regulators
+//            if (Typing[substrate] != StandardReactionTypes[0]) {
+//                ofs << AmountTextStr << "Regulator, ";
+//            }
+//            // Reaction constants
+//            ofs << "self.State.Const_k_" << substrate << "_" << Type;
+//            if (Typing[substrate] != StandardReactionTypes[0]) {
+//                ofs << ", self.State.Const_K_" << Type << ", ";
+//                ofs << "self.State.Const_n_" << Type;
+//            }
+//            ofs << ")" << endl;
+
+            // Apply Time Resolution
+            ofs << in+ in+ "Rate = self.ApplySimTimeResolution(Rate)" << endl;
+
+            if (bMolaritySys) {
+                // Apply stoichiometry
+                ofs << in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                // Convert to counts
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+            } else {
+                // Apply stoichiometry
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+            }
+            // Apply delta counts for molecules in the stoichiometry matrix
+            ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
+            ofs << in+ in+ "self.AddToDist(self.State.Idx_Mol_InStoichMatrix_" << Type << ", self.State.Pos_X, self.State.Pos.Y, dCount_Mol_InStoichMatrix)" << endl;
+            ofs << endl;
+        }
+    }
 
     ofs << in+ "def SpatialLocation(self):" << endl;
     ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()[0]" << endl; // TODO:set up dynamic indexing
@@ -1757,6 +1930,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def CleardCounts(self):" << endl;
     ofs << in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def AddToDist(self, Idx, X, Y, Values):" << endl;
+    ofs << in+ in+ "self.State.Dist_All[:, X, Y] += Values" << endl;
+    ofs << endl;
 
     // TODO: Use SimIdx in the future
     ofs << in+ "# Temporary routines" << endl;

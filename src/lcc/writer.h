@@ -49,6 +49,10 @@ public:
     void Polymerase_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase);
     void Polymerase_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase);
 
+    // TransporterReaction
+    void Initialize_TransporterReaction(ofstream& ofs, std::string Type);
+    void SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
+
     // Spatial Simulation
     void Initialize_SpatialSimulation(ofstream& ofs);
     void SetUp_SpatialSimulation(ofstream& ofs);

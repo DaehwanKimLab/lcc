@@ -429,7 +429,8 @@ public:
     }
 };
 
-class FPolymerase : public FMolecule{ // update to FProtein when ID system is set up with SQL // Note: specific to template-dependent polymerase class.
+class FPolymerase : public FProtein { // update to FProtein when ID system is set up with SQL // Note: specific to template-dependent polymerase class.
+//class FPolymerase : public FMolecule{ // update to FProtein when ID system is set up with SQL // Note: specific to template-dependent polymerase class.
 public:
     std::string Template;
     std::string Target;
@@ -439,14 +440,26 @@ public:
     FPolymerase() {}
 
     FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const float& InRate)
-        : Template(InTemplate), Target(InTarget), Rate(InRate), FMolecule(InName) {}
+        : Template(InTemplate), Target(InTarget), Rate(InRate), FProtein(InName) {}
 
     FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const std::string& InProcess, const float& InRate)
-//        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
-        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FMolecule(InName) {}
+        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
 
     void Print(std::ostream& os) {
         os << "[Polymerase] Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+    }
+};
+
+class FTransporter : public FProtein {
+public:
+    float ki;
+    float ko;
+
+    FTransporter(const std::string& InName, const float Inki, const float Inko)
+        : ki(Inki), ko(Inko), FProtein(InName) {}
+
+    void Print(std::ostream& os) {
+        os << "[Transporter] Id: " << Name << "\t| ki:  " << Utils::SciFloat2Str(ki) << "\t| ko:  " << Utils::SciFloat2Str(ko) << std::endl;
     }
 };
 
@@ -499,20 +512,6 @@ public:
         for (auto& Stoich : Stoichiometry) {
             os << "[" << Stoich.first << ", " << Stoich.second << "], ";
         }
-    }
-};
-
-class FFluxReaction : public FReaction {
-public:
-    float D;
-
-    FFluxReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InD)
-            : D(InD), FReaction(InName, InStoichiometry) {}
-
-    void Print(std::ostream& os) {
-        os << "[Flux Reaction]" ;
-        Print_IdStoichiometry(os);
-        os << "  D: " << D << std::endl;
     }
 };
 
@@ -599,6 +598,27 @@ public:
             os << buildingblock << ", ";
         }
         os << std::endl;
+    }
+};
+
+class FTransporterReaction : public FReaction {
+public:
+    float D;
+    std::string Transporter;
+
+    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string InTransporter)
+        : Transporter(InTransporter), FReaction(InName, InStoichiometry) {}
+
+    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InD)
+        : D(InD), FReaction(InName, InStoichiometry) {}
+
+    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InD, const std::string InTransporter)
+            : Transporter(InTransporter), D(InD), FReaction(InName, InStoichiometry) {}
+
+    void Print(std::ostream& os) {
+        os << "[Transporter Reaction]" ;
+        Print_IdStoichiometry(os);
+        os << "  D: " << D << ", ";
     }
 };
 
@@ -710,6 +730,7 @@ public:
     void AdjustMolarity_PseudoMolecule();
 
     // MoleculeList
+    const FMolecule * GetMolecule_MoleculeList(std::string Name);
     std::vector<std::string> GetNames_MoleculeList();
     int GetIdxByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
@@ -739,8 +760,7 @@ public:
     std::vector<const FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
     std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
 
-    // useful?
-    std::vector<const FEnzymaticReaction *> GetList_Enzymatic_ReactionList();
+    // TODO: Update polymerase reaction writing system
     std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
     
 

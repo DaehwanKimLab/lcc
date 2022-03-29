@@ -576,12 +576,9 @@ void TraversalNode_Core(NNode * node)
                 os << "  "; stmt->Print(os);
 
                 // WITHOUT overall reaction: enzyme takes care of multiple reactions
-                if (!N_Pathway->OverallReaction & (Utils::is_class_of<NReaction, NNode>(stmt.get()))) {
-                    TraversalNode_Core(stmt.get());
-                } else if (!N_Pathway->OverallReaction & (Utils::is_class_of<NDeclarationStatement, NNode>(stmt.get()))) {
+                if (!N_Pathway->OverallReaction & (Utils::is_class_of<NStatement, NNode>(stmt.get()))) {
                     TraversalNode_Core(stmt.get());
                 }
-
             } // closing for stmt loop
 
         } // closing if block
@@ -975,16 +972,19 @@ void TraversalNode_Core(NNode * node)
     } else if (Utils::is_class_of<NDeclarationStatement, NNode>(node)) {
         auto DeclStmt = dynamic_cast<const NDeclarationStatement *>(node);
 
-        // temporary flux syntax parsing
-        if (DeclStmt->Type == "flux") {
+        // temporary Transporter syntax parsing
+        if (DeclStmt->Type == "transporter") {
 
             // extract the following info
-            std::string Name;
+            std::string Name_Reaction, Name_Transporter;
             std::vector<std::pair<std::string, int>> Stoichiometry;
-            float D = Float_Init;
+//            float D = Float_Init;
+            float ki = Float_Init;
+            float ko = Float_Init;
 
             // parsing
-            Name = DeclStmt->Id.Name;
+            Name_Reaction = DeclStmt->Id.Name;
+            Name_Transporter = DeclStmt->Id.Name;
 
             std::string MolName; // for Stoich
 
@@ -997,34 +997,50 @@ void TraversalNode_Core(NNode * node)
                     } else if (Utils::is_class_of<NAExpression, NExpression>(Exp.get())) {
                         auto AExp = dynamic_pointer_cast<NAExpression>(Exp);
                         if (AExp->Oper == T_ASSIGN) {
+                            std::string Key;
+                            float Value;
                             if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExp->OpA.get())) {
                                 const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
-                                std::string KeyName = VarExp->GetName();
-                                Utils::Assertion(KeyName == "D", "Flux syntax currently takes 'D' as a parameter key");
+                                Key = VarExp->GetName();
+                                Utils::Assertion((Key == "ki" || Key == "ko"), "Transporter syntax currently takes 'ki or ko' as a parameter key");
                             }
                             if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExp->OpB.get())) {
                                 const auto ConstExp = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
-                                D = ConstExp->EvaluateInFloat();
+                                Value = ConstExp->EvaluateInFloat();
                             }
+                            // add info
+                            if      (Key == "ki") { ki = Value; }
+                            else if (Key == "ko") { ko = Value; }
                         }
                     }
                 }
             }
 
-//            if (Option.bDebug) {
-                os << "@ Flux Expression parsing result" << endl;
-                os << "Flux Reaction Name : " << Name      << ", ";
-                os << "Target Molecule: "                  << MolName     << ", ";
-                os << "Diffusion Rate: "                   << D << ", ";
-//            }
-
-            std::pair<std::string, int> Stoich(MolName, 1);
+            // stoichiometry set up
+            std::pair<std::string, int> Stoich(MolName, -1);
             Stoichiometry.push_back(Stoich);
 
-            // add flux object
-            FFluxReaction * NewReaction = new FFluxReaction(Name, Stoichiometry, D);
+            // default 0 for unfilled rates
+            if      (ki == Float_Init) { ki = 0; }
+            else if (ko == Float_Init) { ko = 0; }
+
+//            if (Option.bDebug) {
+                os << "@ Transporter Expression parsing result" << endl;
+                os << "Transporter Reaction Name : " << Name_Reaction    << ", ";
+                os << "Target Molecule: "            << MolName          << ", ";
+                os << "Transporter: "                << Name_Transporter << ", ";
+                os << "ki: "                         << ki << ", ";
+                os << "ko: "                         << ko << endl;
+//            }
+
+            // add Transporter object
+            FTransporterReaction * NewReaction = new FTransporterReaction(Name_Reaction, Stoichiometry, Name_Transporter);
             if (Option.bDebug) { NewReaction->Print(os); }
             Context.AddToReactionList(NewReaction);
+
+            FTransporter * NewTransporter = new FTransporter(Name_Transporter, ki, ko);
+            if (Option.bDebug) { NewTransporter->Print(os); }
+            Context.AddToMoleculeList(NewTransporter);
         }
     }
 
@@ -1046,7 +1062,6 @@ void TraversalNode(NBlock* InProgramBlock)
 
     os << endl << "## TraversalNode_Code ##" << endl;
     AddPseudoMolecule();
-
 
     while(!tc.Queue.empty()) {
         const NNode* ConstNode = tc.Queue.front(); tc.Queue.pop();
