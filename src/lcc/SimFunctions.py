@@ -185,8 +185,8 @@ def InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max):
     Dist = np.sqrt(((X - X_Ori) / Width) ** 2 + ((Y - Y_Ori) / Height) ** 2)
     return Max / max(1, Dist * 30)
 
-def Eqn_Transporter_Unregulated(Conc_Inside, Conc_Outside, ki, ko):
-    return Conc_Outside * ko - Conc_Inside * ki
+def Eqn_Transporter_Unregulated(Conc_Transporter, Conc_Inside, Conc_Outside, ki, ko):
+    return Conc_Transporter * (Conc_Outside * ko - Conc_Inside * ki)
 
 def Eqn_Diffusion_Spatial_4Cell(Distribution, D):
     # von Neumann neighborhood

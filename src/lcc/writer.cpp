@@ -158,17 +158,17 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
     ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
     ofs << in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
     }
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
         ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
         ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
-        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
     }
     ofs << endl;
 
@@ -331,30 +331,30 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     Utils::Assertion((Idx_Reactants.size() == Idx_Products.size()), "# of parsed reactants and products do not match");
 
     ofs << in+ in+ "# " << Type << endl;
-    ofs << in+ in+ "self.Idx_Enz_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Enz_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
         ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
         ofs << in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
+            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
         }
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
+            ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
         }
 
     } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
         ofs << in+ in+ "self.Const_kcat_" << Type << " = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
         ofs << in+ in+ "self.Const_KM_" << Type << " = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
-        ofs << in+ in+ "self.Idx_EnzSub_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
+        ofs << in+ in+ "self.Idx_EnzSub_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
         ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
         ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
-        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
     }
     ofs << endl;
 
@@ -515,6 +515,7 @@ void FWriter::Initialize_TransporterReaction(ofstream& ofs, std::string Type)
     ofs << in+ in+ "# " << Type << endl;
 
     ofs << in+ in+ "self.Idx_Cargo_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Dist_Cargo_" << Type << " = None" << endl;
     ofs << in+ in+ "self.Idx_Transporter_" << Type << " = None" << endl;
     ofs << in+ in+ "self.Const_ki_" << Type << " = None" << endl;
     ofs << in+ in+ "self.Const_ko_" << Type << " = None" << endl;
@@ -535,7 +536,9 @@ void FWriter::Initialize_TransporterReaction(ofstream& ofs, std::string Type)
 void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList)
 {
     int Idx_Pseudo = Context.GetIdxByName_MoleculeList(Name_Pseudo);
+    std::vector<std::string> Name_Cargo;
     std::vector<int> Idx_Cargo;
+    std::vector<int> Idx_Dist_Cargo;
     std::vector<int> Idx_Transporter;
     std::vector<float> ki;
     std::vector<float> ko;
@@ -563,16 +566,32 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
         ko.push_back(Transporter->ko);
 
         for (auto &stoich: reaction->Stoichiometry) {
-            int Idx = Context.GetIdxByName_MoleculeList(stoich.first);
+            std::string CargoName = stoich.first;
+            Name_Cargo.push_back(CargoName);
+
+            int Idx = Context.GetIdxByName_MoleculeList(CargoName);
             Idx_Cargo.push_back(Idx);
         }
     }
 
+    // get cargo idx in Dist_All
+    std::vector<std::string> MolUniqueNames = Context.GetUniqueNames_LocationList("Molecule");
+    for (auto Name : Name_Cargo) {
+        int i = 0;
+        for (auto MolUniqueName : MolUniqueNames) {
+            if (MolUniqueName == Name) {
+                Idx_Dist_Cargo.push_back(i);
+            }
+            i++;
+        }
+    }
+
     ofs << in+ in+ "# " << Type << endl;
-    ofs << in+ in+ "self.Idx_Cargo_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Transporter) << "])" << endl;
-    ofs << in+ in+ "self.Idx_Transporter_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Transporter) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Cargo_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Cargo) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Dist_Cargo_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Dist_Cargo) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Transporter_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Transporter) << "])" << endl;
     ofs << in+ in+ "self.Const_ki_" << Type << " = np.array([" << JoinFloat2Str(ki) << "])" << endl;
-    ofs << in+ in+ "self.Const_ko_" << Type << " = np.array([" << JoinFloat2Str(ki) << "])" << endl;
+    ofs << in+ in+ "self.Const_ko_" << Type << " = np.array([" << JoinFloat2Str(ko) << "])" << endl;
 
 //    // Inhibition vs. Activation (improve with number of accepted regulators implemented)
 //    if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
@@ -604,9 +623,6 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
     ofs << in+ in+ "self.Dist_All = np.zeros((" << MolLoc.size() << ", self.Dimension_X , self.Dimension_Y))" << endl;
-    for (auto& location : MolLoc) {
-        ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = None" << endl;
-    }
     ofs << endl;
 
     ofs << in+ in+ "self.Pos_Names = list()" << endl;
@@ -633,7 +649,6 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (auto location : MolLoc) {
         auto Coord = location->Coord;
         auto Amount = Context.GetInitialCountByName_CountList(location->Name);
-        ofs << in+ in+ "self.Idx_Dist_" << location->Name << " = np.asmatrix([" << i << "])" << endl;
         ofs << in+ in+ "self.Dist_All[" << i << "] = sim.InitializeDistribution(self.Dimension_X, self.Dimension_Y, " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
         i++;
     }
@@ -645,11 +660,13 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
-        ofs << in+ in+ "self.Idx_Pos_" << UniqueName << " = np.asmatrix([";
+        ofs << in+ in+ "self.Idx_Pos_" << UniqueName << " = np.array([";
         for (int j = i; j < (Count); j++) {
             ofs << j << ", ";
         }
         ofs << "])" << endl;
+
+        // TODO: may not be used
         ofs << in+ in+ "self.Pos_Name2Idx['" << UniqueName << "'] = self.Idx_Pos_" << UniqueName << endl;
         i++;
     }
@@ -657,7 +674,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 
     i = 0;
     ofs << in+ in+ "# Currently support X, Y, Angle, Threshold" << endl;
-    ofs << in+ in+  "self.Pos_X = np.asmatrix([";
+    ofs << in+ in+  "self.Pos_X = np.array([";
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
@@ -668,7 +685,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     ofs << "]) " << endl;
 
     i = 0;
-    ofs << in+ in+  "self.Pos_Y = np.asmatrix([";
+    ofs << in+ in+  "self.Pos_Y = np.array([";
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
@@ -679,7 +696,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     ofs << "]) " << endl;
 
     i = 0;
-    ofs << in+ in+  "self.Pos_Angle = np.asmatrix([";
+    ofs << in+ in+  "self.Pos_Angle = np.array([";
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
@@ -689,7 +706,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     ofs << "]) " << endl;
 
     i = 0;
-    ofs << in+ in+  "self.Pos_Threshold = np.asmatrix([";
+    ofs << in+ in+  "self.Pos_Threshold = np.array([";
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
@@ -949,7 +966,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Mol_Name2Idx = {";
     int i = 0;
     for (auto MolName : MolNames) {
-        ofs << "'" << MolName << "' : np.asmatrix([" << i << "]), ";
+        ofs << "'" << MolName << "' : np.array([" << i << "]), ";
         i++;
     } ofs << "}" << endl;
     ofs << in+ in+ "self.Legends = ['SimStep', 'Vol', " << JoinStr2Str(MolNames) << "]" << endl;
@@ -967,7 +984,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         MolarityFactor_Molecules.push_back(MolarityFactor);
     }
 
-    ofs << in+ in+ "Idx_Mol = np.asmatrix([";
+    ofs << in+ in+ "Idx_Mol = np.array([";
     if (ObjLoc.empty()) {
         ofs << JoinInt2Str_Idx(Idx_Mol);
     } else {
@@ -1135,7 +1152,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def Initialize(self, InN_SimSteps=1000, InTimeResolution=100):" << endl;
     ofs << in+ in+ "print('Simulation Initialized...')" << endl;
-    ofs << in+ in+ "self.N_SimSteps = np.asmatrix([InN_SimSteps])" << endl;
+    ofs << in+ in+ "self.N_SimSteps = np.array([InN_SimSteps])" << endl;
     ofs << in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
     ofs << endl;
 
@@ -1160,7 +1177,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         if (count->End == -1) { // indicator for fixed
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ "self.Idx_Restore_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+                ofs << in+ in+ "self.Idx_Restore_" << Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1177,7 +1194,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ "self.Idx_Event_" << Name << " = np.asmatrix([" << std::to_string(Idx) << "])" << endl;
+                ofs << in+ in+ "self.Idx_Event_" << Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1221,11 +1238,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // homeostasis--threshold index setting
     ofs << in+ "def SetIdxForHomeostasis(self, MoleculeNameList):" << endl;
     ofs << in+ in+ "if MoleculeNameList:" << endl;
-    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.asmatrix([self.GetMolIdx(Name)[0, 0] for Name in MoleculeNameList])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.asmatrix(range(len(MoleculeNameList)))" << endl;
+    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.array([self.GetMolIdx(Name)[0] for Name in MoleculeNameList])" << endl;
+    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.array(range(len(MoleculeNameList)))" << endl;
     ofs << in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.asmatrix(range(self.State.Count_All.shape[1]))" << endl;
-    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.asmatrix(range(self.State.Count_All.shape[1]))" << endl;
+    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.array(range(self.State.Count_All.shape[1]))" << endl;
+    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.array(range(self.State.Count_All.shape[1]))" << endl;
     ofs << endl;
 
     // regular simloop
@@ -1354,7 +1371,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // Update count at idx
 
 
-    // here
+    // TODO: make it more parallel for all distribution dimensions
     ofs << in+ "def DistributionToCount(self):" << endl;
     if (!MolLoc.empty() & !ObjLoc.empty()) {
         for (auto molLoc : MolLoc) {
@@ -1362,7 +1379,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             for (auto UniqueName : ObjUniqueNames) {
                 ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
                 ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
-                    << "] = Count.transpose()" << endl;
+                    << "] = Count.reshape(-1, 1)" << endl;
             }
         }
     } else {
@@ -1371,16 +1388,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def CountToDistribution(self):" << endl;
-    if (!MolLoc.empty() & !ObjLoc.empty()) {
-        for (auto molLoc : MolLoc) {
-            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-            for (auto UniqueName : ObjUniqueNames) {
-                ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
-                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
-                    << "] = Count.transpose()" << endl;
-            }
-        }
-    } else {
+    {
+//    if (!MolLoc.empty() & !ObjLoc.empty()) {
+//        for (auto molLoc : MolLoc) {
+//            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+//            for (auto UniqueName : ObjUniqueNames) {
+//                ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+//                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+//                    << "] = Count.transpose()" << endl;
+//            }
+//        }
+//    } else {
         ofs << in+ in+ "pass" << endl;
     }
     ofs << endl;
@@ -1405,7 +1423,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 if (MolarityFactor)      { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
                 else                     { Amount = Utils::SciFloat2Str(count->Amount); }
 
-                ofs << in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Name << ", " << Amount << ", axis=1)" << endl;
+                ofs << in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Name << ".reshape(1, -1), " << Amount << ", axis=1)" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1460,7 +1478,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in + "def SetThreshold(self):" << endl;
     float ThresholdFactor = 0.99999;
     ofs << in+ in+ "Threshold = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
-    ofs << in+ in+ "self.State.Pos_Threshold[self.Idx_Pos_Homeostasis] = Threshold"<< endl;
+    ofs << in+ in+ "self.State.Pos_Threshold = Threshold"<< endl;
+//    ofs << in+ in+ "self.State.Pos_Threshold[self.Idx_Pos_Homeostasis[0]] = Threshold"<< endl;
     ofs << endl;
 
     ofs << in + "def Homeostasis(self, MoleculeNames=None):" << endl;
@@ -1510,7 +1529,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ "# Spatial Simulation related routines" << endl;
         ofs << in + "def SpatialSimulation(self):" << endl;
         ofs << in + in + "self.SpatialDiffusion()" << endl;
-        ofs << in + in + "#self.TransporterReaction()" << endl;
+        if (!TransporterReactionTypes.empty()) {
+            ofs << in + in + "#self.TransporterReaction()" << endl;
+        }
         ofs << in + in + "self.SpatialLocation()" << endl;
         ofs << endl;
     }
@@ -1534,23 +1555,34 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
             bool bMolaritySys = Context.CheckMolarityFactorTrueForAny_CountList();
+
             std::string AmountTextStr;
             if (bMolaritySys) { AmountTextStr = "Conc_"; }
             else              { AmountTextStr = "Count_"; }
 
             ofs << in+ "def TransporterReaction(self):" << endl;
 
-            std::string Amount_Inside = AmountTextStr + "Inside";
-            std::string Amount_Outside = AmountTextStr + "Outside";
+            std::string Idx_Cargo = "self.State.Idx_Cargo_" + Type;
+            std::string Idx_Dist_Cargo = "self.State.Idx_Dist_Cargo_" + Type;
+            std::string Idx_Transporter = "self.State.Idx_Transporter_" + Type;
 
-            // Get Concentrations
-            ofs << in+ in+ Amount_Inside << " = ";
-            std::string Line = "self.State.Count_All[:, self.State.Idx_" + Type + "]";
+            std::string Amount_Cargo_Inside = AmountTextStr + "Cargo_Inside";
+            std::string Amount_Cargo_Outside = AmountTextStr + "Cargo_Outside";
+            std::string Amount_Transporter = AmountTextStr + "Transporter";
+
+            ofs << in+ in+ Amount_Transporter << " = ";
+            std::string Line = "self.State.Count_All[:, " + Idx_Transporter + "]";
             if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
             ofs << Line << endl;
 
-            ofs << in+ in+ Amount_Outside << " = ";
-            Line = "self.GetCountfromDistribution(self.State.Idx_" + Type + ", self.State.Pos_X, self.State.Pos_Y)";
+            // Get Concentrations
+            ofs << in+ in+ Amount_Cargo_Inside << " = ";
+            Line = "self.State.Count_All[:, " + Idx_Cargo + "]";
+            if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
+            ofs << Line << endl;
+
+            ofs << in+ in+ Amount_Cargo_Outside << " = ";
+            Line = "self.GetCountFromDistribution(" + Idx_Dist_Cargo + ", self.State.Pos_X, self.State.Pos_Y)";
             if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
             ofs << Line << endl;
 
@@ -1565,9 +1597,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //            }
 
             // Calculate Rate
-            ofs << in+ in+ "Rate = sim.Eqn_" << Type << "(" << Amount_Inside << ", " << Amount_Outside << ", " << "self.State.Const_D_" << Type << ")" << endl;
+            ofs << in+ in+ "Rate = sim.Eqn_" << Type << "(" <<
+            Amount_Transporter << ", " <<
+            Amount_Cargo_Inside << ", " <<
+            Amount_Cargo_Outside << ", " <<
+            "self.State.Const_ki_" << Type << ", " <<
+            "self.State.Const_ko_" << Type << ")" << endl;
 
-//            // Regulators
+            //            // Regulators
 //            if (Typing[substrate] != StandardReactionTypes[0]) {
 //                ofs << AmountTextStr << "Regulator, ";
 //            }
@@ -1982,15 +2019,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.GetDistribution(Idx)" << endl;
     ofs << endl;
 
-    ofs << in+ "def GetCountFromDistribution(self, Dist, X, Y):" << endl;
-    ofs << in+ in+ "return Dist[X.astype(int), Y.astype(int)]" << endl;
+    ofs << in+ "def GetCountFromDistribution(self, Dist_Idx, X, Y):" << endl;
+    ofs << in+ in+ "return self.State.Dist_All[Dist_Idx, X.astype(int), Y.astype(int)]" << endl;
     ofs << endl;
 
     ofs << in+ "def GetCountFromDistributionByNameAndPos(self, NameOfDist, NameOfPos):" << endl;
     // temporary code
     ofs << in+ in+ "X, Y = self.GetPositionXYByName(NameOfPos)" << endl;
-    ofs << in+ in+ "Dist = self.GetDistributionByName(NameOfDist)" << endl;
-    ofs << in+ in+ "return self.GetCountFromDistribution(Dist, X, Y)" << endl;
+    ofs << in+ in+ "Dist_Idx = self.GetDistIdx(NameOfDist)" << endl;
+    ofs << in+ in+ "return self.GetCountFromDistribution(Dist_Idx, X, Y)" << endl;
     ofs << endl;
 
     ofs << in+ "def ApplyCountToDistribution(self, Dist, X, Y, Count):" << endl;
@@ -2389,8 +2426,8 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "for i in range(self.X.size):" << endl;
     ofs << in+ in+ in+ in+ "if i == self.X.size - 1:" << endl;
     ofs << in+ in+ in+ in+ in+ "Color = RED" << endl;
-    ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_BodyEnd[0, i], Y_BodyEnd[0, i]), self.BodyThickness)" << endl;
-    ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[0, i], self.Y[0, i]), (X_TailEnd[0, i], Y_TailEnd[0, i]), self.FlagellaThickness)" << endl;
+    ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_BodyEnd[i], Y_BodyEnd[i]), self.BodyThickness)" << endl;
+    ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
     ofs << endl;
     ofs << in+ "def SetPosition(self, Position):" << endl;
     ofs << in+ in+ "self.X = Position[0]" << endl;
@@ -2425,13 +2462,13 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ "def InitializeTrajectory(self):" << endl;
     ofs << in+ in+ "for i in range(self.X.size):" << endl;
-    ofs << in+ in+ in+ "self.Trajectory[i] = [(self.X[0, i], self.Y[0, i])]" << endl;
+    ofs << in+ in+ in+ "self.Trajectory[i] = [(self.X[i], self.Y[i])]" << endl;
     ofs << in+ in+ in+ "self.TrajectoryColor.append(tuple(np.random.randint(0, 255, 3)))" << endl;
     ofs << in+ in+ "self.TrajectoryColor[-1] = MAGENTA" << endl;
     ofs << endl;
     ofs << in+ "def AddToTrajectory(self):" << endl;
     ofs << in+ in+ "for i in range(self.X.size):" << endl;
-    ofs << in+ in+ in+ "self.Trajectory[i].append((self.X[0, i], self.Y[0, i]))" << endl;
+    ofs << in+ in+ in+ "self.Trajectory[i].append((self.X[i], self.Y[i]))" << endl;
     ofs << endl;
     ofs << in+ "def DrawTrajectory(self):" << endl;
     ofs << in+ in+ "for i in range(len(self.Trajectory)):" << endl;
@@ -2595,9 +2632,9 @@ void FWriter::SimVis2D()
     ofs << in+ "# TODO: Update display status" << endl;
     ofs << in+ "# def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am):" << endl;
     ofs << in+ "def DisplayStatus(self, Glucose_Ecoli, Glucose_Prev_Ecoli, Am_Ecoli):" << endl;
-    ofs << in+ in+ "Glucose_Now = Glucose_Ecoli[0, -1]" << endl;
-    ofs << in+ in+ "Glucose_Prev = Glucose_Prev_Ecoli[0, -1]" << endl;
-    ofs << in+ in+ "Am = Am_Ecoli[-1, 0, 0]" << endl;
+    ofs << in+ in+ "Glucose_Now = Glucose_Ecoli[-1]" << endl;
+    ofs << in+ in+ "Glucose_Prev = Glucose_Prev_Ecoli[-1]" << endl;
+    ofs << in+ in+ "Am = Am_Ecoli[-1, 0]" << endl;
     ofs << in+ in+ "dGlucose = (Glucose_Now - Glucose_Prev) / Glucose_Now * 100" << endl;
     ofs << endl;
     ofs << in+ in+ "StatusText = 'Glucose @ Ecoli :' + '{:.2f} '.format(Glucose_Now/ Unit / NA) + UnitTxt + '\\n' \\" << endl;
