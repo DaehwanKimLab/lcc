@@ -588,7 +588,7 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
 
     ofs << in+ in+ "# " << Type << endl;
     ofs << in+ in+ "self.Idx_Cargo_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Cargo) << "])" << endl;
-    ofs << in+ in+ "self.Idx_Dist_Cargo_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Dist_Cargo) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Dist_Cargo_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Dist_Cargo) << "]).transpose()" << endl;
     ofs << in+ in+ "self.Idx_Transporter_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Transporter) << "])" << endl;
     ofs << in+ in+ "self.Const_ki_" << Type << " = np.array([" << JoinFloat2Str(ki) << "])" << endl;
     ofs << in+ in+ "self.Const_ko_" << Type << " = np.array([" << JoinFloat2Str(ko) << "])" << endl;
@@ -1371,18 +1371,23 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // Update count at idx
 
 
-    // TODO: make it more parallel for all distribution dimensions
+    // TODO: make it conditional for specially treated molecules in the system
     ofs << in+ "def DistributionToCount(self):" << endl;
+    bool PassSwitch = true;
     if (!MolLoc.empty() & !ObjLoc.empty()) {
         for (auto molLoc : MolLoc) {
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto UniqueName : ObjUniqueNames) {
-                ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
-                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
-                    << "] = Count.reshape(-1, 1)" << endl;
+                if (molLoc->Name == "L") {
+                    ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+                    ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+                        << "] = Count.reshape(-1, 1)" << endl;
+                    PassSwitch = false;
+                }
             }
         }
-    } else {
+    }
+    if (PassSwitch) {
         ofs << in+ in+ "pass" << endl;
     }
     ofs << endl;
@@ -1530,7 +1535,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in + "def SpatialSimulation(self):" << endl;
         ofs << in + in + "self.SpatialDiffusion()" << endl;
         if (!TransporterReactionTypes.empty()) {
-            ofs << in + in + "#self.TransporterReaction()" << endl;
+            ofs << in + in + "self.TransporterReactions()" << endl;
         }
         ofs << in + in + "self.SpatialLocation()" << endl;
         ofs << endl;
@@ -1541,11 +1546,27 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         int N_Dist = Context.GetNames_LocationList("Molecule").size();
         // TODO: update to 3d array
         for (i = 0; i < N_Dist; i++) {
+            if (MolLoc[i]->Name == "L") { continue; }
             ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
             // Future implementation
             // ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;
         }
     } else {
+        ofs << in+ in+ "pass" << endl;
+    }
+    ofs << endl;
+
+    // Print StandardReaction for each Reaction Type
+    ofs << in+ "def TransporterReactions(self):" << endl;
+    PassSwitch = true;
+    for (auto& Type : TransporterReactionTypes) {
+        std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
+        if (!ReactionSubList.empty()) {
+            ofs << in+ in+ "self.TransporterReaction_" << Type << "()" << endl;
+            PassSwitch = false;
+        }
+    }
+    if (PassSwitch) {
         ofs << in+ in+ "pass" << endl;
     }
     ofs << endl;
@@ -1560,7 +1581,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             if (bMolaritySys) { AmountTextStr = "Conc_"; }
             else              { AmountTextStr = "Count_"; }
 
-            ofs << in+ "def TransporterReaction(self):" << endl;
+            ofs << in+ "def TransporterReaction_" << Type << "(self):" << endl;
 
             std::string Idx_Cargo = "self.State.Idx_Cargo_" + Type;
             std::string Idx_Dist_Cargo = "self.State.Idx_Dist_Cargo_" + Type;
@@ -1582,7 +1603,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             ofs << Line << endl;
 
             ofs << in+ in+ Amount_Cargo_Outside << " = ";
-            Line = "self.GetCountFromDistribution(" + Idx_Dist_Cargo + ", self.State.Pos_X, self.State.Pos_Y)";
+            Line = "self.GetCountFromDistribution(" + Idx_Dist_Cargo + ", self.State.Pos_X, self.State.Pos_Y).transpose()";
             if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
             ofs << Line << endl;
 
@@ -1630,7 +1651,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             }
             // Apply delta counts for molecules in the stoichiometry matrix
             ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
-            ofs << in+ in+ "self.AddToDist(self.State.Idx_Mol_InStoichMatrix_" << Type << ", self.State.Pos_X, self.State.Pos.Y, dCount_Mol_InStoichMatrix)" << endl;
+            ofs << in+ in+ "self.AddToDist(" << Idx_Dist_Cargo << ", self.State.Pos_X, self.State.Pos_Y, -dCount_Mol_InStoichMatrix.transpose())" << endl;
             ofs << endl;
         }
     }
@@ -1866,7 +1887,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Print StandardReaction for each Reaction Type
     ofs << in+ "def StandardReactions(self):" << endl;
-    bool PassSwitch = true;
+    PassSwitch = true;
     for (auto& Type : StandardReactionTypes) {
         std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
         if (!ReactionSubList.empty()) {
@@ -1874,6 +1895,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             PassSwitch = false;
         }
     }
+
     if (PassSwitch) {
         ofs << in+ in+ "pass" << endl;
     }
@@ -1970,7 +1992,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def AddToDist(self, Idx, X, Y, Values):" << endl;
-    ofs << in+ in+ "self.State.Dist_All[:, X, Y] += Values" << endl;
+    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Values" << endl;
     ofs << endl;
 
     // TODO: Use SimIdx in the future
@@ -2301,10 +2323,8 @@ void FWriter::SimVis2D()
     ofs << in+ "UnitTxt = 'uM'" << endl;
     ofs << endl;
 
-
     // Define indices for spatially distributed molecules and containers
     ofs << "GlucoseName = 'L'" << endl;
-    ofs << "EcoliName = 'E'" << endl;
 
     // Pathway dependent key molecules to monitor
     ofs << "HomeostasisMolName = 'Am'" << endl;
@@ -2404,8 +2424,8 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.FlagellaThickness = 3" << endl;
     ofs << endl;
     ofs << in+ in+ "# Memory for display & debugging" << endl;
-    ofs << in+ in+ "self.Glucose_Prev = 0" << endl;
-    ofs << in+ in+ "self.Am = 0" << endl;
+    ofs << in+ in+ "self.Ligand_Prev = 0" << endl;
+    ofs << in+ in+ "self.Am = 0" << endl; // TODO: hardcoded
     ofs << in+ in+ "self.SimCount = 0" << endl;
     ofs << endl;
     ofs << in+ in+ "# Trajectory" << endl;
@@ -2435,7 +2455,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.Angle = Position[2]" << endl;
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
     ofs << endl;
-    ofs << in+ "def Receptivity(self, N_SimulationsToPass=100):" << endl;
+    ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
     ofs << in+ in+ "# Perform 100 simulations" << endl;
     ofs << in+ in+ "# 99 simulations without spatial simulation" << endl;
     ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
@@ -2447,16 +2467,16 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "# for debugging" << endl;
     ofs << in+ in+ "self.Am = Sim.GetCountByName(HomeostasisMolName)" << endl;
     ofs << in+ in+ "self.SimCount += 1" << endl;
-    ofs << in+ in+ "GlucoseLvl = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)" << endl;
+    ofs << in+ in+ "LigandLvl = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
     ofs << in+ in+ "SimStep = Sim.GetSimStep()" << endl;
-    ofs << in+ in+ "Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100" << endl;
-    ofs << in+ in+ "# print('SimStep {:06d} [Chemotaxis  {:06d}] Glucose:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)'.format" << endl;
-    ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, GlucoseLvl / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
+    ofs << in+ in+ "Delta = (LigandLvl - self.Ligand_Prev) / LigandLvl * 100" << endl;
+    ofs << in+ in+ "# print('SimStep {:06d} [Chemotaxis  {:06d}] Ligand:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)'.format" << endl;
+    ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, LigandLvl / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
     ofs << endl;
     ofs << in+ "def Homeostasis(self, MolName):" << endl;
     ofs << in+ in+ "Sim.Homeostasis([MolName])   # Input 'Am' here" << endl;
-    ofs << in+ in+ "self.Glucose_Prev = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)" << endl;
-    ofs << in+ in+ "self.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))" << endl;
+    ofs << in+ in+ "self.Ligand_Prev = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
+    ofs << in+ in+ "self.SetPosition(Sim.GetPositionXYAngleByName(self.Name))" << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
     ofs << in+ in+ "self.ReportStatus()" << endl;
     ofs << endl;
@@ -2481,6 +2501,8 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.Y = InY" << endl;
     ofs << in+ in+ "self.DiffusionFactor = 2" << endl;
     ofs << in+ in+ "self.SpaceFactor = 50" << endl;
+    ofs << in+ in+ "self.Color = ''" << endl;
+    ofs << in+ in+ "self.Pattern = ''" << endl;
     ofs << endl;
     ofs << in+ in+ "# Heatmap Drawing" << endl;
     ofs << in+ in+ "self.ReductionFactor = 5" << endl;
@@ -2496,7 +2518,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.InitializeStaticParticles()" << endl;
     ofs << endl;
     ofs << in+ "def InitializeHeatmapMax(self):" << endl;
-    ofs << in+ in+ "self.Max = np.max(Sim.GetDistributionByName(GlucoseName))" << endl;
+    ofs << in+ in+ "self.Max = np.max(Sim.GetDistributionByName(self.Name))" << endl;
     ofs << endl;
     ofs << in+ "def InitializeStaticParticles(self):" << endl;
     ofs << in+ in+ "for i in range(int(self.Particle_N / self.Particle_PerLayer)):" << endl;
@@ -2519,27 +2541,62 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "New_Particle_XY_Static.append((X, Y))" << endl;
     ofs << in+ in+ "self.Particle_XY_Static = New_Particle_XY_Static" << endl;
     ofs << endl;
-    ofs << in+ "def Draw(self, Data, pattern='default'):" << endl;
-    ofs << in+ "# def Draw(self, pattern='particle', dynamics='static'):" << endl;
-    ofs << endl;
-    ofs << in+ in+ "if pattern == 'heatmap':" << endl;
-    ofs << in+ in+ in+ "for x in range(0, Data.shape[0], self.ReductionFactor):" << endl;
-    ofs << in+ in+ in+ in+ "for y in range(0, Data.shape[1], self.ReductionFactor):" << endl;
-    ofs << in+ in+ in+ in+ in+ "PercentMolLevel = Data[x][y] / self.Max" << endl;
-    ofs << in+ in+ in+ in+ in+ "intensity = math.floor(PercentMolLevel * 200)" << endl;
+    ofs << in+ "def Draw(self, Data, threshold=0.005):" << endl;
+    ofs << in+ in+ "if self.Pattern == 'spots':" << endl;
+    ofs << in+ in+ in+ "Max = np.max(Data)" << endl;
+    ofs << in+ in+ in+ "if Max == 0:" << endl;
+    ofs << in+ in+ in+ in+ "return"<< endl;
+    ofs << in+ in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ in+ "Data = Data / Max" << endl;
+    ofs << in+ in+ in+ in+ "CoordsToDraw = np.where(Data > threshold)" << endl;
+    ofs << in+ in+ in+ in+ "for X, Y, Value in zip(CoordsToDraw[0], CoordsToDraw[1], Data[CoordsToDraw]):" << endl;
+    ofs << in+ in+ in+ in+ in+ "intensity = math.floor(Value * 200)" << endl;
     ofs << in+ in+ in+ in+ in+ "if intensity > 200:" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "intensity = 200" << endl;
-    ofs << in+ in+ in+ in+ in+ "color = (200, 200, 200 - intensity) # Yellow shade" << endl;
-    ofs << in+ in+ in+ in+ in+ "# color = (200 - intensity, 200 - intensity, 200) # Blue shade" << endl;
-    ofs << in+ in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))" << endl;
+    ofs << in+ in+ in+ in+ in+ "color = self.GetColor(self.Color, intensity)"<< endl;
+    ofs << in+ in+ in+ in+ in+ "pygame.draw.circle(Screen, color, (X, Y), self.Particle_Radius)" << endl;
     ofs << endl;
-    ofs << in+ in+ "elif pattern == 'particle':" << endl;
+    ofs << in+ in+ "elif self.Pattern == 'heatmap':" << endl;
+    ofs << in+ in+ in+ "Max = np.max(Data)" << endl;
+    ofs << in+ in+ in+ "if Max == 0:" << endl;
+    ofs << in+ in+ in+ in+ "color = self.GetColor(self.Color, 0)"<< endl;
+    ofs << in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((0, 0), (W_S, H_S)))" << endl;
+    ofs << in+ in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ in+ "Data = Data / Max" << endl;
+    ofs << in+ in+ in+ in+ "for x in range(0, Data.shape[0], self.ReductionFactor):" << endl;
+    ofs << in+ in+ in+ in+ in+ "for y in range(0, Data.shape[1], self.ReductionFactor):" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "PercentMolLevel = Data[x][y]" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "if PercentMolLevel < threshold:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ in+ "continue" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "intensity = math.floor(PercentMolLevel * 200)" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "if intensity > 200:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ in+ "intensity = 200" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "color = self.GetColor(self.Color, intensity)"<< endl;
+    ofs << in+ in+ in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))" << endl;
+    ofs << endl;
+    ofs << in+ in+ "elif self.Pattern == 'particle':" << endl;
     ofs << in+ in+ in+ "for XY in self.Particle_XY_Static:" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.circle(Screen, BLUE, XY, self.Particle_Radius)" << endl;
     ofs << endl;
     ofs << in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ "assert True, 'Unsupported molecule distribution pattern for drawing: %s' % pattern" << endl;
+    ofs << in+ in+ in+ "assert True, 'Unsupported molecule distribution pattern for drawing: %s' % self.Pattern" << endl;
     ofs << endl;
+
+    ofs << in+ "def GetColor(self, Color, Intensity):" << endl;
+    ofs << in+ in+ "if Color == 'Yellow':" << endl;
+    ofs << in+ in+ in+ "return (200, 200, 200 - Intensity)" << endl;
+    ofs << in+ in+ "if Color == 'Blue':" << endl;
+    ofs << in+ in+ in+ "return (200 - Intensity, 200 - Intensity, 200)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def SetColor(self, InColor):" << endl;
+    ofs << in+ in+ "self.Color = InColor" << endl;
+    ofs << endl;
+
+    ofs << in+ "def SetPattern(self, InPattern):" << endl;
+    ofs << in+ in+ "self.Pattern= InPattern" << endl;
+    ofs << endl;
+
     ofs << "class FControl:" << endl;
     ofs << in+ "def __init__(self):" << endl;
     ofs << in+ in+ "# self.FPS = 30" << endl;
@@ -2589,12 +2646,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "X, Y = Screen.get_rect().topleft" << endl;
     ofs << in+ in+ "Color = None" << endl;
     ofs << in+ in+ "for i, TextLine in enumerate(TextLines):" << endl;
-    ofs << in+ in+ in+ "if 'Glucose' in TextLine:" << endl;
-    ofs << in+ in+ in+ in+ "Color = BLUE" << endl;
-    ofs << in+ in+ in+ "elif 'Ecoli' in TextLine:" << endl;
-    ofs << in+ in+ in+ in+ "Color = RED" << endl;
-    ofs << in+ in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ in+ "Color = BLACK" << endl;
+    ofs << in+ in+ in+ "Color = BLACK" << endl;
     ofs << in+ in+ in+ "Text = Font_Monospace.render(TextLine, True, Color)" << endl;
     ofs << in+ in+ in+ "Text_Rect = Text.get_rect()" << endl;
     ofs << in+ in+ in+ "Text_Rect.topleft = (X, Y + Height * i)" << endl;
@@ -2630,23 +2682,23 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
     ofs << in+ "# TODO: Update display status" << endl;
-    ofs << in+ "# def DisplayStatus(self, Glucose_Total, Glucose_Ecoli, Glucose_Prev_Ecoli, Am):" << endl;
-    ofs << in+ "def DisplayStatus(self, Glucose_Ecoli, Glucose_Prev_Ecoli, Am_Ecoli):" << endl;
-    ofs << in+ in+ "Glucose_Now = Glucose_Ecoli[-1]" << endl;
-    ofs << in+ in+ "Glucose_Prev = Glucose_Prev_Ecoli[-1]" << endl;
-    ofs << in+ in+ "Am = Am_Ecoli[-1, 0]" << endl;
-    ofs << in+ in+ "dGlucose = (Glucose_Now - Glucose_Prev) / Glucose_Now * 100" << endl;
+    ofs << in+ "# def DisplayStatus(self, Ligand_Total, Ligand_Local, Ligand_Prev_Local, Am):" << endl;
+    ofs << in+ "def DisplayStatus(self, Ligand_Local, Ligand_Prev_Local, Am_Local):" << endl;
+    ofs << in+ in+ "Ligand_Now = Ligand_Local[-1]" << endl;
+    ofs << in+ in+ "Ligand_Prev = Ligand_Prev_Local[-1]" << endl;
+    ofs << in+ in+ "Am = Am_Local[-1, 0]" << endl;
+    ofs << in+ in+ "dLigand = (Ligand_Now - Ligand_Prev) / Ligand_Now * 100" << endl;
     ofs << endl;
-    ofs << in+ in+ "StatusText = 'Glucose @ Ecoli :' + '{:.2f} '.format(Glucose_Now/ Unit / NA) + UnitTxt + '\\n' \\" << endl;
-    ofs << in+ in+ in+ in+ in+ " + 'dGlucose @ Ecoli : ' + ('+' if dGlucose >= 0 else '') + '{:.5f}'.format(dGlucose) + ' % \\n' \\" << endl;
-    ofs << in+ in+ in+ in+ in+ " + 'Am level of Ecoli : ' + '{:.5f} '.format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info " << endl;
+    ofs << in+ in+ "StatusText = 'Ligand @ RED :' + '{:.2f} '.format(Ligand_Now/ Unit / NA) + UnitTxt + '\\n' \\" << endl;
+    ofs << in+ in+ in+ in+ in+ " + 'dLigand @ RED : ' + ('+' if dLigand >= 0 else '') + '{:.5f}'.format(dLigand) + ' % \\n' \\" << endl;
+    ofs << in+ in+ in+ in+ in+ " + 'Am level of RED : ' + '{:.5f} '.format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info " << endl;
     ofs << endl;
     ofs << in+ in+ "TextLines = StatusText.splitlines()" << endl;
     ofs << in+ in+ "Height = Font_Monospace.get_linesize() + 2" << endl;
     ofs << in+ in+ "X, Y = Screen.get_rect().topright" << endl;
     ofs << in+ in+ "Color = BLACK" << endl;
     ofs << in+ in+ "for i, TextLine in enumerate(TextLines):" << endl;
-    ofs << in+ in+ in+ "if 'Ecoli' in TextLine:" << endl;
+    ofs << in+ in+ in+ "if 'RED' in TextLine:" << endl;
     ofs << in+ in+ in+ in+ "Color = RED" << endl;
     ofs << in+ in+ in+ "Text = Font_Monospace.render(TextLine, True, Color)" << endl;
     ofs << in+ in+ in+ "Text_Rect = Text.get_rect()" << endl;
@@ -2663,15 +2715,37 @@ void FWriter::SimVis2D()
     ofs << "def main():" << endl;
     ofs << in+ "Control = FControl()" << endl;
     ofs << endl;
-    ofs << in+ "SimUnitTime = 0.1" << endl;
+    ofs << in+ "SimUnitTime = 0.25" << endl;
     ofs << endl;
     ofs << in+ "PetriDish = FEnvironment()" << endl;
     ofs << endl;
     ofs << in+ "# TODO: Communicate to initialize in Sim" << endl;
-    ofs << in+ "Glucose = FMolecule(GlucoseName, 800, 500)" << endl;
-    ofs << in+ "Ecoli = FOrganism(EcoliName, 'Ecoli')" << endl;
+
+    std::vector<std::string> Colors     {"Yellow", "Blue", "Green"}; // currently only support first two
+    std::vector<std::string> Patterns   {"heatmap", "spots", "particles"}; // currently only support first two
+    int i = 0;
+
+    // Instantiate Molecules for Distribution
+    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    for (auto Mol : MolLoc) {
+        ofs << in+ Mol->Name << " = FMolecule('" << Mol->Name << "', ";
+        ofs << Mol->Coord[0] << ", " << Mol->Coord[1] << ")" << endl;
+        ofs << in+ Mol->Name << ".SetColor('" << Colors[i] << "')" << endl;
+        ofs << in+ Mol->Name << ".SetPattern('" << Patterns[i] << "')" << endl;
+        i++;
+    }
+
+    // Instantiate Organisms
+    auto OrgNames = Context.GetUniqueNames_LocationList("Organism");
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ OrganismName << " = FOrganism('" << OrganismName << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
+    }
     ofs << endl;
-    ofs << in+ "Ecoli.Homeostasis(HomeostasisMolName)" << endl;
+
+    // Run Homeostasis for "HomeostasisMolName"
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ OrganismName << ".Homeostasis(HomeostasisMolName)" << endl; // TODO: HARDCODED
+    }
     ofs << endl;
     ofs << in+ "ElapsedTime = 0" << endl;
     ofs << in+ "PrevTime = datetime.now()" << endl;
@@ -2692,9 +2766,12 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ in+ "if event.key == pygame.K_x:" << endl;
     ofs << in+ in+ in+ in+ in+ "SimState = False" << endl;
     ofs << endl;
-    ofs << in+ in+ in+ in+ "# Ecoli Control" << endl;
+
+    ofs << in+ in+ in+ in+ "# Organism Control" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_t:" << endl;
-    ofs << in+ in+ in+ in+ in+ "Ecoli.TrajectorySwitch = not Ecoli.TrajectorySwitch" << endl;
+    for (auto OrganismName : OrgNames) {
+        ofs << in + in + in + in + in + OrganismName << ".TrajectorySwitch = not " << OrganismName << ".TrajectorySwitch" << endl;
+    }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('T')" << endl;
     ofs << endl;
     ofs << in+ in+ in+ in+ "# Control panel" << endl;
@@ -2716,10 +2793,10 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "# PetriDish.Draw()" << endl;
     ofs << in+ in+ "PetriDish.Draw(shape='circle')" << endl;
     ofs << endl;
-    ofs << in+ in+ "Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='heatmap')" << endl;
-    ofs << in+ in+ "# Glucose.Draw(Sim.GetDistributionByName(GlucoseName), pattern='particle')" << endl;
-    ofs << in+ in+ "# Glucose.Draw(Sim.GetDistributionByName(GlucoseName))" << endl;
-    ofs << endl;
+
+    for (auto Mol : MolLoc) {
+        ofs << in+ in+ Mol->Name << ".Draw(Sim.GetDistributionByName('" << Mol->Name << "'))" << endl;
+    }
     ofs << endl;
     ofs << in+ in+ "if Control.PauseSwitch:" << endl;
     ofs << in+ in+ in+ "Control.DisplayPause()" << endl;
@@ -2727,21 +2804,39 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "while ElapsedTime >= SimUnitTime:" << endl;
     ofs << endl;
-    ofs << in+ in+ in+ in+ "Ecoli.Receptivity()" << endl;
-    ofs << in+ in+ in+ in+ "Ecoli.SetPosition(Sim.GetPositionXYAngleByName(EcoliName))" << endl;
-    ofs << in+ in+ in+ in+ "Ecoli.ReportStatus()" << endl;
+
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity()" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(Sim.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".ReportStatus()" << endl;
+    }
     ofs << endl;
+
     ofs << in+ in+ in+ in+ "ElapsedTime -= SimUnitTime" << endl;
     ofs << in+ in+ in+ in+ "Control.Time += 1" << endl;
     ofs << endl;
-    ofs << in+ in+ "if Ecoli.TrajectorySwitch:" << endl;
-    ofs << in+ in+ in+ "Ecoli.AddToTrajectory()" << endl;
-    ofs << in+ in+ in+ "Ecoli.DrawTrajectory()" << endl;
+
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ in+ OrganismName << ".AddToTrajectory()" << endl;
+        ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
+        ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
+    }
     ofs << endl;
-    ofs << in+ in+ "Ecoli.Draw()" << endl;
+
+    ofs << endl;
+
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ in+ OrganismName << ".Draw()" << endl;
+    }
     ofs << in+ in+ "PetriDish.Draw(shape='lining')" << endl;
     ofs << endl;
-    ofs << in+ in+ "Glucose_Now = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, EcoliName)" << endl;
+
+    // Show first molecule only
+    std::string MolName = MolLoc[0]->Name;
+    std::string OrgName = OrgNames[0];
+
+    ofs << in+ in+ MolName << "_Now = Sim.GetCountFromDistributionByNameAndPos('" << MolName << "', '" << OrgName << "')" << endl;
+
     ofs << endl;
     ofs << in+ in+ "if Control.Time < 50:" << endl;
     ofs << in+ in+ in+ "Control.DisplayWelcome()" << endl;
@@ -2750,14 +2845,14 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "if Control.InstructionSwitch:" << endl;
     ofs << in+ in+ in+ "Control.DisplayInstructions()" << endl;
     ofs << in+ in+ "if Control.ScoreSwitch:" << endl;
-    ofs << in+ in+ in+ "Control.Score += Glucose_Now / 10" << endl;
+    ofs << in+ in+ in+ "Control.Score += " << MolName << "_Now / 10" << endl;
     ofs << in+ in+ in+ "Control.DisplayScore()" << endl;
     ofs << endl;
     ofs << in+ in+ "if Control.StatusSwitch:" << endl;
-    ofs << in+ in+ in+ "Control.DisplayStatus(Glucose_Now, Ecoli.Glucose_Prev, Ecoli.Am)" << endl;
+    ofs << in+ in+ in+ "Control.DisplayStatus(" << MolName << "_Now, " << OrgName << ".Ligand_Prev, " << OrgName << ".Am)" << endl;
     ofs << endl;
-    ofs << in+ in+ "# Update Glucose Prev" << endl;
-    ofs << in+ in+ "Ecoli.Glucose_Prev = Glucose_Now" << endl;
+    ofs << in+ in+ "# Update Ligand Prev" << endl;
+    ofs << in+ in+ OrgName << ".Ligand_Prev = " << MolName << "_Now" << endl;
     ofs << endl;
     ofs << in+ in+ "Control.DisplayTime()" << endl;
     ofs << in+ in+ "# Control.DisplayMoleculeGradient()" << endl;

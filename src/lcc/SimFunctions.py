@@ -186,7 +186,7 @@ def InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max):
     return Max / max(1, Dist * 30)
 
 def Eqn_Transporter_Unregulated(Conc_Transporter, Conc_Inside, Conc_Outside, ki, ko):
-    return Conc_Transporter * (Conc_Outside * ko - Conc_Inside * ki)
+    return Conc_Transporter * (Conc_Inside * ko - Conc_Outside * ki)
 
 def Eqn_Diffusion_Spatial_4Cell(Distribution, D):
     # von Neumann neighborhood
@@ -228,12 +228,12 @@ def Eqn_Diffusion_Spatial_8Cell(Distribution, D):
 
     return Distribution_Diffused
 
-def DiffuseDistribution_4Cell(Distribution, D=0.2, dTime=1):
+def DiffuseDistribution_4Cell(Distribution, D=0.1, dTime=1): # D must be less than 1/6
     Distribution_Updated = Distribution + Eqn_Diffusion_Spatial_4Cell(Distribution, D) * dTime
     # return Distribution
     return Distribution_Updated
 
-def DiffuseDistribution_8Cell(Distribution, D=0.2, dTime=1):
+def DiffuseDistribution_8Cell(Distribution, D=0.1, dTime=1): # D less than 1/10
     Distribution_Updated = Distribution + Eqn_Diffusion_Spatial_8Cell(Distribution, D) * dTime
     # return Distribution
     return Distribution_Updated
