@@ -1246,7 +1246,7 @@ public:
     virtual void Visit(FTraversalContext& Context) const override {};
 
     virtual std::string        GetName() const;
-    virtual std::vector<float> GetParameters(std::string Type) const;
+    virtual std::vector<float> GetParameters(int ControlVar, std::string Type) const;
     virtual std::vector<float> RandomNumbers() const;
 };
 

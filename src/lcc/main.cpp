@@ -321,7 +321,7 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
     return SubConstPair;
 }
 
-void ParseCountLocation_AExpression(const NAExpression *AExpression) {
+void ParseCountLocation_AExpression(const NAExpression *AExpression, int ControlVar) {
     // info to seek
     std::string Name;
     float Amount = Float_Init;
@@ -353,7 +353,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression) {
         if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(VarExp->Variable.get())) {
             const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(VarExp->Variable);
 
-            Location = FCExp->GetParameters("Location");
+            Location = FCExp->GetParameters(ControlVar, "Location");
         }
 
         // VarExp->Index, for time info
@@ -370,7 +370,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression) {
         const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(AExpression->OpA);
 
         Name = FCExp->GetName();
-        Location = FCExp->GetParameters("Location");
+        Location = FCExp->GetParameters(ControlVar, "Location");
     }
 
     if (Option.bDebug) {
@@ -800,7 +800,7 @@ void TraversalNode_Core(NNode * node)
         }
 
         if (AExpression->Oper == T_ASSIGN) {
-            ParseCountLocation_AExpression(AExpression);
+            ParseCountLocation_AExpression(AExpression, 0);
         } // end of AExpression
 
     } else if (Utils::is_class_of<NLoopStatement, NNode>(node)) {
@@ -945,7 +945,7 @@ void TraversalNode_Core(NNode * node)
                         auto AExpression = dynamic_cast<const NAExpression *>(ExpStmt->Expression.get());
 
                         if (AExpression->Oper == T_ASSIGN) {
-                            ParseCountLocation_AExpression(AExpression);
+                            ParseCountLocation_AExpression(AExpression, i);
 
                         }
                     }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "node.h"
 #include "number.h"
+#include "lpp.y.hpp"
 
 using namespace std;
 
@@ -376,7 +377,7 @@ std::string NFunctionCallExpression::GetName() const {
     return Name_Out;
 }
 
-std::vector<float> NFunctionCallExpression::GetParameters(std::string Type = "") const {
+std::vector<float> NFunctionCallExpression::GetParameters(int ControlVar, std::string Type = "") const {
     std::vector<float> Parameters;
     bool bLocation = false;
     if (Type == "Location") {
@@ -396,6 +397,34 @@ std::vector<float> NFunctionCallExpression::GetParameters(std::string Type = "")
                     Parameters.push_back(value);
                 }
             }
+        } else if (Utils::is_class_of<NAExpression, NExpression>(arg.get())) {
+            const auto AExp = dynamic_pointer_cast<const NAExpression>(arg);
+
+            float Value = Numbers::GetFloatDefault();
+            float Value_Final = Numbers::GetFloatDefault();
+
+            // Currently only accepting x Oper const with assumption that x is the control variable from the iterator
+
+            if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExp->OpA.get())) {
+                const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
+
+                // empty
+            }
+
+            if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExp->OpB.get())) {
+                const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
+
+                Value = VarAssigned->EvaluateInFloat();
+            }
+
+            Utils::Assertion(Value != Numbers::GetFloatDefault(), "Value not extracted properly");
+
+            if      (AExp->Oper == T_PLUS)  { Value_Final = ControlVar + Value; }
+            else if (AExp->Oper == T_MINUS) { Value_Final = ControlVar - Value; }
+            else if (AExp->Oper == T_STAR)  { Value_Final = ControlVar * Value; }
+            else if (AExp->Oper == T_DIV)   { Value_Final = ControlVar / Value; }
+
+            Parameters.push_back(Value_Final);
         }
     }
 
