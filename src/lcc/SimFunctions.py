@@ -246,7 +246,7 @@ def Displacement_2D(Distance, Angle):
 # Temporary chemotaxis simulation functions. 
 def BacterialChemotaxis(ThresholdSubject, X, Y, Angle, Threshold):
     # optimize the following code into additions and subtractions
-    Decision = ThresholdSubject < Threshold
+    Decision = np.any(ThresholdSubject < Threshold, axis=0)
     X_Run, Y_Run, Angle_Run  = Chemotaxis_Run(X, Y, Angle)
     X_Tumble, Y_Tumble, Angle_Tumble = Chemotaxis_Tumble(X, Y, Angle)
     X_New = np.where(Decision, X_Run, X_Tumble)
@@ -270,3 +270,9 @@ def CorrectOutOfBounds(X, Y, Width, Height):
     Y_Corrected = np.where(Y_Corrected >= np.array([Height]), Height - 1, Y_Corrected)
     return X_Corrected, Y_Corrected
 
+def Normalize_Linear(Data):
+    return Data / np.max(Data)
+
+def Normalize_P1Log(Data):
+    Data_Modified = np.log(Data + 1)
+    return Data_Modified / np.max(Data_Modified)

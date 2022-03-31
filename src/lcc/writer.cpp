@@ -649,7 +649,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (auto location : MolLoc) {
         auto Coord = location->Coord;
         auto Amount = Context.GetInitialCountByName_CountList(location->Name);
-        ofs << in+ in+ "self.Dist_All[" << i << "] = sim.InitializeDistribution(self.Dimension_X, self.Dimension_Y, " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
+        ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
         i++;
     }
     ofs << endl;
@@ -700,7 +700,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
-            ofs << "0.0, ";
+            ofs << Numbers::RandomNumber(0, 1) << " * 2 * np.pi, ";
         }
     }
     ofs << "]) " << endl;
@@ -734,7 +734,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // ofs << "import tensorflow as tf" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
-    ofs << "import SimFunctions as sim" << endl;
+    ofs << "import SimFunctions as SimF" << endl;
     // ofs << "import SimIdx as idx" << endl;
     ofs << "import plot" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
@@ -1265,6 +1265,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << endl;
 
+    ofs << in+ in+ "# temporary: Update Threshold" << endl;
+    ofs << in+ in+ "self.UpdateThreshold()" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "# Update Spatially Distributed Molecules On Count" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
     ofs << in+ in+ "self.CountToDistribution()" << endl;
@@ -1480,16 +1484,29 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
     ofs << endl;
 
+    // temporary code
+    ofs << in + "def GetNewThresholdValues(self):" << endl;
+    float ThresholdFactor = 0.999;
+    ofs << in+ in+ "return self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
+    ofs << endl;
+
     ofs << in + "def SetThreshold(self):" << endl;
-    float ThresholdFactor = 0.99999;
-    ofs << in+ in+ "Threshold = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
-    ofs << in+ in+ "self.State.Pos_Threshold = Threshold"<< endl;
-//    ofs << in+ in+ "self.State.Pos_Threshold[self.Idx_Pos_Homeostasis[0]] = Threshold"<< endl;
+    ofs << in+ in+ "self.State.Pos_Threshold = self.GetNewThresholdValues()" << endl;
+    ofs << endl;
+
+    ofs << in + "def UpdateThreshold(self):" << endl;
+    float HomeostasisFactor = 1e-7;
+    ofs << in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
+    ofs << in+ in+ "bSteadyState = abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << endl;
+    ofs << in+ in+ "Idx_SteadyState = np.where(bSteadyState)" << endl;
+    ofs << in+ in+ "self.State.Pos_Threshold[Idx_SteadyState] = Count_Now[Idx_SteadyState]" << endl;
+//    ofs << in+ in+ "if np.any(Idx_SteadyState):" << endl;
+//    ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been updated.')" << endl;
+    ofs << in+ in+ "self.Count_Prev = Count_Now" << endl;
     ofs << endl;
 
     ofs << in + "def Homeostasis(self, MoleculeNames=None):" << endl;
     // TODO: Get homeostasis info from FPathway,
-    float HomeostasisFactor = 1e-7;
     ofs << in+ in+ "bNotHomeostasis = True" << endl;
     ofs << in+ in+ "self.SetIdxForHomeostasis(MoleculeNames)" << endl;
     ofs << in+ in+ "MoleculeNames_Str = ListToStr(MoleculeNames, '_')" << endl;
@@ -1508,7 +1525,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ in+ "while (bNotHomeostasis):" << endl;
     ofs << in+ in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
-    ofs << in+ in+ in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis]" << endl;
+    ofs << in+ in+ in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
     ofs << in+ in+ in+ in+ "if np.all(Count_Now > 0) and np.all(abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << "):" << endl;
     ofs << in+ in+ in+ in+ in+ "bNotHomeostasis = False" << endl;
     ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been achieved.')" << endl;
@@ -1547,9 +1564,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         // TODO: update to 3d array
         for (i = 0; i < N_Dist; i++) {
             if (MolLoc[i]->Name == "L") { continue; }
-            ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
+            else {
+                ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
+            }
             // Future implementation
-            // ofs << in+ in+ "self.State.Dist_All[" << i << "] = sim.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;
+            // ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;
         }
     } else {
         ofs << in+ in+ "pass" << endl;
@@ -1593,32 +1612,32 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
             ofs << in+ in+ Amount_Transporter << " = ";
             std::string Line = "self.State.Count_All[:, " + Idx_Transporter + "]";
-            if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
+            if (bMolaritySys) { Line = "SimF.CountToConc(" + Line + ", self.State.Vol)"; }
             ofs << Line << endl;
 
             // Get Concentrations
             ofs << in+ in+ Amount_Cargo_Inside << " = ";
             Line = "self.State.Count_All[:, " + Idx_Cargo + "]";
-            if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
+            if (bMolaritySys) { Line = "SimF.CountToConc(" + Line + ", self.State.Vol)"; }
             ofs << Line << endl;
 
             ofs << in+ in+ Amount_Cargo_Outside << " = ";
             Line = "self.GetCountFromDistribution(" + Idx_Dist_Cargo + ", self.State.Pos_X, self.State.Pos_Y).transpose()";
-            if (bMolaritySys) { Line = "sim.CountToConc(" + Line + ", self.State.Vol)"; }
+            if (bMolaritySys) { Line = "SimF.CountToConc(" + Line + ", self.State.Vol)"; }
             ofs << Line << endl;
 
 //            // Regulators
 //            if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
 //                ofs << in+ in+ AmountTextStr << "Regulator = ";
 //                if (bMolaritySys) {
-//                    ofs << "sim.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
+//                    ofs << "SimF.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
 //                } else {
 //                    ofs << "self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "]" << endl;
 //                }
 //            }
 
             // Calculate Rate
-            ofs << in+ in+ "Rate = sim.Eqn_" << Type << "(" <<
+            ofs << in+ in+ "Rate = SimF.Eqn_" << Type << "(" <<
             Amount_Transporter << ", " <<
             Amount_Cargo_Inside << ", " <<
             Amount_Cargo_Outside << ", " <<
@@ -1642,12 +1661,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
             if (bMolaritySys) {
                 // Apply stoichiometry
-                ofs << in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dConc_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
                 // Convert to counts
-                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             } else {
                 // Apply stoichiometry
-                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             }
             // Apply delta counts for molecules in the stoichiometry matrix
             ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
@@ -1658,8 +1677,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def SpatialLocation(self):" << endl;
     ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()[0]" << endl; // TODO:set up dynamic indexing
-    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = sim.BacterialChemotaxis(np.array(HomeostasisMolecule), self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Pos_Threshold)" << endl;
-    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y = sim.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
+    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(np.array(HomeostasisMolecule), self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Pos_Threshold)" << endl;
+    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
     ofs << endl;
 
     ofs << in+ "def NonSpatialSimulation(self):" << endl;
@@ -1718,7 +1737,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << in+ in+ AmountTextStr << substrate << "_" << i << " = ";
                     if (bMolaritySys) {
-                        ofs << "sim.CountToConc(self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "], self.State.Vol)" << endl;
+                        ofs << "SimF.CountToConc(self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "], self.State.Vol)" << endl;
                     } else {
                         ofs << "self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "]" << endl;
                     }
@@ -1729,7 +1748,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
                 ofs << in+ in+ AmountTextStr << "Regulator = ";
                 if (bMolaritySys) {
-                    ofs << "sim.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
+                    ofs << "SimF.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
                 } else {
                     ofs << "self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "]" << endl;
                 }
@@ -1737,7 +1756,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
             // Calculate Rate
             for (auto& substrate : SubstrateTypes) {
-                ofs << in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(";
+                ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(";
 
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << AmountTextStr << substrate << "_" << i << ", ";
@@ -1759,7 +1778,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                 // compare conc
-                ofs << in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
+                ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << ", " << AmountTextStr << substrate << "_" << i;
                 }
@@ -1771,12 +1790,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
             if (bMolaritySys) {
                 // Apply stoichiometry
-                ofs << in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dConc_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
                 // Convert to counts
-                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             } else {
                 // Apply stoichiometry
-                ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             }
             // Apply delta counts for molecules in the stoichiometry matrix
             ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
@@ -1798,29 +1817,29 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             ofs << in+ "def EnzymaticReaction_" << Type << "(self):" << endl;
             // Get Concentrations
             // Enzyme
-            ofs << in+ in+ "Conc_Enz = sim.CountToConc(self.State.Count_All[:, self.State.Idx_Enz_" << Type << "], self.State.Vol)" << endl;
+            ofs << in+ in+ "Conc_Enz = SimF.CountToConc(self.State.Count_All[:, self.State.Idx_Enz_" << Type << "], self.State.Vol)" << endl;
             // Reactants and products or EnzSubstrate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
-                        ofs << in+ in+ "Conc_" << substrate << "_" << i << " = sim.CountToConc(self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "], self.State.Vol)" << endl;
+                        ofs << in+ in+ "Conc_" << substrate << "_" << i << " = SimF.CountToConc(self.State.Count_All[:, self.State.Idx_" << substrate << "_" << i << "_" << Type << "], self.State.Vol)" << endl;
                     }
                 }
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << in+ in+ "Conc_EnzSub = sim.CountToConc(self.State.Count_All[:, self.State.Idx_EnzSub_" << Type << "], self.State.Vol)" << endl;
+                ofs << in+ in+ "Conc_EnzSub = SimF.CountToConc(self.State.Count_All[:, self.State.Idx_EnzSub_" << Type << "], self.State.Vol)" << endl;
             } else {
                 Utils::Assertion(false, "Unsupported Enz Reaction Type: " + Type);
             }
 
             // Regulators
             if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
-                ofs << in+ in+ "Conc_Regulator = sim.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
+                ofs << in+ in+ "Conc_Regulator = SimF.CountToConc(self.State.Count_All[:, self.State.Idx_Regulator_" << Type << "], self.State.Vol)" << endl;
             }
 
             // Calculate Rate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
-                    ofs << in+ in+ "Rate_" << substrate << " = sim.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(Conc_Enz, ";
+                    ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(Conc_Enz, ";
 
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << "Conc_" << substrate << "_" << i << ", ";
@@ -1842,7 +1861,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                     ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                     // compare conc
-                    ofs << in+ in+ "Rate_" << substrate << " = sim.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
+                    ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << ", Conc_" << substrate << "_" << i;
                     }
@@ -1853,7 +1872,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 ofs << in+ in+ "Rate = Rate_Reactant - Rate_Product" << endl;
 
             } else if (Type.find("Enz_MichaelisMenten") != std::string::npos) {
-                ofs << in+ in+ "Rate = sim.Eqn_" << Type << "(Conc_Enz, Conc_EnzSub";
+                ofs << in+ in+ "Rate = SimF.Eqn_" << Type << "(Conc_Enz, Conc_EnzSub";
 
                 // Regulators
                 if ((Type.find("Inhibition") != std::string::npos) || (Type.find("Activation") != std::string::npos)) {
@@ -1876,9 +1895,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 // compare conc for michaelis menten?
             }
             // Apply stoichiometry
-            ofs << in+ in+ "dConc_Mol_InStoichMatrix = sim.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+            ofs << in+ in+ "dConc_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
             // Convert to counts
-            ofs << in+ in+ "dCount_Mol_InStoichMatrix = sim.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
+            ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             // Apply delta counts for molecules in the stoichiometry matrix
             ofs << in+ in+ "self.AddTodCount(self.State.Idx_Mol_InStoichMatrix_" << Type << ", dCount_Mol_InStoichMatrix)" << endl;
             ofs << endl;
@@ -1967,7 +1986,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetConcentration(self, Idx):" << endl;
-    ofs << in+ in+ "return sim.CountToConc(self.State.Count_All[:, Idx])" << endl;
+    ofs << in+ in+ "return SimF.CountToConc(self.State.Count_All[:, Idx])" << endl;
     ofs << endl;
 
     ofs << in+ "def GetDistribution(self, Idx):" << endl;
@@ -2069,7 +2088,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
-    ofs << in+ in+ "Raw = sim.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ "Raw = SimF.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
     ofs << in+ in+ "Rounded = np.around(Raw)" << endl;
     ofs << endl;
 
@@ -2102,8 +2121,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ in+ "# Get randomly selected target indices" << endl;
-    ofs << in+ in+ "Idx_Selected = sim.PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
-    ofs << in+ in+ "Len_Target_Initiated = sim.InsertZeroIntoNegOneElementInLenMatrix(Len_Target, Idx_Selected)" << endl;
+    ofs << in+ in+ "Idx_Selected = SimF.PickRandomIdx(Count_Pol_Avail, Idx_Template, Weight_Initiation)" << endl;
+    ofs << in+ in+ "Len_Target_Initiated = SimF.InsertZeroIntoNegOneElementInLenMatrix(Len_Target, Idx_Selected)" << endl;
     ofs << in+ in+ "# Export Data" << endl;
     ofs << in+ in+ "# N_Initiated" << endl;
     ofs << endl;
@@ -2290,6 +2309,7 @@ void FWriter::SimVis2D()
     ofs << "import random" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import SimModule" << endl;
+    ofs << "import SimFunctions as SimF" << endl;
     ofs << "import numpy as np" << endl;
     ofs << "import math" << endl;
     ofs << endl;
@@ -2327,7 +2347,7 @@ void FWriter::SimVis2D()
     ofs << "GlucoseName = 'L'" << endl;
 
     // Pathway dependent key molecules to monitor
-    ofs << "HomeostasisMolName = 'Am'" << endl;
+    ofs << "HomeostasisMolName = ['Am', 'qAm']" << endl;
     ofs << endl;
 
     ofs << "# Utilities" << endl;
@@ -2379,10 +2399,10 @@ void FWriter::SimVis2D()
     ofs << "State = SimModule.FState()" << endl;
     ofs << "Data = SimModule.FDataset()" << endl;
     ofs << "DataManager = SimModule.FDataManager()" << endl;
-    ofs << "Sim = SimModule.FSimulation(State, Data, DataManager)" << endl;
+    ofs << "SimM = SimModule.FSimulation(State, Data, DataManager)" << endl;
     ofs << endl;
     ofs << "# Initialize model" << endl;
-    ofs << "Sim.Initialize()" << endl;
+    ofs << "SimM.Initialize()" << endl;
     ofs << endl;
     ofs << "class FEnvironment:" << endl;
     ofs << in+ "def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.5, InThickness=10):" << endl;
@@ -2456,27 +2476,25 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
     ofs << endl;
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
-    ofs << in+ in+ "# Perform 100 simulations" << endl;
-    ofs << in+ in+ "# 99 simulations without spatial simulation" << endl;
     ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
-    ofs << in+ in+ in+ "Sim.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
-    ofs << in+ in+ "# 1 with spatial simulation" << endl;
-    ofs << in+ in+ "Sim.SimLoop_WithSpatialSimulation()" << endl;
+    ofs << in+ in+ in+ "SimM.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
+    ofs << in+ in+ "SimM.SimLoop_WithSpatialSimulation()" << endl;
     ofs << endl;
     ofs << in+ "def ReportStatus(self):" << endl;
     ofs << in+ in+ "# for debugging" << endl;
-    ofs << in+ in+ "self.Am = Sim.GetCountByName(HomeostasisMolName)" << endl;
+    ofs << in+ in+ "self.Am = SimM.GetCountByName(HomeostasisMolName[0])" << endl;
+    ofs << in+ in+ "self.qAm = SimM.GetCountByName(HomeostasisMolName[1])" << endl;
     ofs << in+ in+ "self.SimCount += 1" << endl;
-    ofs << in+ in+ "LigandLvl = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
-    ofs << in+ in+ "SimStep = Sim.GetSimStep()" << endl;
+    ofs << in+ in+ "LigandLvl = SimM.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
+    ofs << in+ in+ "SimStep = SimM.GetSimStep()" << endl;
     ofs << in+ in+ "Delta = (LigandLvl - self.Ligand_Prev) / LigandLvl * 100" << endl;
     ofs << in+ in+ "# print('SimStep {:06d} [Chemotaxis  {:06d}] Ligand:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)'.format" << endl;
     ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, LigandLvl / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
     ofs << endl;
-    ofs << in+ "def Homeostasis(self, MolName):" << endl;
-    ofs << in+ in+ "Sim.Homeostasis([MolName])   # Input 'Am' here" << endl;
-    ofs << in+ in+ "self.Ligand_Prev = Sim.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
-    ofs << in+ in+ "self.SetPosition(Sim.GetPositionXYAngleByName(self.Name))" << endl;
+    ofs << in+ "def Homeostasis(self, MolName=[]):" << endl;
+    ofs << in+ in+ "SimM.Homeostasis(MolName)   # Input 'Am', 'qAm' here" << endl;
+    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
+    ofs << in+ in+ "self.SetPosition(SimM.GetPositionXYAngleByName(self.Name))" << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
     ofs << in+ in+ "self.ReportStatus()" << endl;
     ofs << endl;
@@ -2503,6 +2521,8 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.SpaceFactor = 50" << endl;
     ofs << in+ in+ "self.Color = ''" << endl;
     ofs << in+ in+ "self.Pattern = ''" << endl;
+    ofs << in+ in+ "self.MaxBrightness = None" << endl;
+    ofs << in+ in+ "self.NormalizationType = ''" << endl;
     ofs << endl;
     ofs << in+ in+ "# Heatmap Drawing" << endl;
     ofs << in+ in+ "self.ReductionFactor = 5" << endl;
@@ -2518,7 +2538,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.InitializeStaticParticles()" << endl;
     ofs << endl;
     ofs << in+ "def InitializeHeatmapMax(self):" << endl;
-    ofs << in+ in+ "self.Max = np.max(Sim.GetDistributionByName(self.Name))" << endl;
+    ofs << in+ in+ "self.Max = np.max(SimM.GetDistributionByName(self.Name))" << endl;
     ofs << endl;
     ofs << in+ "def InitializeStaticParticles(self):" << endl;
     ofs << in+ in+ "for i in range(int(self.Particle_N / self.Particle_PerLayer)):" << endl;
@@ -2541,37 +2561,39 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "New_Particle_XY_Static.append((X, Y))" << endl;
     ofs << in+ in+ "self.Particle_XY_Static = New_Particle_XY_Static" << endl;
     ofs << endl;
-    ofs << in+ "def Draw(self, Data, threshold=0.005):" << endl;
+    ofs << in+ "def Draw(self, Data, threshold=0):" << endl;
     ofs << in+ in+ "if self.Pattern == 'spots':" << endl;
     ofs << in+ in+ in+ "Max = np.max(Data)" << endl;
     ofs << in+ in+ in+ "if Max == 0:" << endl;
     ofs << in+ in+ in+ in+ "return"<< endl;
     ofs << in+ in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ in+ "Data = Data / Max" << endl;
+    ofs << in+ in+ in+ in+ "Data = SimF.Normalize_Linear(Data)" << endl;
     ofs << in+ in+ in+ in+ "CoordsToDraw = np.where(Data > threshold)" << endl;
     ofs << in+ in+ in+ in+ "for X, Y, Value in zip(CoordsToDraw[0], CoordsToDraw[1], Data[CoordsToDraw]):" << endl;
-    ofs << in+ in+ in+ in+ in+ "intensity = math.floor(Value * 200)" << endl;
-    ofs << in+ in+ in+ in+ in+ "if intensity > 200:" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "intensity = 200" << endl;
-    ofs << in+ in+ in+ in+ in+ "color = self.GetColor(self.Color, intensity)"<< endl;
+    ofs << in+ in+ in+ in+ in+ "intensity = math.floor(Value * self.MaxBrightness)" << endl;
+    ofs << in+ in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "intensity = self.MaxBrightness" << endl;
+    ofs << in+ in+ in+ in+ in+ "color = self.GetColor(intensity)"<< endl;
     ofs << in+ in+ in+ in+ in+ "pygame.draw.circle(Screen, color, (X, Y), self.Particle_Radius)" << endl;
     ofs << endl;
     ofs << in+ in+ "elif self.Pattern == 'heatmap':" << endl;
     ofs << in+ in+ in+ "Max = np.max(Data)" << endl;
     ofs << in+ in+ in+ "if Max == 0:" << endl;
-    ofs << in+ in+ in+ in+ "color = self.GetColor(self.Color, 0)"<< endl;
-    ofs << in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((0, 0), (W_S, H_S)))" << endl;
+    ofs << in+ in+ in+ in+ "return"<< endl;
     ofs << in+ in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ in+ "Data = Data / Max" << endl;
+    ofs << in+ in+ in+ in+ "if self.NormalizationType == 'linear':" << endl;
+    ofs << in+ in+ in+ in+ in+ "Data = SimF.Normalize_Linear(Data)" << endl;
+    ofs << in+ in+ in+ in+ "if self.NormalizationType == 'log':" << endl;
+    ofs << in+ in+ in+ in+ in+ "Data = SimF.Normalize_P1Log(Data)" << endl;
     ofs << in+ in+ in+ in+ "for x in range(0, Data.shape[0], self.ReductionFactor):" << endl;
     ofs << in+ in+ in+ in+ in+ "for y in range(0, Data.shape[1], self.ReductionFactor):" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "PercentMolLevel = Data[x][y]" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "if PercentMolLevel < threshold:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "if PercentMolLevel < threshold or PercentMolLevel == 0:" << endl;
     ofs << in+ in+ in+ in+ in+ in+ in+ "continue" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "intensity = math.floor(PercentMolLevel * 200)" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "if intensity > 200:" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ in+ "intensity = 200" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "color = self.GetColor(self.Color, intensity)"<< endl;
+    ofs << in+ in+ in+ in+ in+ in+ "intensity = math.floor(PercentMolLevel * self.MaxBrightness)" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ in+ "intensity = self.MaxBrightness" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "color = self.GetColor(intensity)"<< endl;
     ofs << in+ in+ in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))" << endl;
     ofs << endl;
     ofs << in+ in+ "elif self.Pattern == 'particle':" << endl;
@@ -2582,19 +2604,22 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "assert True, 'Unsupported molecule distribution pattern for drawing: %s' % self.Pattern" << endl;
     ofs << endl;
 
-    ofs << in+ "def GetColor(self, Color, Intensity):" << endl;
-    ofs << in+ in+ "if Color == 'Yellow':" << endl;
-    ofs << in+ in+ in+ "return (200, 200, 200 - Intensity)" << endl;
-    ofs << in+ in+ "if Color == 'Blue':" << endl;
-    ofs << in+ in+ in+ "return (200 - Intensity, 200 - Intensity, 200)" << endl;
+    ofs << in+ "def GetColor(self, Intensity):" << endl;
+    ofs << in+ in+ "if self.Color == 'Yellow':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness, self.MaxBrightness, self.MaxBrightness - Intensity)" << endl;
+    ofs << in+ in+ "if self.Color == 'Blue':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness - Intensity, self.MaxBrightness - Intensity, self.MaxBrightness)" << endl;
     ofs << endl;
 
-    ofs << in+ "def SetColor(self, InColor):" << endl;
-    ofs << in+ in+ "self.Color = InColor" << endl;
+    ofs << in+ "def SetColor(self, Color, MaxBrightness):" << endl;
+    ofs << in+ in+ "self.Color = Color" << endl;
+    ofs << in+ in+ "self.MaxBrightness = MaxBrightness" << endl;
     ofs << endl;
 
-    ofs << in+ "def SetPattern(self, InPattern):" << endl;
-    ofs << in+ in+ "self.Pattern= InPattern" << endl;
+    ofs << in+ "def SetPattern(self, Pattern, NormalizationType, ReductionFactor):" << endl;
+    ofs << in+ in+ "self.Pattern = Pattern" << endl;
+    ofs << in+ in+ "self.NormalizationType = NormalizationType" << endl;
+    ofs << in+ in+ "self.ReductionFactor = ReductionFactor" << endl;
     ofs << endl;
 
     ofs << "class FControl:" << endl;
@@ -2721,8 +2746,14 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ "# TODO: Communicate to initialize in Sim" << endl;
 
-    std::vector<std::string> Colors     {"Yellow", "Blue", "Green"}; // currently only support first two
-    std::vector<std::string> Patterns   {"heatmap", "spots", "particles"}; // currently only support first two
+    //                                           L,             qL
+    std::vector<std::string> Color              {"Yellow",      "Blue",     "Green"     };
+    std::vector<int> MaxBrightness              {200,           170,        50          };
+
+    std::vector<std::string> Pattern            {"heatmap",     "heatmap",  "particles" };
+    std::vector<std::string> NormalizationType  {"linear",      "log",      "particles" };
+    std::vector<int> ReductionFactor            {5,             2,          1           };
+
     int i = 0;
 
     // Instantiate Molecules for Distribution
@@ -2730,8 +2761,9 @@ void FWriter::SimVis2D()
     for (auto Mol : MolLoc) {
         ofs << in+ Mol->Name << " = FMolecule('" << Mol->Name << "', ";
         ofs << Mol->Coord[0] << ", " << Mol->Coord[1] << ")" << endl;
-        ofs << in+ Mol->Name << ".SetColor('" << Colors[i] << "')" << endl;
-        ofs << in+ Mol->Name << ".SetPattern('" << Patterns[i] << "')" << endl;
+        ofs << in+ Mol->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
+        ofs << in+ Mol->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ",)" << endl;
+        ofs << endl;
         i++;
     }
 
@@ -2739,8 +2771,8 @@ void FWriter::SimVis2D()
     auto OrgNames = Context.GetUniqueNames_LocationList("Organism");
     for (auto OrganismName : OrgNames) {
         ofs << in+ OrganismName << " = FOrganism('" << OrganismName << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
+        ofs << endl;
     }
-    ofs << endl;
 
     // Run Homeostasis for "HomeostasisMolName"
     for (auto OrganismName : OrgNames) {
@@ -2795,7 +2827,7 @@ void FWriter::SimVis2D()
     ofs << endl;
 
     for (auto Mol : MolLoc) {
-        ofs << in+ in+ Mol->Name << ".Draw(Sim.GetDistributionByName('" << Mol->Name << "'))" << endl;
+        ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'))" << endl;
     }
     ofs << endl;
     ofs << in+ in+ "if Control.PauseSwitch:" << endl;
@@ -2806,8 +2838,8 @@ void FWriter::SimVis2D()
     ofs << endl;
 
     for (auto OrganismName : OrgNames) {
-        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity()" << endl;
-        ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(Sim.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(50)" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".ReportStatus()" << endl;
     }
     ofs << endl;
@@ -2835,7 +2867,7 @@ void FWriter::SimVis2D()
     std::string MolName = MolLoc[0]->Name;
     std::string OrgName = OrgNames[0];
 
-    ofs << in+ in+ MolName << "_Now = Sim.GetCountFromDistributionByNameAndPos('" << MolName << "', '" << OrgName << "')" << endl;
+    ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNameAndPos('" << MolName << "', '" << OrgName << "')" << endl;
 
     ofs << endl;
     ofs << in+ in+ "if Control.Time < 50:" << endl;
