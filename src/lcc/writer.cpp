@@ -645,18 +645,24 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
     ofs << in+ in+ "self.Dist_Names = [" << JoinStr2Str(Context.GetNames_LocationList("Molecule")) << "]" << endl;
-    int i = 0;
-    for (auto location : MolLoc) {
-        auto Coord = location->Coord;
-        auto Amount = Context.GetInitialCountByName_CountList(location->Name);
-        ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, " << Coord[0] << ", " << Coord[1] << ", " << Amount << ")" << endl;
-        i++;
+    for (int i = 0; i < MolLoc.size(); i++) {
+        auto Coord = MolLoc[i]->Coord;
+        auto Amount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+        std::string Shape, Pattern;
+        int Size;
+
+        ofs << in + in + "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, "
+            << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount;
+        if (!Shape.empty()) {
+            ofs << ", " << Shape << ", " << Size << ", " << Pattern;
+            }
+        ofs << ")" << endl;
     }
     ofs << endl;
 
     ofs << in+ in+ "self.Pos_Names = [" << JoinStr2Str(Context.GetNames_LocationList("Compartment")) << "]" << endl;
 
-    i = 0;
+    int i = 0;
     std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
@@ -992,7 +998,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             ofs << "[" << JoinInt2Str_Idx(Idx_Mol) << "], ";
         }
     }
-    ofs << "])" << endl;
+    ofs << "], ndmin=2)" << endl;
 
     ofs << in+ in+ "Count_Mol = np.array([";
     if (ObjLoc.empty()) {
@@ -1194,7 +1200,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         if ((count->End >= 0) & (count->Begin != count->End)) { //
             if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
                 int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ "self.Idx_Event_" << Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
+                ofs << in+ in+ "self.Idx_Event_" << Name << " = np.array([" << std::to_string(Idx) << "], ndmin=2)" << endl;
                 Names.push_back(Name);
             }
         }
@@ -1257,7 +1263,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#" ;}
+    if (!Option.bDebug) { ofs << "#"; }
     ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
@@ -1284,7 +1290,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#" ;}
+    if (!Option.bDebug) { ofs << "#";}
     ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
@@ -1292,14 +1298,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << endl;
 
-    // simloop for homeostasis
+    // simloop for receptivity
     ofs << in+ "def SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
-
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#" ;}
+    if (!Option.bDebug) { ofs << "#";}
     ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << endl;
 
@@ -1354,9 +1359,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (Context.LocationList.empty()) {
         ofs << in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
         ofs << in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
-    } else {
-        ofs << in+ in+ "pass" << endl;
-    }
+    } else { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def SaveState(self, FileName):" << endl;
@@ -1391,9 +1394,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             }
         }
     }
-    if (PassSwitch) {
-        ofs << in+ in+ "pass" << endl;
-    }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def CountToDistribution(self):" << endl;
@@ -1518,6 +1519,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ "print('[Homeostasis] Loading previous steady state...')" << endl;
     ofs << in+ in+ in+ "self.State.Count_All = np.load('%s.npy' % FileName_Homeostasis)" << endl;
     ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been achieved!')" << endl;
+    ofs << in+ in+ in+ "self.SpecialRedistribution()" << endl;
     ofs << in+ in+ in+ "if MoleculeNames:" << endl;
     ofs << in+ in+ in+ in+ "self.SetThreshold()" << endl;
     ofs << in+ in+ "else:" << endl;
@@ -1533,6 +1535,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been saved: %s' % FileName_Homeostasis)" << endl;
     ofs << in+ in+ in+ in+ in+ "if MoleculeNames:" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "self.SetThreshold()" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.SpecialRedistribution()" << endl;
 //    ofs << in+ in+ in+ in+ "print('[Homeostasis] achieved  : " << name << " @', self.Debug_ApplyUnit(Current), self.UnitTxt)" << endl;
 //    ofs << in+ in+ in+ in+ "print('[Homeostasis] threshold : " << name << " @', self.Debug_ApplyUnit(Threshold), self.UnitTxt)" << endl;
     //ofs << in+ in+ in+ in+ "print('Homeostasis achieved for      : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
@@ -1547,6 +1550,31 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
+    // Special Distribution Reset for glucose 'L' distribution
+    ofs << in+ "def SpecialRedistribution(self):" << endl;
+    PassSwitch = true;
+//    for (int i = 0; i < MolLoc.size(); i++) {
+//        auto Coord = MolLoc[i]->Coord;
+//        auto Amount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+//        std::string Shape, Pattern;
+//        int Size;
+//
+//        if (MolLoc[i]->Name == "L") {
+//            Shape = "'circle'"; Size = 500; Pattern = "'diffuse'";
+//
+//            ofs << in + in + "self.State.Dist_All[" << i << "] = SimF.InitializeDistribution(self.State.Dimension_X, self.State.Dimension_Y, "
+//                << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount << ", " << 0 ;
+//            if (!Shape.empty()) {
+//                ofs << ", " << Shape << ", " << Size << ", " << Pattern;
+//                }
+//            ofs << ")" << endl;
+//            PassSwitch = false;
+//        }
+//    }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
+    ofs << endl;
+
+
     if (!Context.LocationList.empty()) {
         ofs << in+ "# Spatial Simulation related routines" << endl;
         ofs << in + "def SpatialSimulation(self):" << endl;
@@ -1559,6 +1587,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     ofs << in+ "def SpatialDiffusion(self):" << endl;
+    PassSwitch = true;
     if (!MolLoc.empty()) {
         int N_Dist = Context.GetNames_LocationList("Molecule").size();
         // TODO: update to 3d array
@@ -1566,13 +1595,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             if (MolLoc[i]->Name == "L") { continue; }
             else {
                 ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
+                PassSwitch = false;
             }
             // Future implementation
             // ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;
         }
-    } else {
-        ofs << in+ in+ "pass" << endl;
     }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     // Print StandardReaction for each Reaction Type
@@ -1585,9 +1614,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             PassSwitch = false;
         }
     }
-    if (PassSwitch) {
-        ofs << in+ in+ "pass" << endl;
-    }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     // TransporterReaction function
@@ -1678,16 +1705,18 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def SpatialLocation(self):" << endl;
     ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()[0]" << endl; // TODO:set up dynamic indexing
     ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(np.array(HomeostasisMolecule), self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Pos_Threshold)" << endl;
-    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
+    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
     ofs << endl;
 
     ofs << in+ "def NonSpatialSimulation(self):" << endl;
+    PassSwitch = true;
     if (!StandardReactionTypes.empty()) {
         for (auto &Type: StandardReactionTypes) {
             std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
                 ofs << in + in + "self.StandardReactions()" << endl;
                 ofs << endl;
+                PassSwitch = false;
                 break;
             }
         }
@@ -1699,6 +1728,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             if (!ReactionSubList.empty()) {
                 ofs << in + in + "self.EnzymaticReactions()" << endl;
                 ofs << endl;
+                PassSwitch = false;
                 break;
             }
         }
@@ -1709,9 +1739,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "self.Polymerase_InitiationReactions()" << endl;
         ofs << in+ in+ "self.Polymerase_ElongationReactions()" << endl;
         ofs << in+ in+ "self.Polymerase_TerminationReactions()" << endl;
+        PassSwitch = false;
     }
 
-    ofs << in+ in+ "pass" << endl;
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "# Biochemical Reaction related routines" << endl;
@@ -1914,10 +1945,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             PassSwitch = false;
         }
     }
-
-    if (PassSwitch) {
-        ofs << in+ in+ "pass" << endl;
-    }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
 
@@ -1931,9 +1959,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             PassSwitch = false;
         }
     }
-    if (PassSwitch) {
-        ofs << in+ in+ "pass" << endl;
-    }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     if (!PolymeraseList.empty()) {
@@ -2343,11 +2369,17 @@ void FWriter::SimVis2D()
     ofs << in+ "UnitTxt = 'uM'" << endl;
     ofs << endl;
 
+    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+
     // Define indices for spatially distributed molecules and containers
     ofs << "GlucoseName = 'L'" << endl;
 
     // Pathway dependent key molecules to monitor
-    ofs << "HomeostasisMolName = ['Am', 'qAm']" << endl;
+    ofs << "HomeostasisMolName = [";
+    for (auto location : MolLoc) {
+        if      (location->Name == "L")  { ofs << "'" << "Am" << "', "; }
+        else if (location->Name == "qL") { ofs << "'" << "qAm" << "', "; }
+    } ofs << "]" << endl;
     ofs << endl;
 
     ofs << "# Utilities" << endl;
@@ -2427,9 +2459,6 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.TransparentCircleArea.fill((255, 255, 255, 255))" << endl;
     ofs << in+ in+ "pygame.draw.circle(self.TransparentCircleArea, (0, 0, 0, 0), (self.Radius, self.Radius), self.Radius)" << endl;
     ofs << endl;
-    ofs << in+ "def CheckOutOfBound(self, X, Y):" << endl;
-    ofs << in+ in+ "pass" << endl;
-    ofs << endl;
     ofs << "class FOrganism:" << endl;
     ofs << in+ "def __init__(self, InName, InSpecies):" << endl;
     ofs << in+ in+ "self.Name = InName" << endl;
@@ -2455,7 +2484,7 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ "def Draw(self):" << endl;
     ofs << in+ in+ "if self.Species == 'Ecoli':" << endl;
-    ofs << in+ in+ in+ "Color = YELLOW" << endl;
+    ofs << in+ in+ in+ "Color = ''" << endl;
     ofs << in+ in+ in+ "# pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)" << endl;
     ofs << in+ in+ in+ "dX =  np.cos(self.Angle) * -self.BodyLength" << endl;
     ofs << in+ in+ in+ "dY = -np.sin(self.Angle) * -self.BodyLength" << endl;
@@ -2464,8 +2493,10 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "X_TailEnd = self.X + self.FlagellaLength_Fold * dX" << endl;
     ofs << in+ in+ in+ "Y_TailEnd = self.Y + self.FlagellaLength_Fold * dY" << endl;
     ofs << in+ in+ in+ "for i in range(self.X.size):" << endl;
-    ofs << in+ in+ in+ in+ "if i == self.X.size - 1:" << endl;
+    ofs << in+ in+ in+ in+ "if i == 0:" << endl;
     ofs << in+ in+ in+ in+ in+ "Color = RED" << endl;
+    ofs << in+ in+ in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ in+ in+ "Color = YELLOW" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_BodyEnd[i], Y_BodyEnd[i]), self.BodyThickness)" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
     ofs << endl;
@@ -2483,13 +2514,15 @@ void FWriter::SimVis2D()
     ofs << in+ "def ReportStatus(self):" << endl;
     ofs << in+ in+ "# for debugging" << endl;
     ofs << in+ in+ "self.Am = SimM.GetCountByName(HomeostasisMolName[0])" << endl;
-    ofs << in+ in+ "self.qAm = SimM.GetCountByName(HomeostasisMolName[1])" << endl;
+//    ofs << in+ in+ "self.qAm = SimM.GetCountByName(HomeostasisMolName[1])" << endl;
     ofs << in+ in+ "self.SimCount += 1" << endl;
-    ofs << in+ in+ "LigandLvl = SimM.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
+    ofs << in+ in+ "Ligand_Now = SimM.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)[0]" << endl; // TODO: HARDCODED
     ofs << in+ in+ "SimStep = SimM.GetSimStep()" << endl;
-    ofs << in+ in+ "Delta = (LigandLvl - self.Ligand_Prev) / LigandLvl * 100" << endl;
+    ofs << in+ in+ "Delta = 0" << endl;
+    ofs << in+ in+ "if Ligand_Now != 0:" << endl;
+    ofs << in+ in+ in+ "Delta = (Ligand_Now - self.Ligand_Prev[0]) / Ligand_Now * 100" << endl;
     ofs << in+ in+ "# print('SimStep {:06d} [Chemotaxis  {:06d}] Ligand:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)'.format" << endl;
-    ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, LigandLvl / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
+    ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, Ligand_Now / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
     ofs << endl;
     ofs << in+ "def Homeostasis(self, MolName=[]):" << endl;
     ofs << in+ in+ "SimM.Homeostasis(MolName)   # Input 'Am', 'qAm' here" << endl;
@@ -2502,7 +2535,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "for i in range(self.X.size):" << endl;
     ofs << in+ in+ in+ "self.Trajectory[i] = [(self.X[i], self.Y[i])]" << endl;
     ofs << in+ in+ in+ "self.TrajectoryColor.append(tuple(np.random.randint(0, 255, 3)))" << endl;
-    ofs << in+ in+ "self.TrajectoryColor[-1] = MAGENTA" << endl;
+    ofs << in+ in+ "self.TrajectoryColor[0] = MAGENTA" << endl;
     ofs << endl;
     ofs << in+ "def AddToTrajectory(self):" << endl;
     ofs << in+ in+ "for i in range(self.X.size):" << endl;
@@ -2709,10 +2742,12 @@ void FWriter::SimVis2D()
     ofs << in+ "# TODO: Update display status" << endl;
     ofs << in+ "# def DisplayStatus(self, Ligand_Total, Ligand_Local, Ligand_Prev_Local, Am):" << endl;
     ofs << in+ "def DisplayStatus(self, Ligand_Local, Ligand_Prev_Local, Am_Local):" << endl;
-    ofs << in+ in+ "Ligand_Now = Ligand_Local[-1]" << endl;
-    ofs << in+ in+ "Ligand_Prev = Ligand_Prev_Local[-1]" << endl;
+    ofs << in+ in+ "Ligand_Now = Ligand_Local[0]" << endl;
+    ofs << in+ in+ "Ligand_Prev = Ligand_Prev_Local[0]" << endl;
     ofs << in+ in+ "Am = Am_Local[-1, 0]" << endl;
-    ofs << in+ in+ "dLigand = (Ligand_Now - Ligand_Prev) / Ligand_Now * 100" << endl;
+    ofs << in+ in+ "dLigand = 0" << endl;
+    ofs << in+ in+ "if Ligand_Now != 0:" << endl;
+    ofs << in+ in+ in+ "dLigand = (Ligand_Now - Ligand_Prev) / Ligand_Now * 100" << endl;
     ofs << endl;
     ofs << in+ in+ "StatusText = 'Ligand @ RED :' + '{:.2f} '.format(Ligand_Now/ Unit / NA) + UnitTxt + '\\n' \\" << endl;
     ofs << in+ in+ in+ in+ in+ " + 'dLigand @ RED : ' + ('+' if dLigand >= 0 else '') + '{:.5f}'.format(dLigand) + ' % \\n' \\" << endl;
@@ -2757,7 +2792,7 @@ void FWriter::SimVis2D()
     int i = 0;
 
     // Instantiate Molecules for Distribution
-    auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    // auto MolLoc = Context.GetSubList_LocationList("Molecule");
     for (auto Mol : MolLoc) {
         ofs << in+ Mol->Name << " = FMolecule('" << Mol->Name << "', ";
         ofs << Mol->Coord[0] << ", " << Mol->Coord[1] << ")" << endl;

@@ -173,15 +173,62 @@ def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
 
 
 # Spatial simulation functions
+def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount, BasalAmount=0, shape='', size=0, pattern='diffuse'):
+    '''
+    available shape options: circle, square
+    temporary size options are interpreted as its diameter or length of each side, respectively.
+    '''
 
-def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount):
-    Dist_Init = np.zeros((Width, Height))
-    for X in range(Width):
-        for Y in range(Height):
-            Dist_Init[X][Y] = InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, MaxAmount)
+    if shape != '':
+        assert size > 0 and pattern != '', 'Distribution Error: When shape is defined, size and pattern must be provided'
+
+    Dist_Init = np.full((Width, Height), BasalAmount, dtype='float32')
+
+    # Early termination when there is nothing to distribute
+    if MaxAmount == 0:
+        return Dist_Init
+
+    # Determine Indices to fill based on the shape
+    X_Min = int(X_Ori - size / 2)
+    X_Max = int(X_Ori + size / 2)
+    Y_Min = int(Y_Ori - size / 2)
+    Y_Max = int(Y_Ori + size / 2)
+
+    X_Array = []
+    Y_Array = []
+
+    if shape == 'circle':
+        for X in range(X_Min, X_Max):
+            for Y in range(Y_Min, Y_Max):
+                if np.sqrt((X_Ori - X) ** 2 + (Y_Ori - Y) ** 2) < size / 2:
+                    X_Array.append(X)
+                    Y_Array.append(Y)
+    elif shape == 'square':
+        for X in range(X_Min, X_Max):
+            for Y in range(Y_Min, Y_Max):
+                X_Array.append(X)
+                Y_Array.append(Y)
+    else:
+        for X in range(Width):
+            for Y in range(Height):
+                X_Array.append(X)
+                Y_Array.append(Y)
+
+    Coords_ToFill = (np.array(X_Array), np.array(Y_Array))
+
+    # Fill the shape with distribution
+    if pattern == 'solid':
+        Dist_Init[Coords_ToFill] = MaxAmount
+    elif shape != '' and pattern == 'diffuse':
+        Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, size, size, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
+    elif shape == '' and pattern == 'diffuse':
+        Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
+    else:
+        Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
+
     return Dist_Init
 
-def InitialDiffusionPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max):
+def InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max, ):
     Dist = np.sqrt(((X - X_Ori) / Width) ** 2 + ((Y - Y_Ori) / Height) ** 2)
     return Max / max(1, Dist * 30)
 
@@ -260,15 +307,25 @@ def Chemotaxis_Run(X, Y, Angle, Distance = 15):
 
 def Chemotaxis_Tumble(X, Y, Angle, Distance = 5):
     dX, dY = Displacement_2D(Distance, Angle)
-    NewAngle = np.random.random_sample(Angle.shape) * 2 * pi
+    NewAngle = GetRandomAngle(Angle.shape)
     return X + dX, Y + dY, NewAngle
 
-def CorrectOutOfBounds(X, Y, Width, Height):
-    X_Corrected = np.where(X < np.array([0]), 0, X)
-    X_Corrected = np.where(X_Corrected >= np.array([Width]), Width - 1, X_Corrected)
-    Y_Corrected = np.where(Y < np.array([0]), 0, Y)
-    Y_Corrected = np.where(Y_Corrected >= np.array([Height]), Height - 1, Y_Corrected)
-    return X_Corrected, Y_Corrected
+def GetRandomAngle(AngleShape):
+    return np.random.random_sample(AngleShape) * 2 * pi
+
+def CorrectOutOfBounds(X, Y, Angle, Width, Height):
+    X_LessThanZero = X < np.array([0])
+    X_MoreThanWidth = X >= np.array([Width])
+    Y_LessThanZero = Y < np.array([0])
+    Y_MoreThanHeight = Y >= np.array([Height])
+    Angle_ToChange = np.any(np.stack([X_LessThanZero, X_MoreThanWidth, Y_LessThanZero, Y_MoreThanHeight]), axis=0)
+
+    X_Corrected = np.where(X_LessThanZero, 0, X)
+    X_Corrected = np.where(X_MoreThanWidth, Width - 1, X_Corrected)
+    Y_Corrected = np.where(Y_LessThanZero, 0, Y)
+    Y_Corrected = np.where(Y_MoreThanHeight, Height - 1, Y_Corrected)
+    Angle_Corrected = np.where(Angle_ToChange, GetRandomAngle(Angle.shape), Angle)
+    return X_Corrected, Y_Corrected, Angle_Corrected
 
 def Normalize_Linear(Data):
     return Data / np.max(Data)
