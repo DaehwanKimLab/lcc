@@ -747,6 +747,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     //TODO: Take options from SimModule cmd line
+    ofs << "# Temporary global variables" << endl;
     ofs << "N_SimSteps = " << Sim_Steps << endl;
     ofs << "SimStepTimeResolution = " << Sim_Resolution << endl;
     ofs << "DisplayCount = 0   # 0: Display Counts only, 1: Display both Counts & dCounts" << endl;
@@ -1020,7 +1021,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.Mol_Names" << endl;
     ofs << endl;
 
-    ofs << in+ "def GetDistributionNames(self):" << endl;
+    ofs << in+ "def GetDistNames(self):" << endl;
     ofs << in+ in+ "return self.Dist_Names" << endl;
     ofs << endl;
 
@@ -1156,6 +1157,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Unit = 0" << endl;
     ofs << endl;
 
+    ofs << in+ in+ "# Debugging_Spatial" << endl;
+    ofs << in+ in+ "self.Debug_Idx_Pos = list()" << endl;
+    ofs << in+ in+ "self.Debug_Idx_Dist = list()" << endl;
+    ofs << endl;
+
     ofs << in+ "def Initialize(self, InN_SimSteps=1000, InTimeResolution=100):" << endl;
     ofs << in+ in+ "print('Simulation Initialized...')" << endl;
     ofs << in+ in+ "self.N_SimSteps = np.array([InN_SimSteps])" << endl;
@@ -1238,6 +1244,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ "# Debugging" << endl;
     ofs << in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
+    ofs << in+ in+ "self.Debug_SetIdxDistAndPosToTrack()" << endl;
     ofs << in+ in+ "self.Debug_SetUnit(Unit)" << endl;
     ofs << endl;
 
@@ -1255,17 +1262,24 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def SimLoop_WithSpatialSimulation(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
+//    ofs << in+ in;
+//    if (!Option.bDebug) { ofs << "#";}
+//    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+//    ofs << in+ in;
+//    if (!Option.bDebug) { ofs << "#"; }
+//    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
+//    ofs << in+ in;
+////    if (!Option.bDebug) { ofs << "#"; }
+//    ofs << "self.Debug_PrintDistributions()" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "# Run Spatial Simulation" << endl;
-    ofs << in+ in+ "self.SpatialSimulation()" << endl;
+    ofs << in+ in+ "self.SpatialSimulation()" << endl; // TODO: Take delta, instead of updating directly
     ofs << endl;
 
     ofs << in+ in+ "# Run Reactions" << endl;
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
-    ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#"; }
-    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
-    ofs << endl;
 
     ofs << in+ in+ "# Update Substrate Count" << endl;
     ofs << in+ in+ "self.UpdateCounts()" << endl;
@@ -1287,12 +1301,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def SimLoop_WithoutSpatialSimulation(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
-    ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
+//    ofs << in+ in;
+//    if (!Option.bDebug) { ofs << "#";}
+//    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+//    ofs << in+ in;
+//    if (!Option.bDebug) { ofs << "#";}
+//    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
+//    ofs << endl;
 
-    ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#";}
-    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
-    ofs << endl;
+    ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
@@ -1301,12 +1318,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // simloop for receptivity
     ofs << in+ "def SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
-    ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
-    ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#";}
-    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
-    ofs << endl;
+//    ofs << in+ in;
+//    if (!Option.bDebug) { ofs << "#";}
+//    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+//    ofs << in+ in;
+//    if (!Option.bDebug) { ofs << "#";}
+//    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
+//    ofs << endl;
+
+    ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
@@ -1582,6 +1603,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         if (!TransporterReactionTypes.empty()) {
             ofs << in + in + "self.TransporterReactions()" << endl;
         }
+
+            ofs << endl;
+            ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+            ofs << in+ in+ "print()" << endl;
+            ofs << in+ in+ "self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
+            ofs << endl;
+
         ofs << in + in + "self.SpatialLocation()" << endl;
         ofs << endl;
     }
@@ -1628,6 +1656,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             else              { AmountTextStr = "Count_"; }
 
             ofs << in+ "def TransporterReaction_" << Type << "(self):" << endl;
+
+//            if (Option.bDebug) {
+                ofs << endl;
+                ofs << in+ in+ "# Debugging tool" << endl;
+                ofs << in+ in+ "# self.Debug_PrintNames(PUT_IDX_HERE)" << endl;
+                ofs << endl;
+//            }
 
             std::string Idx_Cargo = "self.State.Idx_Cargo_" + Type;
             std::string Idx_Dist_Cargo = "self.State.Idx_Dist_Cargo_" + Type;
@@ -1762,6 +1797,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             else              { AmountTextStr = "Count_"; }
 
             ofs << in+ "def StandardReaction_" << Type << "(self):" << endl;
+
+//            if (Option.bDebug) {
+                ofs << endl;
+                ofs << in+ in+ "# Debugging tool" << endl;
+                ofs << in+ in+ "# self.Debug_PrintNames(PUT_IDX_HERE)" << endl;
+                ofs << endl;
+//            }
+
             // Get Concentrations
             // Reactants and products
             for (auto& substrate : SubstrateTypes) {
@@ -1846,6 +1889,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             Typing.emplace("Product", EnzReactionTypes[0]); // default type
 
             ofs << in+ "def EnzymaticReaction_" << Type << "(self):" << endl;
+
+//            if (Option.bDebug) {
+                ofs << endl;
+                ofs << in+ in+ "# Debugging tool" << endl;
+                ofs << in+ in+ "# self.Debug_PrintNames(PUT_IDX_HERE)" << endl;
+                ofs << endl;
+//            }
+
             // Get Concentrations
             // Enzyme
             ofs << in+ in+ "Conc_Enz = SimF.CountToConc(self.State.Count_All[:, self.State.Idx_Enz_" << Type << "], self.State.Vol)" << endl;
@@ -2019,6 +2070,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.State.Dist_All[Idx]" << endl;
     ofs << endl;
 
+    ofs << in+ "def GetDistWidth(self):" << endl;
+    ofs << in+ in+ "return self.State.Dimension_X" << endl;
+    ofs << endl;
+
+    ofs << in+ "def GetDistHeight(self):" << endl;
+    ofs << in+ in+ "return self.State.Dimension_Y" << endl;
+    ofs << endl;
+
     ofs << in+ "def AddTodCount(self, Idx, Values):" << endl;
     ofs << in+ in+ "dCountToAdd = np.zeros_like(self.State.dCount_All)" << endl;
     ofs << in+ in+ "np.put_along_axis(dCountToAdd, Idx, Values, axis=1)" << endl;
@@ -2078,7 +2137,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetDistIdx(self, Name):" << endl;
-    ofs << in+ in+ "return self.State.GetDistributionNames().index(Name)" << endl;
+    ofs << in+ in+ "return self.State.GetDistNames().index(Name)" << endl;
     ofs << endl;
 
     ofs << in+ "def GetDistributionByName(self, Name):" << endl;
@@ -2204,29 +2263,42 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return Len_Completed" << endl;
     ofs << endl;
 
+    ofs << in+ "# Debugging tools" << endl;
+    ofs << in+ "def Debug_PrintNames(self, IdxArray):" << endl;
+    ofs << in+ in+ "ListOfNames = list()" << endl;
+    ofs << in+ in+ "if IdxArray.dim == 1:" << endl;
+    ofs << in+ in+ in+ "IdxArray = IdxArray.tolist()" << endl;
+    ofs << in+ in+ "if IdxArray.dim == 2:" << endl;
+    ofs << in+ in+ in+ "IdxArray = IdxArray.tolist()[0]" << endl;
+    ofs << in+ in+ "for Idx in IdxArray.tolist()[0]:" << endl;
+    ofs << in+ in+ in+ "ListOfNames.append(self.State.GetMolNames()[Idx])" << endl;
+    ofs << in+ in+ "print(ListOfNames)" << endl;
+    ofs << endl;
+
     ofs << in+ "def Debug_SetIdxMoleculesToTrack(self):" << endl;
     ofs << in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
-    ofs << in+ in+ "Debug_Names_Molecules = []" << endl; // TODO: take input from command line
+    ofs << in+ in+ "#Debug_Names_Molecules = []" << endl; // TODO: take input from command line
+    ofs << in+ in+ "Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl; // TODO: take input from command line
+    ofs << endl;
+    ofs << in+ in+ "if Debug_Names_Molecules == []:" << endl;
+    ofs << in+ in+ in+ "Debug_Names_Molecules = self.State.GetMolNames()" << endl;
+    ofs << endl;
+    ofs << in+ in+ "for Name in Debug_Names_Molecules:" << endl;
+    ofs << in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.GetMolNames().index(Name))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "if Debug_Names_Molecules:" << endl;
-    ofs << in+ in+ in+ "for Name in Debug_Names_Molecules:" << endl;
-    ofs << in+ in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.GetMolNames().index(Name))" << endl;
-    ofs << in+ in+ in+ "self.Debug_AllCountsSwitch = False" << endl;
-    ofs << in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ "self.Debug_Idx_Molecules = list(range(len(self.State.GetMolNames())))" << endl;
-    ofs << in+ in+ in+ "self.Debug_AllCountsSwitch = True" << endl;
+    ofs << in+ "def Debug_PrintCounts(self, Switch, Idx_Pos=0):" << endl;
+    ofs << in+ in+ "for Idx_Pos in self.Debug_Idx_Pos:" << endl;
+    ofs << in+ in+ in+ "self.Debug_PrintCountsForSinglePosition(DisplayCount, Idx_Pos)" << endl;
     ofs << endl;
 
-    ofs << in+ "def Debug_PrintCounts(self, Switch):" << endl;
-    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-    ofs << in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
-    ofs << in+ in+ in+ "self.Debug_PrintCount(Idx)" << endl;
+    ofs << in+ "def Debug_PrintCountsForSinglePosition(self, Switch, Idx_Pos=0):" << endl;
+    ofs << in+ in+ "for Idx_Mol in self.Debug_Idx_Molecules:" << endl;
+    ofs << in+ in+ in+ "self.Debug_PrintCount(Idx_Mol, Idx_Pos)" << endl;
     ofs << in+ in+ "print()" << endl;
     ofs << in+ in+ "if Switch:" << endl;
-    ofs << in+ in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-    ofs << in+ in+ in+ "for Idx in self.Debug_Idx_Molecules:" << endl;
-    ofs << in+ in+ in+ in+ "self.Debug_PrintdCount(Idx)" << endl;
+    ofs << in+ in+ in+ "for Idx_Mol in self.Debug_Idx_Molecules:" << endl;
+    ofs << in+ in+ in+ in+ "self.Debug_PrintdCount(Idx_Mol, Idx_Pos)" << endl;
     ofs << in+ in+ in+ "print()" << endl;
     ofs << endl;
 
@@ -2235,14 +2307,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end='\t| ')" << endl;
     ofs << endl;
 
-    ofs << in+ "def Debug_PrintCount(self, Idx):" << endl;
-    ofs << in+ in+ "print(' ' + self.State.GetMolNames()[Idx], end=': ')" << endl;
-    ofs << in+ in+ "print('{:010e}'.format(self.Debug_ApplyUnit(self.State.Count_All[0][Idx])), self.UnitTxt, end=' | ')" << endl;
+    ofs << in+ "def Debug_PrintCount(self, Idx_Mol, Idx_Pos=0):" << endl;
+    ofs << in+ in+ "print(' ' + self.State.GetMolNames()[Idx_Mol], end=': ')" << endl;
+    ofs << in+ in+ "print('{:010e}'.format(self.Debug_ApplyUnit(self.State.Count_All[Idx_Pos][Idx_Mol])), self.UnitTxt, end=' | ')" << endl;
     ofs << endl;
 
-    ofs << in+ "def Debug_PrintdCount(self, Idx):" << endl;
-    ofs << in+ in+ "print('d' + self.State.GetMolNames()[Idx], end=': ')" << endl;
-    ofs << in+ in+ "print('{:010e}'.format(self.Debug_ApplyUnit(self.State.dCount_All[0][Idx])), self.UnitTxt, end=' | ')" << endl;
+    ofs << in+ "def Debug_PrintdCount(self, Idx_Mol, Idx_Pos=0):" << endl;
+    ofs << in+ in+ "print('d' + self.State.GetMolNames()[Idx_Mol], end=': ')" << endl;
+    ofs << in+ in+ "print('{:010e}'.format(self.Debug_ApplyUnit(self.State.dCount_All[Idx_Pos][Idx_Mol])), self.UnitTxt, end=' | ')" << endl;
     ofs << endl;
 
     ofs << in+ "def Debug_SetUnit(self, Input):" << endl;
@@ -2258,6 +2330,64 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def Debug_ApplyUnit(self, Value):" << endl;
     ofs << in+ in+ "return Value / self.Unit" << endl;
     ofs << endl;
+
+    // Debugging for spatial simulation
+    ofs << in+ "def Debug_SetIdxDistAndPosToTrack(self):" << endl;
+    ofs << in+ in+ "# Add a list of distributions at and around selected positions to track for debugging every simulation step" << endl;
+    ofs << in+ in+ "Debug_Names_Positions = []" << endl; // TODO: take input from command line
+    ofs << in+ in+ "if Debug_Names_Positions == []:" << endl;
+    ofs << in+ in+ in+ "self.Debug_Idx_Pos = list(range(len(self.State.GetPosNames())))" << endl;
+    ofs << in+ in+ "else:   # does not properly cover all cases due to redundant names allowed through for loops" << endl;
+    ofs << in+ in+ in+ "for Name in Debug_Names_Positions:" << endl;
+    ofs << in+ in+ in+ in+ "self.Debug_Idx_Pos.append(self.State.GetPosNames().index(Name))" << endl;
+    ofs << endl;
+    ofs << in+ in+ "Debug_Names_Distributions = []" << endl; // TODO: take input from command line
+    ofs << in+ in+ "if Debug_Names_Distributions == []:" << endl;
+    ofs << in+ in+ in+ "Debug_Names_Distributions = self.State.GetDistNames()" << endl;
+    ofs << in+ in+ "for Name in Debug_Names_Distributions:" << endl;
+    ofs << in+ in+ in+ "self.Debug_Idx_Dist.append(self.State.GetDistNames().index(Name))" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Debug_PrintDistributions(self):" << endl;
+    ofs << in+ in+ "for Idx_Pos in self.Debug_Idx_Pos:" << endl;
+    ofs << in+ in+ in+ "self.Debug_PrintDistributionsForSinglePosition(Idx_Pos)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Debug_PrintCountsAndDistributions(self):" << endl;
+    ofs << in+ in+ "for Idx_Pos in self.Debug_Idx_Pos:" << endl;
+    ofs << in+ in+ in+ "self.Debug_PrintDistributionsForSinglePosition(Idx_Pos)" << endl;
+    ofs << in+ in+ in+ "self.Debug_PrintCountsForSinglePosition(DisplayCount, Idx_Pos)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Debug_PrintDistributionsForSinglePosition(self, Idx_Pos):" << endl;
+    ofs << in+ in+ "X = self.State.Pos_X[Idx_Pos].astype(int)" << endl;
+    ofs << in+ in+ "Y = self.State.Pos_Y[Idx_Pos].astype(int)" << endl;
+    ofs << in+ in+ "print('Position #' + str(Idx_Pos) + ' Name: ' + self.State.GetPosNames()[Idx_Pos] + ' @ ({}, {})'.format(X, Y))" << endl;
+    ofs << in+ in+ "DistNames = ''" << endl;
+    ofs << in+ in+ "DistValues = dict()" << endl;
+    ofs << in+ in+ "DistValues[0] = ''" << endl;
+    ofs << in+ in+ "DistValues[1] = ''" << endl;
+    ofs << in+ in+ "DistValues[2] = ''" << endl;
+    ofs << in+ in+ "for Idx_Dist in self.Debug_Idx_Dist:" << endl;
+    ofs << in+ in+ in+ "DistNames, DistValues = self.Debug_PrintDistribution(DistNames, DistValues, Idx_Dist, X, Y)" << endl;
+    ofs << in+ in+ "print(DistNames, '\\n', DistValues[0], '\\n', DistValues[1], '\\n', DistValues[2])" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Debug_PrintDistribution(self, DistNames, DistValues, Idx_Dist, X, Y):" << endl;
+    ofs << in+ in+ "DistNames += self.State.GetDistNames()[Idx_Dist] + ' (' + self.UnitTxt + ')' + '\\t\\t\\t\\t\\t\\t\\t\\t'" << endl;
+    ofs << in+ in+ "DistValues[0] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y-1])) + '\\t'" << endl;
+    ofs << in+ in+ "DistValues[1] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y]))   + '\\t'" << endl;
+    ofs << in+ in+ "DistValues[2] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y+1])) + '\\t'" << endl;
+    ofs << in+ in+ "return DistNames, DistValues" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Debug_GetArrayInString(self, Array_1D):" << endl;
+    ofs << in+ in+ "Array_1D_Str = ''" << endl;
+    ofs << in+ in+ "for Idx in range(Array_1D.shape[0]):" << endl;
+    ofs << in+ in+ in+ "Array_1D_Str += SimF.SciFloat(Array_1D[Idx]) + ' '" << endl;
+    ofs << in+ in+ "return Array_1D_Str" << endl;
+    ofs << endl;
+
 
 
     // class FDataManager
@@ -2393,7 +2523,16 @@ void FWriter::SimVis2D()
     ofs << "# pygame" << endl;
     ofs << "pygame.init()" << endl;
     ofs << endl;
-    ofs << "Screen_Size = W_S, H_S = 1200, 800" << endl;
+    ofs << "# Load model" << endl;
+    ofs << "State = SimModule.FState()" << endl;
+    ofs << "Data = SimModule.FDataset()" << endl;
+    ofs << "DataManager = SimModule.FDataManager()" << endl;
+    ofs << "SimM = SimModule.FSimulation(State, Data, DataManager)" << endl;
+    ofs << endl;
+    ofs << "# Initialize model" << endl;
+    ofs << "SimM.Initialize()" << endl;
+    ofs << endl;
+    ofs << "Screen_Size = W_S, H_S = " << "SimM.GetDistWidth()" << "," << "SimM.GetDistHeight()" << endl;
     ofs << "Screen = pygame.display.set_mode(Screen_Size)" << endl;
     ofs << endl;
     ofs << "LEFT = 0" << endl;
@@ -2427,15 +2566,7 @@ void FWriter::SimVis2D()
     ofs << "Font_Sans = pygame.font.Font('freesansbold.ttf', 20)" << endl;
     ofs << "Font_Monospace = pygame.font.SysFont('monospace', 18, True)" << endl;
     ofs << endl;
-    ofs << "# Load model" << endl;
-    ofs << "State = SimModule.FState()" << endl;
-    ofs << "Data = SimModule.FDataset()" << endl;
-    ofs << "DataManager = SimModule.FDataManager()" << endl;
-    ofs << "SimM = SimModule.FSimulation(State, Data, DataManager)" << endl;
-    ofs << endl;
-    ofs << "# Initialize model" << endl;
-    ofs << "SimM.Initialize()" << endl;
-    ofs << endl;
+
     ofs << "class FEnvironment:" << endl;
     ofs << in+ "def __init__(self, InX=W_S/2, InY=H_S/2, InShape='circle', InRadius=W_S*0.5, InThickness=10):" << endl;
     ofs << in+ in+ "self.X = InX" << endl;

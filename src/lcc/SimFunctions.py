@@ -314,16 +314,16 @@ def GetRandomAngle(AngleShape):
     return np.random.random_sample(AngleShape) * 2 * pi
 
 def CorrectOutOfBounds(X, Y, Angle, Width, Height):
-    X_LessThanZero = X < np.array([0])
-    X_MoreThanWidth = X >= np.array([Width])
-    Y_LessThanZero = Y < np.array([0])
-    Y_MoreThanHeight = Y >= np.array([Height])
+    X_LessThanZero = X < np.array([1])
+    X_MoreThanWidth = X >= np.array([Width-1])
+    Y_LessThanZero = Y < np.array([1])
+    Y_MoreThanHeight = Y >= np.array([Height-1])
     Angle_ToChange = np.any(np.stack([X_LessThanZero, X_MoreThanWidth, Y_LessThanZero, Y_MoreThanHeight]), axis=0)
 
-    X_Corrected = np.where(X_LessThanZero, 0, X)
-    X_Corrected = np.where(X_MoreThanWidth, Width - 1, X_Corrected)
-    Y_Corrected = np.where(Y_LessThanZero, 0, Y)
-    Y_Corrected = np.where(Y_MoreThanHeight, Height - 1, Y_Corrected)
+    X_Corrected = np.where(X_LessThanZero, 1, X)
+    X_Corrected = np.where(X_MoreThanWidth, Width - 2, X_Corrected)
+    Y_Corrected = np.where(Y_LessThanZero, 1, Y)
+    Y_Corrected = np.where(Y_MoreThanHeight, Height - 2, Y_Corrected)
     Angle_Corrected = np.where(Angle_ToChange, GetRandomAngle(Angle.shape), Angle)
     return X_Corrected, Y_Corrected, Angle_Corrected
 
@@ -333,3 +333,7 @@ def Normalize_Linear(Data):
 def Normalize_P1Log(Data):
     Data_Modified = np.log(Data + 1)
     return Data_Modified / np.max(Data_Modified)
+
+# Debugging tools
+def SciFloat(Float, InPrecision=4, InExp_digits=2):
+    return np.format_float_scientific(Float, precision=InPrecision, unique=False, exp_digits=InExp_digits)

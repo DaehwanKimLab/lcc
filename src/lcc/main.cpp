@@ -183,8 +183,10 @@ void AddReaction(std::string ReactionName, const NReaction* Reaction)
     }
 
     // Effect
-    if ((!bEffect) & (K != Float_Init))       { Effect = "Inhibition"; }
-    else if ((bEffect) & (K != Float_Init))   { Effect = "Activation"; }
+    if (K != Float_Init) {
+        if (!bEffect)       { Effect = "Inhibition"; }
+        else if (bEffect)   { Effect = "Activation"; }
+    }
 
     // Fill in presumably irreversible reaction kinetic values
     if ((k1 != Float_Init) & (k2 == Float_Init)) { k2 = 0; }
