@@ -651,7 +651,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
         std::string Shape, Pattern;
         int Size;
 
-        ofs << in + in + "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, "
+        ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, "
             << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount;
         if (!Shape.empty()) {
             ofs << ", " << Shape << ", " << Size << ", " << Pattern;
@@ -1290,7 +1290,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.UpdateThreshold()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# Update Spatially Distributed Molecules On Count" << endl;
+    ofs << in+ in+ "# Update Spatially Distributed Molecules On Count (special treatment on 'L' for now)" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
     ofs << in+ in+ "self.CountToDistribution()" << endl;
     ofs << endl;
@@ -1408,8 +1408,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto UniqueName : ObjUniqueNames) {
                 if (molLoc->Name == "L") {
-                    ofs << in + in + "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
-                    ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+                    ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+                    ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
                         << "] = Count.reshape(-1, 1)" << endl;
                     PassSwitch = false;
                 }
@@ -1425,8 +1425,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //        for (auto molLoc : MolLoc) {
 //            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
 //            for (auto UniqueName : ObjUniqueNames) {
-//                ofs << in + in + "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
-//                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+//                ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+//                ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
 //                    << "] = Count.transpose()" << endl;
 //            }
 //        }
@@ -1508,16 +1508,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     // temporary code
-    ofs << in + "def GetNewThresholdValues(self):" << endl;
+    ofs << in+ "def GetNewThresholdValues(self):" << endl;
     float ThresholdFactor = 0.999;
     ofs << in+ in+ "return self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
     ofs << endl;
 
-    ofs << in + "def SetThreshold(self):" << endl;
+    ofs << in+ "def SetThreshold(self):" << endl;
     ofs << in+ in+ "self.State.Pos_Threshold = self.GetNewThresholdValues()" << endl;
     ofs << endl;
 
-    ofs << in + "def UpdateThreshold(self):" << endl;
+    ofs << in+ "def UpdateThreshold(self):" << endl;
     float HomeostasisFactor = 1e-7;
     ofs << in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
     ofs << in+ in+ "bSteadyState = abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << endl;
@@ -1528,7 +1528,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Count_Prev = Count_Now" << endl;
     ofs << endl;
 
-    ofs << in + "def Homeostasis(self, MoleculeNames=None):" << endl;
+    ofs << in+ "def Homeostasis(self, MoleculeNames=None):" << endl;
     // TODO: Get homeostasis info from FPathway,
     ofs << in+ in+ "bNotHomeostasis = True" << endl;
     ofs << in+ in+ "self.SetIdxForHomeostasis(MoleculeNames)" << endl;
@@ -1584,7 +1584,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //        if (MolLoc[i]->Name == "L") {
 //            Shape = "'circle'"; Size = 500; Pattern = "'diffuse'";
 //
-//            ofs << in + in + "self.State.Dist_All[" << i << "] = SimF.InitializeDistribution(self.State.Dimension_X, self.State.Dimension_Y, "
+//            ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.InitializeDistribution(self.State.Dimension_X, self.State.Dimension_Y, "
 //                << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount << ", " << 0 ;
 //            if (!Shape.empty()) {
 //                ofs << ", " << Shape << ", " << Size << ", " << Pattern;
@@ -1599,10 +1599,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     if (!Context.LocationList.empty()) {
         ofs << in+ "# Spatial Simulation related routines" << endl;
-        ofs << in + "def SpatialSimulation(self):" << endl;
-        ofs << in + in + "self.SpatialDiffusion()" << endl;
+        ofs << in+ "def SpatialSimulation(self):" << endl;
+        ofs << in+ in+ "self.SpatialDiffusion()" << endl;
         if (!TransporterReactionTypes.empty()) {
-            ofs << in + in + "self.TransporterReactions()" << endl;
+            ofs << in+ in+ "self.TransporterReactions()" << endl;
         }
 
             ofs << endl;
@@ -1611,7 +1611,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             ofs << in+ in+ "#self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
             ofs << endl;
 
-        ofs << in + in + "self.SpatialLocation()" << endl;
+        ofs << in+ in+ "self.SpatialLocation()" << endl;
         ofs << endl;
     }
 
@@ -1743,8 +1743,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     ofs << in+ "def SpatialLocation(self):" << endl;
-    ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()[0]" << endl; // TODO:set up dynamic indexing
-    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(np.array(HomeostasisMolecule), self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Pos_Threshold)" << endl;
+    ofs << in+ in+ "Evaluations = self.EvaluateChemotaxisThreshold()" << endl;
+    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(Evaluations, self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle)" << endl;
     ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
     ofs << endl;
 
@@ -1754,7 +1754,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         for (auto &Type: StandardReactionTypes) {
             std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
-                ofs << in + in + "self.StandardReactions()" << endl;
+                ofs << in+ in+ "self.StandardReactions()" << endl;
                 ofs << endl;
                 PassSwitch = false;
                 break;
@@ -1766,7 +1766,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         for (auto &Type: EnzReactionTypes) {
             std::vector<const FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
-                ofs << in + in + "self.EnzymaticReactions()" << endl;
+                ofs << in+ in+ "self.EnzymaticReactions()" << endl;
                 ofs << endl;
                 PassSwitch = false;
                 break;
@@ -2119,6 +2119,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.GetConcentration(self.GetMolIdx(Name), self.State.Vol)" << endl;
     ofs << endl;
 
+    ofs << in+ "def GetThreshold(self, Pos_Idx):" << endl;
+    ofs << in+ in+ "return self.State.Pos_Threshold[:, Pos_Idx]" << endl;
+    ofs << endl;
+
     ofs << in+ "def GetPosIdx(self, Name):" << endl;
     ofs << in+ in+ "return self.State.Pos_Name2Idx[Name]" << endl;
     ofs << endl;
@@ -2271,6 +2275,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "# N_Completed" << endl;
 
     ofs << in+ in+ "return Len_Completed" << endl;
+    ofs << endl;
+
+    ofs << in+ "def EvaluateChemotaxisThreshold(self):" << endl;
+    ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()" << endl;
+    ofs << in+ in+ "return np.array(HomeostasisMolecule) < self.State.Pos_Threshold" << endl;
     ofs << endl;
 
     ofs << in+ "# Debugging tools" << endl;
@@ -2453,18 +2462,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // MAIN
     ofs << "if __name__ == '__main__':" << endl;
-    ofs << in + "parser = ArgumentParser()" << endl;
-    ofs << in + "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
-    ofs << in + "args = parser.parse_args()" << endl;
-    ofs << in + "main()" << endl;
-    ofs << in + "plot.main(args.save_fname)" << endl;
+    ofs << in+ "parser = ArgumentParser()" << endl;
+    ofs << in+ "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
+    ofs << in+ "args = parser.parse_args()" << endl;
+    ofs << in+ "main()" << endl;
+    ofs << in+ "plot.main(args.save_fname)" << endl;
     ofs << endl;
 
     std::cout << "  Simulation program has been generated: ";
 }
 
-void FWriter::SimVis2D()
-{
+void FWriter::SimVis2D() {
     std::cout << "Generating SimVis2D..." << std::endl;
 
     // write SimVis2D.py
@@ -2506,13 +2514,15 @@ void FWriter::SimVis2D()
 
     // Define indices for spatially distributed molecules and containers
     ofs << "GlucoseName = 'L'" << endl;
+    ofs << "AutoinducerName = 'qL'" << endl;
 
     // Pathway dependent key molecules to monitor
     ofs << "HomeostasisMolName = [";
-    for (auto location : MolLoc) {
-        if      (location->Name == "L")  { ofs << "'" << "Am" << "', "; }
+    for (auto location: MolLoc) {
+        if (location->Name == "L") { ofs << "'" << "Am" << "', "; }
         else if (location->Name == "qL") { ofs << "'" << "qAm" << "', "; }
-    } ofs << "]" << endl;
+    }
+    ofs << "]" << endl;
     ofs << endl;
 
     ofs << "# Utilities" << endl;
@@ -2594,9 +2604,12 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "pygame.draw.rect(Screen, YELLOW_FAINT, ((0, 0), (W_S, H_S)))" << endl;
     ofs << endl;
     ofs << in+ "def DrawTransparentArea(self):" << endl;
-    ofs << in+ in+ "self.TransparentCircleArea = pygame.Surface((self.Radius * 2, self.Radius * 2), pygame.SRCALPHA)" << endl;
+    ofs << in+ in+ "self.TransparentCircleArea = pygame.Surface((self.Radius * 2, self.Radius * 2), pygame.SRCALPHA)"
+        << endl;
     ofs << in+ in+ "self.TransparentCircleArea.fill((255, 255, 255, 255))" << endl;
-    ofs << in+ in+ "pygame.draw.circle(self.TransparentCircleArea, (0, 0, 0, 0), (self.Radius, self.Radius), self.Radius)" << endl;
+    ofs << in+ in+
+           "pygame.draw.circle(self.TransparentCircleArea, (0, 0, 0, 0), (self.Radius, self.Radius), self.Radius)"
+        << endl;
     ofs << endl;
     ofs << "class FOrganism:" << endl;
     ofs << in+ "def __init__(self, InName, InSpecies):" << endl;
@@ -2611,6 +2624,9 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.BodyThickness = 10" << endl;
     ofs << in+ in+ "self.FlagellaLength_Fold = 2" << endl;
     ofs << in+ in+ "self.FlagellaThickness = 3" << endl;
+    ofs << endl;
+    ofs << in+ in+ "# Draw" << endl;
+    ofs << in+ in+ "self.Threshold_Switch = False" << endl;
     ofs << endl;
     ofs << in+ in+ "# Radar" << endl;
     ofs << in+ in+ "self.Radar_Switch = False" << endl;
@@ -2629,8 +2645,6 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ "def Draw(self):" << endl;
     ofs << in+ in+ "if self.Species == 'Ecoli':" << endl;
-    ofs << in+ in+ in+ "Color = ''" << endl;
-    ofs << in+ in+ in+ "# pygame.draw.circle(Screen, Color, (self.X, self.Y), 5)" << endl;
     ofs << in+ in+ in+ "dX =  np.cos(self.Angle) * -self.BodyLength" << endl;
     ofs << in+ in+ in+ "dY = -np.sin(self.Angle) * -self.BodyLength" << endl;
     ofs << in+ in+ in+ "X_BodyEnd = self.X + dX" << endl;
@@ -2646,43 +2660,90 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
     ofs << in+ in+ in+ in+ "if self.Radar_Switch:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.DrawRadar(Color, self.X[i], self.Y[i])" << endl;
+    ofs << in+ in+ in+ in+ "if self.Threshold_Switch:" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.PrintHomeostasisThresholds(i, self.X[i], self.Y[i])" << endl;
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "pygame.draw.circle(Screen, BLACK, (self.X, self.Y), 5)" << endl;
     ofs << endl;
     ofs << in+ "def DrawRadar(self, Color, X, Y):" << endl;
-    ofs << in+ in+ "self.PrintRadarText(X, Y, unit=True)" << endl;
-    ofs << in+ in+ "for i in range(self.Radar_Sampling):" << endl;
-    ofs << in+ in+ in+ "Spacing = self.Radar_Spacing * (i + 1)" << endl;
-    ofs << in+ in+ in+ "pygame.draw.circle(Screen, Color, (X, Y), Spacing, 1)" << endl;
-    ofs << in+ in+ in+ "self.PrintRadarTexts(X, Y, Spacing)" << endl;
+    ofs << in+ in+ "for i in range(len(self.Radar_MolList)):" << endl;
+    ofs << in+ in+ in+ "dY = 0" << endl;
+    ofs << in+ in+ in+ "if len(self.Radar_MolList) > 1:" << endl;
+    ofs << in+ in+ in+ in+ "dY = 16 * i - 8   # Hardcoded pattern for two molecules" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(self.Radar_MolList[i], X, Y + dY, unit=True, color=self.Radar_MolColor[i])" << endl;
+    ofs << in+ in+ in+ "for j in range(self.Radar_Sampling):" << endl;
+    ofs << in+ in+ in+ in+ "Spacing = self.Radar_Spacing * (j + 1)" << endl;
+    ofs << in+ in+ in+ in+ "pygame.draw.circle(Screen, Color, (X, Y), Spacing, 1)" << endl;
+    ofs << in+ in+ in+ in+ "RotationAngle = int(i * 90 / len(self.Radar_MolList))" << endl;
+    ofs << in+ in+ in+ in+ "self.PrintRadarTexts(self.Radar_MolList[i], X, Y, Spacing, rotate=RotationAngle, color=self.Radar_MolColor[i])" << endl;
     ofs << endl;
-    ofs << in+ "def PrintRadarTexts(self, X, Y, Spacing):" << endl;
-    ofs << in+ in+ "Up = Y - Spacing" << endl;
-    ofs << in+ in+ "Down = Y + Spacing" << endl;
-    ofs << in+ in+ "Left = X - Spacing" << endl;
-    ofs << in+ in+ "Right = X + Spacing" << endl;
-    ofs << in+ in+ "if Up >= 0:" << endl;
-    ofs << in+ in+ in+ "self.PrintRadarText(X, Up)" << endl;
-    ofs << in+ in+ "if Down < H_S:" << endl;
-    ofs << in+ in+ in+ "self.PrintRadarText(X, Down)" << endl;
-    ofs << in+ in+ "if Left >= 0:" << endl;
-    ofs << in+ in+ in+ "self.PrintRadarText(Left, Y)" << endl;
-    ofs << in+ in+ "if Right < W_S:" << endl;
-    ofs << in+ in+ in+ "self.PrintRadarText(Right, Y)" << endl;
+    ofs << in+ "def PrintHomeostasisThresholds(self, Pos_Idx, X, Y):" << endl;
+    ofs << in+ in+ "Spacing = self.Radar_Spacing * self.Radar_Sampling + 20" << endl;
+    ofs << in+ in+ "Y_Threshold = Y - Spacing" << endl;
+    ofs << in+ in+ "Y_ThresholdTxt = Y - Spacing - 15" << endl;
+    ofs << in+ in+ "if Y_ThresholdTxt < 0:" << endl;
+    ofs << in+ in+ in+ "Y_Threshold = Y + Spacing" << endl;
+    ofs << in+ in+ in+ "Y_ThresholdTxt = Y + Spacing + 15" << endl;
+    ofs << in+ in+ "# Hardcoded for one and two threshold cases" << endl;
+    ofs << in+ in+ "self.PrintString('(Thresholds)', X, Y_ThresholdTxt, color=BLACK)" << endl;
+    ofs << in+ in+ "if len(HomeostasisMolName) == 1:" << endl;
+    ofs << in+ in+ in+ "Value = SimM.Debug_ApplyUnit(SimM.GetThreshold(Pos_Idx))" << endl;
+    ofs << in+ in+ in+ "Text = HomeostasisMolName[0] + ' for ' + self.Radar_MolList[0] + ':'+ self.FormatValueToStr(Value[0]) + ' ' + UnitTxt" << endl;
+    ofs << in+ in+ in+ "self.PrintString(Text, X, Y_Threshold, color=self.Radar_MolColor[0])" << endl;
+    ofs << in+ in+ "elif len(HomeostasisMolName) == 2:" << endl;
+    ofs << in+ in+ in+ "Values = SimM.Debug_ApplyUnit(SimM.GetThreshold(Pos_Idx))" << endl;
+    ofs << in+ in+ in+ "Text = HomeostasisMolName[0] + ' for ' + self.Radar_MolList[0] + ': ' + self.FormatValueToStr(Values[0]) + ' '" << endl;
+    ofs << in+ in+ in+ "self.PrintString(Text, X, Y_Threshold, position='midright', color=self.Radar_MolColor[0])" << endl;
+    ofs << in+ in+ in+ "Text = HomeostasisMolName[1] + ' for ' + self.Radar_MolList[1] + ': ' + self.FormatValueToStr(Values[1]) + ' ' + UnitTxt" << endl;
+    ofs << in+ in+ in+ "self.PrintString(Text, X, Y_Threshold, position='midleft', color=self.Radar_MolColor[1])" << endl;
     ofs << endl;
-    ofs << in+ "def PrintRadarText(self, X, Y, unit=False):" << endl;
-    ofs << in+ in+ "Value = SimM.Debug_ApplyUnit(SimM.GetCountFromDistributionByNameOfDistAndXY(GlucoseName, X, Y))" << endl;
-    ofs << in+ in+ "Value_Str = '{:.2f}'.format(Value)" << endl;
-    ofs << in+ in+ "if unit:" << endl;
-    ofs << in+ in+ in+ "Value_Str += (' ' + UnitTxt)" << endl;
-    ofs << in+ in+ "self.PrintString(Value_Str, X, Y)" << endl;
+    ofs << in+ "def PrintRadarTexts(self, MolName, X, Y, Spacing, rotate=0, color=BLACK):" << endl;
+    ofs << in+ in+ "if rotate == 0 or rotate == 90:" << endl;
+    ofs << in+ in+ in+ "Up = Y - Spacing" << endl;
+    ofs << in+ in+ in+ "Down = Y + Spacing" << endl;
+    ofs << in+ in+ in+ "Left = X - Spacing" << endl;
+    ofs << in+ in+ in+ "Right = X + Spacing" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, X, Up, color=color)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, X, Down, color=color)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, Left, Y, color=color)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, Right, Y, color=color)" << endl;
     ofs << endl;
-    ofs << in+ "def PrintString(self, String, X, Y, position='center', rotate=45):" << endl;
-    ofs << in+ in+ "Text = Font_Radar.render(String, True, BLACK)" << endl;
+    ofs << in+ in+ "elif rotate > 0 and rotate < 90:" << endl;
+    ofs << in+ in+ in+ "Spacing_Y = Spacing * np.cos(np.deg2rad(rotate))" << endl;
+    ofs << in+ in+ in+ "Spacing_X = Spacing * np.sin(np.deg2rad(rotate))" << endl;
+    ofs << in+ in+ in+ "Up = int(Y - Spacing_Y)" << endl;
+    ofs << in+ in+ in+ "Down = int(Y + Spacing_Y)" << endl;
+    ofs << in+ in+ in+ "Left = int(X - Spacing_X)" << endl;
+    ofs << in+ in+ in+ "Right = int(X + Spacing_X)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, Left, Up, color=color)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, Right, Up, color=color)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, Left, Down, color=color)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(MolName, Right, Down, color=color)" << endl;
+    ofs << endl;
+    ofs << in+ "def PrintRadarText(self, MolName, X, Y, unit=False, color=BLACK, position='center'):" << endl;
+    ofs << in+ in+ "if X >= 0 and Y >= 0 and X < W_S and Y < H_S:" << endl;
+    ofs << in+ in+ in+ "Value = SimM.Debug_ApplyUnit(SimM.GetCountFromDistributionByNameOfDistAndXY(MolName, np.array([X]), np.array(Y)))" << endl;
+    ofs << in+ in+ in+ "Value_Str = self.FormatValueToStr(Value[0])" << endl;
+    ofs << in+ in+ in+ "if unit:" << endl;
+    ofs << in+ in+ in+ in+ "Value_Str += (' ' + UnitTxt)" << endl;
+    ofs << in+ in+ in+ "self.PrintString(Value_Str, X, Y, color=color, position=position)" << endl;
+    ofs << endl;
+    ofs << in+ "def FormatValueToStr(self, Value):" << endl;
+    ofs << in+ in+ "if Value < 0.01:" << endl;
+    ofs << in+ in+ in+ "return SimF.SciFloat(Value, InPrecision=2, InExp_digits=2)" << endl;
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "return '{:.2f}'.format(Value)" << endl;
+    ofs << endl;
+    ofs << in+ "def PrintString(self, String, X, Y, position='center', rotate=0, color=BLACK):" << endl;
+    ofs << in+ in+ "Text = Font_Radar.render(String, True, color)" << endl;
     ofs << in+ in+ "Text = pygame.transform.rotate(Text, rotate)" << endl;
     ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
     ofs << in+ in+ "if position == 'center':" << endl;
     ofs << in+ in+ in+ "Text_Rect.center = (X, Y)" << endl;
-    ofs << in+ in+ "elif position == 'topleft':" << endl;
-    ofs << in+ in+ in+ "Text_Rect.topleft = (X, Y)" << endl;
+    ofs << in+ in+ "if position == 'midleft':" << endl;
+    ofs << in+ in+ in+ "Text_Rect.midleft = (X, Y)" << endl;
+    ofs << in+ in+ "elif position == 'midright':" << endl;
+    ofs << in+ in+ in+ "Text_Rect.midright = (X, Y)" << endl;
     ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
     ofs << in+ "def SetPosition(self, Position):" << endl;
@@ -2691,10 +2752,22 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.Angle = Position[2]" << endl;
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
     ofs << endl;
-    ofs << in+ "def SetRadar(self, switch=True, sampling=6, spacing=25):" << endl;
+    ofs << in+ "def SetRadar(self, switch=True, sampling=6, spacing=30):" << endl;
+    ofs << in+ in+ "self.Threshold_Switch = switch" << endl;
     ofs << in+ in+ "self.Radar_Switch = switch" << endl;
     ofs << in+ in+ "self.Radar_Sampling = sampling" << endl;
     ofs << in+ in+ "self.Radar_Spacing = spacing" << endl;
+
+    // temporary hardcoding
+    ofs << in+ in+ "self.Radar_MolList = [";
+    for (int i = 0; i < MolLoc.size(); i++) { ofs << "'" << MolLoc[i]->Name << "', "; }
+    ofs << "]" << endl;
+    
+    std::vector<std::string> Radar_MolColor = {"BLACK", "BLUE"};
+    ofs << in+ in+ "self.Radar_MolColor = [";
+    for (int i = 0; i < MolLoc.size(); i++) { ofs << Radar_MolColor[i] << ", "; }
+    ofs << "]" << endl;
+    
     ofs << endl;
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
     ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
@@ -3044,11 +3117,11 @@ void FWriter::SimVis2D()
     }
 
     // Distribution settings (hardcoding)
-    std::vector<std::string>    Radar;
+    std::vector<std::string>    Radar_Switch;
 
 //    if (Option.bDebug)
 //    {
-                                Radar =       {"True",};
+                                Radar_Switch =      {"True",};
 //    }
 
     // Instantiate Organisms
@@ -3057,7 +3130,7 @@ void FWriter::SimVis2D()
         ofs << in+ OrgNames[i] << " = FOrganism('" << OrgNames[i] << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
 
         // set radar
-        if (!Radar.empty())     { ofs << in+ OrgNames[i] << ".SetRadar(switch=" << Radar[i] << ")" << endl; }
+        if (!Radar_Switch.empty())     { ofs << in+ OrgNames[i] << ".SetRadar(switch=" << Radar_Switch[i] << ")" << endl; }
         ofs << endl;
     }
 
@@ -3089,7 +3162,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ in+ "# Organism Control" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_t:" << endl;
     for (auto OrganismName : OrgNames) {
-        ofs << in + in + in + in + in + OrganismName << ".TrajectorySwitch = not " << OrganismName << ".TrajectorySwitch" << endl;
+        ofs << in+ in+ in+ in+ in+ OrganismName << ".TrajectorySwitch = not " << OrganismName << ".TrajectorySwitch" << endl;
     }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('T')" << endl;
     ofs << endl;
@@ -3157,8 +3230,11 @@ void FWriter::SimVis2D()
     ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos('" << MolName << "', '" << OrgName << "')" << endl;
 
     ofs << endl;
-    ofs << in+ in+ "if Control.Time < 50:" << endl;
-    ofs << in+ in+ in+ "Control.DisplayWelcome()" << endl;
+
+    if (!Option.bDebug) {
+        ofs << in+ in+ "if Control.Time < 50:" << endl;
+        ofs << in+ in+ in+ "Control.DisplayWelcome()" << endl;
+    }
     ofs << in+ in+ "if Control.MessageTimer > 0:" << endl;
     ofs << in+ in+ in+ "Control.DisplayInput()" << endl;
     ofs << in+ in+ "if Control.InstructionSwitch:" << endl;
