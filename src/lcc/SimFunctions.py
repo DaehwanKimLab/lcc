@@ -1,9 +1,8 @@
 import numpy as np
-import random
 
 NA = 6.0221409e+23
 pi = np.pi
-random.seed(1)
+np.random.seed(1)
 
 def ConcToCount(Conc_Molecule, Volume):
     return (Conc_Molecule * NA) * Volume
@@ -221,11 +220,9 @@ def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount, BasalAmount=0
         Dist_Init[Coords_ToFill] = MaxAmount
     elif shape != '' and pattern == 'diffuse':
         Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, size, size, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
-    elif shape == '' and pattern == 'diffuse':
-        Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
     else:
-        Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
-
+        Dim_Shorter = min(Width, Height)
+        Dist_Init[Coords_ToFill] = [InitialPattern(X, Y, Dim_Shorter, Dim_Shorter, X_Ori, Y_Ori, MaxAmount) for X, Y in zip(Coords_ToFill[0], Coords_ToFill[1])]
     return Dist_Init
 
 def InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max, ):

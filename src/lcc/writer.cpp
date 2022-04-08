@@ -706,7 +706,8 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (auto& UniqueName : ObjUniqueNames) {
         int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
         for (int j = i; j < (Count); j++) {
-            ofs << Numbers::RandomNumber(0, 1) << " * 2 * np.pi, ";
+            ofs << "0, ";
+//            ofs << Numbers::RandomNumber(0, 1) << " * 2 * np.pi, ";
         }
     }
     ofs << "]) " << endl;
@@ -1407,7 +1408,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto UniqueName : ObjUniqueNames) {
                 if (molLoc->Name == "L") {
-                    ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+                    ofs << in + in + "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
                     ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
                         << "] = Count.reshape(-1, 1)" << endl;
                     PassSwitch = false;
@@ -1424,7 +1425,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //        for (auto molLoc : MolLoc) {
 //            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
 //            for (auto UniqueName : ObjUniqueNames) {
-//                ofs << in + in + "Count = self.GetCountFromDistributionByNameAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+//                ofs << in + in + "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
 //                ofs << in + in + "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
 //                    << "] = Count.transpose()" << endl;
 //            }
@@ -1605,9 +1606,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
 
             ofs << endl;
-            ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-            ofs << in+ in+ "print()" << endl;
-            ofs << in+ in+ "self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
+            ofs << in+ in+ "#self.Debug_PrintSimStepTime()" << endl;
+            ofs << in+ in+ "#print()" << endl;
+            ofs << in+ in+ "#self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
             ofs << endl;
 
         ofs << in + in + "self.SpatialLocation()" << endl;
@@ -1620,11 +1621,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         int N_Dist = Context.GetNames_LocationList("Molecule").size();
         // TODO: update to 3d array
         for (i = 0; i < N_Dist; i++) {
-            if (MolLoc[i]->Name == "L") { continue; }
-            else {
+
+
+//            if (MolLoc[i]->Name == "L") { continue; }
+//            else {
                 ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
-                PassSwitch = false;
-            }
+//                PassSwitch = false;
+//            }
+
+
             // Future implementation
             // ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;
         }
@@ -2149,9 +2154,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.State.Dist_All[Dist_Idx, X.astype(int), Y.astype(int)]" << endl;
     ofs << endl;
 
-    ofs << in+ "def GetCountFromDistributionByNameAndPos(self, NameOfDist, NameOfPos):" << endl;
+    ofs << in+ "def GetCountFromDistributionByNamesOfDistAndPos(self, NameOfDist, NameOfPos):" << endl;
     // temporary code
     ofs << in+ in+ "X, Y = self.GetPositionXYByName(NameOfPos)" << endl;
+    ofs << in+ in+ "return self.GetCountFromDistributionByNameOfDistAndXY(NameOfDist, X, Y)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def GetCountFromDistributionByNameOfDistAndXY(self, NameOfDist, X, Y):" << endl;
+    // temporary code
     ofs << in+ in+ "Dist_Idx = self.GetDistIdx(NameOfDist)" << endl;
     ofs << in+ in+ "return self.GetCountFromDistribution(Dist_Idx, X, Y)" << endl;
     ofs << endl;
@@ -2278,7 +2288,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def Debug_SetIdxMoleculesToTrack(self):" << endl;
     ofs << in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
     ofs << in+ in+ "#Debug_Names_Molecules = []" << endl; // TODO: take input from command line
-    ofs << in+ in+ "Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl; // TODO: take input from command line
+    ofs << in+ in+ "Debug_Names_Molecules = ['Am', 'AmL', 'L']" << endl; // TODO: take input from command line
+    ofs << in+ in+ "#Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl; // TODO: take input from command line
     ofs << endl;
     ofs << in+ in+ "if Debug_Names_Molecules == []:" << endl;
     ofs << in+ in+ in+ "Debug_Names_Molecules = self.State.GetMolNames()" << endl;
@@ -2464,10 +2475,12 @@ void FWriter::SimVis2D()
     ofs << "import pygame" << endl;
     ofs << "import random" << endl;
     ofs << "from datetime import datetime" << endl;
+    ofs << "import numpy as np" << endl;
     ofs << "import SimModule" << endl;
     ofs << "import SimFunctions as SimF" << endl;
-    ofs << "import numpy as np" << endl;
-    ofs << "import math" << endl;
+    ofs << endl;
+    ofs << "random.seed(1)" << endl;
+    ofs << "np.random.seed(1)" << endl;
     ofs << endl;
     ofs << "# Colors" << endl;
     ofs << "BLACK = (0, 0, 0)" << endl;
@@ -2487,16 +2500,6 @@ void FWriter::SimVis2D()
     ofs << "# Global variables" << endl;
     ofs << "NA = 6.0221409e+23" << endl;
     ofs << "pi = np.pi" << endl;
-    ofs << "uM = 1e-6" << endl;
-    ofs << "nM = 1e-9" << endl;
-    ofs << "UnitTxt = ''" << endl;
-    ofs << endl;
-    ofs << "# Determine global unit" << endl;
-    ofs << "Unit = nM" << endl;
-    ofs << "if Unit == nM:" << endl;
-    ofs << in+ "UnitTxt = 'nM'" << endl;
-    ofs << "elif Unit == uM:" << endl;
-    ofs << in+ "UnitTxt = 'uM'" << endl;
     ofs << endl;
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
@@ -2532,6 +2535,10 @@ void FWriter::SimVis2D()
     ofs << "# Initialize model" << endl;
     ofs << "SimM.Initialize()" << endl;
     ofs << endl;
+    ofs << "# Determine global unit" << endl;
+    ofs << "Unit = SimM.Unit" << endl;
+    ofs << "UnitTxt = SimM.UnitTxt" << endl;
+    ofs << endl;
     ofs << "Screen_Size = W_S, H_S = " << "SimM.GetDistWidth()" << "," << "SimM.GetDistHeight()" << endl;
     ofs << "Screen = pygame.display.set_mode(Screen_Size)" << endl;
     ofs << endl;
@@ -2565,6 +2572,7 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << "Font_Sans = pygame.font.Font('freesansbold.ttf', 20)" << endl;
     ofs << "Font_Monospace = pygame.font.SysFont('monospace', 18, True)" << endl;
+    ofs << "Font_Radar = pygame.font.SysFont('arial', 14)" << endl;
     ofs << endl;
 
     ofs << "class FEnvironment:" << endl;
@@ -2598,10 +2606,16 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.Y = None" << endl;
     ofs << in+ in+ "self.Angle = None" << endl;
     ofs << endl;
+    ofs << in+ in+ "# Draw" << endl;
     ofs << in+ in+ "self.BodyLength = 20" << endl;
     ofs << in+ in+ "self.BodyThickness = 10" << endl;
     ofs << in+ in+ "self.FlagellaLength_Fold = 2" << endl;
     ofs << in+ in+ "self.FlagellaThickness = 3" << endl;
+    ofs << endl;
+    ofs << in+ in+ "# Radar" << endl;
+    ofs << in+ in+ "self.Radar_Switch = False" << endl;
+    ofs << in+ in+ "self.Radar_Sampling = 0" << endl;
+    ofs << in+ in+ "self.Radar_Spacing = 0" << endl;
     ofs << endl;
     ofs << in+ in+ "# Memory for display & debugging" << endl;
     ofs << in+ in+ "self.Ligand_Prev = 0" << endl;
@@ -2630,12 +2644,57 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ in+ in+ "Color = YELLOW" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_BodyEnd[i], Y_BodyEnd[i]), self.BodyThickness)" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
+    ofs << in+ in+ in+ in+ "if self.Radar_Switch:" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.DrawRadar(Color, self.X[i], self.Y[i])" << endl;
+    ofs << endl;
+    ofs << in+ "def DrawRadar(self, Color, X, Y):" << endl;
+    ofs << in+ in+ "self.PrintRadarText(X, Y, unit=True)" << endl;
+    ofs << in+ in+ "for i in range(self.Radar_Sampling):" << endl;
+    ofs << in+ in+ in+ "Spacing = self.Radar_Spacing * (i + 1)" << endl;
+    ofs << in+ in+ in+ "pygame.draw.circle(Screen, Color, (X, Y), Spacing, 1)" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarTexts(X, Y, Spacing)" << endl;
+    ofs << endl;
+    ofs << in+ "def PrintRadarTexts(self, X, Y, Spacing):" << endl;
+    ofs << in+ in+ "Up = Y - Spacing" << endl;
+    ofs << in+ in+ "Down = Y + Spacing" << endl;
+    ofs << in+ in+ "Left = X - Spacing" << endl;
+    ofs << in+ in+ "Right = X + Spacing" << endl;
+    ofs << in+ in+ "if Up >= 0:" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(X, Up)" << endl;
+    ofs << in+ in+ "if Down < H_S:" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(X, Down)" << endl;
+    ofs << in+ in+ "if Left >= 0:" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(Left, Y)" << endl;
+    ofs << in+ in+ "if Right < W_S:" << endl;
+    ofs << in+ in+ in+ "self.PrintRadarText(Right, Y)" << endl;
+    ofs << endl;
+    ofs << in+ "def PrintRadarText(self, X, Y, unit=False):" << endl;
+    ofs << in+ in+ "Value = SimM.Debug_ApplyUnit(SimM.GetCountFromDistributionByNameOfDistAndXY(GlucoseName, X, Y))" << endl;
+    ofs << in+ in+ "Value_Str = '{:.2f}'.format(Value)" << endl;
+    ofs << in+ in+ "if unit:" << endl;
+    ofs << in+ in+ in+ "Value_Str += (' ' + UnitTxt)" << endl;
+    ofs << in+ in+ "self.PrintString(Value_Str, X, Y)" << endl;
+    ofs << endl;
+    ofs << in+ "def PrintString(self, String, X, Y, position='center', rotate=45):" << endl;
+    ofs << in+ in+ "Text = Font_Radar.render(String, True, BLACK)" << endl;
+    ofs << in+ in+ "Text = pygame.transform.rotate(Text, rotate)" << endl;
+    ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
+    ofs << in+ in+ "if position == 'center':" << endl;
+    ofs << in+ in+ in+ "Text_Rect.center = (X, Y)" << endl;
+    ofs << in+ in+ "elif position == 'topleft':" << endl;
+    ofs << in+ in+ in+ "Text_Rect.topleft = (X, Y)" << endl;
+    ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
     ofs << in+ "def SetPosition(self, Position):" << endl;
     ofs << in+ in+ "self.X = Position[0]" << endl;
     ofs << in+ in+ "self.Y = Position[1]" << endl;
     ofs << in+ in+ "self.Angle = Position[2]" << endl;
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
+    ofs << endl;
+    ofs << in+ "def SetRadar(self, switch=True, sampling=6, spacing=25):" << endl;
+    ofs << in+ in+ "self.Radar_Switch = switch" << endl;
+    ofs << in+ in+ "self.Radar_Sampling = sampling" << endl;
+    ofs << in+ in+ "self.Radar_Spacing = spacing" << endl;
     ofs << endl;
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
     ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
@@ -2647,7 +2706,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.Am = SimM.GetCountByName(HomeostasisMolName[0])" << endl;
 //    ofs << in+ in+ "self.qAm = SimM.GetCountByName(HomeostasisMolName[1])" << endl;
     ofs << in+ in+ "self.SimCount += 1" << endl;
-    ofs << in+ in+ "Ligand_Now = SimM.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)[0]" << endl; // TODO: HARDCODED
+    ofs << in+ in+ "Ligand_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)[0]" << endl; // TODO: HARDCODED
     ofs << in+ in+ "SimStep = SimM.GetSimStep()" << endl;
     ofs << in+ in+ "Delta = 0" << endl;
     ofs << in+ in+ "if Ligand_Now != 0:" << endl;
@@ -2657,7 +2716,7 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ "def Homeostasis(self, MolName=[]):" << endl;
     ofs << in+ in+ "SimM.Homeostasis(MolName)   # Input 'Am', 'qAm' here" << endl;
-    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNameAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
+    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
     ofs << in+ in+ "self.SetPosition(SimM.GetPositionXYAngleByName(self.Name))" << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
     ofs << in+ in+ "self.ReportStatus()" << endl;
@@ -2690,7 +2749,10 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ in+ "# Heatmap Drawing" << endl;
     ofs << in+ in+ "self.ReductionFactor = 5" << endl;
-    ofs << in+ in+ "self.Max = 0" << endl;
+    ofs << in+ in+ "self.MaxAmount = 0" << endl;
+    ofs << in+ in+ "self.bMaxStatic = False" << endl;
+    ofs << in+ in+ "self.bContourLine = False" << endl;
+    ofs << in+ in+ "self.ContourLinePoints = list()" << endl;
     ofs << in+ in+ "self.InitializeHeatmapMax()" << endl;
     ofs << endl;
     ofs << in+ in+ "# Particle Drawing" << endl;
@@ -2702,7 +2764,7 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.InitializeStaticParticles()" << endl;
     ofs << endl;
     ofs << in+ "def InitializeHeatmapMax(self):" << endl;
-    ofs << in+ in+ "self.Max = np.max(SimM.GetDistributionByName(self.Name))" << endl;
+    ofs << in+ in+ "self.MaxAmount = np.max(SimM.GetDistributionByName(self.Name))" << endl;
     ofs << endl;
     ofs << in+ "def InitializeStaticParticles(self):" << endl;
     ofs << in+ in+ "for i in range(int(self.Particle_N / self.Particle_PerLayer)):" << endl;
@@ -2712,8 +2774,8 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ in+ "self.Particle_XY_Static.append((X, Y))" << endl;
     ofs << endl;
     ofs << in+ "def Reposition(self):" << endl;
-    ofs << in+ in+ "self.X = random.randint(W_S * 2 / 5, W_S * 3 / 5)" << endl;
-    ofs << in+ in+ "self.Y = random.randint(H_S * 2 / 5, H_S * 3 / 5)" << endl;
+    ofs << in+ in+ "self.X = np.random.randint(W_S * 2 / 5, W_S * 3 / 5)" << endl;
+    ofs << in+ in+ "self.Y = np.random.randint(H_S * 2 / 5, H_S * 3 / 5)" << endl;
     ofs << in+ in+ "self.Particle_XY_Static = []" << endl;
     ofs << in+ in+ "self.InitializeStaticParticles()" << endl;
     ofs << endl;
@@ -2726,39 +2788,43 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.Particle_XY_Static = New_Particle_XY_Static" << endl;
     ofs << endl;
     ofs << in+ "def Draw(self, Data, threshold=0):" << endl;
+    ofs << in+ in+ "if np.max(Data) == 0:" << endl;
+    ofs << in+ in+ in+ "return"<< endl;
+    ofs << endl;
     ofs << in+ in+ "if self.Pattern == 'spots':" << endl;
-    ofs << in+ in+ in+ "Max = np.max(Data)" << endl;
-    ofs << in+ in+ in+ "if Max == 0:" << endl;
-    ofs << in+ in+ in+ in+ "return"<< endl;
-    ofs << in+ in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ in+ "Data = SimF.Normalize_Linear(Data)" << endl;
-    ofs << in+ in+ in+ in+ "CoordsToDraw = np.where(Data > threshold)" << endl;
-    ofs << in+ in+ in+ in+ "for X, Y, Value in zip(CoordsToDraw[0], CoordsToDraw[1], Data[CoordsToDraw]):" << endl;
-    ofs << in+ in+ in+ in+ in+ "intensity = math.floor(Value * self.MaxBrightness)" << endl;
+    ofs << in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
+    ofs << in+ in+ in+ "CoordsToDraw = np.where(Data_Normalized > threshold)" << endl;
+    ofs << in+ in+ in+ "for X, Y, Value in zip(CoordsToDraw[0], CoordsToDraw[1], Data_Normalized[CoordsToDraw]):" << endl;
+    ofs << in+ in+ in+ in+ "intensity = np.floor(Value * self.MaxBrightness)" << endl;
+    ofs << in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
+    ofs << in+ in+ in+ in+ in+ "intensity = self.MaxBrightness" << endl;
+    ofs << in+ in+ in+ in+ "color = self.GetColor(intensity)"<< endl;
+    ofs << in+ in+ in+ in+ "pygame.draw.circle(Screen, color, (X, Y), self.Particle_Radius)" << endl;
+    ofs << endl;
+    ofs << in+ in+ "elif self.Pattern == 'heatmap':" << endl;
+    ofs << in+ in+ in+ "Data_Normalized = None" << endl;
+    ofs << in+ in+ in+ "ContourLine = list()" << endl;
+    ofs << in+ in+ in+ "if self.NormalizationType == 'linear':" << endl;
+    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
+    ofs << in+ in+ in+ "elif self.NormalizationType == 'log':" << endl;
+    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_P1Log(Data)" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "for x in range(0, Data_Normalized.shape[0], self.ReductionFactor):" << endl;
+    ofs << in+ in+ in+ in+ "for y in range(0, Data_Normalized.shape[1], self.ReductionFactor):" << endl;
+    ofs << in+ in+ in+ in+ in+ "PercentMolLevel = Data_Normalized[x][y]" << endl;
+    ofs << in+ in+ in+ in+ in+ "if PercentMolLevel < threshold or PercentMolLevel == 0:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "continue" << endl;
+    ofs << in+ in+ in+ in+ in+ "intensity = np.floor(PercentMolLevel * self.MaxBrightness)" << endl;
     ofs << in+ in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "intensity = self.MaxBrightness" << endl;
     ofs << in+ in+ in+ in+ in+ "color = self.GetColor(intensity)"<< endl;
-    ofs << in+ in+ in+ in+ in+ "pygame.draw.circle(Screen, color, (X, Y), self.Particle_Radius)" << endl;
+    ofs << in+ in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))" << endl;
     ofs << endl;
-    ofs << in+ in+ "elif self.Pattern == 'heatmap':" << endl;
-    ofs << in+ in+ in+ "Max = np.max(Data)" << endl;
-    ofs << in+ in+ in+ "if Max == 0:" << endl;
-    ofs << in+ in+ in+ in+ "return"<< endl;
-    ofs << in+ in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ in+ "if self.NormalizationType == 'linear':" << endl;
-    ofs << in+ in+ in+ in+ in+ "Data = SimF.Normalize_Linear(Data)" << endl;
-    ofs << in+ in+ in+ in+ "if self.NormalizationType == 'log':" << endl;
-    ofs << in+ in+ in+ in+ in+ "Data = SimF.Normalize_P1Log(Data)" << endl;
-    ofs << in+ in+ in+ in+ "for x in range(0, Data.shape[0], self.ReductionFactor):" << endl;
-    ofs << in+ in+ in+ in+ in+ "for y in range(0, Data.shape[1], self.ReductionFactor):" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "PercentMolLevel = Data[x][y]" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "if PercentMolLevel < threshold or PercentMolLevel == 0:" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ in+ "continue" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "intensity = math.floor(PercentMolLevel * self.MaxBrightness)" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ in+ "intensity = self.MaxBrightness" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "color = self.GetColor(intensity)"<< endl;
-    ofs << in+ in+ in+ in+ in+ in+ "pygame.draw.rect(Screen, color, ((x, y), (self.ReductionFactor, self.ReductionFactor)))" << endl;
+    ofs << in+ in+ in+ in+ in+ "if self.bContourLine:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "if not self.bMaxStatic:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ in+ "self.SetContourLinePoints(Max=np.Max(Data))" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "if self.CheckContourLine(Data[x][y]):" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ in+ "pygame.draw.rect(Screen, BLACK, ((x, y), (self.ReductionFactor, self.ReductionFactor)))" << endl;
     ofs << endl;
     ofs << in+ in+ "elif self.Pattern == 'particle':" << endl;
     ofs << in+ in+ in+ "for XY in self.Particle_XY_Static:" << endl;
@@ -2768,11 +2834,26 @@ void FWriter::SimVis2D()
     ofs << in+ in+ in+ "assert True, 'Unsupported molecule distribution pattern for drawing: %s' % self.Pattern" << endl;
     ofs << endl;
 
+    ofs << in+ "def CheckContourLine(self, Value):" << endl;
+    ofs << in+ in+ "for (Min, Max) in self.ContourLinePoints:" << endl;
+    ofs << in+ in+ in+ "if Value > Min and Value < Max:" << endl;
+    ofs << in+ in+ in+ in+ "return True" << endl;
+    ofs << in+ in+ "return False" << endl;
+    ofs << endl;
+
     ofs << in+ "def GetColor(self, Intensity):" << endl;
-    ofs << in+ in+ "if self.Color == 'Yellow':" << endl;
-    ofs << in+ in+ in+ "return (self.MaxBrightness, self.MaxBrightness, self.MaxBrightness - Intensity)" << endl;
-    ofs << in+ in+ "if self.Color == 'Blue':" << endl;
+    ofs << in+ in+ "if self.Color == 'Red':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness, self.MaxBrightness - Intensity, self.MaxBrightness - Intensity)" << endl;
+    ofs << in+ in+ "elif self.Color == 'Green':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness - Intensity, self.MaxBrightness, self.MaxBrightness - Intensity)" << endl;
+    ofs << in+ in+ "elif self.Color == 'Blue':" << endl;
     ofs << in+ in+ in+ "return (self.MaxBrightness - Intensity, self.MaxBrightness - Intensity, self.MaxBrightness)" << endl;
+    ofs << in+ in+ "elif self.Color == 'Yellow':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness, self.MaxBrightness, self.MaxBrightness - Intensity)" << endl;
+    ofs << in+ in+ "elif self.Color == 'Cyan':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness - Intensity, self.MaxBrightness, self.MaxBrightness)" << endl;
+    ofs << in+ in+ "elif self.Color == 'Magenta':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness, self.MaxBrightness - Intensity, self.MaxBrightness)" << endl;
     ofs << endl;
 
     ofs << in+ "def SetColor(self, Color, MaxBrightness):" << endl;
@@ -2780,10 +2861,22 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "self.MaxBrightness = MaxBrightness" << endl;
     ofs << endl;
 
-    ofs << in+ "def SetPattern(self, Pattern, NormalizationType, ReductionFactor):" << endl;
+    ofs << in+ "def SetPattern(self, Pattern, NormalizationType, ReductionFactor, maxstatic=False, contourline=False):" << endl;
     ofs << in+ in+ "self.Pattern = Pattern" << endl;
     ofs << in+ in+ "self.NormalizationType = NormalizationType" << endl;
     ofs << in+ in+ "self.ReductionFactor = ReductionFactor" << endl;
+    ofs << in+ in+ "self.bMaxStatic = maxstatic" << endl;
+    ofs << in+ in+ "self.bContourLine = contourline" << endl;
+    ofs << in+ in+ "if self.bContourLine:" << endl;
+    ofs << in+ in+ in+ "self.SetContourLinePoints()" << endl;
+    ofs << endl;
+
+    ofs << in+ "def SetContourLinePoints(self, NumberOfPoints=7, Max=None):" << endl;
+    ofs << in+ in+ "if not Max:" << endl;
+    ofs << in+ in+ in+ "Max = self.MaxAmount" << endl;
+    ofs << in+ in+ "for i in range(NumberOfPoints):" << endl;
+    ofs << in+ in+ in+ "Max /= (1.005 * (i + 1))" << endl;
+    ofs << in+ in+ in+ "self.ContourLinePoints.append((Max * 0.99, Max * 1.001))" << endl;
     ofs << endl;
 
     ofs << "class FControl:" << endl;
@@ -2880,9 +2973,9 @@ void FWriter::SimVis2D()
     ofs << in+ in+ "if Ligand_Now != 0:" << endl;
     ofs << in+ in+ in+ "dLigand = (Ligand_Now - Ligand_Prev) / Ligand_Now * 100" << endl;
     ofs << endl;
-    ofs << in+ in+ "StatusText = 'Ligand @ RED :' + '{:.2f} '.format(Ligand_Now/ Unit / NA) + UnitTxt + '\\n' \\" << endl;
+    ofs << in+ in+ "StatusText = 'Ligand @ RED :' + '{:.5f} '.format(Ligand_Now/ Unit) + UnitTxt + '\\n' \\" << endl;
     ofs << in+ in+ in+ in+ in+ " + 'dLigand @ RED : ' + ('+' if dLigand >= 0 else '') + '{:.5f}'.format(dLigand) + ' % \\n' \\" << endl;
-    ofs << in+ in+ in+ in+ in+ " + 'Am level of RED : ' + '{:.5f} '.format(Am / Unit / NA) + UnitTxt   # Get the last E coli's info " << endl;
+    ofs << in+ in+ in+ in+ in+ " + 'Am level of RED : ' + '{:.5f} '.format(Am / Unit) + UnitTxt   # Get the last E coli's info " << endl;
     ofs << endl;
     ofs << in+ in+ "TextLines = StatusText.splitlines()" << endl;
     ofs << in+ in+ "Height = Font_Monospace.get_linesize() + 2" << endl;
@@ -2912,31 +3005,59 @@ void FWriter::SimVis2D()
     ofs << endl;
     ofs << in+ "# TODO: Communicate to initialize in Sim" << endl;
 
-    //                                           L,             qL
-    std::vector<std::string> Color              {"Yellow",      "Blue",     "Green"     };
-    std::vector<int> MaxBrightness              {200,           170,        50          };
+    // Distribution settings (hardcoding)
+    //                                              L,              qL
+    std::vector<std::string>    Color               {"Yellow",      "Blue",     "Green"     };
+    std::vector<int>            MaxBrightness       {200,           170,        50          };
 
-    std::vector<std::string> Pattern            {"heatmap",     "heatmap",  "particles" };
-    std::vector<std::string> NormalizationType  {"linear",      "log",      "particles" };
-    std::vector<int> ReductionFactor            {5,             2,          1           };
+    std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
+    std::vector<std::string>    NormalizationType   {"linear",      "log",      "particles" };
+    std::vector<int>            ReductionFactor     {5,             2,          1           };
 
-    int i = 0;
+    std::vector<std::string>    MaxStatic;
+    std::vector<std::string>    ContourLine;
+
+//    if (Option.bDebug)
+//    {
+                                Color =             {"Green",       "Blue",     "Green"     };
+//                                MaxStatic =         {"True",        "False",    "particles" };
+//                                ContourLine =       {"True",        "False",    "False" };
+//    }
 
     // Instantiate Molecules for Distribution
     // auto MolLoc = Context.GetSubList_LocationList("Molecule");
-    for (auto Mol : MolLoc) {
-        ofs << in+ Mol->Name << " = FMolecule('" << Mol->Name << "', ";
-        ofs << Mol->Coord[0] << ", " << Mol->Coord[1] << ")" << endl;
-        ofs << in+ Mol->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
-        ofs << in+ Mol->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ",)" << endl;
+    for (int i = 0; i < MolLoc.size(); i++) {
+        // instantiate
+        ofs << in+ MolLoc[i]->Name << " = FMolecule('" << MolLoc[i]->Name << "', ";
+        ofs << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ")" << endl;
+
+        // set color
+        ofs << in+ MolLoc[i]->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
+
+        // set pattern
+        ofs << in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i];
+        if (!MaxStatic.empty())     { ofs << ", maxstatic=" << MaxStatic[i]; }
+        if (!ContourLine.empty())   { ofs << ", contourline=" << ContourLine[i]; }
+        ofs << ",)" << endl;
+
         ofs << endl;
-        i++;
     }
+
+    // Distribution settings (hardcoding)
+    std::vector<std::string>    Radar;
+
+//    if (Option.bDebug)
+//    {
+                                Radar =       {"True",};
+//    }
 
     // Instantiate Organisms
     auto OrgNames = Context.GetUniqueNames_LocationList("Organism");
-    for (auto OrganismName : OrgNames) {
-        ofs << in+ OrganismName << " = FOrganism('" << OrganismName << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
+    for (int i = 0; i < OrgNames.size(); i++) {
+        ofs << in+ OrgNames[i] << " = FOrganism('" << OrgNames[i] << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
+
+        // set radar
+        if (!Radar.empty())     { ofs << in+ OrgNames[i] << ".SetRadar(switch=" << Radar[i] << ")" << endl; }
         ofs << endl;
     }
 
@@ -3033,7 +3154,7 @@ void FWriter::SimVis2D()
     std::string MolName = MolLoc[0]->Name;
     std::string OrgName = OrgNames[0];
 
-    ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNameAndPos('" << MolName << "', '" << OrgName << "')" << endl;
+    ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos('" << MolName << "', '" << OrgName << "')" << endl;
 
     ofs << endl;
     ofs << in+ in+ "if Control.Time < 50:" << endl;
