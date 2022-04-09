@@ -10,6 +10,7 @@
     cd build
     cmake ../
     make
+    cd ..
 
 
 ## compile TCA.lpp (or any) and simulate

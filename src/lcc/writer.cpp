@@ -2594,7 +2594,7 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << "Font_Sans = pygame.font.Font('freesansbold.ttf', 20)" << endl;
     ofs << "Font_Monospace = pygame.font.SysFont('monospace', 18, True)" << endl;
-    ofs << "Font_Radar = pygame.font.SysFont('arial', 14)" << endl;
+    ofs << "Font_Radar = pygame.font.SysFont('arial', 11)" << endl;
     ofs << endl;
 
     ofs << "class FEnvironment:" << endl;

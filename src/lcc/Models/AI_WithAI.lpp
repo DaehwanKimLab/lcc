@@ -73,7 +73,7 @@ petridish P
   E(700, 400, 0) = 1;
   
   glucose L;
-  L(800, 600, 0) = 10 nmol;
+  L(800, 600, 0) = 9 nmol;
 
   Autoinducer qL;
   qL(0, 0, 0) = 0;
