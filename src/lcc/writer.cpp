@@ -719,7 +719,6 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
         for (int j = i; j < (Count); j++) {
             ofs << "0.0, ";
         }
-//        ofs << Numbers::MultiplyByAvogadro(0.983405e-9) << ", ";
     }
     ofs << "]) " << endl;
     ofs << endl;
@@ -1245,11 +1244,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ "# Debugging" << endl;
     ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#"; }
+//    if (!Option.bDebug) { ofs << "#"; }
     ofs << "self.Debug_SetIdxMoleculesToTrack()" << endl;
     if (!Context.LocationList.empty()) {
         ofs << in+ in;
-        if (!Option.bDebug) { ofs << "#"; }
+//        if (!Option.bDebug) { ofs << "#"; }
         ofs << "self.Debug_SetIdxDistAndPosToTrack()" << endl;
     }
     ofs << in+ in;
@@ -1262,6 +1261,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "if MoleculeNameList:" << endl;
     ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.array([self.GetMolIdx(Name)[0] for Name in MoleculeNameList])" << endl;
     ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.array(range(len(MoleculeNameList)))" << endl;
+    ofs << in+ in+ in+ "self.State.Pos_Threshold = np.zeros([len(MoleculeNameList), self.State.Pos_X.size])" << endl;
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.array(range(self.State.Count_All.shape[1]))" << endl;
     ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.array(range(self.State.Count_All.shape[1]))" << endl;
@@ -1522,14 +1522,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
     ofs << endl;
 
-    ofs << in+ "def SetThreshold(self):" << endl;
-    ofs << in+ in+ "self.State.Pos_Threshold = self.GetNewThresholdValues()" << endl;
+    ofs << in+ "def SetThreshold(self, bSteadyState):" << endl;
+    ofs << in+ in+ "NewThreshold = self.GetNewThresholdValues()" << endl;
+    ofs << in+ in+ "self.State.Pos_Threshold = np.where(np.logical_and(self.State.Pos_Threshold == 0, bSteadyState), NewThreshold, self.State.Pos_Threshold)" << endl;
     ofs << endl;
 
     ofs << in+ "def PrintThreshold(self, MoleculeNames_Str):" << endl;
     ofs << in+ in+ "self.Debug_PrintSimStepTime(end='\\n')" << endl;
-    ofs << in+ in+ "print('Thresholds: ' + MoleculeNames_Str)" << endl;
-    ofs << in+ in+ "print(self.State.Pos_Threshold.transpose())" << endl;
+    ofs << in+ in+ "print('Thresholds: ' + MoleculeNames_Str + '(' + self.UnitTxt + ')')" << endl;
+    ofs << in+ in+ "print(self.Debug_ApplyUnit(self.State.Pos_Threshold.transpose()))" << endl;
     ofs << endl;
 
     ofs << in+ "def UpdateThreshold(self):" << endl;
@@ -1558,21 +1559,25 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been achieved!')" << endl;
     ofs << in+ in+ in+ "self.SpecialRedistribution()" << endl;
     ofs << in+ in+ in+ "if MoleculeNames:" << endl;
-    ofs << in+ in+ in+ in+ "self.SetThreshold()" << endl;
+    ofs << in+ in+ in+ in+ "self.SetThreshold(True)" << endl;
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "print('[Homeostasis] Running simulation to achieve steady state...')" << endl;
 
     ofs << in+ in+ in+ "while (bNotHomeostasis):" << endl;
     ofs << in+ in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
     ofs << in+ in+ in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
-    ofs << in+ in+ in+ in+ "if np.all(Count_Now > 0) and np.all(abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << "):" << endl;
+    ofs << in+ in+ in+ in+ "bSteadyState = abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << endl;
+    ofs << in+ in+ in+ in+ "if MoleculeNames:" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.SetThreshold(bSteadyState)" << endl;
+    ofs << in+ in+ in+ in+ "if np.all(Count_Now > 0) and np.all(bSteadyState):" << endl;
+    ofs << in+ in+ in+ in+ in+ "if MoleculeNames:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "self.PrintThreshold(MoleculeNames_Str)" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "print('Current: ')" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
     ofs << in+ in+ in+ in+ in+ "bNotHomeostasis = False" << endl;
     ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been achieved.')" << endl;
     ofs << in+ in+ in+ in+ in+ "self.SaveState(FileName_Homeostasis)" << endl;
     ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been saved: %s' % FileName_Homeostasis)" << endl;
-    ofs << in+ in+ in+ in+ in+ "if MoleculeNames:" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "self.SetThreshold()" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "self.PrintThreshold(MoleculeNames_Str)" << endl;
     ofs << in+ in+ in+ in+ in+ "self.SpecialRedistribution()" << endl;
     ofs << in+ in+ in+ in+ "else:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.Count_Prev = Count_Now" << endl;
@@ -2308,9 +2313,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def Debug_SetIdxMoleculesToTrack(self):" << endl;
     ofs << in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
-    ofs << in+ in+ "#Debug_Names_Molecules = []" << endl; // TODO: take input from command line
-    ofs << in+ in+ "Debug_Names_Molecules = ['Am', 'AmL', 'L']" << endl; // TODO: take input from command line
-    ofs << in+ in+ "#Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl; // TODO: take input from command line
+    ofs << in+ in+ "Debug_Names_Molecules = []" << endl; // TODO: take input from command line
+    if (MolLoc.size() == 1) {
+        ofs << in+ in   + "Debug_Names_Molecules = ['Am']" << endl;
+    } else if (MolLoc.size() == 2) {
+        ofs << in+ in+ "Debug_Names_Molecules = ['Am', 'qAm']" << endl;
+    }
+    ofs << in+ in+ "#Debug_Names_Molecules = ['Am', 'AmL', 'L']" << endl;
+    ofs << in+ in+ "#Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl;
     ofs << endl;
     ofs << in+ in+ "if Debug_Names_Molecules == []:" << endl;
     ofs << in+ in+ in+ "Debug_Names_Molecules = self.State.GetMolNames()" << endl;
@@ -2319,9 +2329,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ "self.Debug_Idx_Molecules.append(self.State.GetMolNames().index(Name))" << endl;
     ofs << endl;
 
-    ofs << in+ "def Debug_PrintCounts(self, Switch, Idx_Pos=0):" << endl;
+    ofs << in+ "def Debug_PrintCounts(self, Switch):" << endl;
     ofs << in+ in+ "for Idx_Pos in self.Debug_Idx_Pos:" << endl;
-    ofs << in+ in+ in+ "self.Debug_PrintCountsForSinglePosition(DisplayCount, Idx_Pos)" << endl;
+    ofs << in+ in+ in+ "self.Debug_PrintCountsForSinglePosition(Switch, Idx_Pos)" << endl;
     ofs << endl;
 
     ofs << in+ "def Debug_PrintCountsForSinglePosition(self, Switch, Idx_Pos=0):" << endl;
@@ -2737,8 +2747,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "Text = self.FormatValueToStr(Current[i])" << endl;
     ofs << in+ in+ in+ "self.DisplayString(Text, X_Mols[i], Y_Current, color=self.Radar_MolColor[i])" << endl;
     // chemotaxis result
-    ofs << in+ in+ in+ "Text = 'Run' if bChemotaxis[i] else 'TUMBLE'" << endl; // here
-    ofs << in+ in+ in+ "Color = RED if bChemotaxis[i] else BLACK" << endl; // here
+    ofs << in+ in+ in+ "Text = 'RUN' if bChemotaxis[i] else 'TUMBLE'" << endl;
+    ofs << in+ in+ in+ "Color = RED if bChemotaxis[i] else BLACK" << endl;
     ofs << in+ in+ in+ "self.DisplayString(Text, X_Mols[i], Y_Chemotaxis, color=Color)" << endl;
 
     ofs << endl;
