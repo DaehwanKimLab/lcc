@@ -1526,6 +1526,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.State.Pos_Threshold = self.GetNewThresholdValues()" << endl;
     ofs << endl;
 
+    ofs << in+ "def PrintThreshold(self, MoleculeNames_Str):" << endl;
+    ofs << in+ in+ "self.Debug_PrintSimStepTime(end='\\n')" << endl;
+    ofs << in+ in+ "print('Thresholds: ' + MoleculeNames_Str)" << endl;
+    ofs << in+ in+ "print(self.State.Pos_Threshold.transpose())" << endl;
+    ofs << endl;
+
     ofs << in+ "def UpdateThreshold(self):" << endl;
     float HomeostasisFactor = 1e-7;
     ofs << in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
@@ -1566,11 +1572,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been saved: %s' % FileName_Homeostasis)" << endl;
     ofs << in+ in+ in+ in+ in+ "if MoleculeNames:" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "self.SetThreshold()" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "self.PrintThreshold(MoleculeNames_Str)" << endl;
     ofs << in+ in+ in+ in+ in+ "self.SpecialRedistribution()" << endl;
-//    ofs << in+ in+ in+ in+ "print('[Homeostasis] achieved  : " << name << " @', self.Debug_ApplyUnit(Current), self.UnitTxt)" << endl;
-//    ofs << in+ in+ in+ in+ "print('[Homeostasis] threshold : " << name << " @', self.Debug_ApplyUnit(Threshold), self.UnitTxt)" << endl;
-    //ofs << in+ in+ in+ in+ "print('Homeostasis achieved for      : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << ")), self.UnitTxt)" << endl;
-    //ofs << in+ in+ in+ in+ "print('Homeostasis threshold set for : " << name << " @ {:.010f}'.format(self.Debug_ApplyUnit(" << Now << " * " << Utils::SciFloat2Str(ThresholdFactor) << ")), self.UnitTxt)" << endl;
     ofs << in+ in+ in+ in+ "else:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.Count_Prev = Count_Now" << endl;
     ofs << endl;
@@ -2331,9 +2334,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ in+ "print()" << endl;
     ofs << endl;
 
-    ofs << in+ "def Debug_PrintSimStepTime(self):" << endl;
+    ofs << in+ "def Debug_PrintSimStepTime(self, end='\\t| '):" << endl;
     ofs << in+ in+ "Time = self.GetSimTime()" << endl;
-    ofs << in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end='\t| ')" << endl;
+    ofs << in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end=end)" << endl;
     ofs << endl;
 
     ofs << in+ "def Debug_PrintCount(self, Idx_Mol, Idx_Pos=0):" << endl;
@@ -2721,7 +2724,7 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << in+ in+ "# Hardcoded for one and two threshold cases" << endl;
     ofs << in+ in+ "# Categories" << endl;
-    ofs << in+ in+ "self.DisplayString('Thresholds:', X_Category, Y_Threshold, position='midright', color=BLACK)" << endl;
+    ofs << in+ in+ "self.DisplayString('Threshold:', X_Category, Y_Threshold, position='midright', color=BLACK)" << endl;
     ofs << in+ in+ "self.DisplayString('Current:', X_Category, Y_Current, position='midright', color=BLACK)" << endl;
     ofs << in+ in+ "for i in range(len(HomeostasisMolName)):" << endl;
     // name
@@ -2998,7 +3001,7 @@ void FWriter::SimVis2D() {
     ofs << "class FControl:" << endl;
     ofs << in+ "def __init__(self):" << endl;
     ofs << in+ in+ "# self.FPS = 30" << endl;
-    ofs << in+ in+ "self.MovementResolution = 30" << endl;
+    ofs << in+ in+ "self.MovementResolution = 2" << endl;
     ofs << in+ in+ "self.MessageWelcome = 'Welcome to Bacterial Chemotaxis!'" << endl;
     ofs << in+ in+ "self.Pos_Welcome = GetMidPoint(Center, CenterTop)" << endl;
     ofs << in+ in+ "self.Message = ''" << endl;
@@ -3008,7 +3011,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Instructions = {" << endl;
     ofs << in+ in+ in+ "'T' : 'Display Trajectory Switch'," << endl;
     ofs << in+ in+ in+ "'I' : 'Display Instruction Switch'," << endl;
-    ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
+//    ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
     ofs << in+ in+ in+ "'A' : 'Display Status Switch'," << endl;
     ofs << in+ in+ in+ "'R' : 'Display Radar Switch'," << endl;
     ofs << in+ in+ in+ "'H' : 'Display Homeostasis Switch'," << endl;
@@ -3020,11 +3023,10 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.MoleculeGradientText = ''" << endl;
     ofs << in+ in+ "self.MoleculeGradientColor = list()" << endl;
     ofs << endl;
-    ofs << in+ in+ "self.Score = 0" << endl;
-    ofs << in+ in+ "self.ScoreSwitch = False" << endl;
-    ofs << endl;
+//    ofs << in+ in+ "self.Score = 0" << endl;
+//    ofs << in+ in+ "self.ScoreSwitch = False" << endl;
+//    ofs << endl;
     ofs << in+ in+ "self.Time = 0" << endl;
-    ofs << in+ in+ "self.ScoreSwitch = False" << endl;
     ofs << endl;
     ofs << in+ in+ "# DK - debugging purposes" << endl;
     ofs << in+ in+ "self.StatusSwitch = True" << endl;
@@ -3069,12 +3071,12 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "assert Key in self.Instructions" << endl;
     ofs << in+ in+ "return 'Input [' + Key + '] : ' + self.Instructions[Key] + '   '" << endl;
     ofs << endl;
-    ofs << in+ "def DisplayScore(self):" << endl;
-    ofs << in+ in+ "Text = Font_Sans.render('Score: ' + str(round(self.Score)), True, RED)" << endl;
-    ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
-    ofs << in+ in+ "Text_Rect.midtop = tuple(map(lambda i, j: i + j, Screen.get_rect().midtop, (0, Text.get_height())))" << endl;
-    ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
-    ofs << endl;
+//    ofs << in+ "def DisplayScore(self):" << endl;
+//    ofs << in+ in+ "Text = Font_Sans.render('Score: ' + str(round(self.Score)), True, RED)" << endl;
+//    ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
+//    ofs << in+ in+ "Text_Rect.midtop = tuple(map(lambda i, j: i + j, Screen.get_rect().midtop, (0, Text.get_height())))" << endl;
+//    ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
+//    ofs << endl;
     ofs << in+ "def DisplayTime(self):" << endl;
     ofs << in+ in+ "Text = Font_Sans.render('Simulation Time: ' + str(round(self.Time)), True, BLACK)" << endl;
     ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
@@ -3215,9 +3217,9 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_i:" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.InstructionSwitch = not Control.InstructionSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('I')" << endl;
-    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_s:" << endl;
-    ofs << in+ in+ in+ in+ in+ "Control.ScoreSwitch = not Control.ScoreSwitch" << endl;
-    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('S')" << endl;
+//    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_s:" << endl;
+//    ofs << in+ in+ in+ in+ in+ "Control.ScoreSwitch = not Control.ScoreSwitch" << endl;
+//    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('S')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_a:" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.StatusSwitch = not Control.StatusSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('A')" << endl;
@@ -3294,9 +3296,9 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "Control.DisplayInput()" << endl;
     ofs << in+ in+ "if Control.InstructionSwitch:" << endl;
     ofs << in+ in+ in+ "Control.DisplayInstructions()" << endl;
-    ofs << in+ in+ "if Control.ScoreSwitch:" << endl;
-    ofs << in+ in+ in+ "Control.Score += " << MolName << "_Now / 10" << endl;
-    ofs << in+ in+ in+ "Control.DisplayScore()" << endl;
+//    ofs << in+ in+ "if Control.ScoreSwitch:" << endl;
+//    ofs << in+ in+ in+ "Control.Score += " << MolName << "_Now / 10" << endl;
+//    ofs << in+ in+ in+ "Control.DisplayScore()" << endl;
     ofs << endl;
     ofs << in+ in+ "if Control.StatusSwitch:" << endl;
     ofs << in+ in+ in+ "Control.DisplayStatus(" << MolName << "_Now, " << OrgName << ".Ligand_Prev, " << OrgName << ".Am)" << endl;
