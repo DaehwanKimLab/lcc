@@ -2692,7 +2692,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "dY = 0" << endl;
     ofs << in+ in+ in+ "if len(self.Radar_MolList) > 1:" << endl;
     ofs << in+ in+ in+ in+ "dY = 16 * i - 8   # Hardcoded pattern for two molecules" << endl;
-    ofs << in+ in+ in+ "self.DisplayRadarText(self.Radar_MolList[i], X, Y + dY, unit=True, color=self.Radar_MolColor[i])" << endl;
+    ofs << in+ in+ in+ "self.DisplayRadarText(self.Radar_MolList[i], X, Y + dY, color=self.Radar_MolColor[i])" << endl;
     ofs << in+ in+ in+ "for j in range(self.Radar_Sampling):" << endl;
     ofs << in+ in+ in+ in+ "Spacing = self.Radar_Spacing * (j + 1)" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.circle(Screen, Color, (X, Y), Spacing, 1)" << endl;
