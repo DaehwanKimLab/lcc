@@ -1253,7 +1253,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << "self.Debug_SetIdxDistAndPosToTrack()" << endl;
     }
     ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#"; }
+//    if (!Option.bDebug) { ofs << "#"; }
     ofs << "self.Debug_SetUnit(Unit)" << endl;
     ofs << endl;
 
@@ -3010,6 +3010,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "'I' : 'Display Instruction Switch'," << endl;
     ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
     ofs << in+ in+ in+ "'A' : 'Display Status Switch'," << endl;
+    ofs << in+ in+ in+ "'R' : 'Display Radar Switch'," << endl;
+    ofs << in+ in+ in+ "'H' : 'Display Homeostasis Switch'," << endl;
     ofs << in+ in+ in+ "'P' : 'Pause Visualization'," << endl;
     ofs << in+ in+ "}" << endl;
     ofs << in+ in+ "self.InstructionText = ''" << endl;
@@ -3219,6 +3221,16 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_a:" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.StatusSwitch = not Control.StatusSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('A')" << endl;
+    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_r:" << endl;
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ in+ in+ in+ in+ OrganismName << ".Radar_Switch = not " << OrganismName << ".Radar_Switch" << endl;
+    }
+    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('R')" << endl;
+    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_h:" << endl;
+    for (auto OrganismName : OrgNames) {
+        ofs << in+ in+ in+ in+ in+ OrganismName << ".HomeostasisMolecule_Switch = not " << OrganismName << ".HomeostasisMolecule_Switch" << endl;
+    }
+    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('H')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_p:" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.PauseSwitch = not Control.PauseSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('P')" << endl;
