@@ -1253,7 +1253,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << "self.Debug_SetIdxDistAndPosToTrack()" << endl;
     }
     ofs << in+ in;
-    if (!Option.bDebug) { ofs << "#"; }
+//    if (!Option.bDebug) { ofs << "#"; }
     ofs << "self.Debug_SetUnit(Unit)" << endl;
     ofs << endl;
 
