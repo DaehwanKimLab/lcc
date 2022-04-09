@@ -1244,9 +1244,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ in+ "# Debugging" << endl;
-    ofs << in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
-    ofs << in+ in+ "self.Debug_SetIdxDistAndPosToTrack()" << endl;
-    ofs << in+ in+ "self.Debug_SetUnit(Unit)" << endl;
+    ofs << in+ in;
+    if (!Option.bDebug) { ofs << "#"; }
+    ofs << "self.Debug_SetIdxMoleculesToTrack()" << endl;
+    ofs << in+ in;
+    if (!Context.LocationList.empty()) {
+        if (!Option.bDebug) { ofs << "#"; }
+        ofs << "self.Debug_SetIdxDistAndPosToTrack()" << endl;
+    }
+    ofs << in+ in;
+    if (!Option.bDebug) { ofs << "#"; }
+    ofs << "self.Debug_SetUnit(Unit)" << endl;
     ofs << endl;
 
     // homeostasis--threshold index setting
