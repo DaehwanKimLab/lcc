@@ -260,7 +260,7 @@ protein_sequence_stmt : T_SEQUENCE ident T_LPAREN protein_sequence_decl_args T_R
 protein_pdb_stmt : T_PDB T_STRING_LITERAL { $$ = new NPropertyStatement("PDB", new NConstantExpression(*$2)); delete $2; }
                  ;
 
-protein_threshold_stmt : T_THRESHOLD T_STRING_LITERAL { $$ = new NPropertyStatement("Threshold", new NConstantExpression(*$2)); delete $2; }
+protein_threshold_stmt : T_THRESHOLD p_expr { $$ = new NPropertyStatement("Threshold", $2); }
                        ;
 
 protein_cofactor_decl_args : ident_list { $$ = $1; }
@@ -508,6 +508,7 @@ p_const_expr   : T_NUMBER { $$ = new NConstantExpression(*$1); delete $1; }
                | T_NUMBER unit { $$ = new NConstantExpression(*$1, *$2); delete $1; delete $2; }
                | T_INTEGER { $$ = new NConstantExpression(*$1); delete $1; }
                | T_INTEGER unit { $$ = new NConstantExpression(*$1, *$2); delete $1; delete $2; }
+               | T_STRING_LITERAL { $$ = new NConstantExpression(*$1); delete $1; }
                ;
 
 p_expr         : /* */ { $$ = new NExpression(); }
