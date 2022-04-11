@@ -39,35 +39,43 @@ std::string GetRegType(std::string Type)
     return RegType;
 }
 
-void FWriter::Initialize_StandardReaction(ofstream& ofs, std::string Type)
+void FWriter::Initialize_StandardReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway)
 {
-    ofs << in+ in+ "# " << Type << endl;
+    std::string TypeText = Type + NameSpace_Pathway;
+
+    ofs << in+ in+ "# " << TypeText << endl;
 
     // Standard vs. MichaelisMenten
-    ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
-    ofs << in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Const_k_Reactant_" << TypeText << " = None" << endl;
+    ofs << in+ in+ "self.Const_k_Product_" << TypeText << " = None" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << TypeText << " = None" << endl;
     }
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Product_" << i << "_" << TypeText << " = None" << endl;
     }
     ofs << endl;
 
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ "self.Const_K_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Const_n_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_K_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Const_n_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << TypeText << " = None" << endl;
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
-    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << TypeText << " = None" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << TypeText << " = None" << endl;
     ofs << endl;
 }
 
-void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList)
+void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList, std::string NameSpace_Pathway)
 {
+    std::string TypeText = Type + NameSpace_Pathway;
+
+    if (NameSpace_Pathway != "") {
+        ReactionSubList = Context.FilterByPathway_ReactionList(ReactionSubList, NameSpace_Pathway);
+    }
+
     // Types allowed: "Standard_Unregulated", "Standard_Inhibition", "Standard_Activation"
     // TODO: Multiplexing for regulation
     std::string RegType = GetRegType(Type);
@@ -87,11 +95,16 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
     std::vector<int> Idx_Regulator; // reactant of the regulatory reaction
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(Type); // TODO: Add new type
-    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(Type); // TODO: Add new type
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(ReactionSubList);
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(ReactionSubList);
 
     // relevant reaction lists
     std::vector<const FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);
+
+    if (NameSpace_Pathway != "") {
+        RegulatoryReactionSubList = Context.FilterByPathway_ReactionList(RegulatoryReactionSubList, NameSpace_Pathway);
+    }
+
 
     for (auto Reaction : ReactionSubList) {
         const auto& reaction = dynamic_cast<const FStandardReaction *>(Reaction);
@@ -153,68 +166,76 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
         }
     }
 
-    ofs << in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "# " << TypeText << endl;
 
-    ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
-    ofs << in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+    ofs << in+ in+ "self.Const_k_Reactant_" << TypeText << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
+    ofs << in+ in+ "self.Const_k_Product_" << TypeText << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
     }
     for (int i = 0; i < N_MoleculesAllowed; i++) {
-        ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Product_" << i << "_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
-        ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
-        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+        ofs << in+ in+ "self.Const_K_" << TypeText << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
+        ofs << in+ in+ "self.Const_n_" << TypeText << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
-    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << TypeText << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << TypeText << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
     ofs << endl;
 }
 
-void FWriter::Initialize_EnzymeReaction(ofstream& ofs, std::string Type)
+void FWriter::Initialize_EnzymeReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway)
 {
-    ofs << in+ in+ "# " << Type << endl;
+    std::string TypeText = Type + NameSpace_Pathway;
 
-    ofs << in+ in+ "self.Idx_Enz_" << Type << " = None" << endl;
+    ofs << in+ in+ "# " << TypeText << endl;
+
+    ofs << in+ in+ "self.Idx_Enz_" << TypeText << " = None" << endl;
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
-        ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Const_k_Product_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_k_Reactant_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Const_k_Product_" << TypeText << " = None" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = None" << endl;
+            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << TypeText << " = None" << endl;
         }
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = None" << endl;
+            ofs << in+ in+ "self.Idx_Product_" << i << "_" << TypeText << " = None" << endl;
         }
 
     } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
-        ofs << in+ in+ "self.Const_kcat_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Const_KM_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Idx_EnzSub_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_kcat_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Const_KM_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Idx_EnzSub_" << TypeText << " = None" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
     if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ "self.Const_K_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Const_n_" << Type << " = None" << endl;
-        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = None" << endl;
+        ofs << in+ in+ "self.Const_K_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Const_n_" << TypeText << " = None" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << TypeText << " = None" << endl;
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = None" << endl;
-    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << TypeText << " = None" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << TypeText << " = None" << endl;
     ofs << endl;
 }
 
-void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList) // to be changed with reaction list
+void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList, std::string NameSpace_Pathway) // to be changed with reaction list
 {
+    std::string TypeText = Type + NameSpace_Pathway;
+
+    if (NameSpace_Pathway != "") {
+        ReactionSubList = Context.FilterByPathway_ReactionList(ReactionSubList, NameSpace_Pathway);
+    }
+
     // TODO: Multiplexing for regulation
     std::string RegType = GetRegType(Type);
 
@@ -239,20 +260,24 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     std::vector<int> Idx_Regulator;
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(Type);
-    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(Type);
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(ReactionSubList);
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(ReactionSubList);
 
     // relevant reaction lists
     std::vector<const FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);
 
+    if (NameSpace_Pathway != "") {
+        RegulatoryReactionSubList = Context.FilterByPathway_ReactionList(RegulatoryReactionSubList, NameSpace_Pathway);
+    }
+
     for (auto& Reaction : ReactionSubList) {
-        const auto& reaction = dynamic_cast<const FEnzymaticReaction *>(Reaction);
-        const auto& enzyme = Context.GetEnzyme_EnzymeList(reaction->Enzyme);
+        const auto& EnzReaction = dynamic_cast<const FEnzymaticReaction *>(Reaction);
+        const auto& enzyme = Context.GetEnzyme_EnzymeList(EnzReaction->Enzyme);
 
         Idx_Enz.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
 
         // Enz_Standard
-        if ((reaction->Type >= 10) & (reaction->Type < 20)) {
+        if ((EnzReaction->Type >= 10) & (EnzReaction->Type < 20)) {
             const auto& reaction = dynamic_cast<const FEnz_StandardReaction *>(Reaction);
 
             k.push_back(reaction->k);
@@ -284,7 +309,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
             }
 
             // Enz_Michaelis Menten
-        } else if ((reaction->Type >= 20) & (reaction->Type < 30)) {
+        } else if ((EnzReaction->Type >= 20) & (EnzReaction->Type < 30)) {
             bool bSuccess = false;
             for (auto& kinetics : enzyme->Kinetics) {
                 // get substrate, kcat, KM when enzyme's substrate is found as a reactant of the reaction
@@ -313,7 +338,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
                     if (stoich.second < 0) { reactant_reg = stoich.first; }
                     else if (stoich.second > 0) { product_reg = stoich.first; }
                     // import only if the product of the regulatory reaction targets the current standard reaction
-                    if (stoich.first == reaction->Name) {
+                    if (stoich.first == EnzReaction->Name) {
                         Import = true;
                     }
                 }
@@ -330,36 +355,36 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     // Check Idx lengths
     Utils::Assertion((Idx_Reactants.size() == Idx_Products.size()), "# of parsed reactants and products do not match");
 
-    ofs << in+ in+ "# " << Type << endl;
-    ofs << in+ in+ "self.Idx_Enz_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
+    ofs << in+ in+ "# " << TypeText << endl;
+    ofs << in+ in+ "self.Idx_Enz_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Enz) << "])" << endl;
 
     // Standard vs. MichaelisMenten
     if (Type.find("Enz_Standard") != string::npos) {
-        ofs << in+ in+ "self.Const_k_Reactant_" << Type << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
-        ofs << in+ in+ "self.Const_k_Product_" << Type << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
+        ofs << in+ in+ "self.Const_k_Reactant_" << TypeText << " = np.array([" << JoinFloat2Str(k) << "])" << endl;
+        ofs << in+ in+ "self.Const_k_Product_" << TypeText << " = np.array([" << JoinFloat2Str(krev) << "])" << endl;
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
+            ofs << in+ in+ "self.Idx_Reactant_" << i << "_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Reactants[i]) << "])" << endl;
         }
         for (int i = 0; i < N_MoleculesAllowed; i++) {
-            ofs << in+ in+ "self.Idx_Product_" << i << "_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
+            ofs << in+ in+ "self.Idx_Product_" << i << "_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Products[i]) << "])" << endl;
         }
 
     } else if (Type.find("Enz_MichaelisMenten") != string::npos) {
-        ofs << in+ in+ "self.Const_kcat_" << Type << " = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
-        ofs << in+ in+ "self.Const_KM_" << Type << " = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
-        ofs << in+ in+ "self.Idx_EnzSub_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
+        ofs << in+ in+ "self.Const_kcat_" << TypeText << " = np.array([" << JoinFloat2Str(kcats) << "])" << endl;
+        ofs << in+ in+ "self.Const_KM_" << TypeText << " = np.array([" << JoinFloat2Str(KMs) << "])" << endl;
+        ofs << in+ in+ "self.Idx_EnzSub_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_EnzSub) << "])" << endl;
     }
 
     // Inhibition vs. Activation (improve with number of accepted regulators implemented)
-    if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-        ofs << in+ in+ "self.Const_K_" << Type << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
-        ofs << in+ in+ "self.Const_n_" << Type << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
-        ofs << in+ in+ "self.Idx_Regulator_" << Type << " = np.array([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
+    if ((Type.find("Inhibition") != string::npos) || (TypeText.find("Activation") != string::npos)) {
+        ofs << in+ in+ "self.Const_K_" << TypeText << " = np.array([" << JoinFloat2Str(K) << "])" << endl;
+        ofs << in+ in+ "self.Const_n_" << TypeText << " = np.array([" << JoinFloat2Str(n) << "])" << endl;
+        ofs << in+ in+ "self.Idx_Regulator_" << TypeText << " = np.array([" << JoinInt2Str_Idx(Idx_Regulator) << "])" << endl;
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << Type << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
-    ofs << in+ in+ "self.Const_StoichMatrix_" << Type << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Idx_Mol_InStoichMatrix_" << TypeText << " = np.asmatrix([" << JoinInt2Str_Idx(Idx_Mol_InStoichMatrix) << "])" << endl;
+    ofs << in+ in+ "self.Const_StoichMatrix_" << TypeText << " = np.asmatrix([" << Matrix2Str(StoichMatrix) << "])" << endl;
     ofs << endl;
 }
 
@@ -549,8 +574,8 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
 //    std::vector<int> Idx_Regulator;
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(Type);
-    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(Type);
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(ReactionSubList);
+    std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(ReactionSubList);
 
 //    // relevant reaction lists
 //    std::vector<const FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);

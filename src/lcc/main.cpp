@@ -53,6 +53,10 @@ int Int_Init = Numbers::GetIntDefault(); // random initialized int
 int Sim_Steps = 1000;
 int Sim_Resolution = 100;
 
+// temporary namespace-like info for molecules at the pathway level
+// implemented to be used to find threshold within a pathway
+std::string NameSpace_Pathway;
+
 const char *VersionString = "1.0.0";
 
 void DumpNBlock(const NBlock* InProgramBlock) 
@@ -200,11 +204,13 @@ void AddReaction(std::string ReactionName, const NReaction* Reaction)
     // add new reaction to the system
     if (Type == 0) {
         FStandardReaction *NewReaction = new FStandardReaction(ReactionName, Stoichiometry, k1, k2);
+                    NewReaction->AddPathway(NameSpace_Pathway);
         if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
 
     } else if (Type == 1) {
         FRegulatoryReaction *NewReaction = new FRegulatoryReaction(ReactionName, Stoichiometry, K, n, Effect, Mode);
+                    NewReaction->AddPathway(NameSpace_Pathway);
         if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
     }
@@ -241,11 +247,13 @@ void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::st
     // add new enzymatic reaction to the system
     if ((k >= 0) & (krev >= 0)) {
         FEnz_StandardReaction *NewReaction = new FEnz_StandardReaction(ReactionName, Stoichiometry, EnzymeName, k, krev);
+                    NewReaction->AddPathway(NameSpace_Pathway);
         if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
 
     } else {
         FEnzymaticReaction *NewReaction = new FEnzymaticReaction(ReactionName, Stoichiometry, EnzymeName);
+                    NewReaction->AddPathway(NameSpace_Pathway);
         if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
     }
@@ -458,6 +466,8 @@ void TraversalNode_Core(NNode * node)
         auto& EnzymeName = N_Enzyme->Id.Name;
         auto& Reaction = N_Enzyme->OverallReaction;
         std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
+//        bool bThreshold;
+//        std::string ThresholdTestVariable;
 
         if (Reaction) {
 
@@ -518,8 +528,16 @@ void TraversalNode_Core(NNode * node)
                             Kinetics.push_back(SubConstPair);
                         }
                     }
-                i_reaction++;
+                    i_reaction++;
+//                } else if (Utils::is_class_of<NPropertyStatement, NNode>(node)) {
+//                    auto Property = dynamic_cast<const NPropertyStatement *>(node);
+//
+//                    if (Property->Key == "Threshold") {
+//                        bThreshold = true;
+//                        ThresholdTestVariable = Property->Value->Evaluate();
+//                    }
                 }
+
             } // closing for stmt loop
 
         } // closing if block
@@ -527,11 +545,13 @@ void TraversalNode_Core(NNode * node)
         // add new enzyme to the system
         if (Kinetics.empty()) {
             FEnzyme * NewEnzyme = new FEnzyme(EnzymeName);
+//                        if (bThreshold) { NewEnzyme->SetThresholdTestVariable(ThresholdTestVariable); }
             if (Option.bDebug) { NewEnzyme->Print(os); }
             Context.AddToMoleculeList(NewEnzyme);
         }
         else {
             FEnzyme * NewEnzyme = new FEnzyme(EnzymeName, Kinetics);
+//                        if (bThreshold) { NewEnzyme->SetThresholdTestVariable(ThresholdTestVariable); }
             if (Option.bDebug) { NewEnzyme->Print(os); }
             Context.AddToMoleculeList(NewEnzyme);
         }
@@ -541,6 +561,8 @@ void TraversalNode_Core(NNode * node)
         // os << "Pathway: " << N_Pathway->Id.Name << endl;
 
         string Name = N_Pathway->Id.Name;
+                    NameSpace_Pathway = Name;
+                    os << NameSpace_Pathway;
         vector<string> Sequence;
 
         if (N_Pathway->PathwayChainReaction) {
@@ -788,6 +810,7 @@ void TraversalNode_Core(NNode * node)
         }
         os << "]" << endl;
         FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+                    NewReaction->AddPathway(NameSpace_Pathway);
         if (Option.bDebug) { NewReaction->Print(os); }
         Context.AddToReactionList(NewReaction);
 
@@ -1037,10 +1060,12 @@ void TraversalNode_Core(NNode * node)
 
             // add Transporter object
             FTransporterReaction * NewReaction = new FTransporterReaction(Name_Reaction, Stoichiometry, Name_Transporter);
+                        NewReaction->AddPathway(NameSpace_Pathway);
             if (Option.bDebug) { NewReaction->Print(os); }
             Context.AddToReactionList(NewReaction);
 
             FTransporter * NewTransporter = new FTransporter(Name_Transporter, ki, ko);
+                        NewReaction->AddPathway(NameSpace_Pathway);
             if (Option.bDebug) { NewTransporter->Print(os); }
             Context.AddToMoleculeList(NewTransporter);
         }

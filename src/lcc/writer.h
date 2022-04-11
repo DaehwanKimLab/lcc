@@ -35,12 +35,12 @@ public:
     void SetUpDefaultVariables(int InN_MoleculesAllowed, std::string InName_Pseudo, float InFloat_Default, int InInt_Default);
 
     // StandardReaction
-    void Initialize_StandardReaction(ofstream& ofs, std::string Type);
-    void SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
+    void Initialize_StandardReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway="");
+    void SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
 
     // EnzymeReaction
-    void Initialize_EnzymeReaction(ofstream& ofs, std::string Type);
-    void SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
+    void Initialize_EnzymeReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway="");
+    void SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
 
     // Polymerase
     void Initialize_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase);

@@ -228,6 +228,10 @@ public:
     std::string Name;
     std::string Id;
 
+    // temporary threshold properties
+    bool bThreshold = false;
+    std::string ThresholdTestVariable;
+
     FMolecule() {}
     virtual ~FMolecule() {}
 
@@ -246,6 +250,12 @@ public:
         os << "[Molecule] Id: " << Id << std::endl;
         os << std::endl;
     }
+
+//    void SetThresholdTestVariable(std::string InThresholdTestVariable) {
+//        bThreshold = true;
+//        ThresholdTestVariable = InThresholdTestVariable;
+//        std::cout << Name << " : Threshold tests with a concentration range of " << ThresholdTestVariable << std::endl;
+//    }
 
 };
 
@@ -477,6 +487,9 @@ public:
 
     int Type = -1; // default
 
+    // temporary pathway namespace
+    std::string Pathway;
+
     virtual ~FReaction() {}
 
     FReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry)
@@ -513,6 +526,12 @@ public:
             os << "[" << Stoich.first << ", " << Stoich.second << "], ";
         }
     }
+
+    void AddPathway(std::string InPathway) {
+        Pathway = InPathway;
+        std::cout << Name << " in " << Pathway << std::endl;
+    }
+
 };
 
 class FStandardReaction : public FReaction {
@@ -709,9 +728,9 @@ public:
 
     // Stoichiometry Matrix-related
     std::vector<int> AddUniqueSubstrateIdxToIdxList(const FReaction *, std::vector<int>);
-    std::vector<int> GetIdxForStoichiometryMatrix(std::string);
+    std::vector<int> GetIdxForStoichiometryMatrix(std::vector<const FReaction *> ReactionList);
     std::vector<int> GetCoefficientArray(const FReaction *, std::vector<int>);
-    std::vector<std::vector<int>> GetStoichiometryMatrix(std::string);
+    std::vector<std::vector<int>> GetStoichiometryMatrix(std::vector<const FReaction *> ReactionList);
     std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *>);
 
     // LocationList
@@ -735,6 +754,7 @@ public:
     int GetIdxByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
     // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
+    std::vector<const FMolecule *> GetSubList_MoleculeList(std::string Type);
 
     // useful?
     std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
@@ -742,10 +762,6 @@ public:
     std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
     bool CheckDuplicates_List(std::string ListType, std::string Name);
 
-    std::vector<const FGene *> GetList_Gene_MoleculeList();
-    std::vector<const FRNA *> GetList_RNA_MoleculeList();
-    std::vector<const FProtein *> GetList_Protein_MoleculeList();
-    std::vector<const FEnzyme *> GetList_Enzyme_MoleculeList();
     std::vector<const FPolymerase *> GetList_Polymerase_MoleculeList();
     std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
 
@@ -755,14 +771,13 @@ public:
 
     // ReactionList
     std::vector<std::string> GetNames_ReactionList(std::string Type);
-    std::vector<const FReaction *> GetSubList_ReactionList(std::string Type); // useful for stoichiometry
+    std::vector<const FReaction *> GetSubList_ReactionList(std::string Type, std::string NameSpace_Pathway=""); // useful for stoichiometry
     std::vector<const FStandardReaction *> GetList_Standard_ReactionList(std::string Type);
     std::vector<const FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
     std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
 
     // TODO: Update polymerase reaction writing system
     std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
-    
 
     std::vector<int> GetIdxOfStrListFromStrList(std::vector<std::string> InputList, std::vector<std::string> RefList);
 //    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
@@ -770,6 +785,10 @@ public:
     std::vector<float> GetFreqMatrixForChromosomes();
     std::vector<float> GetFreqMatrixForRNAs();
     std::vector<float> GetFreqMatrixForProteins();
+
+    // temporary namespace functions
+    std::vector<const FReaction *> FilterByPathway_ReactionList(std::vector<const FReaction *> ListOfReactions, std::string PathwayName);
+
 };
 
 
