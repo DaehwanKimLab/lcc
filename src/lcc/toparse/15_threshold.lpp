@@ -1,0 +1,8 @@
+transporter T1(A, ki=1, ko=10); // protein that facilitates transport across membrane
+
+
+protein Am
+{
+    reaction R(B --> BP, k=0.05e9, krev=0.005);
+    threshold L; // threshold control variable
+}

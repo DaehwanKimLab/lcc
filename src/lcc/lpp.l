@@ -60,6 +60,7 @@ digit                         [0-9]
 "PDB"                         { return TOKEN(T_PDB); }
 "step"                        { return TOKEN(T_STEP); }
 "sequence"                    { return TOKEN(T_SEQUENCE); } 
+"threshold"                   { return TOKEN(T_THRESHOLD); }
 "replication_origin"          { return TOKEN(T_REPLICATION_ORIGIN); }
 "replication_terminus"        { return TOKEN(T_REPLICATION_TERMINUS); }
 "ribosome_binding_site"       { return TOKEN(T_RIBOSOME_BINDING_SITE); }

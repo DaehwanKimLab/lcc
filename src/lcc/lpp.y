@@ -44,7 +44,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %token <Token> T_ORGANISM T_ECOLI
 %token <Token> T_DESCRIPTION T_REACTION_ID
 %token <Token> T_PROPERTY T_USING T_MODULE
-%token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE T_PDB
+%token <Token> T_COFACTOR T_DOMAIN T_STEP T_SEQUENCE T_PDB T_THRESHOLD
 %token <Token> T_POLYMERASE T_RIBOSOME
 %token <Token> T_REPLICATION_ORIGIN T_REPLICATION_TERMINUS T_RIBOSOME_BINDING_SITE T_TRANSLATION_TERMINATOR
 %token <Token> T_INITIATION T_ELONGATION T_TERMINATION
@@ -86,7 +86,7 @@ void yyerror(const char *s) { std::printf("Error(line %d): %s\n", yylineno, s); 
 %type <StmtVec> pathway_stmt
 %type <Stmt> protein_stmt process_stmt
 %type <Stmt> pathway_description_stmt pathway_reaction_id_stmt
-%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt protein_pdb_stmt protein_reaction_stmt
+%type <Stmt> protein_cofactor_stmt protein_domain_stmt protein_step_stmt protein_sequence_stmt protein_pdb_stmt protein_reaction_stmt protein_threshold_stmt
 %type <Stmt> process_step_stmt
 %type <IdentVec> ident_list protein_cofactor_decl_args protein_domain_decl_args gen_expr protein_sequence_decl_args
 %type <IdentVec> protein_complex_decl_args
@@ -242,6 +242,7 @@ protein_stmt   : protein_cofactor_stmt T_SEMIC { $$ = $1; }
                | protein_sequence_stmt T_SEMIC { $$ = $1; }
                | protein_pdb_stmt T_SEMIC { $$ = $1; }
                | protein_reaction_stmt T_SEMIC { $$ = $1; }
+               | protein_threshold_stmt T_SEMIC { $$ = $1; }
                ;
 
 protein_cofactor_stmt : T_COFACTOR ident T_LPAREN protein_cofactor_decl_args T_RPAREN { $$ = new NProteinCofactorStatement(*$2, *$4); delete $2; delete $4; }
@@ -258,6 +259,9 @@ protein_sequence_stmt : T_SEQUENCE ident T_LPAREN protein_sequence_decl_args T_R
 
 protein_pdb_stmt : T_PDB T_STRING_LITERAL { $$ = new NPropertyStatement("PDB", new NConstantExpression(*$2)); delete $2; }
                  ;
+
+protein_threshold_stmt : T_THRESHOLD T_STRING_LITERAL { $$ = new NPropertyStatement("Threshold", new NConstantExpression(*$2)); delete $2; }
+                       ;
 
 protein_cofactor_decl_args : ident_list { $$ = $1; }
                            ;
