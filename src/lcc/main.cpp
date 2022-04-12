@@ -466,8 +466,8 @@ void TraversalNode_Core(NNode * node)
         auto& EnzymeName = N_Enzyme->Id.Name;
         auto& Reaction = N_Enzyme->OverallReaction;
         std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
-//        bool bThreshold;
-//        std::string ThresholdTestVariable;
+
+        std::string ThresholdTestVariable;
 
         if (Reaction) {
 
@@ -529,13 +529,8 @@ void TraversalNode_Core(NNode * node)
                         }
                     }
                     i_reaction++;
-//                } else if (Utils::is_class_of<NPropertyStatement, NNode>(node)) {
-//                    auto Property = dynamic_cast<const NPropertyStatement *>(node);
-//
-//                    if (Property->Key == "Threshold") {
-//                        bThreshold = true;
-//                        ThresholdTestVariable = Property->Value->Evaluate();
-//                    }
+                } else {
+                    std::cout << "VISITING Unparsed statement in " << N_Enzyme->Id.Name << std::endl;
                 }
 
             } // closing for stmt loop
@@ -545,13 +540,11 @@ void TraversalNode_Core(NNode * node)
         // add new enzyme to the system
         if (Kinetics.empty()) {
             FEnzyme * NewEnzyme = new FEnzyme(EnzymeName);
-//                        if (bThreshold) { NewEnzyme->SetThresholdTestVariable(ThresholdTestVariable); }
             if (Option.bDebug) { NewEnzyme->Print(os); }
             Context.AddToMoleculeList(NewEnzyme);
         }
         else {
             FEnzyme * NewEnzyme = new FEnzyme(EnzymeName, Kinetics);
-//                        if (bThreshold) { NewEnzyme->SetThresholdTestVariable(ThresholdTestVariable); }
             if (Option.bDebug) { NewEnzyme->Print(os); }
             Context.AddToMoleculeList(NewEnzyme);
         }
@@ -1423,6 +1416,7 @@ int main(int argc, char *argv[])
         Writer.SetUpDefaultVariables(N_MoleculesAllowed, Name_Pseudo, Float_Init, Int_Init);
 
 //        WriteSimIdx();
+
         Writer.SimModule(Sim_Steps, Sim_Resolution);
         cout << Option.SimModuleFile << std::endl;
 
@@ -1431,6 +1425,11 @@ int main(int argc, char *argv[])
             cout << Option.SimVis2DFile << std::endl;
         }
 
+        if (!Context.ThresholdList.empty()) {
+            for (auto ThresholdMolecule : Context.ThresholdList) {
+                Writer.SimThreshold(ThresholdMolecule);
+            }
+        }
     }
 
 //    if (Option.bSimCpp) {

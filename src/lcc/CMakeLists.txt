@@ -31,6 +31,9 @@ set(SOURCEFILE
 	util.cpp
         number.cpp
 		writer.cpp
+		writer_SimModule.cpp
+		writer_SimVis2D.cpp
+		writer_SimThreshold.cpp
 		${BISON_LPPParser_OUTPUTS}
 	${FLEX_LPPScanner_OUTPUTS}
 )

@@ -108,7 +108,7 @@ public:
     FCompartment(const std::string InName, const std::string InShape)
         : Shape(InShape), FContainer(InName) {}
 
-    FCompartment(const std::string InName, const std::string InShape, const float InDimension)
+    FCompartment(const std::string InName, const std::string InShape, float InDimension)
         : Shape(InShape), Dimension{InDimension}, FContainer(InName) {}
 
     FCompartment(const std::string InName, const std::string InShape, const std::vector<float> InDimension)
@@ -228,10 +228,6 @@ public:
     std::string Name;
     std::string Id;
 
-    // temporary threshold properties
-    bool bThreshold = false;
-    std::string ThresholdTestVariable;
-
     FMolecule() {}
     virtual ~FMolecule() {}
 
@@ -250,12 +246,6 @@ public:
         os << "[Molecule] Id: " << Id << std::endl;
         os << std::endl;
     }
-
-//    void SetThresholdTestVariable(std::string InThresholdTestVariable) {
-//        bThreshold = true;
-//        ThresholdTestVariable = InThresholdTestVariable;
-//        std::cout << Name << " : Threshold tests with a concentration range of " << ThresholdTestVariable << std::endl;
-//    }
 
 };
 
@@ -449,10 +439,10 @@ public:
 
     FPolymerase() {}
 
-    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const float& InRate)
+    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, float& InRate)
         : Template(InTemplate), Target(InTarget), Rate(InRate), FProtein(InName) {}
 
-    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const std::string& InProcess, const float& InRate)
+    FPolymerase(const std::string& InName, const std::string& InTemplate, const std::string& InTarget, const std::string& InProcess, float& InRate)
         : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
 
     void Print(std::ostream& os) {
@@ -465,7 +455,7 @@ public:
     float ki;
     float ko;
 
-    FTransporter(const std::string& InName, const float Inki, const float Inko)
+    FTransporter(const std::string& InName, float Inki, float Inko)
         : ki(Inki), ko(Inko), FProtein(InName) {}
 
     void Print(std::ostream& os) {
@@ -539,7 +529,7 @@ public:
     float k;
     float krev;
 
-    FStandardReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float Ink, const float Inkrev)
+    FStandardReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, float Ink, float Inkrev)
         : k(Ink), krev(Inkrev), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
@@ -556,7 +546,7 @@ public:
     std::string Effect; // Activation or Inhibition
     std::string Mode; // Allosteric by default, competitive when n=-1 (temporary)
 
-    FRegulatoryReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InK, const float Inn, const std::string& InEffect, const std::string& InMode)
+    FRegulatoryReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, float InK, float Inn, const std::string& InEffect, const std::string& InMode)
         : K(InK), n(Inn), Effect(InEffect), Mode(InMode), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
@@ -589,7 +579,7 @@ public:
     float k;
     float krev;
 
-    FEnz_StandardReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InEnzyme, const float Ink, const float Inkrev)
+    FEnz_StandardReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string& InEnzyme, float Ink, float Inkrev)
         : k(Ink), krev(Inkrev), FEnzymaticReaction(InName, InStoichiometry, InEnzyme) {}
 
     void Print(std::ostream& os) {
@@ -628,10 +618,10 @@ public:
     FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const std::string InTransporter)
         : Transporter(InTransporter), FReaction(InName, InStoichiometry) {}
 
-    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InD)
+    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, float InD)
         : D(InD), FReaction(InName, InStoichiometry) {}
 
-    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, const float InD, const std::string InTransporter)
+    FTransporterReaction(const std::string& InName, const std::vector<std::pair<std::string, int>>& InStoichiometry, float InD, const std::string InTransporter)
             : Transporter(InTransporter), D(InD), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
@@ -659,7 +649,7 @@ public:
 class FCompilerContext {
 public:
 
-    void Init(const FOption& InOption);
+    void Init(FOption& InOption);
 
     FTable GeneTable;
     FTable RNATable;
@@ -684,6 +674,8 @@ public:
     std::vector<FCount*>        CountList;
     std::vector<FLocation*>     LocationList;
     std::vector<FComposition*>  CompositionList;
+            std::vector<FMolecule*>     ThresholdList; // temporary
+
 
     void PrintLists(std::ostream& os);
     void PrintInitialCounts(std::ostream& os);
@@ -704,44 +696,48 @@ public:
     void AssignReactionTypesForReactionList();
     void MakeListsFromMoleculeList();
     void MakeListsFromContainerList();
+    void MakePathwayLists();
+    void AssignThresholdMolecules();
 
     // Tables
     const std::string QueryTable(const std::string& Name, const std::string& Property, FTable Table);
 
     // EnzymeList
-    const FEnzyme * GetEnzyme_EnzymeList(std::string Name);
-//    float GetFloatAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
-//    std::string GetStringAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
+    FEnzyme * GetEnzyme_EnzymeList(std::string Name);
+//    float GetFloatAttributeByName_EnzymeList(std::vector<FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
+//    std::string GetStringAttributeByName_EnzymeList(std::vector<FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
 
     // PolymeraseList - to be updated
-    std::vector<std::string> GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
-    std::vector<float> GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList);
+    std::vector<std::string> GetNames_PolymeraseList(std::vector<FPolymerase *> PolymeraseList);
+    std::vector<float> GetRates_PolymeraseList(std::vector<FPolymerase *> PolymeraseList);
 
-    std::vector<std::string> GetNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
-    std::vector<std::string> GetSubstrateNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
-    std::vector<std::string> GetReactantNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
-    std::vector<std::string> GetProductNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
-    std::vector<std::string> GetBuildingBlockNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *>);
+    std::vector<std::string> GetNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
+    std::vector<std::string> GetSubstrateNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
+    std::vector<std::string> GetReactantNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
+    std::vector<std::string> GetProductNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
+    std::vector<std::string> GetBuildingBlockNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
 
     std::vector<std::string> GetNames_PathwayList();
     std::vector<std::string> GetSequences_PathwayList();
 
     // Stoichiometry Matrix-related
-    std::vector<int> AddUniqueSubstrateIdxToIdxList(const FReaction *, std::vector<int>);
-    std::vector<int> GetIdxForStoichiometryMatrix(std::vector<const FReaction *> ReactionList);
-    std::vector<int> GetCoefficientArray(const FReaction *, std::vector<int>);
-    std::vector<std::vector<int>> GetStoichiometryMatrix(std::vector<const FReaction *> ReactionList);
-    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *>);
+    std::vector<int> AddUniqueSubstrateIdxToIdxList(FReaction *, std::vector<int>);
+    std::vector<int> GetIdxForStoichiometryMatrix(std::vector<FReaction *> ReactionList);
+    std::vector<int> GetCoefficientArray(FReaction *, std::vector<int>);
+    std::vector<std::vector<int>> GetStoichiometryMatrix(std::vector<FReaction *> ReactionList);
+    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<FPolymeraseReaction *>);
+
+    // TODO: Update all XXList functions to take the XXList itself to enable more flexible list manipulation
 
     // LocationList
     std::vector<float> GetLocationByName_LocationList(std::string MolName);
-    std::vector<const FLocation *> GetSubList_LocationList(std::string Type);
+    std::vector<FLocation *> GetSubList_LocationList(std::string Type);
     std::vector<std::string> GetNames_LocationList(std::string Type);
     std::vector<std::string> GetUniqueNames_LocationList(std::string Type);
 
     // CountList
     std::vector<std::string> GetNames_CountList(std::string Type);
-    std::vector<const FCount *> GetSubList_CountList(std::string Type);
+    std::vector<FCount *> GetSubList_CountList(std::string Type);
     float GetInitialCountByName_CountList(std::string InputName);
     bool GetMolarityFactorByName_CountList(std::string InputName);
     bool CheckMolarityFactorTrueForAny_CountList();
@@ -749,12 +745,12 @@ public:
     void AdjustMolarity_PseudoMolecule();
 
     // MoleculeList
-    const FMolecule * GetMolecule_MoleculeList(std::string Name);
+    FMolecule * GetMolecule_MoleculeList(std::string Name);
     std::vector<std::string> GetNames_MoleculeList();
     int GetIdxByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
     // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
-    std::vector<const FMolecule *> GetSubList_MoleculeList(std::string Type);
+    std::vector<FMolecule *> GetSubList_MoleculeList(std::string Type);
 
     // useful?
     std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
@@ -762,22 +758,22 @@ public:
     std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
     bool CheckDuplicates_List(std::string ListType, std::string Name);
 
-    std::vector<const FPolymerase *> GetList_Polymerase_MoleculeList();
-    std::vector<const FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
+    std::vector<FPolymerase *> GetList_Polymerase_MoleculeList();
+    std::vector<FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
 
     // ContainerList
-    std::vector<const FContainer *> GetSubList_ContainerList(std::string Type);
+    std::vector<FContainer *> GetSubList_ContainerList(std::string Type);
     std::vector<std::string> GetNames_ContainerList(std::string Type);
 
     // ReactionList
     std::vector<std::string> GetNames_ReactionList(std::string Type);
-    std::vector<const FReaction *> GetSubList_ReactionList(std::string Type, std::string NameSpace_Pathway=""); // useful for stoichiometry
-    std::vector<const FStandardReaction *> GetList_Standard_ReactionList(std::string Type);
-    std::vector<const FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
-    std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList);
+    std::vector<FReaction *> GetSubList_ReactionList(std::string Type, std::string NameSpace_Pathway=""); // useful for stoichiometry
+    std::vector<FStandardReaction *> GetList_Standard_ReactionList(std::string Type);
+    std::vector<FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
+    std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<FEnzymaticReaction *> EnzymaticReactionList);
 
     // TODO: Update polymerase reaction writing system
-    std::vector<const FPolymeraseReaction *> GetList_Polymerase_ReactionList();
+    std::vector<FPolymeraseReaction *> GetList_Polymerase_ReactionList();
 
     std::vector<int> GetIdxOfStrListFromStrList(std::vector<std::string> InputList, std::vector<std::string> RefList);
 //    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
@@ -786,9 +782,10 @@ public:
     std::vector<float> GetFreqMatrixForRNAs();
     std::vector<float> GetFreqMatrixForProteins();
 
-    // temporary namespace functions
-    std::vector<const FReaction *> FilterByPathway_ReactionList(std::vector<const FReaction *> ListOfReactions, std::string PathwayName);
-
+    // temporary namespace-related functions
+    std::vector<FReaction *> FilterByPathway_ReactionList(std::vector<FReaction *> ListOfReactions, std::string PathwayName);
+    std::string GetAssociatedPathway_ReactionList(FMolecule* Molecule);
+    std::vector<FMolecule *> GetSubListByReactionList_MoleculeList(std::vector<FReaction *> ListOfReactions);
 };
 
 

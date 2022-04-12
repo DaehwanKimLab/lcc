@@ -89,7 +89,7 @@ void FTable::Dump(const vector<string>& InKeys)
 	}
 }
 
-void FCompilerContext::Init(const FOption& InOption)
+void FCompilerContext::Init(FOption& InOption)
 {
     if (InOption.DataPaths.size() > 0) {
         GeneTable.LoadFromTSV((InOption.DataPaths[0] + "/Database/genes.tsv").c_str());
@@ -292,8 +292,27 @@ void FCompilerContext::Organize()
     // Dependency Note: Assign
     // ReactionTypes uses Lists made from above
     MakeListsFromContainerList();
+            AssignThresholdMolecules(); // temporary
     AssignReactionTypesForReactionList();
     AdjustMolarity_PseudoMolecule();
+}
+
+void FCompilerContext::AssignThresholdMolecules() {
+
+    std::map<std::string, std::string> ThresholdMoleculeMap;
+    ThresholdMoleculeMap.emplace("L", "Am");
+    ThresholdMoleculeMap.emplace("qL", "qAm");
+
+    for (auto molecule : MoleculeList) {
+        if (ThresholdMoleculeMap.count(molecule->Name) > 0) {
+            for (auto location : LocationList) {
+                if (location->Name == molecule->Name) {
+                    auto ThresholdMolecule = GetMolecule_MoleculeList(ThresholdMoleculeMap[molecule->Name]);
+                    ThresholdList.push_back(ThresholdMolecule);
+                }
+            }
+        }
+    }
 }
 
 enum ReactionTypeAssignment {
@@ -501,7 +520,7 @@ std::vector<std::string> FCompilerContext::GetNames_MoleculeList()
 }
 
 
-std::vector<const FReaction *> FCompilerContext::GetSubList_ReactionList(std::string Type, std::string NameSpace_Pathway)
+std::vector<FReaction *> FCompilerContext::GetSubList_ReactionList(std::string Type, std::string NameSpace_Pathway)
 {
 
     int ReactionType = Numbers::GetIntDefault();
@@ -540,10 +559,12 @@ std::vector<const FReaction *> FCompilerContext::GetSubList_ReactionList(std::st
         }
     }
 
-    std::vector<const FReaction *> SubList;
+    std::vector<FReaction *> SubList;
 
     for (auto& reaction : ReactionList) {
-        if (reaction->Type == ReactionType) {
+        if (Type == "All") {
+            SubList.push_back(reaction);
+        } else if (reaction->Type == ReactionType) {
             SubList.push_back(reaction);
         }
     }
@@ -555,29 +576,29 @@ std::vector<const FReaction *> FCompilerContext::GetSubList_ReactionList(std::st
     return SubList;
 }
 
-std::vector<const FStandardReaction *> FCompilerContext::GetList_Standard_ReactionList(std::string ReactionType)
+std::vector<FStandardReaction *> FCompilerContext::GetList_Standard_ReactionList(std::string ReactionType)
 {
-    std::vector<const FStandardReaction *> SubList;
-    std::vector<const FReaction *> ReactionSubList = GetSubList_ReactionList(ReactionType);
+    std::vector<FStandardReaction *> SubList;
+    std::vector<FReaction *> ReactionSubList = GetSubList_ReactionList(ReactionType);
     
 
-    for (const FReaction* Reaction: ReactionSubList) {
-        auto reaction = dynamic_cast<const FStandardReaction *>(Reaction);
+    for (FReaction* Reaction: ReactionSubList) {
+        auto reaction = dynamic_cast<FStandardReaction *>(Reaction);
         SubList.push_back(reaction);
     }
 
     return SubList;
 }
 
-std::vector<const FRegulatoryReaction *> FCompilerContext::GetList_Regulatory_ReactionList(std::string ReactionType)
+std::vector<FRegulatoryReaction *> FCompilerContext::GetList_Regulatory_ReactionList(std::string ReactionType)
 {
     // Reaction Type is either "Inhibition" or "Activation"
 
-    std::vector<const FRegulatoryReaction *> SubList;
+    std::vector<FRegulatoryReaction *> SubList;
 
-    for (const FReaction* Reaction: ReactionList) {
+    for (FReaction* Reaction: ReactionList) {
         if (Utils::is_class_of<FRegulatoryReaction, FReaction>(Reaction)) {
-            auto reaction = dynamic_cast<const FRegulatoryReaction *>(Reaction);
+            auto reaction = dynamic_cast<FRegulatoryReaction *>(Reaction);
             if (reaction->Effect == ReactionType) {
                 SubList.push_back(reaction);
             }
@@ -587,7 +608,7 @@ std::vector<const FRegulatoryReaction *> FCompilerContext::GetList_Regulatory_Re
     return SubList;
 }
 
-const FMolecule * FCompilerContext::GetMolecule_MoleculeList(std::string Name)
+FMolecule * FCompilerContext::GetMolecule_MoleculeList(std::string Name)
 {
     for (auto& molecule : MoleculeList) {
         if (molecule->Name == Name) {
@@ -599,7 +620,7 @@ const FMolecule * FCompilerContext::GetMolecule_MoleculeList(std::string Name)
     return nullptr;
 }
 
-std::vector<std::string> FCompilerContext::GetNames_EnzymaticReactionList(std::vector<const FEnzymaticReaction *> EnzymaticReactionList)
+std::vector<std::string> FCompilerContext::GetNames_EnzymaticReactionList(std::vector<FEnzymaticReaction *> EnzymaticReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : EnzymaticReactionList){
@@ -612,7 +633,7 @@ std::vector<std::string> FCompilerContext::GetNames_EnzymaticReactionList(std::v
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetNames_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList) 
+std::vector<std::string> FCompilerContext::GetNames_PolymeraseList(std::vector<FPolymerase *> PolymeraseList) 
 {
     std::vector<std::string> StrList;
     for (auto& item : PolymeraseList){
@@ -621,7 +642,7 @@ std::vector<std::string> FCompilerContext::GetNames_PolymeraseList(std::vector<c
     return StrList;
 }
 
-std::vector<float> FCompilerContext::GetRates_PolymeraseList(std::vector<const FPolymerase *> PolymeraseList)
+std::vector<float> FCompilerContext::GetRates_PolymeraseList(std::vector<FPolymerase *> PolymeraseList)
 {
     std::vector<float> floatList;
     for (auto& item : PolymeraseList){
@@ -630,20 +651,20 @@ std::vector<float> FCompilerContext::GetRates_PolymeraseList(std::vector<const F
     return floatList;
 }
 
-std::vector<const FPolymeraseReaction *> FCompilerContext::GetList_Polymerase_ReactionList()
+std::vector<FPolymeraseReaction *> FCompilerContext::GetList_Polymerase_ReactionList()
 {
-    std::vector<const FPolymeraseReaction *> SubList;
+    std::vector<FPolymeraseReaction *> SubList;
 
-    for (const FReaction* Reaction: ReactionList) {
+    for (FReaction* Reaction: ReactionList) {
         if (Utils::is_class_of<FPolymeraseReaction, FReaction>(Reaction)) {
-            auto PolymeraseReaction = dynamic_cast<const FPolymeraseReaction* >(Reaction);
+            auto PolymeraseReaction = dynamic_cast<FPolymeraseReaction* >(Reaction);
             SubList.push_back(PolymeraseReaction);
         }
     }
     return SubList;
 }
 
-std::vector<std::string> FCompilerContext::GetNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+std::vector<std::string> FCompilerContext::GetNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *> PolymeraseReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : PolymeraseReactionList){
@@ -656,7 +677,7 @@ std::vector<std::string> FCompilerContext::GetNames_PolymeraseReactionList(std::
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetSubstrateNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+std::vector<std::string> FCompilerContext::GetSubstrateNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *> PolymeraseReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : PolymeraseReactionList){
@@ -669,7 +690,7 @@ std::vector<std::string> FCompilerContext::GetSubstrateNames_PolymeraseReactionL
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetReactantNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+std::vector<std::string> FCompilerContext::GetReactantNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *> PolymeraseReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : PolymeraseReactionList){
@@ -682,7 +703,7 @@ std::vector<std::string> FCompilerContext::GetReactantNames_PolymeraseReactionLi
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetProductNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+std::vector<std::string> FCompilerContext::GetProductNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *> PolymeraseReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : PolymeraseReactionList){
@@ -695,7 +716,7 @@ std::vector<std::string> FCompilerContext::GetProductNames_PolymeraseReactionLis
     return StrList;
 }
 
-std::vector<std::string> FCompilerContext::GetBuildingBlockNames_PolymeraseReactionList(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+std::vector<std::string> FCompilerContext::GetBuildingBlockNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *> PolymeraseReactionList)
 {
     std::vector<std::string> StrList;
     for (auto& item : PolymeraseReactionList){
@@ -708,7 +729,7 @@ std::vector<std::string> FCompilerContext::GetBuildingBlockNames_PolymeraseReact
 
 std::vector<std::string> FCompilerContext::GetNames_ContainerList(std::string Type)
 {
-    std::vector<const FContainer *> SubList = GetSubList_ContainerList(Type);
+    std::vector<FContainer *> SubList = GetSubList_ContainerList(Type);
     std::vector<std::string> StrList;
 
     for (auto& container : SubList) {
@@ -718,9 +739,9 @@ std::vector<std::string> FCompilerContext::GetNames_ContainerList(std::string Ty
     return StrList;
 }
 
-std::vector<const FContainer *> FCompilerContext::GetSubList_ContainerList(std::string Type)
+std::vector<FContainer *> FCompilerContext::GetSubList_ContainerList(std::string Type)
 {
-    std::vector<const FContainer *> SubList;
+    std::vector<FContainer *> SubList;
 
     if (Type == "Compartment") {
         for (auto& container : ContainerList) {
@@ -759,7 +780,7 @@ std::vector<std::string> FCompilerContext::GetNames_ReactionList(std::string Typ
     if (Type.rfind("Regulatory", 0) == 0) {
         for (auto& Reaction : ReactionList){
             if (Utils::is_class_of<FRegulatoryReaction, FReaction>(Reaction)) {
-                auto reaction = dynamic_cast<const FRegulatoryReaction *>(Reaction);
+                auto reaction = dynamic_cast<FRegulatoryReaction *>(Reaction);
 
                 if ((Type.find("Inhibition") != std::string::npos) & (Type.find("Allosteric") != std::string::npos)) {
                     if ((reaction->Effect == "Inhibition") & (reaction->Mode == "Allosteric")) {
@@ -814,7 +835,7 @@ std::vector<std::string> FCompilerContext::GetSequences_PathwayList()
     return StrList;
 }
 
-std::vector<int> FCompilerContext::GetCoefficientArray(const FReaction* Reaction, std::vector<int> Idx_Substrates)
+std::vector<int> FCompilerContext::GetCoefficientArray(FReaction* Reaction, std::vector<int> Idx_Substrates)
 {
     // StoichiometryMatrix Routine
     std::vector<int> CoeffArray(Idx_Substrates.size(), 0);
@@ -839,7 +860,7 @@ std::vector<int> FCompilerContext::GetCoefficientArray(const FReaction* Reaction
     return CoeffArray; 
 }
 
-const FEnzyme * FCompilerContext::GetEnzyme_EnzymeList(std::string Name) 
+FEnzyme * FCompilerContext::GetEnzyme_EnzymeList(std::string Name) 
 {
     for (auto& enzyme : EnzymeList) {
         if (enzyme->Name == Name) {
@@ -867,7 +888,7 @@ const FEnzyme * FCompilerContext::GetEnzyme_EnzymeList(std::string Name)
 //     else             { std::cout << "Undefined enzyme name: " << Name << std::endl; }
 // }
 
-// std::string FCompilerContext::GetStringAttributeByName_EnzymeList(std::vector<const FEnzyme *> EnzymeList, std::string Name, std::string Attribute)
+// std::string FCompilerContext::GetStringAttributeByName_EnzymeList(std::vector<FEnzyme *> EnzymeList, std::string Name, std::string Attribute)
 // {
 //     std::string Value;
 // 
@@ -886,7 +907,7 @@ const FEnzyme * FCompilerContext::GetEnzyme_EnzymeList(std::string Name)
 //     return Value;
 // }
 
-std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::vector<const FReaction *> ReactionList)
+std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::vector<FReaction *> ReactionList)
 {
     // Types: "Standard_Unregulated", "Standard_Inhibition", "Standard_Activation",
     //        "Enz_Standard_Unregulated", "Enz_Standard_Inhibition", "Enz_Standard_Activation",
@@ -904,7 +925,7 @@ std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix(std::vect
     return StoichMatrix;
 }
 
-std::vector<int> FCompilerContext::AddUniqueSubstrateIdxToIdxList(const FReaction* Reaction, std::vector<int>IdxList)
+std::vector<int> FCompilerContext::AddUniqueSubstrateIdxToIdxList(FReaction* Reaction, std::vector<int>IdxList)
 {
     for (auto& stoich : Reaction->Stoichiometry) {
         int MolIdx = GetIdxByName_MoleculeList(stoich.first);
@@ -916,7 +937,7 @@ std::vector<int> FCompilerContext::AddUniqueSubstrateIdxToIdxList(const FReactio
     return IdxList;
 }
 
-std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::vector<const FReaction *> ReactionList)
+std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::vector<FReaction *> ReactionList)
 {
     // Types: "Standard_Unregulated", "Standard_Inhibition", "Standard_Activation",
     //        "Enz_Standard_Unregulated", "Enz_Standard_Inhibition", "Enz_Standard_Activation",
@@ -931,10 +952,10 @@ std::vector<int> FCompilerContext::GetIdxForStoichiometryMatrix(std::vector<cons
     return IdxList;
 }
 
-std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_PolymeraseReaction(std::vector<const FPolymeraseReaction *> PolymeraseReactionList)
+std::vector<std::vector<int>> FCompilerContext::GetStoichiometryMatrix_PolymeraseReaction(std::vector<FPolymeraseReaction *> PolymeraseReactionList)
 {
     std::vector<std::vector<int>> StoichMatrix;
-    std::vector<const FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList(); // TODO: UPDATE to GetSubList_MoleculeList
+    std::vector<FSmallMolecule *> SMolList = GetList_SmallMolecule_MoleculeList(); // TODO: UPDATE to GetSubList_MoleculeList
 
     for (auto& PolymeraseReaction : PolymeraseReactionList){
         std::vector<int> CoeffArray(SMolList.size(), 0); // replace with substrate index for the reaction
@@ -1016,9 +1037,9 @@ bool FCompilerContext::CheckDuplicates_List(std::string Type, std::string Name)
     return Duplicate;
 }
 
-std::vector<const FLocation *> FCompilerContext::GetSubList_LocationList(std::string Type)
+std::vector<FLocation *> FCompilerContext::GetSubList_LocationList(std::string Type)
 {
-    std::vector<const FLocation *> SubList;
+    std::vector<FLocation *> SubList;
     std::vector<std::string> Names;
 
     if      (Type == "Molecule")    { Names = GetNames_MoleculeList(); }
@@ -1043,7 +1064,7 @@ std::vector<const FLocation *> FCompilerContext::GetSubList_LocationList(std::st
 
 std::vector<std::string> FCompilerContext::GetNames_LocationList(std::string Type)
 {
-    std::vector<const FLocation *> SubList = GetSubList_LocationList(Type);
+    std::vector<FLocation *> SubList = GetSubList_LocationList(Type);
     std::vector<std::string> StrList; 
 
     for (auto& location : SubList) {
@@ -1055,7 +1076,7 @@ std::vector<std::string> FCompilerContext::GetNames_LocationList(std::string Typ
 
 std::vector<std::string> FCompilerContext::GetUniqueNames_LocationList(std::string Type)
 {
-    std::vector<const FLocation *> SubList = GetSubList_LocationList(Type);
+    std::vector<FLocation *> SubList = GetSubList_LocationList(Type);
     std::vector<std::string> StrList; 
 
     for (auto& location : SubList) {
@@ -1069,7 +1090,7 @@ std::vector<std::string> FCompilerContext::GetUniqueNames_LocationList(std::stri
 
 std::vector<std::string> FCompilerContext::GetNames_CountList(std::string Type)
 {
-    std::vector<const FCount *> SubList = GetSubList_CountList(Type);
+    std::vector<FCount *> SubList = GetSubList_CountList(Type);
     std::vector<std::string> StrList;
 
     for (auto& item : SubList){
@@ -1078,9 +1099,9 @@ std::vector<std::string> FCompilerContext::GetNames_CountList(std::string Type)
     return StrList;
 }
 
-std::vector<const FCount *> FCompilerContext::GetSubList_CountList(std::string Type)
+std::vector<FCount *> FCompilerContext::GetSubList_CountList(std::string Type)
 {
-    std::vector<const FCount *> SubList;
+    std::vector<FCount *> SubList;
     std::vector<std::string> Names;
 
     if      (Type == "Molecule")    { Names = GetNames_MoleculeList(); }
@@ -1155,40 +1176,33 @@ void FCompilerContext::AdjustMolarity_PseudoMolecule()
     }
 }
 
-std::vector<const FMolecule *> FCompilerContext::GetSubList_MoleculeList(std::string Type)
+std::vector<FMolecule *> FCompilerContext::GetSubList_MoleculeList(std::string Type)
 {
-    std::vector<const FMolecule *> SubList;
+    std::vector<FMolecule *> SubList;
 
-    if (Type == "Threshold") {
-        for (auto& item : MoleculeList) {
-            if (item->bThreshold) {
-                SubList.push_back(item);
-            }
-        }
-    }
     return SubList;
 }
 
-std::vector<const FSmallMolecule *> FCompilerContext::GetList_SmallMolecule_MoleculeList()
+std::vector<FSmallMolecule *> FCompilerContext::GetList_SmallMolecule_MoleculeList()
 {
-    std::vector<const FSmallMolecule *> SubList;
+    std::vector<FSmallMolecule *> SubList;
 
-    for (const FMolecule* molecule :MoleculeList) {
+    for (FMolecule* molecule :MoleculeList) {
         if (Utils::is_class_of<FSmallMolecule, FMolecule>(molecule)) {
-            auto SmallMolecule = dynamic_cast<const FSmallMolecule *>(molecule);
+            auto SmallMolecule = dynamic_cast<FSmallMolecule *>(molecule);
             SubList.push_back(SmallMolecule);
         }
     }
     return SubList;
 }
 
-std::vector<const FPolymerase *> FCompilerContext::GetList_Polymerase_MoleculeList()
+std::vector<FPolymerase *> FCompilerContext::GetList_Polymerase_MoleculeList()
 {
-    std::vector<const FPolymerase *> SubList;
+    std::vector<FPolymerase *> SubList;
 
-    for (const FMolecule* molecule :MoleculeList) {
+    for (FMolecule* molecule :MoleculeList) {
         if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
-            auto Polymerase = dynamic_cast<const FPolymerase *>(molecule);
+            auto Polymerase = dynamic_cast<FPolymerase *>(molecule);
             SubList.push_back(Polymerase);
         }
     }
@@ -1348,9 +1362,9 @@ std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::stri
 //     std::vector<int> IndexArray;
 //     int Index;
 // 
-//     for (const FMolecule* molecule :MoleculeList) {
+//     for (FMolecule* molecule :MoleculeList) {
 //         if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
-//             auto enzyme = dynamic_cast<const FEnzyme *>(molecule);
+//             auto enzyme = dynamic_cast<FEnzyme *>(molecule);
 //             std::string EnzSub = enzyme->Substrate;
 //             Index = 0;
 //             for (auto& molecule : MoleculeList) {
@@ -1370,9 +1384,9 @@ std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::stri
 //     std::vector<int> IndexArray;
 //     int Index;
 // 
-//     for (const FMolecule* molecule :MoleculeList) {
+//     for (FMolecule* molecule :MoleculeList) {
 //         if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
-//             auto Polymerase = dynamic_cast<const FPolymerase *>(molecule);
+//             auto Polymerase = dynamic_cast<FPolymerase *>(molecule);
 //             std::string PolSub = Polymerase->Substrate;
 //             Index = 0;
 //             for (auto& molecule :MoleculeList) {
@@ -1392,7 +1406,7 @@ std::vector<int> FCompilerContext::GetIdx_PolymeraseReactionSubstrate_ByPolymera
     std::vector<int> IndexArray;
     int Index;
 
-    std::vector<const FPolymeraseReaction *> PolymeraseReactionList = GetList_Polymerase_ReactionList();
+    std::vector<FPolymeraseReaction *> PolymeraseReactionList = GetList_Polymerase_ReactionList();
 
     for (auto& PolymeraseReaction : PolymeraseReactionList){
         if (PolymeraseReaction->Polymerase == InPolymeraseName){
@@ -1449,7 +1463,7 @@ std::vector<int> FCompilerContext::GetIdxOfStrListFromStrList(std::vector<std::s
     return IndexArray;
 }
 
-// std::vector<int> FCompilerContext::GetEnzSubstrateIdxFromAllSubstrates(std::vector<const FEnzyme *> EnzymeList)
+// std::vector<int> FCompilerContext::GetEnzSubstrateIdxFromAllSubstrates(std::vector<FEnzyme *> EnzymeList)
 // {
 //     std::vector<std::string> EnzSubstrateList = GetSubstrateNames_EnzymeList(EnzymeList);
 //     std::vector<std::string> AllSubstrateList = GetSubstrateNames_EnzymaticReactionList();
@@ -1473,9 +1487,9 @@ std::vector<float> FCompilerContext::GetFreqMatrixForProteins()
 }
 
 // temporary namespace functions
-std::vector<const FReaction *> FCompilerContext::FilterByPathway_ReactionList(std::vector<const FReaction *> ListOfReactions, std::string PathwayName)
+std::vector<FReaction *> FCompilerContext::FilterByPathway_ReactionList(std::vector<FReaction *> ListOfReactions, std::string PathwayName)
 {
-    std::vector<const FReaction *> SubList;
+    std::vector<FReaction *> SubList;
 
     for (auto& reaction : ListOfReactions) {
         if (reaction->Pathway == PathwayName) {
@@ -1484,4 +1498,40 @@ std::vector<const FReaction *> FCompilerContext::FilterByPathway_ReactionList(st
     }
 
     return SubList;
+}
+
+std::string FCompilerContext::GetAssociatedPathway_ReactionList(FMolecule* Molecule)
+{
+    std::string Pathway;
+    for (auto reaction : ReactionList) {
+        if ((reaction->CheckIfProduct(Molecule->Name)) || reaction->CheckIfProduct(Molecule->Name)) {
+            Pathway = reaction->Pathway;
+        }
+    }
+    Utils::Assertion(!Pathway.empty(), "Associated Pathway is not found for Molecule: " + Molecule->Name);
+
+    return Pathway;
+}
+
+std::vector<FMolecule *> FCompilerContext::GetSubListByReactionList_MoleculeList(std::vector<FReaction *> ListOfReactions)
+{
+    std::vector<FMolecule *> Molecules;
+
+    for (auto reaction : ListOfReactions) {
+        for (auto stoich: reaction->Stoichiometry) {
+            auto MolName = stoich.first;
+            for (auto Molecule : MoleculeList) {
+                if (Molecule->Name == MolName) {
+                    if (std::find(Molecules.begin(), Molecules.end(), Molecule) == Molecules.end()) {
+                        Molecules.push_back(Molecule);
+//                        std::cout << "MoleculeSubList | New molecule added: " << Molecule->Name << std::endl;
+                        break;
+                    } else {
+//                        std::cout << "MoleculeSubList | Redundant molecule skipped: " << Molecule->Name << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    return Molecules;
 }

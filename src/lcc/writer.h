@@ -36,26 +36,29 @@ public:
 
     // StandardReaction
     void Initialize_StandardReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway="");
-    void SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
+    void SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
 
     // EnzymeReaction
     void Initialize_EnzymeReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway="");
-    void SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
+    void SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
 
     // Polymerase
-    void Initialize_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void SetUp_PolymeraseReaction(ofstream& ofs, const FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold);
-    void Polymerase_InitiationReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void Polymerase_ElongationReaction(ofstream& ofs, const FPolymerase* Polymerase);
-    void Polymerase_TerminationReaction(ofstream& ofs, const FPolymerase* Polymerase);
+    void Initialize_PolymeraseReaction(ofstream& ofs, FPolymerase* Polymerase);
+    void SetUp_PolymeraseReaction(ofstream& ofs, FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold);
+    void Polymerase_InitiationReaction(ofstream& ofs, FPolymerase* Polymerase);
+    void Polymerase_ElongationReaction(ofstream& ofs, FPolymerase* Polymerase);
+    void Polymerase_TerminationReaction(ofstream& ofs, FPolymerase* Polymerase);
 
     // TransporterReaction
     void Initialize_TransporterReaction(ofstream& ofs, std::string Type);
-    void SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<const FReaction *> ReactionSubList);
+    void SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList);
 
     // Spatial Simulation
     void Initialize_SpatialSimulation(ofstream& ofs);
     void SetUp_SpatialSimulation(ofstream& ofs);
+
+    // Pre-simulation for Threshold searching
+    void SimThreshold(FMolecule* ThresholdMol);
 
     // Simulation
     void SimIdx();
