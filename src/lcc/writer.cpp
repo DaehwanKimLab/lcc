@@ -90,7 +90,7 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
     }
 
 
-    for (auto Reaction : ReactionSubList) {
+    for (auto& Reaction : ReactionSubList) {
         const auto& reaction = dynamic_cast<FStandardReaction *>(Reaction);
 
         k.push_back(reaction->k);
@@ -125,13 +125,13 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
         Utils::Assertion((Idx_Reactants.size() == Idx_Products.size()), "# of parsed reactants and products do not match" );
 
         if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-            for (auto &Reg: RegulatoryReactionSubList) {
+            for (auto& Reg: RegulatoryReactionSubList) {
                 const auto& reg = dynamic_cast<FRegulatoryReaction *>(Reg);
 
                 bool Import = false;
                 std::string reactant_reg;
                 std::string product_reg;
-                for (auto &stoich: reg->Stoichiometry) {
+                for (auto& stoich: reg->Stoichiometry) {
                     if (stoich.second < 0) { reactant_reg = stoich.first; }
                     else if (stoich.second > 0) { product_reg = stoich.first; }
                     // import only if the product of the regulatory reaction targets the current standard reaction
@@ -312,13 +312,13 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
         }
 
         if ((Type.find("Inhibition") != string::npos) || (Type.find("Activation") != string::npos)) {
-            for (auto &Reg: RegulatoryReactionSubList) {
-                const auto &reg = dynamic_cast<FRegulatoryReaction *>(Reg);
+            for (auto& Reg: RegulatoryReactionSubList) {
+                const auto& reg = dynamic_cast<FRegulatoryReaction *>(Reg);
 
                 bool Import = false;
                 std::string reactant_reg;
                 std::string product_reg;
-                for (auto &stoich: reg->Stoichiometry) {
+                for (auto& stoich: reg->Stoichiometry) {
                     if (stoich.second < 0) { reactant_reg = stoich.first; }
                     else if (stoich.second > 0) { product_reg = stoich.first; }
                     // import only if the product of the regulatory reaction targets the current standard reaction
@@ -565,7 +565,7 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
 //    std::vector<FReaction *> RegulatoryReactionSubList = Context.GetSubList_ReactionList(RegType);
 
     for (auto& Reaction : ReactionSubList) {
-        const auto &reaction = dynamic_cast<FTransporterReaction *>(Reaction);
+        const auto& reaction = dynamic_cast<FTransporterReaction *>(Reaction);
 
         const auto& molecule = Context.GetMolecule_MoleculeList(reaction->Transporter);
         const auto& Transporter = dynamic_cast<FTransporter *>(molecule);
@@ -574,7 +574,7 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
         ki.push_back(Transporter->ki);
         ko.push_back(Transporter->ko);
 
-        for (auto &stoich: reaction->Stoichiometry) {
+        for (auto& stoich: reaction->Stoichiometry) {
             std::string CargoName = stoich.first;
             Name_Cargo.push_back(CargoName);
 
@@ -585,9 +585,9 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
 
     // get cargo idx in Dist_All
     std::vector<std::string> MolUniqueNames = Context.GetUniqueNames_LocationList("Molecule");
-    for (auto Name : Name_Cargo) {
+    for (auto& Name : Name_Cargo) {
         int i = 0;
-        for (auto MolUniqueName : MolUniqueNames) {
+        for (auto& MolUniqueName : MolUniqueNames) {
             if (MolUniqueName == Name) {
                 Idx_Dist_Cargo.push_back(i);
             }
@@ -627,7 +627,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
-    auto Organisms = Context.OrganismList;
+    auto& Organisms = Context.OrganismList;
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
@@ -648,7 +648,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
     ofs << in+ in+ "# Threshold-related" << endl;
     ofs << in+ in+ "self.MolNames_Threshold = list()" << endl;
     ofs << in+ in+ "self.N_Threshold = 0" << endl;
-    for (auto ThresholdMol : Context.ThresholdList) {
+    for (auto& ThresholdMol : Context.ThresholdList) {
         auto Name_ThresholdMolVar = "Threshold_" + ThresholdMol->Name;
         ofs << in+ in+ Name_ThresholdMolVar << " = 0" << endl;
     }
@@ -663,7 +663,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 
     ofs << in+ in+ "self.Dist_Names = [" << Utils::JoinStr2Str(Context.GetNames_LocationList("Molecule")) << "]" << endl;
     for (int i = 0; i < MolLoc.size(); i++) {
-        auto Coord = MolLoc[i]->Coord;
+        auto& Coord = MolLoc[i]->Coord;
         auto Amount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
         std::string Shape, Pattern;
         int Size;
@@ -698,7 +698,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (int i = 0; i < ObjUniqueNames.size(); i++) {
         int Count = int(Context.GetInitialCountByName_CountList(ObjUniqueNames[i]));
         for (int j = i; j < (Count); j++) {
-            auto Coord = ObjLoc[j]->Coord;
+            auto& Coord = ObjLoc[j]->Coord;
             ofs << Coord[0] << ", ";
         }
     }
@@ -708,7 +708,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (int i = 0; i < ObjUniqueNames.size(); i++) {
         int Count = int(Context.GetInitialCountByName_CountList(ObjUniqueNames[i]));
         for (int j = i; j < (Count); j++) {
-            auto Coord = ObjLoc[j]->Coord;
+            auto& Coord = ObjLoc[j]->Coord;
             ofs << Coord[1] << ", ";
         }
     }
@@ -726,19 +726,16 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 
     ofs << in+ in+ "# Threshold-related" << endl;
     ofs << in+ in+ "self.MolNames_Threshold = [" << endl;
-    for (auto ThresholdMol : Context.ThresholdList) {
+    for (auto& ThresholdMol : Context.ThresholdList) {
         ofs << "'" << ThresholdMol << "', " << endl;
     }
     ofs << "]" << endl;
     ofs << in+ in+ "self.N_Threshold = len(self.MolNames_Threshold)" << endl;
 
-
     for (int i = 0; i < Context.ThresholdList.size(); i++) {
-        auto Name_ThresholdMolProgram = "SimT_" + Context.ThresholdList[i]->Name + ".DetermineThreshold()";
-        ofs << in+ in+ "self.Pos_Threshold[" << i << ", 0]" << " = " << Name_ThresholdMolProgram << endl;
+        ofs << in+ in+ "self.Pos_Threshold[" << i << ", 0]" << " = " << Utils::SciFloat2Str(Context.ThresholdList[i]->Threshold) << endl;
     }
     ofs << endl;
-
 
 }
 

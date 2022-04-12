@@ -52,7 +52,7 @@ void FWriter::SimVis2D() {
 
     // Pathway dependent key molecules to monitor
     ofs << "HomeostasisMolName = [";
-    for (auto location: MolLoc) {
+    for (auto& location: MolLoc) {
         if (location->Name == "L") { ofs << "'" << "Am" << "', "; }
         else if (location->Name == "qL") { ofs << "'" << "qAm" << "', "; }
     }
@@ -664,7 +664,7 @@ void FWriter::SimVis2D() {
 //    }
 
     // Instantiate Molecules for Distribution
-    // auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    // auto& MolLoc = Context.GetSubList_LocationList("Molecule");
     for (int i = 0; i < MolLoc.size(); i++) {
         // instantiate
         ofs << in+ MolLoc[i]->Name << " = FMolecule('" << MolLoc[i]->Name << "', ";
@@ -701,7 +701,7 @@ void FWriter::SimVis2D() {
     }
 
     // Run Homeostasis for "HomeostasisMolName"
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ OrganismName << ".Homeostasis(HomeostasisMolName)" << endl; // TODO: HARDCODED
     }
     ofs << endl;
@@ -727,7 +727,7 @@ void FWriter::SimVis2D() {
 
     ofs << in+ in+ in+ in+ "# Organism Control" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_t:" << endl;
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ in+ OrganismName << ".TrajectorySwitch = not " << OrganismName << ".TrajectorySwitch" << endl;
     }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('T')" << endl;
@@ -743,12 +743,12 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ in+ "Control.StatusSwitch = not Control.StatusSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('A')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_r:" << endl;
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ in+ OrganismName << ".Radar_Switch = not " << OrganismName << ".Radar_Switch" << endl;
     }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('R')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_h:" << endl;
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ in+ OrganismName << ".HomeostasisMolecule_Switch = not " << OrganismName << ".HomeostasisMolecule_Switch" << endl;
     }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('H')" << endl;
@@ -762,7 +762,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "PetriDish.Draw(shape='circle')" << endl;
     ofs << endl;
 
-    for (auto Mol : MolLoc) {
+    for (auto& Mol : MolLoc) {
         ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'))" << endl;
     }
     ofs << endl;
@@ -773,7 +773,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "while ElapsedTime >= SimUnitTime:" << endl;
     ofs << endl;
 
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(50)" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".ReportStatus()" << endl;
@@ -784,7 +784,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "Control.Time += 1" << endl;
     ofs << endl;
 
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ OrganismName << ".AddToTrajectory()" << endl;
         ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
         ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
@@ -793,7 +793,7 @@ void FWriter::SimVis2D() {
 
     ofs << endl;
 
-    for (auto OrganismName : OrgNames) {
+    for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ OrganismName << ".Draw()" << endl;
     }
     ofs << in+ in+ "PetriDish.Draw(shape='lining')" << endl;

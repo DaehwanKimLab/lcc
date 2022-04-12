@@ -162,8 +162,8 @@ void AddReaction(std::string ReactionName, const NReaction* Reaction)
     const auto& propertylist = Reaction->Property;
     for (auto& property :propertylist) {
         auto& Key = property->Key;
-        // auto Value = property->Value->Evaluate();
-        const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+        // auto& Value = property->Value->Evaluate();
+        const auto& Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
         auto Value = Value_Exp->EvaluateValueAndPrefix();
 
         if (Key == "k") {
@@ -225,8 +225,8 @@ void AddEnzReaction(std::string ReactionName, const NReaction* Reaction, std::st
     const auto& propertylist = Reaction->Property;
     for (auto& property :propertylist) {
         auto& Key = property->Key;
-        // auto Value = property->Value->Evaluate();
-        const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+        // auto& Value = property->Value->Evaluate();
+        const auto& Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
         auto Value = Value_Exp->EvaluateValueAndPrefix();
 
         if (Key == "k") {
@@ -276,11 +276,11 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
             Substrate = std::stof(Value);
 
         } else if ((Key == "kcat") || (Key == "kCat")) {
-            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+            const auto& Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
             kcat = Value_Exp->EvaluateValueAndPrefixInFloat();
 
         } else if ((Key == "KM") || (Key == "kM") || (Key == "km")) {
-            const auto Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+            const auto& Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
             KM = Value_Exp->EvaluateValueAndPrefixInFloat();
         }
     }
@@ -340,13 +340,13 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
 
     // get count from OpB
     if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExpression->OpB.get())) {
-        const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB);
+        const auto& VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB);
 
         Amount = VarAssigned->EvaluateInFloat();
         bMolarity = VarAssigned->Molarity();
 
     } else if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpB.get())) {
-        const auto VarAssigned = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpB);
+        const auto& VarAssigned = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpB);
         // TODO: Evaluate may not work yet
 //                    Amount = std::stof(VarAssigned->Evaluate());
 //                    bMolarity = VarAssigned->Molarity();
@@ -354,14 +354,14 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
 
     // get else from OpA
     if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
-        const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
+        const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
 
         // parsing VarExp (may be made into a function in the future)
 
         Name = VarExp->GetName();
 
         if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(VarExp->Variable.get())) {
-            const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(VarExp->Variable);
+            const auto& FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(VarExp->Variable);
 
             Location = FCExp->GetParameters(ControlVar, "Location");
         }
@@ -369,7 +369,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
         // VarExp->Index, for time info
         if (VarExp->Index) {
             if (Utils::is_class_of<const NRangeExpression, const NExpression>(VarExp->Index.get())) {
-                const auto RangeExp = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
+                const auto& RangeExp = dynamic_pointer_cast<const NRangeExpression>(VarExp->Index);
 
                 Range = RangeExp->GetBeginEndStep();
             }
@@ -377,7 +377,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
 
     } else if (Utils::is_class_of<const NFunctionCallExpression, const NExpression>(
             AExpression->OpA.get())) {
-        const auto FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(AExpression->OpA);
+        const auto& FCExp = dynamic_pointer_cast<const NFunctionCallExpression>(AExpression->OpA);
 
         Name = FCExp->GetName();
         Location = FCExp->GetParameters(ControlVar, "Location");
@@ -504,7 +504,7 @@ void TraversalNode_Core(NNode * node)
                 // WITHOUT overall reaction: enzyme takes care of multiple reactions
                 if (!Reaction & (Utils::is_class_of<NReaction, NNode>(stmt.get()))) {
 
-                    const auto Reaction = &*dynamic_pointer_cast<NReaction>(stmt);
+                    const auto& Reaction = &*dynamic_pointer_cast<NReaction>(stmt);
                     os << "Reaction Id: " << Reaction->Id.Name << endl;
                     // Reaction->Print(os);
 
@@ -572,7 +572,7 @@ void TraversalNode_Core(NNode * node)
         }
 
         if (N_Pathway->OverallReaction) {
-            auto Reaction = N_Pathway->OverallReaction;
+            auto& Reaction = N_Pathway->OverallReaction;
             // TODO: if the block contains subreactions, priortize subreactions over main reaction for simulation?
 
             os << "Reaction Id: " << Reaction->Id.Name << endl;
@@ -653,18 +653,18 @@ void TraversalNode_Core(NNode * node)
 
         //            int i = 0;
         //
-        //            for (const auto stmt : N_Polymerase->Statements) {
+        //            for (const auto& stmt : N_Polymerase->Statements) {
         //                stmt->Print(os);
         //                NStatement Statement = *stmt;
         //
         //                if (i == 1) {
-        //                    auto Elongation = static_cast<NElongationStatement *>(&Statement);
+        //                    auto& Elongation = static_cast<NElongationStatement *>(&Statement);
         //                    NReaction EPickRandomNumberWithWeight>Reaction;
         //                    ElongationReaction.Print(os);
         //                    os << "AAAAAAAAAAA" << endl;
         //
         ////                if (Utils::is_class_of<const NElongationStatement, const NStatement>(&Statement)) {
-        ////                    auto Elongation = static_cast<const NElongationStatement *>(&Statement);
+        ////                    auto& Elongation = static_cast<const NElongationStatement *>(&Statement);
         ////                    NReaction ElongationReaction = Elongation->Reaction;
         //
         //                    os << "11111" << endl;
@@ -809,8 +809,8 @@ void TraversalNode_Core(NNode * node)
 
     } else if (Utils::is_class_of<NAExpression, NNode>(node)) {
         auto AExpression = dynamic_cast<const NAExpression *>(node);
-//            auto VarExp = dynamic_pointer_cast<const NVariableExpression *>(AExpression->OpA);
-//            auto VarAssigned = dynamic_pointer_cast<const NExpression *>(AExpression->OpB); 
+//            auto& VarExp = dynamic_pointer_cast<const NVariableExpression *>(AExpression->OpA);
+//            auto& VarAssigned = dynamic_pointer_cast<const NExpression *>(AExpression->OpB); 
 
         if (Option.bDebug) {
             AExpression->Print(os);
@@ -847,7 +847,7 @@ void TraversalNode_Core(NNode * node)
                             // get ControlVar_Name from OpA
                             if (Utils::is_class_of<const NVariableExpression, const NExpression>(
                                     AExpression->OpA.get())) {
-                                const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(
+                                const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(
                                         AExpression->OpA);
 
                                 ControlVar_Name = VarExp->GetName();
@@ -856,14 +856,14 @@ void TraversalNode_Core(NNode * node)
                             // get ControlVar_Start from OpB
                             if (Utils::is_class_of<const NConstantExpression, const NExpression>(
                                     AExpression->OpB.get())) {
-                                const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(
+                                const auto& VarAssigned = dynamic_pointer_cast<const NConstantExpression>(
                                         AExpression->OpB);
 
                                 ControlVar_Start = floor(VarAssigned->EvaluateInFloat());
 
                             } else if (Utils::is_class_of<const NVariableExpression, const NExpression>(
                                     AExpression->OpB.get())) {
-                                const auto VarAssigned = dynamic_pointer_cast<const NVariableExpression>(
+                                const auto& VarAssigned = dynamic_pointer_cast<const NVariableExpression>(
                                         AExpression->OpB);
                                 // TODO: Evaluate may not work yet
                                 //                    Amount = std::stoi(VarAssigned->Evaluate());
@@ -882,19 +882,19 @@ void TraversalNode_Core(NNode * node)
                 if ((AExpression->Oper == T_LT) || (AExpression->Oper == T_LE)) {
                     // get Var_Name from OpA to confirm the Control Var
                     if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
-                        const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
+                        const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
 
                         Utils::Assertion(VarExp->GetName() == ControlVar_Name, "Inconsistent control variable in the loop expression");
                     }
 
                     // get ControlVar_Start from OpB
                     if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExpression->OpB.get())) {
-                        const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB);
+                        const auto& VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB);
 
                         ControlVar_Final = floor(VarAssigned->EvaluateInFloat());
 
                     } else if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpB.get())) {
-                        const auto VarAssigned = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpB);
+                        const auto& VarAssigned = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpB);
                         // TODO: Evaluate may not work yet
     //                    Amount = std::stoi(VarAssigned->Evaluate());
                     }
@@ -914,7 +914,7 @@ void TraversalNode_Core(NNode * node)
                 if (AExpression->Oper == T_ASSIGN) {
                     // get Var_Name from OpA to confirm the Control Var
                     if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
-                        const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
+                        const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
 
                         Utils::Assertion(VarExp->GetName() == ControlVar_Name, "Inconsistent control variable in the loop expression");
                     }
@@ -925,14 +925,14 @@ void TraversalNode_Core(NNode * node)
                         if (AExp->Oper == T_PLUS) {
                             // get Var_Name from OpA to confirm the Control Var
                             if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExp->OpA.get())) {
-                                const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
+                                const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
 
                                 Utils::Assertion(VarExp->GetName() == ControlVar_Name, "Inconsistent control variable in the loop expression");
                             }
 
                             // get ControlVar_Start from OpB
                             if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExp->OpB.get())) {
-                                const auto VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
+                                const auto& VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
 
                                 ControlVar_Increment = floor(VarAssigned->EvaluateInFloat());
                             }
@@ -1008,7 +1008,7 @@ void TraversalNode_Core(NNode * node)
 
             if (DeclStmt->Initializer) {
                 auto Inits = dynamic_cast<const NInitializerExpression *>(DeclStmt->Initializer.get());
-                for (const auto Exp : Inits->ExpressionList) {
+                for (const auto& Exp : Inits->ExpressionList) {
                     if (Utils::is_class_of<NVariableExpression, NExpression>(Exp.get())) {
                         auto VarExp = dynamic_pointer_cast<NVariableExpression>(Exp);
                         MolName = VarExp->GetName();
@@ -1018,12 +1018,12 @@ void TraversalNode_Core(NNode * node)
                             std::string Key;
                             float Value;
                             if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExp->OpA.get())) {
-                                const auto VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
+                                const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(AExp->OpA);
                                 Key = VarExp->GetName();
                                 Utils::Assertion((Key == "ki" || Key == "ko"), "Transporter syntax currently takes 'ki or ko' as a parameter key");
                             }
                             if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExp->OpB.get())) {
-                                const auto ConstExp = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
+                                const auto& ConstExp = dynamic_pointer_cast<const NConstantExpression>(AExp->OpB);
                                 Value = ConstExp->EvaluateInFloat();
                             }
                             // add info
@@ -1066,7 +1066,7 @@ void TraversalNode_Core(NNode * node)
 
 #if 0
     else if (Utils::is_class_of<NIdentifier, NNode>(node)) {
-        auto Identifier = dynamic_cast<const NIdentifier *>(node);
+        auto& Identifier = dynamic_cast<const NIdentifier *>(node);
         os << "Identifier: " << Identifier->Name  << endl;
         Context.IdentifierList.emplace_back(Identifier->Name);
     }
@@ -1097,7 +1097,7 @@ void TraversalNode(NBlock* InProgramBlock)
             Context.AddToContainerList(NewContainer);
 
             if (ContainerStmt->Body) {
-                for (auto &statement: ContainerStmt->Body->Statements) {
+                for (auto& statement: ContainerStmt->Body->Statements) {
                     os << "  ";
                     statement->Print(os);
 
@@ -1113,7 +1113,7 @@ void TraversalNode(NBlock* InProgramBlock)
                             std::string OrganismSpace = "Ecoli";
 
                             if (Ecoli->Block) {
-                                for (auto &stmt: Ecoli->Block->Statements) {
+                                for (auto& stmt: Ecoli->Block->Statements) {
                                     os << "  ";
                                     stmt->Print(os);
                                     os << endl;
@@ -1124,7 +1124,7 @@ void TraversalNode(NBlock* InProgramBlock)
                                         TraversalNode_Core(ExpStmt->Expression.get());
 //
 //                                        if (Utils::is_class_of<NAExpression, NNode>(ExpStmt->Expression.get())) {
-//                                            auto AExpression = dynamic_cast<NAExpression *>(ExpStmt->Expression.get());
+//                                            auto& AExpression = dynamic_cast<NAExpression *>(ExpStmt->Expression.get());
 //
 //                                            if (Option.bDebug) {
 //                                                AExpression->Print(os);
@@ -1163,7 +1163,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                                 i = 0;
                                 os << ">> Genes being imported... : ";
-                                for (auto &record: Context.GeneTable.Records) {
+                                for (auto& record: Context.GeneTable.Records) {
                                     // os << record["symbol"] << ", ";
                                     FGene *NewGene = new FGene(record["id"], record["symbol"]);
                                     //                        if (Option.bDebug) { NewGene->Print(os); }
@@ -1181,7 +1181,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                                 i = 0;
                                 os << ">> RNAs being imported... : ";
-                                for (auto &record: Context.RNATable.Records) {
+                                for (auto& record: Context.RNATable.Records) {
                                     // os << record["id"] << ", ";
                                     FRNA *NewRNA = new FRNA(record["id"], record["type"]);
                                     //                        if (Option.bDebug) { NewRNA->Print(os); }
@@ -1199,7 +1199,7 @@ void TraversalNode(NBlock* InProgramBlock)
 
                                 i = 0;
                                 os << ">> Proteins being imported... : ";
-                                for (auto &record: Context.ProteinTable.Records) {
+                                for (auto& record: Context.ProteinTable.Records) {
                                     // os << record["id"] << ", ";
                                     FProtein *NewProtein = new FProtein(record["id"]);
                                     //                        if (Option.bDebug) { NewProtein->Print(os); }
@@ -1426,7 +1426,7 @@ int main(int argc, char *argv[])
         }
 
         if (!Context.ThresholdList.empty()) {
-            for (auto ThresholdMolecule : Context.ThresholdList) {
+            for (auto& ThresholdMolecule : Context.ThresholdList) {
                 Writer.SimThreshold(ThresholdMolecule);
             }
         }

@@ -22,7 +22,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "import plot" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
     if (!Context.ThresholdList.empty()) {
-        for (auto ThresholdMolecule : Context.ThresholdList) {
+        for (auto& ThresholdMolecule : Context.ThresholdList) {
             ofs << "import SimThreshold_" << ThresholdMolecule->Name << " as SimT_" << ThresholdMolecule->Name << endl;
         }
     }
@@ -65,7 +65,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!ObjLoc.empty()) {
         MatrixSize = 0;
         std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-        for (auto UniqueName : ObjUniqueNames) {
+        for (auto& UniqueName : ObjUniqueNames) {
             int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
             MatrixSize += Count;
         }
@@ -254,7 +254,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Mol_Names = [" << Utils::JoinStr2Str(MolNames) << "]" << endl;
     ofs << in+ in+ "self.Mol_Name2Idx = {";
     int i = 0;
-    for (auto MolName : MolNames) {
+    for (auto& MolName : MolNames) {
         ofs << "'" << MolName << "' : np.array([" << i << "]), ";
         i++;
     } ofs << "}" << endl;
@@ -277,7 +277,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (ObjLoc.empty()) {
         ofs << Utils::JoinInt2Str_Idx(Idx_Mol);
     } else {
-        for (auto objLoc : ObjLoc) {
+        for (auto& objLoc : ObjLoc) {
             ofs << "[" << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ";
         }
     }
@@ -287,7 +287,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (ObjLoc.empty()) {
         ofs << Utils::JoinFloat2Str(InitialCount_Molecules);
     } else {
-        for (auto objLoc : ObjLoc) {
+        for (auto& objLoc : ObjLoc) {
             ofs << "[" << Utils::JoinFloat2Str(InitialCount_Molecules) << "], ";
         }
     }
@@ -366,7 +366,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // Update spatial distribution to a specific coord values --> to LocationList method
 
     if (!MolLoc.empty()) {
-        for (auto molLoc : MolLoc) {
+        for (auto& molLoc : MolLoc) {
             ofs << in+ in+ "self.Idx_DistToCoord_" << molLoc->Name << " = None" << endl;
         }
     }
@@ -429,7 +429,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // Distribution To Count
     i = 0;
     if (!MolLoc.empty()) {
-        for (auto molLoc : MolLoc) {
+        for (auto& molLoc : MolLoc) {
             int Idx = Context.GetIdxByName_MoleculeList(molLoc->Name);
             ofs << in+ in+ "self.Idx_DistToCoord_" << molLoc->Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
             i++;
@@ -653,9 +653,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def DistributionToCount(self):" << endl;
     bool PassSwitch = true;
     if (!MolLoc.empty() & !ObjLoc.empty()) {
-        for (auto molLoc : MolLoc) {
+        for (auto& molLoc : MolLoc) {
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-            for (auto UniqueName : ObjUniqueNames) {
+            for (auto& UniqueName : ObjUniqueNames) {
                 if (molLoc->Name == "L") {
                     ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
                     ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
@@ -671,9 +671,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def CountToDistribution(self):" << endl;
     {
 //    if (!MolLoc.empty() & !ObjLoc.empty()) {
-//        for (auto molLoc : MolLoc) {
+//        for (auto& molLoc : MolLoc) {
 //            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-//            for (auto UniqueName : ObjUniqueNames) {
+//            for (auto& UniqueName : ObjUniqueNames) {
 //                ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
 //                ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
 //                    << "] = Count.transpose()" << endl;
@@ -714,19 +714,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "pass" << endl;
     }
 
-
-//    if (!Context.PathwayList.empty()){
-//        for (auto& Pathway : Context.PathwayList) {
-//            if (Pathway.Name == "TCA") {
-//                std::string MoleculeToRestore = "acetyl-CoA";
-//                int Count = 446331;
-//                ofs << in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Pathway.Name << ", " << std::to_string(Count) << ", axis=1)   # " << MoleculeToRestore << endl;
-//                Pass = false;
-//            }
-//        }
-//    }
-    ofs << endl;
-
     // Event
     ofs << in+ "def TriggerEventMoleculeCount(self):" << endl;
     ofs << in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
@@ -758,7 +745,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     if (!Context.ThresholdList.empty()) {
         ofs << in+ "def FindThresholds(self):" << endl;
-        for (auto ThresholdMol : Context.ThresholdList) {
+        for (auto& ThresholdMol : Context.ThresholdList) {
             // SimThreshold(ThresholdMol);
         }
 
@@ -792,77 +779,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
 
     }
-
-    float HomeostasisFactor = 1e-7;
-    ofs << in+ "def Homeostasis(self, MoleculeNames=None):" << endl;
-    // TODO: Get homeostasis info from FPathway,
-    ofs << in+ in+ "bNotHomeostasis = True" << endl;
-    ofs << in+ in+ "self.SetIdxForHomeostasis(MoleculeNames)" << endl;
-    ofs << in+ in+ "MoleculeNames_Str = ListToStr(MoleculeNames, '_')" << endl;
-
-    ofs << in+ in+ "# Temporary homeostasis save file" << endl;
-    ofs << in+ in+ "FileName_Homeostasis = 'SimSave_Homeostasis_%s" << int(Numbers::RandomNumber(0, 1000)) << "' % MoleculeNames_Str" << endl;
-    ofs << endl;
-    ofs << in+ in+ "if os.path.exists('%s.npy' % FileName_Homeostasis):" << endl;
-    ofs << in+ in+ in+ "print('[Homeostasis] Loading previous steady state...')" << endl;
-    ofs << in+ in+ in+ "self.State.Count_All = np.load('%s.npy' % FileName_Homeostasis)" << endl;
-    ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been achieved!')" << endl;
-    ofs << in+ in+ in+ "self.SpecialRedistribution()" << endl;
-    ofs << in+ in+ in+ "if MoleculeNames:" << endl;
-    ofs << in+ in+ in+ in+ "self.SetThreshold(True)" << endl;
-    ofs << in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ "print('[Homeostasis] Running simulation to achieve steady state...')" << endl;
-
-    ofs << in+ in+ in+ "while (bNotHomeostasis):" << endl;
-    ofs << in+ in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
-    ofs << in+ in+ in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
-    ofs << in+ in+ in+ in+ "bSteadyState = abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << endl;
-    ofs << in+ in+ in+ in+ "if MoleculeNames:" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.SetThreshold(bSteadyState)" << endl;
-    ofs << in+ in+ in+ in+ "if np.all(Count_Now > 0) and np.all(bSteadyState):" << endl;
-    ofs << in+ in+ in+ in+ in+ "if MoleculeNames:" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "self.PrintThreshold(MoleculeNames_Str)" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "print('Current: ')" << endl;
-    ofs << in+ in+ in+ in+ in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-    ofs << in+ in+ in+ in+ in+ "bNotHomeostasis = False" << endl;
-    ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been achieved.')" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.SaveState(FileName_Homeostasis)" << endl;
-    ofs << in+ in+ in+ in+ in+ "print('[Homeostasis] Steady state has been saved: %s' % FileName_Homeostasis)" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.SpecialRedistribution()" << endl;
-    ofs << in+ in+ in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.Count_Prev = Count_Now" << endl;
-    ofs << endl;
-    ofs << in+ in+ in+ in+ in+ "# Trigger Event on Substrate Count" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.TriggerEventMoleculeCount()" << endl;
-    ofs << endl;
-    ofs << in+ in+ in+ in+ in+ "# Save and Export Data" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.ExportData()" << endl;
-    ofs << endl;
-
-    // Special Distribution Reset for glucose 'L' distribution
-    ofs << in+ "def SpecialRedistribution(self):" << endl;
-    PassSwitch = true;
-//    for (int i = 0; i < MolLoc.size(); i++) {
-//        auto Coord = MolLoc[i]->Coord;
-//        auto Amount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
-//        std::string Shape, Pattern;
-//        int Size;
-//
-//        if (MolLoc[i]->Name == "L") {
-//            Shape = "'circle'"; Size = 500; Pattern = "'diffuse'";
-//
-//            ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.InitializeDistribution(self.State.Dimension_X, self.State.Dimension_Y, "
-//                << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount << ", " << 0 ;
-//            if (!Shape.empty()) {
-//                ofs << ", " << Shape << ", " << Size << ", " << Pattern;
-//                }
-//            ofs << ")" << endl;
-//            PassSwitch = false;
-//        }
-//    }
-    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
-    ofs << endl;
-
 
     if (!Context.LocationList.empty()) {
         ofs << in+ "# Spatial Simulation related routines" << endl;
@@ -1018,7 +934,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def NonSpatialSimulation(self):" << endl;
     PassSwitch = true;
     if (!StandardReactionTypes.empty()) {
-        for (auto &Type: StandardReactionTypes) {
+        for (auto& Type: StandardReactionTypes) {
             std::vector<FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
                 ofs << in+ in+ "self.StandardReactions()" << endl;
@@ -1030,7 +946,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     if (!EnzReactionTypes.empty()) {
-        for (auto &Type: EnzReactionTypes) {
+        for (auto& Type: EnzReactionTypes) {
             std::vector<FReaction *> ReactionSubList = Context.GetSubList_ReactionList(Type);
             if (!ReactionSubList.empty()) {
                 ofs << in+ in+ "self.EnzymaticReactions()" << endl;

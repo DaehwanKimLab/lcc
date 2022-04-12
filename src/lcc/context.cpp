@@ -303,9 +303,9 @@ void FCompilerContext::AssignThresholdMolecules() {
     ThresholdMoleculeMap.emplace("L", "Am");
     ThresholdMoleculeMap.emplace("qL", "qAm");
 
-    for (auto molecule : MoleculeList) {
+    for (auto& molecule : MoleculeList) {
         if (ThresholdMoleculeMap.count(molecule->Name) > 0) {
-            for (auto location : LocationList) {
+            for (auto& location : LocationList) {
                 if (location->Name == molecule->Name) {
                     auto ThresholdMolecule = GetMolecule_MoleculeList(ThresholdMoleculeMap[molecule->Name]);
                     ThresholdList.push_back(ThresholdMolecule);
@@ -369,8 +369,8 @@ void FCompilerContext::AssignReactionType(FReaction *Reaction, int Regulation)
 
     } else if (Utils::is_class_of<FRegulatoryReaction, FReaction>(Reaction)) {
         auto reaction = dynamic_cast<FRegulatoryReaction *>(Reaction);
-        auto Effect = reaction->Effect;
-        auto n = reaction->n;
+        auto& Effect = reaction->Effect;
+        auto& n = reaction->n;
 
 	if      ((Effect == "Inhibition") & (n >= 0))  { Type = Regulatory_Inhibition_Allosteric; }
 	else if ((Effect == "Inhibition") & (n == -1)) { Type = Regulatory_Inhibition_Competitive; }
@@ -476,7 +476,7 @@ void FCompilerContext::PrintInitialLocations(std::ostream& os) // TODO: NEEDS UP
         for (auto& location : LocationList){
             os << "[" << i << "] ";
             os << location->Name << " : (";
-            for (auto coord : location->Coord) {
+            for (auto& coord : location->Coord) {
                 os << Utils::SciFloat2Str(coord) << ", ";
             } os << ")" << std::endl;
             i++;
@@ -499,7 +499,7 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
     }
 }
 
-const std::string FCompilerContext::QueryTable(const std::string& Name, const std::string& Property, FTable Table)
+std::string FCompilerContext::QueryTable(std::string Name, std::string Property, FTable Table)
 {
     for (auto& record : Table.Records) {
         if (record["Name"] == Name) {
@@ -1364,7 +1364,7 @@ std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::stri
 // 
 //     for (FMolecule* molecule :MoleculeList) {
 //         if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
-//             auto enzyme = dynamic_cast<FEnzyme *>(molecule);
+//             auto& enzyme = dynamic_cast<FEnzyme *>(molecule);
 //             std::string EnzSub = enzyme->Substrate;
 //             Index = 0;
 //             for (auto& molecule : MoleculeList) {
@@ -1386,7 +1386,7 @@ std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::stri
 // 
 //     for (FMolecule* molecule :MoleculeList) {
 //         if (Utils::is_class_of<FPolymerase, FMolecule>(molecule)) {
-//             auto Polymerase = dynamic_cast<FPolymerase *>(molecule);
+//             auto& Polymerase = dynamic_cast<FPolymerase *>(molecule);
 //             std::string PolSub = Polymerase->Substrate;
 //             Index = 0;
 //             for (auto& molecule :MoleculeList) {
@@ -1503,7 +1503,7 @@ std::vector<FReaction *> FCompilerContext::FilterByPathway_ReactionList(std::vec
 std::string FCompilerContext::GetAssociatedPathway_ReactionList(FMolecule* Molecule)
 {
     std::string Pathway;
-    for (auto reaction : ReactionList) {
+    for (auto& reaction : ReactionList) {
         if ((reaction->CheckIfProduct(Molecule->Name)) || reaction->CheckIfProduct(Molecule->Name)) {
             Pathway = reaction->Pathway;
         }
@@ -1517,10 +1517,10 @@ std::vector<FMolecule *> FCompilerContext::GetSubListByReactionList_MoleculeList
 {
     std::vector<FMolecule *> Molecules;
 
-    for (auto reaction : ListOfReactions) {
-        for (auto stoich: reaction->Stoichiometry) {
-            auto MolName = stoich.first;
-            for (auto Molecule : MoleculeList) {
+    for (auto& reaction : ListOfReactions) {
+        for (auto& stoich: reaction->Stoichiometry) {
+            auto& MolName = stoich.first;
+            for (auto& Molecule : MoleculeList) {
                 if (Molecule->Name == MolName) {
                     if (std::find(Molecules.begin(), Molecules.end(), Molecule) == Molecules.end()) {
                         Molecules.push_back(Molecule);
