@@ -8,7 +8,7 @@
 "
 
 syn keyword lppTodo contained TODO FIXME XXX NOTE
-syn keyword lppTopKeyword organism experiment protein pathway protein_complex
+syn keyword lppTopKeyword organism experiment protein pathway protein_complex flagellum
 
 syn keyword lppTopKeyword ecoli petridish glucose
 
