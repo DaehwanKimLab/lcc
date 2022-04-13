@@ -21,11 +21,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     // ofs << "import SimIdx as idx" << endl;
     ofs << "import plot" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
-    if (!Context.ThresholdList.empty()) {
-        for (auto& ThresholdMolecule : Context.ThresholdList) {
-            ofs << "import SimThreshold_" << ThresholdMolecule->Name << " as SimT_" << ThresholdMolecule->Name << endl;
-        }
-    }
     ofs << endl;
 
     //TODO: Take options from SimModule cmd line
@@ -403,12 +398,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
-    // Homeostasis --> to SimModule cmd option
-    ofs << in+ in+ "self.Count_Prev = 0" << endl;
-    ofs << in+ in+ "self.Idx_Count_Homeostasis = None" << endl;
-    ofs << in+ in+ "self.Idx_Pos_Homeostasis = None" << endl;
-    ofs << endl;
-
     ofs << in+ in+ "# Debugging" << endl;
     ofs << in+ in+ "self.Debug_Idx_Molecules = list()" << endl;
     ofs << in+ in+ "self.UnitTxt = ''" << endl;
@@ -484,42 +473,21 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ in+ "# Debugging" << endl;
-    ofs << in+ in;
-//    if (!Option.bDebug) { ofs << "#"; }
-    ofs << "self.Debug_SetIdxMoleculesToTrack()" << endl;
-    if (!Context.LocationList.empty()) {
-        ofs << in+ in;
-//        if (!Option.bDebug) { ofs << "#"; }
-        ofs << "self.Debug_SetIdxDistAndPosToTrack()" << endl;
-    }
-    ofs << in+ in;
-//    if (!Option.bDebug) { ofs << "#"; }
-    ofs << "self.Debug_SetUnit(Unit)" << endl;
-    ofs << endl;
-
-    // homeostasis--threshold index setting
-    ofs << in+ "def SetIdxForHomeostasis(self):" << endl; // here
-    ofs << in+ in+ "if MoleculeNameList:" << endl;
-    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.array([self.GetMolIdx(Name)[0] for Name in MoleculeNameList])" << endl;
-    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.array(range(len(MoleculeNameList)))" << endl;
-    ofs << in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ "self.Idx_Count_Homeostasis = np.array(range(self.State.Count_All.shape[1]))" << endl;
-    ofs << in+ in+ in+ "self.Idx_Pos_Homeostasis = np.array(range(self.State.Count_All.shape[1]))" << endl;
+    ofs << in+ in+ "self.Debug_SetIdxMoleculesToTrack()" << endl;
+    ofs << in+ in+ "self.Debug_SetIdxDistAndPosToTrack()" << endl;
+    ofs << in+ in+ "self.Debug_SetUnit(Unit)" << endl;
     ofs << endl;
 
     // regular simloop
     ofs << in+ "def SimLoop_WithSpatialSimulation(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
-    ofs << in+ in;
     if (!Option.bDebug) { ofs << "#";}
     ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-    ofs << in+ in;
     if (!Option.bDebug) { ofs << "#"; }
-    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
-    ofs << in+ in;
+    ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
     if (!Option.bDebug) { ofs << "#"; }
-    ofs << "self.Debug_PrintDistributions()" << endl;
+    ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Run Spatial Simulation" << endl;
@@ -534,9 +502,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# temporary: Update Threshold" << endl;
-    ofs << in+ in+ "self.UpdateThreshold()" << endl;
-    ofs << endl;
+//    ofs << in+ in+ "# temporary: Update Threshold" << endl;
+//    ofs << in+ in+ "self.UpdateThreshold()" << endl;
+//    ofs << endl;
 
     ofs << in+ in+ "# Update Spatially Distributed Molecules On Count (special treatment on 'L' for now)" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
@@ -550,13 +518,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def SimLoop_WithoutSpatialSimulation(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
-//    ofs << in+ in;
-//    if (!Option.bDebug) { ofs << "#";}
-//    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-//    ofs << in+ in;
-//    if (!Option.bDebug) { ofs << "#";}
-//    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
-//    ofs << endl;
+    if (!Option.bDebug) { ofs << "#";}
+    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+    if (!Option.bDebug) { ofs << "#"; }
+    ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+    if (!Option.bDebug) { ofs << "#"; }
+    ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+    ofs << endl;
 
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
@@ -744,16 +712,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     if (!Context.ThresholdList.empty()) {
-        ofs << in+ "def FindThresholds(self):" << endl;
-        for (auto& ThresholdMol : Context.ThresholdList) {
-            // SimThreshold(ThresholdMol);
-        }
-
-
         // temporary code
         ofs << in+ "def GetNewThresholdValues(self):" << endl;
         float ThresholdFactor = 0.999;
-        ofs << in+ in+ "return self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
+        ofs << in+ in+ "return self.GetCount_All()[:, self.State.Idx_Count_Threshold].transpose() * " << Utils::SciFloat2Str(ThresholdFactor) << endl;
         ofs << endl;
 
         ofs << in+ "def SetThreshold(self, bSteadyState):" << endl;
@@ -767,17 +729,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "print(self.Debug_ApplyUnit(self.State.Pos_Threshold.transpose()))" << endl;
         ofs << endl;
 
-        ofs << in+ "def UpdateThreshold(self):" << endl;
-        float HomeostasisFactor = 1e-7;
-        ofs << in+ in+ "Count_Now = self.GetCount_All()[:, self.Idx_Count_Homeostasis].transpose()" << endl;
-        ofs << in+ in+ "bSteadyState = abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << endl;
-        ofs << in+ in+ "Idx_SteadyState = np.where(bSteadyState)" << endl;
-        ofs << in+ in+ "self.State.Pos_Threshold[Idx_SteadyState] = Count_Now[Idx_SteadyState]" << endl;
-    //    ofs << in+ in+ "if np.any(Idx_SteadyState):" << endl;
-    //    ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been updated.')" << endl;
-        ofs << in+ in+ "self.Count_Prev = Count_Now" << endl;
-        ofs << endl;
-
+//        ofs << in+ "def UpdateThreshold(self):" << endl;
+//        float HomeostasisFactor = 1e-7;
+//        ofs << in+ in+ "Count_Now = self.GetCount_All()[:, self.State.Idx_Count_Threshold].transpose()" << endl;
+//        ofs << in+ in+ "bSteadyState = abs(Count_Now - self.Count_Prev) / Count_Now < " << Utils::SciFloat2Str(HomeostasisFactor) << endl;
+//        ofs << in+ in+ "Idx_SteadyState = np.where(bSteadyState)" << endl;
+//        ofs << in+ in+ "self.State.Pos_Threshold[Idx_SteadyState] = Count_Now[Idx_SteadyState]" << endl;
+//    //    ofs << in+ in+ "if np.any(Idx_SteadyState):" << endl;
+//    //    ofs << in+ in+ in+ "print('[Homeostasis] Steady state has been updated.')" << endl;
+//        ofs << in+ in+ "self.State.Count_Prev = Count_Now" << endl;
+//        ofs << endl;
     }
 
     if (!Context.LocationList.empty()) {
@@ -1251,7 +1212,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetConcentration(self, Idx):" << endl;
-    ofs << in+ in+ "return SimF.CountToConc(self.State.Count_All[:, Idx])" << endl;
+    ofs << in+ in+ "return SimF.CountToConc(self.State.Count_All[:, Idx], self.State.Vol)" << endl;
     ofs << endl;
 
     ofs << in+ "def GetDistribution(self, Idx):" << endl;
@@ -1299,7 +1260,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetConcentrationByName(self, Name):" << endl;
-    ofs << in+ in+ "return self.GetConcentration(self.GetMolIdx(Name), self.State.Vol)" << endl;
+    ofs << in+ in+ "return self.GetConcentration(self.GetMolIdx(Name))" << endl;
     ofs << endl;
 
     ofs << in+ "def GetThreshold(self, Pos_Idx):" << endl;
@@ -1461,8 +1422,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def EvaluateChemotaxisThreshold(self):" << endl;
-    ofs << in+ in+ "HomeostasisMolecule = self.GetCount(self.Idx_Count_Homeostasis).transpose()" << endl;
-    ofs << in+ in+ "return np.array(HomeostasisMolecule) < self.State.Pos_Threshold" << endl;
+    ofs << in+ in+ "ThresholdedMolecules = self.GetCount(self.State.Idx_Count_Threshold).transpose()" << endl;
+    ofs << in+ in+ "return np.array(ThresholdedMolecules) < self.State.Pos_Threshold" << endl;
     ofs << endl;
 
     ofs << in+ "# Debugging tools" << endl;
@@ -1512,7 +1473,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def Debug_PrintSimStepTime(self, end='\\t| '):" << endl;
     ofs << in+ in+ "Time = self.GetSimTime()" << endl;
-    ofs << in+ in+ "print(self.SimStep, '(', round(Time,3), 's)', end=end)" << endl;
+    ofs << in+ in+ "print(self.SimStep, '(', round(Time, 3), 's)', end=end)" << endl;
     ofs << endl;
 
     ofs << in+ "def Debug_PrintCount(self, Idx_Mol, Idx_Pos=0):" << endl;
@@ -1541,19 +1502,21 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Debugging for spatial simulation
     ofs << in+ "def Debug_SetIdxDistAndPosToTrack(self):" << endl;
-    ofs << in+ in+ "# Add a list of distributions at and around selected positions to track for debugging every simulation step" << endl;
-    ofs << in+ in+ "Debug_Names_Positions = []" << endl; // TODO: take input from command line
-    ofs << in+ in+ "if Debug_Names_Positions == []:" << endl;
-    ofs << in+ in+ in+ "self.Debug_Idx_Pos = list(range(len(self.State.GetPosNames())))" << endl;
-    ofs << in+ in+ "else:   # does not properly cover all cases due to redundant names allowed through for loops" << endl;
-    ofs << in+ in+ in+ "for Name in Debug_Names_Positions:" << endl;
-    ofs << in+ in+ in+ in+ "self.Debug_Idx_Pos.append(self.State.GetPosNames().index(Name))" << endl;
-    ofs << endl;
-    ofs << in+ in+ "Debug_Names_Distributions = []" << endl; // TODO: take input from command line
-    ofs << in+ in+ "if Debug_Names_Distributions == []:" << endl;
-    ofs << in+ in+ in+ "Debug_Names_Distributions = self.State.GetDistNames()" << endl;
-    ofs << in+ in+ "for Name in Debug_Names_Distributions:" << endl;
-    ofs << in+ in+ in+ "self.Debug_Idx_Dist.append(self.State.GetDistNames().index(Name))" << endl;
+    if (!Context.LocationList.empty()) {
+        ofs << in+ in+ "# Add a list of distributions at and around selected positions to track for debugging every simulation step" << endl;
+        ofs << in+ in+ "Debug_Names_Positions = []" << endl; // TODO: take input from command line
+        ofs << in+ in+ "if Debug_Names_Positions == []:" << endl;
+        ofs << in+ in+ in+ "self.Debug_Idx_Pos = list(range(len(self.State.GetPosNames())))" << endl;
+        ofs << in+ in+ "else:   # does not properly cover all cases due to redundant names allowed through for loops" << endl;
+        ofs << in+ in+ in+ "for Name in Debug_Names_Positions:" << endl;
+        ofs << in+ in+ in+ in+ "self.Debug_Idx_Pos.append(self.State.GetPosNames().index(Name))" << endl;
+        ofs << endl;
+        ofs << in+ in+ "Debug_Names_Distributions = []" << endl; // TODO: take input from command line
+        ofs << in+ in+ "if Debug_Names_Distributions == []:" << endl;
+        ofs << in+ in+ in+ "Debug_Names_Distributions = self.State.GetDistNames()" << endl;
+        ofs << in+ in+ "for Name in Debug_Names_Distributions:" << endl;
+        ofs << in+ in+ in+ "self.Debug_Idx_Dist.append(self.State.GetDistNames().index(Name))" << endl;
+    } else { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def Debug_PrintDistributions(self):" << endl;
@@ -1604,6 +1567,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "# SimOut" << endl;
     ofs << in+ in+ "self.Legend = list()" << endl;
     ofs << in+ in+ "self.DataBuffer = list()" << endl;
+    ofs << endl;
 
     ofs << in+ "def SetLegend(self, InLegend):" << endl;
     ofs << in+ in+ "self.Legend = InLegend" << endl;
@@ -1650,12 +1614,16 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // MAIN
     ofs << "if __name__ == '__main__':" << endl;
-    ofs << in+ "parser = ArgumentParser()" << endl;
-    ofs << in+ "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
-    ofs << in+ "args = parser.parse_args()" << endl;
-    ofs << in+ "main()" << endl;
-    ofs << in+ "plot.main(args.save_fname)" << endl;
-    ofs << endl;
 
+    if (Context.LocationList.empty()) {
+        ofs << in+ "parser = ArgumentParser()" << endl;
+        ofs << in+ "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
+        ofs << in+ "args = parser.parse_args()" << endl;
+        ofs << in+ "main()" << endl;
+        ofs << in+ "plot.main(args.save_fname)" << endl;
+        ofs << endl;
+    } else {
+        ofs << in+ "print('\\n%%%%% Run SimVis2D.py for spatial simulation & visualization %%%%%\\n')" << endl;
+    }
     std::cout << "  Simulation program has been generated: ";
 }

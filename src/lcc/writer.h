@@ -57,9 +57,6 @@ public:
     void Initialize_SpatialSimulation(ofstream& ofs);
     void SetUp_SpatialSimulation(ofstream& ofs);
 
-    // Pre-simulation for Threshold searching
-    void SimThreshold(FMolecule* ThresholdMol);
-
     // Simulation
     void SimIdx();
     void SimModule(int Sim_Steps, int Sim_Resolution);

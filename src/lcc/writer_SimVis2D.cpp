@@ -46,17 +46,17 @@ void FWriter::SimVis2D() {
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
 
-    // Define indices for spatially distributed molecules and containers
-    ofs << "GlucoseName = 'L'" << endl;
-    ofs << "AutoinducerName = 'qL'" << endl;
+//    // Define indices for spatially distributed molecules and containers
+//    ofs << "GlucoseName = 'L'" << endl;
+//    ofs << "AutoinducerName = 'qL'" << endl;
 
     // Pathway dependent key molecules to monitor
-    ofs << "HomeostasisMolName = [";
-    for (auto& location: MolLoc) {
-        if (location->Name == "L") { ofs << "'" << "Am" << "', "; }
-        else if (location->Name == "qL") { ofs << "'" << "qAm" << "', "; }
+
+    std::vector<std::string> Names_ThresholdedMolecules;
+    for (auto& Threshold : Context.ThresholdList) {
+        Names_ThresholdedMolecules.push_back(Threshold.first);
     }
-    ofs << "]" << endl;
+    ofs << "ThresholdMolNames = [" << Utils::JoinStr2Str(Names_ThresholdedMolecules) << "]" << endl;
     ofs << endl;
 
     ofs << "# Utilities" << endl;
@@ -159,9 +159,9 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.FlagellaLength_Fold = 2" << endl;
     ofs << in+ in+ "self.FlagellaThickness = 3" << endl;
     ofs << endl;
-    ofs << in+ in+ "# Homeostasis Molecule Display" << endl;
-    ofs << in+ in+ "self.HomeostasisMolecule_Switch = False" << endl;
-    ofs << in+ in+ "self.HomeostasisMolecule_Colors = list()" << endl;
+    ofs << in+ in+ "# Threshold Molecule Display" << endl;
+    ofs << in+ in+ "self.ThresholdMolecule_Switch = False" << endl;
+    ofs << in+ in+ "self.ThresholdMolecule_Colors = list()" << endl;
     ofs << endl;
     ofs << in+ in+ "# Radar" << endl;
     ofs << in+ in+ "self.Radar_Switch = False" << endl;
@@ -189,9 +189,9 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "Threshold = None" << endl;
     ofs << in+ in+ in+ "Current = None" << endl;
     ofs << in+ in+ in+ "bChemotaxis = None" << endl;
-    ofs << in+ in+ in+ "if self.HomeostasisMolecule_Switch:" << endl;
+    ofs << in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
     ofs << in+ in+ in+ in+ "Threshold = SimM.Debug_ApplyUnit(SimM.State.Pos_Threshold)" << endl;
-    ofs << in+ in+ in+ in+ "Current = SimM.Debug_ApplyUnit(SimM.GetCount(SimM.Idx_Count_Homeostasis).transpose())" << endl;
+    ofs << in+ in+ in+ in+ "Current = SimM.Debug_ApplyUnit(SimM.GetCount(SimM.State.Idx_Count_Threshold).transpose())" << endl;
     ofs << in+ in+ in+ in+ "bChemotaxis = SimM.EvaluateChemotaxisThreshold()" << endl;
     ofs << endl;
     ofs << in+ in+ in+ "for i in range(self.X.size):" << endl;
@@ -203,8 +203,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
     ofs << in+ in+ in+ in+ "if self.Radar_Switch:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.DrawRadar(Color, self.X[i], self.Y[i])" << endl;
-    ofs << in+ in+ in+ in+ "if self.HomeostasisMolecule_Switch:" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.DisplayHomeostasisMolecules(self.X[i], self.Y[i], Threshold[:, i], Current[:, i], bChemotaxis[:, i])" << endl;
+    ofs << in+ in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.DisplayThresholdMolecules(self.X[i], self.Y[i], Threshold[:, i], Current[:, i], bChemotaxis[:, i])" << endl;
     ofs << endl;
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "pygame.draw.circle(Screen, BLACK, (self.X, self.Y), 5)" << endl;
@@ -221,8 +221,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "RotationAngle = int(i * 90 / len(self.Radar_MolList))" << endl;
     ofs << in+ in+ in+ in+ "self.DisplayRadarTexts(self.Radar_MolList[i], X, Y, Spacing, rotate=RotationAngle, color=self.Radar_MolColor[i])" << endl;
     ofs << endl;
-    ofs << in+ "def DisplayHomeostasisMolecules(self, X, Y, Threshold, Current, bChemotaxis):" << endl;
-    ofs << in+ in+ "if len(HomeostasisMolName) == 0:" << endl;
+    ofs << in+ "def DisplayThresholdMolecules(self, X, Y, Threshold, Current, bChemotaxis):" << endl;
+    ofs << in+ in+ "if len(ThresholdMolNames) == 0:" << endl;
     ofs << in+ in+ in+ "return" << endl;
     ofs << endl;
     ofs << in+ in+ "# Determine coordinates" << endl;
@@ -245,9 +245,9 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "# Categories" << endl;
     ofs << in+ in+ "self.DisplayString('Threshold:', X_Category, Y_Threshold, position='midright', color=BLACK)" << endl;
     ofs << in+ in+ "self.DisplayString('Current:', X_Category, Y_Current, position='midright', color=BLACK)" << endl;
-    ofs << in+ in+ "for i in range(len(HomeostasisMolName)):" << endl;
+    ofs << in+ in+ "for i in range(len(ThresholdMolNames)):" << endl;
     // name
-    ofs << in+ in+ in+ "Text = HomeostasisMolName[i] + ' (' + UnitTxt + ')'" << endl;
+    ofs << in+ in+ in+ "Text = ThresholdMolNames[i] + ' (' + UnitTxt + ')'" << endl;
     ofs << in+ in+ in+ "self.DisplayString(Text, X_Mols[i], Y_Legends, color=self.Radar_MolColor[i])" << endl;
     // threshold
     ofs << in+ in+ in+ "Text = self.FormatValueToStr(Threshold[i])" << endl;
@@ -317,8 +317,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
     ofs << endl;
     ofs << in+ "def SetRadar(self, switch=True, sampling=6, spacing=30):" << endl;
-    ofs << in+ in+ "self.HomeostasisMolecule_Switch = switch" << endl;
-    ofs << in+ in+ "self.HomeostasisMolecule_Color = [RED_DARK, GREEN_DARK]" << endl;
+    ofs << in+ in+ "self.ThresholdMolecule_Switch = switch" << endl;
+    ofs << in+ in+ "self.ThresholdMolecule_Color = [RED_DARK, GREEN_DARK]" << endl;
     ofs << in+ in+ "self.Radar_Switch = switch" << endl;
     ofs << in+ in+ "self.Radar_Sampling = sampling" << endl;
     ofs << in+ in+ "self.Radar_Spacing = spacing" << endl;
@@ -339,25 +339,27 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "SimM.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
     ofs << in+ in+ "SimM.SimLoop_WithSpatialSimulation()" << endl;
     ofs << endl;
-    ofs << in+ "def ReportStatus(self):" << endl;
-    ofs << in+ in+ "# for debugging" << endl;
-    ofs << in+ in+ "self.Am = SimM.GetCountByName(HomeostasisMolName[0])" << endl;
-//    ofs << in+ in+ "self.qAm = SimM.GetCountByName(HomeostasisMolName[1])" << endl;
+//    ofs << in+ "def ReportStatus(self):" << endl;
+//    ofs << in+ in+ "# for debugging" << endl;
+//    ofs << in+ in+ "self.Am = SimM.GetCountByName(ThresholdMolNames[0])" << endl;
+//    ofs << in+ in+ "self.qAm = SimM.GetCountByName(ThresholdMolNames[1])" << endl;
+//    ofs << in+ in+ "Ligand_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)[0]" << endl; // TODO: HARDCODED
+//    ofs << in+ in+ "SimStep = SimM.GetSimStep()" << endl;
+//    ofs << in+ in+ "Delta = 0" << endl;
+//    ofs << in+ in+ "if Ligand_Now != 0:" << endl;
+//    ofs << in+ in+ in+ "Delta = (Ligand_Now - self.Ligand_Prev[0]) / Ligand_Now * 100" << endl;
+//    ofs << in+ in+ "# print('SimStep {:06d} [Chemotaxis  {:06d}] Ligand:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)'.format" << endl;
+//    ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, Ligand_Now / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
+//    ofs << endl;
+    ofs << in+ "def IncrementSimCount(self):" << endl;
     ofs << in+ in+ "self.SimCount += 1" << endl;
-    ofs << in+ in+ "Ligand_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)[0]" << endl; // TODO: HARDCODED
-    ofs << in+ in+ "SimStep = SimM.GetSimStep()" << endl;
-    ofs << in+ in+ "Delta = 0" << endl;
-    ofs << in+ in+ "if Ligand_Now != 0:" << endl;
-    ofs << in+ in+ in+ "Delta = (Ligand_Now - self.Ligand_Prev[0]) / Ligand_Now * 100" << endl;
-    ofs << in+ in+ "# print('SimStep {:06d} [Chemotaxis  {:06d}] Ligand:{:.6f} {} ({}{:.4f}%) Am:{:.6f} {} (X:{:.2f}, Y:{:.2f}, {:3.1f} degree)'.format" << endl;
-    ofs << in+ in+ "#in+ '   (SimStep, self.SimCount, Ligand_Now / Unit / NA, UnitTxt, ('+' if Delta >= 0 else ''), Delta, self.Am / Unit / NA, UnitTxt , self.X, self.Y, self.Angle / pi * 180))" << endl;
+//    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
     ofs << endl;
-    ofs << in+ "def Homeostasis(self, MolName=[]):" << endl;
-    ofs << in+ in+ "SimM.Homeostasis(MolName)   # Input 'Am', 'qAm' here" << endl;
-    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
+    ofs << in+ "def Initialize(self):" << endl;
+//    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
     ofs << in+ in+ "self.SetPosition(SimM.GetPositionXYAngleByName(self.Name))" << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
-    ofs << in+ in+ "self.ReportStatus()" << endl;
+    ofs << in+ in+ "self.IncrementSimCount()" << endl;
     ofs << endl;
     ofs << in+ "def InitializeTrajectory(self):" << endl;
     ofs << in+ in+ "for i in range(self.X.size):" << endl;
@@ -533,7 +535,7 @@ void FWriter::SimVis2D() {
 //    ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
     ofs << in+ in+ in+ "'A' : 'Display Status Switch'," << endl;
     ofs << in+ in+ in+ "'R' : 'Display Radar Switch'," << endl;
-    ofs << in+ in+ in+ "'H' : 'Display Homeostasis Switch'," << endl;
+    ofs << in+ in+ in+ "'H' : 'Display Threshold Switch'," << endl;
     ofs << in+ in+ in+ "'P' : 'Pause Visualization'," << endl;
     ofs << in+ in+ "}" << endl;
     ofs << in+ in+ "self.InstructionText = ''" << endl;
@@ -700,11 +702,13 @@ void FWriter::SimVis2D() {
         ofs << endl;
     }
 
-    // Run Homeostasis for "HomeostasisMolName"
+    // Initialize Organisms
     for (auto& OrganismName : OrgNames) {
-        ofs << in+ OrganismName << ".Homeostasis(HomeostasisMolName)" << endl; // TODO: HARDCODED
+        ofs << in+ OrganismName << ".Initialize()" << endl;
+        ofs << in+ OrganismName << ".Receptivity(200)   # Pass time" << endl;
     }
     ofs << endl;
+
     ofs << in+ "ElapsedTime = 0" << endl;
     ofs << in+ "PrevTime = datetime.now()" << endl;
     ofs << endl;
@@ -749,7 +753,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('R')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_h:" << endl;
     for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ in+ in+ in+ OrganismName << ".HomeostasisMolecule_Switch = not " << OrganismName << ".HomeostasisMolecule_Switch" << endl;
+        ofs << in+ in+ in+ in+ in+ OrganismName << ".ThresholdMolecule_Switch = not " << OrganismName << ".ThresholdMolecule_Switch" << endl;
     }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('H')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_p:" << endl;
@@ -776,7 +780,7 @@ void FWriter::SimVis2D() {
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(50)" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
-        ofs << in+ in+ in+ in+ OrganismName << ".ReportStatus()" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".IncrementSimCount()" << endl;
     }
     ofs << endl;
 
@@ -804,11 +808,10 @@ void FWriter::SimVis2D() {
     std::string OrgName = OrgNames[0];
 
     ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos('" << MolName << "', '" << OrgName << "')" << endl;
-
     ofs << endl;
 
     if (!Option.bDebug) {
-        ofs << in+ in+ "if Control.Time < 50:" << endl;
+        ofs << in+ in+ "if Control.Time < 5:" << endl;
         ofs << in+ in+ in+ "Control.DisplayWelcome()" << endl;
     }
     ofs << in+ in+ "if Control.MessageTimer > 0:" << endl;
@@ -818,12 +821,12 @@ void FWriter::SimVis2D() {
 //    ofs << in+ in+ "if Control.ScoreSwitch:" << endl;
 //    ofs << in+ in+ in+ "Control.Score += " << MolName << "_Now / 10" << endl;
 //    ofs << in+ in+ in+ "Control.DisplayScore()" << endl;
-    ofs << endl;
-    ofs << in+ in+ "if Control.StatusSwitch:" << endl;
-    ofs << in+ in+ in+ "Control.DisplayStatus(" << MolName << "_Now, " << OrgName << ".Ligand_Prev, " << OrgName << ".Am)" << endl;
-    ofs << endl;
-    ofs << in+ in+ "# Update Ligand Prev" << endl;
-    ofs << in+ in+ OrgName << ".Ligand_Prev = " << MolName << "_Now" << endl;
+//    ofs << endl;
+//    ofs << in+ in+ "if Control.StatusSwitch:" << endl;
+//    ofs << in+ in+ in+ "Control.DisplayStatus(" << MolName << "_Now, " << OrgName << ".Ligand_Prev, " << OrgName << ".Am)" << endl;
+//    ofs << endl;
+//    ofs << in+ in+ "# Update Ligand Prev" << endl;
+//    ofs << in+ in+ OrgName << ".Ligand_Prev = " << MolName << "_Now" << endl;
     ofs << endl;
     ofs << in+ in+ "Control.DisplayTime()" << endl;
     ofs << in+ in+ "# Control.DisplayMoleculeGradient()" << endl;

@@ -25,7 +25,10 @@ std::string GetRegType(std::string Type)
 
 void FWriter::Initialize_StandardReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway)
 {
-    std::string TypeText = Type + "_" + NameSpace_Pathway;
+    std::string TypeText = Type;
+    if (NameSpace_Pathway != "") {
+        TypeText += "_" + NameSpace_Pathway;
+    }
 
     ofs << in+ in+ "# " << TypeText << endl;
 
@@ -54,7 +57,10 @@ void FWriter::Initialize_StandardReaction(ofstream& ofs, std::string Type, std::
 
 void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList, std::string NameSpace_Pathway)
 {
-    std::string TypeText = Type + "_" + NameSpace_Pathway;
+    std::string TypeText = Type;
+    if (NameSpace_Pathway != "") {
+        TypeText += "_" + NameSpace_Pathway;
+    }
 
     if (NameSpace_Pathway != "") {
         ReactionSubList = Context.FilterByPathway_ReactionList(ReactionSubList, NameSpace_Pathway);
@@ -176,7 +182,10 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
 
 void FWriter::Initialize_EnzymeReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway)
 {
-    std::string TypeText = Type + "_" + NameSpace_Pathway;
+    std::string TypeText = Type;
+    if (NameSpace_Pathway != "") {
+        TypeText += "_" + NameSpace_Pathway;
+    }
 
     ofs << in+ in+ "# " << TypeText << endl;
 
@@ -214,7 +223,10 @@ void FWriter::Initialize_EnzymeReaction(ofstream& ofs, std::string Type, std::st
 
 void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList, std::string NameSpace_Pathway) // to be changed with reaction list
 {
-    std::string TypeText = Type + "_" + NameSpace_Pathway;
+    std::string TypeText = Type;
+    if (NameSpace_Pathway != "") {
+        TypeText += "_" + NameSpace_Pathway;
+    }
 
     if (NameSpace_Pathway != "") {
         ReactionSubList = Context.FilterByPathway_ReactionList(ReactionSubList, NameSpace_Pathway);
@@ -644,16 +656,19 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
     ofs << in+ in+ "self.Pos_X = None" << endl;
     ofs << in+ in+ "self.Pos_Y = None" << endl;
     ofs << in+ in+ "self.Pos_Angle = None" << endl;
-
-    ofs << in+ in+ "# Threshold-related" << endl;
-    ofs << in+ in+ "self.MolNames_Threshold = list()" << endl;
-    ofs << in+ in+ "self.N_Threshold = 0" << endl;
-    for (auto& ThresholdMol : Context.ThresholdList) {
-        auto Name_ThresholdMolVar = "Threshold_" + ThresholdMol->Name;
-        ofs << in+ in+ Name_ThresholdMolVar << " = 0" << endl;
-    }
-    ofs << in+ in+  "self.Pos_Threshold = np.zeros([" << Context.ThresholdList.size() << ", 1])" << endl;
     ofs << endl;
+
+    ofs << endl;
+    if (!Context.ThresholdList.empty()) {
+        ofs << in+ in+ "# Threshold-related" << endl;
+        ofs << in+ in+ "self.MolNames_Threshold = list()" << endl;
+        ofs << in+ in+ "self.Pos_Threshold = None" << endl;
+
+        ofs << in+ in+ "self.Count_Prev = 0" << endl;
+        ofs << in+ in+ "self.Idx_Count_Threshold = None" << endl;
+        ofs << in+ in+ "self.Idx_Pos_Threshold = None" << endl;
+        ofs << endl;
+    }
 }
 
 void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
@@ -665,14 +680,14 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     for (int i = 0; i < MolLoc.size(); i++) {
         auto& Coord = MolLoc[i]->Coord;
         auto Amount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
-        std::string Shape, Pattern;
-        int Size;
+//        std::string Shape, Pattern;
+//        int Size;
 
         ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, "
             << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount;
-        if (!Shape.empty()) {
-            ofs << ", " << Shape << ", " << Size << ", " << Pattern;
-            }
+//        if (!Shape.empty()) {
+//            ofs << ", " << Shape << ", " << Size << ", " << Pattern;
+//            }
         ofs << ")" << endl;
     }
     ofs << endl;
@@ -723,20 +738,30 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
         }
     }
     ofs << "]) " << endl;
-
-    ofs << in+ in+ "# Threshold-related" << endl;
-    ofs << in+ in+ "self.MolNames_Threshold = [" << endl;
-    for (auto& ThresholdMol : Context.ThresholdList) {
-        ofs << "'" << ThresholdMol << "', " << endl;
-    }
-    ofs << "]" << endl;
-    ofs << in+ in+ "self.N_Threshold = len(self.MolNames_Threshold)" << endl;
-
-    for (int i = 0; i < Context.ThresholdList.size(); i++) {
-        ofs << in+ in+ "self.Pos_Threshold[" << i << ", 0]" << " = " << Utils::SciFloat2Str(Context.ThresholdList[i]->Threshold) << endl;
-    }
     ofs << endl;
 
-}
+    if (!Context.ThresholdList.empty()) {
 
-void FWriter::SimIdx() {}
+        std::vector<std::string> Names_ThresholdedMolecules;
+        std::vector<int> Idx_Count_Threshold;
+        std::vector<float> ThresholdValues;
+
+        for (auto& Threshold : Context.ThresholdList) {
+            Names_ThresholdedMolecules.push_back(Threshold.first);
+            int Idx = Context.GetIdxByName_MoleculeList(Threshold.first);
+            Idx_Count_Threshold.push_back(Idx);
+            ThresholdValues.push_back(Threshold.second);
+        }
+
+        ofs << in+ in+ "# Threshold-related" << endl;
+        ofs << in+ in+ "self.MolNames_Threshold = [" << Utils::JoinStr2Str(Names_ThresholdedMolecules) << "]" << endl;;
+        ofs << in+ in+ "self.Pos_Threshold = np.tile([" << Utils::JoinFloat2Str(ThresholdValues) << "], [ " << ObjLoc.size() << ", 1]).transpose()" << endl;
+        ofs << endl;
+
+        // threshold index setting
+        ofs << in+ in+ "self.Idx_Count_Threshold = np.array([" << Utils::JoinInt2Str_Idx(Idx_Count_Threshold) <<  "])" << endl;
+        ofs << in+ in+ "self.Idx_Pos_Threshold = np.array(range(len(self.MolNames_Threshold)))" << endl;
+        ofs << endl;
+
+    }
+}
