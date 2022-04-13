@@ -13,6 +13,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // IMPORT
     ofs << "import os, sys" << endl;
+    ofs << endl;
+
+    ofs << "if __name__ == '__main__':" << endl;
+    ofs << in+ "print('\\n%%%%%% Run " << Option.SimExecutorFile << " to execute simulation. %%%%%%')" << endl;
+    ofs << in+ "sys.exit()" << endl;
+    ofs << endl;
+
     ofs << "import numpy as np" << endl;
     // ofs << "import tensorflow as tf" << endl;
     ofs << "from datetime import datetime" << endl;
@@ -507,7 +514,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ "# Update Spatially Distributed Molecules On Count (special treatment on 'L' for now)" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
-    ofs << in+ in+ "self.CountToDistribution()" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
@@ -624,6 +630,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto& UniqueName : ObjUniqueNames) {
                 if (molLoc->Name == "L") {
+                    ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
+                    ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
+                        << "] = Count.reshape(-1, 1)" << endl;
+                    PassSwitch = false;
+                } else if (molLoc->Name == "qL") {
                     ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
                     ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
                         << "] = Count.reshape(-1, 1)" << endl;
@@ -1593,35 +1604,32 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.SaveToTsvFile(self.Legend, self.DataBuffer, InFileName)" << endl;
     ofs << endl;
 
-    // BODY
-    ofs << "def main():   # add verbose" << endl;
-    ofs << endl;
-
-    // Instantiate Objects
-    ofs << in+ "State = FState()" << endl;
-    ofs << in+ "Data = FDataset()" << endl;
-    ofs << in+ "DataManager = FDataManager()" << endl;
-    ofs << in+ "Simulation = FSimulation(State, Data, DataManager)" << endl;
-    ofs << endl;
-
-    // Simulation
-    ofs << in+ "Simulation.Initialize(N_SimSteps, SimStepTimeResolution)" << endl;
-    ofs << in+ "Simulation.Run(Spatial=0) # 0: WithoutSpatialSimulation, 1: WithSpatialSimulation" << endl;
-    ofs << endl;
-    ofs << in+ "DataManager.SaveCountToFile('" << Option.SimResultFile.c_str() << "')" << endl;
-    ofs << endl;
-
-    // MAIN
-    ofs << "if __name__ == '__main__':" << endl;
-
     if (Context.LocationList.empty()) {
-        ofs << in+ "parser = ArgumentParser()" << endl;
-        ofs << in+ "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
-        ofs << in+ "args = parser.parse_args()" << endl;
-        ofs << in+ "main()" << endl;
+        // BODY
+        ofs << "def main():   # add verbose" << endl;
         ofs << endl;
-    } else {
-        ofs << in+ "SimVis2D.main()" << endl;
+
+        // Instantiate Objects
+        ofs << in+ "State = FState()" << endl;
+        ofs << in+ "Data = FDataset()" << endl;
+        ofs << in+ "DataManager = FDataManager()" << endl;
+        ofs << in+ "Simulation = FSimulation(State, Data, DataManager)" << endl;
+        ofs << endl;
+
+        // Simulation
+        ofs << in+ "Simulation.Initialize(N_SimSteps, SimStepTimeResolution)" << endl;
+        ofs << in+ "Simulation.Run(Spatial=0) # 0: WithoutSpatialSimulation, 1: WithSpatialSimulation" << endl;
+        ofs << endl;
+        ofs << in+ "DataManager.SaveCountToFile('" << Option.SimResultFile.c_str() << "')" << endl;
+        ofs << endl;
     }
+        // MAIN
+//        ofs << "if __name__ == '__main__':" << endl;
+//        ofs << in+ "parser = ArgumentParser()" << endl;
+//        ofs << in+ "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
+//        ofs << in+ "args = parser.parse_args()" << endl;
+//        ofs << in+ "main()" << endl;
+//        ofs << endl;
+
     std::cout << "  Simulation module has been generated: ";
 }

@@ -11,6 +11,13 @@ void FWriter::SimVis2D() {
     std::string endl = "\n";
 
     ofs << "import sys" << endl;
+    ofs << endl;
+
+    ofs << "if __name__ == '__main__':" << endl;
+    ofs << in+ "print('\\n%%%%%% Run " << Option.SimExecutorFile << " to execute simulation. %%%%%%')" << endl;
+    ofs << in+ "sys.exit()" << endl;
+    ofs << endl;
+
     ofs << "import pygame" << endl;
     ofs << "import random" << endl;
     ofs << "from datetime import datetime" << endl;
@@ -18,9 +25,11 @@ void FWriter::SimVis2D() {
     ofs << "import SimModule" << endl;
     ofs << "import SimFunctions as SimF" << endl;
     ofs << endl;
+
     ofs << "random.seed(1)" << endl;
     ofs << "np.random.seed(1)" << endl;
     ofs << endl;
+
     ofs << "# Colors" << endl;
     ofs << "BLACK = (0, 0, 0)" << endl;
     ofs << "WHITE = (255, 255, 255)" << endl;
@@ -841,9 +850,6 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << in+ "pygame.quit()" << endl;
     ofs << in+ "sys.exit()" << endl;
-    ofs << endl;
-    ofs << "if __name__ == '__main__':" << endl;
-    ofs << in+ "main()" << endl;
     ofs << endl;
 
     std::cout << "  2D Visualization module has been generated: ";
