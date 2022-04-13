@@ -26,7 +26,10 @@ petridish P
 
     }
 
-    R = 5nM, B = 0.1nM, A = 500nM;
+    flagellum F(Am, 0.982 nM);
+
+    R = 5nM, B = 0.1nM, A = 500 nM;
+
   }
 
   // spatially distributed entities on petridish
@@ -35,5 +38,7 @@ petridish P
   
   glucose L;
   L(800, 600, 0) = 9 nmol;
+
+  F = 3;
 }
 

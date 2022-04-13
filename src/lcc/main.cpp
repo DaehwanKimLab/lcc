@@ -990,6 +990,40 @@ void TraversalNode_Core(NNode * node)
     } else if (Utils::is_class_of<NDeclarationStatement, NNode>(node)) {
         auto DeclStmt = dynamic_cast<const NDeclarationStatement *>(node);
 
+        if (DeclStmt->Type == "flagellum") {
+            std::string Name_Motility = DeclStmt->Id.Name;
+            std::vector<std::pair<std::string, float>> Thresholds;
+
+            if (DeclStmt->Initializer) {
+                auto Inits = dynamic_cast<const NInitializerExpression *>(DeclStmt->Initializer.get());
+
+                std::string ThresholdedMolecule;
+                float ThresholdValue = Numbers::GetFloatDefault();
+
+                for (const auto& Exp : Inits->ExpressionList) {
+                    if (Utils::is_class_of<NVariableExpression, NExpression>(Exp.get())) {
+                        auto VarExp = dynamic_pointer_cast<NVariableExpression>(Exp);
+                        ThresholdedMolecule = VarExp->GetName();
+
+                    } else if (Utils::is_class_of<NConstantExpression, NExpression>(Exp.get())) {
+                        auto ConstExp = dynamic_pointer_cast<NConstantExpression>(Exp);
+                        ThresholdValue = ConstExp->EvaluateInFloat();
+                    } else {
+                        std::cout << "Unsupported expression found in: " << Name_Motility;
+                    }
+
+                }
+                Utils::Assertion(((!ThresholdedMolecule.empty()) & (ThresholdValue > 0)), "flagellum function only takes string and positive float");
+                std::pair<std::string, float> Threshold(ThresholdedMolecule, ThresholdValue);
+                Thresholds.push_back(Threshold);
+            }
+
+            FMotility * NewMotility = new FSwim(Name_Motility, Thresholds);
+            if (Option.bDebug) { NewMotility->Print(os); }
+            Context.AddToMotilityList(NewMotility);
+
+        }
+
         // temporary Transporter syntax parsing
         if (DeclStmt->Type == "transporter") {
 
@@ -1423,12 +1457,6 @@ int main(int argc, char *argv[])
         if (!Context.LocationList.empty()) {
             Writer.SimVis2D();
             cout << Option.SimVis2DFile << std::endl;
-        }
-
-        if (!Context.ThresholdList.empty()) {
-            for (auto& ThresholdMolecule : Context.ThresholdList) {
-                Writer.SimThreshold(ThresholdMolecule);
-            }
         }
     }
 

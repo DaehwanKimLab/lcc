@@ -515,6 +515,12 @@ public:
         return false;
     }
 
+    virtual void Print(std::ostream& os) {
+        os << "[Reaction]";
+        Print_IdStoichiometry(os);
+        os << std::endl;
+    }
+
     void Print_IdStoichiometry(std::ostream& os) {
         os << "  Reaction Id: " << Name << " | ";
         for (auto& Stoich : Stoichiometry) {
@@ -627,12 +633,52 @@ public:
         : D(InD), FReaction(InName, InStoichiometry) {}
 
     FTransporterReaction(std::string InName, std::vector<std::pair<std::string, int>>& InStoichiometry, float InD, std::string InTransporter)
-            : Transporter(InTransporter), D(InD), FReaction(InName, InStoichiometry) {}
+        : Transporter(InTransporter), D(InD), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
         os << "[Transporter Reaction]" ;
         Print_IdStoichiometry(os);
         os << "  D: " << D << ", ";
+    }
+};
+
+class FMotility {
+public:
+    std::string Name;
+
+    FMotility() {}
+    virtual ~FMotility() {}
+
+    FMotility(std::string InName) : Name(InName) {}
+
+    virtual void Print(std::ostream& os) {
+        os << "[Motility]" ;
+        os << "  Name: " << Name;
+    }
+};
+
+class FSwim : public FMotility {
+public:
+    std::vector<std::pair<std::string, float>> Thresholds;
+
+    FSwim() {}
+
+    FSwim(std::string InName)
+            : FMotility(InName) {}
+
+    FSwim(std::string InName, std::vector<std::pair<std::string, float>> InThresholds)
+            : Thresholds(InThresholds), FMotility(InName) {}
+
+    void Print(std::ostream& os) override {
+        os << "[Swim]" ;
+        os << " Name: " << Name;
+        if (!Thresholds.empty()) {
+            os << ", Thresholds: ";
+            for (int i = 0; i < Thresholds.size(); i++) {
+                os << "(Thresholded Molecule: " << Thresholds[i].first << ", Threshold Value: " << Thresholds[i].second << "), ";
+            }
+        }
+        os << std::endl;
     }
 };
 
@@ -679,7 +725,8 @@ public:
     std::vector<FCount*>        CountList;
     std::vector<FLocation*>     LocationList;
     std::vector<FComposition*>  CompositionList;
-            std::vector<FMolecule*>     ThresholdList; // temporary
+    std::vector<FMotility*>     MotilityList;
+            std::vector<std::pair<std::string, float>>     ThresholdList; // temporary, list of mol name and threshold value pairs
 
 
     void PrintLists(std::ostream& os);
@@ -693,6 +740,7 @@ public:
     void AddToContainerList(FContainer *NewContainer);
     void AddToCountList(FCount *NewCount);
     void AddToLocationList(FLocation *NewLocation);
+    void AddToMotilityList(FMotility *NewMotility);
 //    void AddToCompositionList(FComposition *NewComposition);
 
     // Compiler organization
@@ -702,7 +750,7 @@ public:
     void MakeListsFromMoleculeList();
     void MakeListsFromContainerList();
     void MakePathwayLists();
-    void AssignThresholdMolecules();
+                void MakeListsFromMotilityList();
 
     // Tables
     std::string QueryTable(std::string Name, std::string Property, FTable Table);

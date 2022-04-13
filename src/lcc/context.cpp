@@ -285,6 +285,12 @@ void FCompilerContext::AddToLocationList(FLocation *NewLocation)
 //        std::cout << "Location "<< NewLocation->Name << " has been added to the system" << std::endl;
 }
 
+void FCompilerContext::AddToMotilityList(FMotility *NewMotility)
+{   // special: this one does not check redundant entries
+    MotilityList.push_back(NewMotility);
+//        std::cout << "Motility "<< NewMotility->Name << " has been added to the system" << std::endl;
+}
+
 void FCompilerContext::Organize()
 {
     std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
@@ -292,24 +298,18 @@ void FCompilerContext::Organize()
     // Dependency Note: Assign
     // ReactionTypes uses Lists made from above
     MakeListsFromContainerList();
-            AssignThresholdMolecules(); // temporary
+                MakeListsFromMotilityList(); // temporary
     AssignReactionTypesForReactionList();
     AdjustMolarity_PseudoMolecule();
 }
 
-void FCompilerContext::AssignThresholdMolecules() {
+void FCompilerContext::MakeListsFromMotilityList() {
 
-    std::map<std::string, std::string> ThresholdMoleculeMap;
-    ThresholdMoleculeMap.emplace("L", "Am");
-    ThresholdMoleculeMap.emplace("qL", "qAm");
-
-    for (auto& molecule : MoleculeList) {
-        if (ThresholdMoleculeMap.count(molecule->Name) > 0) {
-            for (auto& location : LocationList) {
-                if (location->Name == molecule->Name) {
-                    auto ThresholdMolecule = GetMolecule_MoleculeList(ThresholdMoleculeMap[molecule->Name]);
-                    ThresholdList.push_back(ThresholdMolecule);
-                }
+    for (auto& motility : MotilityList) {
+        if (Utils::is_class_of<FSwim, FMotility>(motility)) {
+            auto swim = dynamic_cast<FSwim *>(motility);
+            for (auto threshold : swim->Thresholds) {
+                ThresholdList.push_back(threshold);
             }
         }
     }
