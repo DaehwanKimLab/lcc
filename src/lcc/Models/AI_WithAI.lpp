@@ -60,7 +60,7 @@ petridish P
 
     }
 
-    flagellum F(qAm, 0.982 nM);
+    flagellum F(qAm, 0.333 nM);
 
     qR = 5nM, qB = 0.1nM, qA = 500nM;
 

@@ -705,7 +705,8 @@ void FWriter::SimVis2D() {
     // Initialize Organisms
     for (auto& OrganismName : OrgNames) {
         ofs << in+ OrganismName << ".Initialize()" << endl;
-        ofs << in+ OrganismName << ".Receptivity(200)   # Pass time" << endl;
+//        ofs << "# ";
+        ofs << in+ OrganismName << ".Receptivity(20000)   # Pass time" << endl;
     }
     ofs << endl;
 
