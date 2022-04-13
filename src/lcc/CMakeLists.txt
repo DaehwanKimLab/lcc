@@ -31,6 +31,7 @@ set(SOURCEFILE
 	util.cpp
         number.cpp
 		writer.cpp
+		writer_SimExecutor.cpp
 		writer_SimModule.cpp
 		writer_SimVis2D.cpp
 		${BISON_LPPParser_OUTPUTS}

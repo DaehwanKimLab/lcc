@@ -4,7 +4,7 @@
 using namespace std;
 
 void FWriter::SimVis2D() {
-    std::cout << "Generating SimVis2D..." << std::endl;
+    std::cout << "Generating 2D Visualization module..." << std::endl;
 
     // write SimVis2D.py
     std::ofstream ofs(Option.SimVis2DFile.c_str());
@@ -114,6 +114,7 @@ void FWriter::SimVis2D() {
     ofs << "Title = 'Vis2D'" << endl;
     ofs << "pygame.display.set_caption(Title)" << endl;
     ofs << endl;
+    ofs << "Font_Init = pygame.font.SysFont('arial', 50)" << endl;
     ofs << "Font_Sans = pygame.font.Font('freesansbold.ttf', 20)" << endl;
     ofs << "Font_Monospace = pygame.font.SysFont('monospace', 18, True)" << endl;
     ofs << "Font_Radar = pygame.font.SysFont('arial', 11)" << endl;
@@ -533,14 +534,14 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "'T' : 'Display Trajectory Switch'," << endl;
     ofs << in+ in+ in+ "'I' : 'Display Instruction Switch'," << endl;
 //    ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
-    ofs << in+ in+ in+ "'A' : 'Display Status Switch'," << endl;
+//    ofs << in+ in+ in+ "'A' : 'Display Status Switch'," << endl;
     ofs << in+ in+ in+ "'R' : 'Display Radar Switch'," << endl;
     ofs << in+ in+ in+ "'H' : 'Display Threshold Switch'," << endl;
     ofs << in+ in+ in+ "'P' : 'Pause Visualization'," << endl;
     ofs << in+ in+ "}" << endl;
+    ofs << in+ in+ "self.InitText = ''" << endl;
     ofs << in+ in+ "self.InstructionText = ''" << endl;
     ofs << in+ in+ "self.SetInstructionText()" << endl;
-    ofs << endl;
     ofs << in+ in+ "self.MoleculeGradientText = ''" << endl;
     ofs << in+ in+ "self.MoleculeGradientColor = list()" << endl;
     ofs << endl;
@@ -549,14 +550,22 @@ void FWriter::SimVis2D() {
 //    ofs << endl;
     ofs << in+ in+ "self.Time = 0" << endl;
     ofs << endl;
-    ofs << in+ in+ "# DK - debugging purposes" << endl;
-    ofs << in+ in+ "self.StatusSwitch = True" << endl;
-    ofs << in+ in+ "# self.StatusSwitch = False" << endl;
-    ofs << endl;
+//    ofs << in+ in+ "# DK - debugging purposes" << endl;
+//    ofs << in+ in+ "self.StatusSwitch = True" << endl;
+//    ofs << in+ in+ "# self.StatusSwitch = False" << endl;
+//    ofs << endl;
     ofs << in+ in+ "# Pause" << endl;
     ofs << in+ in+ "self.MessagePause = 'PAUSE'" << endl;
     ofs << in+ in+ "self.PauseSwitch = False" << endl;
     ofs << endl;
+
+    ofs << in+ "def DisplayInit(self):" << endl;
+    ofs << in+ in+ "Screen.fill(GRAY1)" << endl;
+    ofs << in+ in+ "Text = Font_Init.render(self.InitText, True, BLACK)" << endl;
+    ofs << in+ in+ "Screen.blit(Text, Center)" << endl;
+    ofs << in+ in+ "pygame.display.update()" << endl;
+    ofs << endl;
+
     ofs << in+ "def SetInstructionText(self):" << endl;
     ofs << in+ in+ "self.InstructionText = 'Instructions \\" << "n'" << endl;
     ofs << in+ in+ "for Key, Value in self.Instructions.items():" << endl;
@@ -639,13 +648,11 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << "def main():" << endl;
     ofs << in+ "Control = FControl()" << endl;
-    ofs << endl;
+//    ofs << in+ "Control.DisplayInit()" << endl;
     ofs << in+ "SimUnitTime = 0.25" << endl;
-    ofs << endl;
+
     ofs << in+ "PetriDish = FEnvironment()" << endl;
     ofs << endl;
-    ofs << in+ "# TODO: Communicate to initialize in Sim" << endl;
-
     // Distribution settings (hardcoding)
     //                                              L,              qL
     std::vector<std::string>    Color               {"Yellow",      "Blue",     "Green"     };
@@ -699,8 +706,8 @@ void FWriter::SimVis2D() {
 
         // set radar
         if (!Radar_Switch.empty())     { ofs << in+ OrgNames[i] << ".SetRadar(switch=" << Radar_Switch[i] << ")" << endl; }
-        ofs << endl;
     }
+    ofs << endl;
 
     // Initialize Organisms
     for (auto& OrganismName : OrgNames) {
@@ -744,9 +751,9 @@ void FWriter::SimVis2D() {
 //    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_s:" << endl;
 //    ofs << in+ in+ in+ in+ in+ "Control.ScoreSwitch = not Control.ScoreSwitch" << endl;
 //    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('S')" << endl;
-    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_a:" << endl;
-    ofs << in+ in+ in+ in+ in+ "Control.StatusSwitch = not Control.StatusSwitch" << endl;
-    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('A')" << endl;
+//    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_a:" << endl;
+//    ofs << in+ in+ in+ in+ in+ "Control.StatusSwitch = not Control.StatusSwitch" << endl;
+//    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('A')" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_r:" << endl;
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ in+ OrganismName << ".Radar_Switch = not " << OrganismName << ".Radar_Switch" << endl;
@@ -796,20 +803,18 @@ void FWriter::SimVis2D() {
     }
     ofs << endl;
 
-    ofs << endl;
-
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ OrganismName << ".Draw()" << endl;
     }
     ofs << in+ in+ "PetriDish.Draw(shape='lining')" << endl;
     ofs << endl;
 
-    // Show first molecule only
-    std::string MolName = MolLoc[0]->Name;
-    std::string OrgName = OrgNames[0];
-
-    ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos('" << MolName << "', '" << OrgName << "')" << endl;
-    ofs << endl;
+//    // Show first molecule only
+//    std::string MolName = MolLoc[0]->Name;
+//    std::string OrgName = OrgNames[0];
+//
+//    ofs << in+ in+ MolName << "_Now = SimM.GetCountFromDistributionByNamesOfDistAndPos('" << MolName << "', '" << OrgName << "')" << endl;
+//    ofs << endl;
 
     if (!Option.bDebug) {
         ofs << in+ in+ "if Control.Time < 5:" << endl;
@@ -841,5 +846,5 @@ void FWriter::SimVis2D() {
     ofs << in+ "main()" << endl;
     ofs << endl;
 
-    std::cout << "  Visualization_2D program has been generated: ";
+    std::cout << "  2D Visualization module has been generated: ";
 }

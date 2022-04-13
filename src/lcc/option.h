@@ -28,6 +28,7 @@ public:
     std::string OutputPrefix;
 
     std::string SimResultFile = "SimOut.tsv";
+    std::string SimExecutorFile = "SimExecutor.py";
     std::string SimModuleFile = "SimModule.py";
     std::string SimVis2DFile = "SimVis2D.py";
 

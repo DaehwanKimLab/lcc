@@ -20,6 +20,7 @@ enum {
     ARG_OUTPUT_PREFIX,
 	ARG_SIMOUT,
     ARG_SIMIMP,
+    ARG_SIMEXECUTOR,
     ARG_SIMMODULE,
     ARG_SIMVIS2D,
     ARG_RUNOMVISIM
@@ -38,6 +39,7 @@ int FOption::Parse(int argc, char *argv[])
             {"parse-only", no_argument, NULL, ARG_PARSEONLY},
 	        {"simout", required_argument, NULL, ARG_SIMOUT},
     	    {"simimp", required_argument, NULL, ARG_SIMIMP},
+            {"simexecutor", required_argument, NULL, ARG_SIMEXECUTOR},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {"simvis2d", required_argument, NULL, ARG_SIMVIS2D},
             {"run-omvisim", no_argument, NULL, ARG_RUNOMVISIM},
@@ -96,6 +98,10 @@ int FOption::Parse(int argc, char *argv[])
 				SimResultFile = std::string(optarg);
 				break;
 			
+            case ARG_SIMEXECUTOR:
+                SimExecutorFile = std::string(optarg);
+                break;
+
             case ARG_SIMMODULE:
                 SimModuleFile = std::string(optarg);
                 break;
@@ -137,6 +143,7 @@ void FOption::Reset() {
     bParseOnly = false;
     bSimCpp = false;
     bSimPython = true;    
+    SimExecutorFile = "";
     SimModuleFile = "";
     SimVis2DFile = "";
     SimResultFile = "";
@@ -177,7 +184,9 @@ void FOption::Usage(const char *argv0)
     os << "  " << "--debug             Enable debug mode" << std::endl;
     os << "  " << "--parse-only        Check syntax" << std::endl;
     os << "  " << "--simout <name>     Write simulation result to <name> file" << std::endl;
-    os << "  " << "--simmodule <name>  Write simulation code to <name> file" << std::endl;
+    os << "  " << "--simexecutor <name>Write simulation executor code to <name> file" << std::endl;
+    os << "  " << "--simmodule <name>  Write simulation module code to <name> file" << std::endl;
+    os << "  " << "--simvis2d <name>   Write visualization module code to <name> file" << std::endl;
     os << "  " << "--simimp <mode>     Use <mode> simulation implementation. mode: python, c++" << std::endl;
     os << "  " << "--run-omvisim" << std::endl;
 }
@@ -209,6 +218,7 @@ void FOption::Dump()
 void FOption::PreferredSetting() 
 {
     bSimPython = true;
+    SimExecutorFile = "SimExecutor.py";
     SimModuleFile = "SimModule.py";
     SimVis2DFile = "SimVis2D.py";
     SimResultFile = "SimOut.tsv";

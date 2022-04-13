@@ -1451,13 +1451,18 @@ int main(int argc, char *argv[])
 
 //        WriteSimIdx();
 
+        Writer.SimExecutor();
+        os << Option.SimExecutorFile << endl;
+
         Writer.SimModule(Sim_Steps, Sim_Resolution);
-        cout << Option.SimModuleFile << std::endl;
+        os << Option.SimModuleFile << endl;
 
         if (!Context.LocationList.empty()) {
             Writer.SimVis2D();
-            cout << Option.SimVis2DFile << std::endl;
+            os << Option.SimVis2DFile << endl;
         }
+
+        os << "\n%%%%%% Run " << Option.SimExecutorFile << " to execute simulation. %%%%%%" << endl;
     }
 
 //    if (Option.bSimCpp) {

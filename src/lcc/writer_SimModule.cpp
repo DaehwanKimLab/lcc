@@ -5,7 +5,7 @@ using namespace std;
 
 void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 {
-    std::cout << "Generating SimModule..." << std::endl;
+    std::cout << "Generating simulation module..." << std::endl;
 
     // write SimModule.py
     std::ofstream ofs(Option.SimModuleFile.c_str());
@@ -19,7 +19,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "import csv" << endl;
     ofs << "import SimFunctions as SimF" << endl;
     // ofs << "import SimIdx as idx" << endl;
-    ofs << "import plot" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
 
@@ -1620,10 +1619,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ "parser.add_argument('--save-fig', dest='save_fname', type=str, help='Save figure to file')" << endl;
         ofs << in+ "args = parser.parse_args()" << endl;
         ofs << in+ "main()" << endl;
-        ofs << in+ "plot.main(args.save_fname)" << endl;
         ofs << endl;
     } else {
-        ofs << in+ "print('\\n%%%%% Run SimVis2D.py for spatial simulation & visualization %%%%%\\n')" << endl;
+        ofs << in+ "SimVis2D.main()" << endl;
     }
-    std::cout << "  Simulation program has been generated: ";
+    std::cout << "  Simulation module has been generated: ";
 }

@@ -59,6 +59,7 @@ public:
 
     // Simulation
     void SimIdx();
+    void SimExecutor();
     void SimModule(int Sim_Steps, int Sim_Resolution);
     void SimVis2D();
 
