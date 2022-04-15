@@ -50,10 +50,14 @@ public:
 
     void Print(std::ostream& os) {
         os << "[Location] ";
-        os << Name << " : (";
+
+        os << Name << " : ";
+
+        os << "(";
         for (auto& coord : Coord) {
-        	os << Utils::SciFloat2Str(coord) << ", ";
-        } os << ")";
+            os << Utils::SciFloat2Str(coord) << ", ";
+        } os << "), ";
+
         os << "(Angle: " << Utils::SciFloat2Str(Angle) << ")";
     }
 };

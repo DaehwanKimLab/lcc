@@ -270,6 +270,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     for (auto& molecule : Context.MoleculeList) {
         float Count = Context.GetInitialCountByName_CountList(molecule->Name);
         float MolarityFactor = Context.GetMolarityFactorByName_CountList(molecule->Name);
+
+        // special consideration for 'L' and 'qL' for chemotaxis
+        if ((molecule->Name == "L") || (molecule->Name == "qL")) { Count = 0; }
+
         InitialCount_Molecules.push_back(Count);
         MolarityFactor_Molecules.push_back(MolarityFactor);
     }
@@ -372,36 +376,20 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
-    // Restore --> to CountList method
-    std::vector<std::string> Names;
-    for (auto& count : Context.CountList) {
-        std::string Name = count->Name;
-        // ignore if not relevant to the system
-        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
-            continue;
-        }
-        if (count->End == -1) { // indicator for fixed
-            if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                ofs << in+ in+ "self.Idx_Restore_" << Name << " = None" << endl;
-                Names.push_back(Name);
-            }
+    if (!MolLoc.empty()) {
+        for (auto& molLoc : MolLoc) {
+            ofs << in+ in+ "self.Idx_CoordToDist_" << molLoc->Name << " = None" << endl;
         }
     }
 
-    // Event --> to CountList method
-    Names.clear();
-    for (auto& count : Context.CountList) {
-        std::string Name = count->Name;
-        // ignore if not relevant to the system
-        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
-            continue;
-        }
-        if ((count->End >= 0) & (count->Begin != count->End)) {
-            if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                ofs << in+ in+ "self.Idx_Event_" << Name << " = None" << endl;
-                Names.push_back(Name);
-            }
-        }
+    std::vector<FCount *> Counts_Restore = Context.GetSubList_CountList("Restore");
+    for (auto& Count : Counts_Restore) {
+        ofs << in+ in+ "self.Idx_Restore_" << Count->Name << " = None" << endl;
+    }
+
+    std::vector<FCount *> Counts_Event = Context.GetSubList_CountList("Event");
+    for (auto& Count : Counts_Event) {
+        ofs << in+ in+ "self.Idx_Event_" << Count->Name << " = None" << endl;
     }
 
     ofs << in+ in+ "# Debugging" << endl;
@@ -422,47 +410,30 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     // Distribution To Count
-    i = 0;
     if (!MolLoc.empty()) {
-        for (auto& molLoc : MolLoc) {
-            int Idx = Context.GetIdxByName_MoleculeList(molLoc->Name);
-            ofs << in+ in+ "self.Idx_DistToCoord_" << molLoc->Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
-            i++;
+        for (i = 0; i < MolLoc.size(); i++) {
+            int Idx = Context.GetIdxByName_MoleculeList(MolLoc[i]->Name);
+            ofs << in+ in+ "self.Idx_DistToCoord_" << MolLoc[i]->Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
+        }
+    }
+
+    if (!MolLoc.empty()) {
+        for (i = 0; i < MolLoc.size(); i++) {
+            ofs << in+ in+ "self.Idx_CoordToDist_" << MolLoc[i]->Name << " = np.array([" << i << "])" << endl;
         }
     }
 
     // Restore --> to CountList method
-    Names.clear();
-    for (auto& count : Context.CountList) {
-        std::string Name = count->Name;
-        // ignore if not relevant to the system
-        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
-            continue;
-        }
-        if (count->End == -1) { // indicator for fixed
-            if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ "self.Idx_Restore_" << Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
-                Names.push_back(Name);
-            }
-        }
+    for (auto& count : Counts_Restore) {
+        int Idx = Context.GetIdxByName_MoleculeList(count->Name);
+        ofs << in+ in+ "self.Idx_Restore_" << count->Name << " = np.array([" << std::to_string(Idx) << "], ndmin=2)" << endl;
     }
+    ofs << endl;
 
     // Event --> to CountList method
-    Names.clear();
-    for (auto& count : Context.CountList) {
-        std::string Name = count->Name;
-        // ignore if not relevant to the system
-        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
-            continue;
-        }
-        if ((count->End >= 0) & (count->Begin != count->End)) { //
-            if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                int Idx = Context.GetIdxByName_MoleculeList(Name);
-                ofs << in+ in+ "self.Idx_Event_" << Name << " = np.array([" << std::to_string(Idx) << "], ndmin=2)" << endl;
-                Names.push_back(Name);
-            }
-        }
+    for (auto& count : Counts_Event) {
+        int Idx = Context.GetIdxByName_MoleculeList(count->Name);
+        ofs << in+ in+ "self.Idx_Event_" << count->Name << " = np.array([" << std::to_string(Idx) << "], ndmin=2)" << endl;
     }
     ofs << endl;
 
@@ -486,48 +457,128 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // regular simloop
     ofs << in+ "def SimLoop_WithSpatialSimulation(self):" << endl;
+    bool bDebug_SimFlow = false;
+//    bDebug_SimFlow = true;
+
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
-    if (!Option.bDebug) { ofs << "#";}
+    if (!Option.bDebug) { ofs << "# ";}
     ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-    if (!Option.bDebug) { ofs << "#"; }
+    if (!Option.bDebug) { ofs << "# "; }
     ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-    if (!Option.bDebug) { ofs << "#"; }
+    if (!Option.bDebug) { ofs << "# "; }
     ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "# Run Spatial Simulation" << endl;
-    ofs << in+ in+ "self.SpatialSimulation()" << endl; // TODO: Take delta, instead of updating directly
     ofs << endl;
 
     ofs << in+ in+ "# Run Reactions" << endl;
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after NonSpatialSimulation')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
+//    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
+//    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+//    ofs << endl;
+//
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
 
     ofs << in+ in+ "# Update Substrate Count" << endl;
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << endl;
 
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after UpdateCounts')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
 //    ofs << in+ in+ "# temporary: Update Threshold" << endl;
 //    ofs << in+ in+ "self.UpdateThreshold()" << endl;
 //    ofs << endl;
 
-    ofs << in+ in+ "# Update Spatially Distributed Molecules On Count (special treatment on 'L' for now)" << endl;
-    ofs << in+ in+ "self.DistributionToCount()" << endl;
+
+//    ofs << in+ in+ "# Update Spatially Distributed Molecules from Count (special treatment on 'qL' for now by addition)" << endl;
+//    ofs << in+ in+ "self.CountToDistribution()" << endl;
+//    ofs << endl;
+
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
+
+    ofs << in+ in+ "# Run Spatial Simulation" << endl;
+    ofs << in+ in+ "self.SpatialSimulation()" << endl; // TODO: Take delta, instead of updating directly then move up before UpdateCounts
     ofs << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after SpatialSimulation')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
 
     ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << endl;
 
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
+    ofs << in+ in+ "# Update Spatially Distributed Molecules On Count (special treatment on 'L' and 'qL' for now)" << endl;
+    ofs << in+ in+ "self.DistributionToCount()" << endl;
+    ofs << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after DistributionToCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
     ofs << in+ "def SimLoop_WithoutSpatialSimulation(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
-    if (!Option.bDebug) { ofs << "#";}
+    if (!Option.bDebug) { ofs << "# ";}
     ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-    if (!Option.bDebug) { ofs << "#"; }
+    if (!Option.bDebug) { ofs << "# "; }
     ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-    if (!Option.bDebug) { ofs << "#"; }
+    if (!Option.bDebug) { ofs << "# "; }
     ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
     ofs << endl;
 
@@ -541,20 +592,83 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
-//    ofs << in+ in;
-//    if (!Option.bDebug) { ofs << "#";}
-//    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
-//    ofs << in+ in;
-//    if (!Option.bDebug) { ofs << "#";}
-//    ofs << "self.Debug_PrintCounts(DisplayCount)" << endl;
-//    ofs << endl;
+    if (!Option.bDebug) { ofs << "# ";}
+    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+    if (!Option.bDebug) { ofs << "# ";}
+    ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+    ofs << endl;
 
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after NonSpatialSimulation')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
+//    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+//
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
+
     ofs << in+ in+ "self.UpdateCounts()" << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after UpdateCounts')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
+//    ofs << in+ in+ "self.CountToDistribution()" << endl;
+//
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
+
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
     ofs << in+ in+ "self.DistributionToCount()" << endl;
-    ofs << in+ in+ "self.CountToDistribution()" << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after DistributionToCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
     ofs << endl;
 
     ofs << in+ "def Run(self, Spatial=0):" << endl;
@@ -629,12 +743,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         for (auto& molLoc : MolLoc) {
             std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto& UniqueName : ObjUniqueNames) {
-                if (molLoc->Name == "L") {
-                    ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
-                    ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
-                        << "] = Count.reshape(-1, 1)" << endl;
-                    PassSwitch = false;
-                } else if (molLoc->Name == "qL") {
+                if ((molLoc->Name == "L") || (molLoc->Name == "qL")) {
                     ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
                     ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
                         << "] = Count.reshape(-1, 1)" << endl;
@@ -647,79 +756,64 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def CountToDistribution(self):" << endl;
-    {
-//    if (!MolLoc.empty() & !ObjLoc.empty()) {
-//        for (auto& molLoc : MolLoc) {
-//            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-//            for (auto& UniqueName : ObjUniqueNames) {
-//                ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;
-//                ofs << in+ in+ "self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name
-//                    << "] = Count.transpose()" << endl;
+    PassSwitch = true;
+    if (!MolLoc.empty() & !ObjLoc.empty()) {
+        for (auto& molLoc : MolLoc) {
+            // TODO: Hardcoding to add qL count to distribution
+//            if (molLoc->Name == "qL") {
+//                std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+//                for (auto& UniqueName : ObjUniqueNames) {
+//                    ofs << in+ in+ "Count = self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name << "].reshape(-1)" << endl;
+//                    ofs << in+ in+ "self.AddToDist(self.Idx_CoordToDist_" << molLoc->Name << ", self.State.Pos_X, self.State.Pos_Y, Count)" << endl;
+//                    PassSwitch = false;
+//                }
 //            }
-//        }
-//    } else {
-        ofs << in+ in+ "pass" << endl;
+        }
+    }
+    if (PassSwitch) {
+        ofs << in+ in+ "pass" << endl; // here
     }
     ofs << endl;
 
     // Restore
     ofs << in+ "def RestoreMoleculeCount(self):" << endl;
+    if (!Counts_Restore.empty()){
+        for (auto& count : Counts_Restore) {
+            std::string Amount;
+            float MolarityFactor = Context.GetMolarityFactorByName_CountList(count->Name);
 
-    Names.clear();
-    for (auto& count : Context.CountList) {
-        std::string Name = count->Name;
+            if (MolarityFactor) { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
+            else                { Amount = Utils::SciFloat2Str(count->Amount); }
 
-        // ignore if not relevant to the system
-        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
-            continue;
+            // Special treatment for 'qL' as if qL[:] = 0;
+//            if (count->Name == "qL") {
+//                Amount = "0";
+//            }
+
+            ofs << in + in + "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << count->Name
+                << ".reshape(1, -1), " << Amount << ", axis=1)" << endl;
         }
-
-        if (count->End == -1) { // indicator for fixed
-            if (std::find(Names.begin(), Names.end(), Name) == Names.end()) {
-                std::string Amount;
-                float MolarityFactor = Context.GetMolarityFactorByName_CountList(Name);
-
-                if (MolarityFactor)      { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
-                else                     { Amount = Utils::SciFloat2Str(count->Amount); }
-
-                ofs << in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << Name << ".reshape(1, -1), " << Amount << ", axis=1)" << endl;
-                Names.push_back(Name);
-            }
-        }
-    }
-
-    if (Names.empty()) {
-        ofs << in+ in+ "pass" << endl;
-    }
+    } else { ofs << in+ in+ "pass" << endl; }
+    ofs << endl;
 
     // Event
     ofs << in+ "def TriggerEventMoleculeCount(self):" << endl;
-    ofs << in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
-    bool ElseSwitch = false;
+    if (!Counts_Event.empty()){
+        ofs << in+ in+ "Time = self.SimStep / self.SimTimeResolutionPerSecond" << endl;
+        for (auto& count : Counts_Event) {
+            std::string Amount;
+            float MolarityFactor = Context.GetMolarityFactorByName_CountList(count->Name);
 
-    Names.clear();
-    for (auto& count : Context.CountList) {
-        std::string Name = count->Name;
+            if (MolarityFactor) { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
+            else                { Amount = Utils::SciFloat2Str(count->Amount); }
 
-        // ignore if not relevant to the system
-        if (std::find(MolNames.begin(), MolNames.end(), Name) == MolNames.end()) {
-            continue;
-        }
-
-        std::string Amount;
-        float MolarityFactor = Context.GetMolarityFactorByName_CountList(Name);
-
-        if (MolarityFactor) { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
-        else                { Amount = Utils::SciFloat2Str(count->Amount); }
-
-
-        if ((count->End >= 0) & (count->Begin != count->End)) { //
             ofs << in+ in+ "if (Time >= " << Utils::SciFloat2Str(count->Begin) << ") & (Time < " << Utils::SciFloat2Str(count->End) << "):" << endl;
-            ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << Name << ", " << Amount << ", axis=1)" << endl;
-            Names.push_back(Name);
+            ofs << in+ in+ in+ "np.put_along_axis(self.State.Count_All, self.Idx_Event_" << count->Name << ", " << Amount << ", axis=1)" << endl;
+
         }
-    }
+    } else { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
+
 
     if (!Context.ThresholdList.empty()) {
         // temporary code
@@ -754,18 +848,20 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!Context.LocationList.empty()) {
         ofs << in+ "# Spatial Simulation related routines" << endl;
         ofs << in+ "def SpatialSimulation(self):" << endl;
-        ofs << in+ in+ "self.SpatialDiffusion()" << endl;
-        if (!TransporterReactionTypes.empty()) {
-            ofs << in+ in+ "self.TransporterReactions()" << endl;
-        }
-
-            ofs << endl;
-            ofs << in+ in+ "#self.Debug_PrintSimStepTime()" << endl;
-            ofs << in+ in+ "#print()" << endl;
-            ofs << in+ in+ "#self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
-            ofs << endl;
+//        if (!TransporterReactionTypes.empty()) {
+//            ofs << in+ in+ "self.TransporterReactions()" << endl;
+//        }
+//
+//            ofs << endl;
+//            ofs << in+ in+ "#self.Debug_PrintSimStepTime()" << endl;
+//            ofs << in+ in+ "#print()" << endl;
+//            ofs << in+ in+ "#self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
+//            ofs << endl;
 
         ofs << in+ in+ "self.SpatialLocation()" << endl;
+
+        // diffuse either before or after (nonspatial simulation + spatial location simulation)
+        ofs << in+ in+ "self.SpatialDiffusion()" << endl;
         ofs << endl;
     }
 
@@ -1452,12 +1548,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "# Add a list of molecules to track for debugging every simulation step" << endl;
     ofs << in+ in+ "Debug_Names_Molecules = []" << endl; // TODO: take input from command line
     if (MolLoc.size() == 1) {
-        ofs << in+ in   + "Debug_Names_Molecules = ['Am']" << endl;
+        ofs << in+ in   + "# Debug_Names_Molecules = ['L', 'Am', ]" << endl;
     } else if (MolLoc.size() == 2) {
-        ofs << in+ in+ "Debug_Names_Molecules = ['Am', 'qAm']" << endl;
+        ofs << in+ in+ "# Debug_Names_Molecules = ['L', 'qL', 'Am', 'qAm', 'qA', 'qAL', 'qAmL']" << endl;
     }
-    ofs << in+ in+ "#Debug_Names_Molecules = ['Am', 'AmL', 'L']" << endl;
-    ofs << in+ in+ "#Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl;
+    ofs << in+ in+ "# Debug_Names_Molecules = ['Am', 'AmL', 'L']" << endl;
+    ofs << in+ in+ "# Debug_Names_Molecules = ['Am', 'AmL', 'L', 'qL', 'pc_qL']" << endl;
     ofs << endl;
     ofs << in+ in+ "if Debug_Names_Molecules == []:" << endl;
     ofs << in+ in+ in+ "Debug_Names_Molecules = self.State.GetMolNames()" << endl;

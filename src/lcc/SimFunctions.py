@@ -172,7 +172,7 @@ def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
 
 
 # Spatial simulation functions
-def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount, BasalAmount=0, shape='', size=0, pattern='diffuse'):
+def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount=0, BasalAmount=0, shape='', size=0, pattern='diffuse'):
     '''
     available shape options: circle, square
     temporary size options are interpreted as its diameter or length of each side, respectively.

@@ -1104,9 +1104,13 @@ std::vector<FCount *> FCompilerContext::GetSubList_CountList(std::string Type)
     std::vector<FCount *> SubList;
     std::vector<std::string> Names;
 
-    if      (Type == "Molecule")    { Names = GetNames_MoleculeList(); }
+    if     ((Type == "Molecule")
+         || (Type == "Restore")
+         || (Type == "Event"))     { Names = GetNames_MoleculeList(); }
+
     else if (Type == "Compartment") { Names = GetNames_ContainerList(Type); }
     else if (Type == "Organism")    { Names = GetNames_ContainerList(Type); }
+
     else if (Type == "All")         {}
 
     if (!Names.empty()) {
@@ -1119,6 +1123,23 @@ std::vector<FCount *> FCompilerContext::GetSubList_CountList(std::string Type)
         for (auto& item : CountList) {
             SubList.push_back(item);
         }
+    }
+
+    std::vector<FCount *> Filtered;
+    if (Type == "Restore") {
+        for (auto& count : SubList) {
+            if ((count->End == -1) || (count->Name == "qL")) {
+                Filtered.push_back(count);
+            }
+        }
+        SubList = Filtered;
+    } else if (Type == "Event") {
+        for (auto& count : SubList) {
+            if ((count->End >= 0) & (count->Begin != count->End)) {
+                Filtered.push_back(count);
+            }
+        }
+        SubList = Filtered;
     }
 
     return SubList;

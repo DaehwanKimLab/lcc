@@ -679,12 +679,19 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     ofs << in+ in+ "self.Dist_Names = [" << Utils::JoinStr2Str(Context.GetNames_LocationList("Molecule")) << "]" << endl;
     for (int i = 0; i < MolLoc.size(); i++) {
         auto& Coord = MolLoc[i]->Coord;
-        auto Amount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+        float MaxAmount = 0;
+        float BasalAmount = 0;
+        if (Coord[0] != -1) {
+            MaxAmount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+        } else {
+            BasalAmount = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+        }
+
 //        std::string Shape, Pattern;
 //        int Size;
 
         ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, "
-            << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", " << Amount;
+            << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", MaxAmount=" << MaxAmount << ", BasalAmount=" << BasalAmount;
 //        if (!Shape.empty()) {
 //            ofs << ", " << Shape << ", " << Size << ", " << Pattern;
 //            }

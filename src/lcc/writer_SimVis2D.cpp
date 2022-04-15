@@ -668,7 +668,7 @@ void FWriter::SimVis2D() {
     std::vector<int>            MaxBrightness       {200,           170,        50          };
 
     std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
-    std::vector<std::string>    NormalizationType   {"linear",      "log",      "particles" };
+    std::vector<std::string>    NormalizationType   {"linear",      "linear",      "particles" };
     std::vector<int>            ReductionFactor     {5,             2,          1           };
 
     std::vector<std::string>    MaxStatic;
@@ -784,7 +784,11 @@ void FWriter::SimVis2D() {
     ofs << endl;
 
     for (auto& Mol : MolLoc) {
-        ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'))" << endl;
+        float DrawingThreshold = 0;
+        if (Mol->Coord[0] == -1) {
+            DrawingThreshold = Context.GetInitialCountByName_CountList(Mol->Name);
+        }
+        ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'), threshold=" << DrawingThreshold << ")" << endl;
     }
     ofs << endl;
     ofs << in+ in+ "if Control.PauseSwitch:" << endl;
