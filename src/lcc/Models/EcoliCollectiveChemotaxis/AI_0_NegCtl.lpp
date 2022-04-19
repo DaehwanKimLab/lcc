@@ -26,7 +26,7 @@ petridish P
 
     }
   
-    flagellum F(Am, 0.982 nM);
+    flagellum F(Am, 0.9825 nM);
 
     R = 5nM, B = 0.1nM, A = 500nM;
 
@@ -72,13 +72,13 @@ petridish P
   E(700, 400, 0) = 1;
 
   glucose L;
-  L(800, 600, 0) = 10 nmol;
+  L(800, 600, 0) = 9 nmol;
 
   Autoinducer qL;
-  qL(200, 600, 0) = 10 nmol;
+  qL(250, 400, 0) = 3 nmol;
 
   F = 3;
 
 }
 
-// ~ 915, top left ecoli starts to move to glucose
+// at ~ 410 and 500, top left ecoli starts to move to glucose
