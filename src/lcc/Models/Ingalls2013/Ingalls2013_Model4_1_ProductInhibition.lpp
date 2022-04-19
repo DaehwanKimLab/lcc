@@ -13,7 +13,7 @@ reaction R4(S2 --> S2Out, k=5);
 reaction R5(S1 --> S2, k=2);
 
 // regulatory reaction
-reaction R6(S2 --| R1, Ki=1, n=4);
+reaction R6(S2 --| R1, Ki=0.5, n=4);
 
 S1In[:] = 1;
 S2In[:] = 1;

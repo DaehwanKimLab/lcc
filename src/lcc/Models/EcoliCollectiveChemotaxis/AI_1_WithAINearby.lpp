@@ -26,7 +26,7 @@ petridish P
 
     }
   
-//    flagellum F(Am, 0.982 nM);
+    flagellum F(Am, 0.982 nM);
 
     R = 5nM, B = 0.1nM, A = 500nM;
 
@@ -55,12 +55,12 @@ petridish P
         reaction R(qB --> qBP, k=0.05e9, krev=0.005);
       }
 
-      reaction R2(qAm + qL --> qAmL, k=1e9, krev=1);
-      reaction R3(qA + qL --> qAL, k=1e9, krev=1);
+      reaction R3(qAm + qL --> qAmL, k=1e9, krev=1);
+      reaction R4(qA + qL --> qAL, k=1e9, krev=1);
 
     }
 
-    flagellum F(qAm, 0.983 nM);
+    flagellum F(qAm, 0.982 nM);
 
     qR = 5nM, qB = 0.1nM, qA = 500nM;
 
@@ -72,11 +72,14 @@ petridish P
   E(700, 400, 0) = 1;
 
   glucose L;
-//  L(800, 600, 0) = 10 nmol;
+  L(800, 600, 0) = 10 nmol;
 
   Autoinducer qL;
-  qL(200, 400, 0) = 10 nmol;
+  qL(200, 600, 0) = 10 nmol;
 
   F = 3;
 
 }
+
+// ~ 140, top left ecoli starts to move to autoinducer then to glucose
+// note that the middle ecoli gets distracted as it moved closer to autoinducer

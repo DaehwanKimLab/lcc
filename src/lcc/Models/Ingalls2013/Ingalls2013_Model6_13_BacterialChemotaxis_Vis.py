@@ -160,7 +160,7 @@ class FOrganism:
 
     def LoadImage(self):
         if self.Species == 'Ecoli':
-            self.Image = pygame.image.load('../pygamelib/ecoli.png')
+            self.Image = pygame.image.load('../../pygamelib/ecoli.png')
             self.Image = pygame.transform.scale(self.Image, (self.Image_Size_X, self.Image_Size_Y))
             self.Image_Rect = self.Image.get_rect()
             self.RotateImage(220)
