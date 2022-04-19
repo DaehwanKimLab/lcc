@@ -330,7 +330,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "Data[:, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
 
     int i_Count_Mol = i_Vol + MolNames.size();
-    ofs << in+ in+ "Data[:, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All" << endl;
+
+    ofs << in+ in+ "Data[:, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All";
+    if (!ObjLoc.empty()) { ofs << "[0]"; } ofs << endl;
 
     ofs << in+ in+ "return Data" << endl;
     ofs << endl;
@@ -714,10 +716,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // TODO: scale up exporting
     ofs << in+ "def ExportData(self):" << endl;
-    if (Context.LocationList.empty()) {
+//    if (Context.LocationList.empty()) {
         ofs << in+ in+ "self.Dataset.Data = self.State.ExportData(self.SimStep/self.SimTimeResolutionPerSecond)" << endl;
         ofs << in+ in+ "self.DataManager.Add(self.Dataset.Data)" << endl;
-    } else { ofs << in+ in+ "pass" << endl; }
+//    } else { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def SaveState(self, FileName):" << endl;
@@ -857,8 +859,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //            ofs << in+ in+ "#print()" << endl;
 //            ofs << in+ in+ "#self.Debug_PrintCountsAndDistributions() # Temporary placement. Update with implementing delta for spatial simulation" << endl;
 //            ofs << endl;
-
-        ofs << in+ in+ "self.SpatialLocation()" << endl;
+        if (!Context.MotilityList.empty()) {
+            ofs << in+ in+ "self.SpatialLocation()" << endl;
+        }
 
         // diffuse either before or after (nonspatial simulation + spatial location simulation)
         ofs << in+ in+ "self.SpatialDiffusion()" << endl;

@@ -81,9 +81,9 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << "# Load model" << endl;
     ofs << "State = SimModule.FState()" << endl;
-    ofs << "Data = SimModule.FDataset()" << endl;
+    ofs << "Dataset = SimModule.FDataset()" << endl;
     ofs << "DataManager = SimModule.FDataManager()" << endl;
-    ofs << "SimM = SimModule.FSimulation(State, Data, DataManager)" << endl;
+    ofs << "SimM = SimModule.FSimulation(State, Dataset, DataManager)" << endl;
     ofs << endl;
     ofs << "# Initialize model" << endl;
     ofs << "SimM.Initialize()" << endl;
@@ -199,10 +199,12 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "Threshold = None" << endl;
     ofs << in+ in+ in+ "Current = None" << endl;
     ofs << in+ in+ in+ "bChemotaxis = None" << endl;
-    ofs << in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
-    ofs << in+ in+ in+ in+ "Threshold = SimM.Debug_ApplyUnit(SimM.State.Pos_Threshold)" << endl;
-    ofs << in+ in+ in+ in+ "Current = SimM.Debug_ApplyUnit(SimM.GetCount(SimM.State.Idx_Count_Threshold).transpose())" << endl;
-    ofs << in+ in+ in+ in+ "bChemotaxis = SimM.EvaluateChemotaxisThreshold()" << endl;
+    if (!Context.ThresholdList.empty()) {
+        ofs << in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
+        ofs << in+ in+ in+ in+ "Threshold = SimM.Debug_ApplyUnit(SimM.State.Pos_Threshold)" << endl;
+        ofs << in+ in+ in+ in+ "Current = SimM.Debug_ApplyUnit(SimM.GetCount(SimM.State.Idx_Count_Threshold).transpose())" << endl;
+        ofs << in+ in+ in+ in+ "bChemotaxis = SimM.EvaluateChemotaxisThreshold()" << endl;
+    }
     ofs << endl;
     ofs << in+ in+ in+ "for i in range(self.X.size):" << endl;
     ofs << in+ in+ in+ in+ "if i == 0:" << endl;
@@ -213,8 +215,10 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
     ofs << in+ in+ in+ in+ "if self.Radar_Switch:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.DrawRadar(Color, self.X[i], self.Y[i])" << endl;
-    ofs << in+ in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.DisplayThresholdMolecules(self.X[i], self.Y[i], Threshold[:, i], Current[:, i], bChemotaxis[:, i])" << endl;
+    if (!Context.ThresholdList.empty()) {
+        ofs << in+ in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
+        ofs << in+ in+ in+ in+ in+ "self.DisplayThresholdMolecules(self.X[i], self.Y[i], Threshold[:, i], Current[:, i], bChemotaxis[:, i])" << endl;
+    }
     ofs << endl;
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "pygame.draw.circle(Screen, BLACK, (self.X, self.Y), 5)" << endl;
@@ -342,12 +346,14 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Radar_MolColor = [";
     for (int i = 0; i < MolLoc.size(); i++) { ofs << Radar_MolColor[i] << ", "; }
     ofs << "]" << endl;
-    
+
     ofs << endl;
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
     ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
     ofs << in+ in+ in+ "SimM.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
+    ofs << in+ in+ in+ "SimM.ExportData()" << endl;
     ofs << in+ in+ "SimM.SimLoop_WithSpatialSimulation()" << endl;
+    ofs << in+ in+ "SimM.ExportData()" << endl;
     ofs << endl;
 //    ofs << in+ "def ReportStatus(self):" << endl;
 //    ofs << in+ in+ "# for debugging" << endl;
@@ -386,8 +392,9 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "pygame.draw.aalines(Screen, self.TrajectoryColor[i], False, self.Trajectory[i])" << endl;
     ofs << endl;
     ofs << "class FMolecule:" << endl;
-    ofs << in+ "def __init__(self, InName, InX, InY):" << endl;
+    ofs << in+ "def __init__(self, InName, InIdentity, InX=0, InY=0):" << endl;
     ofs << in+ in+ "self.Name = InName" << endl;
+    ofs << in+ in+ "self.Identity = InIdentity" << endl;
     ofs << in+ in+ "self.X = InX" << endl;
     ofs << in+ in+ "self.Y = InY" << endl;
     ofs << in+ in+ "self.DiffusionFactor = 2" << endl;
@@ -437,6 +444,20 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "New_Particle_XY_Static.append((X, Y))" << endl;
     ofs << in+ in+ "self.Particle_XY_Static = New_Particle_XY_Static" << endl;
     ofs << endl;
+
+    ofs << in+ "def DisplayName(self):" << endl;
+    ofs << in+ in+ "color = WHITE" << endl;
+//    ofs << in+ in+ "color = None" << endl;
+//    ofs << in+ in+ "if self.Color == 'Blue':" << endl;
+//    ofs << in+ in+ in+ "color = WHITE" << endl;
+//    ofs << in+ in+ "else:" << endl;
+//    ofs << in+ in+ in+ "color = BLACK" << endl;
+    ofs << in+ in+ "Text = Font_Radar.render(self.Identity, True, color)" << endl;
+    ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
+    ofs << in+ in+ "Text_Rect.center = (self.X, self.Y)" << endl;
+    ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
+    ofs << endl;
+
     ofs << in+ "def Draw(self, Data, threshold=0):" << endl;
     ofs << in+ in+ "if np.max(Data) == 0:" << endl;
     ofs << in+ in+ in+ "return"<< endl;
@@ -444,6 +465,10 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "if self.Pattern == 'spots':" << endl;
     ofs << in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
     ofs << in+ in+ in+ "CoordsToDraw = np.where(Data_Normalized > threshold)" << endl;
+    ofs << in+ in+ in+ "if self.NormalizationType == 'linear':" << endl;
+    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
+    ofs << in+ in+ in+ "elif self.NormalizationType == 'log':" << endl;
+    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_P1Log(Data)" << endl;
     ofs << in+ in+ in+ "for X, Y, Value in zip(CoordsToDraw[0], CoordsToDraw[1], Data_Normalized[CoordsToDraw]):" << endl;
     ofs << in+ in+ in+ in+ "intensity = np.floor(Value * self.MaxBrightness)" << endl;
     ofs << in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
@@ -540,6 +565,7 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << in+ in+ "self.InstructionSwitch = False" << endl;
     ofs << in+ in+ "self.Instructions = {" << endl;
+    ofs << in+ in+ in+ "'S' : 'Save Data'," << endl;
     ofs << in+ in+ in+ "'T' : 'Display Trajectory Switch'," << endl;
     ofs << in+ in+ in+ "'I' : 'Display Instruction Switch'," << endl;
 //    ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
@@ -654,6 +680,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "Text_Rect.center = self.Pos_Welcome" << endl;
     ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
+
     ofs << endl;
     ofs << "def main():" << endl;
     ofs << in+ "Control = FControl()" << endl;
@@ -664,19 +691,20 @@ void FWriter::SimVis2D() {
     ofs << endl;
     // Distribution settings (hardcoding)
     //                                              L,              qL
-    std::vector<std::string>    Color               {"Yellow",      "Blue",     "Green"     };
+    std::vector<std::string>    Identity            {"Glucose",     "Autoinducer",     "Mol3"     };
+    std::vector<std::string>    Color               {"Blue",        "Green",     "Yellow"     };
     std::vector<int>            MaxBrightness       {200,           170,        50          };
 
     std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
-    std::vector<std::string>    NormalizationType   {"linear",      "linear",      "particles" };
-    std::vector<int>            ReductionFactor     {5,             2,          1           };
+    std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
+    std::vector<int>            ReductionFactor     {5,             5,          1           };
 
     std::vector<std::string>    MaxStatic;
     std::vector<std::string>    ContourLine;
 
 //    if (Option.bDebug)
 //    {
-                                Color =             {"Green",       "Blue",     "Green"     };
+//                                Color =             {"Green",       "Blue",     "Green"     };
 //                                MaxStatic =         {"True",        "False",    "particles" };
 //                                ContourLine =       {"True",        "False",    "False" };
 //    }
@@ -685,7 +713,7 @@ void FWriter::SimVis2D() {
     // auto& MolLoc = Context.GetSubList_LocationList("Molecule");
     for (int i = 0; i < MolLoc.size(); i++) {
         // instantiate
-        ofs << in+ MolLoc[i]->Name << " = FMolecule('" << MolLoc[i]->Name << "', ";
+        ofs << in+ MolLoc[i]->Name << " = FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
         ofs << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ")" << endl;
 
         // set color
@@ -744,8 +772,10 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "Control.MessageTimer = 5000" << endl;
     ofs << in+ in+ in+ in+ "if event.key == pygame.K_x:" << endl;
     ofs << in+ in+ in+ in+ in+ "SimState = False" << endl;
+    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_s:" << endl;
+    ofs << in+ in+ in+ in+ in+ "DataManager.SaveCountToFile('" << Option.SimResultFile.c_str() << "')" << endl;
+    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('S')" << endl;
     ofs << endl;
-
     ofs << in+ in+ in+ in+ "# Organism Control" << endl;
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_t:" << endl;
     for (auto& OrganismName : OrgNames) {
@@ -784,11 +814,12 @@ void FWriter::SimVis2D() {
     ofs << endl;
 
     for (auto& Mol : MolLoc) {
-        float DrawingThreshold = 0;
+        float DrawingThreshold = 0.15;
         if (Mol->Coord[0] == -1) {
             DrawingThreshold = Context.GetInitialCountByName_CountList(Mol->Name);
         }
         ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'), threshold=" << DrawingThreshold << ")" << endl;
+        ofs << in+ in+ Mol->Name << ".DisplayName()" << endl;
     }
     ofs << endl;
     ofs << in+ in+ "if Control.PauseSwitch:" << endl;
