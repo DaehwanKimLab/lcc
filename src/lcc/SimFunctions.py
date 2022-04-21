@@ -227,7 +227,7 @@ def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount=0, BasalAmount
 
 def InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max, ):
     Dist = np.sqrt(((X - X_Ori) / Width) ** 2 + ((Y - Y_Ori) / Height) ** 2)
-    return Max / max(1, Dist * 30)
+    return Max / max(1, Dist * 50)
 
 def Eqn_Transporter_Unregulated(Conc_Transporter, Conc_Inside, Conc_Outside, ki, ko):
     return Conc_Transporter * (Conc_Inside * ko - Conc_Outside * ki)
@@ -334,3 +334,30 @@ def Normalize_P1Log(Data):
 # Debugging tools
 def SciFloat(Float, InPrecision=4, InExp_digits=2):
     return np.format_float_scientific(Float, precision=InPrecision, unique=False, exp_digits=InExp_digits)
+
+# Hardcoded for chemotaxis
+def DiffuseDistribution_FAST(Distribution, D=0.15, dTime=1): # D must be less than 1/6
+    Distribution_Diffused = Distribution + Eqn_Diffusion_Spatial_FAST(Distribution, D) * dTime
+    Distribution_Corrected = RestoreNoise(Distribution_Diffused, np.min(Distribution))
+    # return Distribution
+    # return Distribution_Updated
+    return Distribution_Corrected
+
+def Eqn_Diffusion_Spatial_FAST(Distribution, D, DegreeOfDiffusion=20):
+    # This equation allows faster diffusion
+    Diffusion_Quantity = Distribution * D
+    Diffusion_Padded = np.pad(Diffusion_Quantity, (DegreeOfDiffusion, DegreeOfDiffusion))
+
+    # roll diffusion quantity
+    Upward = np.roll(Diffusion_Padded, -DegreeOfDiffusion, axis=0)
+    Downward = np.roll(Diffusion_Padded, DegreeOfDiffusion, axis=0)
+    Leftward = np.roll(Diffusion_Padded, -DegreeOfDiffusion, axis=1)
+    Rightward = np.roll(Diffusion_Padded, DegreeOfDiffusion, axis=1)
+
+    Distribution_Diffused = (Upward + Downward + Leftward + Rightward)[DegreeOfDiffusion:-DegreeOfDiffusion, DegreeOfDiffusion:-DegreeOfDiffusion] - 4 * Diffusion_Quantity
+
+    return Distribution_Diffused
+
+def RestoreNoise(Distribution, Noise=0): # D must be less than 1/6
+    Distribution_Corrected = np.where(Distribution < Noise, Noise, Distribution)
+    return Distribution_Corrected
