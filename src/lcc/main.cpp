@@ -404,11 +404,12 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
         Range = {0, 0, 0};
     }
 
-//    if (Location.empty()) {
-//        if ((Name == "L") || (Name == "qL")) {
-//            Location = {-1, -1, -1};
-//        }
-//    }
+    // TODO: Update hardcoding for 'L' and 'qL' --> update with namespace if within containers, not in organism
+    if (Location.empty()) {
+        if ((Name == "L") || (Name == "qL")) {
+            Location = {-1, -1, -1};
+        }
+    }
 
     // temporary simulation control system
     if (Name == "SimSteps") {

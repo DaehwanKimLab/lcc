@@ -271,7 +271,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         float Count = Context.GetInitialCountByName_CountList(molecule->Name);
         float MolarityFactor = Context.GetMolarityFactorByName_CountList(molecule->Name);
 
-        // special consideration for 'L' and 'qL' for chemotaxis
+        // TODO: special consideration for 'L' and 'qL' for chemotaxis
         if ((molecule->Name == "L") || (molecule->Name == "qL")) { Count = 0; }
 
         InitialCount_Molecules.push_back(Count);
@@ -517,19 +517,19 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //    ofs << endl;
 
 
-//    ofs << in+ in+ "# Update Spatially Distributed Molecules from Count (special treatment on 'qL' for now by addition)" << endl;
-//    ofs << in+ in+ "self.CountToDistribution()" << endl;
-//    ofs << endl;
+    ofs << in+ in+ "# Update Spatially Distributed Molecules from Count (special treatment on 'qL' for now by addition)" << endl;
+    ofs << in+ in+ "self.CountToDistribution()" << endl;
+    ofs << endl;
 
-//    if (bDebug_SimFlow) {
-//        if (!Option.bDebug) { ofs << "# "; }
-//        ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
-//        if (!Option.bDebug) { ofs << "# "; }
-//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-//        if (!Option.bDebug) { ofs << "# "; }
-//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
-//        ofs << endl;
-//    }
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
 
     ofs << in+ in+ "# Run Spatial Simulation" << endl;
     ofs << in+ in+ "self.SpatialSimulation()" << endl; // TODO: Take delta, instead of updating directly then move up before UpdateCounts
@@ -762,14 +762,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!MolLoc.empty() & !ObjLoc.empty()) {
         for (auto& molLoc : MolLoc) {
             // TODO: Hardcoding to add qL count to distribution
-//            if (molLoc->Name == "qL") {
-//                std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-//                for (auto& UniqueName : ObjUniqueNames) {
-//                    ofs << in+ in+ "Count = self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name << "].reshape(-1)" << endl;
-//                    ofs << in+ in+ "self.AddToDist(self.Idx_CoordToDist_" << molLoc->Name << ", self.State.Pos_X, self.State.Pos_Y, Count)" << endl;
-//                    PassSwitch = false;
-//                }
-//            }
+            if (molLoc->Name == "qL") {
+                std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+                for (auto& UniqueName : ObjUniqueNames) {
+                    ofs << in+ in+ "Count = self.State.Count_All[:, self.Idx_DistToCoord_" << molLoc->Name << "].reshape(-1)" << endl;
+                    ofs << in+ in+ "self.AddToDist(self.Idx_CoordToDist_" << molLoc->Name << ", self.State.Pos_X, self.State.Pos_Y, Count)" << endl;
+                    PassSwitch = false;
+                }
+            }
         }
     }
     if (PassSwitch) {
@@ -787,10 +787,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             if (MolarityFactor) { Amount = Utils::SciFloat2Str(count->Amount) + " * self.State.Vol"; }
             else                { Amount = Utils::SciFloat2Str(count->Amount); }
 
-            // Special treatment for 'qL' as if qL[:] = 0;
-//            if (count->Name == "qL") {
-//                Amount = "0";
-//            }
+            // TODO: Special treatment for 'qL' as if qL[:] = 0;
+            if (count->Name == "qL") {
+                Amount = "0";
+            }
 
             ofs << in + in + "np.put_along_axis(self.State.Count_All, self.Idx_Restore_" << count->Name
                 << ".reshape(1, -1), " << Amount << ", axis=1)" << endl;

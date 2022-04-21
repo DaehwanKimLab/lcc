@@ -27,8 +27,8 @@ petridish P
   }
   E(10, 10, 0) = 1;
 
-  glucose G;
-  G(1, 1, 0) = 1nmol;
+  glucose L;
+  L(1, 1, 0) = 1nmol;
 }
 
 SimSteps = 30000, SimRes = 100;

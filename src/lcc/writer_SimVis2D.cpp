@@ -403,6 +403,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Pattern = ''" << endl;
     ofs << in+ in+ "self.MaxBrightness = None" << endl;
     ofs << in+ in+ "self.NormalizationType = ''" << endl;
+    ofs << in+ in+ "self.bDisplayIntensityRaw = False" << endl;
+    ofs << in+ in+ "self.DisplayIntensityThreshold = 0" << endl;
     ofs << endl;
     ofs << in+ in+ "# Heatmap Drawing" << endl;
     ofs << in+ in+ "self.ReductionFactor = 5" << endl;
@@ -458,13 +460,13 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
 
-    ofs << in+ "def Draw(self, Data, threshold=0):" << endl;
+    ofs << in+ "def Draw(self, Data):" << endl;
     ofs << in+ in+ "if np.max(Data) == 0:" << endl;
     ofs << in+ in+ in+ "return"<< endl;
     ofs << endl;
     ofs << in+ in+ "if self.Pattern == 'spots':" << endl;
     ofs << in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
-    ofs << in+ in+ in+ "CoordsToDraw = np.where(Data_Normalized > threshold)" << endl;
+    ofs << in+ in+ in+ "CoordsToDraw = np.where(Data_Normalized > self.DisplayIntensityThreshold)" << endl;
     ofs << in+ in+ in+ "if self.NormalizationType == 'linear':" << endl;
     ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
     ofs << in+ in+ in+ "elif self.NormalizationType == 'log':" << endl;
@@ -477,17 +479,20 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "pygame.draw.circle(Screen, color, (X, Y), self.Particle_Radius)" << endl;
     ofs << endl;
     ofs << in+ in+ "elif self.Pattern == 'heatmap':" << endl;
+    ofs << in+ in+ in+ "Data_ThresholdRemoved = Data - self.DisplayIntensityThreshold" << endl;
     ofs << in+ in+ in+ "Data_Normalized = None" << endl;
     ofs << in+ in+ in+ "ContourLine = list()" << endl;
     ofs << in+ in+ in+ "if self.NormalizationType == 'linear':" << endl;
-    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data)" << endl;
+    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_Linear(Data_ThresholdRemoved)" << endl;
     ofs << in+ in+ in+ "elif self.NormalizationType == 'log':" << endl;
-    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_P1Log(Data)" << endl;
+    ofs << in+ in+ in+ in+ "Data_Normalized = SimF.Normalize_P1Log(Data_ThresholdRemoved)" << endl;
     ofs << endl;
     ofs << in+ in+ in+ "for x in range(0, Data_Normalized.shape[0], self.ReductionFactor):" << endl;
     ofs << in+ in+ in+ in+ "for y in range(0, Data_Normalized.shape[1], self.ReductionFactor):" << endl;
+    ofs << in+ in+ in+ in+ in+ "RawMolLevel = Data[x][y]" << endl;
     ofs << in+ in+ in+ in+ in+ "PercentMolLevel = Data_Normalized[x][y]" << endl;
-    ofs << in+ in+ in+ in+ in+ "if PercentMolLevel < threshold or PercentMolLevel == 0:" << endl;
+    ofs << in+ in+ in+ in+ in+ "bSkip = self.EvaluateToSkip(RawMolLevel, PercentMolLevel)" << endl;
+    ofs << in+ in+ in+ in+ in+ "if bSkip:" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "continue" << endl;
     ofs << in+ in+ in+ in+ in+ "intensity = np.floor(PercentMolLevel * self.MaxBrightness)" << endl;
     ofs << in+ in+ in+ in+ in+ "if intensity > self.MaxBrightness:" << endl;
@@ -507,6 +512,19 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "assert True, 'Unsupported molecule distribution pattern for drawing: %s' % self.Pattern" << endl;
+    ofs << endl;
+
+    ofs << in+ "def EvaluateToSkip(self, Data_Raw, Data_Normalized):" << endl;
+    ofs << in+ in+ "bSkip = False" << endl;
+    ofs << in+ in+ "if Data_Raw == 0:" << endl;
+    ofs << in+ in+ in+ "bSkip = True" << endl;
+    ofs << in+ in+ "elif self.bDisplayIntensityRaw:" << endl;
+    ofs << in+ in+ in+ "if Data_Raw < self.DisplayIntensityThreshold:" << endl;
+    ofs << in+ in+ in+ in+ "bSkip = True" << endl;
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "if Data_Normalized < self.DisplayIntensityThreshold:" << endl;
+    ofs << in+ in+ in+ in+ "bSkip = True" << endl;
+    ofs << in+ in+ "return bSkip" << endl;
     ofs << endl;
 
     ofs << in+ "def CheckContourLine(self, Value):" << endl;
@@ -536,9 +554,13 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.MaxBrightness = MaxBrightness" << endl;
     ofs << endl;
 
-    ofs << in+ "def SetPattern(self, Pattern, NormalizationType, ReductionFactor, maxstatic=False, contourline=False):" << endl;
+    ofs << in+ "def SetPattern(self, Pattern, NormalizationType, ReductionFactor, DisplayIntensityThreshold, bRaw, maxstatic=False, contourline=False):" << endl;
     ofs << in+ in+ "self.Pattern = Pattern" << endl;
     ofs << in+ in+ "self.NormalizationType = NormalizationType" << endl;
+    ofs << in+ in+ "self.ReductionFactor = ReductionFactor" << endl;
+    ofs << in+ in+ "if bRaw:" << endl;
+    ofs << in+ in+ in+ "self.bDisplayIntensityRaw = True" << endl;
+    ofs << in+ in+ in+ "self.DisplayIntensityThreshold = DisplayIntensityThreshold" << endl;
     ofs << in+ in+ "self.ReductionFactor = ReductionFactor" << endl;
     ofs << in+ in+ "self.bMaxStatic = maxstatic" << endl;
     ofs << in+ in+ "self.bContourLine = contourline" << endl;
@@ -697,7 +719,7 @@ void FWriter::SimVis2D() {
 
     std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
     std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
-    std::vector<int>            ReductionFactor     {5,             5,          1           };
+    std::vector<int>            ReductionFactor     {5,             1,          1           };
 
     std::vector<std::string>    MaxStatic;
     std::vector<std::string>    ContourLine;
@@ -719,8 +741,15 @@ void FWriter::SimVis2D() {
         // set color
         ofs << in+ MolLoc[i]->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
 
+        float DrawingThreshold = 0;
+        std::string bRaw = "False";
+        if (MolLoc[i]->Coord[0] == -1) {
+            DrawingThreshold = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+            bRaw = "True";
+        }
+
         // set pattern
-        ofs << in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i];
+        ofs << in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ", " << Utils::SciFloat2Str(DrawingThreshold) << ", " << bRaw;
         if (!MaxStatic.empty())     { ofs << ", maxstatic=" << MaxStatic[i]; }
         if (!ContourLine.empty())   { ofs << ", contourline=" << ContourLine[i]; }
         ofs << ",)" << endl;
@@ -814,11 +843,13 @@ void FWriter::SimVis2D() {
     ofs << endl;
 
     for (auto& Mol : MolLoc) {
-        float DrawingThreshold = 0.15;
+        float DrawingThreshold = 0;
+        std::string bRaw = "False";
         if (Mol->Coord[0] == -1) {
             DrawingThreshold = Context.GetInitialCountByName_CountList(Mol->Name);
+            bRaw = "True";
         }
-        ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'), threshold=" << DrawingThreshold << ")" << endl;
+        ofs << in+ in+ Mol->Name << ".Draw(SimM.GetDistributionByName('" << Mol->Name << "'))" << endl;
         ofs << in+ in+ Mol->Name << ".DisplayName()" << endl;
     }
     ofs << endl;
