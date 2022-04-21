@@ -485,19 +485,19 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
     }
 
-//    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
-//    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
-//    ofs << endl;
-//
-//    if (bDebug_SimFlow) {
-//        if (!Option.bDebug) { ofs << "# "; }
-//        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
-//        if (!Option.bDebug) { ofs << "# "; }
-//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-//        if (!Option.bDebug) { ofs << "# "; }
-//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
-//        ofs << endl;
-//    }
+    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
+    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+    ofs << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
 
     ofs << in+ in+ "# Update Substrate Count" << endl;
     ofs << in+ in+ "self.UpdateCounts()" << endl;
@@ -517,19 +517,28 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //    ofs << endl;
 
 
-    ofs << in+ in+ "# Update Spatially Distributed Molecules from Count (special treatment on 'qL' for now by addition)" << endl;
-    ofs << in+ in+ "self.CountToDistribution()" << endl;
-    ofs << endl;
+    // temporary for qL efflux
+    if (!Context.ReactionList.empty()) {
+        for (auto& reaction : Context.ReactionList) {
+            if (reaction->CheckIfProduct("qL")) {
+                ofs << in+ in+ "# Update Spatially Distributed Molecules from Count (special treatment on 'qL' for now by addition)" << endl;
+                ofs << in+ in+ "self.CountToDistribution()" << endl;
+                ofs << endl;
 
-    if (bDebug_SimFlow) {
-        if (!Option.bDebug) { ofs << "# "; }
-        ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
-        if (!Option.bDebug) { ofs << "# "; }
-        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-        if (!Option.bDebug) { ofs << "# "; }
-        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
-        ofs << endl;
+                if (bDebug_SimFlow) {
+                    if (!Option.bDebug) { ofs << "# "; }
+                    ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
+                    if (!Option.bDebug) { ofs << "# "; }
+                    ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+                    if (!Option.bDebug) { ofs << "# "; }
+                    ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+                    ofs << endl;
+                }
+                break;
+            }
+        }
     }
+
 
     ofs << in+ in+ "# Run Spatial Simulation" << endl;
     ofs << in+ in+ "self.SpatialSimulation()" << endl; // TODO: Take delta, instead of updating directly then move up before UpdateCounts
@@ -875,13 +884,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         // TODO: update to 3d array
         for (i = 0; i < N_Dist; i++) {
 
-
-//            if (MolLoc[i]->Name == "L") { continue; }
-//            else {
+            if (MolLoc[i]->Name == "L") {
+                // skip glucose diffusion
+                continue;
+            } else if (MolLoc[i]->Name == "qL") {
+                // fast diffusion applied for qL
+                ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_FAST(self.State.Dist_All[" << i << "])" << endl;
+                PassSwitch = false;
+            } else {
                 ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_4Cell(self.State.Dist_All[" << i << "])" << endl;
-//                PassSwitch = false;
-//            }
-
+                PassSwitch = false;
+            }
 
             // Future implementation
             // ofs << in+ in+ "self.State.Dist_All[" << i << "] = SimF.DiffuseDistribution_8Cell(self.State.Dist_All[" << i << "])" << endl;

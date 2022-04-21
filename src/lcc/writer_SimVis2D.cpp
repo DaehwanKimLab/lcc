@@ -43,6 +43,7 @@ void FWriter::SimVis2D() {
     ofs << "GREEN_DARK = (0, 100, 0)" << endl;
     ofs << "YELLOW = (255, 255, 0)" << endl;
     ofs << "YELLOW_FAINT = (200, 200, 150)" << endl;
+    ofs << "YELLOW_DARK = (150, 150, 50)" << endl;
     ofs << "BLUE = (0, 0, 255)" << endl;
     ofs << "BLUE_DARK = (0, 0, 139)" << endl;
     ofs << "MAGENTA = (255, 0, 255)" << endl;
@@ -547,6 +548,8 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ "return (self.MaxBrightness - Intensity, self.MaxBrightness, self.MaxBrightness)" << endl;
     ofs << in+ in+ "elif self.Color == 'Magenta':" << endl;
     ofs << in+ in+ in+ "return (self.MaxBrightness, self.MaxBrightness - Intensity, self.MaxBrightness)" << endl;
+    ofs << in+ in+ "elif self.Color == 'Black':" << endl;
+    ofs << in+ in+ in+ "return (self.MaxBrightness - Intensity, self.MaxBrightness - Intensity, self.MaxBrightness - Intensity)" << endl;
     ofs << endl;
 
     ofs << in+ "def SetColor(self, Color, MaxBrightness):" << endl;
@@ -707,19 +710,19 @@ void FWriter::SimVis2D() {
     ofs << "def main():" << endl;
     ofs << in+ "Control = FControl()" << endl;
 //    ofs << in+ "Control.DisplayInit()" << endl;
-    ofs << in+ "SimUnitTime = 0.25" << endl;
+    ofs << in+ "SimUnitTime = 0.2" << endl;
 
     ofs << in+ "PetriDish = FEnvironment()" << endl;
     ofs << endl;
     // Distribution settings (hardcoding)
     //                                              L,              qL
     std::vector<std::string>    Identity            {"Glucose",     "Autoinducer",     "Mol3"     };
-    std::vector<std::string>    Color               {"Blue",        "Green",     "Yellow"     };
-    std::vector<int>            MaxBrightness       {200,           170,        50          };
+    std::vector<std::string>    Color               {"Blue",      "Black",     "Yellow"     };
+    std::vector<int>            MaxBrightness       {200,           150,        50          };
 
     std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
     std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
-    std::vector<int>            ReductionFactor     {5,             1,          1           };
+    std::vector<int>            ReductionFactor     {5,             2,          1           };
 
     std::vector<std::string>    MaxStatic;
     std::vector<std::string>    ContourLine;
@@ -836,6 +839,39 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ in+ "Control.PauseSwitch = not Control.PauseSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('P')" << endl;
     ofs << endl;
+
+
+    ofs << in+ in+ "if Control.PauseSwitch:" << endl;
+    ofs << in+ in+ in+ "Control.DisplayPause()" << endl;
+    ofs << endl;
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "while ElapsedTime >= SimUnitTime:" << endl;
+    ofs << endl;
+
+    for (auto& OrganismName : OrgNames) {
+        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(20)" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".IncrementSimCount()" << endl;
+    }
+    ofs << endl;
+
+    ofs << in+ in+ in+ in+ "ElapsedTime -= SimUnitTime" << endl;
+    ofs << in+ in+ in+ in+ "Control.Time += 1" << endl;
+    ofs << endl;
+
+    for (auto& OrganismName : OrgNames) {
+        ofs << in+ in+ OrganismName << ".AddToTrajectory()" << endl;
+    }
+    ofs << endl;
+
+    ofs << in+ in+ "if Control.Time % 2:" << endl;
+    ofs << in+ in+ in+ "continue" << endl;
+    ofs << endl;
+    ofs << endl;
+
+
+
+    ofs << in+ in+ "# All the Drawings" << endl;
     ofs << in+ in+ "Screen.fill(GRAY1)" << endl;
     ofs << endl;
     ofs << in+ in+ "# PetriDish.Draw()" << endl;
@@ -853,33 +889,11 @@ void FWriter::SimVis2D() {
         ofs << in+ in+ Mol->Name << ".DisplayName()" << endl;
     }
     ofs << endl;
-    ofs << in+ in+ "if Control.PauseSwitch:" << endl;
-    ofs << in+ in+ in+ "Control.DisplayPause()" << endl;
-    ofs << endl;
-    ofs << in+ in+ "else:" << endl;
-    ofs << in+ in+ in+ "while ElapsedTime >= SimUnitTime:" << endl;
-    ofs << endl;
-
-    for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(50)" << endl;
-        ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
-        ofs << in+ in+ in+ in+ OrganismName << ".IncrementSimCount()" << endl;
-    }
-    ofs << endl;
-
-    ofs << in+ in+ in+ in+ "ElapsedTime -= SimUnitTime" << endl;
-    ofs << in+ in+ in+ in+ "Control.Time += 1" << endl;
-    ofs << endl;
-
-    for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ OrganismName << ".AddToTrajectory()" << endl;
-        ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
-        ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
-    }
-    ofs << endl;
 
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ OrganismName << ".Draw()" << endl;
+        ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
+        ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
     }
     ofs << in+ in+ "PetriDish.Draw(shape='lining')" << endl;
     ofs << endl;
