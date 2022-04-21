@@ -26,17 +26,16 @@ petridish P
 
     }
   
-    flagellum F(Am, 0.9825 nM);
+    flagellum F(Am, 0.982 nM);
 
     R = 5nM, B = 0.1nM, A = 500nM;
 
     pathway QuorumSensing
     {
-//      protein AmL
-//      {
-//        reaction R1(pc_pc_qL --> pc_qL, kcat=200, KM=1nM);
-//        reaction R2(pc_qL --> qL, kcat=1, KM=1nM);
-//      }
+      protein AL
+      {
+        reaction R(pc_qL --> qL, kcat=100, KM=1nM);
+      }
 
       protein qR
       {
@@ -63,6 +62,7 @@ petridish P
     flagellum F(qAm, 0.982 nM);
 
     qR = 5nM, qB = 0.1nM, qA = 500nM;
+    pc_qL[:] = 500 nM;
 
   }
 
@@ -75,7 +75,7 @@ petridish P
   L(800, 600, 0) = 9 nmol;
 
   Autoinducer qL;
-  qL(250, 400, 0) = 9 nmol;
+  qL = 0.1 nmol;
 
   F = 3;
 

@@ -81,5 +81,5 @@ petridish P
 
 }
 
-// at ~ 140, top left ecoli starts to move to autoinducer then at ~300 to glucose
+// at ~ 190, top left ecoli starts to move to autoinducer then at ~300 to glucose
 // note that the middle ecoli gets distracted as it moved closer to autoinducer
