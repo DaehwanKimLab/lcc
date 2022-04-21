@@ -1281,7 +1281,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             PassSwitch = false;
         }
     }
-    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }  
     ofs << endl;
 
     if (!PolymeraseList.empty()) {
@@ -1366,8 +1366,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.State.dCount_All = np.zeros_like(self.State.dCount_All)" << endl;
     ofs << endl;
 
-    ofs << in+ "def AddToDist(self, Idx, X, Y, Values):" << endl;
-    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Values" << endl;
+    ofs << in+ "def AddToDist(self, Idx, X, Y, Value):" << endl;
+    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
+    ofs << in+ in+ "self.State.Dist_All[Idx] = SimF.BilinearExtrapolation(self.State.Dist_All[Idx], X, Y, Value)" << endl;
+//    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Value" << endl;
     ofs << endl;
 
     // TODO: Use SimIdx in the future
@@ -1420,8 +1422,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.GetDistribution(Idx)" << endl;
     ofs << endl;
 
+    ofs << in+ "def Rescale(self, X, Y):" << endl;
+    ofs << in+ in+ "return X / self.State.FoldReduction, Y / self.State.FoldReduction " << endl;
+    ofs << endl;
+
+
     ofs << in+ "def GetCountFromDistribution(self, Dist_Idx, X, Y):" << endl;
-    ofs << in+ in+ "return self.State.Dist_All[Dist_Idx, X.astype(int), Y.astype(int)]" << endl;
+    ofs << in+ in+ "return SimF.BilinearInterpolation(self.State.Dist_All[Dist_Idx], X, Y)" << endl;
+//    ofs << in+ in+ "return self.State.Dist_All[Dist_Idx, X.astype(int), Y.astype(int)]" << endl;
     ofs << endl;
 
     ofs << in+ "def GetCountFromDistributionByNamesOfDistAndPos(self, NameOfDist, NameOfPos):" << endl;
@@ -1433,6 +1441,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def GetCountFromDistributionByNameOfDistAndXY(self, NameOfDist, X, Y):" << endl;
     // temporary code
     ofs << in+ in+ "Dist_Idx = self.GetDistIdx(NameOfDist)" << endl;
+    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
     ofs << in+ in+ "return self.GetCountFromDistribution(Dist_Idx, X, Y)" << endl;
     ofs << endl;
 
@@ -1666,12 +1675,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "print(DistNames, '\\n', DistValues[0], '\\n', DistValues[1], '\\n', DistValues[2])" << endl;
     ofs << endl;
 
+    // When no reduction and interpolation
     ofs << in+ "def Debug_PrintDistribution(self, DistNames, DistValues, Idx_Dist, X, Y):" << endl;
-    ofs << in+ in+ "DistNames += self.State.GetDistNames()[Idx_Dist] + ' (' + self.UnitTxt + ')' + '\\t\\t\\t\\t\\t\\t\\t\\t'" << endl;
-    ofs << in+ in+ "DistValues[0] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y-1])) + '\\t'" << endl;
-    ofs << in+ in+ "DistValues[1] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y]))   + '\\t'" << endl;
-    ofs << in+ in+ "DistValues[2] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y+1])) + '\\t'" << endl;
-    ofs << in+ in+ "return DistNames, DistValues" << endl;
+    ofs << in+ in+ "pass" << endl;
+
+//    ofs << in+ in+ "DistNames += self.State.GetDistNames()[Idx_Dist] + ' (' + self.UnitTxt + ')' + '\\t\\t\\t\\t\\t\\t\\t\\t'" << endl;
+//    ofs << in+ in+ "DistValues[0] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y-1])) + '\\t'" << endl;
+//    ofs << in+ in+ "DistValues[1] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y]))   + '\\t'" << endl;
+//    ofs << in+ in+ "DistValues[2] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y+1])) + '\\t'" << endl;
+//    ofs << in+ in+ "return DistNames, DistValues" << endl;
     ofs << endl;
 
     ofs << in+ "def Debug_GetArrayInString(self, Array_1D):" << endl;

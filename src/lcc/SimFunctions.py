@@ -287,6 +287,42 @@ def Displacement_2D(Distance, Angle):
     dY = -Distance * np.sin(Angle)
     return dX, dY
 
+def BilinearInterpolation(Distribution, X, Y):
+    X_Low = np.floor(X).astype(int)
+    X_High = np.ceil(X).astype(int)
+    X_Decimal = X - X_Low
+    Y_Low = np.floor(Y).astype(int)
+    Y_High = np.ceil(Y).astype(int)
+    Y_Decimal = Y - Y_Low
+
+    TopLeft = Distribution[X_Low, Y_Low]
+    TopRight = Distribution[X_High, Y_Low]
+    BottomLeft = Distribution[X_Low, Y_High]
+    BottomRight = Distribution[X_High, Y_High]
+
+    Interpolate_Top = X_Decimal * TopLeft + (1 - X_Decimal) * TopRight
+    Interpolate_Bottom = X_Decimal * BottomLeft + (1 - X_Decimal) * BottomRight
+    Interpolate_Final = Y_Decimal * Interpolate_Top + (1 - Y_Decimal) * Interpolate_Bottom
+
+    return Interpolate_Final
+
+def BilinearExtrapolation(Distribution, X, Y, Value):
+    X_Low = np.floor(X).astype(int)
+    X_High = np.ceil(X).astype(int)
+    X_Decimal = X - X_Low
+    Y_Low = np.floor(Y).astype(int)
+    Y_High = np.ceil(Y).astype(int)
+    Y_Decimal = Y - Y_Low
+
+    Top = Value * Y_Decimal
+    Bottom = Value * (1 - Y_Decimal)
+    Distribution[:, X_Low, Y_Low] += Top * X_Decimal
+    Distribution[:, X_High, Y_Low] += Top * (1 - X_Decimal)
+    Distribution[:, X_Low, Y_High] += Bottom * X_Decimal
+    Distribution[:, X_High, Y_High] += Bottom * (1 - X_Decimal)
+
+    return Distribution
+
 # Temporary chemotaxis simulation functions. 
 def BacterialChemotaxis(Evaluations, X, Y, Angle):
     # optimize the following code into additions and subtractions
