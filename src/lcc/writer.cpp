@@ -633,13 +633,10 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
     int Map_Width = 1200;
     int Map_Height = 800;
 
-    int FoldReduction = 10;
-
     ofs << in+ in+ "# Spatial Simulation" << endl;
 
-    ofs << in+ in+ "self.Dimension_X = " << (int(Map_Width) / FoldReduction) * FoldReduction << endl;
-    ofs << in+ in+ "self.Dimension_Y = " << (int(Map_Height) / FoldReduction) * FoldReduction << endl;
-    ofs << in+ in+ "self.FoldReduction = " << FoldReduction << endl;
+    ofs << in+ in+ "self.Dimension_X = " << Map_Width << endl;
+    ofs << in+ in+ "self.Dimension_Y = " << Map_Height << endl;
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
@@ -647,7 +644,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array
-    ofs << in+ in+ "self.Dist_All = np.zeros((" << MolLoc.size() << ", int(self.Dimension_X / self.FoldReduction), int(self.Dimension_Y / self.FoldReduction)))" << endl;
+    ofs << in+ in+ "self.Dist_All = np.zeros((" << MolLoc.size() << ", self.Dimension_X, self.Dimension_Y))" << endl;
     ofs << endl;
 
     ofs << in+ in+ "self.Pos_Names = list()" << endl;
@@ -694,7 +691,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 //        std::string Shape, Pattern;
 //        int Size;
 
-        ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(int(self.Dimension_X / self.FoldReduction), int(self.Dimension_Y / self.FoldReduction), "
+        ofs << in+ in+ "self.Dist_All[" << i << "] = SimF.InitializeDistribution(self.Dimension_X, self.Dimension_Y, "
             << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", MaxAmount=" << MaxAmount << ", BasalAmount=" << BasalAmount;
 //        if (!Shape.empty()) {
 //            ofs << ", " << Shape << ", " << Size << ", " << Pattern;

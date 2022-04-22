@@ -891,9 +891,9 @@ void FWriter::SimVis2D() {
     ofs << endl;
 
     for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ OrganismName << ".Draw()" << endl;
         ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
         ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
+        ofs << in+ in+ OrganismName << ".Draw()" << endl;
     }
     ofs << in+ in+ "PetriDish.Draw(shape='lining')" << endl;
     ofs << endl;

@@ -1367,7 +1367,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def AddToDist(self, Idx, X, Y, Value):" << endl;
-    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Values" << endl;
+    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Value" << endl;
 
 //    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
 //    ofs << in+ in+ "self.State.Dist_All[Idx] = SimF.BilinearExtrapolation(self.State.Dist_All[Idx], X, Y, Value)" << endl;
