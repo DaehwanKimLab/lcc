@@ -554,19 +554,19 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
     }
 
-    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
-    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
-    ofs << endl;
-
-    if (bDebug_SimFlow) {
-        if (!Option.bDebug) { ofs << "# "; }
-        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
-        if (!Option.bDebug) { ofs << "# "; }
-        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-        if (!Option.bDebug) { ofs << "# "; }
-        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
-        ofs << endl;
-    }
+//    ofs << in+ in+ "# Restore Substrate Count for Sustained Substrate InTransporter" << endl;
+//    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+//    ofs << endl;
+//
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
 
     ofs << in+ in+ "# Update Spatially Distributed Molecules On Count (special treatment on 'L' and 'qL' for now)" << endl;
     ofs << in+ in+ "self.DistributionToCount()" << endl;
@@ -1367,8 +1367,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def AddToDist(self, Idx, X, Y, Value):" << endl;
-    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
-    ofs << in+ in+ "self.State.Dist_All[Idx] = SimF.BilinearExtrapolation(self.State.Dist_All[Idx], X, Y, Value)" << endl;
+    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Values" << endl;
+
+//    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
+//    ofs << in+ in+ "self.State.Dist_All[Idx] = SimF.BilinearExtrapolation(self.State.Dist_All[Idx], X, Y, Value)" << endl;
 //    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Value" << endl;
     ofs << endl;
 
@@ -1428,8 +1430,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
 
     ofs << in+ "def GetCountFromDistribution(self, Dist_Idx, X, Y):" << endl;
-    ofs << in+ in+ "return SimF.BilinearInterpolation(self.State.Dist_All[Dist_Idx], X, Y)" << endl;
-//    ofs << in+ in+ "return self.State.Dist_All[Dist_Idx, X.astype(int), Y.astype(int)]" << endl;
+//    ofs << in+ in+ "return SimF.BilinearInterpolation(self.State.Dist_All[Dist_Idx], X, Y)" << endl;
+    ofs << in+ in+ "return self.State.Dist_All[Dist_Idx, X.astype(int), Y.astype(int)]" << endl;
     ofs << endl;
 
     ofs << in+ "def GetCountFromDistributionByNamesOfDistAndPos(self, NameOfDist, NameOfPos):" << endl;
@@ -1441,7 +1443,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def GetCountFromDistributionByNameOfDistAndXY(self, NameOfDist, X, Y):" << endl;
     // temporary code
     ofs << in+ in+ "Dist_Idx = self.GetDistIdx(NameOfDist)" << endl;
-    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
+//    ofs << in+ in+ "X, Y = self.Rescale(X, Y)" << endl;
     ofs << in+ in+ "return self.GetCountFromDistribution(Dist_Idx, X, Y)" << endl;
     ofs << endl;
 
@@ -1677,13 +1679,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // When no reduction and interpolation
     ofs << in+ "def Debug_PrintDistribution(self, DistNames, DistValues, Idx_Dist, X, Y):" << endl;
-    ofs << in+ in+ "pass" << endl;
-
-//    ofs << in+ in+ "DistNames += self.State.GetDistNames()[Idx_Dist] + ' (' + self.UnitTxt + ')' + '\\t\\t\\t\\t\\t\\t\\t\\t'" << endl;
-//    ofs << in+ in+ "DistValues[0] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y-1])) + '\\t'" << endl;
-//    ofs << in+ in+ "DistValues[1] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y]))   + '\\t'" << endl;
-//    ofs << in+ in+ "DistValues[2] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y+1])) + '\\t'" << endl;
-//    ofs << in+ in+ "return DistNames, DistValues" << endl;
+    ofs << in+ in+ "DistNames += self.State.GetDistNames()[Idx_Dist] + ' (' + self.UnitTxt + ')' + '\\t\\t\\t\\t\\t\\t\\t\\t'" << endl;
+    ofs << in+ in+ "DistValues[0] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y-1])) + '\\t'" << endl;
+    ofs << in+ in+ "DistValues[1] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y]))   + '\\t'" << endl;
+    ofs << in+ in+ "DistValues[2] += self.Debug_GetArrayInString(self.Debug_ApplyUnit(self.State.Dist_All[Idx_Dist][X-1:X+2, Y+1])) + '\\t'" << endl;
+    ofs << in+ in+ "return DistNames, DistValues" << endl;
     ofs << endl;
 
     ofs << in+ "def Debug_GetArrayInString(self, Array_1D):" << endl;
