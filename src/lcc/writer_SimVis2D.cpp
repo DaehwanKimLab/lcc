@@ -342,7 +342,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Radar_MolList = [";
     for (int i = 0; i < MolLoc.size(); i++) { ofs << "'" << MolLoc[i]->Name << "', "; }
     ofs << "]" << endl;
-    
+
     std::vector<std::string> Radar_MolColor = {"BLACK", "BLUE"};
     ofs << in+ in+ "self.Radar_MolColor = [";
     for (int i = 0; i < MolLoc.size(); i++) { ofs << Radar_MolColor[i] << ", "; }
@@ -765,7 +765,7 @@ void FWriter::SimVis2D() {
 
 //    if (Option.bDebug)
 //    {
-                                Radar_Switch =      {"True",};
+    Radar_Switch =      {"True",};
 //    }
 
     // Instantiate Organisms
