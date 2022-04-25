@@ -1,0 +1,42 @@
+// Stryer Biochemistry 7e
+// 
+// Glycolysis (Glucose -> pyruvate)
+// Net reaction: p465
+// Reaction Steps: Tab. 16.1 p466-7
+// Figure Steps: Fig. 16.2 p456
+
+// Glucose Metabolism:
+// Step 1: Glycolysis
+protein NetGlycolysis(glucose + 2 P + 2 ADP + 2 NAD --> 2 pyruvate + 2 ATP + 2 NADH + 2 H + 2 H_{2}O, kcat = 9.51e28, KM = 1e29uM)
+
+// Step 1.5: pyruvate -> Ace-CoA
+protein pyruvateDehydrogenase(pyruvate + NAD + CoA --> acetylCoA + CO_{2} + NADH + H, kcat = 6.8e19, KM = 1e20uM)
+
+// Step 2: Citric Acid Cycle
+protein NetCAC(acetylCoA + 3 NAD + FAD + ADP + P + 2 H_{2}O --> 2 CO_{2} + 3 NADH + FADH_{2} + ATP + 2 H + CoA, kcat = 5.19e19, KM = 1e20uM)
+
+// Step 3: Oxidative Phosphorylation
+pathway NetOxidativePhosphorylation
+{
+    protein ElectronTransportChain(2 NADH + 2 O_{2} + 2 H --> 2 H_{2}O + 2 NAD, kcat = 8.18e37, KM = 1e38uM)
+    protein ATPsynthase(ADP + P + H --> ATP + H_{2}O, kcat = 4.72e7, KM = 1e6uM)
+}
+
+// Initial Conc.
+// Step 1: 
+NetGlycolysis = 0.5uM; 
+glucose = 5e2uM, P = 5e3uM, ADP = 1.7e3uM,  NAD = 5e3uM;
+
+// Step 1.5:
+pyruvateDehydrogenase = 1uM; 
+CoA = 1e3uM;  
+
+// Step 2:
+NetCAC = 1uM;
+FAD = 2e3uM;
+
+// Step 3:
+ElectronTransportChain = 1uM, ATPsynthase = 1uM;
+O_{2} = 5e3uM;
+
+

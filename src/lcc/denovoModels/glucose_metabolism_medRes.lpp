@@ -1,0 +1,39 @@
+// Stryer Biochemistry 7e
+// 
+// Glycolysis (Glucose -> pyruvate)
+// Net reaction: p465
+// Reaction Steps: Tab. 16.1 p466-7
+// Figure Steps: Fig. 16.2 p456
+
+// Abbreviations:
+// F16BP: fructose 1,6-biphosphate
+// DHAP: Dihydroxyacetone phosphate
+// GAP: glyceraldehyde 3-phosphate
+// 13BPG: 1,3-Bisphosphoglycerate
+// 3PG: 3-Phosphogluterate 
+// 2PG: 2-Phosphogluterate
+// PEP: Phosphoenolpyruvate
+// GAPDH: Glyceraldehyde 3-phosphate dehydrogenase
+
+// Stepwise Glucose to pyruvate
+pathway Glycolysis
+{
+    protein hexokinase(glucose + ATP --> glucose6P + ADP + H, k = 1e4)
+    protein phosphoglucoseIsomerase(glucose6P --> fructose6P, k = 1e6)
+    protein phosphofructokinase(fructose6P + ATP --> F16BP + ADP + H, k = 1e6)
+    protein aldolase(F16BP --> DHAP + GAP, k = 1e6)
+    protein triosePhosphateIsomerase(DHAP --> GAP, k = 1e6)
+    protein GAPDH(GAP + P + NAD --> 13BPG + NADH + H, k = 1e6)
+    protein phosphoglycerateKinase(13BPG + ADP --> 3PG + ATP, k = 1e6)
+    protein phosphoglycerateMutase(3PG --> 2PG, k = 1e6)
+    protein enolase(2PG --> PEP + H2O, k = 1e6)
+    protein pyruvateKinase(PEP + ADP + H --> pyruvate + ATP, k = 1e6)
+}
+
+// Init concentrations: metabolites
+glucose = 500uM, P = 5300uM, ATP = 5000uM, ADP = 1700uM, NAD = 4700uM;
+
+// Init concentrations: enzymes
+hexokinase = 1e4uM, phosphoglucoseIsomerase = 1e4uM, phosphofructokinase = 1e3uM;
+aldolase = 1e4uM, triosePhosphateIsomerase = 1e4uM, GAPDH = 1e4uM;
+phosphoglycerateKinase = 1e4uM, phosphoglycerateMutase = 1e4uM, enolase = 1e4uM, pyruvateKinase = 1e4uM;
