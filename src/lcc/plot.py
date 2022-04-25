@@ -1,10 +1,15 @@
 import os, sys
 from argparse import ArgumentParser
 import csv
+from turtle import color
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.animation as animation
 import numpy as np
+
+#import plotly.express as px
+import plotly.graph_objects as go
+from random import randint
 
 SaveFilename = None
 NA = 6.0221409e+23
@@ -84,7 +89,7 @@ def PlotData(Dataset):
         Data = Data_Processed[1:Cap] / Data_Vol
         Legend = Legend_Processed[1:Cap]
 
-        Plot_Dynamics(Title, Data_Time[0], Data, Legend)
+        Plotly_Dynamics(Title, Data_Time[0], Data, Legend)
         return 0
 
     if plot_ShowAll_DynamicsAndPhasePlain:
@@ -284,6 +289,130 @@ def Plot_Dynamics(Title, Time, Data, Legend):
         plt.savefig(SaveFilename)
     else:
         plt.show()
+
+## Austin 
+def generateRGBList(n:int) -> list:
+    ''' generate n rgb strings and return the list for plotly colors'''
+    outputRGBs = [f'rgb({randint(0,255)},{randint(0,255)},{randint(0,255)})' for val in range(n)]
+    return outputRGBs
+
+### Austin-- convert matplotlib to plotly for easier labelling
+## https://plotly.com/python/line-charts/#label-lines-with-annotations
+def Plotly_Dynamics(Title, Time, Data, Legend):
+    X = Time
+    Y = Data
+    Y = Y * 1000/ NA # Temp conversion to mM
+    colors = generateRGBList(len(Legend))
+
+    assert len(X) == Y.shape[-1]
+
+    '''Sloppy variable removal'''
+    Y = [Y[i] for i in range(len(Legend)) if Legend[i] != 'aether']
+    Legend = [Legend[i] for i in range(len(Legend)) if Legend[i] != 'aether']
+
+    # make figure
+    fig = go.Figure()
+
+    for i in range(len(Legend)):
+        if Legend[i] == "Pseudo":
+            continue
+        fig.add_trace(
+            go.Scatter(
+                x = X, y = Y[i],
+                mode = 'lines', name = Legend[i],
+                line = dict(color = colors[i]),
+                connectgaps = True,
+                ))
+        # endpoints
+        fig.add_trace(go.Scatter(
+            x=[X[0], X[-1]],
+            y=[Y[i][0], Y[i][-1]],
+            mode='markers', name = Legend[i],
+            marker = dict(color = colors[i]),
+            showlegend = False
+        ))
+
+    fig.update_layout(
+ #       xaxis_title = "Time (s)",
+  #      yaxis_title = "Concentration (mM)",    
+
+        xaxis=dict(
+            title = "Time (s)",
+            titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ),
+        ),
+        yaxis=dict(
+            title = "Concentration (mM)",
+            titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            zeroline = True,
+            showgrid=True,
+            showline=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        autosize=True,   
+        legend = dict(
+            orientation = "h",
+        ),
+        
+        plot_bgcolor='white'
+        )
+
+    annotations = []
+    # Adding labels
+    for y_trace, label in zip(Y, Legend):
+        # labeling the left_side of the plot
+        annotations.append(dict(xref='paper', axref = 'x', x=0.1, y=y_trace[0]+.1,
+                                    xanchor='right', yanchor='middle',
+                                    text=' {:2g}mM'.format(round(y_trace[0], 2)),
+                                    font=dict(family='Arial',
+                                                size=16),
+                                    showarrow=False))
+        # labeling the right_side of the plot
+        annotations.append(dict(xref='paper', axref = "x", x=0.95, y=y_trace[-1],
+                                    xanchor='left', yanchor='middle',
+                                    text=label +' {:2g}mM'.format(round(y_trace[-1], 2)),
+                                    font=dict(family='Arial',
+                                                size=16),
+                                    showarrow=False))
+    # Title
+    annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+                                xanchor='left', yanchor='bottom',
+                                text='[Metabolites] over time',
+                                font=dict(family='Arial',
+                                            size=30,
+                                            color='rgb(37,37,37)'),
+                                showarrow=False))
+
+    fig.update_layout(annotations=annotations)
+
+    fig.show()    
+
 
 def ProcessDataToDisplay(Legend, Data):
     Data_Processed = list()

@@ -4,3 +4,27 @@
 // Model   7.25,    p.224
 // Figure  7.28,    p.225
 
+
+protein AHL
+{
+    reaction R1(preAHL + LuxI --> AHL + LuxI)
+    
+    // Reversible reactions
+    reaction R2(AHL --> AHL_ext)
+    reaction R3(2AHL + 2LuxR --> LuxR_AHL)    
+}
+
+protein AHL_ext(AHL_ext --> OutOfSystem)
+
+protein LuxR
+
+protein_complex LuxR_AHL
+
+protein OutOfSystem // Dump variable for AHL_ext diffusing out of system.
+
+protein LuxI{
+    reaction R4(LuxR_AHL --> LuxI + LuxR_AHL) // modulate synth
+    reaction R5(LuxI --> OutOfSystem) // Degred
+}
+
+// Initial conditions
