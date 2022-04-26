@@ -1,16 +1,10 @@
-// Create constant input/output: 
-protein FADRegen(FADH2 --> FAD, kcat = 9.0e5, KM = 1);
-protein NADRegen(NADH --> NAD, kcat = 2e7, KM = 1);
-protein ATPRegen(ATP --> ADP + P, kcat = 1.5e6, KM = 1);
-FADRegen = 1uM, ATPRegen = 1uM, NADRegen = 1uM;
-
 // Glucose Metabolism:
 protein NetGlycolysis(glucose + 2 P + 2 ADP + 2 NAD --> 2 pyruvate + 2 ATP + 2 NADH + 2 H + 2 H2O, kcat = 9.51e28, KM = 1e29uM);
 protein pyruvateDehydrogenase(pyruvate + NAD + CoA --> acetylCoA + CO2 + NADH + H, kcat = 6.8e19, KM = 1e20uM);
 protein NetCAC(acetylCoA + 3 NAD + FAD + ADP + P + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA, kcat = 5.19e19, KM = 1e20uM);
 pathway NetOxidativePhosphorylation
 {
-    protein ElectronTransportChain(2 NADH + 2 O2 + 2 H --> 2 H2O + 2 NAD, kcat = 8.18e37, KM = 1e38uM);
+    protein ElectronTransportChain(2 NADH + O2 + 2 H --> 2 H2O + 2 NAD, kcat = 8.18e37, KM = 1e38uM);
     protein ATPsynthase(ADP + P + H --> ATP + H2O, kcat = 4.72e7, KM = 1e6uM);
 }
 
@@ -19,3 +13,8 @@ NetGlycolysis = 0.32uM, pyruvateDehydrogenase = 0.48uM, NetCAC = 0.8uM, Electron
 glucose[:] = 500uM, O2[:] = 6e3uM, P = 5000uM, ADP = 170uM, ATP = 5.5e3uM, NAD = 2.6e3uM, NADH = 83uM, CoA = 2.0e3uM, FAD = 2e3uM;
 H2O[:] = 8e6uM, CO2[:] = 0uM;
 
+// Create constant input/output: 
+protein FADRegen(FADH2 --> FAD, kcat = 9.0e5, KM = 1);
+protein NADRegen(NADH --> NAD, kcat = 2e7, KM = 1);
+protein ATPRegen(ATP --> ADP + P, kcat = 1.5e6, KM = 1);
+FADRegen = 1uM, ATPRegen = 1uM, NADRegen = 1uM;
