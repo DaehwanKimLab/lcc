@@ -62,14 +62,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
+
     int MatrixSize = 1;
     if (!ObjLoc.empty()) {
-        MatrixSize = 0;
-        std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-        for (auto& UniqueName : ObjUniqueNames) {
-            int Count = int(Context.GetInitialCountByName_CountList(UniqueName));
-            MatrixSize += Count;
-        }
+        MatrixSize = Context.GetCounts_LocationList("Compartments");
     }
     ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
     ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
@@ -266,6 +262,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
     std::vector<float> InitialCount_Molecules;
     std::vector<float> MolarityFactor_Molecules;
+    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
 
     for (auto& molecule : Context.MoleculeList) {
         float Count = Context.GetInitialCountByName_CountList(molecule->Name);
@@ -280,20 +277,26 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ "Idx_Mol = np.array([";
     if (ObjLoc.empty()) {
-        ofs << Utils::JoinInt2Str_Idx(Idx_Mol);
+        ofs << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ndmin=2)" << endl;
     } else {
-        for (auto& objLoc : ObjLoc) {
-            ofs << "[" << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ";
+        for (auto& ObjName : ObjUniqueNames) {
+            int Count = int(Context.GetInitialCountByName_CountList(ObjName));
+            for (i = 0; i < (Count); i++) {
+                ofs << "[" << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ";
+            }
         }
+        ofs << "])" << endl;
     }
-    ofs << "], ndmin=2)" << endl;
 
     ofs << in+ in+ "Count_Mol = np.array([";
     if (ObjLoc.empty()) {
         ofs << Utils::JoinFloat2Str(InitialCount_Molecules);
     } else {
-        for (auto& objLoc : ObjLoc) {
-            ofs << "[" << Utils::JoinFloat2Str(InitialCount_Molecules) << "], ";
+        for (auto& ObjName : ObjUniqueNames) {
+            int Count = int(Context.GetInitialCountByName_CountList(ObjName));
+            for (i = 0; i < (Count); i++) {
+                ofs << "[" << Utils::JoinFloat2Str(InitialCount_Molecules) << "], ";
+            }
         }
     }
     ofs << "])" << endl;
@@ -752,7 +755,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     bool PassSwitch = true;
     if (!MolLoc.empty() & !ObjLoc.empty()) {
         for (auto& molLoc : MolLoc) {
-            std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
             for (auto& UniqueName : ObjUniqueNames) {
                 if ((molLoc->Name == "L") || (molLoc->Name == "qL")) {
                     ofs << in+ in+ "Count = self.GetCountFromDistributionByNamesOfDistAndPos('" << molLoc->Name << "', " << "'" << UniqueName << "')" << endl;

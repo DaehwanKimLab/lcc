@@ -487,16 +487,27 @@ void FCompilerContext::PrintInitialLocations(std::ostream& os) // TODO: NEEDS UP
 
 void FCompilerContext::PrintInitialCounts(std::ostream& os)
 {
-    os << std::endl << "## Compiler Initial Counts ##" << std::endl;
+    os << std::endl << "## Compiler Initial Counts: Molecules ##" << std::endl;
     // currently restricted to the molecules that are registered on the molecule list
     if (!MoleculeList.empty()) {
         int i = 0;
-        for (auto& molecule : MoleculeList){
-            float Count = GetInitialCountByName_CountList(molecule->Name);
-            os << "[ " << i << "] " << molecule->Name << " : " << Count << std::endl;
+        for (auto& item : MoleculeList){
+            float Count = GetInitialCountByName_CountList(item->Name);
+            os << "[" << i << "] " << item->Name << " : " << Count << std::endl;
             i++;
         }
     }
+    os << std::endl << "## Compiler Initial Counts: Containers ##" << std::endl;
+    // currently restricted to the molecules that are registered on the molecule list
+    if (!ContainerList.empty()) {
+        int i = 0;
+        for (auto& item : ContainerList){
+            float Count = GetInitialCountByName_CountList(item->Name);
+            os << "[" << i << "] " << item->Name << " : " << Count << std::endl;
+            i++;
+        }
+    }
+
 }
 
 std::string FCompilerContext::QueryTable(std::string Name, std::string Property, FTable Table)
@@ -1086,6 +1097,18 @@ std::vector<std::string> FCompilerContext::GetUniqueNames_LocationList(std::stri
     }
 
     return StrList;
+}
+
+int FCompilerContext::GetCounts_LocationList(std::string Type)
+{
+    std::vector<FLocation *> SubList = GetSubList_LocationList(Type);
+    int Sum = 0;
+
+    for (auto& location : SubList) {
+        Sum += int(location->Count->Amount);
+    }
+
+    return Sum;
 }
 
 std::vector<std::string> FCompilerContext::GetNames_CountList(std::string Type)

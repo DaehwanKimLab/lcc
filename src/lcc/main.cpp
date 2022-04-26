@@ -341,7 +341,6 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
     // get count from OpB
     if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExpression->OpB.get())) {
         const auto& VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB);
-
         Amount = VarAssigned->EvaluateInFloat();
         bMolarity = VarAssigned->Molarity();
 
@@ -425,7 +424,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
         Context.AddToCountList(NewCount);
 
         if (!Location.empty()) {
-            FLocation *NewLocation = new FLocation(Name, Location);
+            FLocation *NewLocation = new FLocation(Name, Location, NewCount);
             if (Option.bDebug) { NewLocation->Print(os); }
             Context.AddToLocationList(NewLocation);
         }

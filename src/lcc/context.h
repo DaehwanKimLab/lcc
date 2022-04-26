@@ -11,6 +11,37 @@
 
 typedef std::map<std::string, std::string> FTableRecord;
 
+class FCount {
+public:
+    std::string Name;
+    float Amount;
+    float Begin;
+    float End;
+    float Step;
+
+    bool bMolarity;
+
+    FCount() {}
+
+    FCount(std::string InName, float InAmount, std::vector<float> InRange, bool InbMolarity) : Name(InName), Amount(InAmount), bMolarity(InbMolarity) {
+        Utils::Assertion((InRange.size() == 3), "Range requires three float values");
+        Begin = InRange[0];
+        End   = InRange[1];
+        Step  = InRange[2];
+    }
+
+    void Print(std::ostream& os) {
+        os << "[Count] "
+              "Name : " << Name <<
+           "\t| Amount: " << Utils::SciFloat2Str(Amount) <<
+           "\t| Begin: " << Utils::SciFloat2Str(Begin) <<
+           "\t| End: " << Utils::SciFloat2Str(End) <<
+           "\t| Step: " << Utils::SciFloat2Str(Step);
+        if (bMolarity) { os << "\t| (Molarity)"; }
+        os << std::endl;
+    }
+};
+
 class FContainerSpace {
 public:
     std::vector<std::string> Names;
@@ -43,10 +74,13 @@ public:
     std::string Name;
     std::vector<float> Coord;
     float Angle; // initial angle not connected to simulation yet
+    FCount * Count;
 
     FLocation() {}
 
     FLocation(std::string InName, std::vector<float> InCoord) : Name(InName), Coord(InCoord), Angle(0) {}
+
+    FLocation(std::string InName, std::vector<float> InCoord, FCount* InCount) : Name(InName), Coord(InCoord), Angle(0), Count(InCount) {}
 
     void Print(std::ostream& os) {
         os << "[Location] ";
@@ -59,6 +93,10 @@ public:
         } os << "), ";
 
         os << "(Angle: " << Utils::SciFloat2Str(Angle) << ")";
+        os << std::endl;
+
+        os << "(Count: " << Count->Amount << ")";
+        os << std::endl;
     }
 };
 
@@ -194,37 +232,6 @@ class FEukaryote : public FOrganism {
 public:
     bool Multicellularity;
 
-};
-
-class FCount {
-public:
-    std::string Name;
-    float Amount;
-    float Begin;
-    float End;
-    float Step;
-
-    bool bMolarity;
-
-    FCount() {}
-
-    FCount(std::string InName, float InAmount, std::vector<float> InRange, bool InbMolarity) : Name(InName), Amount(InAmount), bMolarity(InbMolarity) {
-        Utils::Assertion((InRange.size() == 3), "Range requires three float values");
-        Begin = InRange[0];
-        End   = InRange[1];
-        Step  = InRange[2];
-    }
-
-    void Print(std::ostream& os) {
-        os << "[Count] "
-         "Name : " << Name <<
-         "\t| Amount: " << Utils::SciFloat2Str(Amount) <<
-         "\t| Begin: " << Utils::SciFloat2Str(Begin) <<
-         "\t| End: " << Utils::SciFloat2Str(End) <<
-         "\t| Step: " << Utils::SciFloat2Str(Step);
-         if (bMolarity) { os << "\t| (Molarity)"; }
-         os << std::endl;
-    }
 };
 
 class FMolecule {
@@ -791,6 +798,7 @@ public:
     std::vector<FLocation *> GetSubList_LocationList(std::string Type);
     std::vector<std::string> GetNames_LocationList(std::string Type);
     std::vector<std::string> GetUniqueNames_LocationList(std::string Type);
+    int GetCounts_LocationList(std::string Type);
 
     // CountList
     std::vector<std::string> GetNames_CountList(std::string Type);

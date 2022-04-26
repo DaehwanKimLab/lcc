@@ -700,49 +700,69 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
     }
     ofs << endl;
 
-    ofs << in+ in+ "self.Pos_Names = [" << Utils::JoinStr2Str(Context.GetNames_LocationList("Compartment")) << "]" << endl;
-
     std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-    for (int i = 0; i < ObjUniqueNames.size(); i++) {
-        int Count = int(Context.GetInitialCountByName_CountList(ObjUniqueNames[i]));
-        ofs << in+ in+ "self.Idx_Pos_" << ObjUniqueNames[i] << " = np.array([";
-        for (int j = i; j < (Count); j++) {
-            ofs << j << ", ";
+
+    ofs << in+ in+ "self.Pos_Names = [" << Utils::JoinStr2Str(ObjUniqueNames) << "]" << endl;
+    int i = 0;
+    for (auto& ObjName : ObjUniqueNames) {
+        int Count = int(Context.GetInitialCountByName_CountList(ObjName));
+        ofs << in+ in+ "self.Idx_Pos_" << ObjName << " = np.array([";
+        for (int j = 0; j < (Count); j++) {
+            ofs << i << ", ";
+            i++;
         }
         ofs << "])" << endl;
 
         // TODO: may not be used
-        ofs << in+ in+ "self.Pos_Name2Idx['" << ObjUniqueNames[i] << "'] = self.Idx_Pos_" << ObjUniqueNames[i] << endl;
+        ofs << in+ in+ "self.Pos_Name2Idx['" << ObjName << "'] = self.Idx_Pos_" << ObjName << endl;
     }
     ofs << endl;
-
+// here
     ofs << in+ in+ "# Currently support X, Y, Angle, Threshold" << endl;
     ofs << in+ in+  "self.Pos_X = np.array([";
-    for (int i = 0; i < ObjUniqueNames.size(); i++) {
-        int Count = int(Context.GetInitialCountByName_CountList(ObjUniqueNames[i]));
-        for (int j = i; j < (Count); j++) {
-            auto& Coord = ObjLoc[j]->Coord;
-            ofs << Coord[0] << ", ";
+    i = 0;
+    for (auto& ObjName : ObjUniqueNames) {
+        for (auto& objloc : ObjLoc){
+            if (objloc->Name == ObjName) {
+                int Count = int(objloc->Count->Amount);
+                for (int j = 0; j < (Count); j++) {
+                    auto& Coord = objloc->Coord;
+                    ofs << Coord[0] << ", ";
+                    i++;
+                }
+            }
         }
     }
     ofs << "]) " << endl;
 
     ofs << in+ in+  "self.Pos_Y = np.array([";
-    for (int i = 0; i < ObjUniqueNames.size(); i++) {
-        int Count = int(Context.GetInitialCountByName_CountList(ObjUniqueNames[i]));
-        for (int j = i; j < (Count); j++) {
-            auto& Coord = ObjLoc[j]->Coord;
-            ofs << Coord[1] << ", ";
+    i = 0;
+    for (auto& ObjName : ObjUniqueNames) {
+        for (auto& objloc : ObjLoc){
+            if (objloc->Name == ObjName) {
+                int Count = int(objloc->Count->Amount);
+                for (int j = 0; j < (Count); j++) {
+                    auto& Coord = objloc->Coord;
+                    ofs << Coord[1] << ", ";
+                    i++;
+                }
+            }
         }
     }
     ofs << "]) " << endl;
 
     ofs << in+ in+  "self.Pos_Angle = np.array([";
-    for (int i = 0; i < ObjUniqueNames.size(); i++) {
-        int Count = int(Context.GetInitialCountByName_CountList(ObjUniqueNames[i]));
-        for (int j = i; j < (Count); j++) {
-            ofs << "0, ";
-//            ofs << Numbers::RandomNumber(0, 1) << " * 2 * np.pi, ";
+    i = 0;
+    for (auto& ObjName : ObjUniqueNames) {
+        for (auto& objloc : ObjLoc){
+            if (objloc->Name == ObjName) {
+                int Count = int(objloc->Count->Amount);
+                for (int j = 0; j < (Count); j++) {
+                    auto& Coord = objloc->Coord;
+                    ofs << "0, ";
+                    i++;
+                }
+            }
         }
     }
     ofs << "]) " << endl;
@@ -761,9 +781,14 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
             ThresholdValues.push_back(Threshold.second);
         }
 
+        int MatrixSize = 1;
+        if (!ObjLoc.empty()) {
+            MatrixSize = Context.GetCounts_LocationList("Compartments");
+        }
+
         ofs << in+ in+ "# Threshold-related" << endl;
-        ofs << in+ in+ "self.MolNames_Threshold = [" << Utils::JoinStr2Str(Names_ThresholdedMolecules) << "]" << endl;;
-        ofs << in+ in+ "self.Pos_Threshold = np.tile([" << Utils::JoinFloat2Str(ThresholdValues) << "], [ " << ObjLoc.size() << ", 1]).transpose()" << endl;
+        ofs << in+ in+ "self.MolNames_Threshold = [" << Utils::JoinStr2Str(Names_ThresholdedMolecules) << "]" << endl;
+        ofs << in+ in+ "self.Pos_Threshold = np.tile([" << Utils::JoinFloat2Str(ThresholdValues) << "], [" << MatrixSize << ", 1]).transpose()" << endl;
         ofs << endl;
 
         // threshold index setting
