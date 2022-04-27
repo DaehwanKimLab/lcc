@@ -1,7 +1,7 @@
 import numpy as np
 
 class EryingPolaniEquation():
-    def __init__(self, deltaG = 30500, transmissionCoefficient = 1, temp = 310.15):
+    def __init__(self, deltaG = -96000, transmissionCoefficient = 1, temp = 310.15):
 
         # Constants:
         self.kBolzmann =  1.380649e-23 # J/K
