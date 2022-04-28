@@ -15,12 +15,16 @@ import pandas as pd
 import numpy as np
 # from random import randint
 # import os
-from fun import preProcessSimOut, Plotly_Dynamics, CompileLPP
+from fun import preProcessSimOut, Plotly_Dynamics, CompileLPP, extractKVals
+from functools import reduce
 
 app = Dash(__name__)
 
+## Apparently this is bad practice
 df = pd.read_csv('src\lcc\SimOut.tsv', sep = '\t', index_col = False)
 df = preProcessSimOut(df)
+
+app.config.suppress_callback_exceptions = True
 
 app.layout = html.Div([
     dcc.Graph(id='graph-with-slider'),
@@ -42,28 +46,48 @@ app.layout = html.Div([
     html.Br(),
     html.Div(id = 'k1-output', children='Compile'),
     html.Br(),
+    html.Button('get kcat', id='kcat-button', n_clicks=0),
+    html.Div(id = 'k-val-container'),
+    html.Div(dcc.Input(id = 'empty')),
+    html.Br(),
     dcc.Input(
         id = 'lcc-input',
         type = 'text',
-        value = 'src\lcc\denovoModels\glucose_metabolism_lowRes_abridged.lpp',
-        children = 'lccFile'
+        value = 'src\lcc\denovoModels\glucose_metabolism_lowRes_abridged.lpp'
     ),
+    html.Button('Load L++', id='load-lpp-button', n_clicks=0),
     html.Br(),
-    html.Div(id = 'lcc-output', children = 'lccFile')
-    # html.Div([
-    #     dcc.Markdown(id = 'lcc-text', children = 'lccFile')
-    # ])
-    
+    html.Div([
+        dcc.Markdown(id = 'lcc-text', children = 'lccFile')
+    ]),
+    dcc.Store(id = 'protein-k-values')
 ])
 
 @app.callback(
-    Output('lcc-output', 'lccFile'),
-    Input('lcc-input', 'value'))
-def update_lcctext(lcc_filepath):
+    [Output('lcc-text', 'children'),
+    Output('protein-k-values', 'data')],
+    Input('load-lpp-button', 'n_clicks'),
+    State('lcc-input', 'value'))
+def update_lcctext(n_clicks,lcc_filepath):
     lpp = open(lcc_filepath, 'r')
     lines = lpp.readlines()
     lpp.close()
-    return lines
+    return lines, extractKVals(lines)
+
+
+@app.callback(
+    Output('k-val-container', 'children'),
+    Input('kcat-button', 'n_clicks'),
+    State('protein-k-values', 'data'))
+def update_kvals(button,data):
+    if not data: 
+        return None
+    
+    out = []
+    for protein in data.keys():
+        out.append(html.H4(protein, style={'display':'inline-block','margin-right':20}))
+        out.append(dcc.Input(id = f'Protein_{protein}', type='number', value = float(data[protein]['kcat'])))
+    return html.Div(out)
 
 @app.callback(
     Output('k1-output', 'children'),
