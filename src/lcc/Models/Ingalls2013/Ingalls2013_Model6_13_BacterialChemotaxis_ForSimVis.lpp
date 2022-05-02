@@ -37,9 +37,9 @@ petridish P
     reaction R2(A + L --> AL, k=1e9, krev=1);
 
     R = 5nM, B = 0.1nM, A = 500nM;
-  }
 
-  flagellum F(Am, 0.982nM);
+    flagellum F(Am, 0.982 nM);
+  }
 
   for (i = 0; i < 10; i = i + 1)
   {
@@ -51,6 +51,4 @@ petridish P
 
   F = 3;
 }
-
-
 

@@ -22,13 +22,17 @@ petridish P
     reaction R1(Am + L --> AmL, k=1e9, krev=1);
     reaction R2(A + L --> AL, k=1e9, krev=1);
 
-    R = 5nM, B = 0.1nM, Am = 500nM; 
+    flagellum F(Am, 0.982 nM);
 
+    R = 5nM, B = 0.1nM, Am = 500nM; 
   }
-  E(10, 10, 0) = 1;
+
+  E(400, 400, 0) = 1;
 
   glucose L;
-  L(1, 1, 0) = 1nmol;
+  L(700, 600, 0) = 100nmol;
+
+  F = 3;
 }
 
 SimSteps = 30000, SimRes = 100;
