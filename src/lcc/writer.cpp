@@ -783,7 +783,7 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 
         int MatrixSize = 1;
         if (!ObjLoc.empty()) {
-            MatrixSize = Context.GetCounts_LocationList("Compartments");
+            MatrixSize = Context.GetCounts_LocationList("Compartment");
         }
 
         ofs << in+ in+ "# Threshold-related" << endl;

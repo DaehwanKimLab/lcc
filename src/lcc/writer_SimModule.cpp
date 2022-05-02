@@ -65,7 +65,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     int MatrixSize = 1;
     if (!ObjLoc.empty()) {
-        MatrixSize = Context.GetCounts_LocationList("Compartments");
+        MatrixSize = Context.GetCounts_LocationList("Compartment");
     }
     ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
     ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
