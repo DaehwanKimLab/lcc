@@ -2,6 +2,7 @@
 #include "node.h"
 #include "number.h"
 #include "lpp.y.hpp"
+#include "util.h"
 
 using namespace std;
 
@@ -313,6 +314,126 @@ void NExpressionStatement::Visit(FTraversalContext& Context) const {
 //    
 //    return SubConstPair;
 //}
+
+std::string NPolymeraseDeclaration::GetType() const {
+    std::string Type;
+
+    for (const auto stmt : Statements) {
+        if (Utils::is_class_of<NElongationStatement>(stmt.get())) {
+            const auto& elongstmt = dynamic_pointer_cast<NElongationStatement, NStatement>(stmt);
+            std::string Template = elongstmt->GetTemplate();
+            if (Template == "Chromosome") {
+                Type = "DNAP";
+            } else if (Template == "Gene") {
+                Type = "RNAP";
+            } else if (Template == "RNA") {
+                Type = "Ribosome";
+            }
+        }
+    }
+
+    return Type;
+}
+
+std::string NPolymeraseDeclaration::GetTemplateByType(std::string Type) const {
+    std::string Template;
+
+    // map could work better if the list gets long
+    if (Type == "DNAP") {
+        Template = "Chromosome";
+    } else if (Type == "RNAP") {
+        Template = "Gene";
+    } else if (Type == "Ribosome") {
+        Template = "RNA";
+    }
+
+    return Template;
+}
+
+std::string NPolymeraseDeclaration::GetTargetByType(std::string Type) const {
+    std::string Target;
+
+    // map could work better if the list gets long
+    if (Type == "DNAP") {
+        Target = "Chromosome";
+    } else if (Type == "RNAP") {
+        Target = "RNA";
+    } else if (Type == "Ribosome") {
+        Target = "Protein";
+    }
+
+    return Target;
+}
+
+std::string NPolymeraseDeclaration::GetProcessByType(std::string Type) const {
+    std::string Process;
+
+    // map could work better if the list gets long
+    if (Type == "DNAP") {
+        Process = "DNAReplication";
+    } else if (Type == "RNAP") {
+        Process = "RNATranscription";
+    } else if (Type == "Ribosome") {
+        Process = "ProteinTranslation";
+    }
+
+    return Process;
+}
+
+float NPolymeraseDeclaration::GetDefaultRateByType(std::string Type) const {
+    float Rate = Numbers::GetFloatDefault();
+
+    // map could work better if the list gets long
+    if (Type == "DNAP") {
+        Rate = 1000;
+    } else if (Type == "RNAP") {
+        Rate = 60;
+    } else if (Type == "Ribosome") {
+        Rate = 20;
+    }
+
+    return Rate;
+}
+
+std::string NElongationStatement::GetTemplate() const {
+    std::string Template;
+
+    for (const auto& reactant : Reaction.Reactants) {
+        auto& ReactantName = reactant->Id.Name;
+        if (ReactantName == "dna_{n}") {
+            Template = "Chromosome";
+        } else if (ReactantName == "rna_{n}") {
+            Template = "Gene";
+        } else if (ReactantName == "peptide_{n}") {
+            Template = "RNA";
+        } else if (ReactantName == "dnt") {
+            Utils::Assertion(Template == "Chromosome", "Polymerase template and building block do not match: " + Template + ", " + ReactantName);
+        } else if (ReactantName == "nt") {
+            Utils::Assertion(Template == "Gene", "Polymerase template and building block do not match: " + Template + ", " + ReactantName);
+        } else if (ReactantName == "aa") {
+            Utils::Assertion(Template == "RNA", "Polymerase template and building block do not match: " + Template + ", " + ReactantName);
+            continue;
+        }
+    }
+
+    return Template;
+}
+
+float NElongationStatement::GetRate() const {
+    float Rate = Numbers::GetFloatDefault();
+
+    for (const auto& property : Reaction.Property) {
+        auto& Key = property->Key;
+        const auto& Value_Exp = dynamic_pointer_cast<const NConstantExpression>(property->Value);
+        auto Value = Value_Exp->EvaluateValueAndPrefixInFloat();
+
+        if (Key == "rate") {
+            Rate = Value;
+        }
+    }
+
+    return Rate;
+}
 
 std::string NVariableExpression::GetName() const {
     std::string Name_Out;

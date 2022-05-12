@@ -804,6 +804,8 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+    virtual std::string GetTemplate() const;
+    virtual float GetRate() const;
 };
 
 class NTerminationStatement : public NStatement {
@@ -864,6 +866,13 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override;
+
+    virtual std::string GetType() const;
+    virtual std::string GetTemplateByType(std::string Type) const;
+    virtual std::string GetTargetByType(std::string Type) const;
+    virtual std::string GetProcessByType(std::string Type) const;
+    virtual float GetDefaultRateByType(std::string Type) const;
+
 };
 
 
