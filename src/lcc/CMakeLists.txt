@@ -29,11 +29,12 @@ set(SOURCEFILE
 	option.cpp
 	context.cpp
 	util.cpp
-        number.cpp
-		writer.cpp
-		writer_SimExecutor.cpp
-		writer_SimModule.cpp
-		writer_SimVis2D.cpp
+	number.cpp
+	bioinfo.cpp
+	writer.cpp
+	writer_SimExecutor.cpp
+	writer_SimModule.cpp
+	writer_SimVis2D.cpp
 		${BISON_LPPParser_OUTPUTS}
 	${FLEX_LPPScanner_OUTPUTS}
 )
