@@ -331,6 +331,82 @@ std::pair<std::string, std::vector<float>> GetEnzKinetics(std::string EnzymeName
     return SubConstPair;
 }
 
+void ParsePolymeraseInitiationStatement(std::string PolName, const shared_ptr<NInitiationStatement> N_Initiation)
+{
+
+}
+
+void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NElongationStatement> N_Elongation)
+{
+    std::string Name = PolName;
+    auto &ElongationReaction = N_Elongation->Reaction;
+
+    os << "  Polymerase Reaction | Elongation:";
+    ElongationReaction.Print(os);
+    std::vector<std::pair<std::string, int>> Stoichiometry;
+    string Location = ElongationReaction.Location.Name;
+    int Coefficient;
+    std::vector<std::string> BuildingBlocks;
+
+    for (const auto& reactant : ElongationReaction.Reactants) {
+        const std::string& ReactantName = reactant->Id.Name;
+        Coefficient = -reactant->Coeff;
+        os << "    Reactant: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
+        if ((ReactantName == "dna_{n}") | (ReactantName == "rna_{n}") | (ReactantName == "peptide_{n}")) {
+            continue;
+        } else if ((ReactantName == "dnt") || (ReactantName == "nt") || (ReactantName == "aa")) {
+            BuildingBlocks = BioInfo::GetBuildingBlocks(ReactantName);
+            continue;
+        }
+        std::pair<std::string, int> Stoich(ReactantName, Coefficient);
+        Stoichiometry.push_back(Stoich);
+
+        FMolecule * NewMolecule = new FMolecule(ReactantName);
+        if (Option.bDebug) { NewMolecule->Print(os); }
+        Context.AddToMoleculeList(NewMolecule);
+    }
+
+    for (const auto& product : ElongationReaction.Products) {
+        const std::string ProductName = product->Id.Name;
+        Coefficient = product->Coeff;
+        os << "    Product: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
+        if ((ProductName == "dna_{n+1}") | (ProductName == "rna_{n+1}") | (ProductName == "peptide_{n+1}")) {
+            continue;
+        }
+        std::pair<std::string, int> Stoich(ProductName, Coefficient);
+        Stoichiometry.push_back(Stoich);
+
+        FMolecule * NewMolecule = new FMolecule(ProductName);
+        if (Option.bDebug) { NewMolecule->Print(os); }
+        Context.AddToMoleculeList(NewMolecule);
+    }
+
+    if (!Location.empty()) {
+        os << "    Location: " << Location << endl;
+    }
+
+    if (!BuildingBlocks.empty()){
+        os << "    BuildingBlocks: [";
+    }
+    for (auto& BuildingBlock : BuildingBlocks) {
+        FMolecule * NewMolecule = new FMolecule(BuildingBlock);
+        os << NewMolecule->Name << ", ";
+        if (Option.bDebug) { NewMolecule->Print(os); }
+        Context.AddToMoleculeList(NewMolecule);
+    }
+    os << "]" << endl;
+
+    FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+    NewReaction->AddPathway(NameSpace_Pathway);
+    if (Option.bDebug) { NewReaction->Print(os); }
+    Context.AddToReactionList(NewReaction);
+}
+
+void ParsePolymeraseTerminationStatement(std::string PolName, const shared_ptr<NTerminationStatement> N_Termination)
+{
+
+}
+
 void ParseCountLocation_AExpression(const NAExpression *AExpression, int ControlVar) {
     // info to seek
     std::string Name;
@@ -615,203 +691,52 @@ void TraversalNode_Core(NNode * node)
         os << "Polymerase Id: " << N_Polymerase->Id.Name << endl;
         // N_Polymerase->Print(os);
 
-        auto& Id = N_Polymerase->Id;
+//        Name	Template	Target	Process	Rate
+//        pol1	Chromosome	Chromosome	DNAReplication	1000
+//        rnap	Gene	RNA	RNATranscription	60
+//        r1	RNA	Protein	ProteinTranslation	20
 
-        string Name = Id.Name;
-        string Template = Context.QueryTable(Name, "Template", Context.PolymeraseTable);
-        string Target = Context.QueryTable(Name, "Target", Context.PolymeraseTable);
-        string Process = Context.QueryTable(Name, "Process", Context.PolymeraseTable);
-        float Rate = std::stof(Context.QueryTable(Name, "Rate", Context.PolymeraseTable));
+        string Name_Pol, Type, Template, Target, Process;
+        float Rate = Numbers::GetFloatDefault();
 
-        FPolymerase * NewPolymerase = new FPolymerase(Name, Template, Target, Process, Rate);
-        if (Option.bDebug) { NewPolymerase->Print(os); }
-        Context.AddToMoleculeList(NewPolymerase);
+        Name_Pol = N_Polymerase->Id.Name;
+        Type = N_Polymerase->GetType();
+        Template = N_Polymerase->GetTemplateByType(Type);
+        Target = N_Polymerase->GetTargetByType(Type);
+        Process = N_Polymerase->GetProcessByType(Type);
 
-
-#if 1
+        // parse reactions
         for (const shared_ptr<NStatement>& stmt: N_Polymerase->Statements) {
-            if (Utils::is_class_of<NElongationStatement, NStatement>(stmt.get())) {
-                const shared_ptr<NElongationStatement> elongstmt = dynamic_pointer_cast<NElongationStatement>(stmt);
-                // os << "---This is an elongation statement of the polymerase stmt---" << endl;
-                // elongstmt->Print(os);
-
-                NReaction ElongationReaction = elongstmt->Reaction;
-                os << "  Elongation:";
-                // ElongationReaction.Print(os);
-
-                os << "-----------------" << endl;
-            } else if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
+            if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
                 const shared_ptr<NInitiationStatement> initstmt = dynamic_pointer_cast<NInitiationStatement>(stmt);
-                // os << "---This is an initiation statement of the polymerase stmt---" << endl;
-                // initstmt->Print(os);
-                // os << "-----------------" << endl;
+                 initstmt->Print(os);
+
+                 ParsePolymeraseInitiationStatement(Name_Pol, initstmt);
+
+            } else if (Utils::is_class_of<NElongationStatement, NStatement>(stmt.get())) {
+                const shared_ptr<NElongationStatement> elongstmt = dynamic_pointer_cast<NElongationStatement>(stmt);
+                elongstmt->Print(os);
+
+                ParsePolymeraseElongationStatement(Name_Pol, elongstmt);
+                Rate = elongstmt->GetRate();
+
             } else if (Utils::is_class_of<NTerminationStatement, NStatement>(stmt.get())) {
                 const shared_ptr<NTerminationStatement> termstmt = dynamic_pointer_cast<NTerminationStatement>(stmt);
-                // os << "---This is a termination statement of the polymerase stmt---" << endl;
-                // termstmt->Print(os);
-                // os << "-----------------" << endl;
+                 termstmt->Print(os);
+
+                ParsePolymeraseTerminationStatement(Name_Pol, termstmt);
+
             }
         }
 
-
-
-#endif
-
-        //            int i = 0;
-        //
-        //            for (const auto& stmt : N_Polymerase->Statements) {
-        //                stmt->Print(os);
-        //                NStatement Statement = *stmt;
-        //
-        //                if (i == 1) {
-        //                    auto& Elongation = static_cast<NElongationStatement *>(&Statement);
-        //                    NReaction EPickRandomNumberWithWeight>Reaction;
-        //                    ElongationReaction.Print(os);
-        //                    os << "AAAAAAAAAAA" << endl;
-        //
-        ////                if (Utils::is_class_of<const NElongationStatement, const NStatement>(&Statement)) {
-        ////                    auto& Elongation = static_cast<const NElongationStatement *>(&Statement);
-        ////                    NReaction ElongationReaction = Elongation->Reaction;
-        //
-        //                    os << "11111" << endl;
-        //
-        //                    os << "  Elongation:"; ElongationReaction.Print(os);
-        //                    map<string, int> Stoichiometry;
-        //        			string Location = ElongationReaction.Location.Name;
-        //                    int Coefficient;
-        //                    std::vector<std::string> BuildingBlocks;
-        //
-        //                    for (const auto& reactant : ElongationReaction.Reactants) {
-        //                        Coefficient = -1; // update when coeff is fully implemented in parser
-        //                        os << "    Reactants: " << "(" << Coefficient << ")" << reactant->Name << ", " << endl;
-        //                        if ((reactant->Name == "dna_{n}") | (reactant->Name == "rna_{n}") | (reactant->Name == "peptide_{n}")) {
-        //                            continue;
-        //                        } else if (reactant->Name == "dnt") {
-        //                            BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
-        //                            continue;
-        //                        } else if (reactant->Name == "nt") {
-        //                            BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
-        //                            continue;
-        //                        } else if (reactant->Name == "nt") {
-        //                            BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
-        //                            continue;
-        //                        }
-        //
-        //                        Stoichiometry[reactant->Name]= Coefficient;
-        //
-        //                        FSmallMolecule * Molecule = new FSmallMolecule(reactant->Name);
-        //                        Molecule->Print(os);
-        //                        Context.AddToMoleculeList(Molecule);
-        //                    }
-        //
-        //                    os << "2222" << endl;
-        //                    for (const auto& product : ElongationReaction.Products) {
-        //                        Coefficient = 1; // update when coeff is fully implemented in parser
-        //                        os << "    Products: " << "(" << Coefficient << ")" << product->Name << ", " << endl;
-        //                        if (product->Name == "rna_{n+1}") {
-        //                            continue;
-        //                        }
-        //                        Stoichiometry[product->Name]= Coefficient;
-        //
-        //                        FSmallMolecule * Molecule = new FSmallMolecule(product->Name);
-        //                        Molecule->Print(os);
-        //                        Context.AddToMoleculeList(Molecule);
-        //                    }
-        //
-        //        			if (!Location.empty()) {
-        //                        os << "    Location: " << Location << endl;
-        //        			}
-        //
-        //                    os << "3333" << endl;
-        //                    for (auto& BuildingBlock : BuildingBlocks) {
-        //                        FSmallMolecule * Molecule = new FSmallMolecule(BuildingBlock);
-        //                        Molecule->Print(os);
-        //                        Context.AddToMoleculeList(Molecule);
-        //                    }
-        //
-        //                    FPolymeraseReaction *PolymeraseReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-        //                    PolymeraseReaction->Print(os);
-        //                    Context.AddToReactionList(PolymeraseReaction);
-        //                } // if
-        //            i++;
-        //            }
-
-
-
-
-        // Temporary PolymeraseReactionCode
-    } else if (Utils::is_class_of<NElongationStatement, NNode>(node)) {
-        auto N_Elongation = dynamic_cast<const NElongationStatement *>(node);
-        std::string Name;
-
-        auto& ElongationReaction = N_Elongation->Reaction;
-
-        os << "  Polymerase Reaction | Elongation:"; ElongationReaction.Print(os);
-        std::vector<std::pair<std::string, int>> Stoichiometry;
-        string Location = ElongationReaction.Location.Name;
-        int Coefficient;
-        std::vector<std::string> BuildingBlocks;
-
-        for (const auto& reactant : ElongationReaction.Reactants) {
-            const std::string& ReactantName = reactant->Id.Name;
-            Coefficient = -reactant->Coeff;
-            os << "    Reactant: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
-            if ((ReactantName == "dna_{n}") | (ReactantName == "rna_{n}") | (ReactantName == "peptide_{n}")) {
-                continue;
-            } else if (ReactantName == "dnt") {
-                Name = "pol1";
-                BuildingBlocks = {"dATP", "dCTP", "dGTP", "dUTP"};
-                continue;
-            } else if (ReactantName == "nt") {
-                Name = "rnap";
-                BuildingBlocks = {"ATP", "CTP", "GTP", "UTP"};
-                continue;
-            } else if (ReactantName == "aa") {
-                Name = "r1";
-                BuildingBlocks = {"ALA", "ARG", "ASN", "ASP", "CYS", "GLT", "GLN", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "SEL", "VAL"};
-                continue;
-            }
-            std::pair<std::string, int> Stoich(ReactantName, Coefficient);
-            Stoichiometry.push_back(Stoich);
-
-            FMolecule * NewMolecule = new FMolecule(ReactantName);
-            if (Option.bDebug) { NewMolecule->Print(os); }
-            Context.AddToMoleculeList(NewMolecule);
+        // set default value for rate
+        if (Rate < 0) {
+            Rate = N_Polymerase->GetDefaultRateByType(Type);
         }
 
-        for (const auto& product : ElongationReaction.Products) {
-            const std::string ProductName = product->Id.Name;
-            Coefficient = product->Coeff;
-            os << "    Product: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
-            if ((ProductName == "dna_{n+1}") | (ProductName == "rna_{n+1}") | (ProductName == "peptide_{n+1}")) {
-                continue;
-            }
-            std::pair<std::string, int> Stoich(ProductName, Coefficient);
-            Stoichiometry.push_back(Stoich);
-
-            FMolecule * NewMolecule = new FMolecule(ProductName);
-            if (Option.bDebug) { NewMolecule->Print(os); }
-            Context.AddToMoleculeList(NewMolecule);
-        }
-
-        if (!Location.empty()) {
-            os << "    Location: " << Location << endl;
-        }
-
-        if (!BuildingBlocks.empty()){
-            os << "    BuildingBlocks: [";
-        }
-        for (auto& BuildingBlock : BuildingBlocks) {
-            FMolecule * NewMolecule = new FMolecule(BuildingBlock);
-            os << NewMolecule->Name << ", ";
-//                if (Option.bDebug) { NewMolecule->Print(os); }
-            Context.AddToMoleculeList(NewMolecule);
-        }
-        os << "]" << endl;
-        FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
-                    NewReaction->AddPathway(NameSpace_Pathway);
-        if (Option.bDebug) { NewReaction->Print(os); }
-        Context.AddToReactionList(NewReaction);
+        FPolymerase * NewPolymerase = new FPolymerase(Name_Pol, Type, Template, Target, Process, Rate);
+        if (Option.bDebug) { NewPolymerase->Print(os); }
+        Context.AddToMoleculeList(NewPolymerase);
 
     } else if (Utils::is_class_of<NAExpression, NNode>(node)) {
         auto AExpression = dynamic_cast<const NAExpression *>(node);

@@ -8,6 +8,7 @@
 #include "option.h"
 #include "node.h"
 #include "util.h"
+#include "bioinfo.h"
 
 typedef std::map<std::string, std::string> FTableRecord;
 
@@ -298,15 +299,27 @@ public:
 
 class FPolymer : public FMolecule {
 public:
-    std::map<std::string, float> Composition;
+    std::vector<std::pair<std::string, float>> Composition; // Name of monomers and their proportion
 
     FPolymer() {}
 
     FPolymer(std::string InName) : FMolecule(InName) {}
 
-    FPolymer(std::string InName, std::map<std::string, float> InComposition)
+    FPolymer(std::string InName, std::vector<std::pair<std::string, float>> InComposition)
         : Composition(InComposition), FMolecule(InName) {}
 
+    FPolymer(std::string InName, std::vector<std::string> InCompositionNameOnly)
+        : FMolecule(InName) {
+        for (auto &CompositionName: InCompositionNameOnly) {
+            Composition.push_back(std::pair<std::string, float> (CompositionName, 1 / InCompositionNameOnly.size()));
+        }
+    }
+
+    void Print_Composition(std::ostream& os) {
+        for (auto& composition : Composition){
+            os << composition.first << " : " << composition.second << ", ";
+        }
+    }
 };
 
 class FPolymer_Static : public FPolymer {
@@ -318,100 +331,147 @@ public:
     FPolymer_Static(std::string InName)
         : FPolymer(InName) {}
 
-    FPolymer_Static(std::string InName, int InSize)
-        : Size(InSize), FPolymer(InName) {}
-
-    FPolymer_Static(std::string InName, std::map<std::string, float> InComposition)
-        : FPolymer(InName, InComposition) {}
-
-    FPolymer_Static(std::string InName, std::map<std::string, float> InComposition, int InSize)
+    FPolymer_Static(std::string InName, int InSize, std::vector<std::pair<std::string, float>> InComposition)
         : Size(InSize), FPolymer(InName, InComposition) {}
+
+    FPolymer_Static(std::string InName, int InSize, std::vector<std::string> InCompositionNameOnly)
+        : Size(InSize), FPolymer(InName, InCompositionNameOnly) {}
+
 };
 
-class FChromosome : public FPolymer_Static {
+class FPolymer_TemplateBased : public FPolymer_Static {
 public:
-    std::string Symbol; // roman numeral? such as ChI, ChII?
 
-    FChromosome() {}
+    std::string Template;   // Added in context organization
 
-    FChromosome(std::string InName)
+    FPolymer_TemplateBased() {}
+
+    FPolymer_TemplateBased(std::string InName)
         : FPolymer_Static(InName) {}
 
-    FChromosome(std::string InName, std::string InSymbol)
-        : Symbol(InSymbol), FPolymer_Static(InName) {}
+    FPolymer_TemplateBased(std::string InName, int InSize, std::vector<std::pair<std::string, float>> InComposition)
+        : FPolymer_Static(InName, InSize, InComposition) {}
+
+    FPolymer_TemplateBased(std::string InName, int InSize, std::vector<std::string> InCompositionNameOnly)
+        : FPolymer_Static(InName, InSize, InCompositionNameOnly) {}
+};
+
+class FGeneticMaterial : public FPolymer_TemplateBased {
+public:
+    // std::string Symbol;
+    std::string Sequence;
+    std::vector<std::string> BuildingBlocks;
+
+    // Either enter (size + composition) || sequence
+    // Sequence can be used to calculate size and composition)
+
+    FGeneticMaterial() {}
+
+    FGeneticMaterial(std::string InName)
+            : FPolymer_TemplateBased(InName) {}
+
+    FGeneticMaterial(std::string InName, int InSize, std::vector<std::pair<std::string, float>> InComposition)
+        : FPolymer_TemplateBased(InName, InSize, InComposition) {}
+
+    FGeneticMaterial(std::string InName, int InSize, std::vector<std::string> InBuildingBlocks)
+        : BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName, InSize, InBuildingBlocks) {} // Convenient default example for genes would be FGene(A, 1000, NT);
+
+    FGeneticMaterial(std::string InName, std::string InSequence, std::vector<std::string> InBuildingBlocks)
+        : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) {
+
+        for (auto& buildingblock : InBuildingBlocks) {
+            std::string Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
+            int Count = std::count(Sequence.begin(), Sequence.end(), Char);
+            std::pair<std::string, int> CharNCount(Char, Count);
+            Composition.push_back(CharNCount);
+        }
+    }
+
+};
+
+class FChromosome : public FGeneticMaterial {
+public:
+    FChromosome() {}
 
     FChromosome(std::string InName, int InSize)
-        : FPolymer_Static(InName, InSize) {}
+        : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {}
 
-    FChromosome(std::string InName, std::map<std::string, float> InComposition, int InSize, std::string InSymbol)
-        : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
+    FChromosome(std::string InName, std::string InSequence)
+        : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("dNT")) {}
 
     void Print(std::ostream& os) {
-        os << "  Chromosome Id: " << Name << std::endl;
+        os << "[Chromosome] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
     }
 };
 
-class FGene : public FPolymer_Static {   // to be revisted for its categorization. Make a new FEATURE class?
+class FGene : public FGeneticMaterial {   // to be revisted for its categorization. Make a new FEATURE class?
 public:
-    std::string Symbol;
+    std::vector<std::string> Promoters;
 
     FGene() {}
 
     FGene(std::string InName)
-        : FPolymer_Static(InName) {}
+        : FGeneticMaterial(InName) {}
 
-    FGene(std::string InName, std::string InSymbol)
-        : Symbol(InSymbol), FPolymer_Static(InName) {}
+    FGene(std::string InName, int InSize)
+        : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {} // Convenient default example for genes would be FGene(A_g, 1000, NT);
 
-    FGene(std::string InName, std::map<std::string, float> InComposition, int InSize, std::string InSymbol)
-        : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
+    FGene(std::string InName, std::string InSequence)
+        : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("dNT")) {}
 
     void Print(std::ostream& os) {
-        os << "[Gene] Id: " << Name << std::endl;
+        os << "[Gene] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
     }
 };
 
-class FRNA : public FPolymer_Static {
+class FRNA : public FGeneticMaterial {
 public:
-    std::string Type;
+    std::string RNAType;
 
     FRNA() {}
 
     FRNA(std::string InName)
-        : FPolymer_Static(InName) {}
+    : FGeneticMaterial(InName) {}
 
-    FRNA(std::string InName, std::string InType)
-        : Type(InType), FPolymer_Static(InName) {}
+    FRNA(std::string InName, int InSize)
+    : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("NT")) {} // Convenient default example for genes would be FRNA(A_r, 1000, NT);
 
-    FRNA(std::string InName, std::map<std::string, float> InComposition, int InSize, std::string InType)
-        : Type(InType), FPolymer_Static(InName, InComposition, InSize) {}
+    FRNA(std::string InName, std::string InSequence)
+    : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("NT")) {}
 
     void Print(std::ostream& os) {
-        os << "[RNA] Id: " << Name << std::endl;
+        os << "[RNA] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
     }
 };
 
-class FProtein : public FPolymer_Static {
+class FProtein : public FGeneticMaterial {
 public:
-    std::string Symbol;
 
     FProtein() {}
 
     FProtein(std::string InName)
-        : FPolymer_Static(InName) {}
+    : FGeneticMaterial(InName) {}
 
-    FProtein(std::string InName, std::string InSymbol)
-        : Symbol(InSymbol), FPolymer_Static(InName) {}
+    FProtein(std::string InName, int InSize)
+    : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("AA")) {} // Convenient default example for genes would be FProtein(A_p, 333, AA);
 
-    FProtein(std::string InName, std::map<std::string, float> InComposition, int InSize, std::string InSymbol)
-        : Symbol(InSymbol), FPolymer_Static(InName, InComposition, InSize) {}
+    FProtein(std::string InName, std::string InSequence)
+    : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("AA")) {}
 
     void Print(std::ostream& os) {
-        os << "[Protein] Id: " << Name << std::endl;
+        os << "[Protein] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
     }
 };
 
-class FEnzyme : public FMolecule { // update to FProtein when ID system is set up
+class FEnzyme : public FProtein {
 public:
     // Kinetics is a vector of Substrate:(kcat, KM...) data. Maybe extended by adding temperature, pH, etc.
     std::vector<std::pair<std::string, std::vector<float>>> Kinetics;
@@ -420,10 +480,10 @@ public:
 
     // UPDATE TO FProtein(InName) when ID System is set up
     FEnzyme(std::string InName, std::vector<std::pair<std::string, std::vector<float>>> InKinetics)
-        : Kinetics(InKinetics), FMolecule(InName) {}
+        : Kinetics(InKinetics), FProtein(InName) {}
 
     FEnzyme(std::string InName)
-        : FMolecule(InName) {}
+        : FProtein(InName) {}
 
     void Print(std::ostream& os) {
         os << "[Enzyme] Id: " << Name;
@@ -445,9 +505,9 @@ public:
     }
 };
 
-class FPolymerase : public FProtein { // update to FProtein when ID system is set up with SQL // Note: specific to template-dependent polymerase class.
-//class FPolymerase : public FMolecule{ // update to FProtein when ID system is set up with SQL // Note: specific to template-dependent polymerase class.
+class FPolymerase : public FProtein { // Note: specific to template-dependent polymerase class.
 public:
+    std::string Type;
     std::string Template;
     std::string Target;
     std::string Process; // temporary
@@ -455,14 +515,11 @@ public:
 
     FPolymerase() {}
 
-    FPolymerase(std::string InName, std::string InTemplate, std::string InTarget, float& InRate)
-        : Template(InTemplate), Target(InTarget), Rate(InRate), FProtein(InName) {}
-
-    FPolymerase(std::string InName, std::string InTemplate, std::string InTarget, std::string InProcess, float& InRate)
-        : Template(InTemplate), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
+    FPolymerase(std::string InName, std::string InType, std::string InTemplate, std::string InTarget, std::string InProcess, float& InRate)
+        : Template(InTemplate), Type(InType), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
 
     void Print(std::ostream& os) {
-        os << "[Polymerase] Id: " << Name << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+        os << "[Polymerase] Id: " << Name << "\tType: " << Type << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
     }
 };
 
@@ -479,11 +536,11 @@ public:
     }
 };
 
-class FComplex : public FMolecule {
+class FComplex : public FPolymer_Static {
 public:
     FComplex() {}
 
-    FComplex(std::string InName) : FMolecule(InName) {}
+    FComplex(std::string InName) : FPolymer_Static(InName) {}
 };
 
 class FReaction {

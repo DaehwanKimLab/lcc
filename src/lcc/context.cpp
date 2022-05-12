@@ -1325,7 +1325,7 @@ std::vector<int> FCompilerContext::GetIdxListFromMoleculeList(std::string FClass
         for (FMolecule * molecule :MoleculeList) {
             if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 FRNA * RNA = dynamic_cast<FRNA *>(molecule);
-                if (RNA->Type == "mRNA") {
+                if (RNA->RNAType == "mRNA") {
                     IndexArray.push_back(Index);
                 }
             }
@@ -1392,7 +1392,7 @@ std::vector<std::string> FCompilerContext::GetNameListFromMoleculeList(std::stri
         for (FMolecule * molecule :MoleculeList) {
             if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 FRNA * RNA = dynamic_cast<FRNA *>(molecule);
-                if (RNA->Type == "mRNA") {
+                if (RNA->RNAType == "mRNA") {
                     StrArray.push_back(molecule->Name);
                 }
             }
