@@ -8,7 +8,7 @@
 namespace BioInfo {
 
 std::vector<std::string> GetBuildingBlocks(std::string Type);
-std::string GetBuildingBlockAbbr(std::string BuildingBlock);
+char GetBuildingBlockAbbr(std::string BuildingBlock);
 
 } // Namespace BioInfo
 #endif /* LCC_BIOINFO_H */

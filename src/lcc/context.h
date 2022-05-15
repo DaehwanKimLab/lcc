@@ -24,6 +24,8 @@ public:
 
     FCount() {}
 
+    FCount(std::string InName, float InAmount) : Name(InName), Amount(InAmount), Begin(0), End(0), Step(0), bMolarity(false) {}
+
     FCount(std::string InName, float InAmount, std::vector<float> InRange, bool InbMolarity) : Name(InName), Amount(InAmount), bMolarity(InbMolarity) {
         Utils::Assertion((InRange.size() == 3), "Range requires three float values");
         Begin = InRange[0];
@@ -331,6 +333,9 @@ public:
     FPolymer_Static(std::string InName)
         : FPolymer(InName) {}
 
+    FPolymer_Static(std::string InName, std::vector<std::string> InCompositionNameOnly)
+            : FPolymer(InName, InCompositionNameOnly) {}
+
     FPolymer_Static(std::string InName, int InSize, std::vector<std::pair<std::string, float>> InComposition)
         : Size(InSize), FPolymer(InName, InComposition) {}
 
@@ -348,6 +353,9 @@ public:
 
     FPolymer_TemplateBased(std::string InName)
         : FPolymer_Static(InName) {}
+
+    FPolymer_TemplateBased(std::string InName, std::vector<std::string> InCompositionNameOnly)
+        : FPolymer_Static(InName, InCompositionNameOnly) {}
 
     FPolymer_TemplateBased(std::string InName, int InSize, std::vector<std::pair<std::string, float>> InComposition)
         : FPolymer_Static(InName, InSize, InComposition) {}
@@ -370,6 +378,9 @@ public:
     FGeneticMaterial(std::string InName)
             : FPolymer_TemplateBased(InName) {}
 
+    FGeneticMaterial(std::string InName, std::vector<std::string> InBuildingBlocks)
+            : BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName, InBuildingBlocks) {} // Convenient default example for genes would be FGene(A, 1000, NT);
+
     FGeneticMaterial(std::string InName, int InSize, std::vector<std::pair<std::string, float>> InComposition)
         : FPolymer_TemplateBased(InName, InSize, InComposition) {}
 
@@ -380,9 +391,10 @@ public:
         : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) {
 
         for (auto& buildingblock : InBuildingBlocks) {
-            std::string Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
+            auto Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
             int Count = std::count(Sequence.begin(), Sequence.end(), Char);
-            std::pair<std::string, int> CharNCount(Char, Count);
+            std::string Char_Str(1, Char);
+            std::pair<std::string, int> CharNCount(Char_Str, Count);
             Composition.push_back(CharNCount);
         }
     }
@@ -392,6 +404,9 @@ public:
 class FChromosome : public FGeneticMaterial {
 public:
     FChromosome() {}
+
+    FChromosome(std::string InName)
+        : FGeneticMaterial(InName, BioInfo::GetBuildingBlocks("dNT")) {}
 
     FChromosome(std::string InName, int InSize)
         : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {}
@@ -413,7 +428,7 @@ public:
     FGene() {}
 
     FGene(std::string InName)
-        : FGeneticMaterial(InName) {}
+        : FGeneticMaterial(InName, 1000, BioInfo::GetBuildingBlocks("dNT")) {}
 
     FGene(std::string InName, int InSize)
         : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {} // Convenient default example for genes would be FGene(A_g, 1000, NT);
@@ -434,14 +449,14 @@ public:
 
     FRNA() {}
 
-    FRNA(std::string InName)
-    : FGeneticMaterial(InName) {}
+    FRNA(std::string InName, std::string InRNAType)
+    : RNAType(InRNAType), FGeneticMaterial(InName, 1000, BioInfo::GetBuildingBlocks("NT")) {}
 
-    FRNA(std::string InName, int InSize)
-    : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("NT")) {} // Convenient default example for genes would be FRNA(A_r, 1000, NT);
+    FRNA(std::string InName, int InSize, std::string InRNAType)
+    : RNAType(InRNAType), FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("NT")) {} // Convenient default example for genes would be FRNA(A_r, 1000, NT);
 
-    FRNA(std::string InName, std::string InSequence)
-    : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("NT")) {}
+    FRNA(std::string InName, std::string InSequence, std::string InRNAType)
+    : RNAType(InRNAType), FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("NT")) {}
 
     void Print(std::ostream& os) {
         os << "[RNA] Id: " << Name << " | ";
@@ -456,7 +471,7 @@ public:
     FProtein() {}
 
     FProtein(std::string InName)
-    : FGeneticMaterial(InName) {}
+    : FGeneticMaterial(InName, 333, BioInfo::GetBuildingBlocks("AA")) {}
 
     FProtein(std::string InName, int InSize)
     : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("AA")) {} // Convenient default example for genes would be FProtein(A_p, 333, AA);
@@ -802,6 +817,7 @@ public:
     void PrintInitialLocations(std::ostream& os);
     void SaveUsingModuleList(const char *Filename);
 
+    // Base class list addition
     void AddToMoleculeList(FMolecule *NewMolecule);
     void AddToReactionList(FReaction *NewReaction);
     void AddToPathwayList(FPathway *NewPathway);
@@ -813,6 +829,7 @@ public:
 
     // Compiler organization
     void Organize();
+    void ApplyDefaultGeneticInformationProcessingOnMoleculeList();
     void AssignReactionType(FReaction *Reaction, int Regulation);
     void AssignReactionTypesForReactionList();
     void MakeListsFromMoleculeList();
@@ -824,13 +841,13 @@ public:
     std::string QueryTable(std::string Name, std::string Property, FTable Table);
 
     // EnzymeList
-    FEnzyme * GetEnzyme_EnzymeList(std::string Name);
+//    FEnzyme * GetEnzyme_EnzymeList(std::string Name);
 //    float GetFloatAttributeByName_EnzymeList(std::vector<FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
 //    std::string GetStringAttributeByName_EnzymeList(std::vector<FEnzyme *> EnzymeList, std::string EnzymeName, std::string Attribute);
 
     // PolymeraseList - to be updated
-    std::vector<std::string> GetNames_PolymeraseList(std::vector<FPolymerase *> PolymeraseList);
-    std::vector<float> GetRates_PolymeraseList(std::vector<FPolymerase *> PolymeraseList);
+//    std::vector<std::string> GetNames_PolymeraseList(std::vector<FPolymerase *> PolymeraseList);
+//    std::vector<float> GetRates_PolymeraseList(std::vector<FPolymerase *> PolymeraseList);
 
     std::vector<std::string> GetNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
     std::vector<std::string> GetSubstrateNames_PolymeraseReactionList(std::vector<FPolymeraseReaction *>);
@@ -841,7 +858,13 @@ public:
     std::vector<std::string> GetNames_PathwayList();
     std::vector<std::string> GetSequences_PathwayList();
 
-    // Stoichiometry Matrix-related
+    // Compiler Utility
+    FMolecule * GenerateChromosome(std::string MolName, int Count); // default
+    FMolecule * GenerateCounterpart_Gene(std::string MolName, int Count); // default
+    FMolecule * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
+
+
+        // Stoichiometry Matrix-related
     std::vector<int> AddUniqueSubstrateIdxToIdxList(FReaction *, std::vector<int>);
     std::vector<int> GetIdxForStoichiometryMatrix(std::vector<FReaction *> ReactionList);
     std::vector<int> GetCoefficientArray(FReaction *, std::vector<int>);
@@ -868,7 +891,7 @@ public:
 
     // MoleculeList
     FMolecule * GetMolecule_MoleculeList(std::string Name);
-    std::vector<std::string> GetNames_MoleculeList();
+    std::vector<std::string> GetNames_MoleculeList(std::string Type);
     int GetIdxByName_MoleculeList(std::string InputName);
     std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
     // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
@@ -876,7 +899,6 @@ public:
 
     // useful?
     std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
-    std::vector<std::string> GetNameListFromMoleculeList(std::string FClassName);
     std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
     bool CheckDuplicates_List(std::string ListType, std::string Name);
 

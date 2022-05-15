@@ -110,12 +110,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     // for polymerase reactions (Template-based)
-    std::vector<FPolymerase *> PolymeraseList = Context.GetList_Polymerase_MoleculeList();
+    std::vector<FMolecule *> PolymeraseList = Context.GetSubList_MoleculeList("Polymerase");
+
 //    std::vector<std::string> PolymeraseNames = Context.GetNames_PolymeraseList(PolymeraseList);
     std::vector<FPolymeraseReaction *> PolymeraseReactionList = Context.GetList_Polymerase_ReactionList();
 
     if (!PolymeraseList.empty()) {
-        for (auto& Polymerase : PolymeraseList) {
+        for (auto& polymerase : PolymeraseList) {
+            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
             Initialize_PolymeraseReaction(ofs, Polymerase);
         }
     }
@@ -162,7 +164,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     if (!PolymeraseList.empty()) {
-        for (auto& Polymerase : PolymeraseList) {
+        for (auto& polymerase : PolymeraseList) {
+            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
+
             std::string PolymeraseName = Polymerase->Name;
             float Rate = Polymerase->Rate;
             int Idx_Pol = Context.GetIdxByName_MoleculeList(PolymeraseName);
@@ -220,7 +224,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 Idx_Target     = Context.GetIdxListFromMoleculeList("Protein"); // update to link mRNA to protein matching
                 Threshold      = 1;
 
-                Idx_TemplateSubset = Context.GetIdxOfStrListFromStrList(Context.GetNameListFromMoleculeList("mRNA"), Context.GetNameListFromMoleculeList("RNA"));
+                Idx_TemplateSubset = Context.GetIdxOfStrListFromStrList(Context.GetNames_MoleculeList("mRNA"), Context.GetNames_MoleculeList("RNA"));
             }
 
             else { // add exception handling
@@ -247,7 +251,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     // for legends
-    std::vector<std::string> MolNames = Context.GetNames_MoleculeList();
+    std::vector<std::string> MolNames = Context.GetNames_MoleculeList("Molecule");
     ofs << in+ in+ "self.Mol_Names = [" << Utils::JoinStr2Str(MolNames) << "]" << endl;
     ofs << in+ in+ "self.Mol_Name2Idx = {";
     int i = 0;
@@ -1289,20 +1293,23 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!PolymeraseList.empty()) {
 
         ofs << in+ "def Polymerase_InitiationReactions(self):" << endl;
-        for (auto& Polymerase : PolymeraseList) {
+        for (auto& polymerase : PolymeraseList) {
+            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
 
             Polymerase_InitiationReaction(ofs, Polymerase);
         }
 
 
         ofs << in+ "def Polymerase_ElongationReactions(self):" << endl;
-        for (auto& Polymerase : PolymeraseList) {
+        for (auto& polymerase : PolymeraseList) {
+            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
 
             Polymerase_ElongationReaction(ofs, Polymerase);
         }
 
         ofs << in+ "def Polymerase_TerminationReactions(self):" << endl;
-        for (auto& Polymerase : PolymeraseList) {
+        for (auto& polymerase : PolymeraseList) {
+            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
 
             Polymerase_TerminationReaction(ofs, Polymerase);
         }

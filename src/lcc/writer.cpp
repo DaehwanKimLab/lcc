@@ -268,7 +268,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
 
     for (auto& Reaction : ReactionSubList) {
         const auto& EnzReaction = dynamic_cast<FEnzymaticReaction *>(Reaction);
-        const auto& enzyme = Context.GetEnzyme_EnzymeList(EnzReaction->Enzyme);
+        const auto& enzyme = dynamic_cast<FEnzyme *>(Context.GetMolecule_MoleculeList(EnzReaction->Enzyme));
 
         Idx_Enz.push_back(Context.GetIdxByName_MoleculeList(enzyme->Name));
 
