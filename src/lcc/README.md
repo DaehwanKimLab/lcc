@@ -4,30 +4,28 @@
 # Downloads
 
 # Build
-## build lcc-prep
-    
-    mkdir build
-    cd build
-    cmake ../
-    make
-    cd ..
+## build lcc
 
+1. Create a build directory in the project and change to it, and run cmake
+   ```sh
+   mkdir build
+   cd build
+   cmake ../
+   ```
 
-## compile TCA.lpp (or any) and simulate
+2. Run make command
+   ```sh
+   make
+   ```
 
-    ./build/lcc -i . TCA.lpp RNASynthesis.lpp ProteinSynthesis.lpp Ecoli.lpp
-    python SimModule.py
-    
-    
-    To see a nice curve:
-    ./build/lcc -i . TCA_Reduced_2.lpp
-    python SimModule.py
-    
-## plotting
+## compile lpp source cfile and run simulation
 
-    ./plot.py
-
-
+To run lcc command, activate lcc conda environment and run the command in the project directory.
+```sh
+conda activate lcc
+./build/lcc Models/Ingalls2013/Ingalls2013_Model2_18_NumericalSimulation.lpp
+python SimExecutor.py
+```
 
 # Build on Windows
 Required packages:  
