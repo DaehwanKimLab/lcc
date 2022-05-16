@@ -20,6 +20,9 @@ std::map<std::string, char> BuildingBlock2Abbr {
         {"ALA", 'A'},   {"ARG", 'R'},   {"ASN", 'D'},   {"ASP", 'N'},   {"CYS", 'C'},   {"GLU", 'E'},   {"GLN", 'Q'},
         {"GLY", 'G'},   {"HIS", 'H'},   {"ILE", 'I'},   {"LEU", 'L'},   {"LYS", 'K'},   {"MET", 'M'},   {"PHE", 'F'},
         {"PRO", 'P'},   {"SER", 'S'},   {"THR", 'T'},   {"TRP", 'W'},   {"TYR", 'Y'},   {"SEC", 'U'},   {"VAL", 'V'},
+
+        // terminator
+        {"TER", 'X'}
 };
 
 std::map<std::string, std::string> Codon2AA { 
@@ -79,6 +82,11 @@ char GetBuildingBlockAbbr(std::string BuildingBlock)
 std::string GetAAFromCodon(std::string Codon)
 {
     return Codon2AA[Codon];
+}
+
+char GetAAAbbrFromCodon(std::string Codon)
+{
+    return BuildingBlock2Abbr[Codon2AA[Codon]];
 }
 
 
