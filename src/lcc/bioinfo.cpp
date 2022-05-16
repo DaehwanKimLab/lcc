@@ -22,6 +22,27 @@ std::map<std::string, char> BuildingBlock2Abbr {
         {"PRO", 'P'},   {"SER", 'S'},   {"THR", 'T'},   {"TRP", 'W'},   {"TYR", 'Y'},   {"SEC", 'U'},   {"VAL", 'V'},
 };
 
+std::map<std::string, std::string> Codon2AA { 
+    {"TTT", "PHE"}, {"TTC", "PHE"}, {"TTA", "LEU"}, {"TTG", "LEU"}, 
+    {"TCT", "SER"}, {"TCC", "SER"}, {"TCA", "SER"}, {"TCG", "SER"}, 
+    {"TAT", "TYR"}, {"TAC", "TYR"}, {"TAA", "TER"}, {"TAG", "TER"}, 
+    {"TGT", "CYS"}, {"TGC", "CYS"}, {"TGA", "TER"}, {"TGG", "TRP"}, 
+    {"CTT", "LEU"}, {"CTC", "LEU"}, {"CTA", "LEU"}, {"CTG", "LEU"}, 
+    {"CCT", "PRO"}, {"CCC", "PRO"}, {"CCA", "PRO"}, {"CCG", "PRO"}, 
+    {"CAT", "HIS"}, {"CAC", "HIS"}, {"CAA", "GLN"}, {"CAG", "GLN"}, 
+    {"CGT", "ARG"}, {"CGC", "ARG"}, {"CGA", "ARG"}, {"CGG", "ARG"}, 
+    {"ATT", "ILE"}, {"ATC", "ILE"}, {"ATA", "ILE"}, {"ATG", "MET"}, 
+    {"ACT", "THR"}, {"ACC", "THR"}, {"ACA", "THR"}, {"ACG", "THR"}, 
+    {"AAT", "ASN"}, {"AAC", "ASN"}, {"AAA", "LYS"}, {"AAG", "LYS"}, 
+    {"AGT", "SER"}, {"AGC", "SER"}, {"AGA", "ARG"}, {"AGG", "ARG"}, 
+    {"GTT", "VAL"}, {"GTC", "VAL"}, {"GTA", "VAL"}, {"GTG", "VAL"}, 
+    {"GCT", "ALA"}, {"GCC", "ALA"}, {"GCA", "ALA"}, {"GCG", "ALA"}, 
+    {"GAT", "ASP"}, {"GAC", "ASP"}, {"GAA", "GLU"}, {"GAG", "GLU"}, 
+    {"GGT", "GLY"}, {"GGC", "GLY"}, {"GGA", "GLY"}, {"GGG", "GLY"},
+};
+
+
+
 //
 //std::map<std::string, std::string> BuildingBlock2Abbr {
 //        // dNT
@@ -53,6 +74,11 @@ std::vector<std::string> GetBuildingBlocks(std::string Type)
 char GetBuildingBlockAbbr(std::string BuildingBlock)
 {
     return BuildingBlock2Abbr[BuildingBlock];
+}
+
+std::string GetAAFromCodon(std::string Codon)
+{
+    return Codon2AA[Codon];
 }
 
 
