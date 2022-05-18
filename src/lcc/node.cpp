@@ -419,6 +419,12 @@ std::string NElongationStatement::GetTemplate() const {
     return Template;
 }
 
+
+
+std::string NInitiationStatement::GetBindingSite() const {
+    return Id.Name;
+}
+
 float NElongationStatement::GetRate() const {
     float Rate = Numbers::GetFloatDefault();
 
@@ -433,6 +439,10 @@ float NElongationStatement::GetRate() const {
     }
 
     return Rate;
+}
+
+std::string NTerminationStatement::GetBindingSite() const {
+    return Id.Name;
 }
 
 std::string NVariableExpression::GetName() const {

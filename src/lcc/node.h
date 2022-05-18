@@ -789,6 +789,7 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+    virtual std::string GetBindingSite() const;
 };
 
 class NElongationStatement : public NStatement {
@@ -819,6 +820,7 @@ public:
     }
 
     virtual void Visit(FTraversalContext& Context) const override {};
+    virtual std::string GetBindingSite() const;
 };
 
 class NRibosomeDeclaration : public NStatement {

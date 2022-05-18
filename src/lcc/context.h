@@ -263,7 +263,6 @@ public:
 
     void Print(std::ostream& os) {
         os << "[Molecule] Id: " << Id << std::endl;
-        os << std::endl;
     }
 
 };
@@ -342,6 +341,9 @@ public:
     FPolymer_Static(std::string InName, int InSize, std::vector<std::string> InCompositionNameOnly)
         : Size(InSize), FPolymer(InName, InCompositionNameOnly) {}
 
+    void SetSize(int InSize) {
+        Size = InSize;
+    }
 };
 
 class FPolymer_TemplateBased : public FPolymer_Static {
@@ -362,6 +364,10 @@ public:
 
     FPolymer_TemplateBased(std::string InName, int InSize, std::vector<std::string> InCompositionNameOnly)
         : FPolymer_Static(InName, InSize, InCompositionNameOnly) {}
+
+    void SetTemplate(std::string MolName) {
+        Template = MolName;
+    }
 };
 
 class FGeneticMaterial : public FPolymer_TemplateBased {
@@ -445,21 +451,104 @@ public:
 
 class FRNA : public FGeneticMaterial {
 public:
-    std::string RNAType;
 
     FRNA() {}
 
-    FRNA(std::string InName, std::string InRNAType)
-    : RNAType(InRNAType), FGeneticMaterial(InName, 1000, BioInfo::GetBuildingBlocks("NT")) {}
+    FRNA(std::string InName)
+    : FGeneticMaterial(InName, 1000, BioInfo::GetBuildingBlocks("NT")) {}
 
-    FRNA(std::string InName, int InSize, std::string InRNAType)
-    : RNAType(InRNAType), FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("NT")) {} // Convenient default example for genes would be FRNA(A_r, 1000, NT);
+    FRNA(std::string InName, int InSize)
+    : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("NT")) {} // Convenient default example for genes would be FRNA(A_r, 1000, NT);
 
-    FRNA(std::string InName, std::string InSequence, std::string InRNAType)
-    : RNAType(InRNAType), FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("NT")) {}
+    FRNA(std::string InName, std::string InSequence)
+    : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("NT")) {}
 
     void Print(std::ostream& os) {
         os << "[RNA] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
+    }
+};
+
+class FmRNA : public FRNA {
+public:
+
+    FmRNA() {}
+
+    FmRNA(std::string InName)
+    : FRNA(InName) {}
+
+    FmRNA(std::string InName, int InSize)
+    : FRNA(InName, InSize) {}
+
+    FmRNA(std::string InName, std::string InSequence)
+    : FRNA(InName, InSequence) {}
+
+    void Print(std::ostream& os) {
+        os << "[mRNA] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
+    }
+};
+
+class FrRNA : public FRNA {
+public:
+
+    FrRNA() {}
+
+    FrRNA(std::string InName)
+    : FRNA(InName) {}
+
+    FrRNA(std::string InName, int InSize)
+    : FRNA(InName, InSize) {}
+
+    FrRNA(std::string InName, std::string InSequence)
+    : FRNA(InName, InSequence) {}
+
+    void Print(std::ostream& os) {
+        os << "[rRNA] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
+    }
+};
+
+class FtRNA : public FRNA {
+public:
+
+    FtRNA() {}
+
+    FtRNA(std::string InName)
+    : FRNA(InName) {}
+
+    FtRNA(std::string InName, int InSize)
+    : FRNA(InName, InSize) {}
+
+    FtRNA(std::string InName, std::string InSequence)
+    : FRNA(InName, InSequence) {}
+
+    void Print(std::ostream& os) {
+        os << "[tRNA] Id: " << Name << " | ";
+        Print_Composition(os);
+        os << std::endl;
+    }
+};
+
+class FmiscRNA : public FRNA {
+public:
+
+    FmiscRNA() {}
+
+    FmiscRNA(std::string InName)
+    : FRNA(InName) {}
+
+    FmiscRNA(std::string InName, int InSize)
+    : FRNA(InName, InSize) {}
+
+    FmiscRNA(std::string InName, std::string InSequence)
+    : FRNA(InName, InSequence) {}
+
+    void Print(std::ostream& os) {
+        os << "[miscRNA] Id: " << Name << " | ";
         Print_Composition(os);
         os << std::endl;
     }
@@ -522,19 +611,65 @@ public:
 
 class FPolymerase : public FProtein { // Note: specific to template-dependent polymerase class.
 public:
-    std::string Type;
-    std::string Template;
-    std::string Target;
-    std::string Process; // temporary
+    std::string InitiationSite;
+    std::string TerminationSite;
+    std::string TemplateClass;
+    std::string TargetClass;
+    std::string Process;
     float Rate;
 
     FPolymerase() {}
 
-    FPolymerase(std::string InName, std::string InType, std::string InTemplate, std::string InTarget, std::string InProcess, float& InRate)
-        : Template(InTemplate), Type(InType), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
+    FPolymerase(std::string InName, std::string InInitiationSite, float& InRate, std::string InTerminationSite)
+        : InitiationSite(InInitiationSite), Rate(InRate), TerminationSite(InTerminationSite), FProtein(InName) {}
+
+    FPolymerase(std::string InName, std::string InInitiationSite, float& InRate, std::string InTerminationSite, std::string InTemplateClass, std::string InTargetClass, std::string InProcess)
+        : InitiationSite(InInitiationSite), Rate(InRate), TerminationSite(InTerminationSite), TemplateClass(InTemplateClass), TargetClass(InTargetClass), Process(InProcess), FProtein(InName) {}
+//
+//    FPolymerase(std::string InName, std::string InType, std::string InTemplate, std::string InTarget, std::string InProcess, float& InRate)
+//        : Template(InTemplate), Type(InType), Target(InTarget), Process(InProcess), Rate(InRate), FProtein(InName) {}
 
     void Print(std::ostream& os) {
-        os << "[Polymerase] Id: " << Name << "\tType: " << Type << "\tTemplate: " << Template << "\tTarget: " << Target << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+        os << "[Polymerase] Id: " << Name << "\tTemplate: " << Template << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+    }
+};
+
+class FDNAP : public FPolymerase {
+public:
+    FDNAP() {}
+
+    FDNAP(std::string InName, std::string InInitiationSite, float& InRate, std::string InTerminationSite)
+        : FPolymerase(InName, InInitiationSite, InRate, InTerminationSite, "Chromosome", "Chromosome", "Replication") {}
+
+    void Print(std::ostream& os) {
+        os << "[DNAP] Id: " << Name << "\tTemplate: " << Template << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+        os << "\tTemplateClass: " << TemplateClass << "\tTargetClass: " << TargetClass << std::endl;
+    }
+};
+
+class FRNAP : public FPolymerase {
+public:
+    FRNAP() {}
+
+    FRNAP(std::string InName, std::string InInitiationSite, float& InRate, std::string InTerminationSite)
+        : FPolymerase(InName, InInitiationSite, InRate, InTerminationSite, "Gene", "RNA", "Transcription") {}
+
+    void Print(std::ostream& os) {
+        os << "[RNAP] Id: " << Name << "\tTemplate: " << Template << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+        os << "\tTemplateClass: " << TemplateClass << "\tTargetClass: " << TargetClass << std::endl;
+    }
+};
+
+class FRibosome : public FPolymerase {
+public:
+    FRibosome() {}
+
+    FRibosome(std::string InName, std::string InInitiationSite, float& InRate, std::string InTerminationSite)
+        : FPolymerase(InName, InInitiationSite, InRate, InTerminationSite, "mRNA", "Protein", "Translation") {}
+
+    void Print(std::ostream& os) {
+        os << "[Ribosome] Id: " << Name << "\tTemplate: " << Template << "\tRate:  " << Utils::SciFloat2Str(Rate) << std::endl;
+        os << "\tTemplateClass: " << TemplateClass << "\tTargetClass: " << TargetClass << std::endl;
     }
 };
 
@@ -690,7 +825,7 @@ public:
     std::vector<std::string> BuildingBlocks; // may be moved to FPolymer
     // std::map<std::string, int> Stoichiometry;
 
-    FPolymeraseReaction(std::string InName, std::vector<std::pair<std::string, int>>& InStoichiometry, std::string InPolymerase, std::vector<std::string>& InBuildingBlocks)
+    FPolymeraseReaction(std::string InName, std::vector<std::pair<std::string, int>>& InStoichiometry, std::string InPolymerase, std::vector<std::string> InBuildingBlocks)
         : Polymerase(InPolymerase), BuildingBlocks(InBuildingBlocks), FReaction(InName, InStoichiometry) {}
 
     void Print(std::ostream& os) {
@@ -796,15 +931,15 @@ public:
 
     std::vector<std::string>    UsingModuleList;
     std::vector<FMolecule*>     MoleculeList;
-    std::vector<FGene*>         GeneList;
-    std::vector<FRNA*>	        RNAList;
-    std::vector<FProtein*>      ProteinList;
-    std::vector<FEnzyme*>       EnzymeList;
+//    std::vector<FGene*>         GeneList;
+//    std::vector<FRNA*>	        RNAList;
+//    std::vector<FProtein*>      ProteinList;
+//    std::vector<FEnzyme*>       EnzymeList;
     std::vector<FReaction*>     ReactionList;
     std::vector<FPathway*>      PathwayList;
     std::vector<std::string>    IdentifierList;
     std::vector<FContainer*>    ContainerList;
-    std::vector<FOrganism*>     OrganismList;
+//    std::vector<FOrganism*>     OrganismList;
     std::vector<FCount*>        CountList;
     std::vector<FLocation*>     LocationList;
     std::vector<FComposition*>  CompositionList;
@@ -859,17 +994,18 @@ public:
     std::vector<std::string> GetSequences_PathwayList();
 
     // Compiler Utility
-    FMolecule * GenerateChromosome(std::string MolName, int Count); // default
-    FMolecule * GenerateCounterpart_Gene(std::string MolName, int Count); // default
-    FMolecule * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
+    FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, int Size); // default
+
+    FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, int Count); // default
+    FGeneticMaterial * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
 
 
-        // Stoichiometry Matrix-related
+    // Stoichiometry Matrix-related
     std::vector<int> AddUniqueSubstrateIdxToIdxList(FReaction *, std::vector<int>);
-    std::vector<int> GetIdxForStoichiometryMatrix(std::vector<FReaction *> ReactionList);
+    std::vector<int> GetUniqueSubstrateIdx_ReactionList(std::vector<FReaction *> ReactionList);
     std::vector<int> GetCoefficientArray(FReaction *, std::vector<int>);
     std::vector<std::vector<int>> GetStoichiometryMatrix(std::vector<FReaction *> ReactionList);
-    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<FPolymeraseReaction *>);
+//    std::vector<std::vector<int>> GetStoichiometryMatrix_PolymeraseReaction(std::vector<FPolymeraseReaction *>);
 
     // TODO: Update all XXList functions to take the XXList itself to enable more flexible list manipulation
 
@@ -891,19 +1027,18 @@ public:
 
     // MoleculeList
     FMolecule * GetMolecule_MoleculeList(std::string Name);
-    std::vector<std::string> GetNames_MoleculeList(std::string Type);
-    int GetIdxByName_MoleculeList(std::string InputName);
-    std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
-    // std::vector<int> GetInitialCountByStrList_MoleculeList(std::vector<std::string>);
     std::vector<FMolecule *> GetSubList_MoleculeList(std::string Type);
+    std::vector<std::string> GetNameListByType_MoleculeList(std::string Type);
+    std::vector<std::string> GetNameList_MoleculeList(std::vector<FMolecule *> ListOfMolecules);
+    int GetIdxByName_MoleculeList(std::string InputName);
+    int GetIdx_MoleculeList(FMolecule * Molecule);
+    std::vector<int> GetIdxByStrList_MoleculeList(std::vector<std::string>);
+    std::vector<int> GetIdxListByType_MoleculeList(std::string Type);
+    std::vector<int> GetIdxList_MoleculeList(std::vector<FMolecule *> ListOfMolecules);
+    std::vector<int> GetLocalIdxList_MoleculeList(std::vector<FMolecule *> SubListOfMolecules, std::vector<FMolecule *> ListOfMolecules);
 
-    // useful?
-    std::vector<int> GetIdxListFromMoleculeList(std::string FClassName);
-    std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
+//    std::vector<int> GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(std::string);
     bool CheckDuplicates_List(std::string ListType, std::string Name);
-
-    std::vector<FPolymerase *> GetList_Polymerase_MoleculeList();
-    std::vector<FSmallMolecule *> GetList_SmallMolecule_MoleculeList();
 
     // ContainerList
     std::vector<FContainer *> GetSubList_ContainerList(std::string Type);
@@ -916,10 +1051,12 @@ public:
     std::vector<FRegulatoryReaction *> GetList_Regulatory_ReactionList(std::string Type);
     std::vector<std::string> GetNames_EnzymaticReactionList(std::vector<FEnzymaticReaction *> EnzymaticReactionList);
 
+    FReaction * GetReactionByPolymeraseName_ReactionList(std::string InPolymeraseName);
+
+
     // TODO: Update polymerase reaction writing system
     std::vector<FPolymeraseReaction *> GetList_Polymerase_ReactionList();
 
-    std::vector<int> GetIdxOfStrListFromStrList(std::vector<std::string> InputList, std::vector<std::string> RefList);
 //    std::vector<int> GetEnzSubstrateIdxFromAllSubstrates();
 
     std::vector<float> GetFreqMatrixForChromosomes();

@@ -338,11 +338,13 @@ void ParsePolymeraseInitiationStatement(std::string PolName, const shared_ptr<NI
 
 void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NElongationStatement> N_Elongation)
 {
-    std::string Name = PolName;
     auto &ElongationReaction = N_Elongation->Reaction;
 
-    os << "  Polymerase Reaction | Elongation:";
-    ElongationReaction.Print(os);
+    if (Option.bDebug) {
+        os << "  Polymerase Reaction | Elongation:";
+//        ElongationReaction.Print(os);
+    }
+
     std::vector<std::pair<std::string, int>> Stoichiometry;
     string Location = ElongationReaction.Location.Name;
     int Coefficient;
@@ -351,7 +353,11 @@ void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NE
     for (const auto& reactant : ElongationReaction.Reactants) {
         const std::string& ReactantName = reactant->Id.Name;
         Coefficient = -reactant->Coeff;
-        os << "    Reactant: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
+
+        if (Option.bDebug) {
+            os << "    Reactant: " << "(" << Coefficient << ")" << ReactantName << ", " << endl;
+        }
+
         if ((ReactantName == "dna_{n}") | (ReactantName == "rna_{n}") | (ReactantName == "peptide_{n}")) {
             continue;
         } else if ((ReactantName == "dnt") || (ReactantName == "nt") || (ReactantName == "aa")) {
@@ -369,7 +375,7 @@ void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NE
     for (const auto& product : ElongationReaction.Products) {
         const std::string ProductName = product->Id.Name;
         Coefficient = product->Coeff;
-        os << "    Product: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
+//        os << "    Product: " << "(" << Coefficient << ")" << ProductName << ", " << endl;
         if ((ProductName == "dna_{n+1}") | (ProductName == "rna_{n+1}") | (ProductName == "peptide_{n+1}")) {
             continue;
         }
@@ -386,17 +392,17 @@ void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NE
     }
 
     if (!BuildingBlocks.empty()){
-        os << "    BuildingBlocks: [";
+//        os << "    BuildingBlocks: [";
     }
     for (auto& BuildingBlock : BuildingBlocks) {
         FMolecule * NewMolecule = new FMolecule(BuildingBlock);
-        os << NewMolecule->Name << ", ";
+//        os << NewMolecule->Name << ", ";
         if (Option.bDebug) { NewMolecule->Print(os); }
         Context.AddToMoleculeList(NewMolecule);
     }
-    os << "]" << endl;
+//    os << "]" << endl;
 
-    FPolymeraseReaction *NewReaction = new FPolymeraseReaction(Name, Stoichiometry, Name, BuildingBlocks);
+    FPolymeraseReaction *NewReaction = new FPolymeraseReaction(PolName, Stoichiometry, PolName, BuildingBlocks);
     NewReaction->AddPathway(NameSpace_Pathway);
     if (Option.bDebug) { NewReaction->Print(os); }
     Context.AddToReactionList(NewReaction);
@@ -688,43 +694,45 @@ void TraversalNode_Core(NNode * node)
 
     } else if (Utils::is_class_of<NPolymeraseDeclaration, NNode>(node)) {
         auto N_Polymerase = dynamic_cast<const NPolymeraseDeclaration *>(node);
-        os << "Polymerase Id: " << N_Polymerase->Id.Name << endl;
-        // N_Polymerase->Print(os);
+//        os << "Polymerase Id: " << N_Polymerase->Id.Name << endl;
+         N_Polymerase->Print(os);
 
 //        Name	Template	Target	Process	Rate
 //        pol1	Chromosome	Chromosome	DNAReplication	1000
 //        rnap	Gene	RNA	RNATranscription	60
 //        r1	RNA	Protein	ProteinTranslation	20
 
-        string Name_Pol, Type, Template, Target, Process;
+        string Name_Pol, Type, InitiationSite, TerminationSite;
         float Rate = Numbers::GetFloatDefault();
 
         Name_Pol = N_Polymerase->Id.Name;
         Type = N_Polymerase->GetType();
-        Template = N_Polymerase->GetTemplateByType(Type);
-        Target = N_Polymerase->GetTargetByType(Type);
-        Process = N_Polymerase->GetProcessByType(Type);
+//        Template = N_Polymerase->GetTemplateByType(Type);
+//        Target = N_Polymerase->GetTargetByType(Type);
+//        Process = N_Polymerase->GetProcessByType(Type);
 
         // parse reactions
         for (const shared_ptr<NStatement>& stmt: N_Polymerase->Statements) {
             if (Utils::is_class_of<NInitiationStatement, NStatement>(stmt.get())) {
                 const shared_ptr<NInitiationStatement> initstmt = dynamic_pointer_cast<NInitiationStatement>(stmt);
-                 initstmt->Print(os);
+//                 initstmt->Print(os);
 
                  ParsePolymeraseInitiationStatement(Name_Pol, initstmt);
+                 InitiationSite = initstmt->GetBindingSite();
 
             } else if (Utils::is_class_of<NElongationStatement, NStatement>(stmt.get())) {
                 const shared_ptr<NElongationStatement> elongstmt = dynamic_pointer_cast<NElongationStatement>(stmt);
-                elongstmt->Print(os);
+//                elongstmt->Print(os);
 
                 ParsePolymeraseElongationStatement(Name_Pol, elongstmt);
                 Rate = elongstmt->GetRate();
 
             } else if (Utils::is_class_of<NTerminationStatement, NStatement>(stmt.get())) {
                 const shared_ptr<NTerminationStatement> termstmt = dynamic_pointer_cast<NTerminationStatement>(stmt);
-                 termstmt->Print(os);
+//                 termstmt->Print(os);
 
                 ParsePolymeraseTerminationStatement(Name_Pol, termstmt);
+                InitiationSite = termstmt->GetBindingSite();
 
             }
         }
@@ -734,7 +742,13 @@ void TraversalNode_Core(NNode * node)
             Rate = N_Polymerase->GetDefaultRateByType(Type);
         }
 
-        FPolymerase * NewPolymerase = new FPolymerase(Name_Pol, Type, Template, Target, Process, Rate);
+//        FPolymerase * NewPolymerase = new FPolymerase(Name_Pol, Type, Template, Target, Process, Rate);
+        FPolymerase * NewPolymerase;
+        if (Type == "DNAP")             { NewPolymerase = new FDNAP(Name_Pol, InitiationSite, Rate, TerminationSite); }
+        else if (Type == "RNAP")        { NewPolymerase = new FRNAP(Name_Pol, InitiationSite, Rate, TerminationSite); }
+        else if (Type == "Ribosome")    { NewPolymerase = new FRibosome(Name_Pol, InitiationSite, Rate, TerminationSite); }
+        else                            { NewPolymerase = new FPolymerase(Name_Pol, InitiationSite, Rate, TerminationSite); }
+
         if (Option.bDebug) { NewPolymerase->Print(os); }
         Context.AddToMoleculeList(NewPolymerase);
 
@@ -1125,42 +1139,43 @@ void TraversalNode(NBlock* InProgramBlock)
 
                                 int i;
                                 int i_cap = 5000;
-
-                                i = 0;
-                                os << ">> Genes being imported... : ";
-                                for (auto& record: Context.GeneTable.Records) {
-                                    // os << record["symbol"] << ", ";
-                                    FGene *NewGene = new FGene(record["id"], record["symbol"]);
-                                    //                        if (Option.bDebug) { NewGene->Print(os); }
-                                    Context.AddToMoleculeList(NewGene);
-
-                                    i++;
-                                    // temporary capping
-                                    if (i == i_cap) {
-                                        os << "Gene importing is capped at " << std::to_string(i_cap) << endl;
-                                        break;
-                                    }
-                                }
-                                os << "done" << endl;
-                                // os << endl;
-
-                                i = 0;
-                                os << ">> RNAs being imported... : ";
-                                for (auto& record: Context.RNATable.Records) {
-                                    // os << record["id"] << ", ";
-                                    FRNA *NewRNA = new FRNA(record["id"], record["type"]);
-                                    //                        if (Option.bDebug) { NewRNA->Print(os); }
-                                    Context.AddToMoleculeList(NewRNA);
-
-                                    i++;
-                                    // temporary capping
-                                    if (i == i_cap) {
-                                        os << "RNA importing is capped at " << std::to_string(i_cap) << endl;
-                                        break;
-                                    }
-                                }
-                                os << "done" << endl;
-                                // os << endl;
+//
+//                                i = 0;
+//                                os << ">> Genes being imported... : ";
+//                                for (auto& record: Context.GeneTable.Records) {
+//                                    // os << record["symbol"] << ", ";
+//                                    FGene *NewGene = new FGene(record["id"], record["symbol"]);
+//                                    //                        if (Option.bDebug) { NewGene->Print(os); }
+//                                    Context.AddToMoleculeList(NewGene);
+//
+//                                    i++;
+//                                    // temporary capping
+//                                    if (i == i_cap) {
+//                                        os << "Gene importing is capped at " << std::to_string(i_cap) << endl;
+//                                        break;
+//                                    }
+//                                }
+//                                os << "done" << endl;
+//                                // os << endl;
+//
+//                                i = 0;
+//                                os << ">> RNAs being imported... : ";
+//                                for (auto& record: Context.RNATable.Records) {
+//                                    // os << record["id"] << ", ";
+////                                    FRNA *NewRNA = new FRNA(record["id"], record["type"]);
+//                                    FRNA *NewRNA = new FRNA(record["id"]);
+//                                    //                        if (Option.bDebug) { NewRNA->Print(os); }
+//                                    Context.AddToMoleculeList(NewRNA);
+//
+//                                    i++;
+//                                    // temporary capping
+//                                    if (i == i_cap) {
+//                                        os << "RNA importing is capped at " << std::to_string(i_cap) << endl;
+//                                        break;
+//                                    }
+//                                }
+//                                os << "done" << endl;
+//                                // os << endl;
 
                                 i = 0;
                                 os << ">> Proteins being imported... : ";
@@ -1180,7 +1195,7 @@ void TraversalNode(NBlock* InProgramBlock)
                                 os << "done" << endl;
                                 // os << endl;
 
-                                FOrganism *NewOrganism = new FOrganism(Organism->Id.Name, Organism->Id.Name, Strain);
+                                FOrganism *NewOrganism = new FOrganism(Organism->Id.Name, "Ecoli", Strain);
                                 //                    if (Option.bDebug) { NewOrganism->Print(os); }
                                 Context.AddToContainerList(NewOrganism);
 
