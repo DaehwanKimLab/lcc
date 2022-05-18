@@ -85,7 +85,7 @@ void FWriter::SetUp_StandardReaction(ofstream& ofs, std::string Type, std::vecto
     std::vector<int> Idx_Regulator; // reactant of the regulatory reaction
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(ReactionSubList);
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetUniqueSubstrateIdx_ReactionList(ReactionSubList);
     std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(ReactionSubList);
 
     // relevant reaction lists
@@ -256,7 +256,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     std::vector<int> Idx_Regulator;
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(ReactionSubList);
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetUniqueSubstrateIdx_ReactionList(ReactionSubList);
     std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(ReactionSubList);
 
     // relevant reaction lists
@@ -384,150 +384,326 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     ofs << endl;
 }
 
-void FWriter::Initialize_PolymeraseReaction(ofstream& ofs, FPolymerase* Polymerase)
+void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes)
 {
-    ofs << in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = None" << endl;
+    std::string BB_Ch, BB_RNA, BB_Protein;
+    std::string Max_Ch, Max_RNA, Max_Protein;
+    std::string Len_Ch, Len_RNA, Len_Protein;
 
+    Max_Ch =        "self.MaxLen_NascentChromosomes";
+    Max_RNA =       "self.MaxLen_NascentRNAs";
+    Max_Protein =   "self.MaxLen_NascentProteins";
+    BB_Ch =         "self.Freq_BB_Chromosomes";
+    BB_RNA =        "self.Freq_BB_RNAs";
+    BB_Protein =    "self.Freq_BB_Proteins";
+
+    Len_Ch =        "self.Len_NascentChromosomes";
+    Len_RNA =       "self.Len_NascentRNAs";
+    Len_Protein =   "self.Len_NascentProteins";
+
+    // For DNA Replication
+    if (!PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_Ch        << " = None" << endl;
+        ofs << in+ in+ BB_RNA       << " = None" << endl;
+        ofs << in+ in+ BB_Protein   << " = None" << endl;
+        ofs << in+ in+ Max_Ch       << " = None" << endl;
+        ofs << in+ in+ Max_RNA      << " = None" << endl;
+        ofs << in+ in+ Max_Protein  << " = None" << endl;
+        ofs << in+ in+ Len_Ch       << " = None" << endl;
+        ofs << in+ in+ Len_RNA      << " = None" << endl;
+        ofs << in+ in+ Len_Protein  << " = None" << endl;
+
+    // For Transcription (and Replication)
+    } else if (!PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_Ch        << " = None" << endl;
+        ofs << in+ in+ BB_RNA       << " = None" << endl;
+        ofs << in+ in+ Max_Ch       << " = None" << endl;
+        ofs << in+ in+ Max_RNA      << " = None" << endl;
+        ofs << in+ in+ Len_Ch       << " = None" << endl;
+        ofs << in+ in+ Len_RNA      << " = None" << endl;
+
+    // For Translation
+    } else if (PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_RNA   << " = None" << endl;
+        ofs << in+ in+ BB_Protein   << " = None" << endl;
+        ofs << in+ in+ Max_RNA      << " = None" << endl;
+        ofs << in+ in+ Max_Protein  << " = None" << endl;
+        ofs << in+ in+ Len_RNA      << " = None" << endl;
+        ofs << in+ in+ Len_Protein  << " = None" << endl;
+
+    // For Replication
+    } else if (!PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_Ch        << " = None" << endl;
+        ofs << in+ in+ Max_Ch       << " = None" << endl;
+        ofs << in+ in+ Len_Ch       << " = None" << endl;
+    }
+}
+
+void FWriter::Initialize_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule *> Polymerases)
+{
+    // Polymerases for future uses
+
+    // std::string InitiationSite
+    // std::string TerminationSite
+
+    // initialize common for all polymerase
+    Initialize_PolymeraseReaction_Index(ofs, dynamic_cast<FPolymerase *>(Polymerases[0])->Process);
+}
+
+void FWriter::Initialize_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule *> Polymerases)
+{
+    // Polymerases for future uses
+
+    // std::string InitiationSite
+    // std::string TerminationSite
+
+    // initialize common for all polymerase
+    Initialize_PolymeraseReaction_Index(ofs, dynamic_cast<FPolymerase *>(Polymerases[0])->Process);
+}
+
+void FWriter::Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule *> Polymerases)
+{
+    // Polymerases for future uses
+
+    // std::string InitiationSite
+    // std::string TerminationSite
+
+    // initialize common for all polymerase
+    Initialize_PolymeraseReaction_Index(ofs, dynamic_cast<FPolymerase *>(Polymerases[0])->Process);
+    ofs << in+ in+ "self.Idx_mRNAInRNA = None" << endl;
+
+}
+
+void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Process)
+{
     // Initiation
-    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ "self.Idx_Template_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ "self.Idx_TemplateSubset" << Polymerase->Process << " = None" << endl; // local indexing within the template population for mRNA in RNA for protein translation
-    ofs << in+ in+ "self.Weight_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "# " << Process << ": Initialize Initiation Reaction" << endl;
+    ofs << in+ in+ "self.Idx_Pol_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Template_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_TemplateSubset_" << Process << " = None" << endl; // local indexing within the template population for mRNA in RNA for protein translation
+    ofs << in+ in+ "self.Weight_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Pol_Threshold_" << Process << " = None" << endl; // here
     ofs << endl;
-
-    // Check if template exists as a target of any polymerases in the system
-    bool TemplateExists = false;
-//    auto& PolymeraseList = Context.GetList_PolymeraseMoleculeList
-    for (auto& PolymeraseInSystem : Context.GetList_Polymerase_MoleculeList()) {
-        if (PolymeraseInSystem->Target == Polymerase->Template) {
-            TemplateExists = true;
-            break;
-        }
-    }
-
-    if (!TemplateExists) {
-        ofs << in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = None" << endl;
-    }
 
     // Elongation
-    ofs << in+ in+ "# " << Polymerase->Process << " Initialize ElongationReaction" << endl;
-    ofs << in+ in+ "self.Rate_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = None" << endl;
-    ofs << in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = None" << endl;
+    ofs << in+ in+ "# " << Process << ": Initialize Elongation Reaction" << endl;
+    ofs << in+ in+ "self.Rate_" << Process << " = None" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = None" << endl;
-    ofs << in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_PolSub_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_PolBB_" << Process << " = None" << endl;
     ofs << endl;
 }
-
-void FWriter::SetUp_PolymeraseReaction(ofstream& ofs, FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold)
+void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes)
 {
-    ofs << in+ in+ "self.Freq_BB_" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << FreqBBFileName << "'))" << endl;
+    std::string BB_Ch, BB_RNA, BB_Protein;
+    std::string Max_Ch, Max_RNA, Max_Protein;
+    std::string Len_Ch, Len_RNA, Len_Protein;
+
+    Max_Ch =        "self.MaxLen_NascentChromosomes = np.asmatrix(np.load(r'./Database/Len_ChromosomesInGenome.npy'))";
+    Max_RNA =       "self.MaxLen_NascentRNAs = np.asmatrix(np.load(r'./Database/Len_RNAs.npy'))";
+    Max_Protein =   "self.MaxLen_NascentProteins = np.asmatrix(np.load(r'./Database/Len_Proteins.npy'))";
+    BB_Ch =         "self.Freq_BB_Chromosomes = np.asmatrix(np.load(r'./Database/Freq_NTsInChromosomesInGenome.npy'))";
+    BB_RNA =        "self.Freq_BB_RNAs = np.asmatrix(np.load(r'./Database/Freq_NTsInRNAs.npy'))";
+    BB_Protein =    "self.Freq_BB_Proteins = np.asmatrix(np.load(r'./Database/Freq_AAsInProteins.npy'))";
+
+    Len_Ch =        "self.Len_NascentChromosomes = np.asmatrix(np.full([10, self.Freq_BB_Chromosomes.shape[0]], -1))";
+    Len_RNA =       "self.Len_NascentRNAs = np.asmatrix(np.full([10, self.Freq_BB_RNAs.shape[0]], -1))";
+    Len_Protein =   "self.Len_NascentProteins = np.asmatrix(np.full([10, self.Freq_BB_Proteins.shape[0]], -1))";
+
+    // For DNA Replication
+    if (!PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_Ch        << endl;
+        ofs << in+ in+ BB_RNA       << endl;
+        ofs << in+ in+ BB_Protein   << endl;
+        ofs << in+ in+ Max_Ch       << endl;
+        ofs << in+ in+ Max_RNA      << endl;
+        ofs << in+ in+ Max_Protein  << endl;
+        ofs << in+ in+ Len_Ch       << endl;
+        ofs << in+ in+ Len_RNA      << endl;
+        ofs << in+ in+ Len_Protein  << endl;
+
+        // For Transcription (and Replication)
+    } else if (!PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_Ch        << endl;
+        ofs << in+ in+ BB_RNA       << endl;
+        ofs << in+ in+ Max_Ch       << endl;
+        ofs << in+ in+ Max_RNA      << endl;
+        ofs << in+ in+ Len_Ch       << endl;
+        ofs << in+ in+ Len_RNA      << endl;
+
+        // For Translation
+    } else if (PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_RNA       << endl;
+        ofs << in+ in+ BB_Protein   << endl;
+        ofs << in+ in+ Max_RNA      << endl;
+        ofs << in+ in+ Max_Protein  << endl;
+        ofs << in+ in+ Len_RNA      << endl;
+        ofs << in+ in+ Len_Protein  << endl;
+
+        // For Replication
+    } else if (!PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
+        ofs << in+ in+ BB_Ch        << endl;
+        ofs << in+ in+ Max_Ch       << endl;
+        ofs << in+ in+ Len_Ch       << endl;
+    }
+}
+
+void FWriter::SetUp_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases)
+{
+    // std::string InitiationSite
+    // std::string TerminationSite
+
+    int Threshold = 50;
+
+    SetUp_PolymeraseReaction_Index(ofs, Polymerases, Threshold);
+
+}
+
+void FWriter::SetUp_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases)
+{
+    // std::string InitiationSite
+    // std::string TerminationSite
+
+    int Threshold = 1;
+
+    SetUp_PolymeraseReaction_Index(ofs, Polymerases, Threshold);
+
+}
+void FWriter::SetUp_Idx_mRNAInRNA(ofstream& ofs)
+{
+    std::vector<int> Idx_mRNAInRNA = Context.GetLocalIdxList_MoleculeList(Context.GetSubList_MoleculeList("mRNA"), Context.GetSubList_MoleculeList("RNA"));
+    Utils::Assertion(Idx_mRNAInRNA.size() == Context.GetSubList_MoleculeList("Protein").size(), "ERROR: # of mRNA and Proteins do not match. mRNAs: " + to_string(Idx_mRNAInRNA.size()) + " | Proteins: " + to_string(Context.GetSubList_MoleculeList("Protein").size()));
+    ofs << in+ in+ "Idx_mRNAInRNA = np.array([" << Utils::JoinInt2Str_Idx(Idx_mRNAInRNA) << "], ndmin=2)" << endl;
+    ofs << in+ in+ "self.Idx_TemplateSubset_" << "Translation" << " = Idx_mRNAInRNA" << endl; // local indexing within the template population for mRNA in RNA for protein translation
+
+}
+
+void FWriter::SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases)
+{
+    // std::string InitiationSite
+    // std::string TerminationSite
+
+    int Threshold = 1;
+
+    SetUp_PolymeraseReaction_Index(ofs, Polymerases, Threshold);
+    SetUp_Idx_mRNAInRNA(ofs);
+
+}
+
+void FWriter::SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecule *> Polymerases, int Threshold)
+{
+    // Polymerase Example
+    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+//    std::cout << "Polymerase: " << Pol->Name << " | Process: " << Pol->Process << " | TemplateClass: " << Pol->TemplateClass << " | TargetClass: " << Pol->TargetClass << std::endl;
+
+    std::string MaxLen =            "self.MaxLen_Nascent"   + Pol->TargetClass + "s";
+    std::string BuildingBlockFreq = "self.Freq_BB_"         + Pol->TargetClass + "s";
+    std::string Len =               "self.Len_Nascent"      + Pol->TargetClass + "s";
+
+    std::vector<float>          Rate;
+    std::vector<int>            Idx_Pol,    Idx_Template,       Idx_Target,     Idx_Local,  Idx_PolSub,     Idx_PolBB;
+    // For debugging purposes
+    std::vector<std::string>    Names_Pol,  Names_Template,     Names_Target,               Names_PolSub,   Names_PolBB;
+
+    // Set Rate array
+    for (auto& polymerase : Polymerases) {
+        auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
+        Rate.push_back(Polymerase->Rate);
+    }
+
+    // Set Pol info
+    Names_Pol = Context.GetNameList_MoleculeList(Polymerases);
+    Idx_Pol = Context.GetIdxList_MoleculeList(Polymerases);
+
+    // Set Template and targets
+    Names_Template = Context.GetNameListByType_MoleculeList(Pol->TemplateClass);
+    Idx_Template = Context.GetIdxListByType_MoleculeList(Pol->TemplateClass);
+
+    std::vector<FMolecule *> TargetList = Context.GetSubList_MoleculeList(Pol->TargetClass);
+    Names_Target = Context.GetNameListByType_MoleculeList(Pol->TargetClass);
+    Idx_Target = Context.GetIdxListByType_MoleculeList(Pol->TargetClass);
+
+    // PolymeraseReaction Example
+    auto PolymeraseReaction = Context.GetReactionByPolymeraseName_ReactionList(Polymerases[0]->Name);
+
+    // Substrates
+    Idx_PolSub = Context.AddUniqueSubstrateIdxToIdxList(PolymeraseReaction, Idx_PolSub);
+    for (auto idx : Idx_PolSub) {
+        Names_PolSub.push_back(Context.MoleculeList[idx]->GetName());
+    }
+
+    // BuildingBlocks
+    Names_PolBB = dynamic_cast<FPolymeraseReaction *>(PolymeraseReaction)->BuildingBlocks;
+    Idx_PolBB = Context.GetIdxByStrList_MoleculeList(Names_PolBB);
 
     // Initiation
-    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Idx_Pol) << "])" << endl;
-    ofs << in+ in+ "self.Idx_Template_" << Polymerase->Process << " = np.asmatrix([" << Utils::JoinInt2Str_Idx(Idx_Template) << "])" << endl;
-    ofs << in+ in+ "self.Idx_TemplateSubset_" << Polymerase->Process << " = np.asmatrix([" << Utils::JoinInt2Str_Idx(Idx_TemplateSubset) << "])" << endl;
-    ofs << in+ in+ "self.Idx_Target_" << Polymerase->Process << " = np.asmatrix([" << Utils::JoinInt2Str_Idx(Idx_Target) << "])" << endl;
-    ofs << in+ in+ "self.Weight_" << Polymerase->Process << " = np.array([" << "1" << "])" << endl;
+    ofs << in+ in+ "# " << Pol->Process << ": Set Up Initiation Reaction" << endl;
+    ofs << in+ in+ "self.Idx_Pol_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Pol) << "], ndmin=2)" << endl;
+    ofs << in+ in+ "self.Idx_Template_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Template) << "], ndmin=2)" << endl;
+    ofs << in+ in+ "self.Idx_TemplateSubset_" << Pol->Process << " = np.array([range(" << Idx_Template.size() << ")], ndmin=2)   # Default" << endl;
+    ofs << in+ in+ "self.Idx_Target_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Target) << "], ndmin=2)" << endl;
+    ofs << in+ in+ "self.Weight_" << Pol->Process << " = np.array([" << "1" << "])" << endl;
+    ofs << endl;
+    ofs << in+ in+ "# for debugging purposes" << endl;
+    ofs << in+ in+ "self.Names_Pol_" << Pol->Process << " = [" << Utils::JoinStr2Str(Names_Pol) << "]" << endl;
+    ofs << in+ in+ "self.Names_Template_" << Pol->Process << " = [" << Utils::JoinStr2Str(Names_Template) << "]" << endl;
+    ofs << in+ in+ "self.Names_Target_" << Pol->Process << " = [" << Utils::JoinStr2Str(Names_Target) << "]" << endl;
     ofs << endl;
 
-    // Check if template exists as a target of any polymerases in the system
-    bool TemplateExists = false;
-    for (auto& PolymeraseInSystem : Context.GetList_Polymerase_MoleculeList()){
-        if (PolymeraseInSystem->Target == Polymerase->Template){
-            TemplateExists = true;
-            break;
-        }
-    }
-
-    if (!TemplateExists) {
-        ofs << in+ in+ "self.Len_Nascent" << Polymerase->Template << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
-        ofs << endl;
-    }
-
-    int Template_Min, Template_Max, Target_Min, Target_Max;
-
-    if      (Polymerase->Process == "DNAReplication") 	        {Template_Min = 1; Template_Max = 2; Target_Min = 1; Target_Max = 2;}
-    else if (Polymerase->Process == "RNATranscription") 	{Template_Min = 1; Template_Max = 2; Target_Min = 0; Target_Max = 1;}
-    else if (Polymerase->Process == "ProteinTranslation") 	{Template_Min = 0; Template_Max = 1; Target_Min = 0; Target_Max = 1;}
-    else    				                        {Template_Min = 0; Template_Max = 1; Target_Min = 0; Target_Max = 1;} // improve exception handling
-
-
-    ofs << in+ in+ "self.Pol_Threshold_" << Polymerase->Process << " = " << std::to_string(Threshold) << endl;
+    ofs << in+ in+ "self.Pol_Threshold_" << Pol->Process << " = " << std::to_string(Threshold) << endl;
     ofs << endl;
-    ofs << in+ in+ "Count_Template_" << Polymerase->Process << " = np.random.randint(" << std::to_string(Template_Min) << ", high=" << std::to_string(Template_Max) << ", size=self.Idx_Template_" << Polymerase->Process << ".shape[1])" << endl;
-    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Template_" << Polymerase->Process << ", Count_Template_" << Polymerase->Process << ", axis=1)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "Count_Target_" << Polymerase->Process << " = np.random.randint(" << std::to_string(Target_Min) << ", high=" << std::to_string(Target_Max) << ", size=self.Idx_Target_" << Polymerase->Process << ".shape[1])" << endl;
-    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Target_" << Polymerase->Process << ", Count_Target_" << Polymerase->Process << ", axis=1)" << endl;
-    ofs << endl;
-
 
     // Elongation
-    ofs << in+ in+ "# " << Polymerase->Process << " SetUp ElongationReaction" << endl;
-    ofs << in+ in+ "self.Rate_" << Polymerase->Process << " = " << std::to_string(int(Rate)) << endl;
-    ofs << in+ in+ "self.MaxLen_Nascent" << Polymerase->Target << "s = np.asmatrix(np.load(r'" << MaxLenFileName << "'))" << endl;
-    ofs << in+ in+ "self.Len_Nascent" << Polymerase->Target << "s = np.asmatrix(np.full([10, self.Freq_BB_" << Polymerase->Target << "s.shape[0]], -1))" << endl;
-    ofs << endl;
+    ofs << in+ in+ "# " << Pol->Process << ": Set Up Elongation Reaction" << endl;
+    ofs << in+ in+ "self.Rate_" << Pol->Process << " = np.array([" << Utils::JoinFloat2Str(Rate) << "])" << endl;
 
-    ofs << in+ in+ "self.Idx_Pol_" << Polymerase->Process << " = np.asmatrix([" << std::to_string(Context.GetIdxByName_MoleculeList(Polymerase->Name)) << "])" << endl;
-    ofs << in+ in+ "self.Idx_PolSub_" << Polymerase->Process << " = np.asmatrix([" << Utils::JoinInt2Str_Idx(Idx_PolSub) << "])" << endl;
-    ofs << in+ in+ "self.Idx_PolBB_" << Polymerase->Process << " = np.asmatrix([" << Utils::JoinInt2Str_Idx(Idx_PolBB) << "])" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "Count_Pol_" << Polymerase->Process << " = np.asmatrix(np.full(len(self.Idx_Pol_" << Polymerase->Process << "), 100))" << endl;
-    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_Pol_" << Polymerase->Process << ", Count_Pol_" << Polymerase->Process << ", axis=1)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "Count_PolSub_" << Polymerase->Process << " = np.asmatrix(np.full(len(self.Idx_PolSub_" << Polymerase->Process << "), 1000))" << endl;
-    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolSub_" << Polymerase->Process << ", Count_PolSub_" << Polymerase->Process << ", axis=1)" << endl;
-    ofs << endl;
-
-    ofs << in+ in+ "Count_PolBB_" << Polymerase->Process << " = np.random.randint(4000, high=5000, size=self.Freq_BB_" << Polymerase->Target << "s.shape[1])" << endl;
-    ofs << in+ in+ "np.put_along_axis(self.Count_All, self.Idx_PolBB_" << Polymerase->Process << ", Count_PolBB_" << Polymerase->Process << ", axis=1)" << endl;
-    ofs << endl;
-
-}
-
-void FWriter::Polymerase_InitiationReaction(ofstream& ofs, FPolymerase* Polymerase)
-{
-    ofs << in+ in+ "# " << Polymerase->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Initiation(";
-    ofs << "self.State.Len_Nascent" << Polymerase->Template << "s, ";
-    ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
-    ofs << "self.State.Idx_Pol_" << Polymerase->Process << ", ";
-    ofs << "self.State.Idx_Template_" << Polymerase->Process << ", ";
-    ofs << "self.State.Idx_TemplateSubset_" << Polymerase->Process << ", ";
-    ofs << "self.State.Weight_" << Polymerase->Process << ", ";
-    ofs << "self.State.Pol_Threshold_" << Polymerase->Process << ") " << endl;
+    ofs << in+ in+ "self.Idx_PolSub_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_PolSub) << "], ndmin=2)" << endl;
+    ofs << in+ in+ "self.Idx_PolBB_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_PolBB) << "], ndmin=2)" << endl;
     ofs << endl;
 }
 
-void FWriter::Polymerase_ElongationReaction(ofstream& ofs, FPolymerase* Polymerase)
+void FWriter::Polymerase_InitiationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases)
 {
-    ofs << in+ in+ "# " << Polymerase->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Elongation(";
-    ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
-    ofs << "self.State.MaxLen_Nascent" << Polymerase->Target << "s, ";
-    ofs << "self.State.Rate_" << Polymerase->Process << ", ";
+    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+
+//    ofs << in+ in+ "# " << Pol->Process << endl;
+    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << "s = self.Initiation(";
+    ofs << "self.State.Len_Nascent" << Pol->TemplateClass << "s, ";
+    ofs << "self.State.Len_Nascent" << Pol->TargetClass << "s, ";
+    ofs << "self.State.Idx_Pol_" << Pol->Process << ", ";
+    ofs << "self.State.Idx_Template_" << Pol->Process << ", ";
+    ofs << "self.State.Idx_TemplateSubset_" << Pol->Process << ", ";
+    ofs << "self.State.Weight_" << Pol->Process << ", ";
+    ofs << "self.State.Pol_Threshold_" << Pol->Process << ") ";
+    ofs << endl;
+}
+
+void FWriter::Polymerase_ElongationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases)
+{
+    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+
+//    ofs << in+ in+ "# " << Pol->Process << endl;
+    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << "s = self.Elongation(";
+    ofs << "self.State.Len_Nascent" << Pol->TargetClass << "s, ";
+    ofs << "self.State.MaxLen_Nascent" << Pol->TargetClass << "s, ";
+    ofs << "self.State.Rate_" << Pol->Process << ", ";
     ofs << "1, ";
-    ofs << "self.State.Freq_BB_" << Polymerase->Target << "s, ";
-    ofs << "self.State.Idx_PolSub_" << Polymerase->Process << ", ";
-    ofs << "self.State.Idx_PolBB_" << Polymerase->Process << ") " << endl;
+    ofs << "self.State.Freq_BB_" << Pol->TargetClass << "s, ";
+    ofs << "self.State.Idx_PolSub_" << Pol->Process << ", ";
+    ofs << "self.State.Idx_PolBB_" << Pol->Process << ") ";
     ofs << endl;
 }
 
-void FWriter::Polymerase_TerminationReaction(ofstream& ofs, FPolymerase* Polymerase)
+void FWriter::Polymerase_TerminationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases)
 {
-    ofs << in+ in+ "# " << Polymerase->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Polymerase->Target << "s = self.Termination(";
-    ofs << "self.State.Len_Nascent" << Polymerase->Target << "s, ";
-    ofs << "self.State.MaxLen_Nascent" << Polymerase->Target << "s, ";
-    ofs << "self.State.Idx_Target_" << Polymerase->Process << ")" << endl;
+    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+
+//    ofs << in+ in+ "# " << Pol->Process << endl;
+    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << "s = self.Termination(";
+    ofs << "self.State.Len_Nascent" << Pol->TargetClass << "s, ";
+    ofs << "self.State.MaxLen_Nascent" << Pol->TargetClass << "s, ";
+    ofs << "self.State.Idx_Target_" << Pol->Process << ")";
     ofs << endl;
 }
 
@@ -570,7 +746,7 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
 //    std::vector<int> Idx_Regulator;
 
     // for stoichiometry matrix
-    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetIdxForStoichiometryMatrix(ReactionSubList);
+    std::vector<int> Idx_Mol_InStoichMatrix = Context.GetUniqueSubstrateIdx_ReactionList(ReactionSubList);
     std::vector<std::vector<int>> StoichMatrix = Context.GetStoichiometryMatrix(ReactionSubList);
 
 //    // relevant reaction lists
@@ -640,7 +816,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
-    auto& Organisms = Context.OrganismList;
+//    auto Organisms = Context.GetSubList_ContainerList("Organism");
 
     ofs << in+ in+ "self.Dist_Names = list()" << endl;
     // TODO: update to 3d array

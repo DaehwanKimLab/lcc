@@ -43,11 +43,22 @@ public:
     void SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList, std::string NameSpace_Pathway="");
 
     // Polymerase
-    void Initialize_PolymeraseReaction(ofstream& ofs, FPolymerase* Polymerase);
-    void SetUp_PolymeraseReaction(ofstream& ofs, FPolymerase* Polymerase, float Rate, std::string FreqBBFileName, std::string MaxLenFileName, int Idx_Pol, std::vector<int> Idx_Template, std::vector<int> Idx_TemplateSubset, std::vector<int> Idx_Target, std::vector<int> Idx_PolSub, std::vector<int> Idx_PolBB, int Threshold);
-    void Polymerase_InitiationReaction(ofstream& ofs, FPolymerase* Polymerase);
-    void Polymerase_ElongationReaction(ofstream& ofs, FPolymerase* Polymerase);
-    void Polymerase_TerminationReaction(ofstream& ofs, FPolymerase* Polymerase);
+    void Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes);
+    void Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Process);
+    void SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes);
+    void SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecule *> Polymerases, int Threshold);
+    void Polymerase_InitiationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_ElongationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_TerminationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+
+    // Polymerase type-specific functions
+    void Initialize_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
+    void Initialize_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
+    void Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
+    void SetUp_Idx_mRNAInRNA(ofstream& ofs);
+    void SetUp_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerase);
+    void SetUp_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerase);
+    void SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerase);
 
     // TransporterReaction
     void Initialize_TransporterReaction(ofstream& ofs, std::string Type);

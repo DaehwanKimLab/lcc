@@ -111,16 +111,23 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // for polymerase reactions (Template-based)
     std::vector<FMolecule *> PolymeraseList = Context.GetSubList_MoleculeList("Polymerase");
-
-//    std::vector<std::string> PolymeraseNames = Context.GetNames_PolymeraseList(PolymeraseList);
-    std::vector<FPolymeraseReaction *> PolymeraseReactionList = Context.GetList_Polymerase_ReactionList();
+    std::vector<FMolecule *> DNAPs = Context.GetSubList_MoleculeList("DNAP");
+    std::vector<FMolecule *> RNAPs = Context.GetSubList_MoleculeList("RNAP");
+    std::vector<FMolecule *> Ribosomes = Context.GetSubList_MoleculeList("Ribosome");
 
     if (!PolymeraseList.empty()) {
-        for (auto& polymerase : PolymeraseList) {
-            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
-            Initialize_PolymeraseReaction(ofs, Polymerase);
-        }
+        if      (!DNAPs.empty())        {}
+        else if (!RNAPs.empty())        {}
+        else if (!Ribosomes.empty())    {}
+        else                            { Utils::Assertion(false, "ERROR: Polymerase List is empty."); }
     }
+
+    std::vector<std::vector<FMolecule *>> PolymeraseTypes = {DNAPs, RNAPs, Ribosomes};
+    Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
+
+    if (!DNAPs.empty())             { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
+    else if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
+    else if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes); }
 
     // for Transporter reactions
     ReactionTypes.clear();
@@ -163,84 +170,22 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
-    if (!PolymeraseList.empty()) {
-        for (auto& polymerase : PolymeraseList) {
-            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
+    SetUp_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
 
-            std::string PolymeraseName = Polymerase->Name;
-            float Rate = Polymerase->Rate;
-            int Idx_Pol = Context.GetIdxByName_MoleculeList(PolymeraseName);
-            std::vector<int> Idx_Template;
-            std::vector<int> Idx_Target;
-            std::vector<int> Idx_TemplateSubset;
-            std::vector<int> Idx_PolSub = Context.GetIdx_PolymeraseReactionSubstrate_ByPolymeraseName_MoleculeList(PolymeraseName);
-            std::vector<int> Idx_PolBB;
-            std::vector<std::string> BuildingBlockNames;
-            std::string MaxLenFileName;
-            std::string FreqBBFileName;
-            int Threshold;
+    if (!DNAPs.empty())             { SetUp_PolymeraseReaction_DNAP(ofs, DNAPs); }
+    else if (!RNAPs.empty())        { SetUp_PolymeraseReaction_RNAP(ofs, RNAPs); }
+    else if (!Ribosomes.empty())    { SetUp_PolymeraseReaction_Ribosome(ofs, Ribosomes); }
 
-            for (auto& reaction : Context.GetList_Polymerase_ReactionList()){
-                if (reaction->Name == PolymeraseName){
-                    for (auto& BuildingBlock : reaction->BuildingBlocks){
-                        BuildingBlockNames.push_back(BuildingBlock);
-                    }
-                    Idx_PolBB = Context.GetIdxByStrList_MoleculeList(BuildingBlockNames);
-                }
-            }
-
-            std::vector<std::vector<int>> StoichMatrix_PolymeraseReaction = Context.GetStoichiometryMatrix_PolymeraseReaction(PolymeraseReactionList);
-
-            if (Polymerase->Process == "DNAReplication") {
-                MaxLenFileName = "./Database/Len_ChromosomesInGenome.npy";
-                FreqBBFileName = "./Database/Freq_NTsInChromosomesInGenome.npy";
-                Idx_Template   = Context.GetIdxListFromMoleculeList("Chromosome");
-                Idx_Target     = Context.GetIdxListFromMoleculeList("Chromosome");
-                Threshold      = 50;  // The number of polymerases required for a functional unit to initiate the polymerase reaction
-
-                // Idx_TemplateSubset
-                for (int i = 0; i < Idx_Template.size(); i++) {
-                    Idx_TemplateSubset.push_back(i);
-                }
-            }
-
-            else if (Polymerase->Process == "RNATranscription") {
-                MaxLenFileName = "./Database/Len_RNAs.npy";
-                FreqBBFileName = "./Database/Freq_NTsInRNAs.npy";
-                Idx_Template   = Context.GetIdxListFromMoleculeList("Gene");
-                Idx_Target     = Context.GetIdxListFromMoleculeList("RNA"); // update to link gene to RNA matching when importing and generating this list
-                Threshold      = 1;
-
-                // Idx_TemplateSubset
-                for (int i = 0; i < Idx_Template.size(); i++) {
-                    Idx_TemplateSubset.push_back(i);
-                }
-            }
-
-            else if (Polymerase->Process == "ProteinTranslation") {
-                MaxLenFileName = "./Database/Len_Proteins.npy";
-                FreqBBFileName = "./Database/Freq_AAsInProteins.npy";
-                Idx_Template   = Context.GetIdxListFromMoleculeList("mRNA");
-                Idx_Target     = Context.GetIdxListFromMoleculeList("Protein"); // update to link mRNA to protein matching
-                Threshold      = 1;
-
-                Idx_TemplateSubset = Context.GetIdxOfStrListFromStrList(Context.GetNames_MoleculeList("mRNA"), Context.GetNames_MoleculeList("RNA"));
-            }
-
-            else { // add exception handling
-            }
-
-            // debugging
-            std::cout << Polymerase->Process;
-            if (Polymerase->Process == "DNAReplication") {
-                std::cout << "\t";
-            }
-            std::cout << "\t | Idx_Template.size(): " << Idx_Template.size() << "\t Idx_Target.size(): " << Idx_Target.size() << endl;
-            Utils::Assertion((Idx_Template.size() == Idx_Target.size()), "# of Target and Target do not match for Polymerase: " + PolymeraseName);
-
-            SetUp_PolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
-        }
-    }
+//
+//        //    std::vector<std::string> PolymeraseNames = Context.GetNames_PolymeraseList(PolymeraseList);
+//        std::vector<FPolymeraseReaction *> PolymeraseReactionList = Context.GetList_Polymerase_ReactionList();
+//
+//        std::vector<std::vector<int>> StoichMatrix_PolymeraseReaction = Context.GetStoichiometryMatrix_PolymeraseReaction(PolymeraseReactionList);
+//
+//
+//
+//        SetUp_PolymeraseReaction(ofs, Polymerase, Rate, FreqBBFileName, MaxLenFileName, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Threshold);
+//    }
 
     // Print SetUp_TransporterReaction for each Reaction Type
     for (auto& Type : TransporterReactionTypes) {
@@ -251,19 +196,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     // for legends
-    std::vector<std::string> MolNames = Context.GetNames_MoleculeList("Molecule");
+    std::vector<std::string> MolNames = Context.GetNameListByType_MoleculeList("All");
     ofs << in+ in+ "self.Mol_Names = [" << Utils::JoinStr2Str(MolNames) << "]" << endl;
     ofs << in+ in+ "self.Mol_Name2Idx = {";
-    int i = 0;
-    for (auto& MolName : MolNames) {
-        ofs << "'" << MolName << "' : np.array([" << i << "]), ";
-        i++;
+    for (int i = 0; i < MolNames.size(); i++) {
+        ofs << "'" << MolNames[i] << "' : np.array([" << i << "]), ";
     } ofs << "}" << endl;
     ofs << in+ in+ "self.Legends = ['SimStep', 'Vol', " << Utils::JoinStr2Str(MolNames) << "]" << endl;
     ofs << endl;
 
     // Initialize all molecule counts
-    std::vector<int> Idx_Mol = Context.GetIdxListFromMoleculeList("Molecule");
+    std::vector<int> Idx_Mol = Context.GetIdxListByType_MoleculeList("All");
     std::vector<float> InitialCount_Molecules;
     std::vector<float> MolarityFactor_Molecules;
     std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
@@ -285,7 +228,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     } else {
         for (auto& ObjName : ObjUniqueNames) {
             int Count = int(Context.GetInitialCountByName_CountList(ObjName));
-            for (i = 0; i < (Count); i++) {
+            for (int i = 0; i < (Count); i++) {
                 ofs << "[" << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ";
             }
         }
@@ -298,7 +241,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     } else {
         for (auto& ObjName : ObjUniqueNames) {
             int Count = int(Context.GetInitialCountByName_CountList(ObjName));
-            for (i = 0; i < (Count); i++) {
+            for (int i = 0; i < (Count); i++) {
                 ofs << "[" << Utils::JoinFloat2Str(InitialCount_Molecules) << "], ";
             }
         }
@@ -316,11 +259,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetDistNames(self):" << endl;
-    ofs << in+ in+ "return self.Dist_Names" << endl;
+    if (!MolLoc.empty() & !ObjLoc.empty())  { ofs << in+ in+ "return self.Dist_Names" << endl; }
+    else                                    { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def GetPosNames(self):" << endl;
-    ofs << in+ in+ "return self.Pos_Names" << endl;
+    if (!MolLoc.empty() & !ObjLoc.empty())  { ofs << in+ in+ "return self.Pos_Names" << endl; }
+    else                                    { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def ExportLegend(self):" << endl;
@@ -329,9 +274,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def ExportData(self, Time):" << endl;
     ofs << in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
-    i = 0;
-    int i_SimStep = i + 1;
-    ofs << in+ in+ "Data[:, " << i << ":" << i_SimStep << "] = Time" << endl;
+    int Initial = 0;
+    int i_SimStep = Initial + 1;
+    ofs << in+ in+ "Data[:, " << Initial << ":" << i_SimStep << "] = Time" << endl;
 
     int i_Vol = i_SimStep + 1;
     ofs << in+ in+ "Data[:, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
@@ -420,14 +365,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // Distribution To Count
     if (!MolLoc.empty()) {
-        for (i = 0; i < MolLoc.size(); i++) {
+        for  (int i = 0; i < MolLoc.size(); i++) {
             int Idx = Context.GetIdxByName_MoleculeList(MolLoc[i]->Name);
             ofs << in+ in+ "self.Idx_DistToCoord_" << MolLoc[i]->Name << " = np.array([" << std::to_string(Idx) << "])" << endl;
         }
     }
 
     if (!MolLoc.empty()) {
-        for (i = 0; i < MolLoc.size(); i++) {
+        for  (int i = 0; i < MolLoc.size(); i++) {
             ofs << in+ in+ "self.Idx_CoordToDist_" << MolLoc[i]->Name << " = np.array([" << i << "])" << endl;
         }
     }
@@ -888,7 +833,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (!MolLoc.empty()) {
         int N_Dist = Context.GetNames_LocationList("Molecule").size();
         // TODO: update to 3d array
-        for (i = 0; i < N_Dist; i++) {
+        for  (int i = 0; i < N_Dist; i++) {
 
             if (MolLoc[i]->Name == "L") {
                 // skip glucose diffusion
@@ -1014,11 +959,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
-    ofs << in+ "def SpatialLocation(self):" << endl;
-    ofs << in+ in+ "Evaluations = self.EvaluateChemotaxisThreshold()" << endl;
-    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(Evaluations, self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle)" << endl;
-    ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
-    ofs << endl;
+    if (!Context.MotilityList.empty()) {
+        ofs << in+ "def SpatialLocation(self):" << endl;
+        ofs << in+ in+ "Evaluations = self.EvaluateChemotaxisThreshold()" << endl;
+        ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(Evaluations, self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle)" << endl;
+        ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
+        ofs << endl;
+    }
 
     ofs << in+ "def NonSpatialSimulation(self):" << endl;
     PassSwitch = true;
@@ -1048,9 +995,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     // TODO: encapsulate this part with each polymerase to allow more process-specific customization
     if (!PolymeraseList.empty()){
-        ofs << in+ in+ "self.Polymerase_InitiationReactions()" << endl;
-        ofs << in+ in+ "self.Polymerase_ElongationReactions()" << endl;
-        ofs << in+ in+ "self.Polymerase_TerminationReactions()" << endl;
+        ofs << in+ in+ "self.PolymeraseReactions()" << endl;
         PassSwitch = false;
     }
 
@@ -1291,34 +1236,39 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     if (!PolymeraseList.empty()) {
+        ofs << in+ "def PolymeraseReactions(self):" << endl;
+        if      (!DNAPs.empty())        { ofs << in+ in+ "self.Replication()" << endl; }
+        else if (!RNAPs.empty())        { ofs << in+ in+ "self.Transcription()" << endl; }
+        else if (!Ribosomes.empty())    { ofs << in+ in+ "self.Translation()" << endl; }
+        ofs << endl;
 
-        ofs << in+ "def Polymerase_InitiationReactions(self):" << endl;
-        for (auto& polymerase : PolymeraseList) {
-            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
+//        ofs << in+ in+ "self.Polymerase_InitiationReactions()" << endl;
+//        ofs << in+ in+ "self.Polymerase_ElongationReactions()" << endl;
+//        ofs << in+ in+ "self.Polymerase_TerminationReactions()" << endl;
+//
 
-            Polymerase_InitiationReaction(ofs, Polymerase);
-        }
+        if (!DNAPs.empty()) {
+            ofs << in+ "def Replication(self):" << endl;
+            Polymerase_InitiationReaction(ofs, DNAPs);
+            Polymerase_ElongationReaction(ofs, DNAPs);
+            Polymerase_TerminationReaction(ofs, DNAPs);
+            ofs << endl;
 
+        } else if (!RNAPs.empty()) {
+            ofs << in+ "def Transcription(self):" << endl;
+            Polymerase_InitiationReaction(ofs, RNAPs);
+            Polymerase_ElongationReaction(ofs, RNAPs);
+            Polymerase_TerminationReaction(ofs, RNAPs);
+            ofs << endl;
 
-        ofs << in+ "def Polymerase_ElongationReactions(self):" << endl;
-        for (auto& polymerase : PolymeraseList) {
-            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
-
-            Polymerase_ElongationReaction(ofs, Polymerase);
-        }
-
-        ofs << in+ "def Polymerase_TerminationReactions(self):" << endl;
-        for (auto& polymerase : PolymeraseList) {
-            auto Polymerase = dynamic_cast<FPolymerase *>(polymerase);
-
-            Polymerase_TerminationReaction(ofs, Polymerase);
+        } else if (!Ribosomes.empty()) {
+            ofs << in+ "def Translation(self):" << endl;
+            Polymerase_InitiationReaction(ofs, Ribosomes);
+            Polymerase_ElongationReaction(ofs, Ribosomes);
+            Polymerase_TerminationReaction(ofs, Ribosomes);
+            ofs << endl;
         }
     }
-
-//    if (EnzymeList.empty() & PolymeraseList.empty()) {
-//            ofs << in+ in+ "pass" << endl;
-//            ofs << endl;
-//    }
 
     ofs << in+ "# Useful routines" << endl;
 
@@ -1497,6 +1447,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)[0, 0]" << endl;
     ofs << endl;
 
+    // TODO: Take Weight_Initiation part out of the function and get weight as direct input (due to complication in transcription)
     ofs << in+ in+ "# Get final initiation weight by applying initiation site count" << endl;
     ofs << in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
     ofs << in+ in+ "Count_Template_Nascent = np.count_nonzero(np.where(Len_Template != -1, 1, 0), axis=0)   # Assumption: each nascent template has one highly efficient initiation site" << endl;

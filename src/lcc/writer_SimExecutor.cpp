@@ -5,7 +5,7 @@ using namespace std;
 
 void FWriter::SimExecutor()
 {
-    std::cout << "Generating simulation executor..." << std::endl;
+    std::cout << std::endl << "Generating simulation executor..." << std::endl;
 
     // write SimModule.py
     std::ofstream ofs(Option.SimExecutorFile.c_str());
