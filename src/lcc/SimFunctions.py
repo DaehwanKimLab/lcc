@@ -139,14 +139,14 @@ def DetermineAmountOfBuildingBlocks(Freq, Rate):
 
 def PickRandomIdx(Quantity, Indices, Weight=1):
     # Adjust Quantity and Weight if Weight is completely zero
-    Sum_Weight = np.sum(Weight)
+    Sum_Weight = np.sum(Weight, axis=0)
     Weight = Weight + np.where(Sum_Weight == 0, 1, 0)
     Quantity = Quantity * np.where(Sum_Weight == 0, 0, 1)
 
     # Generate cumulative sum on weight and pick a random number in its range
-    Weight_Cumsum = np.cumsum(Weight)
-    Weight_Cumsum_Min = Weight_Cumsum[0]
-    Weight_Cumsum_Max = Weight_Cumsum[-1]
+    Weight_Cumsum = np.cumsum(Weight, axis=1)
+    Weight_Cumsum_Min = Weight_Cumsum[:, 0]
+    Weight_Cumsum_Max = Weight_Cumsum[:, -1]
     Weight_Cumsum_Min = np.where(Weight_Cumsum_Min == Weight_Cumsum_Max, Weight_Cumsum_Min - 1, Weight_Cumsum_Min)
     RanNums = np.asmatrix(np.random.randint(Weight_Cumsum_Min, high=Weight_Cumsum_Max, size=Quantity)).transpose()
     # Generate a matrix of the random numbers for comparison to indices
@@ -158,7 +158,7 @@ def PickRandomIdx(Quantity, Indices, Weight=1):
 def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
     # Generate an array of counts for each index
     Count_Indices = np.zeros(Len.shape[1])
-    np.put_along_axis(Count_Indices, Indices, 1, axis=0)
+    np.put_along_axis(np.reshape(Count_Indices.astype(int), [Count_Indices.shape[0], -1]), Indices, 1, axis=0)
     # Generate a cumulative sum matrix of available position in the Len Matrix
     Bool_LenAvailable = np.less(Len, 0)  # used again later
     Bin_LenAvailable = Bool_LenAvailable.astype(int)

@@ -1043,6 +1043,7 @@ public:
     // ContainerList
     std::vector<FContainer *> GetSubList_ContainerList(std::string Type);
     std::vector<std::string> GetNames_ContainerList(std::string Type);
+    int GetCounts_ContainerList(std::string Type);
 
     // ReactionList
     std::vector<std::string> GetNames_ReactionList(std::string Type);

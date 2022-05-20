@@ -55,6 +55,7 @@ void FWriter::SimVis2D() {
     ofs << endl;
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
+    auto DNAPs = Context.GetSubList_MoleculeList("DNAP");
 
 //    // Define indices for spatially distributed molecules and containers
 //    ofs << "GlucoseName = 'L'" << endl;
@@ -165,10 +166,13 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Angle = None" << endl;
     ofs << endl;
     ofs << in+ in+ "# Draw" << endl;
-    ofs << in+ in+ "self.BodyLength = 20" << endl;
+    ofs << in+ in+ "self.BodyLength = 20" << endl; // get value from l++ or default
     ofs << in+ in+ "self.BodyThickness = 10" << endl;
     ofs << in+ in+ "self.FlagellaLength_Fold = 2" << endl;
     ofs << in+ in+ "self.FlagellaThickness = 3" << endl;
+    ofs << endl;
+    ofs << in+ in+ "self.ReplicationCompletionRate_Switch = False" << endl;
+    ofs << in+ in+ "self.ReplicationCompletionRate = 0" << endl;
     ofs << endl;
     ofs << in+ in+ "# Threshold Molecule Display" << endl;
     ofs << in+ in+ "self.ThresholdMolecule_Switch = False" << endl;
@@ -191,15 +195,27 @@ void FWriter::SimVis2D() {
     ofs << endl;
     ofs << in+ "def Draw(self):" << endl;
     ofs << in+ in+ "if self.Species == 'Ecoli':" << endl;
-    ofs << in+ in+ in+ "dX =  np.cos(self.Angle) * -self.BodyLength" << endl;
-    ofs << in+ in+ in+ "dY = -np.sin(self.Angle) * -self.BodyLength" << endl;
+
+    ofs << in+ in+ in+ "BodyLength = self.BodyLength";
+    if (!DNAPs.empty()) {
+        ofs << " * (1 + self.ReplicationCompletionRate)";
+    } ofs << endl;
+    ofs << in+ in+ in+ "dX =  np.cos(self.Angle) * -BodyLength" << endl;
+    ofs << in+ in+ in+ "dY = -np.sin(self.Angle) * -BodyLength" << endl;
     ofs << in+ in+ in+ "X_BodyEnd = self.X + dX" << endl;
     ofs << in+ in+ in+ "Y_BodyEnd = self.Y + dY" << endl;
-    ofs << in+ in+ in+ "X_TailEnd = self.X + self.FlagellaLength_Fold * dX" << endl;
-    ofs << in+ in+ in+ "Y_TailEnd = self.Y + self.FlagellaLength_Fold * dY" << endl;
+
+    if (!Context.MotilityList.empty()) {
+        ofs << in+ in+ in+ "dX =  np.cos(self.Angle) * -self.BodyLength" << endl;
+        ofs << in+ in+ in+ "dY = -np.sin(self.Angle) * -self.BodyLength" << endl;
+        ofs << in+ in+ in+ "X_TailEnd = self.X + self.FlagellaLength_Fold * dX" << endl;
+        ofs << in+ in+ in+ "Y_TailEnd = self.Y + self.FlagellaLength_Fold * dY" << endl;
+    }
+
     ofs << in+ in+ in+ "Threshold = None" << endl;
     ofs << in+ in+ in+ "Current = None" << endl;
     ofs << in+ in+ in+ "bChemotaxis = None" << endl;
+
     if (!Context.ThresholdList.empty()) {
         ofs << in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
         ofs << in+ in+ in+ in+ "Threshold = SimM.Debug_ApplyUnit(SimM.State.Pos_Threshold)" << endl;
@@ -207,23 +223,35 @@ void FWriter::SimVis2D() {
         ofs << in+ in+ in+ in+ "bChemotaxis = SimM.EvaluateChemotaxisThreshold()" << endl;
     }
     ofs << endl;
+
     ofs << in+ in+ in+ "for i in range(self.X.size):" << endl;
     ofs << in+ in+ in+ in+ "if i == 0:" << endl;
     ofs << in+ in+ in+ in+ in+ "Color = RED" << endl;
     ofs << in+ in+ in+ in+ "else:" << endl;
     ofs << in+ in+ in+ in+ in+ "Color = YELLOW" << endl;
     ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_BodyEnd[i], Y_BodyEnd[i]), self.BodyThickness)" << endl;
-    ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
+
+    if (!Context.MotilityList.empty()) {
+        ofs << in+ in+ in+ in+ "pygame.draw.line(Screen, Color, (self.X[i], self.Y[i]), (X_TailEnd[i], Y_TailEnd[i]), self.FlagellaThickness)" << endl;
+    }
+
     ofs << in+ in+ in+ in+ "if self.Radar_Switch:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.DrawRadar(Color, self.X[i], self.Y[i])" << endl;
+
     if (!Context.ThresholdList.empty()) {
         ofs << in+ in+ in+ in+ "if self.ThresholdMolecule_Switch:" << endl;
         ofs << in+ in+ in+ in+ in+ "self.DisplayThresholdMolecules(self.X[i], self.Y[i], Threshold[:, i], Current[:, i], bChemotaxis[:, i])" << endl;
     }
     ofs << endl;
+    if (!DNAPs.empty()) {
+        ofs << in+ in+ in+ in+ "if self.ReplicationCompletionRate_Switch:" << endl;
+        ofs << in+ in+ in+ in+ in+ "self.DisplayReplicationCompletionRate(self.X[i], self.Y[i], self.ReplicationCompletionRate[i])" << endl;
+    }
+
     ofs << in+ in+ "else:" << endl;
     ofs << in+ in+ in+ "pygame.draw.circle(Screen, BLACK, (self.X, self.Y), 5)" << endl;
     ofs << endl;
+
     ofs << in+ "def DrawRadar(self, Color, X, Y):" << endl;
     ofs << in+ in+ "for i in range(len(self.Radar_MolList)):" << endl;
     ofs << in+ in+ in+ "dY = 0" << endl;
@@ -307,6 +335,11 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "Value_Str += (' ' + UnitTxt)" << endl;
     ofs << in+ in+ in+ "self.DisplayString(Value_Str, X, Y, color=color, position=position)" << endl;
     ofs << endl;
+    ofs << in+ "def DisplayReplicationCompletionRate(self, X, Y, Rate):" << endl;
+    ofs << in+ in+ "if Y >= 30 and Y < H_S:" << endl;
+    ofs << in+ in+ in+ "Value_Str = self.FormatValueToStr(Rate * 100) + '%'" << endl;
+    ofs << in+ in+ in+ "self.DisplayString(Value_Str, X, Y - 20)" << endl;
+    ofs << endl;
     ofs << in+ "def FormatValueToStr(self, Value):" << endl;
     ofs << in+ in+ "if Value < 0.01:" << endl;
     ofs << in+ in+ in+ "return SimF.SciFloat(Value, InPrecision=2, InExp_digits=2)" << endl;
@@ -331,7 +364,10 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Angle = Position[2]" << endl;
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
     ofs << endl;
-    ofs << in+ "def SetRadar(self, switch=True, sampling=6, spacing=30):" << endl;
+    ofs << in+ "def SetReplicationCompletionRate(self, Rate):" << endl;
+    ofs << in+ in+ "self.ReplicationCompletionRate = Rate.transpose()[0]" << endl;
+    ofs << endl;
+    ofs << in+ "def SetRadar(self, switch=False, sampling=6, spacing=30):" << endl;
     ofs << in+ in+ "self.ThresholdMolecule_Switch = switch" << endl;
     ofs << in+ in+ "self.ThresholdMolecule_Color = [RED_DARK, GREEN_DARK]" << endl;
     ofs << in+ in+ "self.Radar_Switch = switch" << endl;
@@ -375,6 +411,9 @@ void FWriter::SimVis2D() {
     ofs << in+ "def Initialize(self):" << endl;
 //    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
     ofs << in+ in+ "self.SetPosition(SimM.GetPositionXYAngleByName(self.Name))" << endl;
+    if (!DNAPs.empty()) {
+        ofs << in+ in+ "self.SetReplicationCompletionRate(SimM.GetReplicationCompletionRate(self.Name))";
+    } ofs << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
     ofs << in+ in+ "self.IncrementSimCount()" << endl;
     ofs << endl;
@@ -591,12 +630,13 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.InstructionSwitch = False" << endl;
     ofs << in+ in+ "self.Instructions = {" << endl;
     ofs << in+ in+ in+ "'S' : 'Save Data'," << endl;
-    ofs << in+ in+ in+ "'T' : 'Display Trajectory Switch'," << endl;
-    ofs << in+ in+ in+ "'I' : 'Display Instruction Switch'," << endl;
-//    ofs << in+ in+ in+ "'S' : 'Display Score Switch'," << endl;
-//    ofs << in+ in+ in+ "'A' : 'Display Status Switch'," << endl;
-    ofs << in+ in+ in+ "'R' : 'Display Radar Switch'," << endl;
-    ofs << in+ in+ in+ "'H' : 'Display Threshold Switch'," << endl;
+    ofs << in+ in+ in+ "'T' : 'Display Trajectory'," << endl;
+    ofs << in+ in+ in+ "'I' : 'Display Instruction'," << endl;
+//    ofs << in+ in+ in+ "'S' : 'Display Score'," << endl;
+//    ofs << in+ in+ in+ "'A' : 'Display Status'," << endl;
+    ofs << in+ in+ in+ "'R' : 'Display Radar'," << endl;
+    ofs << in+ in+ in+ "'H' : 'Display Threshold'," << endl;
+    ofs << in+ in+ in+ "'D' : 'Display DNA Replication Rate'," << endl;
     ofs << in+ in+ in+ "'P' : 'Pause Visualization'," << endl;
     ofs << in+ in+ "}" << endl;
     ofs << in+ in+ "self.InitText = ''" << endl;
@@ -671,6 +711,12 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "Text = Font_Sans.render('Simulation Time: ' + str(round(self.Time)), True, BLACK)" << endl;
     ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
     ofs << in+ in+ "Text_Rect.midtop = Screen.get_rect().midtop" << endl;
+    ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
+    ofs << endl;
+    ofs << in+ "def DisplayNumberOfOrganisms(self, NumberOfOrganisms):" << endl;
+    ofs << in+ in+ "Text = Font_Sans.render('# of Organisms: ' + str(round(NumberOfOrganisms)), True, BLUE)" << endl;
+    ofs << in+ in+ "Text_Rect = Text.get_rect()" << endl;
+    ofs << in+ in+ "Text_Rect.midtop = tuple(map(lambda i, j: i + j, Screen.get_rect().midtop, (0, Text.get_height() * 1.5)))" << endl;
     ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
     ofs << in+ "# TODO: Update display status" << endl;
@@ -765,7 +811,7 @@ void FWriter::SimVis2D() {
 
 //    if (Option.bDebug)
 //    {
-    Radar_Switch =      {"True",};
+        Radar_Switch =      {"False",};
 //    }
 
     // Instantiate Organisms
@@ -782,7 +828,11 @@ void FWriter::SimVis2D() {
     for (auto& OrganismName : OrgNames) {
         ofs << in+ OrganismName << ".Initialize()" << endl;
 //        ofs << "# ";
-        ofs << in+ OrganismName << ".Receptivity(20000)   # Pass time" << endl;
+        if (!Context.ThresholdList.empty()) {
+            if (Context.ThresholdList[0].first == "Am") {
+                ofs << in+ OrganismName << ".Receptivity(20000)   # Pass time" << endl;
+            }
+        }
     }
     ofs << endl;
 
@@ -825,16 +875,26 @@ void FWriter::SimVis2D() {
 //    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_a:" << endl;
 //    ofs << in+ in+ in+ in+ in+ "Control.StatusSwitch = not Control.StatusSwitch" << endl;
 //    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('A')" << endl;
+
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_r:" << endl;
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ in+ OrganismName << ".Radar_Switch = not " << OrganismName << ".Radar_Switch" << endl;
     }
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('R')" << endl;
-    ofs << in+ in+ in+ in+ "elif event.key == pygame.K_h:" << endl;
-    for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ in+ in+ in+ OrganismName << ".ThresholdMolecule_Switch = not " << OrganismName << ".ThresholdMolecule_Switch" << endl;
+    if (!Context.ThresholdList.empty()) {
+        ofs << in+ in+ in+ in+ "elif event.key == pygame.K_h:" << endl;
+        for (auto& OrganismName : OrgNames) {
+            ofs << in+ in+ in+ in+ in+ OrganismName << ".ThresholdMolecule_Switch = not " << OrganismName << ".ThresholdMolecule_Switch" << endl;
+        }
+        ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('H')" << endl;
     }
-    ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('H')" << endl;
+    if (!DNAPs.empty()) {
+        ofs << in+ in+ in+ in+ "elif event.key == pygame.K_d:" << endl;
+        for (auto& OrganismName : OrgNames) {
+            ofs << in+ in+ in+ in+ in+ OrganismName << ".ReplicationCompletionRate_Switch = not " << OrganismName << ".ReplicationCompletionRate_Switch" << endl;
+        }
+        ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('D')" << endl;
+    }
     ofs << in+ in+ in+ in+ "elif event.key == pygame.K_p:" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.PauseSwitch = not Control.PauseSwitch" << endl;
     ofs << in+ in+ in+ in+ in+ "Control.Message = Control.SetMessage('P')" << endl;
@@ -851,6 +911,9 @@ void FWriter::SimVis2D() {
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(20)" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
+        if (!DNAPs.empty()) {
+            ofs << in+ in+ in+ in+ OrganismName << ".SetReplicationCompletionRate(SimM.GetReplicationCompletionRate('" << OrganismName << "'))" << endl;
+        }
         ofs << in+ in+ in+ in+ OrganismName << ".IncrementSimCount()" << endl;
     }
     ofs << endl;
@@ -859,8 +922,14 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ in+ in+ "Control.Time += 1" << endl;
     ofs << endl;
 
-    for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ OrganismName << ".AddToTrajectory()" << endl;
+    if (!Context.MotilityList.empty()) {
+        if (!Context.ThresholdList.empty()) {
+            if (Context.ThresholdList[0].first == "Am") {
+                for (auto& OrganismName : OrgNames) {
+                    ofs << in+ in+ OrganismName << ".AddToTrajectory()" << endl;
+                }
+            }
+        }
     }
     ofs << endl;
 
@@ -891,8 +960,12 @@ void FWriter::SimVis2D() {
     ofs << endl;
 
     for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
-        ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
+        if (!Context.MotilityList.empty()) {
+            if (Context.ThresholdList[0].first == "Am") {
+                ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
+                ofs << in+ in+ in+ OrganismName << ".DrawTrajectory()" << endl;
+            }
+        }
         ofs << in+ in+ OrganismName << ".Draw()" << endl;
     }
     ofs << in+ in+ "PetriDish.Draw(shape='lining')" << endl;
@@ -909,6 +982,11 @@ void FWriter::SimVis2D() {
         ofs << in+ in+ "if Control.Time < 5:" << endl;
         ofs << in+ in+ in+ "Control.DisplayWelcome()" << endl;
     }
+
+    if (!DNAPs.empty()) {
+        ofs << in+ in+ "Control.DisplayNumberOfOrganisms(E.X.shape[0])" << endl;
+    }
+
     ofs << in+ in+ "if Control.MessageTimer > 0:" << endl;
     ofs << in+ in+ in+ "Control.DisplayInput()" << endl;
     ofs << in+ in+ "if Control.InstructionSwitch:" << endl;

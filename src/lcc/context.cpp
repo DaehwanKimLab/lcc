@@ -115,35 +115,35 @@ void FCompilerContext::PrintLists(std::ostream& os)
     if (!PathwayList.empty()) {
         os << "  PathwayList: " << std::endl << "  " << "  ";
         for (int i = 0; i < PathwayList.size(); i++) {
-            os << "[" << i << "] " << PathwayList[0]->Name << ", ";
+            os << "[" << i << "] " << PathwayList[i]->Name << ", ";
         } os << std::endl;
     }
 
     if (!ReactionList.empty()) {
         os << "  ReactionList: " << std::endl << "  " << "  ";
         for (int i = 0; i < ReactionList.size(); i++) {
-            os << "[" << i << "] " << ReactionList[0]->Name << ", ";
+            os << "[" << i << "] " << ReactionList[i]->Name << ", ";
         } os << std::endl;
     }
 
     if (!ContainerList.empty()) {
         os << "  ContainerList: " << std::endl << "  " << "  ";
         for (int i = 0; i < ContainerList.size(); i++) {
-            os << "[" << i << "] " << ContainerList[0]->Name << ", ";
+            os << "[" << i << "] " << ContainerList[i]->Name << ", ";
         } os << std::endl;
     }
 
     if (!CountList.empty()) {
         os << "  CountList: " << std::endl << "  " << "  ";
         for (int i = 0; i < CountList.size(); i++) {
-            os << "[" << i << "] " << CountList[0]->Name << ", ";
+            os << "[" << i << "] " << CountList[i]->Name << ", ";
         } os << std::endl;
     }
 
     if (!LocationList.empty()) {
         os << "  LocationList: " << std::endl << "  " << "  ";
         for (int i = 0; i < LocationList.size(); i++) {
-            os << "[" << i << "] " << LocationList[0]->Name << ", ";
+            os << "[" << i << "] " << LocationList[i]->Name << ", ";
         } os << std::endl;
     }
 }
@@ -578,7 +578,7 @@ void FCompilerContext::AssignReactionTypesForReactionList()
 
 void FCompilerContext::MakeListsFromMoleculeList()
 {
-    std::cout << "Making Context Lists from Molecule List..." << std::endl;
+//    std::cout << "Making Context Lists from Molecule List..." << std::endl;
 //    for (auto& molecule : MoleculeList) {
 //        if (Utils::is_class_of<FEnzyme, FMolecule>(molecule)) {
 //            auto enzyme = dynamic_cast<FEnzyme *>(molecule);
@@ -613,6 +613,8 @@ void FCompilerContext::PrintInitialLocations(std::ostream& os) // TODO: NEEDS UP
                 os << Utils::SciFloat2Str(coord) << ", ";
             } os << ")" << std::endl;
         } os << std::endl;
+    } else {
+        os << "  None" << std::endl;
     }
 }
 
@@ -625,6 +627,8 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
             float Count = GetInitialCountByName_CountList(MoleculeList[i]->Name);
             os << "  [" << i << "] " << MoleculeList[i]->Name << " : " << Count << std::endl;
         }
+    } else {
+        os << "  None" << std::endl;
     }
     os << std::endl << "## Compiler Initial Counts: Containers ##" << std::endl;
     // currently restricted to the molecules that are registered on the molecule list
@@ -633,6 +637,8 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
             float Count = GetInitialCountByName_CountList(ContainerList[i]->Name);
             os << "  [" << i << "] " << ContainerList[i]->Name << " : " << Count << std::endl;
         }
+    } else {
+        os << "  None" << std::endl;
     }
 
 }
@@ -1252,6 +1258,22 @@ int FCompilerContext::GetCounts_LocationList(std::string Type)
 
     for (auto& location : SubList) {
         Sum += int(location->Count->Amount);
+    }
+
+    return Sum;
+}
+
+int FCompilerContext::GetCounts_ContainerList(std::string Type)
+{
+    std::vector<FContainer *> SubList = GetSubList_ContainerList(Type);
+    int Sum = 0;
+
+    for (auto& container : SubList) {
+        for (auto& count : CountList) {
+            if (container->Name == count->Name) {
+                Sum += int(count->Amount);
+            }
+        }
     }
 
     return Sum;
