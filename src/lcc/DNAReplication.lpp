@@ -1,10 +1,33 @@
-//@# DNA Replication​
+//@# DNA Replication
 //@
 //@```
-replication_origin origin1;
-replication_terminus terminus1;
-polymerase pol1(initiation: origin1, 
-               elongation: dna_{n} + dnt -->
-                           dna_{n+1} + ppi, 
-               termination: terminus1);
+
+petridish P
+{
+    ecoli E
+    {
+        pathway Replication
+        {
+            replication_origin origin1;
+            replication_terminus terminus1;
+            polymerase pol1(initiation: origin1,
+                            elongation: dna_{n} + dnt -->
+                                       dna_{n+1} + ppi,
+                            termination: terminus1);
+        }
+
+        pol1 = 10000;
+        dATP = 1nM, dCTP = 1nM, dGTP = 1nM, dTTP = 1nM;
+//        dATP = 10000, dCTP = 10000, dGTP = 10000, dTTP = 10000;
+
+        flagellum F(pol1, 50);
+
+    }
+
+    for (i = 0; i < 2 ; i = i + 1) 
+    {
+        E(rand(200, 1000), rand(200, 600), 0) = 1;
+    }
+}
+
 //@```
