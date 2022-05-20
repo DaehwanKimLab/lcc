@@ -62,7 +62,7 @@ def GetNodesAndDistances(Dim_X, Dim_Y, Dim_Z, N_Nodes, shape='rectangle'):
     return Nodes_Arranged, Distances
 
 
-def Plot3D(Nodes):
+def Plot3D(Nodes, Distance, dim=None):
     ax = plt.axes(projection='3d')
 
     # Data for a three-dimensional line
@@ -71,9 +71,18 @@ def Plot3D(Nodes):
     Z = Nodes[:, 2]
     ax.plot3D(X, Y, Z, 'red')
 
+    if dim:
+        ax.set_box_aspect(dim)
+    #
+    # ax.set_xlim3d(0, X.shape[0])
+    # ax.set_ylim3d(0, Y.shape[0])
+    # ax.set_zlim3d(0, Z.shape[0])
+
     # Data for three-dimensional scattered points
     # ax.scatter3D(X, Y, Z, c='blue')
     # ax.scatter3D(X, Y, Z, c=Z, cmap='Greens')
+
+    ax.set_title('Distance Covered: {:.3f}'.format(Distance))
 
     plt.show()
 
@@ -84,7 +93,7 @@ def main():   # add verbose
     Dim_Z = 10000
     N_Nodes = 10000
     Nodes, Distances = GetNodesAndDistances(Dim_X, Dim_Y, Dim_Z, N_Nodes)
-    Plot3D(Nodes)
+    Plot3D(Nodes, np.sum(Distances), (Dim_X, Dim_Y, Dim_Z))
 
 
 if __name__ == '__main__':
