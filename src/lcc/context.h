@@ -396,6 +396,7 @@ public:
     FGeneticMaterial(std::string InName, std::string InSequence, std::vector<std::string> InBuildingBlocks)
         : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) {
 
+        Size = InSequence.size();
         for (auto& buildingblock : InBuildingBlocks) {
             auto Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
             int Count = std::count(Sequence.begin(), Sequence.end(), Char);
