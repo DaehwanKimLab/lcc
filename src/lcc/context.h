@@ -973,6 +973,9 @@ public:
     void MakePathwayLists();
                 void MakeListsFromMotilityList();
 
+    bool CheckForEcoli();
+    void DefaultSetUp_Ecoli();
+
     // Tables
     std::string QueryTable(std::string Name, std::string Property, FTable Table);
 

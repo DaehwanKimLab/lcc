@@ -272,6 +272,9 @@ void FCompilerContext::Organize()
 {
     std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
 
+    if (CheckForEcoli()) {
+        DefaultSetUp_Ecoli();
+    }
 
     if (!GetSubList_MoleculeList("Polymerase").empty()) {
         ApplyDefaultGeneticInformationProcessingOnMoleculeList();
@@ -282,6 +285,103 @@ void FCompilerContext::Organize()
 
     AssignReactionTypesForReactionList();
     AdjustMolarity_PseudoMolecule();
+}
+
+bool FCompilerContext::CheckForEcoli() {
+
+    auto Organisms = GetSubList_ContainerList("Organism");
+    for (auto& organism : Organisms) {
+        auto Organism = dynamic_cast<FOrganism *>(organism);
+        if (Organism->Species == "Ecoli") {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void FCompilerContext::DefaultSetUp_Ecoli() {
+
+    std::cout << std::endl << "  Loading Default Ecoli properties..." << std::endl;
+
+    auto Organisms = GetSubList_ContainerList("Organism");
+    for (auto& organism : Organisms) {
+        auto Organism = dynamic_cast<FOrganism *>(organism);
+        if (Organism->Species == "Ecoli") {
+
+            // 0.6–0.7 μm3 in volume, cylinder 1.0-2.0 um long, with radius 0.5 um.
+            Organism->Shape = "cylinder";
+            Organism->Dimension = {800, 1200, 800};
+        }
+    }
+
+    std::vector<FMolecule *> ListOfNewMolecules;
+
+    bool bDNAP = !GetSubList_MoleculeList("DNAP").empty();
+    bool bRNAP = !GetSubList_MoleculeList("RNAP").empty();
+    bool bRibosome = !GetSubList_MoleculeList("Ribosome").empty();
+
+    // Generate chromosome if not made by the user
+    if ((bDNAP || bRNAP) & GetSubList_MoleculeList("Chromosome").empty()) {
+        //std::string Strain == "K-12 MG1655";
+        int ChromosomeSize = 4641652;
+        FGeneticMaterial* Chromosome = GenerateChromosome("Ch_I", 1, ChromosomeSize);
+        Chromosome->SetTemplate(Chromosome->Name);
+        ListOfNewMolecules.push_back(Chromosome);
+    }
+
+//    if (bRNAP & bRibosome) {
+//        // add tRNA, rRNA, misc RNA
+//        for (auto &molecule: MoleculeList) {
+//            if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
+//                auto Protein = dynamic_cast<FProtein *>(molecule);
+//
+//                FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, 0, "mRNA");
+//                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
+//                Protein->SetTemplate(mRNA->Name);
+//                mRNA->SetTemplate(Gene->Name);
+//                ListOfNewMolecules.push_back(Gene);
+//                ListOfNewMolecules.push_back(mRNA);
+//
+//            } else if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
+//                auto RNA = dynamic_cast<FRNA *>(molecule);
+//
+//                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
+//                RNA->SetTemplate(Gene->Name);
+//                ListOfNewMolecules.push_back(Gene);
+//            }
+//        }
+//    } else if (bRNAP & !bRibosome) {
+//        for (auto &molecule: MoleculeList) {
+//            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
+//                auto RNA = dynamic_cast<FRNA *>(molecule);
+//
+//                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
+//                RNA->SetTemplate(Gene->Name);
+//                ListOfNewMolecules.push_back(Gene);
+//            }
+//        }
+//    } else if (!bRNAP & bRibosome) {
+//        for (auto &molecule: MoleculeList) {
+//            if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
+//                auto Protein = dynamic_cast<FProtein *>(molecule);
+//
+//                FGeneticMaterial * mRNA = GenerateCounterpart_RNA(molecule->Name, 1, "mRNA");
+//                Protein->SetTemplate(mRNA->Name);
+//                ListOfNewMolecules.push_back(mRNA);
+//            }
+//        }
+//    }
+
+    if (!ListOfNewMolecules.empty()) {
+        for (auto& molecule : ListOfNewMolecules) {
+            if (Option.bDebug) {
+                std::string TextOutputTag = "[Counterpart Molecule Added] ";
+                molecule->Print(std::cout);
+            }
+            AddToMoleculeList(molecule);
+        }
+    }
 }
 
 void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() {
@@ -295,27 +395,10 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
 
     // Generate chromosome if not made by the user
     if ((bDNAP || bRNAP) & GetSubList_MoleculeList("Chromosome").empty()) {
-        int ChromosomeSize = -1;
-
-        // E coli specific chromosome
-        auto Organisms = GetSubList_ContainerList("Organism");
-        for (auto& organism : Organisms) {
-            if (dynamic_cast<FOrganism *>(organism)->Species == "Ecoli") {
-                //std::string Strain == "K-12 MG1655";
-                ChromosomeSize = 4641652;
-                FGeneticMaterial* Chromosome = GenerateChromosome("Ch_I", 1, ChromosomeSize);
-                Chromosome->SetTemplate(Chromosome->Name);
-                ListOfNewMolecules.push_back(Chromosome);
-                break;
-            }
-        }
-
-        if (ChromosomeSize < 0) {
-            ChromosomeSize = 500000;
-            FGeneticMaterial* Chromosome = GenerateChromosome("Chromosome", 1, ChromosomeSize);
-            Chromosome->SetTemplate(Chromosome->Name);
-            ListOfNewMolecules.push_back(Chromosome);
-        }
+        int ChromosomeSize = 500000;
+        FGeneticMaterial* Chromosome = GenerateChromosome("Chromosome", 1, ChromosomeSize);
+        Chromosome->SetTemplate(Chromosome->Name);
+        ListOfNewMolecules.push_back(Chromosome);
     }
 
     //
