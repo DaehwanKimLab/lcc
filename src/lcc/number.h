@@ -21,14 +21,15 @@ std::string GetAvogadroStr();
 float RandomNumber(float Min, float Max);
 float GetFloatDefault();
 float GetIntDefault();
-bool CheckMolarity(std::string InUnit);
-float Prefix2Value(std::string InPrefix);
-float Suffix2Value(std::string InSuffix);
-float Unit2Value(std::string InUnit);
-float Unit2ValueWithPrefixOnly(std::string InUnit);
-std::pair<std::string, std::string> ParseUnit(std::string InUnit);
-float Count2Mol(float InCount);
-float Mol2Count(float InMol);
+bool CheckMolarity(std::string Unit);
+float Prefix2Value(std::string Prefix);
+float Suffix2Value(std::string Suffix);
+float Unit2Value(std::string Unit);
+float Unit2ValueWithPrefixOnly(std::string Unit);
+std::pair<std::string, std::string> ParseUnit(std::string Unit);
+float Conversion_bp2nm(int BP);
+float Count2Mol(float Count);
+float Mol2Count(float Mol);
 
 } // Namespace Numbers
 #endif /* LCC_NUMBER_H */

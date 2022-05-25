@@ -1131,12 +1131,6 @@ void TraversalNode(NBlock* InProgramBlock)
                             if (Organism->Description == "E. coli K-12 MG1655") {
                                 std::string Strain = "K-12 MG1655";
 
-                                int ChromosomeSize = 4641652;
-                                os << "Chromosome_I: " << std::to_string(ChromosomeSize) << "bp" << endl;
-                                FChromosome *NewChromosome = new FChromosome("ChI", ChromosomeSize);
-                                //                    if (Option.bDebug) { NewChromosome->Print(os); }
-                                Context.AddToMoleculeList(NewChromosome);
-
                                 int i;
                                 int i_cap = 5000;
 //
