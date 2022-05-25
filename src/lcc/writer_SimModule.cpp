@@ -29,6 +29,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
 
+    if (Option.bDebug) {
+        ofs << "import plot" << endl;
+    }
+
     //TODO: Take options from SimModule cmd line
     ofs << "# Temporary global variables" << endl;
     ofs << "N_SimSteps = " << Sim_Steps << endl;
@@ -288,6 +292,49 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ in+ "return Data" << endl;
     ofs << endl;
+
+    ofs << in+ "# Temporary database routines" << endl;
+    ofs << endl;
+
+    ofs << in+ "def LoadTSVDatabase(self, db_fname):" << endl;
+    ofs << in+ in+ "db = None" << endl;
+    ofs << in+ in+ "with open(db_fname) as fp:" << endl;
+    ofs << in+ in+ in+ "csv_reader = csv.reader(fp, delimiter='\\t')" << endl;
+    ofs << in+ in+ in+ "list_of_rows = list(csv_reader)" << endl;
+    ofs << in+ in+ in+ "db = list_of_rows[1:]" << endl;
+    ofs << in+ in+ "return db" << endl;
+    ofs << endl;
+
+    ofs << in+ "def OpenTSVDatabase(self, db_fname):" << endl;
+    ofs << in+ in+ "db = self.LoadTSVDatabase(db_fname)" << endl;
+    ofs << in+ in+ "Database_Gene = self.ParseGenes(db)" << endl;
+    ofs << in+ in+ "return Database_Gene" << endl;
+    ofs << endl;
+
+    ofs << in+ "def ParseGenes(self, db_genes):" << endl;
+    ofs << in+ in+ "db = dict()" << endl;
+    ofs << in+ in+ "NUniq_Genes = len(db_genes)" << endl;
+    ofs << in+ in+ "db['Symbol'] = list()" << endl;
+    ofs << in+ in+ "db['Length'] = np.zeros(NUniq_Genes)" << endl;
+    ofs << in+ in+ "db['Coord'] = np.zeros(NUniq_Genes)" << endl;
+    ofs << in+ in+ "db['Dir'] = np.zeros(NUniq_Genes)" << endl;
+    ofs << in+ in+ "db['Seq'] = list()" << endl;
+    ofs << endl;
+    ofs << in+ in+ "Dir = dict()" << endl;
+    ofs << in+ in+ "Dir['+'] = 1" << endl;
+    ofs << in+ in+ "Dir['-'] = -1" << endl;
+    ofs << endl;
+    ofs << in+ in+ "for i, Value in enumerate(db_genes):" << endl;
+    ofs << in+ in+ in+ "Length, Name, Seq, RNAID, Coordinate, Direction, Symbol, Type, GeneID, MonomerID = Value" << endl;
+    ofs << in+ in+ in+ "db['Symbol'].append(Symbol)" << endl;
+    ofs << in+ in+ in+ "db['Length'][i] = (len(Seq))" << endl;
+    ofs << in+ in+ in+ "db['Coord'][i] = int(Coordinate)" << endl;
+    ofs << in+ in+ in+ "db['Dir'][i] = Dir[Direction]" << endl;
+    ofs << in+ in+ in+ "db['Seq'].append(Seq)" << endl;
+    ofs << endl;
+    ofs << in+ in+ "return db" << endl;
+    ofs << endl;
+
 
     // class FDataset
     ofs << "class FDataset:" << endl;
@@ -1432,8 +1479,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "Count = self.GetCountByName" << endl;
     ofs << endl;
 
-
-    ofs << in+ "# Temporary routines" << endl;
+    ofs << in+ "# Central dogma routines" << endl;
+    ofs << endl;
 
     ofs << in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
     ofs << in+ in+ "Len_Over = np.where(Len_Elongated > Max, Len_Elongated - Max, 0)" << endl;
@@ -1619,7 +1666,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         //        ofs << in+ in+ "Idx_DividingCells = np.where(np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2), axis=1) > 0)" << endl;
         ofs << endl;
 
-//        if (Option.bDebug) {
+        if (Option.bDebug) {
             ofs << in+ in+ "#Debugging" << endl;
             ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl;
 
@@ -1632,13 +1679,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 ofs << in+ in+ "print('Pos_Threshold:   ', self.State.Pos_Threshold)" << endl;
             }
             ofs << endl;
-//        }
+        }
 
 
         ofs << in+ in+ "DividingCell_Count_All = self.State.Count_All[Idx_DividingCells]" << endl;
-
-
-
         ofs << in+ in+ "Distributed_Count_All = DividingCell_Count_All / 2" << endl;
         ofs << in+ in+ "self.State.Count_All = np.vstack([self.State.Count_All, Distributed_Count_All])" << endl;
         ofs << in+ in+ "self.State.Count_All[Idx_DividingCells] = Distributed_Count_All" << endl;

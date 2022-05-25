@@ -1,4 +1,6 @@
 import numpy as np
+import os, sys
+
 
 NA = 6.0221409e+23
 pi = np.pi
@@ -397,3 +399,93 @@ def Eqn_Diffusion_Spatial_FAST(Distribution, D, DegreeOfDiffusion=20):
 def RestoreNoise(Distribution, Noise=0): # D must be less than 1/6
     Distribution_Corrected = np.where(Distribution < Noise, Noise, Distribution)
     return Distribution_Corrected
+
+'''
+For initializing Genome location in a 3D cell container
+'''
+
+def GetDistanceBTWTwoPoints(P1, P2):
+    return np.sqrt(np.sum((P1 - P2) ** 2, axis=1))
+
+# def GetVolume(Dimension)
+
+def TrimToShape(Nodes, Dim, Shape):
+    if Shape == 'cuboid':
+        return Nodes
+    elif Shape == 'ellipsoid':
+        # ellipsoid equation: x**2/a**2 + y**2/b**2 + z**2/c**2 = 1, where a, b, c are the principal semiaxes.
+        Semiaxes = np.array([Dim[0], Dim[1], Dim[2]]) / 2
+        IdxToRetain = np.where(np.sum(((Nodes - Semiaxes) ** 2) / (Semiaxes ** 2), axis=1) < 1)
+        return Nodes[IdxToRetain]
+    elif Shape == 'cylinder':
+        # 2 π r^2 are the principal semiaxes.
+        Radius = Dim[0] / 2
+        Ref_XZ = np.array([Radius, Radius])   # may just use broadcasting
+        DistancesFromRef = GetDistanceBTWTwoPoints(Ref_XZ, np.stack([Nodes[:, 0], Nodes[:, 2]], axis=1))
+        IdxToRetain = np.where(DistancesFromRef < Radius)
+        return Nodes[IdxToRetain]
+    else:
+        print('Unrecognizable Shape for Trimming: ', Shape)
+        print('Available Trimming Shapes: cuboid, ellipsoid, cylinder')
+        sys.exit(0)
+
+def GetNodesAndDistances(Dim, Len, shape='cuboid', n_nodes=None):
+    assert (isinstance(n_nodes, int)) & (
+                n_nodes > 1), 'ERROR: N_Nodes (Input: %s) must be an integer greater than 1.' % n_nodes
+
+    XYZ = np.array([Dim])
+
+    # Generate sets of three random numbers
+    Nodes_Original = np.random.rand(n_nodes, 3) * XYZ
+    Nodes_Trimmed = TrimToShape(Nodes_Original, Dim, shape)
+
+    # Arrange Nodes by finding the nearest neighbor
+    Node_Reference = Nodes_Trimmed[0]
+    Nodes_Modified = Nodes_Trimmed[1:]  # Nodes excluding the reference node
+    Nodes_Arranged = np.zeros_like(Nodes_Trimmed)
+    Nodes_Arranged[0] = Node_Reference
+
+    # TODO: Decouple Distance generation in the algorithm
+    Distances = np.zeros(Nodes_Trimmed.shape[0])
+
+    # print('Prev', Nodes_Modified)
+    # print('Node:', Node_Reference)
+
+    for i in range(Nodes_Modified.shape[0]):
+        Distance = GetDistanceBTWTwoPoints(Node_Reference, Nodes_Modified)
+        Idx_NearestNeighbor = Distance.argmin()
+        Distances[i] = Distance[Idx_NearestNeighbor]
+        Node_Reference = Nodes_Modified[Idx_NearestNeighbor]
+        Nodes_Arranged[i + 1] = Node_Reference
+        Nodes_Modified = np.delete(Nodes_Modified, Idx_NearestNeighbor, axis=0)
+        # print(i)
+        # print('Node    :', Node_Reference)
+        # print('Rest    :', Nodes_Modified)
+        # print('Arranged:', Nodes_Arranged)
+
+    return Nodes_Arranged, Distances
+
+def GetXYZForGenomePositionsInBP(Positions_bp, Nodes, Distances):
+    Positions_nm = (Positions_bp / 10) * 3.4   # unit conversion from bp to nm
+    NodePositionOnGenome = np.reshape(np.cumsum(np.roll(Distances, shift=1)), [1, -1])
+
+    # For Debugging
+    # Positions_nm = Positions_nm[0:4]
+    NodePositionOnGenome *= 10   # for debugging
+
+    Positions_Bin = Positions_nm < NodePositionOnGenome
+    Positions_Bin_Cumsum = np.cumsum(Positions_Bin, axis=1)
+    Positions_Idx = np.where(Positions_Bin_Cumsum == 1)[1]
+
+    Point_1 = NodePositionOnGenome[:, Positions_Idx - 1]
+    Point_2 = NodePositionOnGenome[:, Positions_Idx ]
+
+    PercentLengthOfGeneStartBetweenPoints = ((Positions_nm.transpose() - Point_1) / (Point_2 - Point_1)).transpose()
+
+    XYZ_1 = Nodes[Positions_Idx - 1]
+    XYZ_2 = Nodes[Positions_Idx]
+
+    Positions_XYZ = XYZ_1 + ((XYZ_2 - XYZ_1) * PercentLengthOfGeneStartBetweenPoints)
+    assert np.count_nonzero(Positions_XYZ < 0) == 0, 'ERROR: XYZ coordinates cannot be less than zero'
+
+    return Positions_XYZ

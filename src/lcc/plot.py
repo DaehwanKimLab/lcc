@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib.animation as animation
 import numpy as np
+import SimFunctions as SimF
 
 SaveFilename = None
 NA = 6.0221409e+23
@@ -451,6 +452,46 @@ def main(SaveToFile = None):
     Datasets = LoadRawData(Data_Dir)
     for FileName, Dataset in Datasets.items():
         PlotData(Dataset)
+
+
+
+
+def Plot3D(Nodes, dim=None, distance=None, volume=None, shape='cuboid'):
+    ax = plt.axes(projection='3d')
+
+    # Data for a three-dimensional line
+    X = Nodes[:, 0]
+    Y = Nodes[:, 1]
+    Z = Nodes[:, 2]
+    ax.plot3D(X, Y, Z, 'red')
+
+    if dim:
+        ax.set_box_aspect(dim)
+    #
+    # ax.set_xlim3d(0, X.shape[0])
+    # ax.set_ylim3d(0, Y.shape[0])
+    # ax.set_zlim3d(0, Z.shape[0])
+
+    # Data for three-dimensional scattered points
+    # ax.scatter3D(X, Y, Z, c='blue')
+    # ax.scatter3D(X, Y, Z, c=Z, cmap='Greens')
+
+    VolTxt = ''
+
+    if dim:
+        VolTxt = 'Volume: '
+        Vol = 0
+        if shape == 'cuboid':
+            Vol = np.prod(np.array(dim)) / 1e9
+        elif shape == 'ellipsoid':
+            Vol = (4 / 3) * np.pi * np.prod(np.array(dim) / 2) / 1e9
+        elif shape == 'cylinder':
+            Vol = np.pi * np.prod(np.array([dim[0] / 2, dim[1], dim[2] / 2])) / 1e9
+        VolTxt += str(Vol) + 'um^3\n '
+
+    ax.set_title(VolTxt + 'Distance Covered: {:.3f} nm\n # of Nodes (retained): {}'.format(distance, Nodes.shape[0]))
+
+    plt.show()
 
 
 if __name__ == '__main__':

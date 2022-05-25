@@ -386,6 +386,8 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
 
 void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes)
 {
+    ofs << in+ in+ "# Initialize_PolymeraseReaction_Matrix" << endl;
+
     std::string BB_Ch, BB_RNA, BB_Protein;
     std::string Max_Ch, Max_RNA, Max_Protein;
     std::string Len_Ch, Len_RNA, Len_Protein;
@@ -477,6 +479,8 @@ void FWriter::Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<
 
 void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Process)
 {
+    ofs << in+ in+ "# Initialize_PolymeraseReaction_Index" << endl;
+
     // Initiation
     ofs << in+ in+ "# " << Process << ": Initialize Initiation Reaction" << endl;
     ofs << in+ in+ "self.Idx_Pol_" << Process << " = None" << endl;
@@ -497,6 +501,8 @@ void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Pro
 }
 void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes)
 {
+    ofs << in+ in+ "# SetUp_PolymeraseReaction_Matrix" << endl;
+
     std::string BB_Ch, BB_RNA, BB_Protein;
     std::string Max_Ch, Max_RNA, Max_Protein;
     std::string Len_Ch, Len_RNA, Len_Protein;
@@ -595,6 +601,8 @@ void FWriter::SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMole
 
 void FWriter::SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecule *> Polymerases, int Threshold)
 {
+    ofs << in+ in+ "# SetUp_PolymeraseReaction_Index" << endl;
+
     // Polymerase Example
     FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
 //    std::cout << "Polymerase: " << Pol->Name << " | Process: " << Pol->Process << " | TemplateClass: " << Pol->TemplateClass << " | TargetClass: " << Pol->TargetClass << std::endl;
@@ -712,7 +720,7 @@ void FWriter::Polymerase_TerminationReaction(ofstream& ofs, std::vector<FMolecul
 
 void FWriter::Initialize_TransporterReaction(ofstream& ofs, std::string Type)
 {
-    ofs << in+ in+ "# " << Type << endl;
+    ofs << in+ in+ "# Initialize_TransporterReaction" << Type << endl;
 
     ofs << in+ in+ "self.Idx_Cargo_" << Type << " = None" << endl;
     ofs << in+ in+ "self.Idx_Dist_Cargo_" << Type << " = None" << endl;
@@ -735,6 +743,8 @@ void FWriter::Initialize_TransporterReaction(ofstream& ofs, std::string Type)
 
 void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList)
 {
+    ofs << in+ in+ "# SetUp_TransporterReaction" << Type << endl;
+
     int Idx_Pseudo = Context.GetIdxByName_MoleculeList(Name_Pseudo);
     std::vector<std::string> Name_Cargo;
     std::vector<int> Idx_Cargo;
@@ -812,7 +822,7 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
     int Map_Width = 1200;
     int Map_Height = 800;
 
-    ofs << in+ in+ "# Spatial Simulation" << endl;
+    ofs << in+ in+ "# Initialize_SpatialSimulation" << endl;
 
     ofs << in+ in+ "self.Dimension_X = " << Map_Width << endl;
     ofs << in+ in+ "self.Dimension_Y = " << Map_Height << endl;
@@ -849,10 +859,28 @@ void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
         ofs << in+ in+ "self.Idx_Pos_Threshold = None" << endl;
         ofs << endl;
     }
+
+    if (!Context.GetSubList_MoleculeList("Chromosome").empty()) {
+        Initialize_ChromosomeSimulation(ofs);
+    }
+}
+
+void FWriter::Initialize_ChromosomeSimulation(ofstream& ofs)
+{
+    ofs << in+ in+ "# Initialize_ChromosomeSimulation" << endl;
+
+    ofs << in+ in+ "self.Pos_Ref = None" << endl;
+    ofs << in+ in+ "self.Pos_Gene_Start = None" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End = None" << endl;
+
+    ofs << in+ in+ "self.Name_Genes = list()" << endl;
+    ofs << endl;
 }
 
 void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
 {
+    ofs << in+ in+ "# SetUp_SpatialSimulation" << endl;
+
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
 
@@ -976,4 +1004,63 @@ void FWriter::SetUp_SpatialSimulation(ofstream& ofs)
         ofs << endl;
 
     }
+
+    if (!Context.GetSubList_MoleculeList("Chromosome").empty()) {
+        SetUp_ChromosomeSimulation(ofs);
+    }
 }
+
+void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
+{
+    ofs << in+ in+ "# SetUp_ChromosomeSimulation" << endl;
+
+    // Get info from organism
+    auto Organisms = Context.GetSubList_ContainerList("Organism");
+    auto Organism = dynamic_cast<FOrganism *>(Organisms[0]);
+
+    std::string Shape = Organism->Shape;
+    std::vector<float> Dim = Organism->Dimension;
+
+    if (Shape == "cylinder") {
+        Utils::Assertion(Dim[0] == Dim[2], "cylinder shape must have same X and Z dimensions");
+    }
+
+    // Get info from chromosome
+    auto Chromosomes = Context.GetSubList_MoleculeList("Chromosome");
+    auto Chromosome = dynamic_cast<FChromosome *>(Chromosomes[0]);
+
+    int Size_Chr_bp = Chromosome->Size;
+    float Len_Chr_nm = Numbers::Conversion_bp2nm(Size_Chr_bp);
+
+    ofs << in+ in+ "Dim = np.array([" << Utils::JoinFloat2Str(Dim) << "])" << endl;
+    ofs << in+ in+ "Len_Chr_nm = " << Numbers::Conversion_bp2nm(Size_Chr_bp) << endl;
+    ofs << in+ in+ "Shape = '" << Shape << "'" << endl;
+
+    // move into the algorithm later to make a perfect length chromosome
+    int N_Nodes = 5000;
+
+    ofs << in+ in+ "Nodes, Distances = SimF.GetNodesAndDistances(Dim, Len_Chr_nm, shape=Shape, n_nodes=" << N_Nodes << ")" << endl;
+
+    if (Option.bDebug) {
+        ofs << in+ in+ "plot.Plot3D(Nodes, dim=Dim, distance=np.sum(Distances), shape=Shape)" << endl;
+        ofs << endl;
+    }
+
+                // Temporary database from tsv
+                ofs << in+ in+ "DatabaseFileName = r'./Database/genes.tsv'" << endl;
+                ofs << in+ in+ "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
+                ofs << endl;
+
+    ofs << in+ in+ "Gene_Start_bp = np.reshape(Database['Coord'], [-1, 1])" << endl;
+    ofs << in+ in+ "Gene_End_bp = np.reshape(Database['Coord'] + Database['Length'] * Database['Dir'], [-1, 1])" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "self.Pos_Ref = Nodes" << endl;
+    ofs << in+ in+ "self.Pos_Gene_Start = SimF.GetXYZForGenomePositionsInBP(Gene_Start_bp, Nodes, Distances)" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End = SimF.GetXYZForGenomePositionsInBP(Gene_End_bp, Nodes, Distances)" << endl;
+
+    ofs << in+ in+ "self.Name_Genes = Database['Symbol']" << endl;
+    ofs << endl;
+
+}
+

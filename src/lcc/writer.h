@@ -66,7 +66,9 @@ public:
 
     // Spatial Simulation
     void Initialize_SpatialSimulation(ofstream& ofs);
+    void Initialize_ChromosomeSimulation(ofstream& ofs);
     void SetUp_SpatialSimulation(ofstream& ofs);
+    void SetUp_ChromosomeSimulation(ofstream& ofs);
 
     // Simulation
     void SimIdx();
