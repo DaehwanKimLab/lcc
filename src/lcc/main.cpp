@@ -1400,6 +1400,8 @@ int main(int argc, char *argv[])
         if (!Context.LocationList.empty()) {
             Writer.SimVis2D();
             os << Option.SimVis2DFile << endl;
+            Writer.SimServer();
+            os << Option.SimServerFile << endl;
         }
 
         os << "\n%%%%%% Run " << Option.SimExecutorFile << " to execute simulation. %%%%%%" << endl;

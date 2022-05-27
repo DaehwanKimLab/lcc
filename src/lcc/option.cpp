@@ -23,6 +23,7 @@ enum {
     ARG_SIMEXECUTOR,
     ARG_SIMMODULE,
     ARG_SIMVIS2D,
+    ARG_SIMSERVER,
     ARG_RUNOMVISIM
 };
 
@@ -42,6 +43,7 @@ int FOption::Parse(int argc, char *argv[])
             {"simexecutor", required_argument, NULL, ARG_SIMEXECUTOR},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {"simvis2d", required_argument, NULL, ARG_SIMVIS2D},
+            {"simserver", required_argument, NULL, ARG_SIMSERVER},
             {"run-omvisim", no_argument, NULL, ARG_RUNOMVISIM},
             {NULL, 0, NULL, 0},
     };
@@ -110,6 +112,10 @@ int FOption::Parse(int argc, char *argv[])
                 SimVis2DFile = std::string(optarg);
                 break;
 
+            case ARG_SIMSERVER:
+                SimServerFile = std::string(optarg);
+                break;
+
             case ARG_RUNOMVISIM:
                 bRunInOmVisim = true;
                 break;
@@ -146,6 +152,7 @@ void FOption::Reset() {
     SimExecutorFile = "";
     SimModuleFile = "";
     SimVis2DFile = "";
+    SimServerFile = "";
     SimResultFile = "";
     bRunInOmVisim = false;
 }
@@ -187,6 +194,7 @@ void FOption::Usage(const char *argv0)
     os << "  " << "--simexecutor <name>Write simulation executor code to <name> file" << std::endl;
     os << "  " << "--simmodule <name>  Write simulation module code to <name> file" << std::endl;
     os << "  " << "--simvis2d <name>   Write visualization module code to <name> file" << std::endl;
+    os << "  " << "--simserver <name>  Write server code to <name> file" << std::endl;
     os << "  " << "--simimp <mode>     Use <mode> simulation implementation. mode: python, c++" << std::endl;
     os << "  " << "--run-omvisim" << std::endl;
 }
@@ -221,5 +229,6 @@ void FOption::PreferredSetting()
     SimExecutorFile = "SimExecutor.py";
     SimModuleFile = "SimModule.py";
     SimVis2DFile = "SimVis2D.py";
+    SimServerFile = "SimServer.py";
     SimResultFile = "SimOut.tsv";
 }

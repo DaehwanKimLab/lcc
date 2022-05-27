@@ -22,6 +22,7 @@ import sys
 sys.path.insert(0, './protos')
 
 import grpc
+from grpc import aio
 import lccsimulation_pb2
 import lccsimulation_pb2_grpc
 

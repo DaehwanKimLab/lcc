@@ -35,6 +35,7 @@ set(SOURCEFILE
 	writer_SimExecutor.cpp
 	writer_SimModule.cpp
 	writer_SimVis2D.cpp
+	writer_SimServer.cpp
 		${BISON_LPPParser_OUTPUTS}
 	${FLEX_LPPScanner_OUTPUTS}
 )

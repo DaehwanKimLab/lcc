@@ -31,6 +31,7 @@ public:
     std::string SimExecutorFile = "SimExecutor.py";
     std::string SimModuleFile = "SimModule.py";
     std::string SimVis2DFile = "SimVis2D.py";
+    std::string SimServerFile = "SimServer.py";
 
     bool bSimCpp;
     bool bSimPython = true;
