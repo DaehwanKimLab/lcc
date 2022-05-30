@@ -21,6 +21,16 @@ Parameter values are, (in time−1): k1 = 200, k2 = 1, k3 = 1, k4 = 1, k5 = 0.05
 k−4 = 1, k−5 = 0.005; (in concentration): kM1 = 1, kM2 = 1. Units are arbitrary.
 """
 
+"""
+https://www.math.uwaterloo.ca/~bingalls/MMSB/Code/matlab/chemotaxis.m
+cheR=1;
+L=20;
+%assign initial condition species vector S=[Am AmL A AL B BP]
+%these values were determined by running a previous simulation to steady
+%state with L=20.
+S0=[0.0360    1.5593    0.0595    0.3504    0.7356    0.2644];
+"""
+
 uM = 1e-6
 nM = 1e-9
 
@@ -32,22 +42,26 @@ Count2Mol = 1.0 / Mol2Count
 
 def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
                             BP):
-    return min(krev1 * R, A) - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
+    return krev1 * R - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
+    # return min(krev1 * R, A) - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
 
 
 def dAmL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
                              BP):
-    return min(krev2 * R, AL) - (k2 * BP) * AmL / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
+    return krev2 * R - (k2 * BP) * AmL / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
+    # return min(krev2 * R, AL) - (k2 * BP) * AmL / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
 
 
 def dA_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
                            BP):
-    return -min(krev1 * R, A) + (k1 * BP) * Am / (kM1 + Am) - k4 * A * L + krev4 * AL
+    return -krev1 * R + (k1 * BP) * Am / (kM1 + Am) - k4 * A * L + krev4 * AL
+    # return -min(krev1 * R, A) + (k1 * BP) * Am / (kM1 + Am) - k4 * A * L + krev4 * AL
 
 
 def dAL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
                             BP):
-    return -min(krev2 * R, AL) + (k2 * BP) * AmL / (kM2 + AmL) + k4 * A * L - krev4 * AL
+    return -krev2 * R + (k2 * BP) * AmL / (kM2 + AmL) + k4 * A * L - krev4 * AL
+    # return -min(krev2 * R, AL) + (k2 * BP) * AmL / (kM2 + AmL) + k4 * A * L - krev4 * AL
 
 
 def dB_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B,
@@ -61,10 +75,19 @@ def dBP_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev
 
 class FModel():
     def __init__(self,
-                 k1=200, k2=1, k3=1 / Unit, k4=1 / Unit, k5=0.05 / Unit, kM1=1 * Unit, kM2=1 * Unit,  # for Ingalls model
+                 k1=200, k2=1.0, k3=1 / Unit, k4=1 / Unit, k5=0.05 / Unit, kM1=1 * Unit, kM2=1 * Unit,  # for Ingalls model
                  L=20 * Unit, R=5 * Unit, A=500 * Unit, B=0.1 * Unit,  # for Ingalls model
                  krev1=1, krev2=1, krev3=1, krev4=1, krev5=0.005,
                  Am=0, AL=0, AmL=0, BP=0):
+
+        R = 1 * Unit
+
+        Am=0.0360 * Unit
+        AmL=1.5593 * Unit
+        A=0.0595 * Unit
+        AL=0.3504 * Unit
+        B=0.7356 * Unit
+        BP=0.2644 * Unit
 
         # Initial Concentrations
         self.L = L
@@ -112,8 +135,8 @@ class FModel():
         self.HomeostasisCheckInterval = 100
 
         # DoublePlot
-        self.DoublePlotSwitch = True
-        self.ShowTrueUnits = True
+        self.DoublePlotSwitch = False
+        self.ShowTrueUnits = False
 
     def InitializeSimStepZero(self):
         self.AppendData(self.L, self.R, self.Am, self.AmL, self.A, self.AL, self.B, self.BP)
@@ -139,7 +162,7 @@ class FModel():
         print("# Homeostasis points: (Time, [Am]")
         print(self.Homeostasis)
 
-    def Run(self, SimSteps=100000, TimeResolution=100):
+    def Run(self, SimSteps=1000000, TimeResolution=100):
         Flat = 0.000001  # Steady state threshold
 
         self.TimeResolution = TimeResolution
@@ -189,7 +212,7 @@ class FModel():
             # for homeostasis recording
             if not ManualLigandInduction:
                 if Time % self.HomeostasisCheckInterval == 0:
-                    if PrevAm > 0 and abs(Am - PrevAm) / PrevAm < 1e-7:
+                    if PrevAm > 0 and abs(Am - PrevAm) / PrevAm < 1e-9:
                         if len(self.Homeostasis) < N_LigandInduction:
                             Time_LigandInduction = Time + 50
                             Amount_LigandInduction = self.L * LigandFoldChange
@@ -268,7 +291,7 @@ class FModel():
             fig = plt.figure()
             fig.subplots_adjust(wspace=0.2, hspace=0.3)
 
-            PlotBegin = 5000
+            PlotBegin = 0
 
             # Dynamics
             ax1 = fig.add_subplot(2, 2, 1)
@@ -276,6 +299,7 @@ class FModel():
             ax1.set_title('Bacterial Chemotaxis')
             ax1.set_xlabel('Time (s)')
             ax1.set_ylabel('Concentration ' + UnitTxt)
+            ax1.set_yticks([0, 50, 0.01, 0.04])
             ax1.legend(loc='upper right')
             ax1.grid()
 

@@ -12,7 +12,7 @@ petridish P
                         termination: terminus1);
     }
 
-    pol1 = 100;
+    pol1 = 10000;
     dATP = 1nM, dCTP = 1nM, dGTP = 1nM, dTTP = 1nM;
 
     pathway Chemotaxis
