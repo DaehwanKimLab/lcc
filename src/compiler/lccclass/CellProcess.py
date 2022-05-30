@@ -19,6 +19,7 @@ def Write_CellProcess(Writer):
             Writer.Variable_("self.WeightResolution", 2 ** 10, 'tf.float32')   # For random number generator
             Writer.BlankLine()
 
+        # Abstract methods
         Writer.AbsMethod()
         with Writer.Function_("Init_ProcessSpecificVariables"):
             Writer.Pass_____()
@@ -34,6 +35,26 @@ def Write_CellProcess(Writer):
             Writer.Pass_____()
             Writer.BlankLine()
 
+        Writer.AbsMethod()
+        with Writer.Function_("ViewProcessSummary"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        Writer.AbsMethod()
+        with Writer.Function_("ViewProcessDebuggingMessages"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        with Writer.Function_("SaveData"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+        with Writer.Function_("Pass"):
+            Writer.Pass_____()
+            Writer.BlankLine()
+
+
+        # Get/Add Counts/DeltaCounts
         with Writer.Function_("GetCounts", "MolIdxs"):
             Writer.ReturnVar("self.Cel.GetCounts(MolIdxs)")
             Writer.BlankLine()
@@ -48,13 +69,6 @@ def Write_CellProcess(Writer):
             Writer.Statement("Count = self.Cel.GetCounts(MolIdxs)")
             Writer.Statement("Count_RateApplied = self.DetermineAmountFromRate(Count, Rate)")
             Writer.ReturnVar("Count_RateApplied")
-            Writer.BlankLine()
-
-        with Writer.Function_("DetermineAmountFromRate", "Count", "Rate"):
-            Writer.Cast_____("Count_Float", "Count", 'float32')
-            Writer.Multiply_("Count_RateApplied", "Count_Float", "Rate")
-            Writer.RoundInt_("Count_RateApplied_Rounded", "Count_RateApplied")
-            Writer.ReturnVar("Count_RateApplied_Rounded")
             Writer.BlankLine()
 
         with Writer.Function_("GetDeltaCounts", "MolIdxs"):
@@ -106,6 +120,7 @@ def Write_CellProcess(Writer):
             Writer.Statement("self.Cel.AddToDeltaCounts(self.Cel.Idx_PPi, MolCounts)")
             Writer.BlankLine()
 
+        # Conversion
         with Writer.Function_("ConvertConcToCount", "Conc"):
             Writer.Multiply_("Mole", "Conc", "self.Cel.Vol")
             Writer.Multiply_("Count", "Mole", "self.Cst.NA")
@@ -125,29 +140,13 @@ def Write_CellProcess(Writer):
         #     Writer.ScatNdAdd("self.Cel.DeltaCounts", "self.Cel.DeltaCounts", "self.Cel.Idx_H2O", "MolCounts")
         #     Writer.BlankLine()
 
-        Writer.AbsMethod()
-        with Writer.Function_("ViewProcessSummary"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        Writer.AbsMethod()
-        with Writer.Function_("ViewProcessDebuggingMessages"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
         with Writer.Function_("DebuggingVar", "VarBefore", "VarAfter"):
             Writer.Statement("print('[Debug] %s' % VarAfter)")
             Writer.Subtract_("Delta", "VarBefore", "VarAfter")
             Writer.PrintVaVa("Delta")
             Writer.BlankLine()
 
-        with Writer.Function_("GetFrequencyMatrix", "Count_Matrix"):
-            Writer.ReduceSum("ReducedSum_Count", "Count_Matrix")
-            Writer.Divide___("Freq_Count", "Count_Matrix", "ReducedSum_Count")
-            Writer.Transpose("Freq_Count", "Freq_Count")
-            Writer.ReturnVar("Freq_Count")
-            Writer.BlankLine()
-
+        # Determine Amounts
         with Writer.Function_("DetermineAmountOfBuildingBlocks", "Len_Polymers", "Freq_Monomers"):
             Writer.Statement("NUniq_Monomers = tf.shape(Freq_Monomers, out_type='int32')[0]")
             Writer.Statement("NUniq_Polymers = tf.shape(Len_Polymers, out_type='int32')[0]")
@@ -200,7 +199,7 @@ def Write_CellProcess(Writer):
             Writer.BoolToBin("Bin_LenAvailable", "Bool_LenAvailable")
             Writer.BlankLine()
 
-
+        # Determine X number of 0 containing elements
         with Writer.Function_("GetBinToAddNewCountToLenMatrix", "LengthMatrix", "CountMatrixToAdd"):
             Writer.Comment__("Generate boolean and binary matrices for element availability in nascent proteins length matrix.")
             Writer.Less_____("Bool_LenAvailable", "LengthMatrix", 0)
@@ -224,6 +223,7 @@ def Write_CellProcess(Writer):
             Writer.ReturnVar("Bin_LenSelected")
             Writer.BlankLine()
 
+        # Expand 1-dimentional values to 2-dimentional 1's
         with Writer.Function_("ConvertCountToBinary", "Count", "N_Columns"):
             Writer.Comment__("Generate binary pair vector")
             Writer.Statement("Length_Count = tf.shape(Count)")
@@ -242,47 +242,7 @@ def Write_CellProcess(Writer):
             Writer.Comment__("Generate Generate binary matrix")
             Writer.VarRepeat("BinaryRepeatArray", "BinaryPairArray", "BinaryPairCount")
             Writer.Reshape__("BinaryMatrix", "BinaryRepeatArray", "[-1, N_Columns]")
-            Writer.Statement("return BinaryMatrix")
-            Writer.BlankLine()
-
-        with Writer.Function_("PickRandomIndexFromPool_Uniform", "N_MoleculesToDistribute", "Indices"):
-            Writer.Comment__("Select random values")
-            Writer.RndNumUni("RandomValues", Shape="N_MoleculesToDistribute", MaxVal="len(Indices)", Type='int32')
-            Writer.Comment__("Select indices corresponding to the random values")
-            Writer.Gather___("Idx_Random", "Indices", "RandomValues")
-            Writer.ReturnVar("Idx_Random")
-            Writer.BlankLine()
-
-        with Writer.Function_("PickRandomIndexFromPool_Weighted_Local", "N_MoleculesToDistribute", "Indices", "Weights"):
-            Writer.Reshape__("Weights", "Weights", -1)
-            Writer.Reshape__("Indices", "Indices", -1)
-
-            Writer.Comment__("Generate a scalar value for the shape of Weights")
-            Writer.Statement("N_RandomValues = tf.shape(Indices)[0]")
-
-            Writer.Comment__("Cumsum on Counts")
-            Writer.CumSum___("WeightCumSum", "Weights", 0)
-
-            Writer.Comment__("Generate random number ranging between first and last elements of cumsum int values")
-            Writer.RndNumUni("RandomValues", Shape="N_MoleculesToDistribute", MinVal="WeightCumSum[0]", MaxVal="WeightCumSum[-1]", Type='int32')
-
-            Writer.Comment__("Repeat random number array then reshape to generate matrix shaped with [Count shape, -1]")
-            Writer.VarRepeat("RandomValues_RepeatArray", "RandomValues", "N_RandomValues")
-            Writer.Reshape__("RandomValues_Matrix", "RandomValues_RepeatArray", "[-1, N_RandomValues]")
-
-            Writer.ConvToBin("Bin_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "<", "WeightCumSum")
-
-            Writer.Comment__("Argmax on the binary to get the first indices of 1's in each random number generated.")
-            Writer.ArgMax___("Idx_Random", "Bin_RandomValuesLessThanWeightCumSum", Axis=1)
-
-            Writer.ReturnVar("Idx_Random")
-            Writer.BlankLine()
-
-        with Writer.Function_("PickRandomIndexFromPool_Weighted_Global", "N_MoleculesToDistribute", "Indices", "Weights"):
-            Writer.Statement("Idx_Random_Local = self.PickRandomIndexFromPool_Weighted_Local(N_MoleculesToDistribute, Indices, Weights)")
-            Writer.Statement("Idx_Random = self.IdxFromLocalToReference(Idx_Random_Local, Indices)")
-            # Writer.Gather___("Idx_Random", "Indices", "Idx_Random_Local")
-            Writer.ReturnVar("Idx_Random")
+            Writer.ReturnVar("BinaryMatrix")
             Writer.BlankLine()
 
         with Writer.Function_("IdxFromLocalToReference", "Idx_Local", "Idx_Reference"):
@@ -332,6 +292,80 @@ def Write_CellProcess(Writer):
 
             Writer.ReturnVar("Len_Matrix_MaxToZero")
             Writer.BlankLine()
+        # with Writer.Statement("def SqueezeDistributionRangeNegAndPosOne(self, Input):"):
+        #     Writer.ReduceMax("Max", "Input")
+        #     Writer.ReduceMin("Min", "Input")
+        #     Writer.Add______("MaxMinAdded", "Max", "Min")
+        #     Writer.Cast_____("MaxMinAdded", "MaxMinAdded", 'float32')
+        #     Writer.Divide___("Median", "MaxMinAdded", 2)
+        #     Writer.Subtract_("Input_ZeroCentered", "Input", "Median")
+        #     Writer.ReduceMax("Max_ZeroCentered", "Input_ZeroCentered")
+        #     Writer.Divide___("Input_ZeroCenteredNormalizedToOne", "Input_ZeroCentered", "Max_ZeroCentered")
+        #     Writer.ReturnVar("Input_ZeroCenteredNormalizedToOne")
+        #     Writer.BlankLine()
+        #
+        # with Writer.Statement("def StretchDistributionRangeToNegAndPosValue(self, Input, Value):"):
+        #     Writer.Statement("Input_NormalizedToOne = self.SqueezeDistributionRangeNegAndPosOne(Input)")
+        #     Writer.Multiply_("Input_Stretched", "Input_NormalizedToOne", "Value")
+        #     Writer.ReturnVar("Input_Stretched")
+        #     Writer.BlankLine()
+
+
+        # Matrix operation tools
+        with Writer.Function_("DetermineAmountFromRate", "Count", "Rate"):
+            Writer.Cast_____("Count_Float", "Count", 'float32')
+            Writer.Multiply_("Count_RateApplied", "Count_Float", "Rate")
+            Writer.RoundInt_("Count_RateApplied_Rounded", "Count_RateApplied")
+            Writer.ReturnVar("Count_RateApplied_Rounded")
+            Writer.BlankLine()
+
+        with Writer.Function_("ConvertToRatio", "Count_Matrix"):
+            Writer.ReduceSum("ReducedSum_Count", "Count_Matrix")
+            Writer.Divide___("Freq_Count", "Count_Matrix", "ReducedSum_Count")
+            Writer.Transpose("Freq_Count", "Freq_Count")
+            Writer.ReturnVar("Freq_Count")
+            Writer.BlankLine()
+
+        with Writer.Function_("PickRandomIndexFromPool_Uniform", "N_MoleculesToDistribute", "Indices"):
+            Writer.Comment__("Select random values")
+            Writer.RndNumUni("RandomValues", Shape="N_MoleculesToDistribute", MaxVal="len(Indices)", Type='int32')
+            Writer.Comment__("Select indices corresponding to the random values")
+            Writer.Gather___("Idx_Random", "Indices", "RandomValues")
+            Writer.ReturnVar("Idx_Random")
+            Writer.BlankLine()
+
+        with Writer.Function_("PickRandomIndexFromPool_Weighted_Local", "N_MoleculesToDistribute", "Indices", "Weights"):
+            Writer.Reshape__("Weights", "Weights", -1)
+            Writer.Reshape__("Indices", "Indices", -1)
+
+            Writer.Comment__("Generate a scalar value for the shape of Weights")
+            Writer.Statement("N_RandomValues = tf.shape(Indices)[0]")
+
+            Writer.Comment__("Cumsum on Counts")
+            Writer.CumSum___("WeightCumSum", "Weights", 0)
+
+            Writer.Comment__("Generate random number ranging between first and last elements of cumsum int values")
+            Writer.RndNumUni("RandomValues", Shape="N_MoleculesToDistribute", MinVal="WeightCumSum[0]", MaxVal="WeightCumSum[-1]", Type='int32')
+
+            Writer.Comment__("Repeat random number array then reshape to generate matrix shaped with [Count shape, -1]")
+            Writer.VarRepeat("RandomValues_RepeatArray", "RandomValues", "N_RandomValues")
+            Writer.Reshape__("RandomValues_Matrix", "RandomValues_RepeatArray", "[-1, N_RandomValues]")
+
+            Writer.ConvToBin("Bin_RandomValuesLessThanWeightCumSum", "RandomValues_Matrix", "<", "WeightCumSum")
+
+            Writer.Comment__("Argmax on the binary to get the first indices of 1's in each random number generated.")
+            Writer.ArgMax___("Idx_Random", "Bin_RandomValuesLessThanWeightCumSum", Axis=1)
+
+            Writer.ReturnVar("Idx_Random")
+            Writer.BlankLine()
+
+        with Writer.Function_("PickRandomIndexFromPool_Weighted_Global", "N_MoleculesToDistribute", "Indices", "Weights"):
+            Writer.Statement("Idx_Random_Local = self.PickRandomIndexFromPool_Weighted_Local(N_MoleculesToDistribute, Indices, Weights)")
+            Writer.Statement("Idx_Random = self.IdxFromLocalToReference(Idx_Random_Local, Indices)")
+            # Writer.Gather___("Idx_Random", "Indices", "Idx_Random_Local")
+            Writer.ReturnVar("Idx_Random")
+            Writer.BlankLine()
+
 
         with Writer.Function_("ResetZerosToNegOnes", "Len_Matrix"):
             Writer.Comment__("Replace 0's with -1 to indicate no processor binding")
@@ -436,33 +470,4 @@ def Write_CellProcess(Writer):
 
             Writer.ReturnVar("Counts_Distributed")
             Writer.BlankLine()
-
-        # with Writer.Statement("def SqueezeDistributionRangeNegAndPosOne(self, Input):"):
-        #     Writer.ReduceMax("Max", "Input")
-        #     Writer.ReduceMin("Min", "Input")
-        #     Writer.Add______("MaxMinAdded", "Max", "Min")
-        #     Writer.Cast_____("MaxMinAdded", "MaxMinAdded", 'float32')
-        #     Writer.Divide___("Median", "MaxMinAdded", 2)
-        #     Writer.Subtract_("Input_ZeroCentered", "Input", "Median")
-        #     Writer.ReduceMax("Max_ZeroCentered", "Input_ZeroCentered")
-        #     Writer.Divide___("Input_ZeroCenteredNormalizedToOne", "Input_ZeroCentered", "Max_ZeroCentered")
-        #     Writer.ReturnVar("Input_ZeroCenteredNormalizedToOne")
-        #     Writer.BlankLine()
-        #
-        # with Writer.Statement("def StretchDistributionRangeToNegAndPosValue(self, Input, Value):"):
-        #     Writer.Statement("Input_NormalizedToOne = self.SqueezeDistributionRangeNegAndPosOne(Input)")
-        #     Writer.Multiply_("Input_Stretched", "Input_NormalizedToOne", "Value")
-        #     Writer.ReturnVar("Input_Stretched")
-        #     Writer.BlankLine()
-
-        with Writer.Function_("SaveData"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-        with Writer.Function_("Pass"):
-            Writer.Pass_____()
-            Writer.BlankLine()
-
-
-
 

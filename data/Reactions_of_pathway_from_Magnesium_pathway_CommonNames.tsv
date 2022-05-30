@@ -1,0 +1,4 @@
+Reactions of pathway from Magnesium pathway	Enzymes of a reaction	Substrates (reactants and products) of a reaction	Reaction-Direction
+PhoP + PhoQ-N-phospho-L-histidine  <-->  PhoP-Pasp51 + PhoQ		PhoQ-N-phospho-L-histidine // DNA-binding transcriptional dual regulator PhoP // Phosphorylated DNA-binding transcriptional dual regulator PhoP // bifunctional sensor histidine kinase PhoQ	REVERSIBLE
+PhoQ[inner membrane] + ATP  ->  PhoQ-N-phospho-L-histidine[inner membrane] + ADP		ATP // bifunctional sensor histidine kinase PhoQ // PhoQ-N-phospho-L-histidine // ADP	LEFT-TO-RIGHT
+Mg2+[periplasm] + ATP + H2O  ->  Mg2+[cytosol] + ADP + phosphate + H+	Mg2+ importing P-type ATPase	ATP // H2O // Mg2+ // phosphate // ADP // H+	PHYSIOL-LEFT-TO-RIGHT

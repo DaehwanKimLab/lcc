@@ -19,8 +19,11 @@ from lccclass.cellprocess.signaling import SigmaFactor
 from lccclass.cellprocess.synthesis import Replication, Translation, Transcription
 from lccclass.cellprocess.degradation import ProteinDegradation, RNADegradation, DNADegradation
 from lccclass.cellprocess.conversion import Complexation, Equilibrium
-from lccclass.cellprocess.metabolism import Metabolism
-from lccclass.cellprocess.metabolism.pathways import TCACycle
+from lccclass.cellprocess.biochemicalreactions import Metabolism
+# from lccclass.cellprocess.biochemicalreactions import Transport
+from lccclass.cellprocess.biochemicalreactions.pathways import TCACycle
+from lccclass.cellprocess.biochemicalreactions.pathways import Magnesium
+from lccclass.cellprocess.biochemicalreactions.pathways import CarbonicAnhydrase
 from lccclass.cellprocess.division import CellDivision
 
 
@@ -68,6 +71,8 @@ class FProcessGenerator():
             # Metabolism
             [Metabolism, "Metabolism"],
             # [TCACycle, "TCACycle"],
+            # [Transport, "Transport"],
+            # [Magnesium, "Magnesium"],
 
             # Cell division
             [CellDivision, "CellDivision"],

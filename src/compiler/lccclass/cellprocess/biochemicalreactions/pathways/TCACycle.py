@@ -30,7 +30,7 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
         ID_SubstratesInTCACycle.append(SubstrateID)
         Idx_SubstratesInTCACycle4Count.append(Comp.Master.ID2Idx_Master[SubstrateID])
 
-        EnzymeID = Comp.Metabolism.ID_Enzymes4METRXN[Idx]
+        EnzymeID = Comp.Master.ID2ID_Gene2Protein['EG10402']
         ID_EnzymesInTCACycle.append(EnzymeID)
         Idx_EnzymesInTCACycle4Count.append(Comp.Master.ID2Idx_Master[EnzymeID])
 
@@ -64,6 +64,56 @@ def Write_CellProcess(Writer, Comp, ProGen, ProcessID):
     ]
 
     Idx_EnergyProductsInTCACycle = ProGen.GetMolIdx_Master(ID_EnergyProductsInTCACycle)
+
+    # Code to extract info for TCA cycle
+
+    # Counts
+    def PrintCounts(Name, IDs, Comp):
+        Indices = ProGen.GetMolIdx_Master(IDs)
+
+        print(Name + " = [")
+        for ID, Index in zip(IDs, Indices):
+            print("\t", ID, "\t: ", Comp.Master.Count_Master[Index], ", ")
+        print("]")
+
+    Dict_Name2IDs = dict()
+
+    Name = "Count_AllSubstrates_TCACycle"
+    IDs = Comp.Metabolism.ID_MolsInTCARXN
+    Dict_Name2IDs[Name] = IDs
+
+    Name = "Count_KeySubstrates_TCACycle"
+    IDs = ID_SubstratesInTCACycle
+    Dict_Name2IDs[Name] = IDs
+
+    Name = "Count_Enzymes_TCACycle"
+    IDs = ID_EnzymesInTCACycle
+    Dict_Name2IDs[Name] = IDs
+
+    for Name, IDs in Dict_Name2IDs.items():
+        PrintCounts(Name, IDs, Comp)
+
+    # Enzyme constants
+    def PrintEnzymeConstants(Name, IDs, Comp):
+        Indices = list()
+
+        for ID in IDs:
+            for i, EnzymeID in enumerate(Comp.Kinetics.ID_Enzymes4KINRXN):
+                if ID == EnzymeID:
+                    Indices.append(i)
+                    break
+
+        print(Name + " = [")
+        for ID, Index in zip(IDs, Indices):
+            Comp.Kinetics.Const_Kcat[Index]
+
+            print("\t", ID, "\t: ", Comp.Master.Count_Master[Index], ", ")
+        print("]")
+
+    # TCA cycle enzymes
+    Name = "EnzymeConstants_TCACycle"
+    IDs = ID_EnzymesInTCACycle
+
 
     # FROM METABOLISM
 

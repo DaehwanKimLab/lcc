@@ -1,0 +1,4 @@
+Reactions of pathway from Magnesium pathway	Enzymes of a reaction	Substrates (reactants and products) of a reaction	Reaction-Direction
+PHOP-RXN		PHOSPHO-PHOQ // PHOP-MONOMER // PHOSPHO-PHOP // CPLX0-8168	REVERSIBLE
+PHOQ-RXN		ATP // CPLX0-8168 // PHOSPHO-PHOQ // ADP	LEFT-TO-RIGHT
+TRANS-RXN-250	MGTA-MONOMER	ATP // WATER // MG+2 // Pi // ADP // PROTON	PHYSIOL-LEFT-TO-RIGHT

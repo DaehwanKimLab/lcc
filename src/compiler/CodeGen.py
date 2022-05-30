@@ -274,9 +274,13 @@ class TFCodeWriter(CodeWriter):
     def WhileRtrn(self, ReturnVariable=DefaultTensor):
         self.ReturnVar(ReturnVariable)
 
-    def IfEl_Func(self, Predicate, True_Function, False_Function):
-        Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
-        self.Statement(Line)
+    def IfEl_Func(self, Predicate, True_Function, False_Function):   # TODO: FIX this for tf function
+        with self.Statement('if %s:' % Predicate):
+            self.Statement('%s()' % True_Function)
+        with self.Statement('else:'):
+            self.Statement('%s()' % False_Function)
+        # Line = 'IfStatement = tf.cond(%s, true_fn=%s, false_fn=%s)' % (Predicate, True_Function, False_Function)
+        # self.Statement(Line)
 
     # tf.print
     def PrintLine(self, Length=100):
@@ -432,7 +436,7 @@ class TFCodeWriter(CodeWriter):
         return self
 
     def TF_Graph_(self):
-        if self.Switch4Graph:
+        if self.Switch4TFGraph:
             self.Statement("@tf.function")
 
     def TFForLoop(self, Timer, MaxTime):

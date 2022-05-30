@@ -5,6 +5,7 @@ import ast
 import re
 from abc import abstractmethod
 
+
 class FDataset():
     def __init__(self):
         self.Switch4DebugDataset = False
@@ -20,7 +21,8 @@ class FDataset():
             np.save('%s.npy' % SaveFileName, Value)
 
     def AddLocalizationToMolName(self, VariableName, Localization):
-        assert VariableName[-3] != '[' and VariableName[-1] != ']', 'Variable already has a localization info to be added'
+        assert VariableName[-3] != '[' and VariableName[
+            -1] != ']', 'Variable already has a localization info to be added'
         assert Localization[0] == '[' and Localization[2] == ']', 'Localization String must be in the format of "[x]"'
         return VariableName + Localization
 
@@ -43,7 +45,6 @@ class FDataset():
                 self.DebugPrint('Redundant ID found in ID2Type_Master: %s' % ID)
                 pass
 
-
         MasterDataset.Count_Master = np.append(MasterDataset.Count_Master, Counts)
         MasterDataset.MW_Master = np.append(MasterDataset.MW_Master, MWs)
         # if Localizations:
@@ -60,13 +61,13 @@ class FDataset():
 
         MasterDataset.NUniq_Master = len(MasterDataset.ID_Master)
 
-        self.DebugPrint('MasterDataset lengths:')
-        print(len(MasterDataset.ID_Master))
-        print(len(MasterDataset.ID2Idx_Master))
-        print(len(MasterDataset.Count_Master))
-        print(len(MasterDataset.MW_Master))
+        # self.DebugPrint('MasterDataset.ID_Master size     : %s' % len(MasterDataset.ID_Master))
+        # self.DebugPrint('MasterDataset.ID2Idx_Master size : %s' % len(MasterDataset.ID2Idx_Master))
+        # self.DebugPrint('MasterDataset.Count_Master size  : %s' % len(MasterDataset.Count_Master))
+        # self.DebugPrint('MasterDataset.MW_Master size     : %s' % len(MasterDataset.MW_Master))
 
-        assert len(MasterDataset.ID_Master) == len(MasterDataset.ID2Idx_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.Count_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.MW_Master)
+        assert len(MasterDataset.ID_Master) == len(MasterDataset.ID2Idx_Master) and len(MasterDataset.ID_Master) == len(
+            MasterDataset.Count_Master) and len(MasterDataset.ID_Master) == len(MasterDataset.MW_Master)
 
     def AppendStr(self, List, Str):
         # Appends Str to the List
@@ -97,6 +98,7 @@ class FDataset():
     def DebugPrint(self, Statement):
         print(self.PrintTag, Statement)
 
+
 class FMetabolite(FDataset):
     def __init__(self):
         self.PrintTag = 'Metabolite | '
@@ -112,7 +114,7 @@ class FMetabolite(FDataset):
 
         self.ID_Metabolites_NoLocalization = list()
 
-        super().__init__() # MasterLocalizations
+        super().__init__()  # MasterLocalizations
 
     def SetUpData(self, Dataset, Comp):
         MW_Metabolites = Dataset['metabolites.tsv']
@@ -135,7 +137,7 @@ class FMetabolite(FDataset):
             assert Name not in self.ID2Idx_Metabolites
             self.ID2Idx_Metabolites[Name] = len(self.ID_Metabolites)  # = i
             self.ID_Metabolites.append(Name)
-            if NameLocRemoved not in self.ID_Metabolites_NoLocalization:   # ID without localization
+            if NameLocRemoved not in self.ID_Metabolites_NoLocalization:  # ID without localization
                 self.ID_Metabolites_NoLocalization.append(NameLocRemoved)
             self.MW_Metabolites[i] = self.ID2MW_Metabolites_Temp[NameLocRemoved]
             self.Count_Metabolites[i] = Count
@@ -146,10 +148,13 @@ class FMetabolite(FDataset):
                 Count_Temporary_Int32 = int(1e7)
                 self.Count_Metabolites[i] = Count_Temporary_Int32
                 if self.Switch4DebugDataset:
-                    self.DebugPrint('The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s' % (Name, Count, Count_Temporary_Int32))
+                    self.DebugPrint(
+                        'The Count of %s is %s, which is out of int32 range (> 2147483647). It has been temporarily replaced with the value of %s' % (
+                        Name, Count, Count_Temporary_Int32))
 
         # Add to the Master Dataset
-        self.AddToMaster(Comp.Master, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites, self.MW_Metabolites)
+        self.AddToMaster(Comp.Master, self.ID_Metabolites, self.MolType_Metabolites, self.Count_Metabolites,
+                         self.MW_Metabolites)
 
 
 class FChromosome(FDataset):
@@ -194,7 +199,8 @@ class FChromosome(FDataset):
             self.Len_ChromosomesInGenome[i] = len(ChromosomeSeq)
 
             # ChromosomeNTFreq
-            NTCounts = np.array([ChromosomeSeq.count("A"), ChromosomeSeq.count("C"), ChromosomeSeq.count("G"), ChromosomeSeq.count("T")])
+            NTCounts = np.array([ChromosomeSeq.count("A"), ChromosomeSeq.count("C"), ChromosomeSeq.count("G"),
+                                 ChromosomeSeq.count("T")])
             if np.sum(NTCounts) != self.Len_ChromosomesInGenome[i]:
                 print('Genome Dataset | ', 'WARNING: RNA seq may contain non-ACGT text.', file=sys.stderr)
             NTFreq = NTCounts / self.Len_ChromosomesInGenome[i]
@@ -208,7 +214,7 @@ class FChromosome(FDataset):
 
         self.Count_Chromosomes = np.zeros(self.NUniq_ChromosomesInGenome)
         self.MW_DNABasePairs = np.zeros(self.NUniq_ChromosomesInGenome)
-        DNABasePairMW = 650 # average molecular weight of one base pair: 650 Daltons, which is 650 g/mol
+        DNABasePairMW = 650  # average molecular weight of one base pair: 650 Daltons, which is 650 g/mol
 
         ChromosomeCount = 0
         for ReplicationRoundID in range(RepFactor):
@@ -248,7 +254,8 @@ class FChromosome(FDataset):
                 #     ChromosomeCount += 1
 
         # Add to the Master Dataset
-        self.AddToMaster(Comp.Master, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_Chromosomes, self.MW_DNABasePairs)
+        self.AddToMaster(Comp.Master, self.ID_Chromosomes, self.MolType_Chromosomes, self.Count_Chromosomes,
+                         self.MW_DNABasePairs)
 
 
 class FGene(FDataset):
@@ -258,11 +265,11 @@ class FGene(FDataset):
         self.MolType_Genes = 'Gene'
 
         self.Len_Genes = 0
-        self.Coord_Genes = 0 # Coord for Coordinate
+        self.Coord_Genes = 0  # Coord for Coordinate
         self.MW_Genes = 0
-        self.Dir_Genes = 0 # Dir for Direction
+        self.Dir_Genes = 0  # Dir for Direction
         self.Name_Genes = list()
-        self.Sym_Genes = list() # Sym for Symbols
+        self.Sym_Genes = list()  # Sym for Symbols
         self.ID_Genes = list()
         self.Seq_Genes = list()
         self.Type_Genes = list()
@@ -279,7 +286,6 @@ class FGene(FDataset):
         self.Coord_Genes_Reindexed_Leftward = 0
         self.Coord_Genes_Reindexed_Rightward = 0
 
-
         super().__init__()
 
     def SetUpData(self, Dataset, Comp):
@@ -288,9 +294,10 @@ class FGene(FDataset):
         self.NUniq_Genes = len(Genes)
         self.Len_Genes = np.zeros(self.NUniq_Genes)
         self.Coord_Genes = np.zeros(self.NUniq_Genes)
-        self.MW_Genes = np.zeros(self.NUniq_Genes) # No molecular weights to be calculated
+        self.MW_Genes = np.zeros(self.NUniq_Genes)  # No molecular weights to be calculated
         self.Dir_Genes = np.zeros(self.NUniq_Genes)
-        self.Count_Genes = np.ones(self.NUniq_Genes) # The count may be adjusted according to the starting replication state of the chromosomes.
+        self.Count_Genes = np.ones(
+            self.NUniq_Genes)  # The count may be adjusted according to the starting replication state of the chromosomes.
 
         DirectionBinaryDict = dict()
         DirectionBinaryDict['+'] = 1
@@ -365,7 +372,7 @@ class FGene(FDataset):
         # Extra additions for promoter data
         Dict_GeneSynonyms_PromoterData = {
             # 'yliL': 'G6419',   # Phantom gene
-            'yddJ': 'G6771',   # Pseudogene
+            'yddJ': 'G6771',  # Pseudogene
         }
 
         self.Dict_GeneSynonyms.update(Dict_GeneSynonyms_PromoterData)
@@ -433,14 +440,14 @@ class FPromoter(FDataset):
 
                 Line = Line.split('\t')
 
-                GeneSymbols = Line[3]   # List
+                GeneSymbols = Line[3]  # List
                 PromoterName = Line[4]
                 L_end = Line[0]
                 R_end = Line[1]
                 Strand = Line[2]
 
                 SigmaFactor = Line[5]
-                Score = Line[14]   # assign to the gene
+                Score = Line[14]  # assign to the gene
                 HomologyLevel = Line[15]
                 PValue = Line[16]
                 Sequence = Line[20]
@@ -467,7 +474,7 @@ class FPromoter(FDataset):
                 for GeneSymbol in GeneSymbols.split(' '):
                     if GeneSymbol in Comp.Gene.Dict_GeneSynonyms:
                         GeneID = Comp.Gene.Dict_GeneSynonyms[GeneSymbol]
-                    elif GeneSymbol + '1' in Comp.Gene.Dict_GeneSynonyms:   # for insX (insertion element repressor) family of genes
+                    elif GeneSymbol + '1' in Comp.Gene.Dict_GeneSynonyms:  # for insX (insertion element repressor) family of genes
                         GeneID = Comp.Gene.Dict_GeneSynonyms[GeneSymbol + '1']
 
                     # elif GeneSymbol in Comp.Gene.Sym_Genes:
@@ -526,9 +533,11 @@ class FPromoter(FDataset):
                 if 'ins' in Name:
                     print(Name)
                 if len(Name.split('-')) > 1 and not Name[:5] == 'p_WC_':
-                    print("Promoter Dataset | Promoter '%s' contains '-' in XXXp promoter name format: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | Promoter '%s' contains '-' in XXXp promoter name format: %s" % (
+                    PromoterID, Name))
                 if len(Name.split('-')) > 2:
-                    print("Promoter Dataset | Promoter '%s' contains more than two '-' in the promoter name: %s" % (PromoterID, Name))
+                    print("Promoter Dataset | Promoter '%s' contains more than two '-' in the promoter name: %s" % (
+                    PromoterID, Name))
 
             TargetGeneSymbol = None
             TargetGeneSymbolsOnly = list()
@@ -539,21 +548,21 @@ class FPromoter(FDataset):
                     TargetGeneSymbol = Name
 
                 # DL: INCOMPLETE Exception handling:
-                    # p_WC_insA-1B-1-insAB-1
-                    # p_WC_insA-2B-2-afuBC-insAB-2
-                    # p_WC_insA-3B-3-insAB-3
-                    # p_WC_insA-4B-4-insAB-4
-                    # p_WC_insC-1D-1-insCD-1
-                    # p_WC_insC-2D-2-insCD-2
-                    # p_WC_insC-3D-3-insCD-3
-                    # p_WC_insC-4D-4-ygeONM-insCD-4
-                    # p_WC_insC-6D-6-insCD-6
-                    # p_WC_insE-2F-2-insEF-2
-                    # p_WC_insE-3F-3-insEF-3
-                    # p_WC_insE-4F-4-insEF-4
-                    # p_WC_insE-5F-5-insEF-5
-                    # p_WC_insO-2-yjhWV
-                    # p_WC_eaeH-insE-1F-1-insEF-1
+                # p_WC_insA-1B-1-insAB-1
+                # p_WC_insA-2B-2-afuBC-insAB-2
+                # p_WC_insA-3B-3-insAB-3
+                # p_WC_insA-4B-4-insAB-4
+                # p_WC_insC-1D-1-insCD-1
+                # p_WC_insC-2D-2-insCD-2
+                # p_WC_insC-3D-3-insCD-3
+                # p_WC_insC-4D-4-ygeONM-insCD-4
+                # p_WC_insC-6D-6-insCD-6
+                # p_WC_insE-2F-2-insEF-2
+                # p_WC_insE-3F-3-insEF-3
+                # p_WC_insE-4F-4-insEF-4
+                # p_WC_insE-5F-5-insEF-5
+                # p_WC_insO-2-yjhWV
+                # p_WC_eaeH-insE-1F-1-insEF-1
                 # elif N_SplitName == 2:
                 #
                 #     TargetGeneSymbol =
@@ -571,13 +580,15 @@ class FPromoter(FDataset):
 
             if not TargetGeneSymbol:
                 if self.Switch4DebugDataset:
-                    print('Promoter Dataset | ', 'Promoter %s contains an irregular name format to parse: %s' % (PromoterID, Name))
+                    print('Promoter Dataset | ',
+                          'Promoter %s contains an irregular name format to parse: %s' % (PromoterID, Name))
                 IrregularNames += 1
                 TargetGeneSymbol = Name
             # Check if the gene is expressed by multiple promoters
             if self.Switch4DebugDataset:
                 if TargetGeneSymbol in self.Sym_PromoterTargetGenes:
-                    print('Promoter Dataset | ', 'The gene symbol %s is expressed by multiple promoters' % TargetGeneSymbol)
+                    print('Promoter Dataset | ',
+                          'The gene symbol %s is expressed by multiple promoters' % TargetGeneSymbol)
             self.Sym_PromoterTargetGenes.append(TargetGeneSymbol)
         if self.Switch4DebugDataset:
             print('Promoter Dataset | ', '# of Irregular Names: ', IrregularNames)
@@ -596,7 +607,6 @@ class FPromoter(FDataset):
         # Comp.Gene.Sym2ID_Genes['']
         # Comp.Gene.ID2Idx_Genes['']
         # Comp.Gene.Sym2Idx_Genes['']
-
 
 
 class FRNA(FDataset):
@@ -820,7 +830,7 @@ class FComplex(FDataset):
 
         self.NUniq_Complexes = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()  # MasterLocalizations
 
     def SetUpData(self, Dataset, Comp):
         Proteins = Dataset['proteins.tsv']
@@ -835,7 +845,8 @@ class FComplex(FDataset):
             ID = self.RemoveLocalizationFromMolName(ID)
             self.ID2Count_Proteins_Temp[ID] = int(Count)
 
-        ComplexCounts = Dataset['Counts4AllProteinMonomersAndCPLXsForComplexation_DL_44_totalIs_42_8_Complexation_BulkMolecules.tsv']
+        ComplexCounts = Dataset[
+            'Counts4AllProteinMonomersAndCPLXsForComplexation_DL_44_totalIs_42_8_Complexation_BulkMolecules.tsv']
         for Value in ComplexCounts:
             ID, Count, Request = Value
             IDWithoutLocalization = self.RemoveLocalizationFromMolName(ID)
@@ -876,7 +887,8 @@ class FComplex(FDataset):
         self.NUniq_Complexes = len(self.ID_Complexes)
 
         # Add to the Master Dataset
-        self.AddToMaster(Comp.Master, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes, self.MW_Complexes)
+        self.AddToMaster(Comp.Master, self.ID_Complexes, self.MolType_Complexes, self.Count_Complexes,
+                         self.MW_Complexes)
 
 
 class FComplexation(FDataset):
@@ -899,7 +911,7 @@ class FComplexation(FDataset):
 
         self.IDModification = dict()
 
-        self.ID_UnregisteredFromCPLXRXN = list()   # Mostly additional metabolites
+        self.ID_UnregisteredFromCPLXRXN = list()  # Mostly additional metabolites
         self.MolType_UnregisteredFromCPLXRXN = 'MetabolitesUnregisteredFromCPLXRXN'
         self.Count_UnregisteredFromCPLXRXN = 0
         self.MW_UnregisteredFromCPLXRXN = 0
@@ -1065,7 +1077,7 @@ class FComplexation(FDataset):
             'ENTF-PANT': 'ENTF-MONOMER',
             'PHOSPHO-OMPR': 'OMPR-MONOMER',
             'G7678-MONOMER': 'MONOMER0-2341',
-            'EG10245-MONOMER': 'MONOMER0-2383',   # DNA polymerase III, &gamma; subunit
+            'EG10245-MONOMER': 'MONOMER0-2383',  # DNA polymerase III, &gamma; subunit
             # 'MONOMER0-4195': 'EG10374-MONOMER',   # CPLX0-7885
             # 'MONOMER0-4196': 'EG10374-MONOMER',   # CPLX0-7885
             # 'SAMDC-ALPHA-MONOMER': 'SPED-MONOMER',
@@ -1104,7 +1116,8 @@ class FComplexation(FDataset):
         Data_NotInMasterDataset_NotAddedToUnregistered_Temp = list()
         for Value in Complexations:
             ComplexationProcess, ComplexationStoichiometry, ComplexationID, ComplexationDirection = Value
-            for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+            for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split(
+                    '},'):
                 for LabelDataPair in MoleculeInfo.split(','):
                     Label, Data = LabelDataPair.strip().split(': ')
                     if Label == '"molecule"':
@@ -1130,9 +1143,10 @@ class FComplexation(FDataset):
 
         self.NUniq_UnregisteredFromCPLXRXN = len(self.ID_UnregisteredFromCPLXRXN)
         self.Count_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)
-        self.MW_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)   # TODO: get values from database
+        self.MW_UnregisteredFromCPLXRXN = np.zeros(self.NUniq_UnregisteredFromCPLXRXN)  # TODO: get values from database
 
-        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN, self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromCPLXRXN, self.MolType_UnregisteredFromCPLXRXN,
+                         self.Count_UnregisteredFromCPLXRXN, self.MW_UnregisteredFromCPLXRXN)
 
         self.NMax_ComplexationMolParts = len(self.ID_MolsInCPLXRXN)
 
@@ -1140,11 +1154,12 @@ class FComplexation(FDataset):
             ComplexationProcess, ComplexationStoichiometry, ComplexationID, ComplexationDirection = Value
             assert ComplexationID not in self.ID_Complexations, '%s' % ComplexationID
             self.ID_Complexations.append(ComplexationID)
-            self.ID2Idx_Complexations[ComplexationID] = len(self.ID_Complexations) # = i
+            self.ID2Idx_Complexations[ComplexationID] = len(self.ID_Complexations)  # = i
             self.Dir_RevComplexations[i] = ComplexationDirection
 
             CoeffArray = np.zeros(self.NMax_ComplexationMolParts)
-            for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
+            for MoleculeInfo in ComplexationStoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split(
+                    '},'):
                 Coeff = None
                 Idx = None
                 for LabelDataPair in MoleculeInfo.split(','):
@@ -1176,7 +1191,6 @@ class FEquilibrium(FDataset):
         self.Rate_EQMRXNReverse = 0
         self.Dir_RevEQMRXNs = 0  # Rev for Reversibility
 
-
         self.ID_MolsInEQMRXN = list()
         self.ID2Idx_MolsInEQMRXN = dict()
         self.Coeff_MolsInEQMRXN = list()
@@ -1189,7 +1203,7 @@ class FEquilibrium(FDataset):
         # To handle unregistered metabolites
         self.ID_Metabolites = list()
 
-        self.ID_UnregisteredFromEQMRXN = list()   # Mostly additional metabolites
+        self.ID_UnregisteredFromEQMRXN = list()  # Mostly additional metabolites
         self.MolType_UnregisteredFromEQMRXN = 'MetabolitesUnregisteredFromEQMRXN'
         self.Count_UnregisteredFromEQMRXN = 0
         self.MW_UnregisteredFromEQMRXN = 0
@@ -1213,7 +1227,6 @@ class FEquilibrium(FDataset):
         #     self.ID_
         #
         #     Process, Stoichiometry, ID, Direction, ForwardRate, ReverseRate, OriginalReverseRate = EQMRXNs
-
 
         EQMRXNs = Dataset['equilibriumReactions.tsv']
 
@@ -1280,12 +1293,12 @@ class FEquilibrium(FDataset):
                         else:
                             N_Mol_Repeated += 1
 
-
         self.NUniq_UnregisteredFromEQMRXN = len(self.ID_UnregisteredFromEQMRXN)
         self.Count_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)
-        self.MW_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)   # TODO: get values from database
+        self.MW_UnregisteredFromEQMRXN = np.zeros(self.NUniq_UnregisteredFromEQMRXN)  # TODO: get values from database
 
-        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN, self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromEQMRXN, self.MolType_UnregisteredFromEQMRXN,
+                         self.Count_UnregisteredFromEQMRXN, self.MW_UnregisteredFromEQMRXN)
 
         self.NMax_EQMRXNMolParts = len(self.ID_MolsInEQMRXN)
 
@@ -1293,7 +1306,7 @@ class FEquilibrium(FDataset):
             Process, Stoichiometry, EQMRXNID, EQMRXNDirection, ForwardRate, ReverseRate, OriginalReverseRate = Value
             assert EQMRXNID not in self.ID_EQMRXNs, '%s' % EQMRXNID
             self.ID_EQMRXNs.append(EQMRXNID)
-            self.ID2Idx_EQMRXNs[EQMRXNID] = len(self.ID_EQMRXNs) # = i
+            self.ID2Idx_EQMRXNs[EQMRXNID] = len(self.ID_EQMRXNs)  # = i
             self.Rate_EQMRXNForward[i] = ForwardRate
             self.Rate_EQMRXNReverse[i] = ReverseRate
             self.Dir_RevEQMRXNs[i] = EQMRXNDirection
@@ -1324,7 +1337,7 @@ class FMetabolism(FDataset):
 
         self.ID_METRXNs = list()
         self.ID2Idx_METRXNs = dict()
-        self.Dir_RevMETRXNs = list()   # Rev for Reversibility
+        self.Dir_RevMETRXNs = list()  # Rev for Reversibility
         self.ID_Enzymes4METRXN = list()
         self.ID_Substrates4METRXN = list()
         self.ID2Idx_Enzymes4METRXN = dict()
@@ -1336,17 +1349,20 @@ class FMetabolism(FDataset):
 
         self.NUniq_METRXNs = 0
 
+        # Tools
         self.IDModification = dict()
+        self.ReversibilityBinaryDict = dict()
+        self.SubstratesToSkipWithTags = list()
 
         # Unregistered Metabolites
-        self.ID_UnregisteredFromMETRXN_Metabolites = list()   # Mostly additional metabolites
+        self.ID_UnregisteredFromMETRXN_Metabolites = list()  # Mostly additional metabolites
         self.MolType_UnregisteredFromMETRXN_Metabolites = 'UnregisteredMetabolitesFromMETRXN'
         self.Count_UnregisteredFromMETRXN_Metabolites = 0
         self.MW_UnregisteredFromMETRXN_Metabolites = 0
         self.NUniq_UnregisteredFromMETRXN_Metabolites = 0
 
         # Unregistered Enzymes
-        self.ID_UnregisteredFromMETRXN_Enzymes = list()   # Mostly additional Enzymes
+        self.ID_UnregisteredFromMETRXN_Enzymes = list()  # Mostly additional Enzymes
         self.MolType_UnregisteredFromMETRXN_Enzymes = 'UnregisteredEnzymesFromMETRXN'
         self.Count_UnregisteredFromMETRXN_Enzymes = 0
         self.MW_UnregisteredFromMETRXN_Enzymes = 0
@@ -1357,7 +1373,7 @@ class FMetabolism(FDataset):
         # self.ID_Substrates4TCACycle = list()
         # self.ID_Enzymes4TCACycle = list()
         self.NUniq_RXNsInTCACycle = 0
-        
+
         self.ID_TCARXNs = list()
         self.ID2Idx_TCARXNs = dict()
         self.Dir_RevTCARXNs = list()
@@ -1370,10 +1386,51 @@ class FMetabolism(FDataset):
         self.Coeff_MolsInTCARXN = list()
         self.NUniq_MolsInTCARXN = 0
 
+        # Carbonic anhydrase 2
+
+        # RAW RXN information
+        self.RXNID = list()
+        self.RXNID2EQN = dict()
+        self.RXNID2Dir = dict()
+        self.RXNID2SubstrateID = dict()
+        self.RXNID2CoeffDict = dict()
+        self.RXNID2ENZID = dict()
+        self.RXNID2CofactorID = dict()
+        self.RXNID2TAG = dict()
+
+        # RAW Enzyme information
+        self.ENZID = list()
+        self.ENZID2Kcat = dict()
+        self.ENZID2Substrate_KmDict = dict()  # will contain another dictionary{Substrate:KM}
+
+        # Procesed RXN information
+        self.RXN_AllSubstrates = list()
+        self.RXN_RXNID = list()  # Original ID + FWD or REV
+        self.RXN_RXNID2Idx = dict()
+        self.RXN_Reactant = list()  # from EQN Parsing
+        self.RXN_Product = list()  # from EQN Parsing
+        self.RXN_ENZID = list()  # from RXN data
+        self.RXN_ENZSubstrate = list()  # the reactant that Enzyme acts on
+        self.RXN_Kcat = list()  # from ENZID2Kcat
+        self.RXN_Km = list()  # from ENZID2Substrate_List and ENZID2Substrate_KmDict
+
+        self.RXN_StoichiometricMatrix_SubstrateID2Idx = dict()
+        self.RXN_StoichiometricMatrix_SubstrateID = list()
+        self.RXN_StoichiometricMatrix_Coefficient = list()
+
         super().__init__()
 
     # Reactions and kinetic parameters (K values)
     def SetUpData(self, Dataset, Comp):
+        # Carbonic Anhydrase 2
+        self.CarbonicAnhydrase2()
+        # print('CA2 set up completed')
+
+        # TCA
+
+        # Build System
+        self.BuildSystemFromLibrary()
+
         self.SetUpMetaboliteIDRef(Dataset)
 
         METRXNs = Dataset['reactions.tsv']
@@ -1414,9 +1471,8 @@ class FMetabolism(FDataset):
 
         self.NUniq_METRXNs = len(METRXNs)
 
-        ReversibilityBinaryDict = dict()
-        ReversibilityBinaryDict['true'] = 1
-        ReversibilityBinaryDict['false'] = 0
+        self.ReversibilityBinaryDict['true'] = 1
+        self.ReversibilityBinaryDict['false'] = 0
 
         # Build indices for stoichiometry matrix
         N_Mol_Total = 0
@@ -1446,15 +1502,21 @@ class FMetabolism(FDataset):
 
         self.NUniq_UnregisteredFromMETRXN_Metabolites = len(self.ID_UnregisteredFromMETRXN_Metabolites)
         self.Count_UnregisteredFromMETRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromMETRXN_Metabolites)
-        self.MW_UnregisteredFromMETRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromMETRXN_Metabolites)   # TODO: get values from database
-        
-        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMETRXN_Metabolites, self.MolType_UnregisteredFromMETRXN_Metabolites, self.Count_UnregisteredFromMETRXN_Metabolites, self.MW_UnregisteredFromMETRXN_Metabolites)
+        self.MW_UnregisteredFromMETRXN_Metabolites = np.zeros(
+            self.NUniq_UnregisteredFromMETRXN_Metabolites)  # TODO: get values from database
+
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMETRXN_Metabolites,
+                         self.MolType_UnregisteredFromMETRXN_Metabolites, self.Count_UnregisteredFromMETRXN_Metabolites,
+                         self.MW_UnregisteredFromMETRXN_Metabolites)
 
         self.NUniq_UnregisteredFromMETRXN_Enzymes = len(self.ID_UnregisteredFromMETRXN_Enzymes)
         self.Count_UnregisteredFromMETRXN_Enzymes = np.zeros(self.NUniq_UnregisteredFromMETRXN_Enzymes)
-        self.MW_UnregisteredFromMETRXN_Enzymes = np.zeros(self.NUniq_UnregisteredFromMETRXN_Enzymes)   # TODO: get values from database
-        
-        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMETRXN_Enzymes, self.MolType_UnregisteredFromMETRXN_Enzymes, self.Count_UnregisteredFromMETRXN_Enzymes, self.MW_UnregisteredFromMETRXN_Enzymes)
+        self.MW_UnregisteredFromMETRXN_Enzymes = np.zeros(
+            self.NUniq_UnregisteredFromMETRXN_Enzymes)  # TODO: get values from database
+
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMETRXN_Enzymes,
+                         self.MolType_UnregisteredFromMETRXN_Enzymes, self.Count_UnregisteredFromMETRXN_Enzymes,
+                         self.MW_UnregisteredFromMETRXN_Enzymes)
 
         self.NMax_METRXNMolParts = len(self.ID_MolsInMETRXN)
 
@@ -1480,18 +1542,17 @@ class FMetabolism(FDataset):
 
         LocalizationTags = ['[c]', '[p]']
 
-        SubstratesToSkipWithTags = list()
         for Substrate in SubstratesToSkip:
             for Tag in LocalizationTags:
                 SubstrateWithTag = Substrate + Tag
-                SubstratesToSkipWithTags.append(SubstrateWithTag)
+                self.SubstratesToSkipWithTags.append(SubstrateWithTag)
 
         for i, Value in enumerate(METRXNs):
             RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = Value
             assert RXNID not in self.ID2Idx_METRXNs
-            self.ID2Idx_METRXNs[RXNID] = len(self.ID_METRXNs) # = i
+            self.ID2Idx_METRXNs[RXNID] = len(self.ID_METRXNs)  # = i
             self.ID_METRXNs.append(RXNID)
-            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
+            RXNReversibilityBinary = self.ReversibilityBinaryDict[RXNReversibility]
             self.Dir_RevMETRXNs.append(RXNReversibilityBinary)
 
             if RXNEnzymeID.strip('[').strip(']'):
@@ -1524,21 +1585,24 @@ class FMetabolism(FDataset):
                     if int(Coeff) < 0:
                         if Substrate == None:
                             Substrate = MolID
-                        elif Substrate in SubstratesToSkipWithTags:
+                        elif Substrate in self.SubstratesToSkipWithTags:
                             Substrate = MolID
                         elif Substrate.__contains__('+'):
                             Substrate = MolID
 
-            self.ID_Substrates4METRXN.append(Substrate)   # Only one substrate taken from one reaction
+            self.ID_Substrates4METRXN.append(Substrate)  # Only one substrate taken from one reaction
             self.Coeff_MolsInMETRXN.append(CoeffArray)
         self.NUniq_MolsInMETRXN = len(self.ID_MolsInMETRXN)
 
+        self.TCACycle(Dataset, Comp)
+        self.CarbonicAnhydrase2()
 
+    def TCACycle(self, Dataset, Comp):
         # TCA CYCLE RXN IDs ONLY
         TCACycle = Dataset['DL_TCAcycleI_prokaryotic.tsv']
 
         RXNIDChange = {
-            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN':   'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
+            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN': 'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
         }
 
         for i, RXN in enumerate(TCACycle):
@@ -1550,14 +1614,14 @@ class FMetabolism(FDataset):
 
         self.NUniq_RXNsInTCACycle = len(self.ID_RXNsInTCACycle)
 
-
         # TCA CYCLE INDEPENDENT
         TCARXNs = Dataset['reactions_TCA.tsv']
 
         RXNIDChange = {
-            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN':   'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
+            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN': 'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
         }
 
+        N_Mol_Total = 0
         for Value in TCARXNs:
             for MoleculeInfo in Value[1].strip().strip('"').strip('[').strip(']').strip('{').split('},'):
                 for MolIDCoeffPair in MoleculeInfo.strip().split(','):
@@ -1575,9 +1639,9 @@ class FMetabolism(FDataset):
             if RXNID in RXNIDChange:
                 RXNID = RXNIDChange[RXNID]
             assert RXNID in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % RXNID
-            self.ID2Idx_TCARXNs[RXNID] = len(self.ID_TCARXNs) # = i
+            self.ID2Idx_TCARXNs[RXNID] = len(self.ID_TCARXNs)  # = i
             self.ID_TCARXNs.append(RXNID)
-            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
+            RXNReversibilityBinary = self.ReversibilityBinaryDict[RXNReversibility]
             self.Dir_RevTCARXNs.append(RXNReversibilityBinary)
 
             CoeffArray = np.zeros(self.NMax_TCARXNMolParts)
@@ -1590,7 +1654,7 @@ class FMetabolism(FDataset):
                     if MolID not in self.ID_MolsInTCARXN:
                         self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
                         self.ID_MolsInTCARXN.append(MolID)
-                        
+
                     Idx = self.ID2Idx_MolsInTCARXN[MolID]
                     CoeffArray[Idx] = int(Coeff)
 
@@ -1598,18 +1662,186 @@ class FMetabolism(FDataset):
                     if int(Coeff) < 0:
                         if Substrate == None:
                             Substrate = MolID
-                        elif Substrate in SubstratesToSkipWithTags:
+                        elif Substrate in self.SubstratesToSkipWithTags:
                             Substrate = MolID
                         elif Substrate.__contains__('+'):
                             Substrate = MolID
 
-            self.ID_Substrates4TCARXN.append(Substrate)   # Only one substrate taken from one reaction
+            self.ID_Substrates4TCARXN.append(Substrate)  # Only one substrate taken from one reaction
             self.Coeff_MolsInTCARXN.append(CoeffArray)
         self.NUniq_MolsInTCARXN = len(self.ID_MolsInTCARXN)
 
+    def CarbonicAnhydrase2(self):
+        # Carbonic anhydrase 2 reaction
+
+        '''protein ca2(CO2 + H2O —> OHCOO- + H+)
+        {
+        cofactor co1(zn2+);
+        };'''
+
+        # Reaction information
+        ID_RXN = 'RXN0-5224'
+        EQN = 'CO2 + H2O —> OHCOO- + H+'
+        Dir = 0  # 0 for reversible, 1 for LEFT-TO-RIGHT, -1 for RIGHT-TO-LEFT
+        ID_Substrates = [
+            'CARBON-DIOXIDE[c]',
+            'WATER[c]',
+            'HCO3[c]',
+            'PROTON[c]',
+        ]
+        ID_ENZ = 'EG12319-MONOMER'  # the correct one is CPLX0-7521, which is a complex of EG12319-MONOMER + ZN+2
+        Coeff_Dict = {
+            'CARBON-DIOXIDE[c]': -1,
+            'WATER[c]': -1,
+            'HCO3[c]': 1,
+            'PROTON[c]': 1,
+        }
+
+        ID_Cofactor = 'ZN+2[c]'
+        Tag = 'CA2'
+
+        # Enzyme information
+        kcatOverkM_FWD = 67
+        kcat = 400
+        kM_CO2 = kcat / kcatOverkM_FWD
+        kM_HCO3 = 20
+        kMs = {
+            'CARBON-DIOXIDE[c]': kM_CO2,
+            'HCO3[c]': kM_HCO3,
+        }
+
+        RXN_Info = [ID_RXN, EQN, Dir, ID_ENZ, ID_Cofactor, Tag]
+        ENZ_Info = [ID_ENZ, kcat, kMs]
+
+        self.AddToLibrary_RXN(RXN_Info)
+        self.AddToLibrary_ENZ(ENZ_Info)
+
+    def ParseEQN(self, EQN):
+        ID_Substrates = []
+        Coeff_Dict = {}
+
+        # TODO: REPLACE THE BELOW WITH PARSING CODE FROM DATASET CODE
+        ID_Substrates = [
+            'CARBON-DIOXIDE[c]',
+            'WATER[c]',
+            'HCO3[c]',
+            'PROTON[c]',
+        ]
+
+        Coeff_Dict = {
+            'CARBON-DIOXIDE[c]': -1,
+            'WATER[c]': -1,
+            'HCO3[c]': 1,
+            'PROTON[c]': 1,
+        }
+
+        return ID_Substrates, Coeff_Dict
+
+    def AddToLibrary_RXN(self, RXN_Info):
+        ID_RXN, EQN, Dir, ID_ENZ, ID_Cofactor, Tag = RXN_Info
+
+        ID_Substrates, Coeff_Dict = self.ParseEQN(EQN)
+
+        # RAW RXN information
+        self.RXNID.append(ID_RXN)
+        self.RXNID2EQN[ID_RXN] = EQN  # kept for troubleshooting
+        self.RXNID2Dir[ID_RXN] = Dir
+        self.RXNID2SubstrateID[ID_RXN] = ID_Substrates
+        self.RXNID2CoeffDict[ID_RXN] = Coeff_Dict
+        self.RXNID2ENZID[ID_RXN] = ID_ENZ
+        self.RXNID2CofactorID[ID_RXN] = ID_Cofactor
+        self.RXNID2TAG[ID_RXN] = Tag
+
+    def AddToLibrary_ENZ(self, ENZ_Info):
+        ID_ENZ, kcat, kMs = ENZ_Info
+
+        # RAW ENZ information
+        self.ENZID.append(ID_ENZ)
+        self.ENZID2Kcat[ID_ENZ] = kcat
+        self.ENZID2Substrate_KmDict[ID_ENZ] = kMs
+
+    def ReverseCoeff(self, Coeff_Dict):
+        Coeff_Dict_Reversed = {}
+        for Substrate, Coeff in Coeff_Dict.items():
+            Coeff_Dict_Reversed[Substrate] = -Coeff
+        return Coeff_Dict_Reversed
+
+    def BuildSystemSubstrateList(self):
+        self.RXN_AllSubstrates = list()
+        for Substrates in self.RXNID2SubstrateID.values():
+            for Substrate in Substrates:
+                if Substrate not in self.RXN_AllSubstrates:
+                    self.RXN_AllSubstrates.append(Substrate)
+
+    def BuildSystemFromLibrary(self):
+        self.BuildSystemSubstrateList()
+
+        for ID_RXN in self.RXNID:
+            Dir_RXN = self.RXNID2Dir[ID_RXN]
+
+            # LEFT_TO_RIGHT Reaction
+            if Dir_RXN == 1:
+                self.AddRXNToSystem(ID_RXN, 'FWD', self.RXNID2CoeffDict[ID_RXN])
+
+            # RIGHT_TO_LEFT Reaction
+            elif Dir_RXN == -1:
+                Coeff_Dict_Reverse = self.ReverseCoeff(self.RXNID2CoeffDict[ID_RXN])
+                self.AddRXNToSystem(ID_RXN, 'REV', Coeff_Dict_Reverse)
+
+            # REVERSIBLE Reactions
+            elif Dir_RXN == 0:
+                self.AddRXNToSystem(ID_RXN, 'FWD', self.RXNID2CoeffDict[ID_RXN])
+
+                Coeff_Dict_Reverse = self.ReverseCoeff(self.RXNID2CoeffDict[ID_RXN])
+                self.AddRXNToSystem(ID_RXN, 'REV', Coeff_Dict_Reverse)
+
+            # Unidentifiable Reaction Directions
+            else:
+                self.DebugPrint(f'Reaction Direction Parsing Error {Dir_RXN} for Reaction ID {ID_RXN}')
+
+    def AddRXNToSystem(self, ID_RXN, Dir, Coeff_Dict):
+        # RXNDirection-independent
+        ID_ENZ = self.RXNID2ENZID[ID_RXN]
+        ID_Cofactor = self.RXNID2CofactorID[ID_RXN]  # Most likely the same cofactor for both reaction directions
+
+        # Procesed RXN information
+        assert ID_RXN not in self.RXN_RXNID
+        self.RXN_RXNID2Idx[ID_RXN] = len(self.RXN_RXNID)
+        self.RXN_RXNID.append(ID_RXN + '_' + Dir)  # Original ID + FWD or REV
+        self.RXN_ENZID.append(ID_ENZ)  # from RXN data
+        self.RXN_Kcat.append(self.ENZID2Kcat[ID_ENZ])  # from ENZID2Kcat
+
+        # RXNDirection-dependent
+        Reactants = list()
+        Products = list()
+        Coeffs = np.zeros(len(self.RXN_AllSubstrates))
+        for Substrate, Coeff in Coeff_Dict.items():
+            # Stoichiometry table referencing
+            if Substrate not in self.RXN_StoichiometricMatrix_SubstrateID:
+                self.RXN_StoichiometricMatrix_SubstrateID2Idx[Substrate] = len(
+                    self.RXN_StoichiometricMatrix_SubstrateID)
+                self.RXN_StoichiometricMatrix_SubstrateID.append(Substrate)
+
+            # Coefficient array
+            Coeffs[self.RXN_StoichiometricMatrix_SubstrateID2Idx[Substrate]] = Coeff
+
+            # Reactant % Product parsing
+            if Coeff < 0:
+                Reactants.append(Substrate)
+                if Substrate in self.ENZID2Substrate_KmDict[ID_ENZ].keys():
+                    self.RXN_ENZSubstrate.append(Substrate)
+                    self.RXN_Km.append(self.ENZID2Substrate_KmDict[ID_ENZ][Substrate])
+            elif Coeff > 0:
+                Products.append(Substrate)
+            else:
+                self.DebugPrint(f'Coeff error: {Substrate}:{Coeff} in {ID_RXN}')
+        self.RXN_Reactant.append(Reactants)
+        self.RXN_Product.append(Products)
+        self.RXN_StoichiometricMatrix_Coefficient.append(Coeffs)
+
 
 class FKinetics(FDataset):
-    def __init__(self): # MasterLocalizations
+    def __init__(self):  # MasterLocalizations
         self.PrintTag = 'Kinetics | '
 
         self.MolType_Kinetics = 'Kinetics'
@@ -1626,7 +1858,7 @@ class FKinetics(FDataset):
         self.Const_Kcat_Default = 0
         self.Const_Km_Default = 0
 
-        self.ID_UnregisteredFromKINRXN = list()   # Mostly additional metabolites
+        self.ID_UnregisteredFromKINRXN = list()  # Mostly additional metabolites
         self.MolType_UnregisteredFromKINRXN = 'MetabolitesUnregisteredFromKINRXN'
         self.Count_UnregisteredFromKINRXN = 0
         self.MW_UnregisteredFromKINRXN = 0
@@ -1634,7 +1866,7 @@ class FKinetics(FDataset):
 
         self.NUniq_KINRXNs = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()  # MasterLocalizations
 
     def SetUpData(self, Dataset, Comp):
         # This kinetic table has no info on pH condition
@@ -1643,7 +1875,7 @@ class FKinetics(FDataset):
         METRXNs = Dataset['reactions.tsv']
         ID_METRXNs = list()
         for METRXN in METRXNs:
-            ID_METRXNs.append(METRXN[0])   # METRXNID
+            ID_METRXNs.append(METRXN[0])  # METRXNID
 
         Kinetics_Filtered = list()
 
@@ -1654,8 +1886,8 @@ class FKinetics(FDataset):
 
         # Flatdata quality check for unregistered data 
         for Value in Kinetics:
-            PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs,\
-            SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters,\
+            PubmedID, Temp, Checked, Notes, Exclude, ConcentrationSubstrates, ReactionClassID, ReactionID, EnzymeIDs, \
+            SubstrateIDs, RateEquationType, Direction, kcat, kM, kI, CustomRateEquation, CustomParameters, \
             CustomParameterConstants, CustomParameterConstantValues, CustomParameterVariables, CheckedBy = Value
 
             SubstrateIDs = ast.literal_eval(SubstrateIDs)
@@ -1666,7 +1898,7 @@ class FKinetics(FDataset):
                 print('Kinetics Dataset | ', 'ReactionID not in ID_METRXNs: ', ReactionID)
 
             # Check and add unregistered molecule IDs
-            if EnzymeIDs not in Comp.Master.ID_Master:   # All EnzymeIDs contain only one EnzymeID
+            if EnzymeIDs not in Comp.Master.ID_Master:  # All EnzymeIDs contain only one EnzymeID
                 self.ID_UnregisteredFromKINRXN.append(EnzymeIDs)
                 print('Kinetics Dataset | ', 'EnzymeID not in ID_Master: ', EnzymeIDs)
 
@@ -1736,9 +1968,12 @@ class FKinetics(FDataset):
             self.Const_Km_Default = 10 ** -1
 
             # TODO: Currently only accepting a single kM from the flatdata,
-            kcat_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(self.ReplaceEmptyListWithValue(ast.literal_eval(kcat), 0))
-            kM_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(self.ReplaceEmptyListWithValue(ast.literal_eval(kM), self.Const_Km_Default))
-            kI_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(self.ReplaceEmptyListWithValue(ast.literal_eval(kI), 0))
+            kcat_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(
+                self.ReplaceEmptyListWithValue(ast.literal_eval(kcat), 0))
+            kM_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(
+                self.ReplaceEmptyListWithValue(ast.literal_eval(kM), self.Const_Km_Default))
+            kI_Adjusted = self.ReduceListWithMoreThanTwoElementsToOne(
+                self.ReplaceEmptyListWithValue(ast.literal_eval(kI), 0))
 
             # Adjust kcat based on temperature
             if Temp != 37:
@@ -1760,7 +1995,6 @@ class FKinetics(FDataset):
             self.Const_Kcat[i] = kcat_Adjusted
             self.Const_Km[i] = kM_Adjusted
             self.Const_Ki[i] = kI_Adjusted
-
 
     def ReplaceEmptyListWithValue(self, Variable, Value):
         if Variable == list():
@@ -1790,16 +2024,21 @@ class FTransporter(FDataset):
 
         self.ID_TRNRXNs = list()
         self.ID2Idx_TRNRXNs = dict()
-        self.Dir_RevTRNRXNs = list()   # Rev for Reversibility
+        self.Dir_RevTRNRXNs = list()  # Rev for Reversibility
         self.ID2EQN_TRNRXNs = dict()
         self.ID_Enzymes4TRNRXN = list()
+        # self.ID2Type_Enzymes4TRNRXN = dict()
         self.ID_Substrates4TRNRXN = list()
         # self.ID2Idx_Enzymes4TRNRXN = dict()
         self.NUniq_TRNRXNs = 0
 
+        self.ID_Transporters = list()
+        self.ID2ID_Enzyme2TRNRXN = dict()
+        self.ID2Type_Enzymes4TRNRXN = dict()
+
         self.ID_MolsInTRNRXN = list()
-        self.ID_MolsExcludedInTRNRXN = list()   # for debugging
-        self.ID_MolsAddedInTRNRXN = list()   # for extracellular molecules missing from the system
+        self.ID_MolsExcludedInTRNRXN = list()  # for debugging
+        self.ID_MolsAddedInTRNRXN = list()  # for extracellular molecules missing from the system
         self.ID2Idx_MolsInTRNRXN = dict()
         self.Coeff_MolsInTRNRXN = list()
         self.NUniq_MolsInTRNRXN = 0
@@ -1815,12 +2054,31 @@ class FTransporter(FDataset):
         self.MW_UnregisteredFromTRNRXN_Metabolites = 0
         self.NUniq_UnregisteredFromTRNRXN_Metabolites = 0
 
-        # # Unregistered Enzymes
-        # self.ID_UnregisteredFromTRNRXN_Enzymes = list()  # Mostly additional Enzymes
-        # self.MolType_UnregisteredFromTRNRXN_Enzymes = 'UnregisteredEnzymesFromTRNRXN'
-        # self.Count_UnregisteredFromTRNRXN_Enzymes = 0
-        # self.MW_UnregisteredFromTRNRXN_Enzymes = 0
-        # self.NUniq_UnregisteredFromTRNRXN_Enzymes = 0
+        # Unregistered Enzymes
+        self.ID_UnregisteredFromTRNRXN_Enzymes = list()  # Mostly additional Enzymes
+        self.MolType_UnregisteredFromTRNRXN_Enzymes = 'UnregisteredEnzymesFromTRNRXN'
+        self.Count_UnregisteredFromTRNRXN_Enzymes = 0
+        self.MW_UnregisteredFromTRNRXN_Enzymes = 0
+        self.NUniq_UnregisteredFromTRNRXN_Enzymes = 0
+
+        # Magnesium Pathway
+        self.ID_MolsInMgRXN = list()
+        self.ID_MgRXNs = list()
+        self.ID2Idx_MgRXNs = dict()
+        self.ID2EQN_MgRXNs = dict()
+        self.Dir_RevMgRXNs = list()
+        self.ID_Substrates4MgRXN = list()
+        self.ID_Enzymes4MgRXN = list()
+        self.ID2Idx_MolsInMgRXN = dict()
+        self.Coeff_MolsInMgRXN = list()
+        self.NUniq_MolsInMgRXN = 0
+        self.NUniq_EnzymesInMgRXN = 0
+
+        self.ID_UnregisteredFromMgRXN = list()  # Mostly additional metabolites
+        self.MolType_UnregisteredFromMgRXN = 'UnregisteredMoleculeFromMgRXN'
+        self.Count_UnregisteredFromMgRXN = 0
+        self.MW_UnregisteredFromMgRXN = 0
+        self.NUniq_UnregisteredFromMgRXN = 0
 
         super().__init__()
 
@@ -1831,8 +2089,12 @@ class FTransporter(FDataset):
 
         # The below modified file no longer contains html language <i>, </i>, etc
         Transporters_SubstratesDicts = list()
-        Transporters_SubstratesDicts.append(Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_SubInstances.tsv'])
-        Transporters_SubstratesDicts.append(Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_modified.tsv'])
+        Transporters_SubstratesDicts.append(
+            Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_SubInstances.tsv'])
+        Transporters_SubstratesDicts.append(
+            Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_modified.tsv'])
+        Transporters_SubstratesDicts.append(Dataset[
+                                                'Substrates_(reactants_and_products)_of_a_reaction_from_Reactions_of_pathway_from_Magnesium_pathway_Synonyms.tsv'])
 
         for i, Transporters_SubstratesDict in enumerate(Transporters_SubstratesDicts):
             for Names in Transporters_SubstratesDict:
@@ -1841,13 +2103,13 @@ class FTransporter(FDataset):
                 CommonName = ''
                 Synonyms = ''
 
-                if i == 0:   # All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_SubInstances.tsv
+                if i == 0:  # All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_SubInstances.tsv
                     Classes = list(Names[0].split(' // '))
                     ID = Names[3]
                     CommonName = Names[1]
                     Synonyms = Names[2]
 
-                elif i == 1:   # All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_modified.tsv
+                elif i >= 1:  # All_transporters_of_E._coli_K-12_substr._MG1655_SubstratesSynonyms_modified.tsv
                     # No class information
                     ID = Names[2]
                     CommonName = Names[0]
@@ -1867,9 +2129,14 @@ class FTransporter(FDataset):
                     continue
 
                 # Construct synonym dictionary
+                assert ID not in self.Name2ID_Substrates4TRNRXNs, self.PrintTag + 'Redundant Name (%s) found for ID %s' % (
+                ID, ID)
                 self.Name2ID_Substrates4TRNRXNs[ID] = ID
                 self.ID2Name_Substrates4TRNRXNs[ID].append(ID)
                 if ID != CommonName:
+                    if CommonName in self.Name2ID_Substrates4TRNRXNs:
+                        self.DebugPrint('Redundant Name (%s) found for ID %s' % (CommonName, ID))
+                        continue
                     self.Name2ID_Substrates4TRNRXNs[CommonName] = ID
                     self.ID2Name_Substrates4TRNRXNs[ID].append(CommonName)
                 for Synonym in Synonyms.split('//'):
@@ -1878,6 +2145,9 @@ class FTransporter(FDataset):
                     Synonym_Refined = Synonym.strip()
                     # self.DebugPrint('"%s"\t to \t"%s"' % (Synonym, Synonym_Refined))
                     # self.Name2ID_Substrates4TRNRXNs[Synonym] = ID
+                    if Synonym_Refined in self.Name2ID_Substrates4TRNRXNs:
+                        self.DebugPrint('Redundant Name "%s" found for ID "%s"' % (Synonym_Refined, ID))
+                        continue
                     self.Name2ID_Substrates4TRNRXNs[Synonym_Refined] = ID
                     self.ID2Name_Substrates4TRNRXNs[ID].append(Synonym_Refined)
 
@@ -1905,9 +2175,9 @@ class FTransporter(FDataset):
         self.Name2ID_Substrates4TRNRXNs.update(Comp.BuildingBlock.Name2ID_BuildingBlocks)
 
         Exceptions_Dict = {
-            'diphosphate'       : 'PPI',
-            'PPi'               : 'PPI',
-            'Pi'                : 'PI',
+            'diphosphate': 'PPI',
+            'PPi': 'PPI',
+            'Pi': 'PI',
         }
 
         for Synonym, ID in Exceptions_Dict.items():
@@ -1916,30 +2186,69 @@ class FTransporter(FDataset):
             self.ID2Name_Substrates4TRNRXNs[ID] = [Synonym]
 
         ReversibilityBinaryDict = {
-            'REVERSIBLE'            : 1,
-            'LEFT-TO-RIGHT'         : 0,
-            'PHYSIOL-LEFT-TO-RIGHT' : 0,
-            'RIGHT-TO-LEFT'         : 0,
+            'REVERSIBLE': 1,
+            'LEFT-TO-RIGHT': 0,
+            'PHYSIOL-LEFT-TO-RIGHT': 0,
+            'RIGHT-TO-LEFT': 0,
         }
 
         ReversibilityArrows = [' -> ', ' <--> ']
 
         self.Dict_LocalizationTags = {
-            'cytosol'               : '[c]',
-            'periplasm'             : '[p]',
-            'inner membrane'        : '[i]',
-            'outer membrane'        : '[o]',
-            'extracellular space'   : '[e]',
+            'cytosol': '[c]',
+            'periplasm': '[p]',
+            'inner membrane': '[i]',
+            'outer membrane': '[o]',
+            'extracellular space': '[e]',
 
-            'out'   : '[e]',   # RXN-22326
-            'in'    : '[p]',  # RXN-22326
+            'out': '[e]',  # RXN-22326
+            'in': '[p]',  # RXN-22326
         }
+
+        # Transporter types for default rate determination
+        Transporters_Enzymes_CommonNames = Dataset['Transporters_of_E._coli_K-12_substr._MG1655_CommonNames.tsv']
+        Transporters_Enzymes_IDs = Dataset['Transporters_of_E._coli_K-12_substr._MG1655_IDs.tsv']
+
+        Transporters_Unregistered = list()
+        for Enzyme_CommonName, Enzyme_ID in zip(Transporters_Enzymes_CommonNames, Transporters_Enzymes_IDs):
+            ID_Enzyme = Enzyme_ID[0]
+            CommonName_Enzyme = Enzyme_CommonName[0]
+            Type_Enzyme = ''
+            ID_RXNs = Enzyme_ID[3].split(' // ')
+
+            if ID_Enzyme not in Comp.Master.ID_Master and ID_Enzyme not in self.ID_UnregisteredFromTRNRXN_Enzymes:
+                self.DebugPrint('Unregistered Transporter found: %s' % ID_Enzyme + ' aka ' + CommonName_Enzyme)
+                Transporters_Unregistered.append(ID_Enzyme)
+                self.ID_UnregisteredFromTRNRXN_Enzymes.append(ID_Enzyme)
+
+            if ID_Enzyme not in self.ID_Transporters:
+                self.ID_Transporters.append(ID_Enzyme)
+                self.ID2ID_Enzyme2TRNRXN[ID_Enzyme] = ID_RXNs
+                if 'channel' in CommonName_Enzyme or 'porin' in CommonName_Enzyme:
+                    Type_Enzyme = 'Channel'
+                else:
+                    Type_Enzyme = 'Carrier'
+                self.ID2Type_Enzymes4TRNRXN[ID_Enzyme] = Type_Enzyme
+
+        self.DebugPrint('# of Unregistered Transporters found: %s' % str(len(Transporters_Unregistered)))
+
+        self.NUniq_UnregisteredFromTRNRXN_Enzymes = len(self.ID_UnregisteredFromTRNRXN_Enzymes)
+        self.Count_UnregisteredFromTRNRXN_Enzymes = np.zeros(self.NUniq_UnregisteredFromTRNRXN_Enzymes)
+        self.MW_UnregisteredFromTRNRXN_Enzymes = np.zeros(
+            self.NUniq_UnregisteredFromTRNRXN_Enzymes)  # TODO: get values from database
+
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromTRNRXN_Enzymes,
+                         self.MolType_UnregisteredFromTRNRXN_Enzymes, self.Count_UnregisteredFromTRNRXN_Enzymes,
+                         self.MW_UnregisteredFromTRNRXN_Enzymes)
 
         # The modifications made:
         # TRANS-RXN0-562, RXN66-448: RIGHT-TO-LEFT reaction direction, molecule localizations
         # character beta from
-        TransporterReactions = Dataset['All_transporter_reactions_of_E._coli_K-12_substr._MG1655_ReExported_Modified.tsv']
+        TransporterReactions = Dataset[
+            'All_transporter_reactions_of_E._coli_K-12_substr._MG1655_ReExported_Modified.tsv']
         for TransporterReaction in TransporterReactions:
+            SkipRXN = False
+
             ID_TRNRXN = TransporterReaction[0]
             EQN_TRNRXN = TransporterReaction[2]
             self.ID2EQN_TRNRXNs[ID_TRNRXN] = EQN_TRNRXN
@@ -1954,6 +2263,7 @@ class FTransporter(FDataset):
                 EQN_Split = EQN_TRNRXN.split(' <--> ')
             assert len(EQN_Split) == 2, self.PrintTag + 'Equation is not in the expected format: %s' % EQN_TRNRXN
 
+            ID_Substrates = list()
             for i, Substrates in enumerate(EQN_Split):
                 for Substrate in Substrates.split(' + '):
                     Substrate_CoeffSplit = re.split('^(\d\s|n\s)', Substrate)[-1]
@@ -1962,7 +2272,8 @@ class FTransporter(FDataset):
                     if MolID not in self.Name2ID_Substrates4TRNRXNs:
                         if MolID not in self.ID_MolsExcludedInTRNRXN:
                             self.ID_MolsExcludedInTRNRXN.append(MolID)
-                            self.DebugPrint('ID_Substrate not found in self.Name2ID_Substrates4TRNRXNs: %s' % Substrate_CoeffSplit)
+                            self.DebugPrint(
+                                'ID_Substrate not found in self.Name2ID_Substrates4TRNRXNs: %s' % Substrate_CoeffSplit)
                         continue
                     ID_Substrate = MolID + LocalizationTag
 
@@ -1972,13 +2283,12 @@ class FTransporter(FDataset):
                         if ID_Substrate not in self.ID_MolsInTRNRXN:
                             self.ID2Idx_MolsInTRNRXN[ID_Substrate] = len(self.ID_MolsInTRNRXN)
                             self.ID_MolsInTRNRXN.append(ID_Substrate)
-                            if ID_Substrate not in Comp.Master.ID_Master:
-                                if ID_Substrate in self.ID_UnregisteredFromTRNRXN_Metabolites:
-                                    self.NewMoleculeID(ID_Substrate)
+                            if ID_Substrate not in Comp.Master.ID_Master and ID_Substrate not in self.ID_UnregisteredFromTRNRXN_Metabolites:
+                                self.NewMoleculeID(ID_Substrate)
                         # Missing extracellular species added to the system
                         MolID_Extracellular = MolID + '[e]'
                         if LocalizationTag == '[p]' and ID_Substrate in self.ID_MolsInTRNRXN:
-                            if MolID_Extracellular not in self.ID_MolsInTRNRXN and MolID_Extracellular not in Comp.Master.ID_Master and MolID_Extracellular in self.ID_UnregisteredFromTRNRXN_Metabolites:
+                            if MolID_Extracellular not in self.ID_MolsInTRNRXN and MolID_Extracellular not in Comp.Master.ID_Master and MolID_Extracellular not in self.ID_UnregisteredFromTRNRXN_Metabolites:
                                 self.NewMoleculeID(MolID_Extracellular)
                 # self.DebugPrint("%s %s" % (Coeff, ID_Substrate)
 
@@ -1986,9 +2296,12 @@ class FTransporter(FDataset):
 
         self.NUniq_UnregisteredFromTRNRXN_Metabolites = len(self.ID_UnregisteredFromTRNRXN_Metabolites)
         self.Count_UnregisteredFromTRNRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromTRNRXN_Metabolites)
-        self.MW_UnregisteredFromTRNRXN_Metabolites = np.zeros(self.NUniq_UnregisteredFromTRNRXN_Metabolites)  # TODO: get values from database
+        self.MW_UnregisteredFromTRNRXN_Metabolites = np.zeros(
+            self.NUniq_UnregisteredFromTRNRXN_Metabolites)  # TODO: get values from database
 
-        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromTRNRXN_Metabolites, self.MolType_UnregisteredFromTRNRXN_Metabolites, self.Count_UnregisteredFromTRNRXN_Metabolites, self.MW_UnregisteredFromTRNRXN_Metabolites)
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromTRNRXN_Metabolites,
+                         self.MolType_UnregisteredFromTRNRXN_Metabolites, self.Count_UnregisteredFromTRNRXN_Metabolites,
+                         self.MW_UnregisteredFromTRNRXN_Metabolites)
 
         # Generate a stoichiometry table
         Transporters = Dataset['All_transporters_of_E._coli_K-12_substr._MG1655_IDs.tsv']
@@ -2021,7 +2334,7 @@ class FTransporter(FDataset):
                             Coeff_Default = 1
                         else:  # Products
                             Coeff_Default = -1
-                    else:   # LEFT-TO-RIGHT or REVERSIBILE, etc
+                    else:  # LEFT-TO-RIGHT or REVERSIBILE, etc
                         if i == 0:  # Reactants
                             Coeff_Default = -1
                         else:  # Products
@@ -2058,40 +2371,142 @@ class FTransporter(FDataset):
         self.NUniq_TRNRXNs = len(self.ID_TRNRXNs)
         self.NUniq_MolsInTRNRXN = len(self.ID_MolsInTRNRXN)
 
+        # Magnesium Pathway
+        MgReactions_CommonNames = Dataset['Reactions_of_pathway_from_Magnesium_pathway_CommonNames.tsv']
+        MgReactions_IDs = Dataset['Reactions_of_pathway_from_Magnesium_pathway_IDs.tsv']
+
+        # Add substrates to the system
+        MoleculesInMgReactions = 'ATP // WATER // MG+2 // PI // ADP // PROTON // PHOSPHO-PHOQ // PHOP-MONOMER // PHOSPHO-PHOP // CPLX0-8168 // CPLX0-8168 // MGTA-MONOMER'
+        SmallMoleculesInMgReactions = 'ATP // WATER // MG+2 // PI // ADP // PROTON'
+        MacroMoleculesInMgReactions = 'PHOSPHO-PHOQ // PHOP-MONOMER // PHOSPHO-PHOP // CPLX0-8168 // MGTA-MONOMER'
+
+        for Molecule in MoleculesInMgReactions.split(' // '):
+            ID_Molecule = ''
+            if Molecule in SmallMoleculesInMgReactions:
+                ID_Molecule = Molecule.strip() + '[c]'
+                if ID_Molecule not in self.ID_MolsInMgRXN:
+                    self.ID2Idx_MolsInMgRXN[ID_Molecule] = len(self.ID_MolsInMgRXN)
+                    self.ID_MolsInMgRXN.append(ID_Molecule)
+                if Molecule == 'MG+2':
+                    ID_Molecule = Molecule.strip() + '[p]'
+                    if ID_Molecule not in self.ID_MolsInMgRXN:
+                        self.ID2Idx_MolsInMgRXN[ID_Molecule] = len(self.ID_MolsInMgRXN)
+                        self.ID_MolsInMgRXN.append(ID_Molecule)
+            elif Molecule in MacroMoleculesInMgReactions:
+                ID_Molecule = Molecule
+                self.ID2Idx_MolsInMgRXN[ID_Molecule] = len(self.ID_MolsInMgRXN)
+                self.ID_MolsInMgRXN.append(ID_Molecule)
+
+        self.ID_UnregisteredFromMgRXN = [ID_Molecule for ID_Molecule in self.ID_MolsInMgRXN if
+                                         ID_Molecule not in Comp.Master.ID_Master and ID_Molecule not in self.ID_UnregisteredFromMgRXN]
+
+        self.NUniq_MolsInMgRXN = len(self.ID_MolsInMgRXN)
+
+        self.NUniq_UnregisteredFromMgRXN = len(self.ID_UnregisteredFromMgRXN)
+        self.Count_UnregisteredFromMgRXN = np.zeros(self.NUniq_UnregisteredFromMgRXN)
+        self.MW_UnregisteredFromMgRXN = np.zeros(self.NUniq_UnregisteredFromMgRXN)  # TODO: get values from database
+
+        self.AddToMaster(Comp.Master, self.ID_UnregisteredFromMgRXN, self.MolType_UnregisteredFromMgRXN,
+                         self.Count_UnregisteredFromMgRXN, self.MW_UnregisteredFromMgRXN)
+
+        # Prepare Coefficient and Molecular index arrays
+        for MgCommon, MgID in zip(MgReactions_CommonNames, MgReactions_IDs):
+            Separator = ' // '
+
+            ID_MgRXN = MgID[0]
+            EQN_MgRXN = MgCommon[0]
+            ID_Enzymes4MgRXN = MgID[1]
+            # CommonName_Substrates4MgRXN = MgCommon[1]
+            # ID_Substrates4MgRXN = MgID[2].split(Separator)
+            # CommonName_Substrates4MgRXN = MgCommon[2].split(Separator)
+            Reversibility = MgID[3]
+
+            self.ID2EQN_MgRXNs[ID_MgRXN] = EQN_MgRXN
+
+            EQN_Split = EQN_MgRXN.split(' -> ')
+            if len(EQN_Split) == 1:
+                EQN_Split = EQN_MgRXN.split(' <--> ')
+            assert len(EQN_Split) == 2, self.PrintTag + 'Equation is not in the expected format: %s' % EQN_MgRXN
+
+            ID_Substrates = list()
+            Coeff_Substrates = list()
+
+            for i, Substrates in enumerate(EQN_Split):
+                # Set default coefficient
+                Coeff_Default = 0
+                if Reversibility == 'RIGHT-TO-LEFT':
+                    if i == 0:  # Reactants
+                        Coeff_Default = 1
+                    else:  # Products
+                        Coeff_Default = -1
+                else:  # LEFT-TO-RIGHT or REVERSIBILE, etc
+                    if i == 0:  # Reactants
+                        Coeff_Default = -1
+                    else:  # Products
+                        Coeff_Default = 1
+                assert Coeff_Default != 0, self.PrintTag + 'Coeff_Default value is not assigned: %s' % Coeff_Default
+
+                # Parse Substrate
+                for Substrate in Substrates.split(' + '):
+                    Substrate = Substrate.strip()
+                    Coeff = self.ParseSubstrate_Coeff(Substrate, Coeff_Default)
+                    Substrate_CoeffSplit = re.split('^(%s|n)\s' % Coeff, Substrate)[-1]
+
+                    ID_Substrate = ''
+                    MolID, LocalizationTag = self.ParseSubstrate_ID(Substrate_CoeffSplit, Comp)
+                    # for small molecules
+                    if MolID + LocalizationTag in Comp.Master.ID_Master:
+                        ID_Substrate = MolID + LocalizationTag
+                    else:
+                        ID_Substrate = MolID
+                    Coeff_Substrates.append(Coeff)
+                    ID_Substrates.append(ID_Substrate)
+
+            self.ID2Idx_MgRXNs[ID_MgRXN] = len(self.ID_MgRXNs)  # = i
+            self.ID_MgRXNs.append(ID_MgRXN)
+            if Reversibility not in ReversibilityBinaryDict:
+                print(Reversibility)
+            self.Dir_RevMgRXNs.append(ReversibilityBinaryDict[Reversibility])
+            self.ID_Enzymes4MgRXN.append(ID_Enzymes4MgRXN)
+            self.ID_Substrates4MgRXN.append(ID_Substrates)
+            CoeffArray = np.zeros(self.NUniq_MolsInMgRXN)
+            for Coeff, ID_Substrate in zip(Coeff_Substrates, ID_Substrates):
+                CoeffArray[self.ID2Idx_MolsInMgRXN[ID_Substrate]] = Coeff
+            self.Coeff_MolsInMgRXN.append(CoeffArray)
 
     def ParseSubstrate_Coeff(self, Substrate, Coeff_Default):
-            # Determine coefficient
-            Coeff = 0
-            Substrate_CoeffSearch = re.search('^(\d|n)\s', Substrate)
-            if Substrate_CoeffSearch:
-                Coeff_Parsed = Substrate_CoeffSearch[0].strip()
-                if Coeff_Parsed == 'n':
-                    Coeff_Parsed = 2   # TODO: The value of 'n' may be different, depend on the reaction. Current default value is set to 2.
-                Coeff = int(Coeff_Parsed) * Coeff_Default
-            else:
-                Coeff = Coeff_Default
-            return Coeff
+        # Determine coefficient
+        Coeff = 0
+        Substrate_CoeffSearch = re.search('^(\d|n)\s', Substrate)
+        if Substrate_CoeffSearch:
+            Coeff_Parsed = Substrate_CoeffSearch[0].strip()
+            if Coeff_Parsed == 'n':
+                Coeff_Parsed = 2  # TODO: The value of 'n' may be different, depend on the reaction. Current default value is set to 2.
+            Coeff = int(Coeff_Parsed) * Coeff_Default
+        else:
+            Coeff = Coeff_Default
+        return Coeff
 
     def ParseSubstrate_ID(self, Substrate, Comp):
-            MolID = Substrate
+        MolID = Substrate
 
-            # Determine localization and remove localization text
-            Localization = 'cytosol'  # default localization
-            Localization_RE = re.compile('\[([a-z]|\s)+\]$')
+        # Determine localization and remove localization text
+        Localization = 'cytosol'  # default localization
+        Localization_RE = re.compile('\[([a-z]|\s)+\]$')
 
-            Localization_Search = Localization_RE.search(Substrate)
-            if Localization_Search:
-                Localization = Localization_Search[0].strip('[').strip(']')
-                MolID = Substrate[:-len(Localization_Search[0])]
-            LocalizationTag = self.Dict_LocalizationTags[Localization]
+        Localization_Search = Localization_RE.search(Substrate)
+        if Localization_Search:
+            Localization = Localization_Search[0].strip('[').strip(']')
+            MolID = Substrate[:-len(Localization_Search[0])]
+        LocalizationTag = self.Dict_LocalizationTags[Localization]
 
-            # Determine Molecule Name
-            if MolID in self.Name2ID_Substrates4TRNRXNs:
-                MolID = self.Name2ID_Substrates4TRNRXNs[MolID]
-            else:
-                self.DebugPrint('MolID not parsed: %s' % MolID)
-            # self.DebugPrint('MolID: \t%s' % MolID)
-            return MolID, LocalizationTag
+        # Determine Molecule Name
+        if MolID in self.Name2ID_Substrates4TRNRXNs:
+            MolID = self.Name2ID_Substrates4TRNRXNs[self.Name2ID_Substrates4TRNRXNs[MolID]]
+        else:
+            self.DebugPrint('MolID not parsed: %s' % MolID)
+        # self.DebugPrint('MolID: \t%s' % MolID)
+        return MolID, LocalizationTag
 
     def NewMoleculeID(self, ID_Substrate):
         self.ID2Idx_MolsInTRNRXN[ID_Substrate] = len(self.ID_MolsInTRNRXN)
@@ -2101,83 +2516,8 @@ class FTransporter(FDataset):
         self.DebugPrint('MolID not found in ID_Master, hence added to the unregistered: %s' % ID_Substrate)
 
 
-
-'''
-        # TCA CYCLE RXN IDs ONLY
-        TCACycle = Dataset['DL_TCAcycleI_prokaryotic.tsv']
-
-        RXNIDChange = {
-            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN': 'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
-        }
-
-        for i, RXN in enumerate(TCACycle):
-            ID_RXN, ID_Substrates, ID_Enzymes = RXN
-            if ID_RXN in RXNIDChange:
-                ID_RXN = RXNIDChange[ID_RXN]
-            assert ID_RXN in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % ID_RXN
-            self.ID_RXNsInTCACycle.append(ID_RXN)
-
-        self.NUniq_RXNsInTCACycle = len(self.ID_RXNsInTCACycle)
-
-        # TCA CYCLE INDEPENDENT
-        TCARXNs = Dataset['reactions_TCA.tsv']
-
-        RXNIDChange = {
-            'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN': 'SUCCINATE-DEHYDROGENASE-UBIQUINONE-RXN-SUC/UBIQUINONE-8//FUM/CPD-9956.31.'
-        }
-
-        for Value in TCARXNs:
-            for MoleculeInfo in Value[1].strip().strip('"').strip('[').strip(']').strip('{').split('},'):
-                for MolIDCoeffPair in MoleculeInfo.strip().split(','):
-                    MolID, Coeff = MolIDCoeffPair.strip().split(': ')
-                    MolID = MolID[1:-1]
-                    N_Mol_Total += 1
-                    if MolID not in self.ID_MolsInTCARXN:
-                        self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
-                        self.ID_MolsInTCARXN.append(MolID)
-        self.NMax_TCARXNMolParts = len(self.ID_MolsInTCARXN)
-
-        for i, Value in enumerate(TCARXNs):
-            RXNID, Stoichiometry, RXNReversibility, RXNEnzymeID = Value
-            assert RXNID not in self.ID2Idx_TCARXNs
-            if RXNID in RXNIDChange:
-                RXNID = RXNIDChange[RXNID]
-            assert RXNID in self.ID_METRXNs, 'Metabolism Dataset | ' + 'Reaction ID not found in ID_METRXNs: %s' % RXNID
-            self.ID2Idx_TCARXNs[RXNID] = len(self.ID_TCARXNs)  # = i
-            self.ID_TCARXNs.append(RXNID)
-            RXNReversibilityBinary = ReversibilityBinaryDict[RXNReversibility]
-            self.Dir_RevTCARXNs.append(RXNReversibilityBinary)
-
-            CoeffArray = np.zeros(self.NMax_TCARXNMolParts)
-            Substrate = None
-            for MoleculeInfo in Stoichiometry.strip().strip('"').strip('[').strip(']').strip('{').split('},'):
-                for MolIDCoeffPair in MoleculeInfo.split(','):
-                    MolID, Coeff = MolIDCoeffPair.strip().strip('}').split(': ')
-                    MolID = MolID[1:-1]
-                    N_Mol_Total += 1
-                    if MolID not in self.ID_MolsInTCARXN:
-                        self.ID2Idx_MolsInTCARXN[MolID] = len(self.ID_MolsInTCARXN)
-                        self.ID_MolsInTCARXN.append(MolID)
-
-                    Idx = self.ID2Idx_MolsInTCARXN[MolID]
-                    CoeffArray[Idx] = int(Coeff)
-
-                    # Substrate
-                    if int(Coeff) < 0:
-                        if Substrate == None:
-                            Substrate = MolID
-                        elif Substrate in SubstratesToSkipWithTags:
-                            Substrate = MolID
-                        elif Substrate.__contains__('+'):
-                            Substrate = MolID
-
-            self.ID_Substrates4TCARXN.append(Substrate)  # Only one substrate taken from one reaction
-            self.Coeff_MolsInTCARXN.append(CoeffArray)
-        self.NUniq_MolsInTCARXN = len(self.ID_MolsInTCARXN)
-'''
-
 class FCompartment(FDataset):
-    def __init__(self): # MasterLocalizations
+    def __init__(self):  # MasterLocalizations
         self.PrintTag = 'Compartment | '
 
         self.ID_Compartments = list()
@@ -2186,7 +2526,7 @@ class FCompartment(FDataset):
         self.Key2Idx_Compartments = dict()
         self.NUniq_Compartments = 0
 
-        super().__init__() # MasterLocalizations
+        super().__init__()  # MasterLocalizations
 
     def SetUpData(self, Dataset, Comp):
         Compartments = Dataset['compartments.tsv']
@@ -2410,7 +2750,7 @@ class FMaster():
 
         self.Idx2Idx_Gene2RNA_Master = dict()
         self.Idx2Idx_mRNA2ProteinMonomer_Master = dict()
-        
+
         # MasterIndices
         self.Idx_Master_Chromosomes = list()
         self.Idx_Master_Genes = list()
@@ -2458,17 +2798,23 @@ class FMaster():
         self.Idx_Master_Metabolites = self.GetMolIdx(Comp.Metabolite.ID_Metabolites, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_Metabolites) == Comp.Metabolite.NUniq_Metabolites
 
-        self.Idx_Master_UnregisteredFromCPLXRXN = self.GetMolIdx(Comp.Complexation.ID_UnregisteredFromCPLXRXN, Comp.Master.ID2Idx_Master)
+        self.Idx_Master_UnregisteredFromCPLXRXN = self.GetMolIdx(Comp.Complexation.ID_UnregisteredFromCPLXRXN,
+                                                                 Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_UnregisteredFromCPLXRXN) == Comp.Complexation.NUniq_UnregisteredFromCPLXRXN
 
-        self.Idx_Master_UnregisteredFromEQMRXN = self.GetMolIdx(Comp.Equilibrium.ID_UnregisteredFromEQMRXN, Comp.Master.ID2Idx_Master)
+        self.Idx_Master_UnregisteredFromEQMRXN = self.GetMolIdx(Comp.Equilibrium.ID_UnregisteredFromEQMRXN,
+                                                                Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_UnregisteredFromEQMRXN) == Comp.Equilibrium.NUniq_UnregisteredFromEQMRXN
 
-        self.Idx_Master_UnregisteredFromMETRXN_Metabolites = self.GetMolIdx(Comp.Metabolism.ID_UnregisteredFromMETRXN_Metabolites, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_UnregisteredFromMETRXN_Metabolites) == Comp.Metabolism.NUniq_UnregisteredFromMETRXN_Metabolites
+        self.Idx_Master_UnregisteredFromMETRXN_Metabolites = self.GetMolIdx(
+            Comp.Metabolism.ID_UnregisteredFromMETRXN_Metabolites, Comp.Master.ID2Idx_Master)
+        assert len(
+            self.Idx_Master_UnregisteredFromMETRXN_Metabolites) == Comp.Metabolism.NUniq_UnregisteredFromMETRXN_Metabolites
 
-        self.Idx_Master_UnregisteredFromMETRXN_Enzymes = self.GetMolIdx(Comp.Metabolism.ID_UnregisteredFromMETRXN_Enzymes, Comp.Master.ID2Idx_Master)
-        assert len(self.Idx_Master_UnregisteredFromMETRXN_Enzymes) == Comp.Metabolism.NUniq_UnregisteredFromMETRXN_Enzymes
+        self.Idx_Master_UnregisteredFromMETRXN_Enzymes = self.GetMolIdx(
+            Comp.Metabolism.ID_UnregisteredFromMETRXN_Enzymes, Comp.Master.ID2Idx_Master)
+        assert len(
+            self.Idx_Master_UnregisteredFromMETRXN_Enzymes) == Comp.Metabolism.NUniq_UnregisteredFromMETRXN_Enzymes
 
         self.Idx_Master_MolsInCPLXRXN = self.GetMolIdx(Comp.Complexation.ID_MolsInCPLXRXN, Comp.Master.ID2Idx_Master)
         assert len(self.Idx_Master_MolsInCPLXRXN) == Comp.Complexation.NUniq_MolsInCPLXRXN
@@ -2527,8 +2873,8 @@ class FMaster():
             if Comp.Gene.Sym2ID_Genes[Sym_Gene] in Comp.RNA.ID2ID_Gene2RNA.keys():
                 self.Sym2ID_Gene2RNA_Master[Sym_Gene] = Comp.RNA.ID2ID_Gene2RNA[Comp.Gene.Sym2ID_Genes[Sym_Gene]]
             if Comp.Gene.Sym2ID_Genes[Sym_Gene] in Comp.Protein.ID2ID_Gene2Protein.keys():
-                self.Sym2ID_Gene2Protein_Master[Sym_Gene] = Comp.Protein.ID2ID_Gene2Protein[Comp.Gene.Sym2ID_Genes[Sym_Gene]]
-
+                self.Sym2ID_Gene2Protein_Master[Sym_Gene] = Comp.Protein.ID2ID_Gene2Protein[
+                    Comp.Gene.Sym2ID_Genes[Sym_Gene]]
 
     def GetMolIdx(self, Molecules, MolIdxRef):
         MolIdxList = list()

@@ -124,6 +124,8 @@ def Write_CellState(Writer, Comp, ProGen):
             Writer.Statement("self.Coeff_Complexation = self.Coeff_MolsInCPLXRXN")
             Writer.Statement("self.Coeff_Equilibrium = self.Coeff_MolsInEQMRXN")
             Writer.Statement("self.Coeff_Metabolism = self.Coeff_MolsInMETRXN")
+            Writer.Statement("self.Coeff_Transport = self.Coeff_MolsInTRNRXN")
+            Writer.Statement("self.Coeff_Magnesium = self.Coeff_MolsInMgRXN")
             Writer.BlankLine()
 
             # Temporary code

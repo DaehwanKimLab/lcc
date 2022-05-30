@@ -84,11 +84,11 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Output
     Writer.Switch4Comment = True
     Writer.Switch4PrintString = True
-    Writer.Switch4TFGraph = True
+    Writer.Switch4TFGraph = False
 
     # Metabolism
     Writer.Switch4PostSimulationStepCorrection = True
-    Writer.Switch4Kinetics = False
+    Writer.Switch4Kinetics = True
 
     # Cell Division Test
     Writer.Switch4TestCellDivision = False
@@ -96,9 +96,9 @@ def WriteBody(Writer, CompilerData, ProGen):
     # Print
     Writer.Switch4SimStepsExecuted = True
     Writer.Switch4ProcessSummary = True
-    Writer.Switch4CellStateSummary = False
+    Writer.Switch4CellStateSummary = True
     Writer.Switch4PostSimulationStepCorrectionMessage = False
-    Writer.Switch4Visualization2D = False
+    Writer.Switch4Visualization2D = True
 
     # Debugging
     Writer.Switch4DebugSimulationPrint = False
@@ -109,7 +109,7 @@ def WriteBody(Writer, CompilerData, ProGen):
     Writer.Switch4HardCheckCounts = False
     Writer.Switch4CheckDeltaCountsNeg = False
     Writer.Switch4ShowDeltaCounts = False
-    Writer.Switch4ProcessTimer = False
+    Writer.Switch4ProcessTimer = True
 
     # Save Data
     Writer.Switch4SaveAllCounts = False
@@ -140,20 +140,22 @@ def WriteBody(Writer, CompilerData, ProGen):
         # 'ASN[c]',
         # 'ATP[c]',
         # 'BIOTIN[c]',
-        # 'alaS',  # Amino acyl tRNA synthesis
-        # 'rplC',  # Ribosome
-        # 'def',  # Translation
-        # 'groS',  # Protein folding
-        # 'dnaA',  # Replication
-        # 'ftsZ',  # Cell division
-        # 'nusB',  # Transcription factor
-        # 'pyrH',  # NTP biosynthesis
-        # 'nadE',  # NAD biosynthesis
-        # 'murC',  # Peptidoglycan biosynthesis
+        'alaS',  # Amino acyl tRNA synthesis
+        'rplC',  # Ribosome
+        'def',  # Translation
+        'groS',  # Protein folding
+        'dnaA',  # Replication
+        'ftsZ',  # Cell division
+        'nusB',  # Transcription factor
+        'pyrH',  # NTP biosynthesis
+        'nadE',  # NAD biosynthesis
+        'murC',  # Peptidoglycan biosynthesis
+        # 'MG+2[c]',
+        # 'phoQ'
     ]
 
     # Type can be None (default) 'Gene' or 'RNA' or 'Protein' or 'Complex' or 'Metabolite'
-    MolType = 'Protein'
+    MolType = 'RNA'
 
     MoleculesToDisplay_Refined = list()
     MoleculesToDisplay_OriginalNameDict = dict()
