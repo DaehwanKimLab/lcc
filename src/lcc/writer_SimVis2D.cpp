@@ -752,89 +752,89 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "Screen.blit(Text, Text_Rect)" << endl;
     ofs << endl;
 
-    ofs << endl;
-    ofs << "def main():" << endl;
-    ofs << in+ "Control = FControl()" << endl;
-//    ofs << in+ "Control.DisplayInit()" << endl;
-    ofs << in+ "SimUnitTime = 0.2" << endl;
+                ofs << endl;
+                ofs << "def main():" << endl;
+                ofs << in+ "Control = FControl()" << endl;
+            //    ofs << in+ "Control.DisplayInit()" << endl;
+                ofs << in+ "SimUnitTime = 0.2" << endl;
 
-    ofs << in+ "PetriDish = FEnvironment()" << endl;
-    ofs << endl;
-    // Distribution settings (hardcoding)
-    //                                              L,              qL
-    std::vector<std::string>    Identity            {"Glucose",     "Autoinducer",     "Mol3"     };
-    std::vector<std::string>    Color               {"Blue",      "Black",     "Yellow"     };
-    std::vector<int>            MaxBrightness       {200,           150,        50          };
+                ofs << in+ "PetriDish = FEnvironment()" << endl;
+                ofs << endl;
+                // Distribution settings (hardcoding)
+                //                                              L,              qL
+                std::vector<std::string>    Identity            {"Glucose",     "Autoinducer",     "Mol3"     };
+                std::vector<std::string>    Color               {"Blue",      "Black",     "Yellow"     };
+                std::vector<int>            MaxBrightness       {200,           150,        50          };
 
-    std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
-    std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
-    std::vector<int>            ReductionFactor     {5,             2,          1           };
+                std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
+                std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
+                std::vector<int>            ReductionFactor     {5,             2,          1           };
 
-    std::vector<std::string>    MaxStatic;
-    std::vector<std::string>    ContourLine;
+                std::vector<std::string>    MaxStatic;
+                std::vector<std::string>    ContourLine;
 
-//    if (Option.bDebug)
-//    {
-//                                Color =             {"Green",       "Blue",     "Green"     };
-//                                MaxStatic =         {"True",        "False",    "particles" };
-//                                ContourLine =       {"True",        "False",    "False" };
-//    }
+            //    if (Option.bDebug)
+            //    {
+            //                                Color =             {"Green",       "Blue",     "Green"     };
+            //                                MaxStatic =         {"True",        "False",    "particles" };
+            //                                ContourLine =       {"True",        "False",    "False" };
+            //    }
 
-    // Instantiate Molecules for Distribution
-    // auto& MolLoc = Context.GetSubList_LocationList("Molecule");
-    for (int i = 0; i < MolLoc.size(); i++) {
-        // instantiate
-        ofs << in+ MolLoc[i]->Name << " = FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
-        ofs << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ")" << endl;
+                // Instantiate Molecules for Distribution
+                // auto& MolLoc = Context.GetSubList_LocationList("Molecule");
+                for (int i = 0; i < MolLoc.size(); i++) {
+                    // instantiate
+                    ofs << in+ MolLoc[i]->Name << " = FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
+                    ofs << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ")" << endl;
 
-        // set color
-        ofs << in+ MolLoc[i]->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
+                    // set color
+                    ofs << in+ MolLoc[i]->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
 
-        float DrawingThreshold = 0;
-        std::string bRaw = "False";
-        if (MolLoc[i]->Coord[0] == -1) {
-            DrawingThreshold = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
-            bRaw = "True";
-        }
+                    float DrawingThreshold = 0;
+                    std::string bRaw = "False";
+                    if (MolLoc[i]->Coord[0] == -1) {
+                        DrawingThreshold = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+                        bRaw = "True";
+                    }
 
-        // set pattern
-        ofs << in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ", " << Utils::SciFloat2Str(DrawingThreshold) << ", " << bRaw;
-        if (!MaxStatic.empty())     { ofs << ", maxstatic=" << MaxStatic[i]; }
-        if (!ContourLine.empty())   { ofs << ", contourline=" << ContourLine[i]; }
-        ofs << ",)" << endl;
+                    // set pattern
+                    ofs << in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ", " << Utils::SciFloat2Str(DrawingThreshold) << ", " << bRaw;
+                    if (!MaxStatic.empty())     { ofs << ", maxstatic=" << MaxStatic[i]; }
+                    if (!ContourLine.empty())   { ofs << ", contourline=" << ContourLine[i]; }
+                    ofs << ",)" << endl;
 
-        ofs << endl;
-    }
+                    ofs << endl;
+                }
 
-    // Distribution settings (hardcoding)
-    std::vector<std::string>    Radar_Switch;
+                // Distribution settings (hardcoding)
+                std::vector<std::string>    Radar_Switch;
 
-//    if (Option.bDebug)
-//    {
-        Radar_Switch =      {"False",};
-//    }
+            //    if (Option.bDebug)
+            //    {
+                    Radar_Switch =      {"False",};
+            //    }
 
-    // Instantiate Organisms
-    auto OrgNames = Context.GetUniqueNames_LocationList("Organism");
-    for (int i = 0; i < OrgNames.size(); i++) {
-        ofs << in+ OrgNames[i] << " = FOrganism('" << OrgNames[i] << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
+                // Instantiate Organisms
+                auto OrgNames = Context.GetUniqueNames_LocationList("Organism");
+                for (int i = 0; i < OrgNames.size(); i++) {
+                    ofs << in+ OrgNames[i] << " = FOrganism('" << OrgNames[i] << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
 
-        // set radar
-        if (!Radar_Switch.empty())     { ofs << in+ OrgNames[i] << ".SetRadar(switch=" << Radar_Switch[i] << ")" << endl; }
-    }
-    ofs << endl;
+                    // set radar
+                    if (!Radar_Switch.empty())     { ofs << in+ OrgNames[i] << ".SetRadar(switch=" << Radar_Switch[i] << ")" << endl; }
+                }
+                ofs << endl;
 
-    // Initialize Organisms
-    for (auto& OrganismName : OrgNames) {
-        ofs << in+ OrganismName << ".Initialize()" << endl;
-//        ofs << "# ";
-        if (!Context.ThresholdList.empty()) {
-            if (Context.ThresholdList[0].first == "Am") {
-                ofs << in+ OrganismName << ".Receptivity(20000)   # Pass time" << endl;
-            }
-        }
-    }
-    ofs << endl;
+                // Initialize Organisms
+                for (auto& OrganismName : OrgNames) {
+                    ofs << in+ OrganismName << ".Initialize()" << endl;
+            //        ofs << "# ";
+                    if (!Context.ThresholdList.empty()) {
+                        if (Context.ThresholdList[0].first == "Am") {
+                            ofs << in+ OrganismName << ".Receptivity(20000)   # Pass time" << endl;
+                        }
+                    }
+                }
+                ofs << endl;
 
     ofs << in+ "ElapsedTime = 0" << endl;
     ofs << in+ "PrevTime = datetime.now()" << endl;
