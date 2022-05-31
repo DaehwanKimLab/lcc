@@ -23,13 +23,15 @@ sys.path.insert(0, './protos')
 
 import grpc
 from grpc import aio
-import lccsimulation_pb2
-import lccsimulation_pb2_grpc
+from protos import lccsimulation_pb2
+from protos import lccsimulation_pb2_grpc
 
 import time
 
+ChannelName = 'localhost:50051'
+
 async def sim_run() -> None:
-    async with grpc.aio.insecure_channel('localhost:50051') as channel:
+    async with grpc.aio.insecure_channel(ChannelName) as channel:
         stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
         response_iterator = stub.Run(lccsimulation_pb2.Empty())
 
@@ -58,7 +60,7 @@ def run():
     while(True):
         cmd = input("Server Function To Run: ")
         if cmd == "Initialize" or cmd == "0":
-            with grpc.insecure_channel('localhost:50051') as channel:
+            with grpc.insecure_channel(ChannelName) as channel:
                 stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
                 response = stub.Initialize(lccsimulation_pb2.Empty())
                 print(response)
@@ -67,12 +69,12 @@ def run():
             asyncio.run(sim_run())
 
         elif cmd == "Pause" or cmd == "2":
-            with grpc.insecure_channel('localhost:50051') as channel:
+            with grpc.insecure_channel(ChannelName) as channel:
                 stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
                 response = stub.Pause(lccsimulation_pb2.Empty())
 
         elif cmd == "Stop" or cmd == "3":
-            with grpc.insecure_channel('localhost:50051') as channel:
+            with grpc.insecure_channel(ChannelName) as channel:
                 stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
                 response = stub.Stop(lccsimulation_pb2.Empty())
         
