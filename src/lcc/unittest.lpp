@@ -1,0 +1,191 @@
+// This is intended to create unit test data.
+
+// Notes: 
+//  I'm not sure how compiler would handle negative k values...
+//  I'm not sure how to test 0th order reactions
+
+/*  Standard Reaction: 1st order
+TestCase1: Intial product = 0 (likely most common)
+    [reactant] > 0
+    [product] = 0
+    k > 0
+    Expected Result: FirstOrderInitialTC1 is consumed linearly; FirstOrderFinalTC1 produced linearly
+
+TestCase2: Inital concentration = 0
+    [reactant] = 0
+    [product] > 0
+    k > 0
+    Expected Result: No change from initial conditions
+
+TestCase3: Rate constant = 0
+    [reactant] > 0 
+    [product] > 0 
+    k = 0
+    Expected Result: No change from inital conditions
+
+TestCase4: Syntax Change
+    [reactant] > 0 
+    [product] = 0 
+    k > 0
+    Expected Result: Same as TC1
+*/
+
+// TestCase1: Inital product = 0
+reaction standardReactionFirstOrderTestCase1(FirstOrderInitialTC1 --> FirstOrderFinalTC1, k=2);
+FirstOrderInitialTC1[0]=10;
+FirstOrderFinalTC1[0]=0;
+
+// TestCase2: Inital concentration = 0
+reaction standardReactionFirstOrderTestCase2(FirstOrderInitialTC2 --> FirstOrderFinalTC2, k=2);
+FirstOrderInitialTC2[0]=0;
+FirstOrderFinalTC2[0]=10;
+
+// TestCase3: Rate constant = 0
+reaction standardReactionFirstOrderTestCase3(FirstOrderInitialTC3 --> FirstOrderFinalTC3, k=0);
+FirstOrderInitialTC3[0]=10;
+FirstOrderFinalTC3[0]=10;
+
+// TestCase4: Inital product = 0
+reaction standardReactionFirstOrderTestCase4(FirstOrderInitialTC4 --> FirstOrderFinalTC4, k=2);
+FirstOrderInitialTC4=10M;
+FirstOrderFinalTC4[0]=0;
+
+/*  Standard Reaction: 2nd order
+// [R1]^2 --> [P]
+TestCase1: Intial product = 0 (likely most common)
+    [reactant1] > 0
+    [product] = 0
+    k > 0
+    krev = 0
+    Expected Result: 
+
+TestCase2: Syntax Change
+    [reactant] > 0 
+    [product] = 0 
+    k > 0
+    krev = 0
+    Expected Result: Same as TC1
+
+TestCase3: Inital concentration = 0
+    [reactant] = 0
+    [product] > 0
+    k > 0
+    krev = 0
+    Expected Result: No change from initial conditions
+
+TestCase4: Rate constant = 0
+    [reactant] > 0 
+    [product] > 0 
+    k = 0
+    krev = 0
+    Expected Result: No change from inital conditions
+
+// [R1][R2] --> [P]
+TestCase5: Two different reactants; both positive
+    [reactant1] > 0
+    [reactant2] > 0
+    [product] = 0
+    k > 0
+    krev = 0
+    Expected Result: 
+
+TestCase6: Two different reactants; one zero
+    [reactant1] > 0
+    [reactant2] = 0
+    [product] = 0
+    k > 0
+    krev = 0
+    Expected Result: No change from initial condition 
+
+// [R1] <--> [P]
+TestCase7: Reversible reactions; krev > 0, k = 0
+    [reactant] = 0
+    [product] > 0
+    k = 0
+    krev > 0
+    Expected Result: 1st order rxn from product to reactant
+
+TestCase8: Reversible reactions; krev = k 
+    [reactant] > 0
+    [product] > 0
+    k = krev
+    Expected Result: No change from initial condition
+
+TestCase9: Reversible reactions; krev > k 
+    [reactant] = [product]
+    k < krev
+    Expected Result: 
+
+*/
+
+// TestCase1: Inital product = 0
+reaction standardReactionSecondOrderTestCase1(2 SecondOrderInitialTC1 --> SecondOrderFinalTC1, k=2, krev=0);
+SecondOrderInitialTC1[0]=10;
+SecondOrderFinalTC1[0]=0;
+
+// TestCase2: Syntax Change
+reaction standardReactionSecondOrderTestCase2(SecondOrderInitialTC2 + SecondOrderInitialTC2 --> SecondOrderFinalTC4, k=2, krev=0);
+SecondOrderInitialTC2=10M;
+SecondOrderFinalTC2[0]=0;
+
+// TestCase3: Inital concentration = 0
+reaction standardReactionSecondOrderTestCase3(SecondOrderInitialTC3 --> SecondOrderFinalTC3, k=2, krev=0);
+SecondOrderInitialTC3[0]=0;
+SecondOrderFinalTC3[0]=10;
+
+// TestCase4: Rate constant = 0
+reaction standardReactionSecondOrderTestCase4(SecondOrderInitialTC4 --> SecondOrderFinalTC4, k=0, krev=0);
+SecondOrderInitialTC4[0]=10;
+SecondOrderFinalTC4[0]=10;
+
+// TestCase5: Two Reactants Change
+reaction standardReactionSecondOrderTestCase5(SecondOrderInitialTC5_A + SecondOrderInitialTC5_B --> SecondOrderFinalTC5, k=2, krev=0);
+SecondOrderInitialTC5_A=10M;
+SecondOrderInitialTC5_B=10M;
+SecondOrderFinalTC5[0]=0;
+
+// TestCase6: Two Reactants, one = 0
+reaction standardReactionSecondOrderTestCase6(SecondOrderInitialTC6_A + SecondOrderInitialTC6_B --> SecondOrderFinalTC6, k=2, krev=0);
+SecondOrderInitialTC6_A=10M;
+SecondOrderInitialTC6_B=0M;
+SecondOrderFinalTC6[0]=0;
+
+// TestCase7: Reversible, krev > 0; k = 0
+reaction standardReactionSecondOrderTestCase1(SecondOrderInitialTC7 --> SecondOrderFinalTC7, k=0, krev=2);
+SecondOrderInitialTC1[0]=0;
+SecondOrderFinalTC1[0]=10;
+
+// TestCase8: Reversible, krev = k 
+reaction standardReactionSecondOrderTestCase8(SecondOrderInitialTC8 --> SecondOrderFinalTC8, k=100, krev=100);
+SecondOrderInitialTC8=500M;
+SecondOrderFinalTC8[0]=500;
+
+// TestCase9: Reversible, krev > k 
+reaction standardReactionSecondOrderTestCase9(SecondOrderInitialTC9 --> SecondOrderFinalTC9, k=2, krev=5);
+SecondOrderInitialTC9=5M;
+SecondOrderFinalTC9[0]=5;
+
+
+
+// enzymatic reaction
+protein E(S --> P, kcat=10, KM=3.666667);
+
+// initial quantity
+E=1M, S=5M;
+
+
+// standard reactions
+reaction R1(S1In --> S1, k=20);
+reaction R2(S2In --> S2, k=5);
+reaction R3(S1 --> S1Out, k=5);
+reaction R4(S2 --> S2Out, k=5);
+reaction R5(S1 --> S2, k=2);
+
+// regulatory reaction
+reaction R6(S2 --| R1, Ki=1, n=4);
+
+S1In[:] = 1;
+S2In[:] = 1;
+S1Out[:] = 0;
+S2Out[:] = 0;
+
