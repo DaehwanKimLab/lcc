@@ -10,6 +10,104 @@ def ConcToCount(Conc_Molecule, Volume):
 def CountToConc(Count_Molecule, Volume):
     return (Count_Molecule / NA) / Volume
 
+### if N_MOLECULEALLOWED = N ###########################################################################################
+# To make this relevant for an arbitrary number of variables, 
+# Simply make Conc_1 -> array and perform operations on the array
+
+class ReactionEquations:
+    """ ReactionEquations
+
+        Attributes:
+        ----------
+            arr1DConc : `np.ndarray` 
+                Input array (1,n) containing the concentrations of all reactants.
+  
+        Methods
+        -------
+        CheckRateAndConc
+
+        Eqn_Standard_Unregulated
+
+        Eqn_Standard_Inhibition_Allosteric
+
+        Eqn_Standard_Activation_Allosteric
+
+        Eqn_Enz_Standard_Unregulated
+
+        Eqn_Enz_Standard_Inhibition_Allosteric
+        
+        Eqn_Enz_Standard_Activation_Allosteric
+    """
+
+    def __init__(
+        self, 
+        arr1DConc: np.ndarray,              # Conc. of all reaction components (now incl. enz)
+        Rate,                               # How is rate different from k?
+        dReactionCoeff: float,              # k 
+        dHillCoeff: float = 1,              # Default hill coeff
+        dAllosteryConc : float = 0,         # If 0, no allostery
+        dKAllostery: float = 1,             # 
+        dAllosteryType : int = 1            # 1 for Activator, -1 for inhibitor
+        
+    ):
+        self.arr1DConc = arr1DConc 
+        self.Rate = Rate
+        self.dReactionCoeff = dReactionCoeff
+        self.dKAllostery = dKAllostery
+        self.dHillCoeff = dHillCoeff
+        self.dAllosteryConc = dAllosteryConc
+        self.AllosteryType = dAllosteryType
+
+    # I'm not sure why we are taking the minimum of concentration and rate...
+    def CheckRateAndConc(self):
+        """ """
+        return np.min((self.Rate, self.arr1DConc), axis=0)
+
+    # Numerator
+    def Standard_reaction(self):
+        """Note: it is expected that Enzyme concentration is included in this.  
+        I would like to break this down to rate limiting enzyme/concentration"""
+        return self.dReactionCoeff * np.prod(self.arr1DConc)
+    
+    # Denominator
+    def Standard_Allostery(self):
+        return (1 + (self.dAllosteryConc / self.dKAllostery) ** self.dHillCoeff) 
+
+    # 
+    def reaction(self):
+        return self.Standard_reaction() * self.Standard_Allostery() ** self.AllosteryType 
+
+    # Standard reactions
+    def Eqn_Standard_Unregulated(self):
+        return self.k * np.prod(self.arr1DConc)  
+
+    """ So we can simplify this A lot I think. 
+    The only difference between Enz and standard is that the enzyme concentration is also calculated. 
+    Which in non saturating conditions is essentially equivalent to eqn_standard_unregulated for substrates n+1
+
+    """
+    # Enzymatic, standard reactions
+    def Eqn_Enz_Standard_Unregulated(self):
+        return self.Conc_Enzyme * self.k * np.prod(self.arr1DConc)  
+        # return Conc_Enzyme * k (for saturation)
+
+    
+    ## These two formulas are the same... should probably combine.
+    def Eqn_Standard_Inhibition_Allosteric(self):
+        return self.k / (1 + (self.Conc_Inhibitor / self.Ki) ** self.hillCoeff) * np.prod(self.arr1DConc)   
+    def Eqn_Standard_Activation_Allosteric(self):
+        return self.k * (1 + (self.Conc_Activator / self.Ka) ** self.hillCoeff) * np.prod(self.arr1DConc)   
+
+
+
+
+    # These two formulas are the same... should probably combine
+    def Eqn_Enz_Standard_Inhibition_Allosteric(self):
+        return self.Conc_Enzyme * self.k / (1 + (self.Conc_Inhibitor / self.Ki) ** self.hillCoeff) * np.prod(self.arr1DConc)  
+    def Eqn_Enz_Standard_Activation_Allosteric(self):
+        return self.Conc_Enzyme * self.k * (1 + (self.Conc_Activator / self.Ka) ** self.hillCoeff) * np.prod(self.arr1DConc)  
+
+
 ### if N_MOLECULEALLOWED = 1 ###########################################################################################
 def CheckRateAndConc_1(Rate, Conc_1):
     return np.min((Rate, Conc_1), axis=0)
