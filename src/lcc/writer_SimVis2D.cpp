@@ -933,12 +933,10 @@ void FWriter::SimVis2D() {
     }
     ofs << endl;
 
-    ofs << in+ in+ "if Control.Time % 2:" << endl;
-    ofs << in+ in+ in+ "continue" << endl;
-    ofs << endl;
-    ofs << endl;
-
-
+    //ofs << in+ in+ "if Control.Time % 2:" << endl;
+    //ofs << in+ in+ in+ "continue" << endl;
+    //ofs << endl;
+    //ofs << endl;
 
     ofs << in+ in+ "# All the Drawings" << endl;
     ofs << in+ in+ "Screen.fill(GRAY1)" << endl;
@@ -1010,5 +1008,5 @@ void FWriter::SimVis2D() {
     ofs << in+ "sys.exit()" << endl;
     ofs << endl;
 
-    std::cout << "  2D Visualization module has been generated: ";
+    std::cout << "  2D Visualization has been generated: ";
 }

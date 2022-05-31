@@ -29,7 +29,7 @@ void FWriter::SimExecutor()
     if (Context.LocationList.empty())   { ofs << in+ "SimModule.main()" << endl;
                                           ofs << in+ "plot.main(args.save_fname)" << endl; }
 
-    else                                { ofs << in+ "SimServer.main()" << endl; }
+    else                                { ofs << in+ "# SimServer.main()" << endl; }
                                         { ofs << in+ "SimVis2D.main()" << endl; }
     ofs << endl;
 

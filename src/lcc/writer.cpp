@@ -1056,9 +1056,12 @@ void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
     ofs << endl;
 
     ofs << in+ in+ "self.Pos_Ref = Nodes" << endl;
-    ofs << in+ in+ "self.Pos_Gene_Start = SimF.GetXYZForGenomePositionsInBP(Gene_Start_bp, Nodes, Distances)" << endl;
-    ofs << in+ in+ "self.Pos_Gene_End = SimF.GetXYZForGenomePositionsInBP(Gene_End_bp, Nodes, Distances)" << endl;
-
+    ofs << in+ in+ "self.Pos_Gene_Start_nm = SimF.ConvertNTLength2nm(Gene_Start_bp)" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End_nm = SimF.ConvertNTLength2nm(Gene_End_bp)" << endl;
+    ofs << endl;
+    //ofs << in+ in+ "self.Pos_Gene_Start_XYZ = SimF.GetXYZForGenomePositionsInBP(Gene_Start_bp, Nodes, Distances)" << endl;
+    //ofs << in+ in+ "self.Pos_Gene_End_XYZ = SimF.GetXYZForGenomePositionsInBP(Gene_End_bp, Nodes, Distances)" << endl;
+    //ofs << endl;
     ofs << in+ in+ "self.Name_Genes = Database['Symbol']" << endl;
     ofs << endl;
 

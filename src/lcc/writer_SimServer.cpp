@@ -12,7 +12,7 @@ void FWriter::SimServer() {
     ofs << endl;
     ofs << "## lcc" << endl;
     ofs << "import random" << endl;
-    ofs << "import SimModule as SimM" << endl;
+    ofs << "import SimModule" << endl;
     ofs << "import SimVis2D as SimV" << endl;
     ofs << "import numpy as np" << endl;
     ofs << "from datetime import datetime" << endl;
@@ -25,10 +25,11 @@ void FWriter::SimServer() {
     ofs << endl;
     ofs << "import grpc" << endl;
     ofs << endl;
-    ofs << "import sys" << endl;
+    ofs << "import os, sys" << endl;
+    ofs << "os.system('python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./protos/lccsimulation.proto')" << endl;
     ofs << "sys.path.insert(0, './protos')" << endl;
-    ofs << "import lccsimulation_pb2" << endl;
-    ofs << "import lccsimulation_pb2_grpc" << endl;
+    ofs << "from protos import lccsimulation_pb2" << endl;
+    ofs << "from protos import lccsimulation_pb2_grpc" << endl;
     ofs << endl;
 
     ofs << "def RandomInt(maxInt):" << endl;
@@ -40,18 +41,20 @@ void FWriter::SimServer() {
     ofs << endl;
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
-    auto DNAPs = Context.GetSubList_MoleculeList("DNAP");
     auto OrgNames = Context.GetUniqueNames_LocationList("Organism");
+
+    auto Chromosomes = Context.GetSubList_MoleculeList("Chromosome");
+    auto DNAPs = Context.GetSubList_MoleculeList("DNAP");
 
     ofs << endl;
     ofs << "class LCCSimulation(lccsimulation_pb2_grpc.LCCSimulationServicer):" << endl;
     ofs << in+ "def __init__(self):" << endl;
     ofs << in+ in+ "self.IsRunning = False" << endl;
     ofs << endl;
-    ofs << in+ in+ "self.State = SimM.FState()" << endl;
-    ofs << in+ in+ "self.Data = SimM.FDataset()" << endl;
-    ofs << in+ in+ "self.DataManager = SimM.FDataManager()" << endl;
-    ofs << in+ in+ "self.SimM = SimM.FSimulation(self.State, self.Data, self.DataManager)" << endl;
+    ofs << in+ in+ "self.State = None" << endl;
+    ofs << in+ in+ "self.Data = None" << endl;
+    ofs << in+ in+ "self.DataManager = None" << endl;
+    ofs << in+ in+ "self.SimM = None" << endl;
     ofs << endl;
     for (int i = 0; i < OrgNames.size(); i++) {
         ofs << in+ in+ "self." << OrgNames[i] << " = None" << endl;
@@ -61,10 +64,10 @@ void FWriter::SimServer() {
     ofs << in+ "def Initialize(self, request, context):" << endl;
     ofs << in+ in+ "print('initializing')" << endl;
     ofs << in+ in+ "# Load model" << endl;
-    ofs << in+ in+ "self.State = SimM.FState()" << endl;
-    ofs << in+ in+ "self.Data = SimM.FDataset()" << endl;
-    ofs << in+ in+ "self.DataManager = SimM.FDataManager()" << endl;
-    ofs << in+ in+ "self.SimM = SimM.FSimulation(self.State, self.Data, self.DataManager)" << endl;
+    ofs << in+ in+ "self.State = SimModule.FState()" << endl;
+    ofs << in+ in+ "self.Data = SimModule.FDataset()" << endl;
+    ofs << in+ in+ "self.DataManager = SimModule.FDataManager()" << endl;
+    ofs << in+ in+ "self.SimM = SimModule.FSimulation(self.State, self.Data, self.DataManager)" << endl;
     ofs << endl;
     ofs << in+ in+ "# Initialize model" << endl;
     ofs << in+ in+ "self.SimM.Initialize()" << endl;
@@ -73,134 +76,191 @@ void FWriter::SimServer() {
     ofs << in+ in+ "SimUnitTime = 0.2" << endl;
     ofs << in+ in+ "PetriDish = SimV.FEnvironment()" << endl;
     ofs << endl;
-    // Distribution settings (hardcoding)
-    //                                              L,              qL
-    std::vector<std::string>    Identity            {"Glucose",     "Autoinducer",     "Mol3"     };
-    std::vector<std::string>    Color               {"Blue",      "Black",     "Yellow"     };
-    std::vector<int>            MaxBrightness       {200,           150,        50          };
 
-    std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
-    std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
-    std::vector<int>            ReductionFactor     {5,             2,          1           };
+    if (!MolLoc.empty()) {
+        // Distribution settings (hardcoding)
+        //                                              L,              qL
+        std::vector<std::string>    Identity            {"Glucose",     "Autoinducer",     "Mol3"     };
+        std::vector<std::string>    Color               {"Blue",      "Black",     "Yellow"     };
+        std::vector<int>            MaxBrightness       {200,           150,        50          };
 
-    std::vector<std::string>    MaxStatic;
-    std::vector<std::string>    ContourLine;
+        std::vector<std::string>    Pattern             {"heatmap",     "heatmap",  "particles" };
+        std::vector<std::string>    NormalizationType   {"linear",      "linear",   "particles" };
+        std::vector<int>            ReductionFactor     {5,             2,          1           };
 
-//    if (Option.bDebug)
-//    {
-//                                Color =             {"Green",       "Blue",     "Green"     };
-//                                MaxStatic =         {"True",        "False",    "particles" };
-//                                ContourLine =       {"True",        "False",    "False" };
-//    }
+        std::vector<std::string>    MaxStatic;
+        std::vector<std::string>    ContourLine;
 
-    // Instantiate Molecules for Distribution
-    // auto& MolLoc = Context.GetSubList_LocationList("Molecule");
-    for (int i = 0; i < MolLoc.size(); i++) {
-        // instantiate
-        ofs << in+ in+ MolLoc[i]->Name << " = SimV.FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
-        ofs << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ")" << endl;
+    //    if (Option.bDebug)
+    //    {
+    //                                Color =             {"Green",       "Blue",     "Green"     };
+    //                                MaxStatic =         {"True",        "False",    "particles" };
+    //                                ContourLine =       {"True",        "False",    "False" };
+    //    }
 
-        // set color
-        ofs << in+ in+ MolLoc[i]->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
+        // Instantiate Molecules for Distribution
+        // auto& MolLoc = Context.GetSubList_LocationList("Molecule");
 
-        float DrawingThreshold = 0;
-        std::string bRaw = "False";
-        if (MolLoc[i]->Coord[0] == -1) {
-            DrawingThreshold = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
-            bRaw = "True";
+        for (int i = 0; i < MolLoc.size(); i++) {
+            // instantiate
+            ofs << in+ in+ MolLoc[i]->Name << " = SimV.FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
+            ofs << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ")" << endl;
+
+            // set color
+            ofs << in+ in+ MolLoc[i]->Name << ".SetColor('" << Color[i] << "', " << MaxBrightness[i] << ")" << endl;
+
+            float DrawingThreshold = 0;
+            std::string bRaw = "False";
+            if (MolLoc[i]->Coord[0] == -1) {
+                DrawingThreshold = Context.GetInitialCountByName_CountList(MolLoc[i]->Name);
+                bRaw = "True";
+            }
+
+            // set pattern
+            ofs << in+ in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ", " << Utils::SciFloat2Str(DrawingThreshold) << ", " << bRaw;
+            if (!MaxStatic.empty())     { ofs << ", maxstatic=" << MaxStatic[i]; }
+            if (!ContourLine.empty())   { ofs << ", contourline=" << ContourLine[i]; }
+            ofs << ",)" << endl;
+
+            ofs << endl;
         }
+    }
 
-        // set pattern
-        ofs << in+ in+ MolLoc[i]->Name << ".SetPattern('" << Pattern[i] << "', '" << NormalizationType[i] << "', " << ReductionFactor[i] << ", " << Utils::SciFloat2Str(DrawingThreshold) << ", " << bRaw;
-        if (!MaxStatic.empty())     { ofs << ", maxstatic=" << MaxStatic[i]; }
-        if (!ContourLine.empty())   { ofs << ", contourline=" << ContourLine[i]; }
-        ofs << ",)" << endl;
+    if (!OrgNames.empty()) {
+            // Distribution settings (hardcoding)
+        std::vector<std::string>    Radar_Switch;
 
+    //    if (Option.bDebug)
+    //    {
+        Radar_Switch =      {"False",};
+    //    }
+
+        // Instantiate Organisms
+        for (int i = 0; i < OrgNames.size(); i++) {
+            ofs << in+ in+ "self." << OrgNames[i] << " = SimV.FOrganism('" << OrgNames[i] << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
+
+            // set radar
+            if (!Radar_Switch.empty())     { ofs << in+ in+ "self." << OrgNames[i] << ".SetRadar(switch=" << Radar_Switch[i] << ")" << endl; }
+        }
+        ofs << endl;
+
+        // Initialize Organisms
+        for (auto& OrganismName : OrgNames) {
+            ofs << in+ in+ "self." << OrganismName << ".Initialize()" << endl;
+    //        ofs << "# ";
+            if (!Context.ThresholdList.empty()) {
+                if (Context.ThresholdList[0].first == "Am") {
+                    ofs << in+ in+ "self." << OrganismName << ".Receptivity(20000)   # Pass time" << endl;
+                }
+            }
+        }
         ofs << endl;
     }
 
-    // Distribution settings (hardcoding)
-    std::vector<std::string>    Radar_Switch;
-
-//    if (Option.bDebug)
-//    {
-    Radar_Switch =      {"False",};
-//    }
-
-    // Instantiate Organisms
-    for (int i = 0; i < OrgNames.size(); i++) {
-        ofs << in+ in+ "self." << OrgNames[i] << " = SimV.FOrganism('" << OrgNames[i] << "', " << "'Ecoli'" << ")" << endl; // TODO: Get Species later
-
-        // set radar
-        if (!Radar_Switch.empty())     { ofs << in+ in+ "self." << OrgNames[i] << ".SetRadar(switch=" << Radar_Switch[i] << ")" << endl; }
-    }
+    ofs << in + in + "# Setup Static Objects" << endl;
+    
+    ofs << in + in + "InitVisObjects = []" << endl;
+    ofs << in + in + "ZeroVec = lccsimulation_pb2.Vector3(X=0, Y=0, Z=0)" << endl;
+    ofs << in + in + "UnitVec = lccsimulation_pb2.Vector3(X=1, Y=1, Z=1)" << endl;
+    ofs << in + in + "White = lccsimulation_pb2.Vector3(X=255, Y=255, Z=255)" << endl;
+    ofs << in + in + "Blue = lccsimulation_pb2.Vector3(X=143, Y=186, Z=255)" << endl;
+    ofs << in + in + "Yellow = lccsimulation_pb2.Vector3(X=255, Y=255, Z=102)" << endl;
     ofs << endl;
 
-    // Initialize Organisms
-    for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ "self." << OrganismName << ".Initialize()" << endl;
-//        ofs << "# ";
-        if (!Context.ThresholdList.empty()) {
-            if (Context.ThresholdList[0].first == "Am") {
-                ofs << in+ in+ "self." << OrganismName << ".Receptivity(20000)   # Pass time" << endl;
-            }
+    ofs << in + in + "# Static Petri Dish" << endl;
+    ofs << in + in + "InitVisObjects.append(lccsimulation_pb2.VisObjectData(" << endl;
+    ofs << in + in + in + in + "ID=0, " << endl;
+    ofs << in + in + in + in + "ObjType=lccsimulation_pb2.VisObjectType.M_PETRI_DISH," << endl;
+    ofs << in + in + in + in + "Position=lccsimulation_pb2.Vector3(X=100, Y=100, Z=0)," << endl;
+    ofs << in + in + in + in + "Rotation=ZeroVec," << endl;
+    ofs << in + in + in + in + "Scale=lccsimulation_pb2.Vector3(X=self.SimM.State.Dimension_X, Y=self.SimM.State.Dimension_Y, Z=1)," << endl;
+    ofs << in + in + in + in + "Color=Blue))" << endl;
+    ofs << endl;
+
+    // temporary static molecule 'distribution'
+// TODO: take dynamic distribution
+
+//for (int i = 0; i < MolLoc.size(); i++) {
+//    // instantiate
+//    ofs << in + in + MolLoc[i]->Name << " = SimV.FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
+
+    if (!MolLoc.empty()) {
+    
+        ofs << in + in + "# Static Glucose" << endl;
+        ofs << in + in + "for Pos in L.Particle_XY_Static:" << endl;
+        ofs << in + in + in + "NewObj = lccsimulation_pb2.VisObjectData(" << endl;
+        ofs << in + in + in + in + "ID=0, " << endl;
+        ofs << in + in + in + in + "ObjType=lccsimulation_pb2.VisObjectType.M_GLUCOSE," << endl;
+        ofs << in + in + in + in + "Position=lccsimulation_pb2.Vector3(X=Pos[0], Y=Pos[1], Z=0)," << endl;
+        ofs << in + in + in + in + "Rotation=ZeroVec," << endl;
+        ofs << in + in + in + in + "Scale=lccsimulation_pb2.Vector3(X=10,Y=10,Z=10)," << endl;
+        ofs << in + in + in + in + "Color=White)" << endl;
+        ofs << in + in + in + "" << endl;
+        ofs << in + in + in + "InitVisObjects.append(NewObj)" << endl;
+        ofs << in + in + "" << endl;
+
+    }
+
+    ofs << in + in + "# Setup Dynamic Objects" << endl;
+
+    if (!OrgNames.empty()) {
+        
+        ofs << in+ in+ "# Dynamic Ecoli" << endl;
+
+        for (auto& orgName : OrgNames) {
+            ofs << in+ in+ "for i in range(len(self." << orgName << ".X)):" << endl;
+            ofs << in+ in+ in+ "PosVec = lccsimulation_pb2.Vector3(X=self." << orgName << ".X[i], Y=self." << orgName << ".Y[i], Z=0)" << endl;
+            ofs << in+ in+ in+ "RotVec = lccsimulation_pb2.Vector3(X=0, Y=self." << orgName << ".Angle[i] * (180/np.pi), Z=0)" << endl;
+            ofs << in+ in+ in+ "" << endl;
+            ofs << in+ in+ in+ "InitVisObjects.append(lccsimulation_pb2.VisObjectData(" << endl;
+            ofs << in+ in+ in+ in+ "ID=i + 1," << endl;
+            ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_ECOLI," << endl;
+            ofs << in+ in+ in+ in+ "Position=PosVec," << endl;
+            ofs << in+ in+ in+ in+ "Rotation=RotVec," << endl;
+            ofs << in+ in+ in+ in+ "Scale = lccsimulation_pb2.Vector3(X=0.2,Y=0.2,Z=0.2)," << endl;
+            ofs << in+ in+ in+ in+ "Color = GenRandomColor()," << endl;
+            ofs << in+ in+ in+ "))" << endl;
+            ofs << in+ in+ "" << endl;
         }
+
     }
+
+    ofs << in+ in+ "# DNA Init Data" << endl;
+    ofs << in+ in+ "DNA_Init = []" << endl;
     ofs << endl;
 
+    if (!Chromosomes.empty()) {
 
-    ofs << in+ in+ "# Setup Static Objects" << endl;
-    ofs << in+ in+ "InitVisObjects = []" << endl;
-    ofs << in+ in+ "ZeroVec = lccsimulation_pb2.Vector3(X=0,Y=0,Z=0)" << endl;
-    ofs << in+ in+ "UnitVec = lccsimulation_pb2.Vector3(X=1,Y=1,Z=1)" << endl;
-    ofs << in+ in+ "White = lccsimulation_pb2.Vector3(X=255,Y=255,Z=255)" << endl;
-    ofs << in+ in+ "Blue = lccsimulation_pb2.Vector3(X=143, Y=186, Z=255)" << endl;
-    ofs << in+ in+ "Yellow = lccsimulation_pb2.Vector3(X=255, Y=255, Z=102)" << endl;
-    ofs << endl;
+        ofs << in+ in+ "# DNA Annotation" << endl;
+        ofs << in+ in+ "DNA_Annotations = []" << endl;
+        ofs << endl;
+        ofs << in+ in+ "DNA_Annotations.append(lccsimulation_pb2.DNA_AnnotationData(" << endl;
+        ofs << in+ in+ in+ "Sequence='ACGT'," << endl;
+        ofs << in+ in+ in+ "Gene_StartIndex_nm=self.State.Pos_Gene_Start_nm," << endl;
+        ofs << in+ in+ in+ "Gene_EndIndex_nm=self.State.Pos_Gene_End_nm," << endl;
+        ofs << in+ in+ in+ "Gene_Symbol=self.State.Name_Genes," << endl;
+        ofs << in+ in+ "))" << endl;
+        ofs << endl;
+        
+        ofs << in+ in+ "# DNA Position" << endl;
+        ofs << in+ in+ "DNA_Positions = []" << endl;
+        ofs << endl;
+        ofs << in+ in+ "Positions = []" << endl;
+        ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
+        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.Vector3(X=pos[0], Y=pos[1], Z=pos[2]))" << endl;
+        ofs << endl;
+        ofs << in+ in+ "DNA_Positions.append(lccsimulation_pb2.DNA_PositionData(" << endl;
+        ofs << in+ in+ in+ "Points=Positions" << endl;
+        ofs << in+ in+ "))" << endl;
+        ofs << endl;
+        
+        ofs << in+ in+ "DNA_Init = lccsimulation_pb2.DNA_InitData(" << endl;
+        ofs << in+ in+ in+ "DNA_Annotations=DNA_Annotations," << endl;
+        ofs << in+ in+ in+ "DNA_Positions=DNA_Positions," << endl;
+        ofs << in+ in+ ")" << endl;
+    }
 
-
-    ofs << in+ in+ "# Static Glucose" << endl;
-    ofs << in+ in+ "for Pos in L.Particle_XY_Static:" << endl;
-    ofs << in+ in+ in+ "NewObj = lccsimulation_pb2.VisObjectData(" << endl;
-    ofs << in+ in+ in+ in+ "ID=0, " << endl;
-    ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_GLUCOSE," << endl;
-    ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.Vector3(X=Pos[0], Y=Pos[1], Z=0)," << endl;
-    ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
-    ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.Vector3(X=10,Y=10,Z=10)," << endl;
-    ofs << in+ in+ in+ in+ "Color=White)" << endl;
-    ofs << in+ in+ in+ "" << endl;
-    ofs << in+ in+ in+ "InitVisObjects.append(NewObj)" << endl;
-    ofs << in+ in+ "" << endl;
-
-
-    ofs << in+ in+ "# Static Petri Dish" << endl;
-    ofs << in+ in+ "InitVisObjects.append(lccsimulation_pb2.VisObjectData(" << endl;
-    ofs << in+ in+ in+ in+ "ID=0, " << endl;
-    ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_PETRI_DISH," << endl;
-    ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.Vector3(X=100, Y=100, Z=0)," << endl;
-    ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
-    ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.Vector3(X=500,Y=500,Z=1)," << endl;
-    ofs << in+ in+ in+ in+ "Color=Blue))" << endl;
-    ofs << endl;
-
-
-    ofs << in+ in+ "# Dynamic EColi" << endl;
-    ofs << in+ in+ "for i in range(len(self.E.X)):" << endl;
-    ofs << in+ in+ in+ "PosVec = lccsimulation_pb2.Vector3(X=self.E.X[i], Y=self.E.Y[i], Z=0)" << endl;
-    ofs << in+ in+ in+ "RotVec = lccsimulation_pb2.Vector3(X=0, Y=self.E.Angle[i] * (180/np.pi), Z=0)" << endl;
-    ofs << in+ in+ in+ "" << endl;
-    ofs << in+ in+ in+ "InitVisObjects.append(lccsimulation_pb2.VisObjectData(" << endl;
-    ofs << in+ in+ in+ in+ "ID=i + 1," << endl;
-    ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_ECOLI," << endl;
-    ofs << in+ in+ in+ in+ "Position=PosVec," << endl;
-    ofs << in+ in+ in+ in+ "Rotation=RotVec," << endl;
-    ofs << in+ in+ in+ in+ "Scale = lccsimulation_pb2.Vector3(X=0.2,Y=0.2,Z=0.2)," << endl;
-    ofs << in+ in+ in+ in+ "Color = GenRandomColor()," << endl;
-    ofs << in+ in+ in+ "))" << endl;
-    ofs << in+ in+ "" << endl;
-    ofs << in+ in+ "# TODO: Create DNA Init Data Here" << endl;
-    ofs << endl;
-    ofs << in+ in+ "return lccsimulation_pb2.InitData(InitObjects=InitVisObjects)" << endl;
+    ofs << in + in + "return lccsimulation_pb2.InitData(InitObjects=InitVisObjects, InitDNA=DNA_Init)" << endl;
     ofs << endl;
 
     // TODO: stream run
@@ -228,9 +288,9 @@ void FWriter::SimServer() {
 
     for (auto& OrganismName : OrgNames) {
         ofs << in+ in+ in+ in+ in+ "self." << OrganismName << ".Receptivity(20)" << endl;
-        ofs << in+ in+ in+ in+ in+ "self." << OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
+        ofs << in+ in+ in+ in+ in+ "self." << OrganismName << ".SetPosition(self.SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
         if (!DNAPs.empty()) {
-            ofs << in+ in+ in+ in+ in+ "self." << OrganismName << ".SetReplicationCompletionRate(SimM.GetReplicationCompletionRate('" << OrganismName << "'))" << endl;
+            ofs << in+ in+ in+ in+ in+ "self." << OrganismName << ".SetReplicationCompletionRate(self.SimM.GetReplicationCompletionRate('" << OrganismName << "'))" << endl;
         }
         ofs << in+ in+ in+ in+ in+ "self." << OrganismName << ".IncrementSimCount()" << endl;
     }
@@ -241,6 +301,8 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "# Record data SimUnitState" << endl;
     ofs << in+ in+ in+ in+ "VisObjects = {} # map from id --> VisObjectData" << endl;
     ofs << endl;
+
+
     ofs << in+ in+ in+ in+ "for i in range(len(self.E.X)):" << endl;
     ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.Vector3(X=self.E.X[i], Y=self.E.Y[i], Z=0)" << endl;
     ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.Vector3(X=0, Y=self.E.Angle[i] * (180/np.pi), Z=0)" << endl;

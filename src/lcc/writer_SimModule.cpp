@@ -1666,6 +1666,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         //        ofs << in+ in+ "Idx_DividingCells = np.where(np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2), axis=1) > 0)" << endl;
         ofs << endl;
 
+        ofs << in + in + "# Temporary rate ramping for viewing" << endl;
+        ofs << in + in + "self.State.Rate_Replication = np.array([1e6])" << endl;
+
         if (Option.bDebug) {
             ofs << in+ in+ "#Debugging" << endl;
             ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl;

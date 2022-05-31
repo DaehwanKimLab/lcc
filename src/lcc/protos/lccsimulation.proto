@@ -36,16 +36,17 @@ enum VisObjectType
 
 service LCCSimulation 
 {
-    rpc Initialize (Empty) returns (InitData);
-    rpc Run(Empty) returns (stream RunData);
-    rpc Pause(Empty) returns (ControlSimulationResponse);
-    rpc Stop(Empty) returns (ControlSimulationResponse);
+    rpc Initialize  (Empty) returns (InitData);
+    rpc Run         (Empty) returns (stream RunData);
+    rpc Pause       (Empty) returns (ControlSimulationResponse);
+    rpc Stop        (Empty) returns (ControlSimulationResponse);
 }
 
 message InitData
 {
     repeated VisObjectData InitObjects = 1;
-    DNAInitData DNAInit = 2;
+    DNA_InitData InitDNA = 2;
+
 }
 
 message RunData
@@ -63,6 +64,7 @@ message ControlSimulationResponse
 //
 // Simulation
 //
+
 message SimUnitState 
 {
     float Time = 1;
@@ -83,18 +85,23 @@ message VisObjectData
 //
 // DNA
 //
-
-message DNAAnnotation
+message DNA_InitData
 {
-    uint32 StartIndex = 1;
-    uint32 EndIndex = 2;
-    string Info = 3;
+    repeated DNA_AnnotationData DNA_Annotations = 1;
+    repeated DNA_PositionData DNA_Positions = 2;
 }
 
-message DNAInitData 
+message DNA_AnnotationData
 {
-    repeated uint32 DNASequence = 1;
-    repeated Vector3 Points = 2;
+    string Sequence = 1;
+    repeated float Gene_StartIndex_nm = 2;
+    repeated float Gene_EndIndex_nm = 3;
+    repeated string Gene_Symbol = 4;
+}
+
+message DNA_PositionData
+{
+    repeated Vector3 Points = 1;
 }
 
 //

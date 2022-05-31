@@ -409,6 +409,9 @@ def GetDistanceBTWTwoPoints(P1, P2):
 
 # def GetVolume(Dimension)
 
+def ConvertNTLength2nm(NTLength):
+    return (NTLength / 10) * 3.4   # unit conversion from bp to nm
+
 def TrimToShape(Nodes, Dim, Shape):
     if Shape == 'cuboid':
         return Nodes
