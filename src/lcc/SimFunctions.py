@@ -11,9 +11,6 @@ def CountToConc(Count_Molecule, Volume):
     return (Count_Molecule / NA) / Volume
 
 ### if N_MOLECULEALLOWED = N ###########################################################################################
-# To make this relevant for an arbitrary number of variables, 
-# Simply make Conc_1 -> array and perform operations on the array
-
 class ReactionEquations:
     """ ReactionEquations
 
@@ -26,17 +23,12 @@ class ReactionEquations:
         -------
         CheckRateAndConc
 
-        Eqn_Standard_Unregulated
+        Allostery 
 
-        Eqn_Standard_Inhibition_Allosteric
+        Reaction 
 
-        Eqn_Standard_Activation_Allosteric
+    
 
-        Eqn_Enz_Standard_Unregulated
-
-        Eqn_Enz_Standard_Inhibition_Allosteric
-        
-        Eqn_Enz_Standard_Activation_Allosteric
     """
 
     def __init__(
@@ -63,235 +55,17 @@ class ReactionEquations:
         """ """
         return np.min((self.Rate, self.arr1DConc), axis=0)
 
-    # Numerator
-    def Standard_reaction(self):
-        """Note: it is expected that Enzyme concentration is included in this.  
-        I would like to break this down to rate limiting enzyme/concentration"""
-        return self.dReactionCoeff * np.prod(self.arr1DConc)
-    
-    # Denominator
-    def Standard_Allostery(self):
+    # 
+    def Allostery(self):
+        """ """
         return (1 + (self.dAllosteryConc / self.dKAllostery) ** self.dHillCoeff) 
 
     # 
-    def reaction(self):
-        return self.Standard_reaction() * self.Standard_Allostery() ** self.AllosteryType 
-
-    # Standard reactions
-    def Eqn_Standard_Unregulated(self):
-        return self.k * np.prod(self.arr1DConc)  
-
-    """ So we can simplify this A lot I think. 
-    The only difference between Enz and standard is that the enzyme concentration is also calculated. 
-    Which in non saturating conditions is essentially equivalent to eqn_standard_unregulated for substrates n+1
-
-    """
-    # Enzymatic, standard reactions
-    def Eqn_Enz_Standard_Unregulated(self):
-        return self.Conc_Enzyme * self.k * np.prod(self.arr1DConc)  
-        # return Conc_Enzyme * k (for saturation)
-
-    
-    ## These two formulas are the same... should probably combine.
-    def Eqn_Standard_Inhibition_Allosteric(self):
-        return self.k / (1 + (self.Conc_Inhibitor / self.Ki) ** self.hillCoeff) * np.prod(self.arr1DConc)   
-    def Eqn_Standard_Activation_Allosteric(self):
-        return self.k * (1 + (self.Conc_Activator / self.Ka) ** self.hillCoeff) * np.prod(self.arr1DConc)   
+    def Reaction(self):
+        """"""
+        return self.dReactionCoeff * np.prod(self.arr1DConc) * (self.Allostery() ** self.AllosteryType)
 
 
-
-
-    # These two formulas are the same... should probably combine
-    def Eqn_Enz_Standard_Inhibition_Allosteric(self):
-        return self.Conc_Enzyme * self.k / (1 + (self.Conc_Inhibitor / self.Ki) ** self.hillCoeff) * np.prod(self.arr1DConc)  
-    def Eqn_Enz_Standard_Activation_Allosteric(self):
-        return self.Conc_Enzyme * self.k * (1 + (self.Conc_Activator / self.Ka) ** self.hillCoeff) * np.prod(self.arr1DConc)  
-
-
-### if N_MOLECULEALLOWED = 1 ###########################################################################################
-def CheckRateAndConc_1(Rate, Conc_1):
-    return np.min((Rate, Conc_1), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_1(Conc_1, k):
-    return k * Conc_1  
-
-def Eqn_Standard_Inhibition_Allosteric_1(Conc_1, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1  
-
-def Eqn_Standard_Activation_Allosteric_1(Conc_1, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1  
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_1(Conc_Enzyme, Conc_1, k):
-    return Conc_Enzyme * k * Conc_1  
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_1(Conc_Enzyme, Conc_1, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1  
-
-def Eqn_Enz_Standard_Activation_Allosteric_1(Conc_Enzyme, Conc_1, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1  
-########################################################################################################################
-
-### if N_MOLECULEALLOWED = 2 ###########################################################################################
-def CheckRateAndConc_2(Rate, Conc_1, Conc_2):
-    return np.min((Rate, Conc_1, Conc_2), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_2(Conc_1, Conc_2, k):
-    return k * Conc_1 * Conc_2 
-
-def Eqn_Standard_Inhibition_Allosteric_2(Conc_1, Conc_2, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 
-
-def Eqn_Standard_Activation_Allosteric_2(Conc_1, Conc_2, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_2(Conc_Enzyme, Conc_1, Conc_2, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_2(Conc_Enzyme, Conc_1, Conc_2, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 
-
-def Eqn_Enz_Standard_Activation_Allosteric_2(Conc_Enzyme, Conc_1, Conc_2, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 
-########################################################################################################################
-
-### if N_MOLECULEALLOWED = 3 ###########################################################################################
-def CheckRateAndConc_3(Rate, Conc_1, Conc_2, Conc_3):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_3(Conc_1, Conc_2, Conc_3, k):
-    return k * Conc_1 * Conc_2 * Conc_3
-
-def Eqn_Standard_Inhibition_Allosteric_3(Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
-
-def Eqn_Standard_Activation_Allosteric_3(Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
-
-def Eqn_Enz_Standard_Activation_Allosteric_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
-########################################################################################################################
-
-### if N_MOLECULEALLOWED = 4 ###########################################################################################
-def CheckRateAndConc_4(Rate, Conc_1, Conc_2, Conc_3, Conc_4):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3, Conc_4), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_4(Conc_1, Conc_2, Conc_3, Conc_4, k):
-    return k * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-def Eqn_Standard_Inhibition_Allosteric_4(Conc_1, Conc_2, Conc_3, Conc_4, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-def Eqn_Standard_Activation_Allosteric_4(Conc_1, Conc_2, Conc_3, Conc_4, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3 * Conc_4
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-def Eqn_Enz_Standard_Activation_Allosteric_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-########################################################################################################################
-# Austin: Just copied N_MOLECULEALLOWED=4, added Conc_5 to each method and changed the method name to _5
-### if N_MOLECULEALLOWED = 5 ###########################################################################################
-def CheckRateAndConc_5(Rate, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_5(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, k):
-    return k * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5
-
-def Eqn_Standard_Inhibition_Allosteric_5(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5
-
-def Eqn_Standard_Activation_Allosteric_5(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_5(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_5(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4* Conc_5
-
-def Eqn_Enz_Standard_Activation_Allosteric_5(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5
-########################################################################################################################
-########################################################################################################################
-# Austin: Just copied N_MOLECULEALLOWED=4, added Conc_5 to each method and changed the method name to _5
-### if N_MOLECULEALLOWED = 6 ###########################################################################################
-def CheckRateAndConc_6(Rate, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_6(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, k):
-    return k * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6
-
-def Eqn_Standard_Inhibition_Allosteric_6(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6
-
-def Eqn_Standard_Activation_Allosteric_6(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_6(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_6(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4* Conc_5* Conc_6
-
-def Eqn_Enz_Standard_Activation_Allosteric_6(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5 * Conc_6
-########################################################################################################################
-########################################################################################################################
-# Austin: Just copied N_MOLECULEALLOWED=4, added Conc_5 to each method and changed the method name to _5
-### if N_MOLECULEALLOWED = 7 ###########################################################################################
-def CheckRateAndConc_7(Rate, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_7(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7, k):
-    return k * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6 * Conc_7
-
-def Eqn_Standard_Inhibition_Allosteric_7(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6* Conc_7
-
-def Eqn_Standard_Activation_Allosteric_7(Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6* Conc_7
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_7(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5* Conc_6* Conc_7
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_7(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4* Conc_5* Conc_6* Conc_7
-
-def Eqn_Enz_Standard_Activation_Allosteric_7(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_5, Conc_6, Conc_7, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4 * Conc_5 * Conc_6* Conc_7
-########################################################################################################################
 
 
 # Enzymatic, Michaelis Menten reactions
