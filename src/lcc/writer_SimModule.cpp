@@ -296,19 +296,19 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "# Temporary database routines" << endl;
     ofs << endl;
 
-    ofs << in + "def LoadFASTADatabase(self, db_fname):" << endl;
-    ofs << in + in + "db = list()" << endl;
-    ofs << in + in + "with open(db_fname) as fp:" << endl;
-    ofs << in + in + in + "sequences = fp.read().split('>')[1:]" << endl;
-    ofs << in + in + in + "for i, sequence in enumerate(sequences):" << endl;
-    ofs << in + in + in + in+ "list_of_rows = sequence.split('\\n')" << endl;
-    ofs << in + in + in + in+ "db.append(''.join(list_of_rows[1:]))" << endl;
-    ofs << in + in + "return db" << endl;
+    ofs << in+ "def LoadFASTADatabase(self, db_fname):" << endl;
+    ofs << in+ in+ "db = list()" << endl;
+    ofs << in+ in+ "with open(db_fname) as fp:" << endl;
+    ofs << in+ in+ in+ "sequences = fp.read().split('>')[1:]" << endl;
+    ofs << in+ in+ in+ "for i, sequence in enumerate(sequences):" << endl;
+    ofs << in+ in+ in+ in+ "list_of_rows = sequence.split('\\n')" << endl;
+    ofs << in+ in+ in+ in+ "db.append(''.join(list_of_rows[1:]))" << endl;
+    ofs << in+ in+ "return db" << endl;
     ofs << endl;
 
-    ofs << in + "def OpenFASTADatabase(self, db_fname):" << endl;
-    ofs << in + in + "db = self.LoadFASTADatabase(db_fname)" << endl;
-    ofs << in + in + "return db" << endl;
+    ofs << in+ "def OpenFASTADatabase(self, db_fname):" << endl;
+    ofs << in+ in+ "db = self.LoadFASTADatabase(db_fname)" << endl;
+    ofs << in+ in+ "return db" << endl;
     ofs << endl;
 
     ofs << in+ "def LoadTSVDatabase(self, db_fname):" << endl;

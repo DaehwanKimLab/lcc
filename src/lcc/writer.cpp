@@ -403,7 +403,7 @@ void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<st
     Len_RNA =       "self.Len_NascentRNAs";
     Len_Protein =   "self.Len_NascentProteins";
 
-    // For DNA Replication
+    // For All genetic info processing
     if (!PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
         ofs << in+ in+ BB_Ch        << " = None" << endl;
         ofs << in+ in+ BB_RNA       << " = None" << endl;
@@ -499,6 +499,7 @@ void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Pro
     ofs << in+ in+ "self.Idx_PolBB_" << Process << " = None" << endl;
     ofs << endl;
 }
+
 void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes)
 {
     ofs << in+ in+ "# SetUp_PolymeraseReaction_Matrix" << endl;
