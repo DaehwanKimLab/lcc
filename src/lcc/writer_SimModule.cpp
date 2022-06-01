@@ -307,7 +307,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in + "def OpenFASTADatabase(self, db_fname):" << endl;
-    ofs << in + in + "db = self.LoadTSVDatabase(db_fname)" << endl;
+    ofs << in + in + "db = self.LoadFASTADatabase(db_fname)" << endl;
     ofs << in + in + "return db" << endl;
     ofs << endl;
 
