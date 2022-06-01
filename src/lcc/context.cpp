@@ -14,6 +14,36 @@ using namespace std;
 
 extern FOption Option;
 
+std::string LoadFromFASTA(const char* Filename)
+{
+    std::ifstream FastaFile(Filename);
+
+    std::string line, name, seq;
+    while (std::getline(FastaFile, line)) {
+        if (line.empty() || line[0] == '>') {
+            if (!name.empty()) { 
+                std::cout << name << " : " << seq << std::endl;
+                name.clear();
+            }
+            if (!line.empty()) {
+                name = line.substr(1);
+            }
+            seq.clear();
+        }
+        else if (!name.empty()) {
+            if (line.find(' ') != std::string::npos) {
+                name.clear();
+                seq.clear();
+            }
+            else {
+                seq += line;
+            }
+        }
+    }
+    std::cout << "Seq length: " << seq.size() << std::endl;
+    return seq;
+}
+
 void FTable::LoadFromTSV(const char *Filename)
 {
 	if (Option.bDebug) {
@@ -311,7 +341,7 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
 
             // 0.6–0.7 μm3 in volume, cylinder 1.0-2.0 um long, with radius 0.5 um.
             Organism->Shape = "cylinder";
-            Organism->Dimension = {800, 1200, 800};
+            Organism->Dimension = {800, 1200, 800}; // nm
         }
     }
 
@@ -324,8 +354,8 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
     // Generate chromosome if not made by the user
     if ((bDNAP || bRNAP) & GetSubList_MoleculeList("Chromosome").empty()) {
         //std::string Strain == "K-12 MG1655";
-        int ChromosomeSize = 4641652;
-        FGeneticMaterial* Chromosome = GenerateChromosome("Ch_I", 1, ChromosomeSize);
+        std::string Sequence = LoadFromFASTA("./Database/EscherichiaColi.fasta");
+        FGeneticMaterial* Chromosome = GenerateChromosome("Ch_I", 1, Sequence);
         Chromosome->SetTemplate(Chromosome->Name);
         ListOfNewMolecules.push_back(Chromosome);
     }
@@ -461,6 +491,16 @@ FGeneticMaterial * FCompilerContext::GenerateChromosome(std::string MolName, int
     FChromosome * NewChromosome = new FChromosome(MolName, Size);
 
     FCount * NewCount = new FCount(MolName, Count);
+    AddToCountList(NewCount);
+
+    return NewChromosome;
+}
+
+FGeneticMaterial* FCompilerContext::GenerateChromosome(std::string MolName, int Count, std::string Sequence)
+{
+    FChromosome* NewChromosome = new FChromosome(MolName, Sequence);
+
+    FCount* NewCount = new FCount(MolName, Count);
     AddToCountList(NewCount);
 
     return NewChromosome;
@@ -1332,6 +1372,24 @@ std::vector<std::string> FCompilerContext::GetUniqueNames_LocationList(std::stri
     }
 
     return StrList;
+}
+
+std::vector<FContainer *> FCompilerContext::GetUniqueContainers_LocationList(std::string Type)
+{
+    std::vector<FLocation *> SubLocationList = GetSubList_LocationList(Type);
+    std::vector<FContainer *> SubContainerList = GetSubList_ContainerList(Type);
+    std::vector<FContainer *> UniqueContainerList;
+
+    for (auto& location : SubLocationList) {
+        for (auto& container : SubContainerList) {
+            if (container->Name == location->Name) {
+                if (std::find(UniqueContainerList.begin(), UniqueContainerList.end(), container) == UniqueContainerList.end()) {
+                    UniqueContainerList.push_back(container);
+                }
+            }
+        }
+    }
+    return UniqueContainerList;
 }
 
 int FCompilerContext::GetCounts_LocationList(std::string Type)

@@ -386,11 +386,7 @@ void FWriter::SimVis2D() {
 
     ofs << endl;
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
-    ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
-    ofs << in+ in+ in+ "SimM.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
-    ofs << in+ in+ in+ "SimM.ExportData()" << endl;
-    ofs << in+ in+ "SimM.SimLoop_WithSpatialSimulation()" << endl;
-    ofs << in+ in+ "SimM.ExportData()" << endl;
+    ofs << in+ in+ "SimM.Receptivity(N_SimulationsToPass)" << endl;
     ofs << endl;
 //    ofs << in+ "def ReportStatus(self):" << endl;
 //    ofs << in+ in+ "# for debugging" << endl;

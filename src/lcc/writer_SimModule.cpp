@@ -296,6 +296,21 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "# Temporary database routines" << endl;
     ofs << endl;
 
+    ofs << in + "def LoadFASTADatabase(self, db_fname):" << endl;
+    ofs << in + in + "db = list()" << endl;
+    ofs << in + in + "with open(db_fname) as fp:" << endl;
+    ofs << in + in + in + "sequences = fp.read().split('>')[1:]" << endl;
+    ofs << in + in + in + "for i, sequence in enumerate(sequences):" << endl;
+    ofs << in + in + in + in+ "list_of_rows = sequence.split('\\n')" << endl;
+    ofs << in + in + in + in+ "db.append(''.join(list_of_rows[1:]))" << endl;
+    ofs << in + in + "return db" << endl;
+    ofs << endl;
+
+    ofs << in + "def OpenFASTADatabase(self, db_fname):" << endl;
+    ofs << in + in + "db = self.LoadTSVDatabase(db_fname)" << endl;
+    ofs << in + in + "return db" << endl;
+    ofs << endl;
+
     ofs << in+ "def LoadTSVDatabase(self, db_fname):" << endl;
     ofs << in+ in+ "db = None" << endl;
     ofs << in+ in+ "with open(db_fname) as fp:" << endl;
@@ -1387,8 +1402,20 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 //    ofs << in+ in+ "self.State.Dist_All[Idx, X.astype(int), Y.astype(int)] += Value" << endl;
     ofs << endl;
 
+    ofs << in+ "# External Simulation Control routines" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
+    ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
+    ofs << in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution()" << endl;
+    ofs << in+ in+ in+ "self.ExportData()" << endl;
+    ofs << in+ in+ "self.SimLoop_WithSpatialSimulation()" << endl;
+    ofs << in+ in+ "self.ExportData()" << endl;
+    ofs << endl;
+
     // TODO: Use SimIdx in the future
     ofs << in+ "# Temporary routines" << endl;
+    ofs << endl;
 
     ofs << in+ "def GetMolIdx(self, Name):" << endl;
     ofs << in+ in+ "return self.State.Mol_Name2Idx[Name]" << endl;

@@ -999,6 +999,7 @@ public:
 
     // Compiler Utility
     FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, int Size); // default
+    FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, std::string Sequence); // default
 
     FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, int Count); // default
     FGeneticMaterial * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
@@ -1018,6 +1019,7 @@ public:
     std::vector<FLocation *> GetSubList_LocationList(std::string Type);
     std::vector<std::string> GetNames_LocationList(std::string Type);
     std::vector<std::string> GetUniqueNames_LocationList(std::string Type);
+    std::vector<FContainer*> FCompilerContext::GetUniqueContainers_LocationList(std::string Type);
     int GetCounts_LocationList(std::string Type);
 
     // CountList
