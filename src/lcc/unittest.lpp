@@ -4,6 +4,8 @@
 //  I'm not sure how compiler would handle negative k values...
 //  I'm not sure how to test 0th order reactions
 
+// TODO: Implement constant check (avagadro, conversions, etc.)
+
 /*  Standard Reaction: 1st order
 TestCase1: Intial product = 0 (likely most common)
     [reactant] > 0
@@ -23,11 +25,16 @@ TestCase3: Rate constant = 0
     k = 0
     Expected Result: No change from inital conditions
 
-TestCase4: Syntax Change
+TestCase4: Syntax - Units
     [reactant] > 0 
     [product] = 0 
     k > 0
     Expected Result: Same as TC1
+TestCase5: Syntax - Continuous concentration  
+    [reactant] = 1; always 
+    [product] = 0 
+    k > 0
+    Expected Result: No depletion of reactant.  continuous product formation.
 */
 
 // TestCase1: Inital product = 0
@@ -42,13 +49,18 @@ FirstOrderFinalTC2[0]=10;
 
 // TestCase3: Rate constant = 0
 reaction standardReactionFirstOrderTestCase3(FirstOrderInitialTC3 --> FirstOrderFinalTC3, k=0);
-FirstOrderInitialTC3[0]=10;
-FirstOrderFinalTC3[0]=10;
+FirstOrderInitialTC3[0]=3;
+FirstOrderFinalTC3[0]=5;
 
-// TestCase4: Inital product = 0
+// TestCase4: Syntax - Units
 reaction standardReactionFirstOrderTestCase4(FirstOrderInitialTC4 --> FirstOrderFinalTC4, k=2);
 FirstOrderInitialTC4=10M;
 FirstOrderFinalTC4[0]=0;
+
+// TestCase5: Syntax - Continuous concentration
+reaction standardReactionFirstOrderTestCase5(FirstOrderInitialTC5 --> FirstOrderFinalTC5, k=2);
+FirstOrderInitialTC5[:]=10M;
+FirstOrderFinalTC5[0]=0;
 
 /*  Standard Reaction: 2nd order
 // [R1]^2 --> [P]
@@ -114,8 +126,12 @@ TestCase8: Reversible reactions; krev = k
 TestCase9: Reversible reactions; krev > k 
     [reactant] = [product]
     k < krev
-    Expected Result: 
-
+    Expected Result: net product conversion to reactant
+TestCase10: Syntax - Units: 
+    [reactant] = 1; always 
+    [product] > 0 
+    k < krev
+    Expected Result: No depletion of reactant.  continuous product formation.
 */
 
 // TestCase1: Inital product = 0
@@ -135,8 +151,8 @@ SecondOrderFinalTC3[0]=10;
 
 // TestCase4: Rate constant = 0
 reaction standardReactionSecondOrderTestCase4(SecondOrderInitialTC4 --> SecondOrderFinalTC4, k=0, krev=0);
-SecondOrderInitialTC4[0]=10;
-SecondOrderFinalTC4[0]=10;
+SecondOrderInitialTC4[0]=3;
+SecondOrderFinalTC4[0]=5;
 
 // TestCase5: Two Reactants Change
 reaction standardReactionSecondOrderTestCase5(SecondOrderInitialTC5_A + SecondOrderInitialTC5_B --> SecondOrderFinalTC5, k=2, krev=0);
@@ -151,9 +167,9 @@ SecondOrderInitialTC6_B=0M;
 SecondOrderFinalTC6[0]=0;
 
 // TestCase7: Reversible, krev > 0; k = 0
-reaction standardReactionSecondOrderTestCase1(SecondOrderInitialTC7 --> SecondOrderFinalTC7, k=0, krev=2);
-SecondOrderInitialTC1[0]=0;
-SecondOrderFinalTC1[0]=10;
+reaction standardReactionSecondOrderTestCase7(SecondOrderInitialTC7 --> SecondOrderFinalTC7, k=0, krev=2);
+SecondOrderInitialTC7[0]=0;
+SecondOrderFinalTC7[0]=10;
 
 // TestCase8: Reversible, krev = k 
 reaction standardReactionSecondOrderTestCase8(SecondOrderInitialTC8 --> SecondOrderFinalTC8, k=100, krev=100);
@@ -165,6 +181,50 @@ reaction standardReactionSecondOrderTestCase9(SecondOrderInitialTC9 --> SecondOr
 SecondOrderInitialTC9=5M;
 SecondOrderFinalTC9[0]=5;
 
+// TestCase10:  Syntax - Units:  
+reaction standardReactionSecondOrderTestCase10(SecondOrderInitialTC10 --> SecondOrderFinalTC10, k=2, krev=5);
+SecondOrderInitialTC10[:]=5M;
+SecondOrderFinalTC10[0]=5;
+
+/*  Enzymatic Reactions
+
+// Enzymatic Michaelis Menten (KM, kcat)
+
+TODO: Implement Michaelis Menten
+
+// [R1]^2 --> [P]
+TestCase1: Intial product = 0 (likely most common)
+    [reactant1] > 0
+    [product] = 0
+    k > 0
+    krev = 0
+    Expected Result: 
+
+*/
+
+
+
+
+
+/* Allosteric Regulation (Ki, Ka)
+
+// Activation
+
+
+
+// Inihibition
+
+
+*/
+
+
+
+
+/* Cooperativity (hill coefficient)
+
+
+
+*/
 
 
 // enzymatic reaction
