@@ -77,6 +77,8 @@ std::string JoinInt2Str(std::vector<int> IntList);
 std::string JoinInt2Str_Idx(std::vector<int> IntList);
 std::string JoinFloat2Str(std::vector<float> FloatList);
 std::string Matrix2Str(std::vector<std::vector<int>> Matrix);
+std::string UpperCaseStr(std::string InStr);
+std::string LowerCaseStr(std::string InStr);
 void Assertion(bool Bool, std::string ErrorMessage);
 
 } // Namespace Utils

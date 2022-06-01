@@ -117,6 +117,24 @@ std::string Matrix2Str(std::vector<std::vector<int>> Matrix)
     return MatrixStr;
 }
 
+std::string UpperCaseStr(std::string InStr)
+{
+    std::string OutStr;
+    for (auto& c : InStr) {
+         OutStr += toupper(c);
+    }
+    return OutStr;
+}
+
+std::string LowerCaseStr(std::string InStr)
+{
+    std::string OutStr;
+    for (auto& c : InStr) {
+         OutStr += tolower(c);
+    }
+    return OutStr;
+}
+
 void Assertion(bool Bool, std::string ErrorMessage)
 {
     if (!Bool) {
