@@ -82,24 +82,42 @@ class ReactionEquations:
         self,
         arr1DConc: np.ndarray,  # Conc. of all reaction components (now incl. enz)
         Rate,  # How is rate different from k?
-        dReactionRateCoeff: float,  # k
-        dHillCoeff: float = 1.0,  # Default hill coeff
-        dAllosteryConc: float = 0.0,  # If 0, no allostery
-        dKAllostery: float = 1.0,  # must be non-zero
-        intAllosteryType: int = 1,  # 1 for Activator, -1 for inhibitor
+        dReactionRateCoeff: np.ndarray,  # float,  # k
+        arr1DdHillCoeff: np.ndarray,  # float = 1.0,  # Default hill coeff
+        arr1DdAllosteryConc: np.ndarray,  # float = 0.0,  # If 0, no allostery
+        arr2DdKAllostery: np.ndarray,  # float = 1.0,  # must be non-zero
+        arr1DintAllosteryType: np.ndarray,  # int = 1,  # 1 for Activator, -1 for inhibitor
+        arr4DAllostery: np.ndarray,
+        arr1DdKMichaelis: np.ndarray,
     ):
-        self.arr1DConc = arr1DConc
+        #
         self.Rate = Rate
         self.dReactionRateCoeff = dReactionRateCoeff
-        self.dKAllostery = dKAllostery
-        self.dHillCoeff = dHillCoeff
-        self.dAllosteryConc = dAllosteryConc
-        self.intAllosteryType = intAllosteryType
+
+        self.arr1DConc = arr1DConc
+
+        # Need (n, 4) array [0] holds the index of the substrate, [1] conc allosteric regulator
+        # [2] dissociation constant of allosteric regulator [3] type of allosteric regulation
+        self.arr4DAllostery = arr4DAllostery
+
+        self.arr2DdKAllostery = arr2DdKAllostery
+        self.arr1DdAllosteryConc = arr1DdAllosteryConc
+        self.arr1DintAllosteryType = arr1DintAllosteryType
+
+        self.arr1DdHillCoeff = arr1DdHillCoeff  # currently I don't think this is actually the hill coeff....
+        self.arr1DdKMichaelis = arr1DdKMichaelis
+
+        # Get Relative concentrations
+        self.arr1DdRelativeConc = self.RelativeConcentration()
+        # Get Rate Limiting concentration
+        self.rateLimitingConcentration = np.min(self.arr1DdRelativeConc)
 
     # I'm not sure why we are taking the minimum of concentration and rate...
     def CheckRateAndConc(self):
         """ ???? """
-        return np.min((self.Rate, self.arr1DConc), axis=0) # may need to get min of array 1st...
+        return np.min(
+            (self.Rate, self.arr1DConc), axis=0
+        )  # may need to get min of array 1st...
 
     def MassActionReactionRate(self):
         """Mass action reaction rate:
@@ -107,20 +125,80 @@ class ReactionEquations:
         """
         return self.dReactionRateCoeff * np.prod(self.arr1DConc)
 
-    def Allostery(self):
-        """ Calculate the impact of allosteric elements on reaction"""
-        return 1 + (self.dAllosteryConc / self.dKAllostery) ** self.dHillCoeff
+    # def Allostery(self, regulatedIndex, regulatorConc, regulatorDissociationConstant, regulatorType):
+    #     """ Calculate the impact of allosteric elements on reaction"""
+    #     # note what was formerly "n" was removed as I don't think this cooperative effect applies here...
+    #     return (1 + (regulatorConc / regulatorDissociationConstant)) ** regulatorType
+
+    def Allostery(self, arr4DAllostery):
+        """ Calculate the impact of allosteric elements on reaction
+        Pass in subset of Arr4D for one regulated component.
+
+        """
+        # note what was formerly "n" was removed as I don't think this cooperative effect applies here...
+
+        # Loop through, get individual allosteric elements,
+        # overall allostery is the product of those elements
+        # Note: I'm not sure if this works for regulator of regulators is going to work...
+        return np.prod(
+            np.array(
+                [
+                    (1 + (arr4DAllostery[i, 1] / arr4DAllostery[i, 2]))
+                    ** arr4DAllostery[i, 3]
+                    for i in range(arr4DAllostery.shape[0])
+                ]
+            )
+        )
 
     def Reaction(self):
         """Total Reaction: 
         The MassActionReactionRate modulated by allosteric elements.
         """
-        return self.MassActionReactionRate() * (
-            self.Allostery() ** self.intAllosteryType
+        return self.MassActionReactionRate() * self.Allostery()
+
+    # [Relative] and Rate limiting step
+    def RelativeConcentration(self):
+        """Combine allosteric effects with concentration to get relative concentration"""
+        np.array(
+            [
+                self.arr1DConc[i]
+                * self.Allostery(
+                    arr4DAllostery=self.arr4DAllostery.where(
+                        self.arr4DAllostery[0]
+                        == i  # Subset of arr4D with allosteric elements for current substrate
+                    )
+                )
+                for i in range(self.arr1DConc.shape[0])
+            ]
+        )
+
+    def Saturation(self):
+        """ Calculate Saturation (i.e. relative availability) + cooperativity (via hill coeff)"""
+
+        np.prod(
+            np.array(
+                [
+                    self.arr1DConc[i] ** self.arr1DdHillCoeff[i]
+                    / (
+                        self.arr1DdKMichaelis[i] ** self.arr1DdHillCoeff[i]
+                        + self.arr1DConc[i] ** self.arr1DdHillCoeff[i]
+                    )
+                    for i in range(self.arr1DConc.shape[0])
+                ]
+            )
+        )
+
+    # TODO: Michaelis Menten
+    def MichaelisMentenReaction(self):
+        """Total reaction using Michaelis Menten like kinetics
+        
+        """
+        # k*min(substrate) * (substrate[i]^hillCoeff[i]/(substrate[i] + Km[i]))
+        return (
+            self.dReactionRateCoeff * self.rateLimitingConcentration * self.Saturation()
         )
 
     # TODO: Cooperativity
-    # TODO: Michaelis Menten 
 
 
 # Enzymatic, Michaelis Menten reactions
