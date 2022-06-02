@@ -53,7 +53,7 @@ class ReactionEquations:
                     The `regulatoryType`.  The direction of the regulation (activation/inhibition).  Activation = 1, inhibition = -1. This value should always be either 1 or -1.
             
             arr1DdKMichaelis : `np.ndarray(float)`, Default = np.zeros              
-                The concentration at which the reaction proceeds (i.e. Vmax / 2 )
+                The concentration at which the reaction proceeds (i.e. Vmax / 2 ).  Default setting (i.e. KM = 0) suggests that the reaction velocity is independent of substrate concentration.
 
             arr1DdRelativeConc : `np.ndarray(float)`
                 The relative concentration of each substrate as determined by: [relative_X] = [total_X] * [allosteric_X].
@@ -79,7 +79,8 @@ class ReactionEquations:
             summarized as an unregulated mass action scheme.
 
         Allostery 
-            Calculates the allosteric effects on the current reaction.
+            Calculates the allosteric effects on the current reaction. 
+            Currently, if the substrate of a reaction has an allosteric effect on one of its regulators, this is ignored.
 
         Saturation
             Michaelis-Menten like hyperbolic saturation.  [S]^n / KM^n + [S]^n. Note cooperativity is also taken into consideration (i.e. n) by means
@@ -102,10 +103,17 @@ class ReactionEquations:
 
         Current version uses list comprehension.  This should be vectorized.
         Currently there is no check if the deltaProduct is greater than the stoichiometry of substrates...
-        TODO: Implement AND/OR operations i.e.
+        
+        TODO
+        ----
+        Implement AND/OR operations i.e.
             AND -- allosteric effect only occurs if both [A] AND [B] are present
             OR -- allosteric effect occurs if either [A] OR [B] are present
- 
+
+        Vectorize list comprehensions
+        Initialize default values (np.zeros/np.ones where needed)
+        (?) Check deltaProduct greater than stoichiometry allows (?)
+
     """
 
     def __init__(
@@ -137,6 +145,7 @@ class ReactionEquations:
         # Get Relative concentrations
         # Relative conc. regulators
         #self.arr5DAllostery[1] = self.RelativeConcentration(self.arr5DAllostery[1], 4)
+        
         # Relatice conc. Reaction components
         self.arr1DdRelativeConc = self.RelativeConcentration(self.arr1DConc, 0)
         # Get Rate Limiting concentration
@@ -215,44 +224,41 @@ class ReactionEquations:
             )
         )
 
-    # TODO: Michaelis Menten
     def MichaelisMentenReaction(self):
-        """Total reaction using MichaelisMenten-like kinetics
-        
-        """
+        """Total reaction using MichaelisMenten-like kinetics"""
         return (
             self.dReactionRateCoeff * self.rateLimitingConcentration * self.Saturation()
         )
 
 
 
-# Enzymatic, Michaelis Menten reactions
-def Eqn_Enz_MichaelisMenten_Unregulated(Conc_Enzyme, Conc_Substrate, kcat, KM):
-    return (kcat * Conc_Enzyme * Conc_Substrate) / (KM + Conc_Substrate)
+# # Enzymatic, Michaelis Menten reactions
+# def Eqn_Enz_MichaelisMenten_Unregulated(Conc_Enzyme, Conc_Substrate, kcat, KM):
+#     return (kcat * Conc_Enzyme * Conc_Substrate) / (KM + Conc_Substrate)
 
 
-def Eqn_Enz_MichaelisMenten_CompetitiveInhibition(
-    Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki
-):
-    return (kcat * Conc_Enzyme * Conc_Substrate) / (
-        KM * (1 + (Conc_Inhibitor / Ki)) + Conc_Substrate
-    )
+# def Eqn_Enz_MichaelisMenten_CompetitiveInhibition(
+#     Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki
+# ):
+#     return (kcat * Conc_Enzyme * Conc_Substrate) / (
+#         KM * (1 + (Conc_Inhibitor / Ki)) + Conc_Substrate
+#     )
 
 
-def Eqn_Enz_MichaelisMenten_Inhibition_Allosteric(
-    Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n
-):
-    return (kcat * Conc_Enzyme / (1 + (Conc_Inhibitor / Ki) ** n)) * (
-        Conc_Substrate / (KM + Conc_Substrate)
-    )
+# def Eqn_Enz_MichaelisMenten_Inhibition_Allosteric(
+#     Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n
+# ):
+#     return (kcat * Conc_Enzyme / (1 + (Conc_Inhibitor / Ki) ** n)) * (
+#         Conc_Substrate / (KM + Conc_Substrate)
+#     )
 
 
-def Eqn_Enz_MichaelisMenten_Activation_Allosteric(
-    Conc_Enzyme, Conc_Substrate, Conc_Activator, kcat, KM, Ka, n
-):
-    return (kcat * Conc_Enzyme * (1 + (Conc_Activator / Ka) ** n)) * (
-        Conc_Substrate / (KM + Conc_Substrate)
-    )
+# def Eqn_Enz_MichaelisMenten_Activation_Allosteric(
+#     Conc_Enzyme, Conc_Substrate, Conc_Activator, kcat, KM, Ka, n
+# ):
+#     return (kcat * Conc_Enzyme * (1 + (Conc_Activator / Ka) ** n)) * (
+#         Conc_Substrate / (KM + Conc_Substrate)
+#     )
 
 
 def MatrixMultiplication_Rev(Freq, Rate):
