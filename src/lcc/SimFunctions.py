@@ -34,24 +34,34 @@ class ReactionEquations:
                 `rate = k(T)*[A]^m*[B]^n`.  Note m,n are not necessarily equal to the stoichiometric coefficients
                 of the reaction.
 
-            dHillCoeff : `float`, Default = 1.0
+            arr1DdHillCoeff : `float`, Default = 1.0
                 Quantifies the degree of interaction (cooperativity) between ligand binding sites. 
                 Noncooperative binding (dHillCoeff = 1.0) indicates all binding events are independent.
                 Positive cooperativity (dHillCoeff > 1.0) affinity increases as ligands bind.
                 Negative cooperativity (dHillCoeff < 1.0) affinity decreases as ligands bind.
                 Note, The hill coefficient should always be positive (i.e. > 0.0).  
 
-            dAllosteryConc : `float`, Default = 0.0         
-                Concentration of an allosteric element. If there is none present, this value should be 0.0.
+            arr4DAllostery : `np.ndarray`
+                arr4DAllostery[0] : `int` , Default = np.zeros() 
+                    The `substrateTargetIndex`. Holds index in the substrate array which holds the target substrate of the current regulatory element.
+                arr4DAllostery[1] : `float` , Default = np.zeros()
+                    The `regulatoryElementConcentration`.  Holds the concentration of the current regulatory element, if none present this should be 0.0
+                arr4DAllostery[2] : `float` , Default = np.ones()
+                    The `regulatoryElementDissociationConstant`.  The rate of dissociation of the regulatory element. Kd = k-unbinding/kbinding (I think)
+                    Note, this element must be non-zero, o/w allostery will divide by zero (and throw error)
+                arr4DAllostery[3] : `int` , Default = np.ones()
+                    The `regulatoryType`.  The direction of the regulation (activation/inhibition).  Activation = 1, inhibition = -1. This value should always be either 1 or -1.
             
-            dKAllostery: `float`, Default = 1.0              
-                Dissociation constant of allosteric element (i.e. rate-of-binding/rate-of-unbinding )
-                Note: this value must be non-zero (o/w divide by 0 error)
+            arr1DdKMichaelis : `np.ndarray(float)`, Default = np.zeros              
+                The concentration at which the reaction proceeds (i.e. Vmax / 2 )
 
-            intAllosteryType : `int`, Default = 1
-                Indicates the direction of the allostery. This value should always be either -1 or 1.
-                Value of 1 indicates allosteric activation, while -1 indicates allosteric inhibition.
-  
+            arr1DdRelativeConc : `np.ndarray(float)`
+                The relative concentration of each substrate as determined by: [relative_X] = [total_X] * [allosteric_X].
+                Fundamentally this accounts for situations where the rate limiting concentration is not the absolute minimum concentration due to allosteric effects.               
+
+            rateLimitingConcentration : `float`
+                The minimum of arr1DRelativeConc
+
         Methods
         -------
         CheckRateAndConc
@@ -63,19 +73,39 @@ class ReactionEquations:
             corresponding rate coefficient at temperature T.
             i.e. rate = dReactionRateCoefficent * [A][B][...][N]
         
-        Allostery 
-            Calculates the allosteric effects on the current reaction.
-        
         Reaction 
             The Cumulative reaction described by both mass action reaction rate and allosteric effects.
             Note the default values of allosteric elements equate to 1 such that the reaction can be
             summarized as an unregulated mass action scheme.
+
+        Allostery 
+            Calculates the allosteric effects on the current reaction.
+
+        Saturation
+            Michaelis-Menten like hyperbolic saturation.  [S]^n / KM^n + [S]^n. Note cooperativity is also taken into consideration (i.e. n) by means
+            of the Hill coefficient. Note: The assumptions for the Michaelis Meneten model are not being considered (i.e. assumed to hold).
         
+        RelativeConcentration
+            Determines the relative concentration of reaction substrates.  Note the relative concentration can be larger than the absolute concentration. 
+            This is intended in order to allosterically modulate KM (michaelis constant) without actually changing its value. These relative concentrations
+            are not propogated out, but instead are used internally to calculate the change in product for the current reaction.
+
+        ReactionMichaelisMenten
+            calculates the change in product for a reaction base on the rate limiting concentration, the reaction rate (k-value), and the saturation.
+            Note: this is truely a Pseudo-MichaelisMenten and instead assuming the enzyme is the rate limiting concentration, the minimum
+            relative concentration is used. Theoretically, however, the rate limiting concentration should almost always be the enzyme concentration.
+
         Notes
         -----
         Current implementations do not consider saturation or diffusion limited reaction rates...
-        Currently at most one allosteric modulation can be considered...
+        Fixed (although with limitations) >> Currently at most one allosteric modulation can be considered..
 
+        Current version uses list comprehension.  This should be vectorized.
+        Currently there is no check if the deltaProduct is greater than the stoichiometry of substrates...
+        TODO: Implement AND/OR operations i.e.
+            AND -- allosteric effect only occurs if both [A] AND [B] are present
+            OR -- allosteric effect occurs if either [A] OR [B] are present
+ 
     """
 
     def __init__(
@@ -84,9 +114,6 @@ class ReactionEquations:
         Rate,  # How is rate different from k?
         dReactionRateCoeff: np.ndarray,  # float,  # k
         arr1DdHillCoeff: np.ndarray,  # float = 1.0,  # Default hill coeff
-        arr1DdAllosteryConc: np.ndarray,  # float = 0.0,  # If 0, no allostery
-        arr2DdKAllostery: np.ndarray,  # float = 1.0,  # must be non-zero
-        arr1DintAllosteryType: np.ndarray,  # int = 1,  # 1 for Activator, -1 for inhibitor
         arr4DAllostery: np.ndarray,
         arr1DdKMichaelis: np.ndarray,
     ):
@@ -95,20 +122,23 @@ class ReactionEquations:
         self.dReactionRateCoeff = dReactionRateCoeff
 
         self.arr1DConc = arr1DConc
+        self.arr1DdKMichaelis = arr1DdKMichaelis
+        self.arr1DdHillCoeff = arr1DdHillCoeff  
 
-        # Need (n, 4) array [0] holds the index of the substrate, [1] conc allosteric regulator
-        # [2] dissociation constant of allosteric regulator [3] type of allosteric regulation
+        # Need (n, 4) array [0] holds the index of the substrate in arr1Conc, [1] conc allosteric regulator
+        # [2] dissociation constant of allosteric regulator [3] type of allosteric regulation, 
+        # [4] holds index of in arr5DAllostery of substrate should it exist -- regulator of regulators
+        # Removed the regulator of regulators... It gets into a circular logic problem.
         self.arr4DAllostery = arr4DAllostery
 
-        self.arr2DdKAllostery = arr2DdKAllostery
-        self.arr1DdAllosteryConc = arr1DdAllosteryConc
-        self.arr1DintAllosteryType = arr1DintAllosteryType
-
-        self.arr1DdHillCoeff = arr1DdHillCoeff  # currently I don't think this is actually the hill coeff....
-        self.arr1DdKMichaelis = arr1DdKMichaelis
+        # Currently relative concentraitons of allosteric components override absolute concentrations... 
+        # This may be a problem if a substrate is also a regulator...
 
         # Get Relative concentrations
-        self.arr1DdRelativeConc = self.RelativeConcentration()
+        # Relative conc. regulators
+        #self.arr5DAllostery[1] = self.RelativeConcentration(self.arr5DAllostery[1], 4)
+        # Relatice conc. Reaction components
+        self.arr1DdRelativeConc = self.RelativeConcentration(self.arr1DConc, 0)
         # Get Rate Limiting concentration
         self.rateLimitingConcentration = np.min(self.arr1DdRelativeConc)
 
@@ -125,10 +155,28 @@ class ReactionEquations:
         """
         return self.dReactionRateCoeff * np.prod(self.arr1DConc)
 
-    # def Allostery(self, regulatedIndex, regulatorConc, regulatorDissociationConstant, regulatorType):
-    #     """ Calculate the impact of allosteric elements on reaction"""
-    #     # note what was formerly "n" was removed as I don't think this cooperative effect applies here...
-    #     return (1 + (regulatorConc / regulatorDissociationConstant)) ** regulatorType
+    def Reaction(self):
+        """Total Reaction: 
+        The MassActionReactionRate modulated by allosteric elements.
+        """
+        # Need to update this b/c I changed Allostery
+        return self.MassActionReactionRate() * self.Allostery()
+
+    # [Relative] and Rate limiting step
+    def RelativeConcentration(self, arr1DConc, allosteryMatchIndex  = 0):
+        """Combine allosteric effects with concentration to get relative concentration"""
+        return np.array(
+            [
+                arr1DConc[i]
+                * self.Allostery(
+                    arr5DAllostery=self.arr4DAllostery.where(
+                        self.arr4DAllostery[allosteryMatchIndex]
+                        == i  # Subset of arr4D with allosteric elements for current substrate
+                    )
+                )
+                for i in range(arr1DConc.shape[0])
+            ]
+        )
 
     def Allostery(self, arr4DAllostery):
         """ Calculate the impact of allosteric elements on reaction
@@ -139,7 +187,8 @@ class ReactionEquations:
 
         # Loop through, get individual allosteric elements,
         # overall allostery is the product of those elements
-        # Note: I'm not sure if this works for regulator of regulators is going to work...
+        # Note: I'm not sure if this works for regulator of regulators is going to work... 
+        # We need to allostery(regulators), get allosteric interactions between regulators...
         return np.prod(
             np.array(
                 [
@@ -148,28 +197,6 @@ class ReactionEquations:
                     for i in range(arr4DAllostery.shape[0])
                 ]
             )
-        )
-
-    def Reaction(self):
-        """Total Reaction: 
-        The MassActionReactionRate modulated by allosteric elements.
-        """
-        return self.MassActionReactionRate() * self.Allostery()
-
-    # [Relative] and Rate limiting step
-    def RelativeConcentration(self):
-        """Combine allosteric effects with concentration to get relative concentration"""
-        np.array(
-            [
-                self.arr1DConc[i]
-                * self.Allostery(
-                    arr4DAllostery=self.arr4DAllostery.where(
-                        self.arr4DAllostery[0]
-                        == i  # Subset of arr4D with allosteric elements for current substrate
-                    )
-                )
-                for i in range(self.arr1DConc.shape[0])
-            ]
         )
 
     def Saturation(self):
@@ -190,15 +217,13 @@ class ReactionEquations:
 
     # TODO: Michaelis Menten
     def MichaelisMentenReaction(self):
-        """Total reaction using Michaelis Menten like kinetics
+        """Total reaction using MichaelisMenten-like kinetics
         
         """
-        # k*min(substrate) * (substrate[i]^hillCoeff[i]/(substrate[i] + Km[i]))
         return (
             self.dReactionRateCoeff * self.rateLimitingConcentration * self.Saturation()
         )
 
-    # TODO: Cooperativity
 
 
 # Enzymatic, Michaelis Menten reactions
