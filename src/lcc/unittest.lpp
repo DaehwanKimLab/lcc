@@ -229,25 +229,26 @@ TestCase1: Intial product = 0 (likely most common)
 */
 
 
+// TODO: Implement enzymatic reactions
 // enzymatic reaction
-protein E(S --> P, kcat=10, KM=3.666667);
+//protein E(S --> P, kcat=10, KM=3.666667);
 
 // initial quantity
-E=1M, S=5M;
+//E=1M, S=5M;
 
 
 // standard reactions
-reaction R1(S1In --> S1, k=20);
-reaction R2(S2In --> S2, k=5);
-reaction R3(S1 --> S1Out, k=5);
-reaction R4(S2 --> S2Out, k=5);
-reaction R5(S1 --> S2, k=2);
+//reaction R1(S1In --> S1, k=20);
+//reaction R2(S2In --> S2, k=5);
+//reaction R3(S1 --> S1Out, k=5);
+//reaction R4(S2 --> S2Out, k=5);
+//reaction R5(S1 --> S2, k=2);
 
 // regulatory reaction
-reaction R6(S2 --| R1, Ki=1, n=4);
-
-S1In[:] = 1;
-S2In[:] = 1;
-S1Out[:] = 0;
-S2Out[:] = 0;
+//reaction R6(S2 --| R1, Ki=1, n=4);
+//
+//S1In[:] = 1;
+//S2In[:] = 1;
+//S1Out[:] = 0;
+//S2Out[:] = 0;
 

@@ -12,6 +12,134 @@ def ConcToCount(Conc_Molecule, Volume):
 def CountToConc(Count_Molecule, Volume):
     return (Count_Molecule / NA) / Volume
 
+""" Old Implementation: Attempting to phase out -- 20220603 ATM"""
+### if N_MOLECULEALLOWED = 1 ###########################################################################################
+def CheckRateAndConc_1(Rate, Conc_1):
+    return np.min((Rate, Conc_1), axis=0)
+
+# Standard reactions
+def Eqn_Standard_Unregulated_1(Conc_1, k):
+    return k * Conc_1  
+
+def Eqn_Standard_Inhibition_Allosteric_1(Conc_1, Conc_Inhibitor, k, Ki, n):
+    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1  
+
+def Eqn_Standard_Activation_Allosteric_1(Conc_1, Conc_Activator, k, Ka, n):
+    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1  
+
+# Enzymatic, standard reactions
+def Eqn_Enz_Standard_Unregulated_1(Conc_Enzyme, Conc_1, k):
+    return Conc_Enzyme * k * Conc_1  
+    # return Conc_Enzyme * k (for saturation)
+
+def Eqn_Enz_Standard_Inhibition_Allosteric_1(Conc_Enzyme, Conc_1, Conc_Inhibitor, k, Ki, n):
+    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1  
+
+def Eqn_Enz_Standard_Activation_Allosteric_1(Conc_Enzyme, Conc_1, Conc_Activator, k, Ka, n):
+    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1  
+########################################################################################################################
+
+### if N_MOLECULEALLOWED = 2 ###########################################################################################
+def CheckRateAndConc_2(Rate, Conc_1, Conc_2):
+    return np.min((Rate, Conc_1, Conc_2), axis=0)
+
+# Standard reactions
+def Eqn_Standard_Unregulated_2(Conc_1, Conc_2, k):
+    return k * Conc_1 * Conc_2 
+
+def Eqn_Standard_Inhibition_Allosteric_2(Conc_1, Conc_2, Conc_Inhibitor, k, Ki, n):
+    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 
+
+def Eqn_Standard_Activation_Allosteric_2(Conc_1, Conc_2, Conc_Activator, k, Ka, n):
+    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 
+
+# Enzymatic, standard reactions
+def Eqn_Enz_Standard_Unregulated_2(Conc_Enzyme, Conc_1, Conc_2, k):
+    return Conc_Enzyme * k * Conc_1 * Conc_2 
+    # return Conc_Enzyme * k (for saturation)
+
+def Eqn_Enz_Standard_Inhibition_Allosteric_2(Conc_Enzyme, Conc_1, Conc_2, Conc_Inhibitor, k, Ki, n):
+    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 
+
+def Eqn_Enz_Standard_Activation_Allosteric_2(Conc_Enzyme, Conc_1, Conc_2, Conc_Activator, k, Ka, n):
+    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 
+########################################################################################################################
+
+### if N_MOLECULEALLOWED = 3 ###########################################################################################
+def CheckRateAndConc_3(Rate, Conc_1, Conc_2, Conc_3):
+    return np.min((Rate, Conc_1, Conc_2, Conc_3), axis=0)
+
+# Standard reactions
+def Eqn_Standard_Unregulated_3(Conc_1, Conc_2, Conc_3, k):
+    return k * Conc_1 * Conc_2 * Conc_3
+
+def Eqn_Standard_Inhibition_Allosteric_3(Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
+    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
+
+def Eqn_Standard_Activation_Allosteric_3(Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
+    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
+
+# Enzymatic, standard reactions
+def Eqn_Enz_Standard_Unregulated_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, k):
+    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3
+    # return Conc_Enzyme * k (for saturation)
+
+def Eqn_Enz_Standard_Inhibition_Allosteric_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
+    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
+
+def Eqn_Enz_Standard_Activation_Allosteric_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
+    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
+########################################################################################################################
+
+### if N_MOLECULEALLOWED = 4 ###########################################################################################
+def CheckRateAndConc_4(Rate, Conc_1, Conc_2, Conc_3, Conc_4):
+    return np.min((Rate, Conc_1, Conc_2, Conc_3, Conc_4), axis=0)
+
+# Standard reactions
+def Eqn_Standard_Unregulated_4(Conc_1, Conc_2, Conc_3, Conc_4, k):
+    return k * Conc_1 * Conc_2 * Conc_3 * Conc_4
+
+def Eqn_Standard_Inhibition_Allosteric_4(Conc_1, Conc_2, Conc_3, Conc_4, Conc_Inhibitor, k, Ki, n):
+    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
+
+def Eqn_Standard_Activation_Allosteric_4(Conc_1, Conc_2, Conc_3, Conc_4, Conc_Activator, k, Ka, n):
+    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
+
+# Enzymatic, standard reactions
+def Eqn_Enz_Standard_Unregulated_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, k):
+    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3 * Conc_4
+    # return Conc_Enzyme * k (for saturation)
+
+def Eqn_Enz_Standard_Inhibition_Allosteric_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_Inhibitor, k, Ki, n):
+    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
+
+def Eqn_Enz_Standard_Activation_Allosteric_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_Activator, k, Ka, n):
+    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
+########################################################################################################################
+
+# Enzymatic, Michaelis Menten reactions
+def Eqn_Enz_MichaelisMenten_Unregulated(Conc_Enzyme, Conc_Substrate, kcat, KM):
+    return (kcat * Conc_Enzyme * Conc_Substrate) / (KM + Conc_Substrate)
+
+def Eqn_Enz_MichaelisMenten_CompetitiveInhibition(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki):
+    return (kcat * Conc_Enzyme * Conc_Substrate) / (KM * (1 + (Conc_Inhibitor / Ki)) + Conc_Substrate)
+
+def Eqn_Enz_MichaelisMenten_Inhibition_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n):
+    return (kcat * Conc_Enzyme / (1 + (Conc_Inhibitor / Ki) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
+
+def Eqn_Enz_MichaelisMenten_Activation_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Activator, kcat, KM, Ka, n):
+    return (kcat * Conc_Enzyme * (1 + (Conc_Activator / Ka) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
+
+
+def MatrixMultiplication_Rev(Freq, Rate):
+    return np.matmul(Rate, Freq)
+
+def GetDerivativeFromStoichiometryMatrix(Freq, Rate):
+    return MatrixMultiplication_Rev(Freq, Rate)
+
+def DetermineAmountOfBuildingBlocks(Freq, Rate):
+    return MatrixMultiplication_Rev(Freq, Rate)
+
 
 ### if N_MOLECULEALLOWED = N ###########################################################################################
 class ReactionEquations:
