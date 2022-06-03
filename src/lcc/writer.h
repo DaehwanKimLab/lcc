@@ -47,9 +47,6 @@ public:
     void Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Process);
     void SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes);
     void SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecule *> Polymerases, int Threshold);
-    void Polymerase_InitiationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases);
-    void Polymerase_ElongationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases);
-    void Polymerase_TerminationReaction(ofstream& ofs, std::vector<FMolecule*> Polymerases);
 
     // Polymerase type-specific functions
     void Initialize_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
@@ -59,6 +56,16 @@ public:
     void SetUp_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerase);
     void SetUp_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerase);
     void SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerase);
+    void Polymerase_InitiationReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_InitiationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_InitiationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_ElongationReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_ElongationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_TerminationReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_TerminationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_TerminationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+
 
     // TransporterReaction
     void Initialize_TransporterReaction(ofstream& ofs, std::string Type);

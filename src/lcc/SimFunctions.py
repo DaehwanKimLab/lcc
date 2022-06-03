@@ -157,6 +157,7 @@ def PickRandomIdx(Quantity, Indices, Weight=1):
     Idx_Rnd = np.argmax(Bin_RanNumLessThanWeightCumsum, 1)
     return Idx_Rnd
 
+# Array manipulation routines
 def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
     # Generate an array of counts for each index
     Count_Indices = np.zeros(Len.shape[1])
@@ -172,6 +173,25 @@ def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
     Bin_Len_Selected = np.logical_and(Bool_LenAvailable, Bool_LenCumsum).astype(int)
     return Len + Bin_Len_Selected
 
+def AdjustMinToAboveZero(Input):
+    assert not np.any(Input == 0), 'Input array for AdjustMinToAboveZero contains an element with a value of 0'
+    AdjustFactor = np.floor(np.log10(np.min(Input)))
+    return Input / (10 ** AdjustFactor)
+
+def AddValueToArrayAtIdx(InputArray, Idx, Value):
+    # Idx must be 1D array
+    # Value may be scalar or 1D array
+    InputArray[:, Idx] += Value
+    return InputArray
+
+def ReplaceValueInArrayAtIdx(InputArray, Idx, Value):
+    # Idx must be 1D array
+    # Value may be scalar or 1D array
+    InputArray[:, Idx] = Value
+    return InputArray
+
+def GetIdxOfEmptyElement(InputArray):
+    return np.argmin(InputArray)
 
 # Spatial simulation functions
 def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount=0, BasalAmount=0, shape='', size=0, pattern='diffuse'):
@@ -492,3 +512,6 @@ def GetXYZForGenomePositionsInBP(Positions_bp, Nodes, Distances):
     assert np.count_nonzero(Positions_XYZ < 0) == 0, 'ERROR: XYZ coordinates cannot be less than zero'
 
     return Positions_XYZ
+
+a = 1
+b = 2
