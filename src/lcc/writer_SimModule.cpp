@@ -1106,11 +1106,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
             // Calculate Rate
             for (auto& substrate : SubstrateTypes) {
-                ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(";
+                ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "((";
 
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << AmountTextStr << substrate << "_" << i << ", ";
                 }
+                ofs << "), ";
 
                 // Regulators
                 if (Typing[substrate] != StandardReactionTypes[0]) {
@@ -1128,11 +1129,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                 // compare conc
-                ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
+                ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc(Rate_" << substrate << ", (";
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << ", " << AmountTextStr << substrate << "_" << i;
+                    ofs << AmountTextStr << substrate << "_" << i << ", ";
                 }
-                ofs << ")" << endl;
+                ofs << "))" << endl;
             }
 
             // Tally Rates
@@ -1197,11 +1198,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             // Calculate Rate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
-                    ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(Conc_Enz, ";
+                    ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "(Conc_Enz, (";
 
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << "Conc_" << substrate << "_" << i << ", ";
                     }
+                    ofs << "), ";
 
                     // Regulators
                     if (Typing[substrate] != EnzReactionTypes[0]) {
@@ -1219,11 +1221,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                     ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                     // compare conc
-                    ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
+                    ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc(Rate_" << substrate << ", (";
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
-                        ofs << ", Conc_" << substrate << "_" << i;
+                        ofs << "Conc_" << substrate << "_" << i << ", ";
                     }
-                    ofs << ")" << endl;
+                    ofs << "))" << endl;
                 }
 
                 // Tally Rates
