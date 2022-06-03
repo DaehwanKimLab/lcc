@@ -306,12 +306,10 @@ class ReactionEquations:
             [
                 arr1DConc[i]
                 * self.Allostery(
-                    arr5DAllostery=self.arr4DAllostery.where(
-                        self.arr4DAllostery[allosteryMatchIndex]
-                        == i  # Subset of arr4D with allosteric elements for current substrate
-                    )
+                    arr4DAllostery = np.array([np.where(self.arr4DAllostery[allosteryMatchIndex] == i)])  # Subset of arr4D with allosteric elements for current substrate
                 )
-                for i in range(arr1DConc.shape[0])
+                for i in range(arr1DConc.shape[0]) 
+                if self.arr4DAllostery[allosteryMatchIndex] == i
             ]
         )
 
@@ -331,7 +329,7 @@ class ReactionEquations:
                 [
                     (1 + (arr4DAllostery[i, 1] / arr4DAllostery[i, 2]))
                     ** arr4DAllostery[i, 3]
-                    for i in range(arr4DAllostery.shape[0])
+                    for i in range(arr4DAllostery.shape[0]-1) ########################### Not sure if this is right but it un-broke it...
                 ]
             )
         )
