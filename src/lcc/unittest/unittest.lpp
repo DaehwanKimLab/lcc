@@ -40,27 +40,27 @@ TestCase5: Syntax - Continuous concentration
 
 // TestCase1: Inital product = 0
 reaction standardReactionFirstOrderTestCase1(FirstOrderInitialTC1 --> FirstOrderFinalTC1, k=2);
-FirstOrderInitialTC1[0]=10;
+FirstOrderInitialTC1[0]=11mM;
 FirstOrderFinalTC1[0]=0;
 
 // TestCase2: Inital concentration = 0
 reaction standardReactionFirstOrderTestCase2(FirstOrderInitialTC2 --> FirstOrderFinalTC2, k=2);
 FirstOrderInitialTC2[0]=0;
-FirstOrderFinalTC2[0]=10;
+FirstOrderFinalTC2[0]=12mM;
 
 // TestCase3: Rate constant = 0
 reaction standardReactionFirstOrderTestCase3(FirstOrderInitialTC3 --> FirstOrderFinalTC3, k=0);
-FirstOrderInitialTC3[0]=3;
-FirstOrderFinalTC3[0]=5;
+FirstOrderInitialTC3[0]=3mM;
+FirstOrderFinalTC3[0]=5mM;
 
 // TestCase4: Syntax - Units
 reaction standardReactionFirstOrderTestCase4(FirstOrderInitialTC4 --> FirstOrderFinalTC4, k=2);
-FirstOrderInitialTC4=10M;
+FirstOrderInitialTC4=13mM;
 FirstOrderFinalTC4[0]=0;
 
 // TestCase5: Syntax - Continuous concentration
-reaction standardReactionFirstOrderTestCase5(FirstOrderInitialTC5 --> FirstOrderFinalTC5, k=2);
-FirstOrderInitialTC5[:]=10M;
+reaction standardReactionFirstOrderTestCase5(FirstOrderInitialTC5 --> FirstOrderFinalTC5, k=0.01);
+FirstOrderInitialTC5[:]=14mM;
 FirstOrderFinalTC5[0]=0;
 
 /*  Standard Reaction: 2nd order
@@ -72,12 +72,12 @@ TestCase1: Intial product = 0 (likely most common)
     krev = 0
     Expected Result: 
 
-TestCase2: Syntax Change
-    [reactant] > 0 
-    [product] = 0 
-    k > 0
-    krev = 0
-    Expected Result: Same as TC1
+TestCase2: constant final conc.
+    [reactant] = 0 
+    [product] = 10 (always) 
+    k = 0
+    krev > 0
+    Expected Result: 
 
 TestCase3: Inital concentration = 0
     [reactant] = 0
@@ -137,55 +137,74 @@ TestCase10: Syntax - Units:
 
 // TestCase1: Inital product = 0
 reaction standardReactionSecondOrderTestCase1(2 SecondOrderInitialTC1 --> SecondOrderFinalTC1, k=2, krev=0);
-SecondOrderInitialTC1[0]=10;
+SecondOrderInitialTC1[0]=8mM;
 SecondOrderFinalTC1[0]=0;
 
-// TestCase2: Syntax Change
-reaction standardReactionSecondOrderTestCase2(SecondOrderInitialTC2 + SecondOrderInitialTC2 --> SecondOrderFinalTC4, k=2, krev=0);
-SecondOrderInitialTC2=10M;
-SecondOrderFinalTC2[0]=0;
+// TestCase2: constant final conc.
+reaction standardReactionSecondOrderTestCase2(SecondOrderInitialTC2 + SecondOrderInitialTC2 --> SecondOrderFinalTC4, k=0, krev=2);
+SecondOrderInitialTC2=16mM;
+SecondOrderFinalTC2[:]=4mM;
 
 // TestCase3: Inital concentration = 0
 reaction standardReactionSecondOrderTestCase3(SecondOrderInitialTC3 --> SecondOrderFinalTC3, k=2, krev=0);
 SecondOrderInitialTC3[0]=0;
-SecondOrderFinalTC3[0]=10;
+SecondOrderFinalTC3[0]=17mM;
 
 // TestCase4: Rate constant = 0
 reaction standardReactionSecondOrderTestCase4(SecondOrderInitialTC4 --> SecondOrderFinalTC4, k=0, krev=0);
-SecondOrderInitialTC4[0]=3;
-SecondOrderFinalTC4[0]=5;
+SecondOrderInitialTC4[0]=7mM;
+SecondOrderFinalTC4[0]=2mM;
 
 // TestCase5: Two Reactants Change
 reaction standardReactionSecondOrderTestCase5(SecondOrderInitialTC5_A + SecondOrderInitialTC5_B --> SecondOrderFinalTC5, k=2, krev=0);
-SecondOrderInitialTC5_A=10M;
-SecondOrderInitialTC5_B=10M;
+SecondOrderInitialTC5_A=19mM;
+SecondOrderInitialTC5_B=2.6mM;
 SecondOrderFinalTC5[0]=0;
 
 // TestCase6: Two Reactants, one = 0
 reaction standardReactionSecondOrderTestCase6(SecondOrderInitialTC6_A + SecondOrderInitialTC6_B --> SecondOrderFinalTC6, k=2, krev=0);
-SecondOrderInitialTC6_A=10M;
-SecondOrderInitialTC6_B=0M;
+SecondOrderInitialTC6_A=10mM;
+SecondOrderInitialTC6_B=0;
 SecondOrderFinalTC6[0]=0;
 
 // TestCase7: Reversible, krev > 0; k = 0
 reaction standardReactionSecondOrderTestCase7(SecondOrderInitialTC7 --> SecondOrderFinalTC7, k=0, krev=2);
 SecondOrderInitialTC7[0]=0;
-SecondOrderFinalTC7[0]=10;
+SecondOrderFinalTC7[0]=10mM;
 
 // TestCase8: Reversible, krev = k 
 reaction standardReactionSecondOrderTestCase8(SecondOrderInitialTC8 --> SecondOrderFinalTC8, k=100, krev=100);
-SecondOrderInitialTC8=500M;
-SecondOrderFinalTC8[0]=500;
+SecondOrderInitialTC8=22mM;
+SecondOrderFinalTC8[0]=21mM;
 
 // TestCase9: Reversible, krev > k 
 reaction standardReactionSecondOrderTestCase9(SecondOrderInitialTC9 --> SecondOrderFinalTC9, k=2, krev=5);
-SecondOrderInitialTC9=5M;
-SecondOrderFinalTC9[0]=5;
+SecondOrderInitialTC9=20mM;
+SecondOrderFinalTC9[0]=1mM;
 
 // TestCase10:  Syntax - Units:  
 reaction standardReactionSecondOrderTestCase10(SecondOrderInitialTC10 --> SecondOrderFinalTC10, k=2, krev=5);
-SecondOrderInitialTC10[:]=5M;
-SecondOrderFinalTC10[0]=5;
+SecondOrderInitialTC10[:]=5.62mM;
+SecondOrderFinalTC10[0]=4.213mM;
+
+
+/*  Reaction: 2nd order with interdpendent reactants
+// [R1]^2 --> [P]
+TestCase1: Circular activation...
+    
+*/
+ 
+reaction interdependentReactantsSecondOrderTestCase1_A(interDepSecondOrderTC1_A + interDepSecondOrderTC1_B --> interDepSecondOrderTC1_C, k = 2)
+reaction interdependentReactantsSecondOrderTestCase1_A(interDepSecondOrderTC1_A + interDepSecondOrderTC1_C --> interDepSecondOrderTC1_B, k = 2)
+reaction interdependentReactantsSecondOrderTestCase1_A(interDepSecondOrderTC1_B + interDepSecondOrderTC1_C --> interDepSecondOrderTC1_A, k = 2)
+interDepSecondOrderTC1_A = 1mM
+interDepSecondOrderTC1_B = 3mM
+interDepSecondOrderTC1_C = 2mM
+
+
+
+
+
 
 
 /*  Enzymatic Reactions

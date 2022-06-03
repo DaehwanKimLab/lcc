@@ -1,0 +1,122 @@
+/*  Michaelis menten 2nd Order; km = 1
+
+//// KM = 1
+
+A + EA --> B
+B + EB --> C
+C + EC --> A
+
+//// [0.1mM enzyme]
+// TestCase1: Low kcat (kcat = 5)
+// TestCase2: med kcat (kcat = 40)
+// TestCase3: high kcat (kcat = 100)
+// TestCase4: ultra high kcat (kcat = 1000)
+
+//// [1mM enzyme]
+// TestCase5: Low kcat 
+// TestCase6: med kcat
+// TestCase7: high kcat
+// TestCase8: ultra high kcat
+
+//// [10mM enzyme]
+// TestCase9: Low kcat
+// TestCase10: med kcat
+// TestCase11: high kcat
+// TestCase12: ultra high kcat
+
+*/
+
+
+//// [0.1mM enzyme]
+// TestCase1: Low kcat
+protein TestCase1_A(TC1_A --> TC1_B, kcat = 5, KM = 1);
+protein TestCase1_B(TC1_B --> TC1_C, kcat = 5, KM = 1)
+protein TestCase1_C(TC1_C --> TC1_A, kcat = 5, KM = 1);
+TC1_A = 1mM, TC1_B = 3mM, TC1_C = 2mM;
+TestCase1_A = 0.1mM, TestCase1_B = 0.1mM, TestCase1_C = 0.1mM;
+
+// TestCase2: med kcat
+protein TestCase2_A(TC2_A --> TC2_B, kcat = 40, KM = 1);
+protein TestCase2_B(TC2_B --> TC2_C, kcat = 40, KM = 1)
+protein TestCase2_C(TC2_C --> TC2_A, kcat = 40, KM = 1);
+TC2_A = 6mM, TC2_B = 4mM, TC2_C = 5mM;
+TestCase2_A = 0.1mM, TestCase2_B = 0.1mM, TestCase2_C = 0.1mM;
+
+// TestCase3: high kcat
+protein TestCase3_A(TC3_A --> TC3_B, kcat = 100, KM = 1);
+protein TestCase3_B(TC3_B --> TC3_C, kcat = 100, KM = 1)
+protein TestCase3_C(TC3_C --> TC3_A, kcat = 100, KM = 1);
+TC3_A = 8mM, TC3_B = 9mM, TC3_C = 7mM;
+TestCase3_A = 0.1mM, TestCase3_B = 0.1mM, TestCase3_C = 0.1mM;
+
+// TestCase4: ultra high kcat
+protein TestCase4_A(TC4_A --> TC4_B, kcat = 1000, KM = 1);
+protein TestCase4_B(TC4_B --> TC4_C, kcat = 1000, KM = 1)
+protein TestCase4_C(TC4_C --> TC4_A, kcat = 1000, KM = 1);
+TC4_A = 10mM, TC4_B = 12mM, TC4_C = 11mM;
+TestCase4_A = 0.1mM, TestCase4_B = 0.1mM, TestCase4_C = 0.1mM;
+
+
+//// [1mM enzyme]
+// TestCase5: Low kcat
+protein TestCase5_A(TC5_A --> TC5_B, kcat = 5, KM = 1);
+protein TestCase5_B(TC5_B --> TC5_C, kcat = 5, KM = 1)
+protein TestCase5_C(TC5_C --> TC5_A, kcat = 5, KM = 1);
+TC5_A = 1.5mM, TC5_B = 3.5mM, TC5_C = 2.5mM;
+TestCase5_A = 1mM, TestCase5_B = 1mM, TestCase5_C = 1mM;
+
+// TestCase6: med kcat
+protein TestCase6_A(TC6_A --> TC6_B, kcat = 40, KM = 1);
+protein TestCase6_B(TC6_B --> TC6_C, kcat = 40, KM = 1)
+protein TestCase6_C(TC6_C --> TC6_A, kcat = 40, KM = 1);
+TC6_A = 6.5mM, TC6_B = 4.5mM, TC6_C = 5.5mM;
+TestCase6_A = 1mM, TestCase6_B = 1mM, TestCase6_C =1mM;
+
+// TestCase7: high kcat
+protein TestCase7_A(TC7_A --> TC7_B, kcat = 100, KM = 1);
+protein TestCase7_B(TC7_B --> TC7_C, kcat = 100, KM = 1)
+protein TestCase7_C(TC7_C --> TC7_A, kcat = 100, KM = 1);
+TC7_A = 8.5mM, TC7_B = 9.5mM, TC7_C = 7.5mM;
+TestCase7_A = 1mM, TestCase7_B = 1mM, TestCase7_C = 1mM;
+
+// TestCase8: ultra high kcat
+protein TestCase8_A(TC8_A --> TC8_B, kcat = 1000, KM = 1);
+protein TestCase8_B(TC8_B --> TC8_C, kcat = 1000, KM = 1)
+protein TestCase8_C(TC8_C --> TC8_A, kcat = 1000, KM = 1);
+TC8_A = 10.5mM, TC8_B = 12.5mM, TC8_C = 11.5mM;
+TestCase8_A = 1mM, TestCase8_B = 1mM, TestCase8_C = 1mM;
+
+
+//// [10mM enzyme]
+// TestCase9: Low kcat
+protein TestCase9_A(TC9_A --> TC9_B, kcat = 5, KM = 1);
+protein TestCase9_B(TC9_B --> TC9_C, kcat = 5, KM = 1)
+protein TestCase9_C(TC9_C --> TC9_A, kcat = 5, KM = 1);
+TC9_A = 21.5mM, TC9_B = 23.5mM, TC9_C = 22.5mM;
+TestCase9_A = 10mM, TestCase9_B = 10mM, TestCase9_C = 10mM;
+
+// TestCase10: med kcat
+protein TestCase10_A(TC10_A --> TC10_B, kcat = 40, KM = 1);
+protein TestCase10_B(TC10_B --> TC10_C, kcat = 40, KM = 1)
+protein TestCase10_C(TC10_C --> TC10_A, kcat = 40, KM = 1);
+TC10_A = 26.5mM, TC10_B = 24.5mM, TC10_C = 25.5mM;
+TestCase10_A = 10mM, TestCase10_B = 10mM, TestCase10_C =10mM;
+
+// TestCase11: high kcat
+protein TestCase11_A(TC11_A --> TC11_B, kcat = 100, KM = 1);
+protein TestCase11_B(TC11_B --> TC11_C, kcat = 100, KM = 1)
+protein TestCase11_C(TC11_C --> TC11_A, kcat = 100, KM = 1);
+TC11_A = 28.5mM, TC11_B = 29.5mM, TC11_C = 27.5mM;
+TestCase11_A = 10mM, TestCase11_B = 10mM, TestCase11_C = 10mM;
+
+// TestCase12: ultra high kcat
+protein TestCase12_A(TC12_A --> TC12_B, kcat = 1000, KM = 1);
+protein TestCase12_B(TC12_B --> TC12_C, kcat = 1000, KM = 1)
+protein TestCase12_C(TC12_C --> TC12_A, kcat = 1000, KM = 1);
+TC12_A = 30.5mM, TC12_B = 32.5mM, TC12_C = 31.5mM;
+TestCase12_A = 10mM, TestCase12_B = 10mM, TestCase12_C = 10mM;
+
+
+
+
+

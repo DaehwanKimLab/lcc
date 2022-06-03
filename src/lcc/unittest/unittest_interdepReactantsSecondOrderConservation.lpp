@@ -1,0 +1,55 @@
+/*  Reaction: 2nd order with interdependent reactants
+
+Same as above, but there should be conservation of reactants and products 
+
+TestCase1: Circular activation low k (k = 1.5)
+// A + B --> 2 C
+// A + C --> 2 B
+// B + C --> 2 A
+
+TestCase2: Circular activation med k (k = 30)
+// A + B --> 2 C
+// A + C --> 2 B
+// B + C --> 2 A
+
+TestCase3: Circular activation high k (k = 100)
+// A + B --> 2 C
+// A + C --> 2 B
+// B + C --> 2 A
+
+TestCase4: Circular activation ultra high k (k = 1000)
+// A + B --> 2 C
+// A + C --> 2 B
+// B + C --> 2 A
+
+*/
+
+// TestCase1: Circular, 2 reactants
+reaction interdependentReactantsSecondOrderTestCase1_A(interDepSecondOrderTC1_A + interDepSecondOrderTC1_B --> 2 interDepSecondOrderTC1_C, k = 1.5);
+reaction interdependentReactantsSecondOrderTestCase1_B(interDepSecondOrderTC1_A + interDepSecondOrderTC1_C --> 2 interDepSecondOrderTC1_B, k = 1.5)
+reaction interdependentReactantsSecondOrderTestCase1_C(interDepSecondOrderTC1_B + interDepSecondOrderTC1_C --> 2 interDepSecondOrderTC1_A, k = 1.5);
+interDepSecondOrderTC1_A = 1mM, interDepSecondOrderTC1_B = 3mM, interDepSecondOrderTC1_C = 2mM;
+
+
+// TestCase1: Circular, 2 reactants
+reaction interdependentReactantsSecondOrderTestCase2_A(interDepSecondOrderTC2_A + interDepSecondOrderTC2_B --> 2 interDepSecondOrderTC2_C, k = 30);
+reaction interdependentReactantsSecondOrderTestCase2_B(interDepSecondOrderTC2_A + interDepSecondOrderTC2_C --> 2 interDepSecondOrderTC2_B, k = 30)
+reaction interdependentReactantsSecondOrderTestCase2_C(interDepSecondOrderTC2_B + interDepSecondOrderTC2_C --> 2 interDepSecondOrderTC2_A, k = 30);
+interDepSecondOrderTC2_A = 6mM, interDepSecondOrderTC2_B = 4mM, interDepSecondOrderTC2_C = 5mM;
+
+
+// TestCase1: Circular, 2 reactants
+reaction interdependentReactantsSecondOrderTestCase3_A(interDepSecondOrderTC3_A + interDepSecondOrderTC3_B --> 2 interDepSecondOrderTC3_C, k = 100);
+reaction interdependentReactantsSecondOrderTestCase3_B(interDepSecondOrderTC3_A + interDepSecondOrderTC3_C --> 2 interDepSecondOrderTC3_B, k = 100)
+reaction interdependentReactantsSecondOrderTestCase3_C(interDepSecondOrderTC3_B + interDepSecondOrderTC3_C --> 2 interDepSecondOrderTC3_A, k = 100);
+interDepSecondOrderTC3_A = 8mM, interDepSecondOrderTC3_B = 9mM, interDepSecondOrderTC3_C = 7mM;
+
+
+// TestCase1: Circular, 2 reactants
+reaction interdependentReactantsSecondOrderTestCase4_A(interDepSecondOrderTC4_A + interDepSecondOrderTC4_B --> 2 interDepSecondOrderTC4_C, k = 1000);
+reaction interdependentReactantsSecondOrderTestCase4_B(interDepSecondOrderTC4_A + interDepSecondOrderTC4_C --> 2 interDepSecondOrderTC4_B, k = 1000)
+reaction interdependentReactantsSecondOrderTestCase4_C(interDepSecondOrderTC4_B + interDepSecondOrderTC4_C --> 2 interDepSecondOrderTC4_A, k = 1000);
+interDepSecondOrderTC4_A = 10mM, interDepSecondOrderTC4_B = 12mM, interDepSecondOrderTC4_C = 11mM;
+
+
+

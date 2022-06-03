@@ -1,0 +1,49 @@
+/*  Reaction: 2nd order with interdependent reactants
+TestCase1: Circular activation: Low k (k = 2)
+// A --> B
+// B --> C
+// C --> A
+
+TestCase2: Circular activation: Med k (k = 50)
+// A --> B
+// B --> C
+// C --> A
+
+TestCase3: Circular activation: high k (k = 100)
+// A --> B
+// B --> C
+// C --> A
+
+TestCase4: Circular activation: ultra high k (k = 1000)
+// A --> B
+// B --> C
+// C --> A
+
+*/
+
+// TestCase0: circular 1 reactant each: low K
+reaction interdependentReactantsFirstOrderTestCase1_A(interDepFirstOrderTC1_A --> interDepFirstOrderTC1_B, k = 5);
+reaction interdependentReactantsFirstOrderTestCase1_B(interDepFirstOrderTC1_B --> interDepFirstOrderTC1_C, k = 5)
+reaction interdependentReactantsFirstOrderTestCase1_C(interDepFirstOrderTC1_C --> interDepFirstOrderTC1_A, k = 5);
+interDepFirstOrderTC1_A = 1.5mM, interDepFirstOrderTC1_B = 3.5mM, interDepFirstOrderTC1_C = 2.5mM;
+
+// TestCase2: circular 1 reactant each: med k
+reaction interdependentReactantsFirstOrderTestCase2_A(interDepFirstOrderTC2_A --> interDepFirstOrderTC2_B, k = 50);
+reaction interdependentReactantsFirstOrderTestCase2_B(interDepFirstOrderTC2_B --> interDepFirstOrderTC2_C, k = 50)
+reaction interdependentReactantsFirstOrderTestCase2_C(interDepFirstOrderTC2_C --> interDepFirstOrderTC2_A, k = 50);
+interDepFirstOrderTC2_A = 5mM, interDepFirstOrderTC2_B = 6mM, interDepFirstOrderTC2_C = 7mM;
+
+// TestCase3: circular 1 reactant each: high k
+reaction interdependentReactantsFirstOrderTestCase3_A(interDepFirstOrderTC3_A --> interDepFirstOrderTC3_B, k = 100);
+reaction interdependentReactantsFirstOrderTestCase3_B(interDepFirstOrderTC3_B --> interDepFirstOrderTC3_C, k = 100)
+reaction interdependentReactantsFirstOrderTestCase3_C(interDepFirstOrderTC3_C --> interDepFirstOrderTC3_A, k = 100);
+interDepFirstOrderTC3_A = 3.8mM, interDepFirstOrderTC3_B = 4.6mM, interDepFirstOrderTC3_C = 4.2mM;
+
+// TestCase4: circular 1 reactant each: ultra high k
+reaction interdependentReactantsFirstOrderTestCase4_A(interDepFirstOrderTC4_A --> interDepFirstOrderTC4_B, k = 1000);
+reaction interdependentReactantsFirstOrderTestCase4_B(interDepFirstOrderTC4_B --> interDepFirstOrderTC4_C, k = 1000)
+reaction interdependentReactantsFirstOrderTestCase4_C(interDepFirstOrderTC4_C --> interDepFirstOrderTC4_A, k = 1000);
+interDepFirstOrderTC4_A = 1.2mM, interDepFirstOrderTC4_B = 0.4mM, interDepFirstOrderTC4_C = 0.8mM;
+
+
+
