@@ -153,6 +153,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Vol = 1" << endl;
     ofs << endl;
 
+    // Temporary database from tsv
+    if (Context.CheckForEcoli()) {
+        ofs << in + in + "DatabaseFileName = r'./Database/genes.tsv'" << endl;
+        ofs << in + in + "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
+        ofs << endl;
+    }
+
     // Print SetUp_SpatialReaction for all spatial simulation (to be updated)
     if (!Context.LocationList.empty()) {
         SetUp_SpatialSimulation(ofs);

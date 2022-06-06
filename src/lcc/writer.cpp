@@ -3,10 +3,11 @@
 
 using namespace std;
 
-std::string Comma = ", ";
-std::string Equal = " = ";
-std::string LRB = "(";
-std::string RRB = ")";
+std::string Str_Empty = "";
+std::string Str_Comma = ", ";
+std::string Str_Equal = " = ";
+std::string Str_LRB = "(";
+std::string Str_RRB = ")";
 
 void FWriter::SetUpDefaultVariables(int InN_MoleculesAllowed, std::string InName_Pseudo, float InFloat_Default, int InInt_Default) {
     in = "    ";
@@ -533,9 +534,14 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
     std::string Len_Ch, Len_RNA, Len_Protein;
     std::string Count_Nascent_Ch, Count_Nascent_RNA, Count_Nascent_Protein;
 
+    // Temporary database from tsv
+    ofs << in + in + "DatabaseFileName = r'./Database/genes.tsv'" << endl;
+    ofs << in + in + "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
+    ofs << endl;
+
     Max_Ch =        "self.MaxLen_NascentChromosomes = np.array(np.load(r'./Database/Len_ChromosomesInGenome.npy'), ndmin=2)";
-    Max_RNA =       "self.MaxLen_NascentRNAs = np.asmatrix(np.load(r'./Database/Len_RNAs.npy'), ndmin=2)";
-    Max_Protein =   "self.MaxLen_NascentProteins = np.asmatrix(np.load(r'./Database/Len_Proteins.npy'), ndmin=2)";
+    Max_RNA =       "self.MaxLen_NascentRNAs = np.array(Database['length'], ndmin=2)";
+    Max_Protein =   "self.MaxLen_NascentProteins = np.array(Database['length'], ndmin=2) / 3 - 1   # Excluding 1 residue to account for the stop codon";
     BB_Ch =         "self.Freq_BB_Chromosomes = np.asmatrix(np.load(r'./Database/Freq_NTsInChromosomesInGenome.npy'))";
     BB_RNA =        "self.Freq_BB_RNAs = np.asmatrix(np.load(r'./Database/Freq_NTsInRNAs.npy'))";
     BB_Protein =    "self.Freq_BB_Proteins = np.asmatrix(np.load(r'./Database/Freq_AAsInProteins.npy'))";
@@ -759,10 +765,10 @@ void FWriter::Polymerase_InitiationReaction_RNAP(ofstream& ofs, std::vector<FMol
     std::string Function =  "self." + Pol->Process + "_Initiation";
     std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Pos_Start_Template, Pos_End_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB};
     
-    std::string OutputText = Utils::JoinStr2Str(Output);
+    std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
     OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space
         
-    std::string InputText = Utils::JoinStr2Str(Input);
+    std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
     InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
 
     ofs << in + in + OutputText + " = " + Function + "(" + InputText + ")" << endl;
@@ -1204,11 +1210,6 @@ void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
         ofs << in+ in+ "plot.Plot3D(Nodes, dim=Dim, distance=np.sum(Distances), shape=Shape)" << endl;
         ofs << endl;
     }
-
-                // Temporary database from tsv
-                ofs << in+ in+ "DatabaseFileName = r'./Database/genes.tsv'" << endl;
-                ofs << in+ in+ "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
-                ofs << endl;
 
     ofs << in+ in+ "Gene_Start_bp = np.reshape(Database['Coord'], [-1, 1])" << endl;
     ofs << in+ in+ "Gene_End_bp = np.reshape(Database['Coord'] + Database['Length'] * Database['Dir'], [-1, 1])" << endl;

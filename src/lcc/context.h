@@ -349,7 +349,7 @@ public:
 class FPolymer_TemplateBased : public FPolymer_Static {
 public:
 
-    std::string Template;   // Added in context organization
+    FMolecule* Template;   // Added in context organization
 
     FPolymer_TemplateBased() {}
 
@@ -365,8 +365,8 @@ public:
     FPolymer_TemplateBased(std::string InName, int InSize, std::vector<std::string> InCompositionNameOnly)
         : FPolymer_Static(InName, InSize, InCompositionNameOnly) {}
 
-    void SetTemplate(std::string MolName) {
-        Template = MolName;
+    void SetTemplate(FMolecule* Molecule) {
+        Template = Molecule;
     }
 };
 
@@ -394,16 +394,22 @@ public:
         : BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName, InSize, InBuildingBlocks) {} // Convenient default example for genes would be FGene(A, 1000, NT);
 
     FGeneticMaterial(std::string InName, std::string InSequence, std::vector<std::string> InBuildingBlocks)
-        : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) {
+        : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) { GetCompositionFromSequence(InSequence, InBuildingBlocks); }
 
+    void GetCompositionFromSequence(std::string InSequence, std::vector<std::string> InBuildingBlocks) {
         Size = InSequence.size();
         for (auto& buildingblock : InBuildingBlocks) {
             auto Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
-            int Count = std::count(Sequence.begin(), Sequence.end(), Char);
+            int Count = std::count(InSequence.begin(), InSequence.end(), Char);
             std::string Char_Str(1, Char);
             std::pair<std::string, int> CharNCount(Char_Str, Count);
             Composition.push_back(CharNCount);
         }
+    }
+    
+    void UpdateInfoWithSequence(std::string InSequence) {
+        Sequence = InSequence;
+        GetCompositionFromSequence(Sequence, BuildingBlocks);
     }
 
 };
@@ -959,6 +965,7 @@ public:
     void AddToPathwayList(FPathway *NewPathway);
     void AddToContainerList(FContainer *NewContainer);
     void AddToCountList(FCount *NewCount);
+        void AddToCountList(std::string Name, float Count);
     void AddToLocationList(FLocation *NewLocation);
     void AddToMotilityList(FMotility *NewMotility);
 //    void AddToCompositionList(FComposition *NewComposition);
@@ -1001,8 +1008,9 @@ public:
     FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, int Size); // default
     FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, std::string Sequence); // default
 
-    FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, int Count); // default
+    FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Count); // default
     FGeneticMaterial * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
+    FGeneticMaterial * GenerateCounterpart_Protein(std::string MolName, int Count); // default
 
 
     // Stoichiometry Matrix-related

@@ -90,7 +90,6 @@ void FTable::LoadFromTSV(const char *Filename)
 		Records.push_back(Record);
 	}
 
-
 	fp.close();
 return;
 
@@ -286,6 +285,13 @@ void FCompilerContext::AddToCountList(FCount *NewCount)
 //        std::cout << "Count "<< NewCount->Name << " has been added to the system" << std::endl;
 }
 
+void FCompilerContext::AddToCountList(std::string Name, float Count)
+{   // special: this one does not check redundant entries
+    FCount* NewCount = new FCount(Name, Count);
+    CountList.push_back(NewCount);
+//        std::cout << "Count "<< NewCount->Name << " has been added to the system" << std::endl;
+}
+
 void FCompilerContext::AddToLocationList(FLocation *NewLocation)
 {   // special: this one does not check redundant entries
     LocationList.push_back(NewLocation);
@@ -302,13 +308,14 @@ void FCompilerContext::Organize()
 {
     std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
 
+    if (!GetSubList_MoleculeList("Polymerase").empty()) {
+        ApplyDefaultGeneticInformationProcessingOnMoleculeList();
+    }
+
     if (CheckForEcoli()) {
         DefaultSetUp_Ecoli();
     }
 
-    if (!GetSubList_MoleculeList("Polymerase").empty()) {
-        ApplyDefaultGeneticInformationProcessingOnMoleculeList();
-    }
 //    MakeListsFromMoleculeList();
 //    MakeListsFromContainerList();
                 MakeListsFromMotilityList(); // temporary
@@ -332,7 +339,7 @@ bool FCompilerContext::CheckForEcoli() {
 
 void FCompilerContext::DefaultSetUp_Ecoli() {
 
-    std::cout << std::endl << "  Loading Default Ecoli properties..." << std::endl;
+    std::cout << std::endl << "  Loading Default Ecoli properties... ";
 
     auto Organisms = GetSubList_ContainerList("Organism");
     for (auto& organism : Organisms) {
@@ -356,66 +363,72 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         //std::string Strain == "K-12 MG1655";
         std::string Sequence = LoadFromFASTA("./Database/EscherichiaColi.fasta");
         FGeneticMaterial* Chromosome = GenerateChromosome("Ch_I", 1, Sequence);
-        Chromosome->SetTemplate(Chromosome->Name);
+        Chromosome->SetTemplate(Chromosome);
         ListOfNewMolecules.push_back(Chromosome);
     }
 
-//    if (bRNAP & bRibosome) {
-//        // add tRNA, rRNA, misc RNA
-//        for (auto &molecule: MoleculeList) {
-//            if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
-//                auto Protein = dynamic_cast<FProtein *>(molecule);
-//
-//                FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, 0, "mRNA");
-//                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
-//                Protein->SetTemplate(mRNA->Name);
-//                mRNA->SetTemplate(Gene->Name);
-//                ListOfNewMolecules.push_back(Gene);
-//                ListOfNewMolecules.push_back(mRNA);
-//
-//            } else if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
-//                auto RNA = dynamic_cast<FRNA *>(molecule);
-//
-//                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
-//                RNA->SetTemplate(Gene->Name);
-//                ListOfNewMolecules.push_back(Gene);
-//            }
-//        }
-//    } else if (bRNAP & !bRibosome) {
-//        for (auto &molecule: MoleculeList) {
-//            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
-//                auto RNA = dynamic_cast<FRNA *>(molecule);
-//
-//                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
-//                RNA->SetTemplate(Gene->Name);
-//                ListOfNewMolecules.push_back(Gene);
-//            }
-//        }
-//    } else if (!bRNAP & bRibosome) {
-//        for (auto &molecule: MoleculeList) {
-//            if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
-//                auto Protein = dynamic_cast<FProtein *>(molecule);
-//
-//                FGeneticMaterial * mRNA = GenerateCounterpart_RNA(molecule->Name, 1, "mRNA");
-//                Protein->SetTemplate(mRNA->Name);
-//                ListOfNewMolecules.push_back(mRNA);
-//            }
-//        }
-//    }
+    FTable EcoliGeneList;
+    EcoliGeneList.LoadFromTSV("./Database/genes.tsv");
+
+    for (auto& record : EcoliGeneList.Records) {
+        // std::string, std::string record
+
+        // Available data from EcoliGeneList
+        //"length"	"name"	"seq"	"rnaId"	"coordinate"	"direction"	"symbol"	"type"	"id"	"monomerId"
+
+        // Required data to import for generating genetic materials
+        std::string Name = record["symbol"];
+        std::string Seq = record["seq"];
+        std::string RNAType = record["type"];
+
+        // Optional
+        int Coord = std::stoi(record["coordinate"]);
+        int Size = std::stoi(record["length"]);
+
+        std::map<std::string, int> Dir{ { "+", 1 }, { "-", -1 }, };
+        int Direction = Dir[(record["direction"])];
+
+        FGeneticMaterial* Gene;
+        FGeneticMaterial* RNA;
+        FGeneticMaterial* Protein;
+
+        // Generate Gene if not made by the user
+        if (bRNAP) {
+            Gene = GenerateCounterpart_Gene(Name, Seq, 1);
+            ListOfNewMolecules.push_back(Gene);
+        }
+
+        // Generate RNA if not made by the user
+        if (bRNAP || bRibosome) {
+            RNA = GenerateCounterpart_RNA(Name, 1, RNAType);
+            if (!bRNAP) {
+                RNA->SetTemplate(Gene);
+            }
+            ListOfNewMolecules.push_back(RNA);
+        }
+
+        // Generate Protein
+        if (bRibosome) {
+            Protein = GenerateCounterpart_Protein(Name, 0);
+            ListOfNewMolecules.push_back(Protein);
+        }
+    }
 
     if (!ListOfNewMolecules.empty()) {
         for (auto& molecule : ListOfNewMolecules) {
             if (Option.bDebug) {
-                std::string TextOutputTag = "[Counterpart Molecule Added] ";
+                std::string TextOutputTag = "[Ecoli Molecule Added] ";
                 molecule->Print(std::cout);
             }
             AddToMoleculeList(molecule);
         }
     }
+
+    std::cout << "Complete." << std::endl;
 }
 
 void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() {
-    std::cout << std::endl << "  Applying Genetic Information Processing on MoleculeList..." << std::endl;
+    std::cout << std::endl << "  Applying Genetic Information Processing on MoleculeList... ";
 
     std::vector<FMolecule *> ListOfNewMolecules;
 
@@ -423,13 +436,17 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
     bool bRNAP = !GetSubList_MoleculeList("RNAP").empty();
     bool bRibosome = !GetSubList_MoleculeList("Ribosome").empty();
 
+    int Length_Gene_Default = 1000;
+    int Length_Protein_Default = (Length_Gene_Default / 3 - 1);
+    std::string Str_Empty;
+
     // Generate chromosome if not made by the user
     if ((bDNAP || bRNAP) & GetSubList_MoleculeList("Chromosome").empty()) {
         int ChromosomeSize = 500000;
         FGeneticMaterial* Chromosome = GenerateChromosome("Chromosome", 1, ChromosomeSize);
-        Chromosome->SetTemplate(Chromosome->Name);
+        Chromosome->SetTemplate(Chromosome);
         ListOfNewMolecules.push_back(Chromosome);
-    }
+    } 
 
     //
     if (bRNAP & bRibosome) {
@@ -437,19 +454,19 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
         for (auto &molecule: MoleculeList) {
             if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
                 auto Protein = dynamic_cast<FProtein *>(molecule);
-
+                
                 FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, 0, "mRNA");
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
-                Protein->SetTemplate(mRNA->Name);
-                mRNA->SetTemplate(Gene->Name);
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 1);
+                Protein->SetTemplate(mRNA);
+                mRNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
                 ListOfNewMolecules.push_back(mRNA);
 
             } else if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 auto RNA = dynamic_cast<FRNA *>(molecule);
 
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
-                RNA->SetTemplate(Gene->Name);
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 1);
+                RNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
             }
         }
@@ -458,8 +475,8 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
             if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 auto RNA = dynamic_cast<FRNA *>(molecule);
 
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1);
-                RNA->SetTemplate(Gene->Name);
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 1);
+                RNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
             }
         }
@@ -469,7 +486,7 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
                 auto Protein = dynamic_cast<FProtein *>(molecule);
 
                 FGeneticMaterial * mRNA = GenerateCounterpart_RNA(molecule->Name, 1, "mRNA");
-                Protein->SetTemplate(mRNA->Name);
+                Protein->SetTemplate(mRNA);
                 ListOfNewMolecules.push_back(mRNA);
             }
         }
@@ -484,14 +501,14 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
             AddToMoleculeList(molecule);
         }
     }
+
+    std::cout << "Complete." << std::endl;
 }
 
 FGeneticMaterial * FCompilerContext::GenerateChromosome(std::string MolName, int Count, int Size)
 {
     FChromosome * NewChromosome = new FChromosome(MolName, Size);
-
-    FCount * NewCount = new FCount(MolName, Count);
-    AddToCountList(NewCount);
+    AddToCountList(MolName, Count);
 
     return NewChromosome;
 }
@@ -499,20 +516,23 @@ FGeneticMaterial * FCompilerContext::GenerateChromosome(std::string MolName, int
 FGeneticMaterial* FCompilerContext::GenerateChromosome(std::string MolName, int Count, std::string Sequence)
 {
     FChromosome* NewChromosome = new FChromosome(MolName, Sequence);
-
-    FCount* NewCount = new FCount(MolName, Count);
-    AddToCountList(NewCount);
+    AddToCountList(MolName, Count);
 
     return NewChromosome;
 }
 
-FGeneticMaterial * FCompilerContext::GenerateCounterpart_Gene(std::string MolName, int Count)
+FGeneticMaterial * FCompilerContext::GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Count)
 {
     std::string NewName = MolName + "_Gene";
-    FGene * NewGene = new FGene(NewName);
+    FGene* NewGene;
 
-    FCount * NewCount = new FCount(NewName, Count);
-    AddToCountList(NewCount);
+    if (!Sequence.empty()) {
+        NewGene = new FGene(NewName, Sequence);
+    } else {
+        NewGene = new FGene(NewName);
+    }
+
+    AddToCountList(NewName, Count);
 
     return NewGene;
 }
@@ -522,24 +542,27 @@ FGeneticMaterial *  FCompilerContext::GenerateCounterpart_RNA(std::string MolNam
     std::string NewName = MolName + "_" + RNAType;
     FRNA * NewRNA;
 
-    if (RNAType == "mRNA") {
-        NewRNA = new FmRNA(NewName);
-        FCount * NewCount = new FCount(NewName, Count);
-    } else if (RNAType == "rRNA") {
-        NewRNA = new FrRNA(NewName);
-        FCount * NewCount = new FCount(NewName, Count);
-    } else if (RNAType == "tRNA") {
-        NewRNA = new FtRNA(NewName);
-        FCount * NewCount = new FCount(NewName, Count);
-    } else if (RNAType == "miscRNA") {
-        NewRNA = new FmiscRNA(NewName);
-        FCount * NewCount = new FCount(NewName, Count);
-    } else {
-        NewRNA = new FRNA(NewName);
-        FCount * NewCount = new FCount(NewName, Count);
+    if (RNAType == "mRNA")          { NewRNA = new FmRNA(NewName); } 
+    else if (RNAType == "rRNA")     { NewRNA = new FrRNA(NewName); } 
+    else if (RNAType == "tRNA")     { NewRNA = new FtRNA(NewName); } 
+    else if (RNAType == "miscRNA")  { NewRNA = new FmiscRNA(NewName); } 
+    else {
+        Utils::Assertion(false, "ERROR: Unspecified RNA Type. Gene: " + MolName + ", RNAType: " + RNAType);
     }
 
+    AddToCountList(NewName, Count);
+
     return NewRNA;
+}
+
+FGeneticMaterial* FCompilerContext::GenerateCounterpart_Protein(std::string MolName, int Count)
+{
+    std::string NewName = MolName + "_Protein";
+    FProtein* NewProtein = new FProtein(NewName);
+
+    AddToCountList(NewName, Count);
+
+    return NewProtein;
 }
 
 void FCompilerContext::MakeListsFromMotilityList()
@@ -656,7 +679,7 @@ void FCompilerContext::AssignReactionType(FReaction *Reaction, int Regulation)
 
 void FCompilerContext::AssignReactionTypesForReactionList()
 {
-    std::cout << endl << "  Assigning Reaction Types..." << endl;
+    std::cout << endl << "  Assigning Reaction Types:" << endl;
     int i = 0;
     // check if regulated
     int reg;
@@ -729,11 +752,18 @@ void FCompilerContext::PrintInitialLocations(std::ostream& os) // TODO: NEEDS UP
 {
     os << std::endl << "## Compiler Initial Locations ##" << std::endl;
     if (!LocationList.empty()) {
+        
+        std::string Delimiter = ", ";
+        
+        if (LocationList.size() > 50) {
+            Delimiter = "\n";
+        }
+
         for (int i = 0; i < LocationList.size(); i++) {
             os << "  [" << i << "] ";
             os << LocationList[i]->Name << " : (";
             for (auto& coord : LocationList[i]->Coord) {
-                os << Utils::SciFloat2Str(coord) << ", ";
+                os << Utils::SciFloat2Str(coord) << Delimiter;
             } os << ")" << std::endl;
         } os << std::endl;
     } else {
@@ -745,14 +775,22 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
 {
     os << std::endl << "## Compiler Initial Counts: Molecules ##" << std::endl;
     // currently restricted to the molecules that are registered on the molecule list
+
+    std::string Delimiter = ", ";
+
+    if (LocationList.size() > 50) {
+        Delimiter = "\n";
+    }
+
     if (!MoleculeList.empty()) {
         for (int i = 0; i < MoleculeList.size(); i++) {
             float Count = GetInitialCountByName_CountList(MoleculeList[i]->Name);
-            os << "  [" << i << "] " << MoleculeList[i]->Name << " : " << Count << std::endl;
+            os << "  [" << i << "] " << MoleculeList[i]->Name << " : " << Count << Delimiter;
         }
     } else {
-        os << "  None" << std::endl;
-    }
+        os << "  None";
+    } os << std::endl;
+
     os << std::endl << "## Compiler Initial Counts: Containers ##" << std::endl;
     // currently restricted to the molecules that are registered on the molecule list
     if (!ContainerList.empty()) {
