@@ -63,11 +63,11 @@ std::string SciFloat2Str(float Float)
    return ss.str();
 }
 
-std::string JoinStr2Str(std::vector<std::string> StringList)
-{
+std::string JoinStr2Str(std::vector<std::string> StringList, std::string LeftClosure, std::string RightClosure)
+{   
     std::string JoinedStr;
     for (auto& Str : StringList){
-        JoinedStr += "'" + Str + "'" + ", ";
+        JoinedStr += LeftClosure + Str + RightClosure + ", ";
     }
     return JoinedStr;
 }

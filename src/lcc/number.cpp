@@ -7,8 +7,8 @@
 using namespace std;
 
 float NA = 6.0221409e+23; // avogadro's number
-float Float_Default = -0.09876723; // random initialized float
-int Int_Default= -128; // random initialized int
+float Float_Default = -0.000997; // random initialized float
+int Int_Default= -997; // random initialized int
 
 std::map<std::string, float> Prefix2ValueMap {
    { "None", 1 },    // Default 1

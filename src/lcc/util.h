@@ -72,7 +72,7 @@ std::string str_join(Iterator Begin, Iterator End, const std::string& Sep)
 bool CreatePath(const char *Path);
 bool CreatePaths(const char *Path);
 std::string SciFloat2Str (float Float);
-std::string JoinStr2Str(std::vector<std::string> StringList);
+std::string JoinStr2Str(std::vector<std::string> StringList, std::string LeftClosure="'", std::string RightClosure="'");
 std::string JoinInt2Str(std::vector<int> IntList);
 std::string JoinInt2Str_Idx(std::vector<int> IntList);
 std::string JoinFloat2Str(std::vector<float> FloatList);
