@@ -121,11 +121,17 @@ def main():   # add verbose
     print('ChrLen_nm:  ', ChrLen_nm)
     print('Shape:      ', Shape)
 
-    N_Nodes = 5000
+    N_Nodes = 150000
     print('N_Nodes:    ', N_Nodes)
 
     # Genome Position Location
     Nodes, Distances = SimF.GetNodesAndDistances(Dim, ChrLen_nm, shape=Shape, n_nodes=N_Nodes)
+
+    # Save if sufficient for the genome length
+    TotalDistance = np.sum(Distances)
+    if TotalDistance > ChrLen_nm:
+        np.save('./Database/EcoliGenomeNodes.npy', Nodes)
+        np.save('./Database/EcoliGenomeDistances.npy', Distances)
 
     # Set database filename
     # DatabaseFileName = ''
@@ -152,7 +158,7 @@ def main():   # add verbose
     print('Gene_End_XYZ', Gene_End_XYZ)
 
     # Visualization of the result
-    plot.Plot3D(Nodes, dim=Dim, distance=np.sum(Distances), shape=Shape)
+    plot.Plot3D(Nodes, dim=Dim, distance=TotalDistance, shape=Shape)
 
     print('')
 
