@@ -345,7 +345,7 @@ class ReactionEquations:
                         self.arr1DdKMichaelis[i] ** self.arr1DdHillCoeff[i]
                         + self.arr1DConc[i] ** self.arr1DdHillCoeff[i]
                     )
-                    for i in range(self.arr1DConc.shape[0]-1)
+                    for i in range(self.arr1DConc.shape[0])
                 ]
             )
         )
