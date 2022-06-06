@@ -1035,8 +1035,10 @@ void FWriter::Initialize_ChromosomeSimulation(ofstream& ofs)
     ofs << in+ in+ "# Initialize_ChromosomeSimulation" << endl;
 
     ofs << in+ in+ "self.Pos_Ref = None" << endl;
-    ofs << in+ in+ "self.Pos_Gene_Start = None" << endl;
-    ofs << in+ in+ "self.Pos_Gene_End = None" << endl;
+    ofs << in+ in+ "self.Pos_Gene_Start_bp = None" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End_bp = None" << endl;
+    ofs << in+ in+ "self.Pos_Gene_Start_nm = None" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End_nm = None" << endl;
 
     ofs << in+ in+ "self.Name_Genes = list()" << endl;
     ofs << endl;
@@ -1222,8 +1224,8 @@ void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
     ofs << in+ in+ "self.Pos_Ref = Nodes" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "self.Pos_Gene_Start_bp = np.reshape(Database['Coord'], [-1, 1])" << endl;
-    ofs << in+ in+ "self.Pos_Gene_End_bp = np.reshape(Database['Coord'] + Database['Length'] * Database['Dir'], [-1, 1])" << endl;
+    ofs << in+ in+ "self.Pos_Gene_Start_bp = np.reshape(Database['Coord'], [1, -1])" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End_bp = np.reshape(Database['Coord'] + Database['Length'] * Database['Dir'], [1, -1])" << endl;
     ofs << endl;
 
     ofs << in+ in+ "self.Pos_Gene_Start_nm = SimF.ConvertNTLength2nm(self.Pos_Gene_Start_bp)" << endl;

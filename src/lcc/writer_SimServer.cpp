@@ -163,15 +163,14 @@ void FWriter::SimServer() {
 
         ofs << in+ in+ "# Temporary halving" << endl;
         ofs << in+ in+ "Sequence=self.SimM.State.OpenFASTADatabase(r'./Database/EscherichiaColi.fasta')[0]" << endl;
-        ofs << in+ in+ "Sequence=Sequence[:round(len(Sequence)/2)]" << endl;
-
         ofs << endl;
+
         ofs << in+ in+ "DNA_Annotations.append(lccsimulation_pb2.MDNA_AnnotationData(" << endl;
         //ofs << in+ in+ in+ "Sequence='ACGT'," << endl;
         //ofs << in+ in+ in+ "Sequence=self.SimM.State.OpenFASTADatabase(r'./Database/EscherichiaColi.fasta')," << endl;
         ofs << in+ in+ in+ "Sequence=Sequence," << endl;
-        ofs << in+ in+ in+ "Gene_StartIndex_bp=self.State.Pos_Gene_Start_bp.T[0]," << endl;
-        ofs << in+ in+ in+ "Gene_EndIndex_bp=self.State.Pos_Gene_End_bp.T[0]," << endl;
+        ofs << in+ in+ in+ "Gene_StartIndex_bp=self.State.Pos_Gene_Start_bp[0]," << endl;
+        ofs << in+ in+ in+ "Gene_EndIndex_bp=self.State.Pos_Gene_End_bp[0]," << endl;
         ofs << in+ in+ in+ "Gene_Symbol=self.State.Name_Genes," << endl;
         ofs << in+ in+ "))" << endl;
         ofs << endl;
