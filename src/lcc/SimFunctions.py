@@ -331,7 +331,7 @@ class ReactionEquations:
                 [
                     (1 + (arr4DAllostery[i, 1] / arr4DAllostery[i, 2]))
                     ** arr4DAllostery[i, 3]
-                    for i in range(arr4DAllostery.shape[0]-1) ########################### Not sure if this is right but it un-broke it...
+                    for i in range(arr4DAllostery[0].shape[0]-1) ########################### Not sure if this is right but it un-broke it...
                 ]
             )
         )
