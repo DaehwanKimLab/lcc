@@ -309,7 +309,7 @@ class ReactionEquations:
                     arr4DAllostery = np.array([np.where(self.arr4DAllostery[allosteryMatchIndex] == i)])  # Subset of arr4D with allosteric elements for current substrate
                 )
                 for i in range(arr1DConc.shape[0]) 
-                if self.arr4DAllostery[allosteryMatchIndex] == i
+                if self.arr4DAllostery[allosteryMatchIndex].all() == i
             ]
         )
 
@@ -337,7 +337,7 @@ class ReactionEquations:
     def Saturation(self):
         """ Calculate Saturation (i.e. relative availability) + cooperativity (via hill coeff)"""
 
-        np.prod(
+        return np.prod(
             np.array(
                 [
                     self.arr1DConc[i] ** self.arr1DdHillCoeff[i]
@@ -345,7 +345,7 @@ class ReactionEquations:
                         self.arr1DdKMichaelis[i] ** self.arr1DdHillCoeff[i]
                         + self.arr1DConc[i] ** self.arr1DdHillCoeff[i]
                     )
-                    for i in range(self.arr1DConc.shape[0])
+                    for i in range(self.arr1DConc.shape[0]-1)
                 ]
             )
         )
@@ -356,36 +356,7 @@ class ReactionEquations:
             self.dReactionRateCoeff * self.rateLimitingConcentration * self.Saturation()
         )
 
-
-
-# # Enzymatic, Michaelis Menten reactions
-# def Eqn_Enz_MichaelisMenten_Unregulated(Conc_Enzyme, Conc_Substrate, kcat, KM):
-#     return (kcat * Conc_Enzyme * Conc_Substrate) / (KM + Conc_Substrate)
-
-
-# def Eqn_Enz_MichaelisMenten_CompetitiveInhibition(
-#     Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki
-# ):
-#     return (kcat * Conc_Enzyme * Conc_Substrate) / (
-#         KM * (1 + (Conc_Inhibitor / Ki)) + Conc_Substrate
-#     )
-
-
-# def Eqn_Enz_MichaelisMenten_Inhibition_Allosteric(
-#     Conc_Enzyme, Conc_Substrate, Conc_Inhibitor, kcat, KM, Ki, n
-# ):
-#     return (kcat * Conc_Enzyme / (1 + (Conc_Inhibitor / Ki) ** n)) * (
-#         Conc_Substrate / (KM + Conc_Substrate)
-#     )
-
-
-# def Eqn_Enz_MichaelisMenten_Activation_Allosteric(
-#     Conc_Enzyme, Conc_Substrate, Conc_Activator, kcat, KM, Ka, n
-# ):
-#     return (kcat * Conc_Enzyme * (1 + (Conc_Activator / Ka) ** n)) * (
-#         Conc_Substrate / (KM + Conc_Substrate)
-#     )
-
+###### End of code update
 
 def MatrixMultiplication_Rev(Freq, Rate):
     return np.matmul(Rate, Freq)
