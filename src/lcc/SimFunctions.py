@@ -290,14 +290,14 @@ class ReactionEquations:
         """Mass action reaction rate:
         Rate of reaction is the product of all reactants and the reaction coefficient.
         """
-        return self.dReactionRateCoeff * np.prod(self.arr1DConc)
+        return self.dReactionRateCoeff * np.prod(self.arr1DConc)       
 
     def Reaction(self):
         """Total Reaction: 
         The MassActionReactionRate modulated by allosteric elements.
         """
         # Need to update this b/c I changed Allostery
-        return self.MassActionReactionRate() * self.Allostery()
+        return self.dReactionRateCoeff * np.prod(self.arr1DdRelativeConc)
 
     # [Relative] and Rate limiting step
     def RelativeConcentration(self, arr1DConc, allosteryMatchIndex  = 0):
@@ -318,7 +318,9 @@ class ReactionEquations:
         Pass in subset of Arr4D for one regulated component.
 
         """
-        # note what was formerly "n" was removed as I don't think this cooperative effect applies here...
+        # note what was formerly "n" was removed as I don't think this cooperative effect applies here... 
+        ## Actually the above is false and I should add a hill coeff in.  Its totally possible that a protein can bind multiple
+        ## of the same inhibitor/activator and they may have cooperative effects.
 
         # Loop through, get individual allosteric elements,
         # overall allostery is the product of those elements
