@@ -62,10 +62,17 @@ def run():
     while(True):
         cmd = input("Server Function To Run: ")
         if cmd == "Initialize" or cmd == "0":
-            with grpc.insecure_channel(ChannelName) as channel:
-                stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
-                response = stub.Initialize(lccsimulation_pb2.MEmpty())
-                print(response)
+            Max_Message_Length = 10000000
+            channel = grpc.insecure_channel(
+                ChannelName,
+                options=[
+                    ('grpc.max_send_message_length', Max_Message_Length),
+                    ('grpc.max_receive_message_length', Max_Message_Length),
+                ],
+            )
+            stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
+            response = stub.Initialize(lccsimulation_pb2.MEmpty())
+            print(response)
 
         elif cmd == "Run" or cmd == "1":
             asyncio.run(sim_run())

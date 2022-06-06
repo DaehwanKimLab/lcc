@@ -135,7 +135,7 @@ void FWriter::SimServer() {
         for (auto& organism : Organisms) {
             auto Organism = dynamic_cast<FOrganism*>(organism);
             ofs << in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << Organism->Name << "')" << endl;
-            ofs << in+ in+ "for i in range(len(X)):" << endl;
+             ofs << in+ in+ "for i in range(len(X)):" << endl;
             ofs << in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i], Y=Y[i], Z=0)" << endl;
             ofs << in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
             ofs << in+ in+ in+ "" << endl;
@@ -170,8 +170,8 @@ void FWriter::SimServer() {
         //ofs << in+ in+ in+ "Sequence='ACGT'," << endl;
         //ofs << in+ in+ in+ "Sequence=self.SimM.State.OpenFASTADatabase(r'./Database/EscherichiaColi.fasta')," << endl;
         ofs << in+ in+ in+ "Sequence=Sequence," << endl;
-        ofs << in+ in+ in+ "Gene_StartIndex_nm=self.State.Pos_Gene_Start_nm.T[0]," << endl;
-        ofs << in+ in+ in+ "Gene_EndIndex_nm=self.State.Pos_Gene_End_nm.T[0]," << endl;
+        ofs << in+ in+ in+ "Gene_StartIndex_bp=self.State.Pos_Gene_Start_bp.T[0]," << endl;
+        ofs << in+ in+ in+ "Gene_EndIndex_bp=self.State.Pos_Gene_End_bp.T[0]," << endl;
         ofs << in+ in+ in+ "Gene_Symbol=self.State.Name_Genes," << endl;
         ofs << in+ in+ "))" << endl;
         ofs << endl;
@@ -209,6 +209,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ "MinElapsedTime = 0.2" << endl;
     ofs << in+ in+ in+ "ElapsedTime = 0" << endl;
     ofs << in+ in+ in+ "PrevTime = datetime.now()" << endl;
+    ofs << in+ in+ in+ "SimStep = 0" << endl;
     ofs << endl;
     
     ofs << in+ in+ in+ "while(True):" << endl;
@@ -226,6 +227,13 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ in+ "self.SimM.Receptivity(20)" << endl;
     ofs << in+ in+ in+ in+ in+ "ElapsedTime -= SimUnitTime" << endl;
     ofs << endl;
+    
+    ofs << in+ in+ in+ in+ "CurrentSimStep = self.SimM.GetSimStep()" << endl;
+    ofs << in+ in+ in+ in+ "if SimStep == CurrentSimStep:" << endl;
+    ofs << in+ in+ in+ in+ in+ "continue" << endl;
+    ofs << in+ in+ in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ in+ in+ "SimStep = self.SimM.GetSimStep()" << endl;
+    ofs << endl;    
     
     ofs << in+ in+ in+ in+ "# Record data SimUnitState" << endl;
     ofs << in+ in+ in+ in+ "VisObjects = {} # map from id --> VisObjectData" << endl;

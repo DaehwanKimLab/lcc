@@ -1201,23 +1201,33 @@ void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
     ofs << in+ in+ "Len_Chr_nm = " << Numbers::Conversion_bp2nm(Size_Chr_bp) << endl;
     ofs << in+ in+ "Shape = '" << Shape << "'" << endl;
 
-    // move into the algorithm later to make a perfect length chromosome
-    int N_Nodes = 5000;
-
-    ofs << in+ in+ "Nodes, Distances = SimF.GetNodesAndDistances(Dim, Len_Chr_nm, shape=Shape, n_nodes=" << N_Nodes << ")" << endl;
+    // generate genome position
+    if (Context.CheckForEcoli()) {
+        ofs << in+ in+ "Nodes = np.load(r'./Database/EcoliGenomeNodes.npy')" << endl;
+        if (Option.bDebug) {
+            ofs << in+ in+ "Distances = np.load(r'./Database/EcoliGenomeDistances.npy')" << endl;
+        }
+    } else {
+        // default genome positions
+        int N_Nodes = 5000;
+        ofs << in+ in+ "Nodes, Distances = SimF.GetNodesAndDistances(Dim, Len_Chr_nm, shape=Shape, n_nodes=" << N_Nodes << ")" << endl;
+    }
 
     if (Option.bDebug) {
         ofs << in+ in+ "plot.Plot3D(Nodes, dim=Dim, distance=np.sum(Distances), shape=Shape)" << endl;
         ofs << endl;
     }
 
-    ofs << in+ in+ "Gene_Start_bp = np.reshape(Database['Coord'], [-1, 1])" << endl;
-    ofs << in+ in+ "Gene_End_bp = np.reshape(Database['Coord'] + Database['Length'] * Database['Dir'], [-1, 1])" << endl;
+    ofs << endl;
+    ofs << in+ in+ "self.Pos_Ref = Nodes" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "self.Pos_Ref = Nodes" << endl;
-    ofs << in+ in+ "self.Pos_Gene_Start_nm = SimF.ConvertNTLength2nm(Gene_Start_bp)" << endl;
-    ofs << in+ in+ "self.Pos_Gene_End_nm = SimF.ConvertNTLength2nm(Gene_End_bp)" << endl;
+    ofs << in+ in+ "self.Pos_Gene_Start_bp = np.reshape(Database['Coord'], [-1, 1])" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End_bp = np.reshape(Database['Coord'] + Database['Length'] * Database['Dir'], [-1, 1])" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "self.Pos_Gene_Start_nm = SimF.ConvertNTLength2nm(self.Pos_Gene_Start_bp)" << endl;
+    ofs << in+ in+ "self.Pos_Gene_End_nm = SimF.ConvertNTLength2nm(self.Pos_Gene_End_bp)" << endl;
     ofs << endl;
     //ofs << in+ in+ "self.Pos_Gene_Start_XYZ = SimF.GetXYZForGenomePositionsInBP(Gene_Start_bp, Nodes, Distances)" << endl;
     //ofs << in+ in+ "self.Pos_Gene_End_XYZ = SimF.GetXYZForGenomePositionsInBP(Gene_End_bp, Nodes, Distances)" << endl;

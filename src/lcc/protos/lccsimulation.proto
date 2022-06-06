@@ -97,8 +97,8 @@ message MDNA_InitData
 message MDNA_AnnotationData
 {
     string Sequence = 1;
-    repeated float Gene_StartIndex_nm = 2;
-    repeated float Gene_EndIndex_nm = 3;
+    repeated float Gene_StartIndex_bp = 2;
+    repeated float Gene_EndIndex_bp = 3;
     repeated string Gene_Symbol = 4;
 }
 
