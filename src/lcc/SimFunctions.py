@@ -141,6 +141,57 @@ def DetermineAmountOfBuildingBlocks(Freq, Rate):
     return MatrixMultiplication_Rev(Freq, Rate)
 
 
+### Regulatory/Allostery ###########################################################################################
+class RegulatoryEquations:
+    """ Regulatory equations
+    Equations taken from: http://be150.caltech.edu/2020/content/lessons/05_ffls.html#Dynamical-equations-for-FFLs
+
+
+    Methods
+    -------
+    andLogic2Activators
+        Calculates the regulatory effect of two activators with AND logic
+    orLogic2Activators
+        Calculates the regulatory effect of two activators with OR logic
+    andLogic2Repressors
+        Calculates the regulatory effect of two repressors with AND logic
+    orLogic2Repressors
+        Calculates the regulatory effect of two repressors with OR logic
+    andLogic1Activator1Repressor
+        Calculates the regulatory effect of one activator and one repressor with AND logic
+    orLogic1Activator1Repressor
+        Calculates the regulatory effect of one activator and one repressor with OR logic
+
+
+    Notes
+    -----
+    Kd = 1 is provided in each equation as an input although it is not utilized in the calcluation.
+    This is until I figure out whether or not it should replace the 1 in the denom.
+
+    """
+    def __init__(self) -> None:
+        pass
+
+    def andLogic2Activators(self, conc_1, conc_2, Kd1, Kd2, n1 = 1, n2 = 1, Kd = 1):
+        return ((conc_1 / Kd1) ** n1 * (conc_2 / Kd2) ** n2) / ( 1 +(conc_1 / Kd1) ** n1 * (conc_2 / Kd2) ** n2 ) 
+
+    def orLogic2Activators(self, conc_1, conc_2, Kd1, Kd2, n1 = 1, n2 = 1, Kd = 1):
+        return ((conc_1 / Kd1) ** n1 + (conc_2 / Kd2) ** n2) / ( 1 +(conc_1 / Kd1) ** n1 + (conc_2 / Kd2) ** n2 ) 
+
+    def andLogic2Repressors(self, conc_1, conc_2, Kd1, Kd2, n1 = 1, n2 = 1, Kd = 1):
+        return  1 / ( 1 +(1 + conc_1 / Kd1) ** n1 + (1 + conc_2 / Kd2) ** n2 ) 
+
+    def orLogic2Repressors(self, conc_1, conc_2, Kd1, Kd2, n1 = 1, n2 = 1, Kd = 1):
+        return  (1 + (conc_1 / Kd1) ** n1 + (conc_2 / Kd2) ** n2) / ( 1 +(1 + conc_1 / Kd1) ** n1 + (1 + conc_2 / Kd2) ** n2 ) 
+
+    def andLogic1Activator1Repressor(self, conc_act, conc_rep, k_act, k_rep, n_act = 1, n_rep = 1, Kd = 1):
+        return ((conc_act / k_act) ** n_act) / ( 1 + (conc_act / k_act) ** n_act + (conc_rep / k_rep) ** n_rep ) 
+        
+    def orLogic1Activator1Repressor(self, conc_act, conc_rep, k_act, k_rep, n_act = 1, n_rep = 1, Kd = 1):
+        return (1 + (conc_act / k_act) ** n_act) / ( 1 + (conc_act / k_act) ** n_act + (conc_rep / k_rep) ** n_rep ) 
+
+
+
 ### if N_MOLECULEALLOWED = N ###########################################################################################
 class ReactionEquations:
     """ ReactionEquations
