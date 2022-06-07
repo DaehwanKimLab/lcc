@@ -63,13 +63,17 @@ void FTable::LoadFromTSV(const char *Filename)
 	}
     Utils::tokenize(buf, "\t", Headers);
 
-	for(int i = 0; i < Headers.size(); i++) {
-		Headers[i] = Utils::strip(Headers[i], "\"");
+    for (int i = 0; i < Headers.size(); i++) {
+        Headers[i] = Utils::strip(Headers[i], "\"");
 
-		if (Option.bDebug) {
-			cerr << Headers[i] << endl;
-		}
-	}
+        if (Option.bDebug) {
+            if (i == 0) {
+                cerr << "Headers: ";
+            }
+
+            cerr << Headers[i] << ", ";
+        }
+    } cerr << endl;
 
 
 	while(getline(fp, buf)) {
@@ -306,7 +310,7 @@ void FCompilerContext::AddToMotilityList(FMotility *NewMotility)
 
 void FCompilerContext::Organize()
 {
-    std::cout<< std::endl << "## Organizing Compiler Data ## " << std::endl;
+    std::cout << "\n\n## Organizing Compiler Data ## " << std::endl;
 
     if (!GetSubList_MoleculeList("Polymerase").empty()) {
         ApplyDefaultGeneticInformationProcessingOnMoleculeList();
@@ -339,7 +343,7 @@ bool FCompilerContext::CheckForEcoli() {
 
 void FCompilerContext::DefaultSetUp_Ecoli() {
 
-    std::cout << std::endl << "  Loading Default Ecoli properties... ";
+    std::cout << "Loading Default Ecoli properties... ";
 
     auto Organisms = GetSubList_ContainerList("Organism");
     for (auto& organism : Organisms) {
@@ -369,24 +373,27 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
 
     FTable EcoliGeneList;
     EcoliGeneList.LoadFromTSV("./Database/genes.tsv");
+    int LimitRecordSize = 10; // here temporary
 
-    for (auto& record : EcoliGeneList.Records) {
+    for (int i = 0; i < EcoliGeneList.Records.size(); i++) {
         // std::string, std::string record
+
+        if (i > LimitRecordSize) { break; }
 
         // Available data from EcoliGeneList
         //"length"	"name"	"seq"	"rnaId"	"coordinate"	"direction"	"symbol"	"type"	"id"	"monomerId"
 
         // Required data to import for generating genetic materials
-        std::string Name = record["symbol"];
-        std::string Seq = record["seq"];
-        std::string RNAType = record["type"];
+        std::string Name = EcoliGeneList.Records[i]["symbol"];
+        std::string Seq = EcoliGeneList.Records[i]["seq"];
+        std::string RNAType = EcoliGeneList.Records[i]["type"];
 
         // Optional
-        int Coord = std::stoi(record["coordinate"]);
-        int Size = std::stoi(record["length"]);
+        int Coord = std::stoi(EcoliGeneList.Records[i]["coordinate"]);
+        int Size = std::stoi(EcoliGeneList.Records[i]["length"]);
 
         std::map<std::string, int> Dir{ { "+", 1 }, { "-", -1 }, };
-        int Direction = Dir[(record["direction"])];
+        int Direction = Dir[(EcoliGeneList.Records[i]["direction"])];
 
         FGeneticMaterial* Gene;
         FGeneticMaterial* RNA;
@@ -394,14 +401,17 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
 
         // Generate Gene if not made by the user
         if (bRNAP) {
-            Gene = GenerateCounterpart_Gene(Name, Seq, 1);
+            Gene = GenerateCounterpart_Gene(Name, Seq, Coord, Direction, 1);
+            auto gene = dynamic_cast<FGene* >(Gene);
+            gene->Coord = Coord;
+            gene->Dir = Direction;
             ListOfNewMolecules.push_back(Gene);
         }
 
         // Generate RNA if not made by the user
         if (bRNAP || bRibosome) {
             RNA = GenerateCounterpart_RNA(Name, 1, RNAType);
-            if (!bRNAP) {
+            if (bRNAP) {
                 RNA->SetTemplate(Gene);
             }
             ListOfNewMolecules.push_back(RNA);
@@ -410,6 +420,7 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         // Generate Protein
         if (bRibosome) {
             Protein = GenerateCounterpart_Protein(Name, 0);
+            Protein->SetTemplate(RNA);
             ListOfNewMolecules.push_back(Protein);
         }
     }
@@ -418,17 +429,18 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         for (auto& molecule : ListOfNewMolecules) {
             if (Option.bDebug) {
                 std::string TextOutputTag = "[Ecoli Molecule Added] ";
+                std::cout << TextOutputTag;
                 molecule->Print(std::cout);
             }
             AddToMoleculeList(molecule);
         }
     }
 
-    std::cout << "Complete." << std::endl;
+    std::cout << "\tComplete." << std::endl;
 }
 
 void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() {
-    std::cout << std::endl << "  Applying Genetic Information Processing on MoleculeList... ";
+    std::cout << "Applying Genetic Information Processing on MoleculeList... ";
 
     std::vector<FMolecule *> ListOfNewMolecules;
 
@@ -456,7 +468,7 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
                 auto Protein = dynamic_cast<FProtein *>(molecule);
                 
                 FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, 0, "mRNA");
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 1);
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 0, 1, 1);
                 Protein->SetTemplate(mRNA);
                 mRNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
@@ -465,7 +477,7 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
             } else if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 auto RNA = dynamic_cast<FRNA *>(molecule);
 
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 1);
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 0, 1, 1);
                 RNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
             }
@@ -475,7 +487,7 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
             if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
                 auto RNA = dynamic_cast<FRNA *>(molecule);
 
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 1);
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 0, 1, 1);
                 RNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
             }
@@ -493,16 +505,18 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
     }
 
     if (!ListOfNewMolecules.empty()) {
+        std::cout << std::endl;
         for (auto& molecule : ListOfNewMolecules) {
             if (Option.bDebug) {
                 std::string TextOutputTag = "[Counterpart Molecule Added] ";
+                std::cout << TextOutputTag;
                 molecule->Print(std::cout);
             }
             AddToMoleculeList(molecule);
         }
     }
 
-    std::cout << "Complete." << std::endl;
+    std::cout << "\tComplete." << std::endl;
 }
 
 FGeneticMaterial * FCompilerContext::GenerateChromosome(std::string MolName, int Count, int Size)
@@ -521,13 +535,13 @@ FGeneticMaterial* FCompilerContext::GenerateChromosome(std::string MolName, int 
     return NewChromosome;
 }
 
-FGeneticMaterial * FCompilerContext::GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Count)
+FGeneticMaterial * FCompilerContext::GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Coord, int Dir, int Count)
 {
     std::string NewName = MolName + "_Gene";
     FGene* NewGene;
 
     if (!Sequence.empty()) {
-        NewGene = new FGene(NewName, Sequence);
+        NewGene = new FGene(NewName, Sequence, Coord, Dir);
     } else {
         NewGene = new FGene(NewName);
     }
@@ -679,7 +693,7 @@ void FCompilerContext::AssignReactionType(FReaction *Reaction, int Regulation)
 
 void FCompilerContext::AssignReactionTypesForReactionList()
 {
-    std::cout << endl << "  Assigning Reaction Types:" << endl;
+    std::cout << "Assigning Reaction Types : " << endl;
     int i = 0;
     // check if regulated
     int reg;
@@ -753,18 +767,18 @@ void FCompilerContext::PrintInitialLocations(std::ostream& os) // TODO: NEEDS UP
     os << std::endl << "## Compiler Initial Locations ##" << std::endl;
     if (!LocationList.empty()) {
         
-        std::string Delimiter = ", ";
+        std::string Delimiter = "\n";
         
         if (LocationList.size() > 50) {
-            Delimiter = "\n";
+            Delimiter = "," ;
         }
 
         for (int i = 0; i < LocationList.size(); i++) {
             os << "  [" << i << "] ";
             os << LocationList[i]->Name << " : (";
             for (auto& coord : LocationList[i]->Coord) {
-                os << Utils::SciFloat2Str(coord) << Delimiter;
-            } os << ")" << std::endl;
+                os << Utils::SciFloat2Str(coord) << ", ";
+            } os << ")" << Delimiter;
         } os << std::endl;
     } else {
         os << "  None" << std::endl;
@@ -776,14 +790,24 @@ void FCompilerContext::PrintInitialCounts(std::ostream& os)
     os << std::endl << "## Compiler Initial Counts: Molecules ##" << std::endl;
     // currently restricted to the molecules that are registered on the molecule list
 
-    std::string Delimiter = ", ";
-
-    if (LocationList.size() > 50) {
-        Delimiter = "\n";
+    std::string Delimiter = "\n";
+    
+    int Size_Limit_Threshold = 50;
+    int Size_Limit_High = -10;
+    int Size_Limit_Low = 20;
+    
+    if (MoleculeList.size() > Size_Limit_Threshold) {
+        Delimiter = ", ";
     }
 
     if (!MoleculeList.empty()) {
         for (int i = 0; i < MoleculeList.size(); i++) {
+            
+            // Skip if there are too many molecules with initial counts
+            if ((MoleculeList.size() > Size_Limit_Threshold) & (i > Size_Limit_Low) & (i == MoleculeList.size() - Size_Limit_High)) {
+                break;
+            }
+
             float Count = GetInitialCountByName_CountList(MoleculeList[i]->Name);
             os << "  [" << i << "] " << MoleculeList[i]->Name << " : " << Count << Delimiter;
         }

@@ -437,6 +437,9 @@ public:
 class FGene : public FGeneticMaterial {   // to be revisted for its categorization. Make a new FEATURE class?
 public:
     std::vector<std::string> Promoters;
+    int Coord; // TODO: Add chromosome info as std::pair datatype
+    //std::pair<std::string, int> Coord;
+    int Dir; // 1 for positive strand, -1 for negative strand
 
     FGene() {}
 
@@ -445,14 +448,25 @@ public:
 
     FGene(std::string InName, int InSize)
         : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {} // Convenient default example for genes would be FGene(A_g, 1000, NT);
+ 
+    FGene(std::string InName, int InSize, int InCoord, int InDir)
+        : Coord(InCoord), Dir(InDir), FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {} // Convenient default example for genes would be FGene(A_g, 1000, NT);
 
     FGene(std::string InName, std::string InSequence)
         : FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("dNT")) {}
 
+    FGene(std::string InName, std::string InSequence, int InCoord, int InDir)
+        : Coord(InCoord), Dir(InDir), FGeneticMaterial(InName, InSequence, BioInfo::GetBuildingBlocks("dNT")) {}
+
     void Print(std::ostream& os) {
         os << "[Gene] Id: " << Name << " | ";
         Print_Composition(os);
+        os << "Coord: " << Coord << ", | Dir: " << Dir;
         os << std::endl;
+    }
+    
+    void SetCoordDirection(int InCoord, int Direction) {
+        Coord = InCoord;
     }
 };
 
@@ -1008,7 +1022,7 @@ public:
     FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, int Size); // default
     FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, std::string Sequence); // default
 
-    FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Count); // default
+    FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Coord, int Direction, int Count); // default
     FGeneticMaterial * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
     FGeneticMaterial * GenerateCounterpart_Protein(std::string MolName, int Count); // default
 

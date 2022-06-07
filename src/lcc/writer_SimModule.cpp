@@ -160,6 +160,67 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
     }
 
+    // for legends
+    std::vector<std::string> MolNames = Context.GetNameListByType_MoleculeList("All");
+    ofs << in + in + "self.Mol_Names = [" << Utils::JoinStr2Str(MolNames) << "]" << endl;
+    ofs << in + in + "self.Mol_Name2Idx = {";
+    for (int i = 0; i < MolNames.size(); i++) {
+        ofs << "'" << MolNames[i] << "' : np.array([" << i << "]), ";
+    } ofs << "}" << endl;
+    ofs << in + in + "self.Legends = ['SimStep', 'Vol', " << Utils::JoinStr2Str(MolNames) << "]" << endl;
+    ofs << endl;
+
+    // Initialize all molecule counts
+    std::vector<int> Idx_Mol = Context.GetIdxListByType_MoleculeList("All");
+    std::vector<float> InitialCount_Molecules;
+    std::vector<float> MolarityFactor_Molecules;
+    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
+
+    for (auto& molecule : Context.MoleculeList) {
+        float Count = Context.GetInitialCountByName_CountList(molecule->Name);
+        float MolarityFactor = Context.GetMolarityFactorByName_CountList(molecule->Name);
+
+        // TODO: special consideration for 'L' and 'qL' for chemotaxis
+        if ((molecule->Name == "L") || (molecule->Name == "qL")) { Count = 0; }
+
+        InitialCount_Molecules.push_back(Count);
+        MolarityFactor_Molecules.push_back(MolarityFactor);
+    }
+
+    ofs << in + in + "Idx_Mol = np.array([";
+    if (ObjLoc.empty()) {
+        ofs << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ndmin=2)" << endl;
+    }
+    else {
+        for (auto& ObjName : ObjUniqueNames) {
+            int Count = int(Context.GetInitialCountByName_CountList(ObjName));
+            for (int i = 0; i < (Count); i++) {
+                ofs << "[" << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ";
+            }
+        }
+        ofs << "])" << endl;
+    }
+
+    ofs << in + in + "Count_Mol = np.array([";
+    if (ObjLoc.empty()) {
+        ofs << Utils::JoinFloat2Str(InitialCount_Molecules);
+    }
+    else {
+        for (auto& ObjName : ObjUniqueNames) {
+            int Count = int(Context.GetInitialCountByName_CountList(ObjName));
+            for (int i = 0; i < (Count); i++) {
+                ofs << "[" << Utils::JoinFloat2Str(InitialCount_Molecules) << "], ";
+            }
+        }
+    }
+    ofs << "])" << endl;
+
+    ofs << in + in + "MolarityFactor_Mol = np.array([" << Utils::JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
+    ofs << in + in + "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
+    ofs << in + in + "Count_Mol *= MolarityFactor_Mol" << endl;
+    ofs << in + in + "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
+    ofs << endl;
+
     // Print SetUp_SpatialReaction for all spatial simulation (to be updated)
     if (!Context.LocationList.empty()) {
         SetUp_SpatialSimulation(ofs);
@@ -206,64 +267,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
-    // for legends
-    std::vector<std::string> MolNames = Context.GetNameListByType_MoleculeList("All");
-    ofs << in+ in+ "self.Mol_Names = [" << Utils::JoinStr2Str(MolNames) << "]" << endl;
-    ofs << in+ in+ "self.Mol_Name2Idx = {";
-    for (int i = 0; i < MolNames.size(); i++) {
-        ofs << "'" << MolNames[i] << "' : np.array([" << i << "]), ";
-    } ofs << "}" << endl;
-    ofs << in+ in+ "self.Legends = ['SimStep', 'Vol', " << Utils::JoinStr2Str(MolNames) << "]" << endl;
-    ofs << endl;
-
-    // Initialize all molecule counts
-    std::vector<int> Idx_Mol = Context.GetIdxListByType_MoleculeList("All");
-    std::vector<float> InitialCount_Molecules;
-    std::vector<float> MolarityFactor_Molecules;
-    std::vector<std::string> ObjUniqueNames = Context.GetUniqueNames_LocationList("Compartment");
-
-    for (auto& molecule : Context.MoleculeList) {
-        float Count = Context.GetInitialCountByName_CountList(molecule->Name);
-        float MolarityFactor = Context.GetMolarityFactorByName_CountList(molecule->Name);
-
-        // TODO: special consideration for 'L' and 'qL' for chemotaxis
-        if ((molecule->Name == "L") || (molecule->Name == "qL")) { Count = 0; }
-
-        InitialCount_Molecules.push_back(Count);
-        MolarityFactor_Molecules.push_back(MolarityFactor);
-    }
-
-    ofs << in+ in+ "Idx_Mol = np.array([";
-    if (ObjLoc.empty()) {
-        ofs << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ndmin=2)" << endl;
-    } else {
-        for (auto& ObjName : ObjUniqueNames) {
-            int Count = int(Context.GetInitialCountByName_CountList(ObjName));
-            for (int i = 0; i < (Count); i++) {
-                ofs << "[" << Utils::JoinInt2Str_Idx(Idx_Mol) << "], ";
-            }
-        }
-        ofs << "])" << endl;
-    }
-
-    ofs << in+ in+ "Count_Mol = np.array([";
-    if (ObjLoc.empty()) {
-        ofs << Utils::JoinFloat2Str(InitialCount_Molecules);
-    } else {
-        for (auto& ObjName : ObjUniqueNames) {
-            int Count = int(Context.GetInitialCountByName_CountList(ObjName));
-            for (int i = 0; i < (Count); i++) {
-                ofs << "[" << Utils::JoinFloat2Str(InitialCount_Molecules) << "], ";
-            }
-        }
-    }
-    ofs << "])" << endl;
-
-    ofs << in+ in+ "MolarityFactor_Mol = np.array([" << Utils::JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
-    ofs << in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
-    ofs << in+ in+ "Count_Mol *= MolarityFactor_Mol" << endl;
-    ofs << in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
-    ofs << endl;
 
     ofs << in+ "def GetMolNames(self):" << endl;
     ofs << in+ in+ "return self.Mol_Names" << endl;
@@ -1474,7 +1477,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ "def GetReplicationCompletionRate(self, Name):" << endl;
     if (!DNAPs.empty()) {
         ofs << in+ in+ "Idx = self.GetPosIdx(Name)" << endl;
-        ofs << in+ in+ "ReplicationCompletion = self.State.Len_NascentChromosomes / self.State.MaxLen_NascentChromosomes" << endl;
+        ofs << in+ in+ "ReplicationCompletion = self.State.Len_NascentChromosome / self.State.MaxLen_NascentChromosome" << endl;
         ofs << in+ in+ "ReplicationCompletion = np.where(ReplicationCompletion < 0, 0, ReplicationCompletion)" << endl;
         ofs << in+ in+ "return ReplicationCompletion[Idx]" << endl;
     } else {
@@ -1620,19 +1623,18 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "Count_Reg = self.GetCount(Idx_Pol)" << endl;  // TODO: Implement Sigma factors. Temporary same count as pol.
         ofs << in+ in+ "Count_Pol_Reg_Complex = np.where(Count_Pol > Count_Reg, Count_Reg, Count_Pol)" << endl;
         ofs << in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol_Reg_Complex, 2).astype(int)" << endl;
-        ofs << in+ in+ "Count_Pol_Occupied = np.sum(Count_NascentTarget, axis=1) * PolThreshold" << endl;
+        ofs << in+ in+ "Count_Pol_Occupied = np.reshape(np.sum(Count_NascentTarget, axis=1), [-1, 1]) * PolThreshold" << endl;
         ofs << in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
         ofs << in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
         ofs << in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)" << endl;
         ofs << in+ in+ "return Count_Pol_Avail" << endl;
         ofs << endl;
 
-        ofs << in+ "def Transcription_GetInitiationSites(self, Idx_Template, Count_NascentTemplate):" << endl;
+        ofs << in+ "def Transcription_GetInitiationSites(self, Idx_Template, Count_Template_Nascent):" << endl;
         ofs << in+ in+ "# Get final initiation weight by applying initiation site count" << endl;
         ofs << in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
-        ofs << in+ in+ "Count_Template_Nascent = np.sum(Count_NascentTemplate, axis=1)" << endl;
-        ofs << in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_Template_Nascent" << endl;
-        ofs << in+ in+ "return Count_InitiationSite" << endl;
+        ofs << in+ in+ "Count_InitiationSitePerSite = Count_Template_Complete + Count_Template_Nascent" << endl;
+        ofs << in+ in+ "return Count_InitiationSitePerSite" << endl;
         ofs << endl;
 
         // TODO: Update with more mechanistic algorithm later
@@ -1643,14 +1645,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
         ofs << in+ in+ "# Get Count and Weight of transcription initiation sites" << endl;
         ofs << in+ in+ "Count_InitiationSites_PerSite = self.Transcription_GetInitiationSites(Idx_Template, Count_NascentTemplate)" << endl;
-        ofs << in+ in+ "Count_InitiationSites_Total = np.sum(Count_InitiationSites_PerSite)" << endl;
+        ofs << in+ in+ "Count_InitiationSites_Total = np.reshape(np.sum(Count_InitiationSites_PerSite, axis=1), [-1, 1])" << endl;
         ofs << in+ in+ "Weight_InitiationSite = Count_InitiationSites_PerSite * Weight" << endl;
         ofs << in+ in+ "Count_ToBind = np.where(np.logical_and(Count_Pol_Avail > 0, Count_InitiationSites_Total > 0), 1, 0)   # Only allowing one binding at a time to use random function in matrix operation" << endl;
         ofs << endl;
 
         // TODO: Incorporate Weighted system that works with arrays
         ofs << in+ in+ "# Get New polymerase binding sites." << endl;
-        ofs << in+ in+ "Idx_PotentialBinding = np.random.randint(0, high=Weight_InitiationSite.shape[0], size=Weight_InitiationSite.shape[1])" << endl;
+        ofs << in+ in+ "Idx_PotentialBinding = np.reshape(np.random.randint(0, high=Weight_InitiationSite.shape[1], size=Weight_InitiationSite.shape[0]), [-1, 1])" << endl;
         ofs << in+ in+ "Idx_NewBinding = Idx_PotentialBinding * Count_ToBind" << endl;
         ofs << endl;
 
@@ -1661,13 +1663,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "# Apply New Binding at start position to Pos_Pol" << endl;
         ofs << in+ in+ "Idx_Empty = SimF.GetIdxOfEmptyElement(Pos_Pol) " << endl;
         if (Option.bDebug) {
-            ofs << in+ in+ "assert np.logical_and(Pos_End[:, Idx_Empty] == -1), 'Empty Element Indexing is not consistent in Pos_Pol and Pos_Pol_End'" << endl;
+            ofs << in+ in+ "assert np.logical_and(Pos_Pol_End[:, Idx_Empty] == -1), 'Empty Element Indexing is not consistent in Pos_Pol and Pos_Pol_End'" << endl;
         }
         ofs << endl;
-        ofs << in+ in+ "Pos_Template_Start_Initiated = Pos_Template_Start[:, Idx_NewBinding]" << endl;
+        ofs << in+ in+ "Pos_Template_Start_Initiated = Pos_Template_Start[Idx_NewBinding]" << endl;
         ofs << in+ in+ "Pos_Pol_Initiated = SimF.ReplaceValueInArrayAtIdx(Pos_Pol, Idx_Empty, Pos_Template_Start_Initiated) " << endl;
         ofs << endl;
-        ofs << in+ in+ "Pos_Template_End_Initiated = Pos_Template_End[:, Idx_NewBinding]" << endl;
+        ofs << in+ in+ "Pos_Template_End_Initiated = Pos_Template_End[Idx_NewBinding]" << endl;
         ofs << in+ in+ "Pos_Pol_End_Initiated = SimF.ReplaceValueInArrayAtIdx(Pos_Pol_End, Idx_Empty, Pos_Template_End_Initiated) " << endl;
         ofs << endl;
         ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Count_NascentTarget_Initiated" << endl;
@@ -1809,7 +1811,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
         if (Option.bDebug) {
             ofs << in+ in+ "#Debugging" << endl;
-            ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl;
+            //ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl;
 
             ofs << in+ in+ "self.Debug_PrintSimStepTime(end='\\n')" << endl;
             ofs << in+ in+ "print('Chromosomes:     ', self.GetCount(self.State.Idx_Template_Replication).transpose())" << endl;
@@ -1834,8 +1836,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "self.State.dCount_All[Idx_DividingCells] = Distributed_dCount_All" << endl;
         ofs << endl;
         // TODO: to be updated for concurrent replication mode
-        ofs << in+ in+ "DividingCell_Len_NascentChromosomes = self.State.Len_NascentChromosomes[Idx_DividingCells]" << endl;
-        ofs << in+ in+ "self.State.Len_NascentChromosomes = np.vstack([self.State.Len_NascentChromosomes, DividingCell_Len_NascentChromosomes])" << endl;
+        ofs << in+ in+ "DividingCell_Len_NascentChromosome = self.State.Len_NascentChromosome[Idx_DividingCells]" << endl;
+        ofs << in+ in+ "self.State.Len_NascentChromosome = np.vstack([self.State.Len_NascentChromosome, DividingCell_Len_NascentChromosome])" << endl;
         ofs << endl;
         if (!ObjLoc.empty()) {
             ofs << in+ in+ "BodyLength = 20" << endl;
