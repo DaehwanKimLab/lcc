@@ -29,6 +29,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
 
+    if (Option.bDebug) {
+        ofs << "import plot" << endl;
+    }
+
     //TODO: Take options from SimModule cmd line
     ofs << "# Temporary global variables" << endl;
     ofs << "N_SimSteps = " << Sim_Steps << endl;
@@ -61,11 +65,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto ObjLoc = Context.GetSubList_LocationList("Compartment");
-
+    auto Compartments = Context.GetSubList_ContainerList("Compartment");
 
     int MatrixSize = 1;
-    if (!ObjLoc.empty()) {
-        MatrixSize = Context.GetCounts_LocationList("Compartment");
+    if (!Compartments.empty()) {
+        MatrixSize = Context.GetCounts_ContainerList("Compartment");
     }
     ofs << in+ in+ "self.Count_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
     ofs << in+ in+ "self.dCount_All = np.zeros([" << MatrixSize << ", " << Context.MoleculeList.size() << "])" << endl;
@@ -259,12 +263,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def GetDistNames(self):" << endl;
-    if (!MolLoc.empty() & !ObjLoc.empty())  { ofs << in+ in+ "return self.Dist_Names" << endl; }
+    if (!MolLoc.empty() || !ObjLoc.empty())  { ofs << in+ in+ "return self.Dist_Names" << endl; }
     else                                    { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
     ofs << in+ "def GetPosNames(self):" << endl;
-    if (!MolLoc.empty() & !ObjLoc.empty())  { ofs << in+ in+ "return self.Pos_Names" << endl; }
+    if (!MolLoc.empty() || !ObjLoc.empty())  { ofs << in+ in+ "return self.Pos_Names" << endl; }
     else                                    { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
@@ -284,10 +288,53 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     int i_Count_Mol = i_Vol + MolNames.size();
 
     ofs << in+ in+ "Data[:, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All";
-    if (!ObjLoc.empty()) { ofs << "[0]"; } ofs << endl;
+    if (!Compartments.empty()) { ofs << "[0]"; } ofs << endl;
 
     ofs << in+ in+ "return Data" << endl;
     ofs << endl;
+
+    ofs << in+ "# Temporary database routines" << endl;
+    ofs << endl;
+
+    ofs << in+ "def LoadTSVDatabase(self, db_fname):" << endl;
+    ofs << in+ in+ "db = None" << endl;
+    ofs << in+ in+ "with open(db_fname) as fp:" << endl;
+    ofs << in+ in+ in+ "csv_reader = csv.reader(fp, delimiter='\\t')" << endl;
+    ofs << in+ in+ in+ "list_of_rows = list(csv_reader)" << endl;
+    ofs << in+ in+ in+ "db = list_of_rows[1:]" << endl;
+    ofs << in+ in+ "return db" << endl;
+    ofs << endl;
+
+    ofs << in+ "def OpenTSVDatabase(self, db_fname):" << endl;
+    ofs << in+ in+ "db = self.LoadTSVDatabase(db_fname)" << endl;
+    ofs << in+ in+ "Database_Gene = self.ParseGenes(db)" << endl;
+    ofs << in+ in+ "return Database_Gene" << endl;
+    ofs << endl;
+
+    ofs << in+ "def ParseGenes(self, db_genes):" << endl;
+    ofs << in+ in+ "db = dict()" << endl;
+    ofs << in+ in+ "NUniq_Genes = len(db_genes)" << endl;
+    ofs << in+ in+ "db['Symbol'] = list()" << endl;
+    ofs << in+ in+ "db['Length'] = np.zeros(NUniq_Genes)" << endl;
+    ofs << in+ in+ "db['Coord'] = np.zeros(NUniq_Genes)" << endl;
+    ofs << in+ in+ "db['Dir'] = np.zeros(NUniq_Genes)" << endl;
+    ofs << in+ in+ "db['Seq'] = list()" << endl;
+    ofs << endl;
+    ofs << in+ in+ "Dir = dict()" << endl;
+    ofs << in+ in+ "Dir['+'] = 1" << endl;
+    ofs << in+ in+ "Dir['-'] = -1" << endl;
+    ofs << endl;
+    ofs << in+ in+ "for i, Value in enumerate(db_genes):" << endl;
+    ofs << in+ in+ in+ "Length, Name, Seq, RNAID, Coordinate, Direction, Symbol, Type, GeneID, MonomerID = Value" << endl;
+    ofs << in+ in+ in+ "db['Symbol'].append(Symbol)" << endl;
+    ofs << in+ in+ in+ "db['Length'][i] = (len(Seq))" << endl;
+    ofs << in+ in+ in+ "db['Coord'][i] = int(Coordinate)" << endl;
+    ofs << in+ in+ in+ "db['Dir'][i] = Dir[Direction]" << endl;
+    ofs << in+ in+ in+ "db['Seq'].append(Seq)" << endl;
+    ofs << endl;
+    ofs << in+ in+ "return db" << endl;
+    ofs << endl;
+
 
     // class FDataset
     ofs << "class FDataset:" << endl;
@@ -491,7 +538,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
     }
 
-
     ofs << in+ in+ "# Run Spatial Simulation" << endl;
     ofs << in+ in+ "self.SpatialSimulation()" << endl; // TODO: Take delta, instead of updating directly then move up before UpdateCounts
     ofs << endl;
@@ -534,6 +580,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
     }
 
+    ofs << in+ in+ "self.CellDivision()" << endl;
+    ofs << endl;
+
     ofs << in+ "def SimLoop_WithoutSpatialSimulation(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
@@ -541,14 +590,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
     if (!Option.bDebug) { ofs << "# "; }
     ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
-    if (!Option.bDebug) { ofs << "# "; }
-    ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
     ofs << endl;
 
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in+ "self.UpdateCounts()" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "self.CellDivision()" << endl;
     ofs << endl;
 
     // simloop for receptivity
@@ -633,6 +683,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
     }
     ofs << endl;
+
+    ofs << in+ in+ "self.CellDivision()" << endl;
+    ofs << endl;
+
 
     ofs << in+ "def Run(self, Spatial=0):" << endl;
     ofs << in+ in+ "if Spatial:" << endl;
@@ -1052,11 +1106,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
             // Calculate Rate
             for (auto& substrate : SubstrateTypes) {
-                ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(";
+                ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "((";
 
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
                     ofs << AmountTextStr << substrate << "_" << i << ", ";
                 }
+                ofs << "), ";
 
                 // Regulators
                 if (Typing[substrate] != StandardReactionTypes[0]) {
@@ -1074,11 +1129,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                 ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                 // compare conc
-                ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
+                ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc(Rate_" << substrate << ", (";
                 for (int i = 0; i < N_MoleculesAllowed; i++) {
-                    ofs << ", " << AmountTextStr << substrate << "_" << i;
+                    ofs << AmountTextStr << substrate << "_" << i << ", ";
                 }
-                ofs << ")" << endl;
+                ofs << "))" << endl;
             }
 
             // Tally Rates
@@ -1143,11 +1198,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             // Calculate Rate
             if (Type.find("Enz_Standard") != std::string::npos) {
                 for (auto& substrate : SubstrateTypes) {
-                    ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "_" << N_MoleculesAllowed << "(Conc_Enz, ";
+                    ofs << in+ in+ "Rate_" << substrate << " = SimF.Eqn_" << Typing[substrate] << "(Conc_Enz, (";
 
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
                         ofs << "Conc_" << substrate << "_" << i << ", ";
                     }
+                    ofs << "), ";
 
                     // Regulators
                     if (Typing[substrate] != EnzReactionTypes[0]) {
@@ -1165,11 +1221,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
                     ofs << in+ in+ "Rate_" << substrate << " = self.ApplySimTimeResolution(Rate_" << substrate << ")" << endl;
 
                     // compare conc
-                    ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc_" << N_MoleculesAllowed << "(Rate_" << substrate;
+                    ofs << in+ in+ "Rate_" << substrate << " = SimF.CheckRateAndConc(Rate_" << substrate << ", (";
                     for (int i = 0; i < N_MoleculesAllowed; i++) {
-                        ofs << ", Conc_" << substrate << "_" << i;
+                        ofs << "Conc_" << substrate << "_" << i << ", ";
                     }
-                    ofs << ")" << endl;
+                    ofs << "))" << endl;
                 }
 
                 // Tally Rates
@@ -1383,6 +1439,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return self.GetDistribution(Idx)" << endl;
     ofs << endl;
 
+    ofs << in+ "def GetReplicationCompletionRate(self, Name):" << endl;
+    if (!DNAPs.empty()) {
+        ofs << in+ in+ "Idx = self.GetPosIdx(Name)" << endl;
+        ofs << in+ in+ "ReplicationCompletion = self.State.Len_NascentChromosomes / self.State.MaxLen_NascentChromosomes" << endl;
+        ofs << in+ in+ "ReplicationCompletion = np.where(ReplicationCompletion < 0, 0, ReplicationCompletion)" << endl;
+        ofs << in+ in+ "return ReplicationCompletion[Idx]" << endl;
+    } else {
+        ofs << in+ in+ "return 0" << endl;
+    }
+    ofs << endl;
+
     ofs << in+ "def Rescale(self, X, Y):" << endl;
     ofs << in+ in+ "return X / self.State.FoldReduction, Y / self.State.FoldReduction " << endl;
     ofs << endl;
@@ -1414,8 +1481,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "Count = self.GetCountByName" << endl;
     ofs << endl;
 
-
-    ofs << in+ "# Temporary routines" << endl;
+    ofs << in+ "# Central dogma routines" << endl;
+    ofs << endl;
 
     ofs << in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
     ofs << in+ in+ "Len_Over = np.where(Len_Elongated > Max, Len_Elongated - Max, 0)" << endl;
@@ -1423,20 +1490,55 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
-    ofs << in+ in+ "Raw = SimF.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies)" << endl;
+    ofs << in+ in+ "Raw = np.array(SimF.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies))" << endl;
     ofs << in+ in+ "Rounded = np.around(Raw)" << endl;
+    ofs << in+ in+ "return Rounded" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# Discrepancy handling" << endl;
-    ofs << in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies)" << endl;
-    ofs << in+ in+ "Discrepancy = np.sum(Rounded) - N_Elongated" << endl;
-
-    ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
-    ofs << in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
-    ofs << in+ in+ "return Rounded + np.ones(NUniq_BuildingBlocks) * np.int32(Sets) + np.concatenate((np.ones(np.int32(np.round(Remainder))), np.zeros(np.int32(np.around(NUniq_BuildingBlocks - Remainder)))))" << endl;
-    ofs << endl;
+    // TODO: Discrepancy handling needs to be reimplemented
+//    ofs << in+ in+ "# Discrepancy handling" << endl;
+//    ofs << in+ in+ "N_Elongated = np.sum(N_Elongated_PerSpecies, axis=1)" << endl;
+//    ofs << in+ in+ "Discrepancy = np.sum(Rounded, axis=1) - N_Elongated" << endl;
+//
+//    ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
+//    ofs << in+ in+ "Sets, Remainder = np.divmod(Discrepancy, NUniq_BuildingBlocks)" << endl;
+//    ofs << in+ in+ "Sets = np.array(np.asmatrix(Sets).transpose() * np.asmatrix(np.ones(NUniq_BuildingBlocks))).astype(int)" << endl;
+//    ofs << in+ in+ "Remainder = np.concatenate((np.ones(Remainder.astype(int)), np.zeros((NUniq_BuildingBlocks - Remainder).astype(int))))" << endl;
+//    ofs << in+ in+ "return Rounded + Sets + Remainder" << endl;
+//    ofs << endl;
 
     ofs << in+ "# Polymerase Reaction related" << endl;
+
+    ofs << in+ "def Replication_GetAvailablePolymerases(self, Len_Target, Idx_Pol, PolThreshold):" << endl;
+    ofs << in+ in+ "# Get available, active polymerase count - TO BE UPDATED with more regulatory algorithms" << endl;
+    ofs << in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
+    ofs << in+ in+ "Count_Pol_Active = np.floor_divide(Count_Pol, 2).astype(int)" << endl;
+    ofs << in+ in+ "Count_Pol_Occupied = np.where(Len_Target != -1, 1, 0) * PolThreshold" << endl;
+    ofs << in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
+    ofs << in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
+    ofs << in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)" << endl;
+    ofs << in+ in+ "return Count_Pol_Avail" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Replication_GetInitiationSites(self, Idx_Template, Len_Template):" << endl;
+    ofs << in+ in+ "# Get final initiation weight by applying initiation site count" << endl;
+    ofs << in+ in+ "Count_Template_Complete = self.GetCount(Idx_Template)" << endl;
+    ofs << in+ in+ "Count_Template_Nascent = np.where(Len_Template != -1, 1, 0)" << endl;
+    ofs << in+ in+ "Count_InitiationSite = Count_Template_Complete + Count_Template_Nascent" << endl;
+    ofs << in+ in+ "return Count_InitiationSite" << endl;
+    ofs << endl;
+
+    // TODO: Update with more mechanistic algorithm later
+    ofs << in+ "def Replication_Initiation(self, Len_Template, Len_Target, Idx_Pol, Idx_Template, Idx_TemplateSubset, Weight, PolThreshold):" << endl;
+    ofs << in+ in+ "Count_Pol_Avail = self.Replication_GetAvailablePolymerases(Len_Target, Idx_Pol, PolThreshold)" << endl;
+    ofs << in+ in+ "Count_InitiationSite = self.Replication_GetInitiationSites(Idx_Template, Len_Template)" << endl;
+
+    // Only compatible with a single nascent chromosomes
+    ofs << in+ in+ "Count_ToBind = np.where(np.logical_and(Count_Pol_Avail > 0, Count_InitiationSite > 0), np.minimum(Count_Pol_Avail, Count_InitiationSite), 0)" << endl;
+    ofs << in+ in+ "Len_Target_Initiated = Len_Target + Count_ToBind" << endl;
+    ofs << in+ in+ "return Len_Target_Initiated" << endl;
+    ofs << endl;
+
     ofs << in+ "def Initiation(self, Len_Template, Len_Target, Idx_Pol, Idx_Template, Idx_TemplateSubset, Weight, PolThreshold):" << endl;
     ofs << in+ in+ "# Get available, active polymerase count - TO BE UPDATED with more regulatory algorithms" << endl;
     ofs << in+ in+ "Count_Pol = self.GetCount(Idx_Pol)" << endl;
@@ -1444,7 +1546,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "Count_Pol_Occupied = np.count_nonzero(np.where(Len_Target != -1, 1, 0)) * PolThreshold" << endl;
     ofs << in+ in+ "Count_Pol_Avail = Count_Pol_Active - Count_Pol_Occupied" << endl;
     ofs << in+ in+ "Count_Pol_FunctionalUnit = np.floor_divide(Count_Pol_Avail, PolThreshold)" << endl;
-    ofs << in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)[0, 0]" << endl;
+    ofs << in+ in+ "Count_Pol_Avail = np.where(Count_Pol_FunctionalUnit > 0, Count_Pol_FunctionalUnit, 0)" << endl;
     ofs << endl;
 
     // TODO: Take Weight_Initiation part out of the function and get weight as direct input (due to complication in transcription)
@@ -1462,8 +1564,31 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "# Export Data" << endl;
     ofs << in+ in+ "# N_Initiated" << endl;
     ofs << endl;
-
     ofs << in+ in+ "return Len_Target_Initiated" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Replication_Elongation(self, Len, Max, Rate, Freq, Idx_PolSub, Idx_BB):" << endl;
+    ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
+    ofs << in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
+    ofs << endl;
+
+//    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
+    ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
+    ofs << in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, Len)" << endl;
+    ofs << in+ in+ "Len_Trimmed = self.OverElongationCorrection(Len_Elongated, Max)" << endl;
+    ofs << in+ in+ "N_Elongated = np.array(np.sum(Len_Trimmed - Len, axis=1), ndmin=2).transpose()" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated)" << endl;
+    ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
+    ofs << in+ in+ "self.AddTodCount(Idx_BB, -Consumed_BB)" << endl;
+    ofs << endl;
+
+    // TODO: Update this with matrix calculation form
+    ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
+    ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated)" << endl;
+    ofs << endl;
+    ofs << in+ in+ "return Len_Trimmed" << endl;
     ofs << endl;
 
     ofs << in+ "def Elongation(self, Len, Max, Rate, Weight, Freq, Idx_PolSub, Idx_BB):" << endl;
@@ -1514,10 +1639,115 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << in+ in+ "return Len_Completed" << endl;
     ofs << endl;
 
+    ofs << in+ "def Replication_Termination(self, Len, Max, Idx_Target, Idx_Pol, PolThreshold):   # Some polymerization process may not have max" << endl;
+    ofs << in+ in+ "Bool_Completed = (Len == Max)" << endl;
+    ofs << in+ in+ "N_Completed = np.array(np.sum(Bool_Completed, axis=1), ndmin=2).transpose()" << endl;
+    ofs << in+ in+ "Len_Completed = np.where(Bool_Completed, -1, Len)" << endl;
+
+    ofs << in+ in+ "self.AddTodCount(Idx_Target, N_Completed)" << endl;
+    ofs << in+ in+ "self.AddTodCount(np.array(Idx_Pol, ndmin=2), N_Completed * PolThreshold)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Export Data" << endl;
+    ofs << in+ in+ "# N_Completed" << endl;
+
+    ofs << in+ in+ "return Len_Completed" << endl;
+    ofs << endl;
+
     ofs << in+ "def EvaluateChemotaxisThreshold(self):" << endl;
     ofs << in+ in+ "ThresholdedMolecules = self.GetCount(self.State.Idx_Count_Threshold).transpose()" << endl;
     ofs << in+ in+ "return np.array(ThresholdedMolecules) < self.State.Pos_Threshold" << endl;
     ofs << endl;
+
+    ofs << in+ "def CellDivision(self):" << endl;
+    if (!Context.GetSubList_MoleculeList("Chromosome").empty()) {
+        ofs << in+ in+ "bDividingCells = np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2, 1, 0), axis=1)" << endl;
+//        ofs << in+ in+ "bDividingCells[0] = 1" << endl;
+        ofs << in+ in+ "Idx_DividingCells = np.where(bDividingCells > 0)" << endl;
+        // One liner:
+        //        ofs << in+ in+ "Idx_DividingCells = np.where(np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2), axis=1) > 0)" << endl;
+        ofs << endl;
+
+        if (Option.bDebug) {
+            ofs << in+ in+ "#Debugging" << endl;
+            ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl;
+
+            ofs << in+ in+ "self.Debug_PrintSimStepTime(end='\\n')" << endl;
+            ofs << in+ in+ "print('Chromosomes:     ', self.GetCount(self.State.Idx_Template_Replication).transpose())" << endl;
+            ofs << in+ in+ "print('Dividing T/F:    ', bDividingCells.transpose())" << endl;
+            ofs << in+ in+ "print('PolCounts:       ', self.GetCount(self.State.Idx_Pol_Replication).transpose())" << endl;
+            ofs << in+ in+ "print('ReplicationRate: ', self.GetReplicationCompletionRate('E').transpose())" << endl;
+            if (!Context.ThresholdList.empty()) {
+                ofs << in+ in+ "print('Pos_Threshold:   ', self.State.Pos_Threshold)" << endl;
+            }
+            ofs << endl;
+        }
+
+
+        ofs << in+ in+ "DividingCell_Count_All = self.State.Count_All[Idx_DividingCells]" << endl;
+        ofs << in+ in+ "Distributed_Count_All = DividingCell_Count_All / 2" << endl;
+        ofs << in+ in+ "self.State.Count_All = np.vstack([self.State.Count_All, Distributed_Count_All])" << endl;
+        ofs << in+ in+ "self.State.Count_All[Idx_DividingCells] = Distributed_Count_All" << endl;
+        ofs << endl;
+        ofs << in+ in+ "DividingCell_dCount_All = self.State.dCount_All[Idx_DividingCells]" << endl;
+        ofs << in+ in+ "Distributed_dCount_All = DividingCell_dCount_All / 2" << endl;
+        ofs << in+ in+ "self.State.dCount_All = np.vstack([self.State.dCount_All, Distributed_dCount_All])" << endl;
+        ofs << in+ in+ "self.State.dCount_All[Idx_DividingCells] = Distributed_dCount_All" << endl;
+        ofs << endl;
+        // TODO: to be updated for concurrent replication mode
+        ofs << in+ in+ "DividingCell_Len_NascentChromosomes = self.State.Len_NascentChromosomes[Idx_DividingCells]" << endl;
+        ofs << in+ in+ "self.State.Len_NascentChromosomes = np.vstack([self.State.Len_NascentChromosomes, DividingCell_Len_NascentChromosomes])" << endl;
+        ofs << endl;
+        if (!ObjLoc.empty()) {
+            ofs << in+ in+ "BodyLength = 20" << endl;
+            ofs << in+ in+ "dX =  np.cos(self.State.Pos_Angle) * -BodyLength" << endl;
+            ofs << in+ in+ "dY = -np.sin(self.State.Pos_Angle) * -BodyLength" << endl;
+            
+            ofs << in+ in+ "Pos_X = self.State.Pos_X[Idx_DividingCells]" << endl;
+//            ofs << in+ in+ "MotherCell_Pos_X = Pos_X - dX[Idx_DividingCells] /2" << endl;
+//            ofs << in+ in+ "DaughterCell_Pos_X = Pos_X + dX[Idx_DividingCells] /2" << endl;
+            ofs << in+ in+ "DaughterCell_Pos_X = Pos_X + dX[Idx_DividingCells] * 1.2" << endl;
+//            ofs << in+ in+ "self.State.Pos_X[Idx_DividingCells] = MotherCell_Pos_X" << endl;
+            ofs << in+ in+ "self.State.Pos_X = np.concatenate([self.State.Pos_X, DaughterCell_Pos_X])" << endl;
+            ofs << endl;
+            ofs << in+ in+ "Pos_Y = self.State.Pos_Y[Idx_DividingCells]" << endl;
+//            ofs << in+ in+ "MotherCell_Pos_Y = Pos_Y - dY[Idx_DividingCells] /2" << endl;
+//            ofs << in+ in+ "DaughterCell_Pos_Y = Pos_Y + dY[Idx_DividingCells] /2" << endl;
+            ofs << in+ in+ "DaughterCell_Pos_Y = Pos_Y + dY[Idx_DividingCells] * 1.2" << endl;
+//            ofs << in+ in+ "self.State.Pos_Y[Idx_DividingCells] = MotherCell_Pos_Y" << endl;
+            ofs << in+ in+ "self.State.Pos_Y = np.concatenate([self.State.Pos_Y, DaughterCell_Pos_Y])" << endl;
+            ofs << endl;
+            ofs << in+ in+ "Pos_Angle = self.State.Pos_Angle[Idx_DividingCells]" << endl;
+            ofs << in+ in+ "self.State.Pos_Angle = np.concatenate([self.State.Pos_Angle, Pos_Angle])" << endl;
+//            ofs << in+ in+ "MotherCell_Pos_Angle = Pos_Angle - dX" << endl;
+//            ofs << in+ in+ "DaughterCell_Pos_Angle = Pos_Angle + dX" << endl;
+//            ofs << in+ in+ "self.State.Pos_Angle[Idx_DividingCells] = MotherCell_Pos_Angle" << endl;
+//            ofs << in+ in+ "self.State.Pos_Angle = np.concatenate([self.State.Pos_Angle, DaughterCell_Pos_Angle])" << endl;
+            ofs << endl;
+            ofs << in+ in+ "self.State.Pos_Name2Idx['E'] = np.array(range(self.State.Pos_X.shape[0]))" << endl;
+            ofs << endl;
+//            ofs << in+ in+ "DividingCell_Pos_X = self.State.Pos_X[Idx_DividingCells]" << endl;
+//            ofs << in+ in+ "self.State.Pos_X = np.vstack([self.State.Pos_X, DividingCell_Pos_X])" << endl;
+
+        }
+        if (!Context.ThresholdList.empty()) {
+            ofs << in+ in+ "DividingCell_Pos_Threshold = self.State.Pos_Threshold[:, Idx_DividingCells][0]" << endl;
+            ofs << in+ in+ "self.State.Pos_Threshold = np.concatenate([self.State.Pos_Threshold, DividingCell_Pos_Threshold], axis=1)" << endl;
+            ofs << endl;
+        }
+        
+
+//        self.Pos_Names = ['E', ]
+//        self.Idx_Pos_E = np.array([0, 1, ])
+//        self.Pos_Name2Idx['E'] = self.Idx_Pos_E
+
+
+
+//        ofs << in+ in+ "DividingCell_Pos = self.State.Pos"
+    } else {
+        ofs << in+ in+ "pass" << endl;
+    } ofs << endl;
+
 
     ofs << in+ "# Debugging tools" << endl;
     ofs << in+ "def Debug_PrintNames(self, IdxArray):" << endl;
@@ -1609,7 +1839,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ in+ "Debug_Names_Distributions = self.State.GetDistNames()" << endl;
         ofs << in+ in+ "for Name in Debug_Names_Distributions:" << endl;
         ofs << in+ in+ in+ "self.Debug_Idx_Dist.append(self.State.GetDistNames().index(Name))" << endl;
-    } else { ofs << in+ in+ "pass" << endl; }
+    } else { ofs << in+ in+ "self.Debug_Idx_Pos = [0]" << endl; }
     ofs << endl;
 
     ofs << in+ "def Debug_PrintDistributions(self):" << endl;

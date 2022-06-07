@@ -146,6 +146,11 @@ std::pair<std::string, std::string> ParseUnit(std::string InUnit)
     return Unit_Parsed;
 }
 
+float Conversion_bp2nm(int bp)
+{
+    return (bp / 10) * 3.4;
+}
+
 float Count2Mol(float InCount)
 {
     return InCount / NA;

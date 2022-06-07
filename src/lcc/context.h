@@ -396,6 +396,7 @@ public:
     FGeneticMaterial(std::string InName, std::string InSequence, std::vector<std::string> InBuildingBlocks)
         : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) {
 
+        Size = InSequence.size();
         for (auto& buildingblock : InBuildingBlocks) {
             auto Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
             int Count = std::count(Sequence.begin(), Sequence.end(), Char);
@@ -972,6 +973,9 @@ public:
     void MakePathwayLists();
                 void MakeListsFromMotilityList();
 
+    bool CheckForEcoli();
+    void DefaultSetUp_Ecoli();
+
     // Tables
     std::string QueryTable(std::string Name, std::string Property, FTable Table);
 
@@ -1043,6 +1047,7 @@ public:
     // ContainerList
     std::vector<FContainer *> GetSubList_ContainerList(std::string Type);
     std::vector<std::string> GetNames_ContainerList(std::string Type);
+    int GetCounts_ContainerList(std::string Type);
 
     // ReactionList
     std::vector<std::string> GetNames_ReactionList(std::string Type);

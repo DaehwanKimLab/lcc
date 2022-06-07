@@ -1,4 +1,6 @@
 import numpy as np
+import os, sys
+
 
 NA = 6.0221409e+23
 pi = np.pi
@@ -10,109 +12,86 @@ def ConcToCount(Conc_Molecule, Volume):
 def CountToConc(Count_Molecule, Volume):
     return (Count_Molecule / NA) / Volume
 
-### if N_MOLECULEALLOWED = 1 ###########################################################################################
-def CheckRateAndConc_1(Rate, Conc_1):
-    return np.min((Rate, Conc_1), axis=0)
+def GetProductOfAllElementsInTuple(TupleOf2DArrays, axis=0):
+    """
+    Gives a product of all molecular concentrations involved in the reaction.
+    """
+    return np.prod(np.array(TupleOf2DArrays), axis=axis)
+
+def GetMinOfAllElementsInTuple(TupleOf2DArrays, axis=0):
+    """
+    Gives a minimum of all molecular concentrations involved in the reaction.
+    """
+    return np.min(np.array(TupleOf2DArrays), axis=axis)
+
+def CheckRateAndConc(Rate, Conc):
+    Conc = GetMinOfAllElementsInTuple(Conc)
+    return np.min((Rate, Conc), axis=0)
+
+### Reaction Equations Start Here ######################################################################################
+
+# TODO: Take coefficients to account for additional reaction order
 
 # Standard reactions
-def Eqn_Standard_Unregulated_1(Conc_1, k):
-    return k * Conc_1  
+def Eqn_Standard_Unregulated(Conc, k):
+    """
+    Gives a rate for one direction in standard reactions without allostery.
 
-def Eqn_Standard_Inhibition_Allosteric_1(Conc_1, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1  
+    Parameters
+    ----------
+    Conc : tuple of 2-dimensional numpy array
+        Concentrations of molecules to be multiplied in each container.
+        The size of tuple depends on the maximum number of reactants and
+        products in the system.
+        unit: molecules / L or mol / L (equivalent to M)
+    k : numpy array
+        kinetic constants of the reaction.
+        unit: Reaction order-dependent numerator unit / s
 
-def Eqn_Standard_Activation_Allosteric_1(Conc_1, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1  
+    Returns
+    -------
+    rate : 2-dimensional numpy array
+        Rates of one direction in standard reactions.
+        unit: molecules / s or mol / s
+    """
+    Conc = GetProductOfAllElementsInTuple(Conc)
+    return k * Conc
 
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_1(Conc_Enzyme, Conc_1, k):
-    return Conc_Enzyme * k * Conc_1  
-    # return Conc_Enzyme * k (for saturation)
+def Eqn_Standard_Inhibition_Allosteric(Conc, Conc_Inhibitor, k, Ki, n):
+    """
+    Gives a rate for one direction in standard reactions with allosteric inhibition.
 
-def Eqn_Enz_Standard_Inhibition_Allosteric_1(Conc_Enzyme, Conc_1, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1  
+    See Also
+    --------
+    Eqn_Standard_Unregulated
+    """
+    Conc = GetProductOfAllElementsInTuple(Conc)
+    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc
 
-def Eqn_Enz_Standard_Activation_Allosteric_1(Conc_Enzyme, Conc_1, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1  
-########################################################################################################################
+def Eqn_Standard_Activation_Allosteric(Conc, Conc_Activator, k, Ka, n):
+    """
+    Gives a rate for one direction in standard reactions with allosteric activation.
 
-### if N_MOLECULEALLOWED = 2 ###########################################################################################
-def CheckRateAndConc_2(Rate, Conc_1, Conc_2):
-    return np.min((Rate, Conc_1, Conc_2), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_2(Conc_1, Conc_2, k):
-    return k * Conc_1 * Conc_2 
-
-def Eqn_Standard_Inhibition_Allosteric_2(Conc_1, Conc_2, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 
-
-def Eqn_Standard_Activation_Allosteric_2(Conc_1, Conc_2, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_2(Conc_Enzyme, Conc_1, Conc_2, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_2(Conc_Enzyme, Conc_1, Conc_2, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 
-
-def Eqn_Enz_Standard_Activation_Allosteric_2(Conc_Enzyme, Conc_1, Conc_2, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 
-########################################################################################################################
-
-### if N_MOLECULEALLOWED = 3 ###########################################################################################
-def CheckRateAndConc_3(Rate, Conc_1, Conc_2, Conc_3):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_3(Conc_1, Conc_2, Conc_3, k):
-    return k * Conc_1 * Conc_2 * Conc_3
-
-def Eqn_Standard_Inhibition_Allosteric_3(Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
-
-def Eqn_Standard_Activation_Allosteric_3(Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
+    See Also
+    --------
+    Eqn_Standard_Unregulated
+    """
+    Conc = GetProductOfAllElementsInTuple(Conc)
+    return k * (1 + (Conc_Activator / Ka) ** n) * Conc
 
 # Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3
+def Eqn_Enz_Standard_Unregulated(Conc_Enzyme, Conc, k):
+    Conc = GetProductOfAllElementsInTuple(Conc)
+    return Conc_Enzyme * k * Conc
     # return Conc_Enzyme * k (for saturation)
 
-def Eqn_Enz_Standard_Inhibition_Allosteric_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3
+def Eqn_Enz_Standard_Inhibition_Allosteric(Conc_Enzyme, Conc, Conc_Inhibitor, k, Ki, n):
+    Conc = GetProductOfAllElementsInTuple(Conc)
+    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc
 
-def Eqn_Enz_Standard_Activation_Allosteric_3(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3
-########################################################################################################################
-
-### if N_MOLECULEALLOWED = 4 ###########################################################################################
-def CheckRateAndConc_4(Rate, Conc_1, Conc_2, Conc_3, Conc_4):
-    return np.min((Rate, Conc_1, Conc_2, Conc_3, Conc_4), axis=0)
-
-# Standard reactions
-def Eqn_Standard_Unregulated_4(Conc_1, Conc_2, Conc_3, Conc_4, k):
-    return k * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-def Eqn_Standard_Inhibition_Allosteric_4(Conc_1, Conc_2, Conc_3, Conc_4, Conc_Inhibitor, k, Ki, n):
-    return k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-def Eqn_Standard_Activation_Allosteric_4(Conc_1, Conc_2, Conc_3, Conc_4, Conc_Activator, k, Ka, n):
-    return k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-# Enzymatic, standard reactions
-def Eqn_Enz_Standard_Unregulated_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, k):
-    return Conc_Enzyme * k * Conc_1 * Conc_2 * Conc_3 * Conc_4
-    # return Conc_Enzyme * k (for saturation)
-
-def Eqn_Enz_Standard_Inhibition_Allosteric_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_Inhibitor, k, Ki, n):
-    return Conc_Enzyme * k / (1 + (Conc_Inhibitor / Ki) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-
-def Eqn_Enz_Standard_Activation_Allosteric_4(Conc_Enzyme, Conc_1, Conc_2, Conc_3, Conc_4, Conc_Activator, k, Ka, n):
-    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc_1 * Conc_2 * Conc_3 * Conc_4
-########################################################################################################################
+def Eqn_Enz_Standard_Activation_Allosteric(Conc_Enzyme, Conc, Conc_Activator, k, Ka, n):
+    Conc = GetProductOfAllElementsInTuple(Conc)
+    return Conc_Enzyme * k * (1 + (Conc_Activator / Ka) ** n) * Conc
 
 # Enzymatic, Michaelis Menten reactions
 def Eqn_Enz_MichaelisMenten_Unregulated(Conc_Enzyme, Conc_Substrate, kcat, KM):
@@ -127,6 +106,8 @@ def Eqn_Enz_MichaelisMenten_Inhibition_Allosteric(Conc_Enzyme, Conc_Substrate, C
 def Eqn_Enz_MichaelisMenten_Activation_Allosteric(Conc_Enzyme, Conc_Substrate, Conc_Activator, kcat, KM, Ka, n):
     return (kcat * Conc_Enzyme * (1 + (Conc_Activator / Ka) ** n)) * (Conc_Substrate / (KM + Conc_Substrate))
 
+### Reaction Equations End Here ########################################################################################
+
 
 def MatrixMultiplication_Rev(Freq, Rate):
     return np.matmul(Rate, Freq)
@@ -139,14 +120,14 @@ def DetermineAmountOfBuildingBlocks(Freq, Rate):
 
 def PickRandomIdx(Quantity, Indices, Weight=1):
     # Adjust Quantity and Weight if Weight is completely zero
-    Sum_Weight = np.sum(Weight)
+    Sum_Weight = np.sum(Weight, axis=0)
     Weight = Weight + np.where(Sum_Weight == 0, 1, 0)
     Quantity = Quantity * np.where(Sum_Weight == 0, 0, 1)
 
     # Generate cumulative sum on weight and pick a random number in its range
-    Weight_Cumsum = np.cumsum(Weight)
-    Weight_Cumsum_Min = Weight_Cumsum[0]
-    Weight_Cumsum_Max = Weight_Cumsum[-1]
+    Weight_Cumsum = np.cumsum(Weight, axis=1)
+    Weight_Cumsum_Min = Weight_Cumsum[:, 0]
+    Weight_Cumsum_Max = Weight_Cumsum[:, -1]
     Weight_Cumsum_Min = np.where(Weight_Cumsum_Min == Weight_Cumsum_Max, Weight_Cumsum_Min - 1, Weight_Cumsum_Min)
     RanNums = np.asmatrix(np.random.randint(Weight_Cumsum_Min, high=Weight_Cumsum_Max, size=Quantity)).transpose()
     # Generate a matrix of the random numbers for comparison to indices
@@ -158,7 +139,7 @@ def PickRandomIdx(Quantity, Indices, Weight=1):
 def InsertZeroIntoNegOneElementInLenMatrix(Len, Indices):
     # Generate an array of counts for each index
     Count_Indices = np.zeros(Len.shape[1])
-    np.put_along_axis(Count_Indices, Indices, 1, axis=0)
+    np.put_along_axis(np.reshape(Count_Indices.astype(int), [Count_Indices.shape[0], -1]), Indices, 1, axis=0)
     # Generate a cumulative sum matrix of available position in the Len Matrix
     Bool_LenAvailable = np.less(Len, 0)  # used again later
     Bin_LenAvailable = Bool_LenAvailable.astype(int)
@@ -397,3 +378,93 @@ def Eqn_Diffusion_Spatial_FAST(Distribution, D, DegreeOfDiffusion=20):
 def RestoreNoise(Distribution, Noise=0): # D must be less than 1/6
     Distribution_Corrected = np.where(Distribution < Noise, Noise, Distribution)
     return Distribution_Corrected
+
+'''
+For initializing Genome location in a 3D cell container
+'''
+
+def GetDistanceBTWTwoPoints(P1, P2):
+    return np.sqrt(np.sum((P1 - P2) ** 2, axis=1))
+
+# def GetVolume(Dimension)
+
+def TrimToShape(Nodes, Dim, Shape):
+    if Shape == 'cuboid':
+        return Nodes
+    elif Shape == 'ellipsoid':
+        # ellipsoid equation: x**2/a**2 + y**2/b**2 + z**2/c**2 = 1, where a, b, c are the principal semiaxes.
+        Semiaxes = np.array([Dim[0], Dim[1], Dim[2]]) / 2
+        IdxToRetain = np.where(np.sum(((Nodes - Semiaxes) ** 2) / (Semiaxes ** 2), axis=1) < 1)
+        return Nodes[IdxToRetain]
+    elif Shape == 'cylinder':
+        # 2 π r^2 are the principal semiaxes.
+        Radius = Dim[0] / 2
+        Ref_XZ = np.array([Radius, Radius])   # may just use broadcasting
+        DistancesFromRef = GetDistanceBTWTwoPoints(Ref_XZ, np.stack([Nodes[:, 0], Nodes[:, 2]], axis=1))
+        IdxToRetain = np.where(DistancesFromRef < Radius)
+        return Nodes[IdxToRetain]
+    else:
+        print('Unrecognizable Shape for Trimming: ', Shape)
+        print('Available Trimming Shapes: cuboid, ellipsoid, cylinder')
+        sys.exit(0)
+
+def GetNodesAndDistances(Dim, Len, shape='cuboid', n_nodes=None):
+    assert (isinstance(n_nodes, int)) & (
+                n_nodes > 1), 'ERROR: N_Nodes (Input: %s) must be an integer greater than 1.' % n_nodes
+
+    XYZ = np.array([Dim])
+
+    # Generate sets of three random numbers
+    Nodes_Original = np.random.rand(n_nodes, 3) * XYZ
+    Nodes_Trimmed = TrimToShape(Nodes_Original, Dim, shape)
+
+    # Arrange Nodes by finding the nearest neighbor
+    Node_Reference = Nodes_Trimmed[0]
+    Nodes_Modified = Nodes_Trimmed[1:]  # Nodes excluding the reference node
+    Nodes_Arranged = np.zeros_like(Nodes_Trimmed)
+    Nodes_Arranged[0] = Node_Reference
+
+    # TODO: Decouple Distance generation in the algorithm
+    Distances = np.zeros(Nodes_Trimmed.shape[0])
+
+    # print('Prev', Nodes_Modified)
+    # print('Node:', Node_Reference)
+
+    for i in range(Nodes_Modified.shape[0]):
+        Distance = GetDistanceBTWTwoPoints(Node_Reference, Nodes_Modified)
+        Idx_NearestNeighbor = Distance.argmin()
+        Distances[i] = Distance[Idx_NearestNeighbor]
+        Node_Reference = Nodes_Modified[Idx_NearestNeighbor]
+        Nodes_Arranged[i + 1] = Node_Reference
+        Nodes_Modified = np.delete(Nodes_Modified, Idx_NearestNeighbor, axis=0)
+        # print(i)
+        # print('Node    :', Node_Reference)
+        # print('Rest    :', Nodes_Modified)
+        # print('Arranged:', Nodes_Arranged)
+
+    return Nodes_Arranged, Distances
+
+def GetXYZForGenomePositionsInBP(Positions_bp, Nodes, Distances):
+    Positions_nm = (Positions_bp / 10) * 3.4   # unit conversion from bp to nm
+    NodePositionOnGenome = np.reshape(np.cumsum(np.roll(Distances, shift=1)), [1, -1])
+
+    # For Debugging
+    # Positions_nm = Positions_nm[0:4]
+    NodePositionOnGenome *= 10   # for debugging
+
+    Positions_Bin = Positions_nm < NodePositionOnGenome
+    Positions_Bin_Cumsum = np.cumsum(Positions_Bin, axis=1)
+    Positions_Idx = np.where(Positions_Bin_Cumsum == 1)[1]
+
+    Point_1 = NodePositionOnGenome[:, Positions_Idx - 1]
+    Point_2 = NodePositionOnGenome[:, Positions_Idx ]
+
+    PercentLengthOfGeneStartBetweenPoints = ((Positions_nm.transpose() - Point_1) / (Point_2 - Point_1)).transpose()
+
+    XYZ_1 = Nodes[Positions_Idx - 1]
+    XYZ_2 = Nodes[Positions_Idx]
+
+    Positions_XYZ = XYZ_1 + ((XYZ_2 - XYZ_1) * PercentLengthOfGeneStartBetweenPoints)
+    assert np.count_nonzero(Positions_XYZ < 0) == 0, 'ERROR: XYZ coordinates cannot be less than zero'
+
+    return Positions_XYZ
