@@ -541,6 +541,7 @@ void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Pro
     ofs << in+ in+ "self.Pos_Pol_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Pos_Pol_End_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Dir_Pol_" << Process << " = None" << endl;
+    //ofs << in+ in+ "self.Freq_BB_Pol_" << Process << " = None" << endl;
     ofs << endl;
 
     // Elongation
@@ -792,6 +793,7 @@ void FWriter::SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecul
         ofs << in+ in+ "self.Pos_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl;
         ofs << in+ in+ "self.Pos_Pol_End_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl;
         ofs << in+ in+ "self.Dir_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], 0)" << endl;
+        //ofs << in+ in+ "self.Freq_BB_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], 0)" << endl;
         ofs << endl;
     }
 
@@ -902,13 +904,16 @@ void FWriter::Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMol
 {
     FPolymerase* Pol = dynamic_cast<FPolymerase*>(Polymerases[0]);
 
-    std::string Pos_Pol, Pos_Pol_End, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    std::string Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
     Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
     Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
     Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
+    //Freq_BB_Pol =               "self.State.Freq_BB_Pol_"       + Pol->TargetClass;
+    
     Pos_Start_Template =        "self.State.Pos_Start_"         + Pol->TemplateClass;
     Pos_End_Template =          "self.State.Pos_End_"           + Pol->TemplateClass;
     Dir_Template =              "self.State.Dir_"               + Pol->TemplateClass;
+    
     Count_Nascent_Template =    "self.State.Count_Nascent_"     + Pol->TemplateClass;
     Count_Nascent_Target =      "self.State.Count_Nascent_"     + Pol->TargetClass;
     Rate =                      "self.State.Rate_"              + Pol->Process;
@@ -923,7 +928,8 @@ void FWriter::Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMol
 
     std::vector<std::string> Output = { Pos_Pol };
     std::string Function = "self." + Pol->Process + "_Elongation";
-    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Count_Nascent_Target, Freq_BB, Idx_PolSub, Idx_PolBB };
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
+    //std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
 
     std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
     OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space

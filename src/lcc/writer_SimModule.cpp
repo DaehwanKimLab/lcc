@@ -1639,6 +1639,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
         // TODO: Update with more mechanistic algorithm later
         ofs << in+ "def Transcription_Initiation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Pos_Template_Start, Pos_Template_End, Dir_Template, Count_NascentTemplate, Count_NascentTarget, Idx_Pol, Idx_Template, Weight, PolThreshold):" << endl;
+        //ofs << in+ "def Transcription_Initiation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Pos_Template_Start, Pos_Template_End, Dir_Template, Count_NascentTemplate, Count_NascentTarget, Idx_Pol, Idx_Template, Weight, PolThreshold):" << endl;
         ofs << in+ in+ "# Get Available Polymerase complex count" << endl;
         ofs << in+ in+ "Count_Pol_Avail = self.Transcription_GetAvailablePolymerases(Count_NascentTarget, Idx_Pol, PolThreshold)" << endl;
         ofs << endl;
@@ -1675,31 +1676,39 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "Dir_Template_Initiated = Dir_Template[Idx_NewBinding]" << endl;
         ofs << in+ in+ "Dir_Pol_Initiated = SimF.ReplaceValueInArrayAtIdx(Dir_Pol, Idx_Empty, Dir_Template_Initiated) " << endl;
         ofs << endl;
+        //ofs << in+ in+ "Freq_BB_Template_Initiated = Freq_BB_Template[Idx_NewBinding]" << endl;
+        //ofs << in+ in+ "Freq_BB_Pol_Initiated = SimF.ReplaceValueInArrayAtIdx(Freq_BB_Pol, Idx_Empty, Freq_BB_Template_Initiated) " << endl;
+        //ofs << endl;
+        //ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Dir_Pol_Initiated, Freq_BB_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Dir_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << endl;
         
-        ofs << in+ "def Transcription_Elongation(self, Pos_Pol, Pos_Pol_End, Count_Nascent_Target, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
-        ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
-        ofs << in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
+        ofs << in+ "def Transcription_Elongation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
+        ofs << in+ in+ "NUniq_BuildingBlocks = Freq_BB.shape[1]" << endl;
+        ofs << in+ in+ "NUniq_Species = Freq_BB.shape[0]" << endl;
         ofs << endl;
 
         //    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrection(Pos_Pol_Elongated, Pos_Pol_End)" << endl;
-        ofs << in+ in+ "N_Elongated = np.array(np.sum(Pos_Pol_Trimmed - Len, axis=1), ndmin=2).transpose()" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated)" << endl;
+        ofs << in+ in+ "N_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol * Dir_Pol" << endl;
+        ofs << in+ in+ "N_Elongated_Total = np.array(np.sum(Pos_Pol_Trimmed - Pos_Pol, axis=1), ndmin=2).transpose()" << endl;
+        ofs << endl;
+
+        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, Count_Nascent_Target)" << endl;
+        //ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_Elongated_PerPol)" << endl;
         ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
-        ofs << in+ in+ "self.AddTodCount(Idx_BB, -Consumed_BB)" << endl;
+        ofs << in+ in+ "self.AddTodCount(Idx_PolBB, -Consumed_BB)" << endl;
         ofs << endl;
 
         // TODO: Update this with matrix calculation form
         ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
-        ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated)" << endl;
+        ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated_Total)" << endl;
         ofs << endl;
-        ofs << in+ in+ "return Len_Trimmed" << endl;
+        ofs << in+ in+ "return Pos_Pol_Trimmed" << endl;
         ofs << endl;
         
         ofs << in+ "def Transcription_Termination(self, Len, Max, Idx_Target, Idx_Pol, PolThreshold):   # Some polymerization process may not have max" << endl;
