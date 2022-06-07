@@ -1638,7 +1638,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << endl;
 
         // TODO: Update with more mechanistic algorithm later
-        ofs << in+ "def Transcription_Initiation(self, Pos_Pol, Pos_Pol_End, Pos_Template_Start, Pos_Template_End, Count_NascentTemplate, Count_NascentTarget, Idx_Pol, Idx_Template, Weight, PolThreshold):" << endl;
+        ofs << in+ "def Transcription_Initiation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Pos_Template_Start, Pos_Template_End, Dir_Template, Count_NascentTemplate, Count_NascentTarget, Idx_Pol, Idx_Template, Weight, PolThreshold):" << endl;
         ofs << in+ in+ "# Get Available Polymerase complex count" << endl;
         ofs << in+ in+ "Count_Pol_Avail = self.Transcription_GetAvailablePolymerases(Count_NascentTarget, Idx_Pol, PolThreshold)" << endl;
         ofs << endl;
@@ -1672,19 +1672,22 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "Pos_Template_End_Initiated = Pos_Template_End[Idx_NewBinding]" << endl;
         ofs << in+ in+ "Pos_Pol_End_Initiated = SimF.ReplaceValueInArrayAtIdx(Pos_Pol_End, Idx_Empty, Pos_Template_End_Initiated) " << endl;
         ofs << endl;
-        ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Count_NascentTarget_Initiated" << endl;
+        ofs << in+ in+ "Dir_Template_Initiated = Dir_Template[Idx_NewBinding]" << endl;
+        ofs << in+ in+ "Dir_Pol_Initiated = SimF.ReplaceValueInArrayAtIdx(Dir_Pol, Idx_Empty, Dir_Template_Initiated) " << endl;
+        ofs << endl;
+        ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Dir_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << endl;
         
-        ofs << in+ "def Transcription_Elongation(self, Len, Max, Rate, Freq, Idx_PolSub, Idx_BB):" << endl;
+        ofs << in+ "def Transcription_Elongation(self, Pos_Pol, Pos_Pol_End, Count_Nascent_Target, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
         ofs << in+ in+ "NUniq_BuildingBlocks = Freq.shape[1]" << endl;
         ofs << in+ in+ "NUniq_Species = Freq.shape[0]" << endl;
         ofs << endl;
 
         //    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
-        ofs << in+ in+ "Len_Elongated = np.where(Len >= 0, Len + dLength, Len)" << endl;
-        ofs << in+ in+ "Len_Trimmed = self.OverElongationCorrection(Len_Elongated, Max)" << endl;
-        ofs << in+ in+ "N_Elongated = np.array(np.sum(Len_Trimmed - Len, axis=1), ndmin=2).transpose()" << endl;
+        ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength, Pos_Pol)" << endl;
+        ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrection(Pos_Pol_Elongated, Pos_Pol_End)" << endl;
+        ofs << in+ in+ "N_Elongated = np.array(np.sum(Pos_Pol_Trimmed - Len, axis=1), ndmin=2).transpose()" << endl;
         ofs << endl;
 
         ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq, N_Elongated)" << endl;
