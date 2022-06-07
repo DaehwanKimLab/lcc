@@ -465,7 +465,7 @@ def Plot3D(Nodes, dim=None, distance=None, volume=None, shape='cuboid'):
     Z = Nodes[:, 2]
     ax.plot3D(X, Y, Z, 'red')
 
-    if dim:
+    if np.any(dim):
         ax.set_box_aspect(dim)
     #
     # ax.set_xlim3d(0, X.shape[0])
@@ -478,7 +478,7 @@ def Plot3D(Nodes, dim=None, distance=None, volume=None, shape='cuboid'):
 
     VolTxt = ''
 
-    if dim:
+    if np.any(dim):
         VolTxt = 'Volume: '
         Vol = 0
         if shape == 'cuboid':

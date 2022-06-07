@@ -1101,21 +1101,7 @@ void TraversalNode(NBlock* InProgramBlock)
                                         auto ExpStmt = dynamic_cast<NExpressionStatement *>(stmt.get());
 
                                         TraversalNode_Core(ExpStmt->Expression.get());
-//
-//                                        if (Utils::is_class_of<NAExpression, NNode>(ExpStmt->Expression.get())) {
-//                                            auto& AExpression = dynamic_cast<NAExpression *>(ExpStmt->Expression.get());
-//
-//                                            if (Option.bDebug) {
-//                                                AExpression->Print(os);
-//                                                os << endl;
-//                                            }
-//
-//                                            if (AExpression->Oper == T_ASSIGN) {
-//                                                ParseCountLocation_AExpression(AExpression);
-//                                            } // end of AExpression
-//                                        }
-//                                    } else {
-//                                        TraversalNode_Core(stmt.get());
+
                                     } else {
                                         TraversalNode_Core(stmt.get());
                                     }
@@ -1131,71 +1117,13 @@ void TraversalNode(NBlock* InProgramBlock)
                             if (Organism->Description == "E. coli K-12 MG1655") {
                                 std::string Strain = "K-12 MG1655";
 
-                                int i;
-                                int i_cap = 5000;
-//
-//                                i = 0;
-//                                os << ">> Genes being imported... : ";
-//                                for (auto& record: Context.GeneTable.Records) {
-//                                    // os << record["symbol"] << ", ";
-//                                    FGene *NewGene = new FGene(record["id"], record["symbol"]);
-//                                    //                        if (Option.bDebug) { NewGene->Print(os); }
-//                                    Context.AddToMoleculeList(NewGene);
-//
-//                                    i++;
-//                                    // temporary capping
-//                                    if (i == i_cap) {
-//                                        os << "Gene importing is capped at " << std::to_string(i_cap) << endl;
-//                                        break;
-//                                    }
-//                                }
-//                                os << "done" << endl;
-//                                // os << endl;
-//
-//                                i = 0;
-//                                os << ">> RNAs being imported... : ";
-//                                for (auto& record: Context.RNATable.Records) {
-//                                    // os << record["id"] << ", ";
-////                                    FRNA *NewRNA = new FRNA(record["id"], record["type"]);
-//                                    FRNA *NewRNA = new FRNA(record["id"]);
-//                                    //                        if (Option.bDebug) { NewRNA->Print(os); }
-//                                    Context.AddToMoleculeList(NewRNA);
-//
-//                                    i++;
-//                                    // temporary capping
-//                                    if (i == i_cap) {
-//                                        os << "RNA importing is capped at " << std::to_string(i_cap) << endl;
-//                                        break;
-//                                    }
-//                                }
-//                                os << "done" << endl;
-//                                // os << endl;
-
-                                i = 0;
-                                os << ">> Proteins being imported... : ";
-                                for (auto& record: Context.ProteinTable.Records) {
-                                    // os << record["id"] << ", ";
-                                    FProtein *NewProtein = new FProtein(record["id"]);
-                                    //                        if (Option.bDebug) { NewProtein->Print(os); }
-                                    Context.AddToMoleculeList(NewProtein);
-
-                                    // temporary capping
-                                    i++;
-                                    if (i == i_cap) {
-                                        os << "Protein importing is capped at " << std::to_string(i_cap) << endl;
-                                        break;
-                                    }
-                                }
-                                os << "done" << endl;
-                                // os << endl;
-
                                 FOrganism *NewOrganism = new FOrganism(Organism->Id.Name, "Ecoli", Strain);
                                 //                    if (Option.bDebug) { NewOrganism->Print(os); }
                                 Context.AddToContainerList(NewOrganism);
 
                             } else {
 
-                                FOrganism *NewOrganism = new FOrganism(Organism->Id.Name, Organism->Id.Name);
+                                FOrganism *NewOrganism = new FOrganism(Organism->Id.Name, "Ecoli");
                                 //                    if (Option.bDebug) { NewOrganism->Print(os); }
                                 Context.AddToContainerList(NewOrganism);
                             }
@@ -1361,13 +1289,13 @@ int main(int argc, char *argv[])
             TraversalNode(ProgramBlock);
             Context.Organize();
 
-//            if (Option.bDebug) {
+            if (Option.bDebug) {
                 Context.PrintLists(os);
 
                 // initial conditions
                 Context.PrintInitialCounts(os);
                 Context.PrintInitialLocations(os);
-//            }
+            }
         }
 
         delete ProgramBlock;
@@ -1388,6 +1316,8 @@ int main(int argc, char *argv[])
 
         Writer.LinkOptionContext(Option, Context);
         Writer.SetUpDefaultVariables(N_MoleculesAllowed, Name_Pseudo, Float_Init, Int_Init);
+
+        std::cout << "\n\n## Generating Simulation Program ##" << endl;
 
 //        WriteSimIdx();
 

@@ -178,20 +178,22 @@ def AdjustMinToAboveZero(Input):
     AdjustFactor = np.floor(np.log10(np.min(Input)))
     return Input / (10 ** AdjustFactor)
 
-def AddValueToArrayAtIdx(InputArray, Idx, Value):
+def AddValueToArrayAtIdx(InputArray, Idx_Column, Value):
     # Idx must be 1D array
     # Value may be scalar or 1D array
-    InputArray[:, Idx] += Value
+    Idx_Row = np.reshape(np.arange(0, Idx_Column.shape[0]), [-1, 1])
+    InputArray[Idx_Row, Idx_Column] += Value
     return InputArray
 
-def ReplaceValueInArrayAtIdx(InputArray, Idx, Value):
+def ReplaceValueInArrayAtIdx(InputArray, Idx_Column, Value):
     # Idx must be 1D array
     # Value may be scalar or 1D array
-    InputArray[:, Idx] = Value
+    Idx_Row = np.reshape(np.arange(0, Idx_Column.shape[0]), [-1, 1])
+    InputArray[Idx_Row, Idx_Column] = Value
     return InputArray
 
-def GetIdxOfEmptyElement(InputArray):
-    return np.argmin(InputArray)
+def GetIdxOfEmptyElement(InputArray, axis=1):
+    return np.argmin(InputArray, axis=axis)
 
 # Spatial simulation functions
 def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount=0, BasalAmount=0, shape='', size=0, pattern='diffuse'):
