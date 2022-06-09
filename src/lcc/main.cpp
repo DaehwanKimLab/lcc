@@ -53,6 +53,10 @@ int Int_Init = Numbers::GetIntDefault(); // random initialized int
 int Sim_Steps = 1000;
 int Sim_Resolution = 100;
 
+// temporary spatial simulation map control parameters
+int Map_Width = 1200;
+int Map_Height = 800;
+
 // temporary namespace-like info for molecules at the pathway level
 // implemented to be used to find threshold within a pathway
 std::string NameSpace_Pathway;
@@ -464,7 +468,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
         Location = FCExp->GetParameters(ControlVar, "Location");
     }
 
-    if (Option.bDebug) {
+    /*if (Option.bDebug) {
         os << "@ AExpression parsing result" << endl;
         os << "Name : " << Name << ", ";
         os << "Amount: " << Utils::SciFloat2Str(Amount) << ", ";
@@ -478,7 +482,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
         if (!Location.empty()) { os << "(" << Utils::JoinFloat2Str(Location) << ")"; }
         else { os << "None"; }
         os << endl;
-    }
+    }*/
 
     // No range provided assumes [0] as input by default
     if (Range.empty()) {
@@ -495,10 +499,18 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
     // temporary simulation control system
     if (Name == "SimSteps") {
         Sim_Steps = static_cast<int>(Amount);
-        os << "# Temp Sim Control: SimSteps = " << Sim_Steps << endl;
+        os << "\n# Temp Sim Control: SimSteps = " << Sim_Steps << endl;
     } else if (Name == "SimRes") {
         Sim_Resolution = static_cast<int>(Amount);
-        os << "# Temp Sim Control: SimResolution = " << Sim_Resolution << endl;
+        os << "\n# Temp Sim Control: SimResolution = " << Sim_Resolution << endl;
+
+    // temporary simulation control system
+    } else if (Name == "Map_Width") {
+        Map_Width = static_cast<int>(Amount);
+        os << "\n# Temp Spatial Control : Map Width = " << Map_Width << endl;
+    } else if (Name == "Map_Height") {
+        Map_Height = static_cast<int>(Amount);
+        os << "\n# Temp Spatial Control : Map Height = " << Map_Height << endl;
     } else {
         // Add to Count and location
         FCount *NewCount = new FCount(Name, Amount, Range, bMolarity);
@@ -764,6 +776,7 @@ void TraversalNode_Core(NNode * node)
 
         if (AExpression->Oper == T_ASSIGN) {
             ParseCountLocation_AExpression(AExpression, 0);
+
         } // end of AExpression
 
     } else if (Utils::is_class_of<NLoopStatement, NNode>(node)) {
@@ -1324,7 +1337,7 @@ int main(int argc, char *argv[])
         Writer.SimExecutor();
         os << Option.SimExecutorFile << endl;
 
-        Writer.SimModule(Sim_Steps, Sim_Resolution);
+        Writer.SimModule(Sim_Steps, Sim_Resolution, Map_Width, Map_Height);
         os << Option.SimModuleFile << endl;
 
         if (!Context.LocationList.empty()) {

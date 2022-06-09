@@ -72,7 +72,7 @@ public:
     void SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::vector<FReaction *> ReactionSubList);
 
     // Spatial Simulation
-    void Initialize_SpatialSimulation(ofstream& ofs);
+    void Initialize_SpatialSimulation(ofstream& ofs, int Map_Width, int Map_Height);
     void Initialize_ChromosomeSimulation(ofstream& ofs);
     void SetUp_SpatialSimulation(ofstream& ofs);
     void SetUp_ChromosomeSimulation(ofstream& ofs);
@@ -80,7 +80,7 @@ public:
     // Simulation
     void SimIdx();
     void SimExecutor();
-    void SimModule(int Sim_Steps, int Sim_Resolution);
+    void SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Map_Height);
     void SimVis2D();
     void SimServer();
 

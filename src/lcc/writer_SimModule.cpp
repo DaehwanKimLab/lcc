@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
+void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Map_Height)
 {
     std::cout << "Generating simulation module..." << std::endl;
 
@@ -76,7 +76,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     if (!Context.LocationList.empty()) {
-        Initialize_SpatialSimulation(ofs);
+        Initialize_SpatialSimulation(ofs, Map_Width, Map_Height);
     }
 
     // for standard reactions

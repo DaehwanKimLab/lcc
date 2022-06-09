@@ -1,0 +1,15 @@
+petridish P
+{
+  ecoli E
+  {
+    reaction R(X --> Y, k=0.00001);
+    X[:] = 1 nM;
+  }
+
+  // spatially distributed entities on petridish
+  E(400, 400, 0) = 1;
+  X(500, 500, 0) = 100 nmol;
+}
+
+// sets the dimension of 2D molecular distributions and spatial simulation/visualization map
+Map_Width = 1200, Map_Height = 800;

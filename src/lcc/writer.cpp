@@ -1136,12 +1136,9 @@ void FWriter::SetUp_TransporterReaction(ofstream& ofs, std::string Type, std::ve
     ofs << endl;
 }
 
-void FWriter::Initialize_SpatialSimulation(ofstream& ofs)
+void FWriter::Initialize_SpatialSimulation(ofstream& ofs, int Map_Width, int Map_Height)
 {
     // TODO: Take dimension from user input
-    int Map_Width = 1200;
-    int Map_Height = 800;
-
     ofs << in+ in+ "# Initialize_SpatialSimulation" << endl;
 
     ofs << in+ in+ "self.Dimension_X = " << Map_Width << endl;
