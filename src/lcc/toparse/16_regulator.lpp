@@ -1,0 +1,23 @@
+// regulator molecule syntax
+
+protein EnzymeOne(A + B --> C, kcat=1234, KM=1234, n=1)
+{
+   domain d1
+   {
+      regulator regOne(activatorOne, Ka = 1234, n=1);
+      regulator(activatorTwo, Ka = 1234, n=1);
+   }
+   domain d2
+   {
+      regulator regTwo(inhibitorOne, Ki = 1234, n=1);
+      regulator(inhibitorTwo, Ki = 1234, n=1);
+   }
+}
+
+protein EnzymeTwo(A + B --> C, kcat=1234, KM=1234, n=1)
+{
+   regulator regOne(activatorOne, Ka = 1234, n=1);
+   regulator regTwo(inhibitorOne, Ki = 1234, n=1);
+   regulator(activatorTwo, Ka = 1234, n=1);
+   regulator(inhibitorTwo, Ki = 1234, n=1);
+}
