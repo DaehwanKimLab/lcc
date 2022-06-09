@@ -373,7 +373,7 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
 
     FTable EcoliGeneList;
     EcoliGeneList.LoadFromTSV("./Database/genes.tsv");
-    int LimitRecordSize = 10; // here temporary
+    int LimitRecordSize = 100; // here temporary cap to
 
     for (int i = 0; i < EcoliGeneList.Records.size(); i++) {
         // std::string, std::string record

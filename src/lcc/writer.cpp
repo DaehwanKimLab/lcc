@@ -532,6 +532,7 @@ void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Pro
     ofs << in+ in+ "# " << Process << ": Initialize Initiation Reaction" << endl;
     ofs << in+ in+ "self.Idx_Pol_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Idx_Template_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Idx_Target_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Idx_TemplateSubset_" << Process << " = None" << endl; // local indexing within the template population for mRNA in RNA for protein translation
     ofs << in+ in+ "self.Weight_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Pol_Threshold_" << Process << " = None" << endl;
@@ -540,6 +541,8 @@ void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Pro
     // TODO: Upgrade to take multiple distinct polymerases for the same process
     ofs << in+ in+ "self.Pos_Pol_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Pos_Pol_End_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Pos_Pol_Template_" << Process << " = None" << endl;
+    ofs << in+ in+ "self.Pos_Pol_Target_" << Process << " = None" << endl;
     ofs << in+ in+ "self.Dir_Pol_" << Process << " = None" << endl;
     //ofs << in+ in+ "self.Freq_BB_Pol_" << Process << " = None" << endl;
     ofs << endl;
@@ -736,9 +739,9 @@ void FWriter::SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecul
     FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
 //    std::cout << "Polymerase: " << Pol->Name << " | Process: " << Pol->Process << " | TemplateClass: " << Pol->TemplateClass << " | TargetClass: " << Pol->TargetClass << std::endl;
 
-    std::string MaxLen =            "self.MaxLen_Nascent"   + Pol->TargetClass + "s";
-    std::string BuildingBlockFreq = "self.Freq_BB_"         + Pol->TargetClass + "s";
-    std::string Len =               "self.Len_Nascent"      + Pol->TargetClass + "s";
+    std::string MaxLen =            "self.MaxLen_Nascent"   + Pol->TargetClass;
+    std::string BuildingBlockFreq = "self.Freq_BB_"         + Pol->TargetClass;
+    std::string Len =               "self.Len_Nascent"      + Pol->TargetClass;
 
     std::vector<float>          Rate;
     std::vector<int>            Idx_Pol,    Idx_Template,       Idx_Target,     Idx_Local,  Idx_PolSub,     Idx_PolBB;
@@ -785,13 +788,15 @@ void FWriter::SetUp_PolymeraseReaction_Index(ofstream& ofs, std::vector<FMolecul
     ofs << in+ in+ "self.Idx_Pol_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Pol) << "])" << endl;
     ofs << in+ in+ "self.Idx_Template_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Template) << "])" << endl;
     ofs << in+ in+ "self.Idx_TemplateSubset_" << Pol->Process << " = np.array([range(" << Idx_Template.size() << ")])   # Default" << endl;
-    ofs << in+ in+ "self.Idx_Target_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Target) << "], ndmin=2)" << endl;
+    ofs << in+ in+ "self.Idx_Target_" << Pol->Process << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_Target) << "])" << endl;
     ofs << in+ in+ "self.Weight_" << Pol->Process << " = np.array([" << "1" << "])" << endl;
 
     if (Pol->Process != "Replication") {
         // TODO: Upgrade to take multiple distinct polymerases for the same process
-        ofs << in+ in+ "self.Pos_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl;
-        ofs << in+ in+ "self.Pos_Pol_End_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl;
+        ofs << in+ in+ "self.Pos_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl; // -1 means unbound
+        ofs << in+ in+ "self.Pos_Pol_End_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], 0)" << endl; // 0 means unbound
+        ofs << in+ in+ "self.Pos_Pol_Template_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl; // 0 means unbound
+        ofs << in+ in+ "self.Pos_Pol_Target_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], -1)" << endl; // 0 means unbound
         ofs << in+ in+ "self.Dir_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], 0)" << endl;
         //ofs << in+ in+ "self.Freq_BB_Pol_" << Pol->Process << " = np.full([self.Count_All.shape[0], np.max(self.Count_All[:, self.Idx_Pol_" << Pol->Process << "]).astype(int)], 0)" << endl;
         ofs << endl;
@@ -835,9 +840,11 @@ void FWriter::Polymerase_InitiationReaction_RNAP(ofstream& ofs, std::vector<FMol
 {
     FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
 
-    std::string Pos_Pol, Pos_Pol_End, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
     Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
     Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
+    Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
+    Pos_Pol_Target =            "self.State.Pos_Pol_Target_"    + Pol->Process;
     Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
     Pos_Start_Template =        "self.State.Pos_Start_"         + Pol->TemplateClass;
     Pos_End_Template =          "self.State.Pos_End_"           + Pol->TemplateClass;
@@ -848,15 +855,16 @@ void FWriter::Polymerase_InitiationReaction_RNAP(ofstream& ofs, std::vector<FMol
     Freq_BB =                   "self.State.Freq_BB_"           + Pol->TargetClass;
     Idx_Pol =                   "self.State.Idx_Pol_"           + Pol->Process;
     Idx_Template =              "self.State.Idx_Template_"      + Pol->Process;
+    Idx_Target =                "self.State.Idx_Target_"        + Pol->Process;
     Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
     Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
     Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
     
     Weight = "1"; // TODO: Update with sigma factor
 
-    std::vector<std::string> Output = { Pos_Pol, Pos_Pol_End, Dir_Pol, Count_Nascent_Target };
+    std::vector<std::string> Output = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_Nascent_Target };
     std::string Function =  "self." + Pol->Process + "_Initiation";
-    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Idx_Pol, Idx_Template, Weight, Pol_Threshold};
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Idx_Pol, Idx_Template, Weight, Pol_Threshold};
     
     std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
     OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space
@@ -904,9 +912,11 @@ void FWriter::Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMol
 {
     FPolymerase* Pol = dynamic_cast<FPolymerase*>(Polymerases[0]);
 
-    std::string Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
     Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
     Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
+    Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
+    Pos_Pol_Target =            "self.State.Pos_Pol_Target_"    + Pol->Process;
     Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
     //Freq_BB_Pol =               "self.State.Freq_BB_Pol_"       + Pol->TargetClass;
     
@@ -920,6 +930,7 @@ void FWriter::Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMol
     Freq_BB =                   "self.State.Freq_BB_"           + Pol->TargetClass;
     Idx_Pol =                   "self.State.Idx_Pol_"           + Pol->Process;
     Idx_Template =              "self.State.Idx_Template_"      + Pol->Process;
+    Idx_Target =                "self.State.Idx_Target_"        + Pol->Process;
     Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
     Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
     Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
@@ -973,15 +984,43 @@ void FWriter::Polymerase_TerminationReaction_DNAP(ofstream& ofs, std::vector<FMo
 
 void FWriter::Polymerase_TerminationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases)
 {
-    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+    FPolymerase* Pol = dynamic_cast<FPolymerase*>(Polymerases[0]);
 
-//    ofs << in+ in+ "# " << Pol->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << " = self." << Pol->Process << "_Termination(";
-    ofs << "self.State.Len_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.MaxLen_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.Idx_Target_" << Pol->Process << ", ";
-    ofs << "self.State.Idx_Pol_" << Pol->Process << ", ";
-    ofs << "self.State.Pol_Threshold_" << Pol->Process << ")";
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
+    Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
+    Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
+    Pos_Pol_Target =            "self.State.Pos_Pol_Target_"    + Pol->Process;
+    Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
+    //Freq_BB_Pol =               "self.State.Freq_BB_Pol_"       + Pol->TargetClass;
+    
+    Pos_Start_Template =        "self.State.Pos_Start_"         + Pol->TemplateClass;
+    Pos_End_Template =          "self.State.Pos_End_"           + Pol->TemplateClass;
+    Dir_Template =              "self.State.Dir_"               + Pol->TemplateClass;
+    
+    Count_Nascent_Template =    "self.State.Count_Nascent_"     + Pol->TemplateClass;
+    Count_Nascent_Target =      "self.State.Count_Nascent_"     + Pol->TargetClass;
+    Rate =                      "self.State.Rate_"              + Pol->Process;
+    Freq_BB =                   "self.State.Freq_BB_"           + Pol->TargetClass;
+    Idx_Pol =                   "self.State.Idx_Pol_"           + Pol->Process;
+    Idx_Template =              "self.State.Idx_Template_"      + Pol->Process;
+    Idx_Target =                "self.State.Idx_Target_"        + Pol->Process;
+    Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
+    Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
+    Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
+
+    std::vector<std::string> Output = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_Nascent_Target };
+    std::string Function = "self." + Pol->Process + "_Termination";
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_Nascent_Target, Idx_Target };
+    //std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
+
+    std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
+    OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space
+
+    std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
+    InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
+
+    ofs << in+ in+ OutputText + " = " + Function + "(" + InputText + ")" << endl;
     ofs << endl;
 }
 
@@ -1333,10 +1372,10 @@ void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
         ofs << in+ in+ "Nodes, Distances = SimF.GetNodesAndDistances(Dim, Len_Chr_nm, shape=Shape, n_nodes=" << N_Nodes << ")" << endl;
     }
 
-    if (Option.bDebug) {
-        ofs << in+ in+ "plot.Plot3D(Nodes, dim=Dim, distance=np.sum(Distances), shape=Shape)" << endl;
-        ofs << endl;
-    }
+    //if (Option.bDebug) {
+    //    ofs << in+ in+ "plot.Plot3D(Nodes, dim=Dim, distance=np.sum(Distances), shape=Shape)" << endl;
+    //    ofs << endl;
+    //}
 
     ofs << endl;
     ofs << in+ in+ "self.Pos_Ref = Nodes" << endl;

@@ -178,11 +178,17 @@ def AdjustMinToAboveZero(Input):
     AdjustFactor = np.floor(np.log10(np.min(Input)))
     return Input / (10 ** AdjustFactor)
 
-def AddValueToArrayAtIdx(InputArray, Idx_Column, Value):
-    # Idx must be 1D array
+def AddValueToArrayAllRowsAtIdx(InputArray, Idx_Column, Value):
+    # Idx must be 2D array in shape of [n, 1]
     # Value may be scalar or 1D array
     Idx_Row = np.reshape(np.arange(0, Idx_Column.shape[0]), [-1, 1])
     InputArray[Idx_Row, Idx_Column] += Value
+    return InputArray
+
+def AddValueToArrayOnlyAtIdx(InputArray, Idx, Value):
+    # Idx must be a tuple
+    # Value may be scalar or 1D array
+    InputArray[Idx] += Value
     return InputArray
 
 def ReplaceValueInArrayAtIdx(InputArray, Idx_Column, Value):
@@ -190,6 +196,12 @@ def ReplaceValueInArrayAtIdx(InputArray, Idx_Column, Value):
     # Value may be scalar or 1D array
     Idx_Row = np.reshape(np.arange(0, Idx_Column.shape[0]), [-1, 1])
     InputArray[Idx_Row, Idx_Column] = Value
+    return InputArray
+
+def ReplaceValueInArrayOnlyAtIdx(InputArray, Idx, Value):
+    # Idx must be 1D array
+    # Value may be scalar or 1D array
+    InputArray[Idx] = Value
     return InputArray
 
 def GetIdxOfEmptyElement(InputArray, axis=1):

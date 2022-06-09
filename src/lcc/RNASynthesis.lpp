@@ -17,13 +17,13 @@ petridish P
                             termination: taa);
         }
 
-        rnap = 10;
+        rnap = 20;
 //        ATP = 1nM, CTP = 1nM, GTP = 1nM, TTP = 1nM;
         ATP = 10000, CTP = 10000, GTP = 10000, TTP = 10000;
 
     }
 
-    for (i = 0; i < 2 ; i = i + 1) 
+    for (i = 0; i < 3 ; i = i + 1)
     {
         E(rand(200, 1000), rand(200, 600), 0) = 1;
     }
