@@ -261,7 +261,7 @@ void FWriter::SimServer() {
             ofs << endl;
             ofs << in+ in+ in+ in+ in+ "DNAReplications[ObjID] = lccsimulation_pb2.MState_DNAReplication(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i] * 100," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i][0] * 100," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
         }
     }
