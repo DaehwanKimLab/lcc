@@ -1,4 +1,4 @@
-//@# RNA Transcription
+//@# Transcription
 //@
 //@```
 //@```
@@ -7,7 +7,7 @@ petridish P
 {
     ecoli E
     {
-        pathway Replication
+        pathway Transcription
         {
             replication_origin promoter;
             replication_terminus taa;

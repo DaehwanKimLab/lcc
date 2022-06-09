@@ -570,8 +570,8 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
     std::string Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein;
 
     // Temporary database from tsv
-    ofs << in + in + "DatabaseFileName = r'./Database/genes.tsv'" << endl;
-    ofs << in + in + "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
+    ofs << in+ in+ "DatabaseFileName = r'./Database/genes.tsv'" << endl;
+    ofs << in+ in+ "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
     ofs << endl;
 
     auto Chromosome =   Context.GetSubList_MoleculeList("Chromosome");
@@ -872,24 +872,49 @@ void FWriter::Polymerase_InitiationReaction_RNAP(ofstream& ofs, std::vector<FMol
     std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
     InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
 
-    ofs << in + in + OutputText + " = " + Function + "(" + InputText + ")" << endl;
+    ofs << in+ in+ OutputText + " = " + Function + "(" + InputText + ")" << endl;
     ofs << endl;
 }
 
+// TODO: This model is currently very close to that of RNAP's but more distinct code may be implemented in the future for regulatory steps, etc.
 void FWriter::Polymerase_InitiationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases)
 {
     FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
 
-//    ofs << in+ in+ "# " << Pol->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << " = self." << Pol->Process << "_Initiation(";
-    ofs << "self.State.Pos_Pol_" << Pol->Process << ", ";
-    ofs << "self.State.Len_Nascent" << Pol->TemplateClass << ", ";
-    ofs << "self.State.Len_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.Idx_Pol_" << Pol->Process << ", ";
-    ofs << "self.State.Idx_Template_" << Pol->Process << ", ";
-    ofs << "self.State.Idx_TemplateSubset_" << Pol->Process << ", ";
-    ofs << "self.State.Weight_" << Pol->Process << ", ";
-    ofs << "self.State.Pol_Threshold_" << Pol->Process << ") ";
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
+    Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
+    Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
+    Pos_Pol_Target =            "self.State.Pos_Pol_Target_"    + Pol->Process;
+    Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
+    Pos_Start_Template =        "self.State.Pos_Start_"         + Pol->TemplateClass;
+    Pos_End_Template =          "self.State.Pos_End_"           + Pol->TemplateClass;
+    Dir_Template =              "self.State.Dir_"               + Pol->TemplateClass;
+    Count_Nascent_Template =    "self.State.Count_Nascent_"     + Pol->TemplateClass;
+    Count_Nascent_Target =      "self.State.Count_Nascent_"     + Pol->TargetClass;
+    Rate =                      "self.State.Rate_"              + Pol->Process;
+    Freq_BB =                   "self.State.Freq_BB_"           + Pol->TargetClass;
+    Idx_Pol =                   "self.State.Idx_Pol_"           + Pol->Process;
+    Idx_Template =              "self.State.Idx_Template_"      + Pol->Process;
+    Idx_TemplateSubset =        "self.State.Idx_TemplateSubset_"+ Pol->Process;
+    Idx_Target =                "self.State.Idx_Target_"        + Pol->Process;
+    Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
+    Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
+    Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
+    
+    Weight = "1"; // TODO: Update with sigma factor
+
+    std::vector<std::string> Output = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_Nascent_Target };
+    std::string Function =  "self." + Pol->Process + "_Initiation";
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Idx_Pol, Idx_Template, Idx_TemplateSubset, Weight, Pol_Threshold};
+    
+    std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
+    OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space
+        
+    std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
+    InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
+
+    ofs << in+ in+ OutputText + " = " + Function + "(" + InputText + ")" << endl;
     ofs << endl;
 }
 
@@ -948,23 +973,53 @@ void FWriter::Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMol
     std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
     InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
 
-    ofs << in + in + OutputText + " = " + Function + "(" + InputText + ")" << endl;
+    ofs << in+ in+ OutputText + " = " + Function + "(" + InputText + ")" << endl;
     ofs << endl;
 }
 
+// TODO: This model is currently very close to that of RNAP's but more distinct code may be implemented in the future for regulatory steps, etc.
 void FWriter::Polymerase_ElongationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases)
 {
-    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+    FPolymerase* Pol = dynamic_cast<FPolymerase*>(Polymerases[0]);
 
-//    ofs << in+ in+ "# " << Pol->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << " = self." << Pol->Process << "_Elongation(";
-    ofs << "self.State.Pos_Pol_" << Pol->Process << ", ";
-    ofs << "self.State.Len_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.MaxLen_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.Rate_" << Pol->Process << ", ";
-    ofs << "self.State.Freq_BB_" << Pol->TargetClass << ", ";
-    ofs << "self.State.Idx_PolSub_" << Pol->Process << ", ";
-    ofs << "self.State.Idx_PolBB_" << Pol->Process << ") ";
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
+    Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
+    Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
+    Pos_Pol_Target =            "self.State.Pos_Pol_Target_"    + Pol->Process;
+    Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
+    //Freq_BB_Pol =               "self.State.Freq_BB_Pol_"       + Pol->TargetClass;
+    
+    Pos_Start_Template =        "self.State.Pos_Start_"         + Pol->TemplateClass;
+    Pos_End_Template =          "self.State.Pos_End_"           + Pol->TemplateClass;
+    Dir_Template =              "self.State.Dir_"               + Pol->TemplateClass;
+    
+    Count_Nascent_Template =    "self.State.Count_Nascent_"     + Pol->TemplateClass;
+    Count_Nascent_Target =      "self.State.Count_Nascent_"     + Pol->TargetClass;
+    Rate =                      "self.State.Rate_"              + Pol->Process;
+    Freq_BB =                   "self.State.Freq_BB_"           + Pol->TargetClass;
+    Idx_Pol =                   "self.State.Idx_Pol_"           + Pol->Process;
+    Idx_Template =              "self.State.Idx_Template_"      + Pol->Process;
+    Idx_TemplateSubset =        "self.State.Idx_TemplateSubet_" + Pol->Process;
+    Idx_Target =                "self.State.Idx_Target_"        + Pol->Process;
+    Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
+    Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
+    Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
+    
+    Weight = "1"; // TODO: Update with sigma factor
+
+    std::vector<std::string> Output = { Pos_Pol };
+    std::string Function = "self." + Pol->Process + "_Elongation";
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
+    //std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
+
+    std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
+    OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space
+
+    std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
+    InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
+
+    ofs << in+ in+ OutputText + " = " + Function + "(" + InputText + ")" << endl;
     ofs << endl;
 }
 
@@ -1024,17 +1079,47 @@ void FWriter::Polymerase_TerminationReaction_RNAP(ofstream& ofs, std::vector<FMo
     ofs << endl;
 }
 
+// TODO: This model is currently very close to that of RNAP's but more distinct code may be implemented in the future for regulatory steps, etc.
 void FWriter::Polymerase_TerminationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases)
 {
-    FPolymerase* Pol = dynamic_cast<FPolymerase *>(Polymerases[0]);
+    FPolymerase* Pol = dynamic_cast<FPolymerase*>(Polymerases[0]);
 
-//    ofs << in+ in+ "# " << Pol->Process << endl;
-    ofs << in+ in+ "self.State.Len_Nascent" << Pol->TargetClass << " = self." << Pol->Process << "_Termination(";
-    ofs << "self.State.Len_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.MaxLen_Nascent" << Pol->TargetClass << ", ";
-    ofs << "self.State.Idx_Target_" << Pol->Process << ", ";
-    ofs << "self.State.Idx_Pol_" << Pol->Process << ", ";
-    ofs << "self.State.Pol_Threshold_" << Pol->Process << ")";
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_TemplateSubset, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
+    Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
+    Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
+    Pos_Pol_Target =            "self.State.Pos_Pol_Target_"    + Pol->Process;
+    Dir_Pol =                   "self.State.Dir_Pol_"           + Pol->Process;
+    //Freq_BB_Pol =               "self.State.Freq_BB_Pol_"       + Pol->TargetClass;
+    
+    Pos_Start_Template =        "self.State.Pos_Start_"         + Pol->TemplateClass;
+    Pos_End_Template =          "self.State.Pos_End_"           + Pol->TemplateClass;
+    Dir_Template =              "self.State.Dir_"               + Pol->TemplateClass;
+    
+    Count_Nascent_Template =    "self.State.Count_Nascent_"     + Pol->TemplateClass;
+    Count_Nascent_Target =      "self.State.Count_Nascent_"     + Pol->TargetClass;
+    Rate =                      "self.State.Rate_"              + Pol->Process;
+    Freq_BB =                   "self.State.Freq_BB_"           + Pol->TargetClass;
+    Idx_Pol =                   "self.State.Idx_Pol_"           + Pol->Process;
+    Idx_Template =              "self.State.Idx_Template_"      + Pol->Process;
+    Idx_TemplateSubset =        "self.State.Idx_TemplateSubset_"+ Pol->Process;
+    Idx_Target =                "self.State.Idx_Target_"        + Pol->Process;
+    Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
+    Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
+    Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
+
+    std::vector<std::string> Output = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_Nascent_Target };
+    std::string Function = "self." + Pol->Process + "_Termination";
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_Nascent_Target, Idx_Target };
+    //std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
+
+    std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
+    OutputText = OutputText.substr(0, OutputText.size() - 2); // remove , and space
+
+    std::string InputText = Utils::JoinStr2Str(Input, Str_Empty, Str_Empty);
+    InputText = InputText.substr(0, InputText.size() - 2); // remove , and space
+
+    ofs << in+ in+ OutputText + " = " + Function + "(" + InputText + ")" << endl;
     ofs << endl;
 }
 

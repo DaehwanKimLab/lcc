@@ -2,7 +2,7 @@
 //@
 //@```
 
-petridish P
+petridish P()
 {
     ecoli E
     {
