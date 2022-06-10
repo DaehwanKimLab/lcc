@@ -397,7 +397,8 @@ public:
         : Sequence(InSequence), BuildingBlocks(InBuildingBlocks), FPolymer_TemplateBased(InName) { GetCompositionFromSequence(InSequence, InBuildingBlocks); }
 
     void GetCompositionFromSequence(std::string InSequence, std::vector<std::string> InBuildingBlocks) {
-        Size = InSequence.size();
+        SetSize(InSequence.size());
+        // std::cout << Name << ", Size: " << Size << std::endl;
         for (auto& buildingblock : InBuildingBlocks) {
             auto Char = BioInfo::GetBuildingBlockAbbr(buildingblock);
             int Count = std::count(InSequence.begin(), InSequence.end(), Char);
@@ -444,7 +445,7 @@ public:
     FGene() {}
 
     FGene(std::string InName)
-        : FGeneticMaterial(InName, 1000, BioInfo::GetBuildingBlocks("dNT")) {}
+        : FGeneticMaterial(InName, BioInfo::GetBuildingBlocks("dNT")) {}
 
     FGene(std::string InName, int InSize)
         : FGeneticMaterial(InName, InSize, BioInfo::GetBuildingBlocks("dNT")) {} // Convenient default example for genes would be FGene(A_g, 1000, NT);
@@ -1023,8 +1024,9 @@ public:
     FGeneticMaterial * GenerateChromosome(std::string MolName, int Count, std::string Sequence); // default
 
     FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Coord, int Direction, int Count); // default
-    FGeneticMaterial * GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType); // default
-    FGeneticMaterial * GenerateCounterpart_Protein(std::string MolName, int Count); // default
+    FGeneticMaterial * GenerateCounterpart_Gene(std::string MolName, int Size, int Count); // default
+    FGeneticMaterial * GenerateCounterpart_RNA(std::string MolName, int Size, int Count, std::string RNAType); // default
+    FGeneticMaterial * GenerateCounterpart_Protein(std::string MolName, int Size, int Count); // default
 
 
     // Stoichiometry Matrix-related

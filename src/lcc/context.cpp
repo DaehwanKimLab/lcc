@@ -410,7 +410,7 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
 
         // Generate RNA if not made by the user
         if (bRNAP || bRibosome) {
-            RNA = GenerateCounterpart_RNA(Name, 1, RNAType);
+            RNA = GenerateCounterpart_RNA(Name, Size, 1, RNAType);
             if (bRNAP) {
                 RNA->SetTemplate(Gene);
             }
@@ -420,7 +420,7 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         // Generate Protein
         if (bRibosome) {
             if (RNAType != "mRNA") { continue; }
-            Protein = GenerateCounterpart_Protein(Name, 0);
+            Protein = GenerateCounterpart_Protein(Name, int(Size / 3 - 1), 0);
             Protein->SetTemplate(RNA);
             ListOfNewMolecules.push_back(Protein);
         }
@@ -461,44 +461,28 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
         ListOfNewMolecules.push_back(Chromosome);
     } 
 
-    //
+    // Users would have written proteins, not their counterparts (RNA and gene).
     if (bRNAP & bRibosome) {
         // add tRNA, rRNA, misc RNA
-        for (auto &molecule: MoleculeList) {
+        for (auto& molecule : MoleculeList) {
             if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
-                auto Protein = dynamic_cast<FProtein *>(molecule);
-                
-                FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, 0, "mRNA");
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 0, 1, 1);
+                auto Protein = dynamic_cast<FProtein*>(molecule);
+
+                FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, Length_Gene_Default, 0, "mRNA");
+                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1000, 1);
                 Protein->SetTemplate(mRNA);
                 mRNA->SetTemplate(Gene);
                 ListOfNewMolecules.push_back(Gene);
                 ListOfNewMolecules.push_back(mRNA);
-
-            } else if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
-                auto RNA = dynamic_cast<FRNA *>(molecule);
-
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 0, 1, 1);
-                RNA->SetTemplate(Gene);
-                ListOfNewMolecules.push_back(Gene);
             }
         }
-    } else if (bRNAP & !bRibosome) {
-        for (auto &molecule: MoleculeList) {
-            if (Utils::is_class_of<FRNA, FMolecule>(molecule)) {
-                auto RNA = dynamic_cast<FRNA *>(molecule);
 
-                FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, Str_Empty, 0, 1, 1);
-                RNA->SetTemplate(Gene);
-                ListOfNewMolecules.push_back(Gene);
-            }
-        }
     } else if (!bRNAP & bRibosome) {
         for (auto &molecule: MoleculeList) {
             if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
                 auto Protein = dynamic_cast<FProtein *>(molecule);
 
-                FGeneticMaterial * mRNA = GenerateCounterpart_RNA(molecule->Name, 1, "mRNA");
+                FGeneticMaterial * mRNA = GenerateCounterpart_RNA(molecule->Name, Length_Gene_Default, 1, "mRNA");
                 Protein->SetTemplate(mRNA);
                 ListOfNewMolecules.push_back(mRNA);
             }
@@ -539,28 +523,41 @@ FGeneticMaterial* FCompilerContext::GenerateChromosome(std::string MolName, int 
 FGeneticMaterial * FCompilerContext::GenerateCounterpart_Gene(std::string MolName, std::string Sequence, int Coord, int Dir, int Count)
 {
     std::string NewName = MolName + "_Gene";
-    FGene* NewGene;
-
-    if (!Sequence.empty()) {
-        NewGene = new FGene(NewName, Sequence, Coord, Dir);
-    } else {
-        NewGene = new FGene(NewName);
-    }
+    FGene* NewGene = new FGene(NewName, Sequence, Coord, Dir);
 
     AddToCountList(NewName, Count);
 
     return NewGene;
 }
 
-FGeneticMaterial *  FCompilerContext::GenerateCounterpart_RNA(std::string MolName, int Count, std::string RNAType)
+FGeneticMaterial* FCompilerContext::GenerateCounterpart_Gene(std::string MolName, int Size, int Count)
+{
+    std::string NewName = MolName + "_Gene";
+    
+    if (Size <= 0) {
+        Size = 1000;
+    }
+    
+    FGene* NewGene = new FGene(NewName, Size, 0, 1);
+
+    AddToCountList(NewName, Count);
+
+    return NewGene;
+}
+
+FGeneticMaterial *  FCompilerContext::GenerateCounterpart_RNA(std::string MolName, int Size, int Count, std::string RNAType)
 {
     std::string NewName = MolName + "_" + RNAType;
     FRNA * NewRNA;
 
-    if (RNAType == "mRNA")          { NewRNA = new FmRNA(NewName); } 
-    else if (RNAType == "rRNA")     { NewRNA = new FrRNA(NewName); } 
-    else if (RNAType == "tRNA")     { NewRNA = new FtRNA(NewName); } 
-    else if (RNAType == "miscRNA")  { NewRNA = new FmiscRNA(NewName); } 
+    if (Size <= 0) {
+        Size = 1000;
+    }
+
+    if (RNAType == "mRNA")          { NewRNA = new FmRNA(NewName, Size); } 
+    else if (RNAType == "rRNA")     { NewRNA = new FrRNA(NewName, Size); }
+    else if (RNAType == "tRNA")     { NewRNA = new FtRNA(NewName, Size); }
+    else if (RNAType == "miscRNA")  { NewRNA = new FmiscRNA(NewName, Size); }
     else {
         Utils::Assertion(false, "ERROR: Unspecified RNA Type. Gene: " + MolName + ", RNAType: " + RNAType);
     }
@@ -570,10 +567,15 @@ FGeneticMaterial *  FCompilerContext::GenerateCounterpart_RNA(std::string MolNam
     return NewRNA;
 }
 
-FGeneticMaterial* FCompilerContext::GenerateCounterpart_Protein(std::string MolName, int Count)
+FGeneticMaterial* FCompilerContext::GenerateCounterpart_Protein(std::string MolName, int Size, int Count)
 {
     std::string NewName = MolName + "_Protein";
-    FProtein* NewProtein = new FProtein(NewName);
+    
+    if (Size <= 0) {
+        Size = 1000;
+    }
+    
+    FProtein* NewProtein = new FProtein(NewName, Size);
 
     AddToCountList(NewName, Count);
 

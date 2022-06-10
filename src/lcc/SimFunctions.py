@@ -527,5 +527,12 @@ def GetXYZForGenomePositionsInBP(Positions_bp, Nodes, Distances):
 
     return Positions_XYZ
 
-a = 1
-b = 2
+# cell division routines
+def DuplicateCells(Counts, Idx_DividingCells):
+    Counts_Divided = Counts[Idx_DividingCells] / 2
+    Counts[Idx_DividingCells] = np.ceil(Counts_Divided).astype(int)
+    return np.vstack([Counts, np.floor(Counts_Divided).astype(int)])
+
+def AddCells(Counts, Idx_DividingCells, DefaultValue):
+    Counts_New = np.full_like(Counts[Idx_DividingCells], DefaultValue)
+    return np.vstack([Counts, Counts_New])
