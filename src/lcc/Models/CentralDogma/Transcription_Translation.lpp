@@ -1,0 +1,54 @@
+//@# DNA Replication
+//@
+//@```
+
+petridish P
+{
+    ecoli E
+    {
+
+
+        pathway Transcription
+        {
+            replication_origin promoter;
+            replication_terminus taa;
+            polymerase rnap(initiation: promoter,
+                            elongation: rna_{n} + nt -->
+                                       rna_{n+1} + ppi,
+                            termination: taa);
+        }
+
+        rnap = 200;
+//        ATP = 1nM, CTP = 1nM, GTP = 1nM, TTP = 1nM;
+        ATP = 10000, CTP = 10000, GTP = 10000, TTP = 10000;
+
+        pathway Translation
+        {
+            ribosome_binding_site rbs1;
+            translation_terminator tt1;
+            polymerase r1(initiation: rbs1,
+                        elongation: peptide_{n} + aa -->
+                                    peptide_{n+1} + H_{2}O,
+                        termination: tt1);
+        }
+
+        r1 = 10;
+        //ALA = 1nM, ARG = 1nM, ASN = 1nM, ASP = 1nM, CYS = 1nM, GLT = 1nM, GLN = 1nM;
+        //GLY = 1nM, HIS = 1nM, ILE = 1nM, LEU = 1nM, LYS = 1nM, MET = 1nM, PHE = 1nM;
+        //PRO = 1nM, SER = 1nM, THR = 1nM, TRP = 1nM, TYR = 1nM, SEL = 1nM, VAL = 1nM;
+
+        ALA = 1000, ARG = 1000, ASN = 1000, ASP = 1000, CYS = 1000, GLT = 1000, GLN = 1000;
+        GLY = 1000, HIS = 1000, ILE = 1000, LEU = 1000, LYS = 1000, MET = 1000, PHE = 1000;
+        PRO = 1000, SER = 1000, THR = 1000, TRP = 1000, TYR = 1000, SEL = 1000, VAL = 1000;
+
+        flagellum F(pol1, 50);
+
+    }
+
+    for (i = 0; i < 2 ; i = i + 1)
+    {
+        E(rand(200, 1000), rand(200, 600), 0) = 1;
+    }
+}
+
+//@```

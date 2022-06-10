@@ -51,20 +51,20 @@ public:
     // Polymerase type-specific functions
     void Initialize_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
     void Initialize_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
-    void Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases);
-    void SetUp_Idx_mRNAInRNA(ofstream& ofs);
+    void Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule *> ListOfPolymerases, std::string Name_mRNASubIdx);
+    void SetUp_Idx_mRNAInRNA(ofstream& ofs, std::string Name_mRNASubIdx);
     void SetUp_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerase);
     void SetUp_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerase);
-    void SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerase);
+    void SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerase, std::string Name_mRNASubIdx);
     void Polymerase_InitiationReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
     void Polymerase_InitiationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
-    void Polymerase_InitiationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_InitiationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases, std::string Name_mRNASubIdx);
     void Polymerase_ElongationReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
     void Polymerase_ElongationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
-    void Polymerase_ElongationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_ElongationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases, std::string Name_mRNASubIdx);
     void Polymerase_TerminationReaction_DNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
     void Polymerase_TerminationReaction_RNAP(ofstream& ofs, std::vector<FMolecule*> Polymerases);
-    void Polymerase_TerminationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases);
+    void Polymerase_TerminationReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases, std::string Name_mRNASubIdx);
 
 
     // TransporterReaction

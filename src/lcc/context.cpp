@@ -419,6 +419,7 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
 
         // Generate Protein
         if (bRibosome) {
+            if (RNAType != "mRNA") { continue; }
             Protein = GenerateCounterpart_Protein(Name, 0);
             Protein->SetTemplate(RNA);
             ListOfNewMolecules.push_back(Protein);
