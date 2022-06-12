@@ -242,7 +242,7 @@ void FWriter::SimServer() {
     if (!Organisms.empty()) {
         for (auto& organism : Organisms) {
             auto Organism = dynamic_cast<FOrganism*>(organism);
-            ofs << in+ in+ in+ in+ "ReplicationCompletionRate = self.SimM.GetReplicationCompletionRate('" << Organism->Name << "')" << endl;
+            ofs << in+ in+ in+ in+ "ReplicationCompletionRate = self.SimM.GetReplicationCompletionRateByCompartmentName('" << Organism->Name << "')" << endl;
 
             ofs << in+ in+ in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << organism->Name << "')" << endl;
             ofs << in+ in+ in+ in+ "for i in range(len(X)):" << endl;

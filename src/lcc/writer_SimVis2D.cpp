@@ -908,7 +908,7 @@ void FWriter::SimVis2D() {
         ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(20)" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
         if (!DNAPs.empty()) {
-            ofs << in+ in+ in+ in+ OrganismName << ".SetReplicationCompletionRate(SimM.GetReplicationCompletionRate('" << OrganismName << "'))" << endl;
+            ofs << in+ in+ in+ in+ OrganismName << ".SetReplicationCompletionRate(SimM.GetReplicationCompletionRateByCompartmentName('" << OrganismName << "'))" << endl;
         }
         ofs << in+ in+ in+ in+ OrganismName << ".IncrementSimCount()" << endl;
     }

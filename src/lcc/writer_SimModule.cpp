@@ -1490,20 +1490,28 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ in+ "return self.GetDistribution(Idx)" << endl;
     ofs << endl;
 
-    ofs << in+ "def GetReplicationCompletionRate(self, Name=None):" << endl;
+    ofs << in+ "def GetReplicationCompletionRateByCompartmentName(self, Name):" << endl;
     if (!DNAPs.empty()) {
         ofs << in+ in+ "Idx = self.GetPosIdx(Name)" << endl;
+        ofs << in+ in+ "return self.GetReplicationCompletionRate()[Idx]" << endl;
+    } else {
+        ofs << in+ in+ "return np.zeros([self.State.Count_All.shape[0], 1])" << endl;
+    }
+    ofs << endl;
+    
+    ofs << in+ "def GetReplicationCompletionRate(self):" << endl;
+    if (!DNAPs.empty()) {
         ofs << in+ in+ "ReplicationProgress = np.sum((self.State.Pos_Pol_End_Replication + self.State.Pos_Pol_Replication * self.State.Dir_Pol_Replication), axis=1)" << endl;
         ofs << in+ in+ "ReplicationProgress = np.where(ReplicationProgress < 0, 0, ReplicationProgress)" << endl;
-        ofs << in+ in+ "ReplicationCompletion = np.where(ReplicationProgress == 0, 0, ReplicationProgress / np.sum(self.State.Pos_Pol_End_Replication, axis=1))" << endl;
-        ofs << in+ in+ "return ReplicationCompletion[Idx]" << endl;
+        ofs << in+ in+ "ReplicationCompletionRate = np.where(ReplicationProgress == 0, 0, ReplicationProgress / np.sum(self.State.Pos_Pol_End_Replication, axis=1))" << endl;
+        ofs << in+ in+ "return ReplicationCompletionRate" << endl;
     } else {
         ofs << in+ in+ "return np.zeros([self.State.Count_All.shape[0], 1])" << endl;
     }
     ofs << endl;
 
     ofs << in+ "def UpdateVolume(self):" << endl;
-    ofs << in+ in+ "self.State.Vol = self.State.VolInit * (1 + self.GetReplicationCompletionRate())" << endl;
+    ofs << in+ in+ "self.State.Vol = self.State.VolInit * (1 + np.reshape(self.GetReplicationCompletionRate(), [-1, 1]))" << endl;
     ofs << endl;
 
     ofs << in+ "def Rescale(self, X, Y):" << endl;
@@ -2033,7 +2041,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
             ofs << in+ in+ "print('Chromosomes:     ', self.GetCount(self.State.Idx_Template_Replication).transpose())" << endl;
             ofs << in+ in+ "print('Dividing T/F:    ', bDividingCells.transpose())" << endl;
             ofs << in+ in+ "print('PolCounts:       ', self.GetCount(self.State.Idx_Pol_Replication).transpose())" << endl;
-            ofs << in+ in+ "print('ReplicationRate: ', self.GetReplicationCompletionRate('E').transpose())" << endl;
+            ofs << in+ in+ "print('ReplicationRate: ', self.GetReplicationCompletionRate().transpose())" << endl;
             if (!Context.ThresholdList.empty()) {
                 ofs << in+ in+ "print('Pos_Threshold:   ', self.State.Pos_Threshold)" << endl;
             }
