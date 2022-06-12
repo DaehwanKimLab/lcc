@@ -6,7 +6,18 @@ petridish P
 {
     ecoli E
     {
+        pathway Replication
+        {
+            replication_origin origin1;
+            replication_terminus terminus1;
+            polymerase pol1(initiation: origin1,
+                            elongation: dna_{n} + dnt -->
+                                       dna_{n+1} + ppi,
+                            termination: terminus1);
+        }
 
+        pol1 = 100;
+        dATP = 1nM, dCTP = 1nM, dGTP = 1nM, dTTP = 1nM;
 
         pathway Transcription
         {

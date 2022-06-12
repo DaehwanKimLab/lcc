@@ -17,18 +17,18 @@ petridish P
                         termination: tt1);
         }
 
-        r1 = 10;
-        //ALA = 1nM, ARG = 1nM, ASN = 1nM, ASP = 1nM, CYS = 1nM, GLT = 1nM, GLN = 1nM;
-        //GLY = 1nM, HIS = 1nM, ILE = 1nM, LEU = 1nM, LYS = 1nM, MET = 1nM, PHE = 1nM;
-        //PRO = 1nM, SER = 1nM, THR = 1nM, TRP = 1nM, TYR = 1nM, SEL = 1nM, VAL = 1nM;
+        r1 = 100;
+        ALA = 1nM, ARG = 1nM, ASN = 1nM, ASP = 1nM, CYS = 1nM, GLT = 1nM, GLN = 1nM;
+        GLY = 1nM, HIS = 1nM, ILE = 1nM, LEU = 1nM, LYS = 1nM, MET = 1nM, PHE = 1nM;
+        PRO = 1nM, SER = 1nM, THR = 1nM, TRP = 1nM, TYR = 1nM, SEL = 1nM, VAL = 1nM;
 
-        ALA = 1000, ARG = 1000, ASN = 1000, ASP = 1000, CYS = 1000, GLT = 1000, GLN = 1000;
-        GLY = 1000, HIS = 1000, ILE = 1000, LEU = 1000, LYS = 1000, MET = 1000, PHE = 1000;
-        PRO = 1000, SER = 1000, THR = 1000, TRP = 1000, TYR = 1000, SEL = 1000, VAL = 1000;
+        //ALA = 1000, ARG = 1000, ASN = 1000, ASP = 1000, CYS = 1000, GLT = 1000, GLN = 1000;
+        //GLY = 1000, HIS = 1000, ILE = 1000, LEU = 1000, LYS = 1000, MET = 1000, PHE = 1000;
+        //PRO = 1000, SER = 1000, THR = 1000, TRP = 1000, TYR = 1000, SEL = 1000, VAL = 1000;
 
     }
 
-    for (i = 0; i < 2 ; i = i + 1)
+    for (i = 0; i < 3 ; i = i + 1)
     {
         E(rand(200, 1000), rand(200, 600), 0) = 1;
     }

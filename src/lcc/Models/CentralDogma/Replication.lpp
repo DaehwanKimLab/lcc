@@ -16,7 +16,7 @@ petridish P
                             termination: terminus1);
         }
 
-        pol1 = 10000;
+        pol1 = 1000;
         dATP = 1nM, dCTP = 1nM, dGTP = 1nM, dTTP = 1nM;
 //        dATP = 10000, dCTP = 10000, dGTP = 10000, dTTP = 10000;
 
@@ -24,7 +24,7 @@ petridish P
 
     }
 
-    for (i = 0; i < 2 ; i = i + 1) 
+    for (i = 0; i < 3 ; i = i + 1)
     {
         E(rand(200, 1000), rand(200, 600), 0) = 1;
     }
