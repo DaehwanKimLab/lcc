@@ -52,7 +52,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     // class FState
     ofs << "class FState:" << endl;
     ofs << in+ "def __init__(self):" << endl;
-    ofs << in+ in+ "self.Vol = 0" << endl;
+    ofs << in+ in+ "self.VolInit = None" << endl;
+    ofs << in+ in+ "self.Vol = None" << endl;
     ofs << endl;
 
     ofs << in+ in+ "# State Arrays" << endl;
@@ -150,8 +151,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         }
     }
 
+    float VolInit = 1;
+
     ofs << in+ "def Initialize(self):" << endl;
-    ofs << in+ in+ "self.Vol = 1" << endl;
+    ofs << in+ in+ "self.VolInit = np.full([" << MatrixSize << ", 1], " << VolInit << ")" << endl;
+    ofs << in+ in+ "self.Vol = np.full([" << MatrixSize << ", 1], " << VolInit << ")" << endl;
     ofs << endl;
 
     // Temporary database from tsv
@@ -217,7 +221,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << "])" << endl;
 
     ofs << in+ in+ "MolarityFactor_Mol = np.array([" << Utils::JoinFloat2Str(MolarityFactor_Molecules) << "])" << endl;
-    ofs << in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol, 1)" << endl;
+    ofs << in+ in+ "MolarityFactor_Mol = np.where(MolarityFactor_Mol == 1, self.Vol[0], 1)" << endl;
     ofs << in+ in+ "Count_Mol *= MolarityFactor_Mol" << endl;
     ofs << in+ in+ "np.put_along_axis(self.Count_All, Idx_Mol, Count_Mol, axis=1)" << endl;
     ofs << endl;
@@ -294,12 +298,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ in+ "Data[:, " << Initial << ":" << i_SimStep << "] = Time" << endl;
 
     int i_Vol = i_SimStep + 1;
-    ofs << in+ in+ "Data[:, " << i_SimStep << ":" << i_Vol << "] = self.Vol" << endl;
+    ofs << in+ in+ "Data[:, " << i_SimStep << ":" << i_Vol << "] = self.Vol[0]" << endl;
 
     int i_Count_Mol = i_Vol + MolNames.size();
 
-    ofs << in+ in+ "Data[:, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All";
-    if (!Compartments.empty()) { ofs << "[0]"; } ofs << endl;
+    ofs << in+ in+ "Data[:, " << i_Vol << ":" << i_Count_Mol << "] = self.Count_All[0]" << endl;
 
     ofs << in+ in+ "return Data" << endl;
     ofs << endl;
@@ -541,6 +544,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 //    ofs << in+ in+ "self.UpdateThreshold()" << endl;
 //    ofs << endl;
 
+    ofs << in+ in+ "# Update Volume" << endl;
+    ofs << in+ in+ "self.UpdateVolume()" << endl;
+    ofs << endl;
+
 
     // temporary for qL efflux
     if (!Context.ReactionList.empty()) {
@@ -621,6 +628,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ in+ "self.NonSpatialSimulation()" << endl;
 
     ofs << in+ in+ "self.UpdateCounts()" << endl;
+    ofs << in+ in+ "self.UpdateVolume()" << endl;
     ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
     ofs << endl;
 
@@ -662,6 +670,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 //    }
 
     ofs << in+ in+ "self.UpdateCounts()" << endl;
+    ofs << in+ in+ "self.UpdateVolume()" << endl;
 
     if (bDebug_SimFlow) {
         if (!Option.bDebug) { ofs << "# "; }
@@ -1025,7 +1034,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
             if (bMolaritySys) {
                 // Apply stoichiometry
-                ofs << in+ in+ "dConc_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dConc_Mol_InStoichMatrix = np.asarray(SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate))" << endl;
                 // Convert to counts
                 ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             } else {
@@ -1166,7 +1175,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
             if (bMolaritySys) {
                 // Apply stoichiometry
-                ofs << in+ in+ "dConc_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+                ofs << in+ in+ "dConc_Mol_InStoichMatrix = np.asarray(SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate))" << endl;
                 // Convert to counts
                 ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             } else {
@@ -1279,7 +1288,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
                 // compare conc for michaelis menten?
             }
             // Apply stoichiometry
-            ofs << in+ in+ "dConc_Mol_InStoichMatrix = SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate)" << endl;
+            ofs << in+ in+ "dConc_Mol_InStoichMatrix = np.asarray(SimF.GetDerivativeFromStoichiometryMatrix(self.State.Const_StoichMatrix_" << Type <<", Rate))" << endl;
             // Convert to counts
             ofs << in+ in+ "dCount_Mol_InStoichMatrix = SimF.ConcToCount(dConc_Mol_InStoichMatrix, self.State.Vol)" << endl;
             // Apply delta counts for molecules in the stoichiometry matrix
@@ -1479,7 +1488,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ in+ "return self.GetDistribution(Idx)" << endl;
     ofs << endl;
 
-    ofs << in+ "def GetReplicationCompletionRate(self, Name):" << endl;
+    ofs << in+ "def GetReplicationCompletionRate(self, Name=None):" << endl;
     if (!DNAPs.empty()) {
         ofs << in+ in+ "Idx = self.GetPosIdx(Name)" << endl;
         ofs << in+ in+ "ReplicationProgress = np.sum((self.State.Pos_Pol_End_Replication + self.State.Pos_Pol_Replication * self.State.Dir_Pol_Replication), axis=1)" << endl;
@@ -1487,14 +1496,17 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << in+ in+ "ReplicationCompletion = np.where(ReplicationProgress == 0, 0, ReplicationProgress / np.sum(self.State.Pos_Pol_End_Replication, axis=1))" << endl;
         ofs << in+ in+ "return ReplicationCompletion[Idx]" << endl;
     } else {
-        ofs << in+ in+ "return 0" << endl;
+        ofs << in+ in+ "return np.zeros(self.State.Count_All.shape[0])" << endl;
     }
+    ofs << endl;
+
+    ofs << in+ "def UpdateVolume(self):" << endl;
+    ofs << in+ in+ "self.State.Vol = self.State.VolInit * (1 + self.GetReplicationCompletionRate())" << endl;
     ofs << endl;
 
     ofs << in+ "def Rescale(self, X, Y):" << endl;
     ofs << in+ in+ "return X / self.State.FoldReduction, Y / self.State.FoldReduction " << endl;
     ofs << endl;
-
 
     ofs << in+ "def GetCountFromDistribution(self, Dist_Idx, X, Y):" << endl;
 //    ofs << in+ in+ "return SimF.BilinearInterpolation(self.State.Dist_All[Dist_Idx], X, Y)" << endl;
