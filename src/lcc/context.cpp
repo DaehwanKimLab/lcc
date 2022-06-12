@@ -312,13 +312,14 @@ void FCompilerContext::Organize()
 {
     std::cout << "\n\n## Organizing Compiler Data ## " << std::endl;
 
+    if (CheckForEcoli()) {
+        DefaultSetUp_Ecoli();
+    }
+
     if (!GetSubList_MoleculeList("Polymerase").empty()) {
         ApplyDefaultGeneticInformationProcessingOnMoleculeList();
     }
 
-    if (CheckForEcoli()) {
-        DefaultSetUp_Ecoli();
-    }
 
 //    MakeListsFromMoleculeList();
 //    MakeListsFromContainerList();
@@ -468,6 +469,13 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
             if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
                 auto Protein = dynamic_cast<FProtein*>(molecule);
 
+                if (Protein->Name.find("_Protein") != std::string::npos) {
+                    if (Option.bDebug) {
+                        std::cout << "[mRNA counterpart skipped]" + Protein->Name << endl;
+                    }
+                    continue;
+                }
+
                 FGeneticMaterial* mRNA = GenerateCounterpart_RNA(molecule->Name, Length_Gene_Default, 0, "mRNA");
                 FGeneticMaterial* Gene = GenerateCounterpart_Gene(molecule->Name, 1000, 1);
                 Protein->SetTemplate(mRNA);
@@ -481,6 +489,13 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
         for (auto &molecule: MoleculeList) {
             if (Utils::is_class_of<FProtein, FMolecule>(molecule)) {
                 auto Protein = dynamic_cast<FProtein *>(molecule);
+
+                if (Protein->Name.find("_Protein") != std::string::npos) {
+                    if (Option.bDebug) {
+                        std::cout << "[mRNA counterpart skipped]" + Protein->Name << endl;
+                    }
+                    continue;
+                }
 
                 FGeneticMaterial * mRNA = GenerateCounterpart_RNA(molecule->Name, Length_Gene_Default, 1, "mRNA");
                 Protein->SetTemplate(mRNA);

@@ -312,7 +312,7 @@ public:
     FPolymer(std::string InName, std::vector<std::string> InCompositionNameOnly)
         : FMolecule(InName) {
         for (auto &CompositionName: InCompositionNameOnly) {
-            Composition.push_back(std::pair<std::string, float> (CompositionName, 1 / InCompositionNameOnly.size()));
+            Composition.push_back(std::pair<std::string, float> (CompositionName, 1.0 / InCompositionNameOnly.size()));
         }
     }
 
