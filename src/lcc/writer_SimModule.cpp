@@ -130,9 +130,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
     std::string Name_mRNASubIdx = "Idx_mRNAInRNA";
 
-    if (!DNAPs.empty())             { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
-    else if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
-    else if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
+    if (!DNAPs.empty())        { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
+    if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
+    if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
 
     // for Transporter reactions
     ReactionTypes.clear();
@@ -245,9 +245,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
     SetUp_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
 
-    if (!DNAPs.empty())             { SetUp_PolymeraseReaction_DNAP(ofs, DNAPs); }
-    else if (!RNAPs.empty())        { SetUp_PolymeraseReaction_RNAP(ofs, RNAPs); }
-    else if (!Ribosomes.empty())    { SetUp_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
+    if (!DNAPs.empty())        { SetUp_PolymeraseReaction_DNAP(ofs, DNAPs); }
+    if (!RNAPs.empty())        { SetUp_PolymeraseReaction_RNAP(ofs, RNAPs); }
+    if (!Ribosomes.empty())    { SetUp_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
 
 //
 //        //    std::vector<std::string> PolymeraseNames = Context.GetNames_PolymeraseList(PolymeraseList);
@@ -1317,9 +1317,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
     if (!PolymeraseList.empty()) {
         ofs << in+ "def PolymeraseReactions(self):" << endl;
-        if      (!DNAPs.empty())        { ofs << in+ in+ "self.Replication()" << endl; }
-        else if (!RNAPs.empty())        { ofs << in+ in+ "self.Transcription()" << endl; }
-        else if (!Ribosomes.empty())    { ofs << in+ in+ "self.Translation()" << endl; }
+        if (!DNAPs.empty())        { ofs << in+ in+ "self.Replication()" << endl; }
+        if (!RNAPs.empty())        { ofs << in+ in+ "self.Transcription()" << endl; }
+        if (!Ribosomes.empty())    { ofs << in+ in+ "self.Translation()" << endl; }
         ofs << endl;
 
 //        ofs << in+ in+ "self.Polymerase_InitiationReactions()" << endl;
@@ -1334,14 +1334,18 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
             Polymerase_TerminationReaction_DNAP(ofs, DNAPs);
             ofs << endl;
 
-        } else if (!RNAPs.empty()) {
+        } 
+        
+        if (!RNAPs.empty()) {
             ofs << in+ "def Transcription(self):" << endl;
             Polymerase_InitiationReaction_RNAP(ofs, RNAPs);
             Polymerase_ElongationReaction_RNAP(ofs, RNAPs);
             Polymerase_TerminationReaction_RNAP(ofs, RNAPs);
             ofs << endl;
 
-        } else if (!Ribosomes.empty()) {
+        } 
+        
+        if (!Ribosomes.empty()) {
             ofs << in+ "def Translation(self):" << endl;
             Polymerase_InitiationReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx);
             Polymerase_ElongationReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx);
@@ -1478,8 +1482,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ "def GetReplicationCompletionRate(self, Name):" << endl;
     if (!DNAPs.empty()) {
         ofs << in+ in+ "Idx = self.GetPosIdx(Name)" << endl;
-        ofs << in+ in+ "ReplicationProgress = np.sum((self.State.Pos_Pol_End_Replication - self.State.Pos_Pol_Replication) * self.State.Dir_Pol_Replication, axis=1)" << endl;
-        ofs << in+ in+ "ReplicationCompletion = ReplicationProgress / (self.State.Pos_Pol_End_Replication[:, 0] * 2) " << endl;
+        ofs << in+ in+ "ReplicationProgress = np.sum((self.State.Pos_Pol_End_Replication + self.State.Pos_Pol_Replication * self.State.Dir_Pol_Replication), axis=1)" << endl;
+        ofs << in+ in+ "ReplicationProgress = np.where(ReplicationProgress < 0, 0, ReplicationProgress)" << endl;
+        ofs << in+ in+ "ReplicationCompletion = np.where(ReplicationProgress == 0, 0, ReplicationProgress / np.sum(self.State.Pos_Pol_End_Replication, axis=1))" << endl;
         ofs << in+ in+ "return ReplicationCompletion[Idx]" << endl;
     } else {
         ofs << in+ in+ "return 0" << endl;
@@ -1574,7 +1579,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << endl;
 
         // TODO: Update with more mechanistic algorithm later
-        ofs << in+ "def Replication_Initiation(self, Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Pos_Template_Start, Pos_Template_End, Dir_Template, Count_NascentTemplate, Count_NascentTarget, Idx_Pol, Idx_Template, Weight, PolThreshold):" << endl;
+        ofs << in+ "def Replication_Initiation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Pos_Template_Start, Pos_Template_End, Dir_Template, Count_NascentTemplate, Count_NascentTarget, Idx_Pol, Idx_Template, Weight, PolThreshold):" << endl;
         ofs << in+ in+ "# Get Available Polymerase complex count" << endl;
         ofs << in+ in+ "Count_Pol_Avail = self.Replication_GetAvailablePolymerases(Count_NascentTarget, Idx_Pol, PolThreshold)" << endl;
         ofs << endl;
@@ -1583,123 +1588,103 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << in+ in+ "Count_InitiationSites_PerSite = self.Replication_GetInitiationSites(Idx_Template, Count_NascentTemplate)" << endl;
         ofs << in+ in+ "Count_InitiationSites_Total = np.reshape(np.sum(Count_InitiationSites_PerSite, axis=1), [-1, 1])" << endl;
         ofs << in+ in+ "Weight_InitiationSite = Count_InitiationSites_PerSite * Weight" << endl;
-        ofs << in+ in+ "Count_ToBind = np.logical_and(Count_Pol_Avail > 0, Count_InitiationSites_Total > 0)" << endl;
-        ofs << in+ in+ "Count_ToBindThisStep = np.where(Count_ToBind, 1, 0)   # Only allowing one binding at a time to use random function in matrix operation" << endl;
-        ofs << endl;
 
-        // TODO: Update to work on all rows
-        // TODO: Incorporate Weighted system that works with arrays
-        ofs << in+ in+ "# Get New polymerase binding sites." << endl;
-        ofs << in+ in+ "Idx_MolToBind = np.reshape(np.random.randint(0, high=Weight_InitiationSite.shape[1], size=Weight_InitiationSite.shape[0]), [-1, 1])   # Idexing in a template population" << endl;
-        ofs << endl;
+        ofs << in+ in+ "# Check if replication started yet for each cell" << endl;
+        ofs << in+ in+ "bEmpty = (Pos_Pol == -1)" << endl;
+        ofs << in+ in+ "bEmptyReady = (bEmpty == True)   # " << endl;
+        ofs << in+ in+ "bCellsReady = np.reshape(np.all(bEmpty == True, axis=1), [-1, 1])" << endl;
 
-        ofs << in+ in+ "# Apply New Binding to Count_NascentTarget" << endl;
-        ofs << in+ in+ "Count_NascentTarget_Initiated = SimF.AddValueToArrayAllRowsAtIdx(Count_NascentTarget, Idx_MolToBind, Count_ToBindThisStep)" << endl;
-        ofs << endl;
-
-        ofs << in+ in+ "# Apply New Binding at start position to Pos_Pol" << endl;
-        ofs << in+ in+ "Idx_EmptyElement = np.reshape(SimF.GetIdxOfEmptyElement(Pos_Pol), [-1, 1]) " << endl;
-        ofs << endl;
-
-        if (Option.bDebug) {
-            ofs << in+ in+ "print('Replication_Initiation: Count_ToBind\\n', Count_ToBind.T)" << endl;
-            ofs << in+ in+ "print('Replication_Initiation: Count_ToBindThisStep\\n', Count_ToBindThisStep.T)" << endl;
-            ofs << in+ in+ "print('Replication_Initiation: Idx_MolToBind\\n', Idx_MolToBind)" << endl;
-            ofs << in+ in+ "print('Replication_Initiation: Idx_EmptyElement\\n', Idx_EmptyElement.T)" << endl;
-            ofs << in+ in+ "print('Replication_Initiation: Count_NascentTarget_Initiated\\n', Count_NascentTarget_Initiated)" << endl;
-            ofs << endl;
-        }
-
-        ofs << in+ in+ "Pos_Template_Start_Initiated = Pos_Template_Start[Idx_MolToBind]" << endl;
-        ofs << in+ in+ "Pos_Pol_Initiated = SimF.AddValueToArrayAllRowsAtIdx(Pos_Pol, Idx_EmptyElement, Pos_Template_Start_Initiated * Count_ToBindThisStep + Count_ToBindThisStep) # Additional Count_ToBindThisStep to offset -1 value in the unbound element convention" << endl;
-        ofs << endl;
-        ofs << in+ in+ "Pos_Template_End_Initiated = Pos_Template_End[Idx_MolToBind]" << endl;
-        ofs << in+ in+ "Pos_Pol_End_Initiated = SimF.AddValueToArrayAllRowsAtIdx(Pos_Pol_End, Idx_EmptyElement, Pos_Template_End_Initiated * Count_ToBindThisStep) " << endl;
-        ofs << endl;
-        ofs << in+ in+ "Pos_Pol_Template_Initiated = SimF.AddValueToArrayAllRowsAtIdx(Pos_Pol_Template, Idx_EmptyElement, Idx_MolToBind * Count_ToBindThisStep + Count_ToBindThisStep) # Additional Count_ToBindThisStep to offset -1 value in the unbound element convention" << endl;
-        ofs << endl;
-        ofs << in+ in+ "Dir_Template_Initiated = Dir_Template[Idx_MolToBind]" << endl;
-        ofs << in+ in+ "Dir_Pol_Initiated = SimF.AddValueToArrayAllRowsAtIdx(Dir_Pol, Idx_EmptyElement, Dir_Template_Initiated * Count_ToBindThisStep) " << endl;
+        ofs << in+ in+ "# Apply Polymerase binding" << endl;
+        ofs << in+ in+ "Count_Pol_ToBind = np.where(np.logical_and(np.logical_and(Count_Pol_Avail >= 1, Count_InitiationSites_Total >= 1), bEmptyReady), 1, 0)" << endl;
+        ofs << in+ in+ "Pos_Pol_Initiated = Pos_Pol + Pos_Template_Start * Count_Pol_ToBind + Count_Pol_ToBind # Additional Count_ToBindThisStep to offset -1 value in the unbound element convention" << endl;
+        ofs << in+ in+ "Pos_Pol_End_Initiated = Pos_Pol_End + Pos_Template_End * Count_Pol_ToBind" << endl;
+        ofs << in+ in+ "Dir_Pol_Initiated = Dir_Pol + Dir_Template * Count_Pol_ToBind" << endl;
         ofs << endl;
 
         if (Option.bDebug) {
             ofs << in+ in+ "print('Replication_Initiation: Pos_Pol_Initiated\\n', Pos_Pol_Initiated)" << endl;
             ofs << in+ in+ "print('Replication_Initiation: Pos_Pol_End_Initiated\\n', Pos_Pol_End_Initiated)" << endl;
-            ofs << in+ in+ "print('Replication_Initiation: Pos_Pol_Template_Initiated\\n', Pos_Pol_Template_Initiated)" << endl;
             ofs << in+ in+ "print('Replication_Initiation: Dir_Pol_Initiated\\n', Dir_Pol_Initiated)" << endl;
         }
 
-        ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Pos_Pol_Template_Initiated, Dir_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
+        ofs << in+ in+ "# Apply New Binding to Count_NascentTarget" << endl;
+        ofs << in+ in+ "Idx_Count_ToIncrement = np.where(np.logical_and(np.logical_and(Count_Pol_Avail >= 1, Count_InitiationSites_Total >= 1), bCellsReady))" << endl;
+        ofs << in+ in+ "Count_ToIncrement = np.where(Idx_Count_ToIncrement, 1, 0)" << endl;
+        ofs << in+ in+ "Count_NascentTarget_Initiated = SimF.AddValueToArrayOnlyAtIdx(Count_NascentTarget, Idx_Count_ToIncrement, 1)" << endl;
+        ofs << endl;
+
+        if (Option.bDebug) {
+            ofs << in+ in+ "print('Replication_Initiation: Count_NascentTarget_Initiated\\n', Count_NascentTarget_Initiated)" << endl;
+            ofs << endl;
+        }
+
+        ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Dir_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << endl;
                 
-        ofs << in+ "def Replication_Elongation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
+        ofs << in+ "def Replication_Elongation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
         //    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength * Dir_Pol, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrectionWithDirection(Pos_Pol_Elongated, Pos_Pol_End, Dir_Pol)" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "# N_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol * Dir_Pol" << endl;
-        ofs << in+ in+ "N_Elongated_Total = np.array(np.sum(Pos_Pol_Trimmed - Pos_Pol, axis=1), ndmin=2).transpose()" << endl;
+        ofs << in+ in+ "N_Elongated_Total = np.array(np.sum((Pos_Pol_Trimmed - Pos_Pol) * Dir_Pol, axis=1), ndmin=2).transpose()" << endl;
+        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_Elongated_Total)" << endl;
         ofs << endl;
-
-        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, Count_Nascent_Target)" << endl;
-        //ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_Elongated_PerPol)" << endl;
+        
         ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
         ofs << in+ in+ "self.AddTodCount(Idx_PolBB, -Consumed_BB)" << endl;
         ofs << endl;
-
+        
         // TODO: Update this with matrix calculation form
         ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
         ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated_Total)" << endl;
         ofs << endl;
+
+
         ofs << in+ in+ "return Pos_Pol_Trimmed" << endl;
         ofs << endl;
 
-        ofs << in+ "def Replication_Termination(self, Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_NascentTarget, Idx_Target):" << endl;
+        ofs << in+ "def Replication_Termination(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Count_NascentTarget, Idx_Target):" << endl;
         ofs << in+ in+ "# May be taken out to Sim Function" << endl;
         ofs << endl;
 
         ofs << in+ in+ "Idx_Pol_Completed = np.where(Pos_Pol == Pos_Pol_End)" << endl;
-        ofs << in+ in+ "Idx_Template_Completed = Pos_Pol_Template[Idx_Pol_Completed]" << endl;
+        ofs << in+ in+ "Idx_Cell_Completed = np.where(np.reshape(np.any(Pos_Pol == Pos_Pol_End, axis=1), [-1, 1]))" << endl;
+        ofs << in+ in+ "CountToSubtractFromNascent = np.reshape(np.sum(np.where(Pos_Pol == Pos_Pol_End, 0.5, 0), axis=1), [-1, 1])" << endl;
+
+        ofs << in+ in+ "if len(Idx_Pol_Completed[0]) > 0:" << endl;
+        ofs << in+ in+ in+ "a = 123" << endl;
+        ofs << in+ in+ in+ "b = a+213" << endl;
         ofs << endl;
 
         ofs << in+ in+ "Pos_Pol_Completed = SimF.ReplaceValueInArrayOnlyAtIdx(Pos_Pol, Idx_Pol_Completed, -1)   # Pol Position on Chromosome" << endl;
         ofs << in+ in+ "Pos_Pol_End_Completed = SimF.ReplaceValueInArrayOnlyAtIdx(Pos_Pol_End, Idx_Pol_Completed, 0)   # End chromosome position of the gene to which Pol is bound to" << endl;
-        ofs << in+ in+ "Pos_Pol_Template_Completed = SimF.ReplaceValueInArrayOnlyAtIdx(Pos_Pol_Template, Idx_Pol_Completed, -1)   # Genes to which Pol is bound to" << endl;
         ofs << in+ in+ "Dir_Pol_Completed = SimF.ReplaceValueInArrayOnlyAtIdx(Dir_Pol, Idx_Pol_Completed, 0)   # Direction of Gene to which Pol is bound to" << endl;
         ofs << endl;
 
         if (Option.bDebug) {
             ofs << in+ in+ "print('Replication_Termination: Idx_Pol_Completed', Idx_Pol_Completed)" << endl;
-            ofs << in+ in+ "print('Replication_Termination: Idx_Target_Completed', Idx_Template_Completed)" << endl;
             ofs << in+ in+ "print('Replication_Termination: Pos_Pol_Completed\\n', Pos_Pol_Completed)" << endl;
             ofs << in+ in+ "print('Replication_Termination: Pos_Pol_End_Completed\\n', Pos_Pol_End_Completed)" << endl;
-            ofs << in+ in+ "print('Replication_Termination: Pos_Pol_Template_Completed\\n', Pos_Pol_Template_Completed)" << endl;
             ofs << in+ in+ "print('Replication_Termination: Dir_Pol_Completed\\n', Dir_Pol_Completed)" << endl;
             ofs << endl;
         }
 
-        ofs << in+ in+ "Idx_Pol_Completed_Rows = Idx_Pol_Completed[0]" << endl;
-        ofs << in+ in+ "Count_NascentTarget_Completed = SimF.AddValueToArrayOnlyAtIdx(Count_NascentTarget, (Idx_Pol_Completed_Rows, Idx_Template_Completed), -1)" << endl;
+        ofs << in+ in+ "Idx_Pol_Completed_Rows = Idx_Cell_Completed[0]" << endl;
+        ofs << in+ in+ "Count_NascentTarget_Completed = SimF.AddValueToArrayOnlyAtIdx(Count_NascentTarget, (Idx_Pol_Completed_Rows, np.zeros_like(Idx_Pol_Completed_Rows)), -CountToSubtractFromNascent[Idx_Cell_Completed])" << endl;
         if (Option.bDebug) {
             ofs << in+ in+ "print('Replication_Termination: Count_NascentTarget_Completed\\n', Count_NascentTarget_Completed)" << endl;
         }
         ofs << endl;
 
-        ofs << in+ in+ "Idx_Mol_Completed = Idx_Target[Idx_Template_Completed]" << endl;
-        if (Option.bDebug) {
-            ofs << in+ in+ "print('Replication_Termination: Idx_Mol_Completed\\n', Idx_Mol_Completed)" << endl;
-        }
-        ofs << endl;
-
-        ofs << in+ in+ "self.State.dCount_All = SimF.AddValueToArrayOnlyAtIdx(self.State.dCount_All, (Idx_Pol_Completed_Rows, Idx_Mol_Completed), 1)" << endl;
+        ofs << in+ in+ "self.State.dCount_All = SimF.AddValueToArrayOnlyAtIdx(self.State.dCount_All, (Idx_Pol_Completed_Rows, Idx_Target), 1)" << endl;
         if (Option.bDebug) {
             ofs << in+ in+ "print('Replication_Termination: self.State.dCount_All After\\n', self.State.dCount_All)" << endl;
         }
         ofs << endl;
 
-        ofs << in+ in+ "return Pos_Pol_Completed, Pos_Pol_End_Completed, Pos_Pol_Template_Completed, Dir_Pol_Completed, Count_NascentTarget_Completed" << endl;
+        ofs << in+ in+ "return Pos_Pol_Completed, Pos_Pol_End_Completed, Dir_Pol_Completed, Count_NascentTarget_Completed" << endl;
         ofs << endl;
     }
 
@@ -1783,27 +1768,29 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Pos_Pol_Template_Initiated, Dir_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << endl;
         
-        ofs << in+ "def Transcription_Elongation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
+        ofs << in+ "def Transcription_Elongation(self, Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_NascentTarget, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
         //    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength * Dir_Pol, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrectionWithDirection(Pos_Pol_Elongated, Pos_Pol_End, Dir_Pol)" << endl;
+        ofs << in+ in+ "N_NT_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol * Dir_Pol" << endl;
+        ofs << endl;
+        
+        ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
+        ofs << in+ in+ "N_NT_Elongated_Total = np.array(np.sum(N_NT_Elongated_PerPol, axis=1), ndmin=2).transpose()" << endl;
+        ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_NT_Elongated_Total)" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "# N_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol * Dir_Pol" << endl;
-        ofs << in+ in+ "N_Elongated_Total = np.array(np.sum(Pos_Pol_Trimmed - Pos_Pol, axis=1), ndmin=2).transpose()" << endl;
-        ofs << endl;
-
-        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, Count_Nascent_Target)" << endl;
-        //ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_Elongated_PerPol)" << endl;
         ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
+        ofs << in+ in+ "Idx_Elongated = np.where(Pos_Pol_Template > 0)" << endl;
+        ofs << in+ in+ "Idx_Template_Elongated = Pos_Pol_Template[Idx_Elongated]" << endl;
+        ofs << in+ in+ "N_NT_Elongated_PerTemplate = N_NT_Elongated_PerPol[Idx_Elongated]" << endl;
+        ofs << in+ in+ "N_NT_Elongated_NascentTarget = np.zeros_like(Count_NascentTarget)" << endl;
+        ofs << in+ in+ "N_NT_Elongated_NascentTarget[Idx_Elongated[0], Idx_Template_Elongated] = N_NT_Elongated_PerTemplate" << endl;
+        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_NT_Elongated_NascentTarget)" << endl;
         ofs << in+ in+ "self.AddTodCount(Idx_PolBB, -Consumed_BB)" << endl;
         ofs << endl;
 
-        // TODO: Update this with matrix calculation form
-        ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
-        ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated_Total)" << endl;
-        ofs << endl;
         ofs << in+ in+ "return Pos_Pol_Trimmed" << endl;
         ofs << endl;
         
@@ -1932,26 +1919,29 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Pos_Pol_Template_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << endl;
         
-        ofs << in+ "def Translation_Elongation(self, Pos_Pol, Pos_Pol_End, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
-        ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate * 3)" << endl;
+        ofs << in+ "def Translation_Elongation(self, Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Count_NascentTarget, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
+        ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate * 3)   # Account for codon (3nt procession of pol on mRNA template vs. 1aa polypeptides synthesized)" << endl;
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrection(Pos_Pol_Elongated, Pos_Pol_End)" << endl;
+        ofs << in+ in+ "N_AA_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "# N_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol" << endl;
-        ofs << in+ in+ "N_Elongated_Total = np.array(np.sum(Pos_Pol_Trimmed - Pos_Pol, axis=1), ndmin=2).transpose()" << endl;
+        ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
+        ofs << in+ in+ "N_AA_Elongated_Total = np.array(np.sum(N_AA_Elongated_PerPol, axis=1), ndmin=2).transpose()" << endl;
+        ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_AA_Elongated_Total)" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, Count_Nascent_Target)" << endl;
-        //ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_Elongated_PerPol)" << endl;
         ofs << in+ in+ "# Update dCount for BuildingBlocks" << endl;
+        ofs << in+ in+ "Idx_Elongated = np.where(Pos_Pol_Template > 0)" << endl;
+        ofs << in+ in+ "Idx_Template_Elongated = Pos_Pol_Template[Idx_Elongated]" << endl;
+        ofs << in+ in+ "N_AA_Elongated_PerTemplate = N_AA_Elongated_PerPol[Idx_Elongated]" << endl;
+        ofs << in+ in+ "N_AA_Elongated_NascentTarget = np.zeros_like(Count_NascentTarget)" << endl;
+        ofs << in+ in+ "N_AA_Elongated_NascentTarget[Idx_Elongated[0], Idx_Template_Elongated] = N_AA_Elongated_PerTemplate" << endl;
+        ofs << in+ in+ "Consumed_BB = self.BuildingBlockConsumption(Freq_BB, N_AA_Elongated_NascentTarget)" << endl;
         ofs << in+ in+ "self.AddTodCount(Idx_PolBB, -Consumed_BB)" << endl;
         ofs << endl;
 
         // TODO: Update this with matrix calculation form
-        ofs << in+ in+ "# Update dCount for Polymerase Reaction Substrates" << endl;
-        ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated_Total)" << endl;
-        ofs << endl;
         ofs << in+ in+ "return Pos_Pol_Trimmed" << endl;
         ofs << endl;
         
@@ -2005,28 +1995,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ in+ "return np.array(ThresholdedMolecules) < self.State.Pos_Threshold" << endl;
     ofs << endl;
     
-    ofs << in+ "def DuplicateCells(Counts, Idx_DividingCells):" << endl;
-    ofs << in+ in+ "Counts_Divided = Counts[Idx_DividingCells] / 2" << endl;
-    ofs << in+ in+ "Counts[Idx_DividingCells] = np.ceil(Counts_Divided).astype(int)" << endl;
-    ofs << in+ in+ "return np.vstack([Counts, np.floor(Counts_Divided).astype(int)])" << endl;
-    ofs << endl;    
-
-    ofs << in+ "def AddCells(Counts, Idx_DividingCells, DefaultValue):" << endl;
-    ofs << in+ in+ "Counts_New = np.full_like(Counts[Idx_DividingCells], DefaultValue)" << endl;
-    ofs << in+ in+ "return np.vstack([Counts, Counts_New])" << endl;
-    ofs << endl;
-    
     ofs << in+ "def CellDivision(self):" << endl;
-    if (!RNAPs.empty()) {
+    if (Option.bDebug) {
         ofs << in+ in+ "# Temporary rate ramping for viewing" << endl;
-        ofs << in+ in+ "self.State.Rate_Transcription = np.array([1e4])" << endl;
+        if (!DNAPs.empty())     { ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl; }
+        if (!RNAPs.empty())     { ofs << in+ in+ "self.State.Rate_Transcription = np.array([1e4])" << endl; }
+        if (!Ribosomes.empty()) { ofs << in+ in+ "self.State.Rate_Translation = np.array([1e4 / 3])" << endl; }
     }
-
-    if (!Ribosomes.empty()) {
-        ofs << in+ in+ "# Temporary rate ramping for viewing" << endl;
-        ofs << in+ in+ "self.State.Rate_Translation = np.array([1e4 / 3])" << endl;
-    }
-
+    
     if (!DNAPs.empty()) {
         ofs << in+ in+ "bDividingCells = np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2, 1, 0), axis=1)" << endl;
 //        ofs << in+ in+ "bDividingCells[0] = 1" << endl;
@@ -2034,9 +2010,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         // One liner:
         //        ofs << in+ in+ "Idx_DividingCells = np.where(np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2), axis=1) > 0)" << endl;
         ofs << endl;
-
-        ofs << in+ in+ "# Temporary rate ramping for viewing" << endl;
-        ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl;
 
         if (Option.bDebug) {
             ofs << in+ in+ "#Debugging" << endl;
@@ -2075,6 +2048,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
         if (!Ribosomes.empty()) {
             ofs << in+ in+ "self.State.Count_Nascent_Protein = SimF.DuplicateCells(self.State.Count_Nascent_Protein, Idx_DividingCells)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_Translation = SimF.AddCells(self.State.Pos_Pol_Translation, Idx_DividingCells, -1)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_End_Translation = SimF.AddCells(self.State.Pos_Pol_End_Translation, Idx_DividingCells, 0)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_Template_Translation = SimF.AddCells(self.State.Pos_Pol_Template_Translation, Idx_DividingCells, -1)" << endl;
             ofs << endl;
         }
 

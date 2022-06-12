@@ -365,7 +365,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "# Threshold value (Position[3]) is not used" << endl;
     ofs << endl;
     ofs << in+ "def SetReplicationCompletionRate(self, Rate):" << endl;
-    ofs << in+ in+ "self.ReplicationCompletionRate = Rate.transpose()[0]" << endl;
+    ofs << in+ in+ "self.ReplicationCompletionRate = Rate.transpose()" << endl;
     ofs << endl;
     ofs << in+ "def SetRadar(self, switch=False, sampling=6, spacing=30):" << endl;
     ofs << in+ in+ "self.ThresholdMolecule_Switch = switch" << endl;
@@ -408,7 +408,7 @@ void FWriter::SimVis2D() {
 //    ofs << in+ in+ "self.Ligand_Prev = SimM.GetCountFromDistributionByNamesOfDistAndPos(GlucoseName, self.Name)" << endl; // TODO: HARDCODED
     ofs << in+ in+ "self.SetPosition(SimM.GetPositionXYAngleByName(self.Name))" << endl;
     if (!DNAPs.empty()) {
-        ofs << in+ in+ "self.SetReplicationCompletionRate(SimM.GetReplicationCompletionRate(self.Name))";
+        ofs << in+ in+ "self.SetReplicationCompletionRate(np.zeros(SimM.GetPosIdx(self.Name).shape[0]))";
     } ofs << endl;
     ofs << in+ in+ "self.InitializeTrajectory()" << endl;
     ofs << in+ in+ "self.IncrementSimCount()" << endl;
