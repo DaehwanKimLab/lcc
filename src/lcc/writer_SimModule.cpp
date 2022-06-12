@@ -1496,7 +1496,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << in+ in+ "ReplicationCompletion = np.where(ReplicationProgress == 0, 0, ReplicationProgress / np.sum(self.State.Pos_Pol_End_Replication, axis=1))" << endl;
         ofs << in+ in+ "return ReplicationCompletion[Idx]" << endl;
     } else {
-        ofs << in+ in+ "return np.zeros(self.State.Count_All.shape[0])" << endl;
+        ofs << in+ in+ "return np.zeros([self.State.Count_All.shape[0], 1])" << endl;
     }
     ofs << endl;
 
