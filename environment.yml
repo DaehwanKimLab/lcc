@@ -5,7 +5,13 @@ dependencies:
   - python=3.8
   - pip
   - numpy
+  - cmake
+  - grpcio-tools
   - pip:
-    - tensorflow
-    - matplotlib
-    - plot
+      - tensorflow
+      - matplotlib
+      - plot
+      - asyncio
+      - grpcio
+      - protobuf
+      - pygame
