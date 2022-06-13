@@ -128,12 +128,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     }
 
     std::vector<std::vector<FMolecule *>> PolymeraseTypes = {DNAPs, RNAPs, Ribosomes};
-    Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
     std::string Name_mRNASubIdx = "Idx_mRNAInRNA";
 
-    if (!DNAPs.empty())        { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
-    if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
-    if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
+    if (!PolymeraseList.empty()) {
+        Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
+
+        if (!DNAPs.empty())        { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
+        if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
+        if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
+    }
 
     // for Transporter reactions
     ReactionTypes.clear();
@@ -154,7 +157,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     float VolInit = 1;
 
     ofs << in+ "def Initialize(self):" << endl;
-    ofs << in+ in+ "self.VolInit = np.full([" << MatrixSize << ", 1], " << VolInit << ")" << endl;
+    ofs << in+ in+ "self.VolInit = " << VolInit << endl;
     ofs << in+ in+ "self.Vol = np.full([" << MatrixSize << ", 1], " << VolInit << ")" << endl;
     ofs << endl;
 
@@ -247,12 +250,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         }
     }
 
-    SetUp_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
+    if (!PolymeraseList.empty()) {
+        SetUp_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
 
-    if (!DNAPs.empty())        { SetUp_PolymeraseReaction_DNAP(ofs, DNAPs); }
-    if (!RNAPs.empty())        { SetUp_PolymeraseReaction_RNAP(ofs, RNAPs); }
-    if (!Ribosomes.empty())    { SetUp_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
-
+        if (!DNAPs.empty()) { SetUp_PolymeraseReaction_DNAP(ofs, DNAPs); }
+        if (!RNAPs.empty()) { SetUp_PolymeraseReaction_RNAP(ofs, RNAPs); }
+        if (!Ribosomes.empty()) { SetUp_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
+    }   
 //
 //        //    std::vector<std::string> PolymeraseNames = Context.GetNames_PolymeraseList(PolymeraseList);
 //        std::vector<FPolymeraseReaction *> PolymeraseReactionList = Context.GetList_Polymerase_ReactionList();
@@ -433,7 +437,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << in+ in+ "self.Debug_Idx_Dist = list()" << endl;
     ofs << endl;
 
-    ofs << in+ "def Initialize(self, InN_SimSteps=1000, InTimeResolution=100):" << endl;
+    ofs << in+ "def Initialize(self, InN_SimSteps=" << Sim_Steps << ", InTimeResolution=" << Sim_Resolution << "):" << endl;
     ofs << in+ in+ "print('Simulation Initialized...')" << endl;
     ofs << in+ in+ "self.N_SimSteps = np.array([InN_SimSteps])" << endl;
     ofs << in+ in+ "self.SimTimeResolutionPerSecond = InTimeResolution" << endl;
@@ -2050,6 +2054,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
         ofs << in+ in+ "self.State.Count_All = SimF.DuplicateCells(self.State.Count_All, Idx_DividingCells)" << endl;
         ofs << in+ in+ "self.State.dCount_All = SimF.DuplicateCells(self.State.dCount_All, Idx_DividingCells)" << endl;
+        ofs << in+ in+ "self.State.Vol = SimF.DuplicateCells(self.State.Vol, Idx_DividingCells)" << endl;
         ofs << endl;
 
         ofs << in+ in+ "self.State.Count_Nascent_Chromosome = SimF.DuplicateCells(self.State.Count_Nascent_Chromosome, Idx_DividingCells)" << endl;
