@@ -77,8 +77,11 @@ public:
     void SetUp_SpatialSimulation(ofstream& ofs);
     void SetUp_ChromosomeSimulation(ofstream& ofs);
 
+    // SimServer Utility
+    void GenerateVisObjects(std::ofstream& ofs, int indents, std::string ObjectFamilyName, std::string N_Objects_Str);
+
     // Simulation
-    void SimIdx();
+    void SimIdx();  // to store long arrays to call from SimModule
     void SimExecutor();
     void SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Map_Height);
     void SimVis2D();

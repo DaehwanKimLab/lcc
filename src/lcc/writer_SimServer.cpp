@@ -2,6 +2,28 @@
 
 using namespace std;
 
+void FWriter::GenerateVisObjects(std::ofstream& ofs, int indents, std::string ObjectFamilyName, std::string N_Objects_Str) {
+    std::string in = "    ";
+    std::string IN = std::string(4 * indents, ' ');
+
+    std::string Idx = ObjectFamilyName + "_i";
+
+    ofs << IN+ "# For " << ObjectFamilyName << " VisObjects" << endl;
+    ofs << IN+ "VisObjects_" << ObjectFamilyName << " = {}" << endl;
+    ofs << IN+ "for " << Idx << " in range(" << N_Objects_Str << "):" << endl;
+    ofs << IN+ in+ "ObjID = " << Idx << " + 1   # ID 0 is used for static objects" << endl;
+    ofs << IN+ in+ "VisObjects[ObjID] = lccsimulation_pb2.MVisObjectData(" << endl;
+    ofs << IN+ in+ in+ "ID=ObjID," << endl;
+    ofs << IN+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_" << Utils::UpperCaseStr(ObjectFamilyName) << ", " << endl;
+    ofs << IN+ in+ in+ "Position=PosVec," << endl;
+    ofs << IN+ in+ in+ "Rotation=RotVec," << endl;
+    ofs << IN+ in+ in+ "# Scale =, # Scale doesn't change, leave it out" << endl;
+    ofs << IN+ in+ in+ "# Color =, # Color doesn't change, leave it out" << endl;
+    ofs << IN+ in+ ")" << endl;
+    ofs << endl;
+}
+
+
 void FWriter::SimServer() {
     std::cout << "Generating simulation server..." << std::endl;
 
@@ -235,6 +257,9 @@ void FWriter::SimServer() {
     ofs << endl;    
     
     ofs << in+ in+ in+ in+ "# Record data SimUnitState" << endl;
+    
+    ofs << in+ in+ in+ in+ "# Temporary: The following state is at the organism level (highest container level)" << endl;
+
     ofs << in+ in+ in+ in+ "VisObjects = {} # map from id --> VisObjectData" << endl;
     ofs << in+ in+ in+ in+ "DNAReplications = {} # map from id --> VisObjectData" << endl;
     ofs << endl;
@@ -242,10 +267,11 @@ void FWriter::SimServer() {
     if (!Organisms.empty()) {
         for (auto& organism : Organisms) {
             auto Organism = dynamic_cast<FOrganism*>(organism);
+            ofs << in+ in+ in+ in+ "# " << Organism->Name << " State" << endl;
             ofs << in+ in+ in+ in+ "ReplicationCompletionRate = self.SimM.GetReplicationCompletionRateByCompartmentName('" << Organism->Name << "')" << endl;
 
             ofs << in+ in+ in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << organism->Name << "')" << endl;
-            ofs << in+ in+ in+ in+ "for i in range(len(X)):" << endl;
+            ofs << in+ in+ in+ in+ "for i in range(len(X)):   # i here is an organism ID" << endl;
             ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i], Y=Y[i], Z=0)" << endl;
             ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
             ofs << endl;
@@ -259,9 +285,27 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ in+ "# Color =, # Color doesn't change, leave it out" << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
             ofs << endl;
+            
+            std::string DNAP = "DNAP";
+            std::string RNAP = "RNAP";
+            std::string Ribosome = "Ribosome";
+
+            std::vector<std::string> VisObjectFamilyListInOrganism;
+            
+            VisObjectFamilyListInOrganism.push_back(DNAP);
+            //VisObjectFamilyListInOrganism.push_back(RNAP);
+            //VisObjectFamilyListInOrganism.push_back(Ribosome);
+            
+            for (auto& VisObjectFamilyName : VisObjectFamilyListInOrganism) {
+                GenerateVisObjects(ofs, 5, VisObjectFamilyName, "self.State.Pos_Pol_Replication.shape[1]");
+            }
+
             ofs << in+ in+ in+ in+ in+ "DNAReplications[ObjID] = lccsimulation_pb2.MState_DNAReplication(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i][0] * 100," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Objects_DNAP = VisObjects_" << DNAP << "," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_DNAP_bp = self.State.Pos_Pol_Replication[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_DNAP_bp = self.State.Dir_Pol_Replication[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
         }
     }

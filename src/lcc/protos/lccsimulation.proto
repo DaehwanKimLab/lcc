@@ -19,7 +19,7 @@ enum VisObjectType
     M_GLUCOSE = 0;
     M_ECOLI = 1;
     M_PETRI_DISH = 2;
-    
+
     // Vis Objects
     VO_ECOLI = 3;
 
@@ -28,6 +28,12 @@ enum VisObjectType
     // Debug Meshes
     M_SPHERE = 4;
     M_CUBE = 5;
+
+    // Genetic Materials
+    M_DNAP = 6;
+    M_RNAP = 7;
+    M_Ribosome = 8;
+
 }
 
 //
@@ -88,6 +94,7 @@ message MVisObjectData
 //
 // DNA
 //
+
 message MDNA_InitData
 {
     repeated MDNA_AnnotationData DNA_Annotations = 1;
@@ -111,6 +118,9 @@ message MState_DNAReplication
 {
     uint32 ID = 1;
     float ReplicationCompletionRate = 2;
+    map<uint32, MVisObjectData> Objects_DNAP = 3;
+    repeated float Pos_DNAP_bp = 4;
+    repeated float Dir_DNAP = 5;
 }
 
 //
