@@ -1507,7 +1507,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     if (!DNAPs.empty()) {
         ofs << in+ in+ "ReplicationProgress = np.sum((self.State.Pos_Pol_End_Replication + self.State.Pos_Pol_Replication * self.State.Dir_Pol_Replication), axis=1)" << endl;
         ofs << in+ in+ "ReplicationProgress = np.where(ReplicationProgress < 0, 0, ReplicationProgress)" << endl;
-        ofs << in+ in+ "ReplicationCompletionRate = np.where(ReplicationProgress == 0, 0, ReplicationProgress / np.sum(self.State.Pos_Pol_End_Replication, axis=1))" << endl;
+        ofs << in+ in+ "ReplicationTarget = np.sum(np.where(self.State.Pos_Pol_End_Replication == 0, 1, self.State.Pos_Pol_End_Replication), axis=1)" << endl;
+        ofs << in+ in+ "ReplicationCompletionRate = np.where(ReplicationProgress == 0, 0, ReplicationProgress / ReplicationTarget)" << endl;
         ofs << in+ in+ "return ReplicationCompletionRate" << endl;
     } else {
         ofs << in+ in+ "return np.zeros([self.State.Count_All.shape[0], 1])" << endl;
@@ -2022,12 +2023,12 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     ofs << endl;
     
     ofs << in+ "def CellDivision(self):" << endl;
-    if (Option.bDebug) {
-        ofs << in+ in+ "# Temporary rate ramping for viewing" << endl;
-        if (!DNAPs.empty())     { ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl; }
-        if (!RNAPs.empty())     { ofs << in+ in+ "self.State.Rate_Transcription = np.array([1e4])" << endl; }
-        if (!Ribosomes.empty()) { ofs << in+ in+ "self.State.Rate_Translation = np.array([1e4 / 3])" << endl; }
-    }
+    //if (Option.bDebug) {
+    //    ofs << in+ in+ "# Temporary rate ramping for viewing" << endl;
+    //    if (!DNAPs.empty())     { ofs << in+ in+ "self.State.Rate_Replication = np.array([1e6])" << endl; }
+    //    if (!RNAPs.empty())     { ofs << in+ in+ "self.State.Rate_Transcription = np.array([1e4])" << endl; }
+    //    if (!Ribosomes.empty()) { ofs << in+ in+ "self.State.Rate_Translation = np.array([1e4 / 3])" << endl; }
+    //}
     
     if (!DNAPs.empty()) {
         ofs << in+ in+ "bDividingCells = np.count_nonzero(np.where(self.GetCount(self.State.Idx_Template_Replication) >= 2, 1, 0), axis=1)" << endl;
