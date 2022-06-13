@@ -33,3 +33,7 @@ petridish P
         E(rand(200, 1000), rand(200, 600), 0) = 1;
     }
 }
+
+SimRes = 1;
+
+//@```
