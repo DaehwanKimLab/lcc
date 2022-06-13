@@ -302,7 +302,7 @@ void FWriter::SimServer() {
 
             ofs << in+ in+ in+ in+ in+ "DNAReplications[ObjID] = lccsimulation_pb2.MState_DNAReplication(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i][0] * 100," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i] * 100," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_DNAP = VisObjects_" << DNAP << "," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Pos_DNAP_bp = self.State.Pos_Pol_Replication[i]," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Dir_DNAP_bp = self.State.Dir_Pol_Replication[i]," << endl;
