@@ -32,7 +32,7 @@ enum VisObjectType
     // Genetic Materials
     M_DNAP = 6;
     M_RNAP = 7;
-    M_Ribosome = 8;
+    M_RIBOSOME = 8;
 
 }
 
@@ -76,7 +76,9 @@ message MSimUnitState
     float SimulationStep = 1;
     float SimulatedTime = 2;
     map<uint32, MVisObjectData> Objects = 3;
-    map<uint32, MState_DNAReplication> DNAReplication = 4;
+    map<uint32, MState_Replication> Replication = 4;
+    map<uint32, MState_Transcription> Transcription = 5;
+    map<uint32, MState_Translation> Translation = 6;
 
 }
 
@@ -114,13 +116,28 @@ message MDNA_PositionData
     repeated MVector3 Points = 1;
 }
 
-message MState_DNAReplication
+message MState_Replication
 {
     uint32 ID = 1;
     float ReplicationCompletionRate = 2;
     map<uint32, MVisObjectData> Objects_DNAP = 3;
     repeated float Pos_DNAP_bp = 4;
     repeated float Dir_DNAP = 5;
+}
+
+message MState_Transcription
+{
+    uint32 ID = 1;
+    map<uint32, MVisObjectData> Objects_RNAP = 2;
+    repeated float Pos_RNAP_bp = 3;
+    repeated float Dir_RNAP = 4;
+}
+
+message MState_Translation
+{
+    uint32 ID = 1;
+    map<uint32, MVisObjectData> Objects_Ribosome = 2;
+    repeated float Pos_Ribosome_bp = 4;
 }
 
 //

@@ -120,23 +120,26 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
     std::vector<FMolecule *> RNAPs = Context.GetSubList_MoleculeList("RNAP");
     std::vector<FMolecule *> Ribosomes = Context.GetSubList_MoleculeList("Ribosome");
 
-    if (!PolymeraseList.empty()) {
-        if      (!DNAPs.empty())        {}
-        else if (!RNAPs.empty())        {}
-        else if (!Ribosomes.empty())    {}
-        else                            { Utils::Assertion(false, "ERROR: Polymerase List is empty."); }
-    }
-
     std::vector<std::vector<FMolecule *>> PolymeraseTypes = {DNAPs, RNAPs, Ribosomes};
     std::string Name_mRNASubIdx = "Idx_mRNAInRNA";
 
-    if (!PolymeraseList.empty()) {
-        Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
+    // Conditional initialization is deactivated for unconditional initialization of variables used to communicate to visualization
 
-        if (!DNAPs.empty())        { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
-        if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
-        if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
-    }
+    //if (!PolymeraseList.empty()) {
+    //    Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
+
+    //    if (!DNAPs.empty())        { Initialize_PolymeraseReaction_DNAP(ofs, DNAPs); }
+    //    if (!RNAPs.empty())        { Initialize_PolymeraseReaction_RNAP(ofs, RNAPs); }
+    //    if (!Ribosomes.empty())    { Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx); }
+    //} 
+
+    // Unconditional initialization of polymerase variables 
+    Initialize_PolymeraseReaction_Matrix(ofs, PolymeraseTypes);
+    Initialize_PolymeraseReaction_DNAP(ofs, DNAPs);
+    Initialize_PolymeraseReaction_RNAP(ofs, RNAPs);
+    Initialize_PolymeraseReaction_Ribosome(ofs, Ribosomes, Name_mRNASubIdx);
+
+
 
     // for Transporter reactions
     ReactionTypes.clear();
