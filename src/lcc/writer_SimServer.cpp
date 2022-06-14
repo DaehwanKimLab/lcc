@@ -15,8 +15,8 @@ void FWriter::GenerateVisObjects(std::ofstream& ofs, int indents, std::string Ob
     ofs << IN+ in+ "VisObjects[ObjID] = lccsimulation_pb2.MVisObjectData(" << endl;
     ofs << IN+ in+ in+ "ID=ObjID," << endl;
     ofs << IN+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_" << Utils::UpperCaseStr(ObjectFamilyName) << ", " << endl;
-    ofs << IN+ in+ in+ "Position=PosVec," << endl;
-    ofs << IN+ in+ in+ "Rotation=RotVec," << endl;
+    ofs << IN+ in+ in+ "Position=ZeroVec,   # TODO: Requires a check with visualization" << endl;
+    ofs << IN+ in+ in+ "Rotation=ZeroVec,   # TODO: Requires a check with visualization" << endl;
     ofs << IN+ in+ in+ "# Scale =, # Scale doesn't change, leave it out" << endl;
     ofs << IN+ in+ in+ "# Color =, # Color doesn't change, leave it out" << endl;
     ofs << IN+ in+ ")" << endl;
@@ -223,6 +223,40 @@ void FWriter::SimServer() {
     ofs << in+ in+ "print('running')" << endl;
     ofs << in+ in+ "self.IsRunning = True" << endl;
     ofs << endl;
+
+    ofs << in+ in+ "# Setup Static Objects" << endl;
+    
+    ofs << in+ in+ "InitVisObjects = []" << endl;
+    ofs << in+ in+ "ZeroVec = lccsimulation_pb2.MVector3(X=0, Y=0, Z=0)" << endl;
+    ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Setup Default Numpy Arrays" << endl;
+    
+    ofs << in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
+    ofs << in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
+    ofs << in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
+    ofs << in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
+    ofs << in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
+    ofs << in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
+    ofs << in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
+    ofs << endl;
+
+    ofs << in + in + "# Setup Central Dogma Numpy Arrays" << endl;
+
+    ofs << in+ in+ "if np.any(self.State.Pos_Pol_Replication):" << endl;
+    ofs << in+ in+ in+ "Pos_Pol_Replication = self.State.Pos_Pol_Replication" << endl;
+    ofs << in+ in+ "if np.any(self.State.Pos_Pol_Transcription):" << endl;
+    ofs << in+ in+ in+ "Pos_Pol_Transcription = self.State.Pos_Pol_Transcription" << endl;
+    ofs << in+ in+ "if np.any(self.State.Pos_Pol_Translation):" << endl;
+    ofs << in+ in+ in+ "Pos_Pol_Translation = self.State.Pos_Pol_Translation" << endl;
+    ofs << in+ in+ "if np.any(self.State.Dir_Pol_Replication):" << endl;
+    ofs << in+ in+ in+ "Dir_Pol_Replication = self.State.Dir_Pol_Replication" << endl;
+    ofs << in+ in+ "if np.any(self.State.Dir_Pol_Transcription):" << endl;
+    ofs << in+ in+ in+ "Dir_Pol_Transcription = self.State.Dir_Pol_Transcription" << endl;
+    ofs << endl;
+
+
     ofs << in+ in+ "def response_messages():" << endl;
     ofs << endl;
     
@@ -261,12 +295,33 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "# Temporary: The following state is at the organism level (highest container level)" << endl;
 
     ofs << in+ in+ in+ in+ "VisObjects = {} # map from id --> VisObjectData" << endl;
-    ofs << in+ in+ in+ in+ "DNAReplications = {} # map from id --> VisObjectData" << endl;
+    ofs << endl;
+
+    std::vector<std::string> VisObjectFamilyListInOrganism, Processes;
+    std::string VisObjectFamily, Process;
+    std::string DNAP, RNAP, Ribosome;
+
+    DNAP = "DNAP";
+    RNAP = "RNAP";
+    Ribosome = "Ribosome";
+
+    VisObjectFamilyListInOrganism.push_back(DNAP);
+    VisObjectFamilyListInOrganism.push_back(RNAP);
+    VisObjectFamilyListInOrganism.push_back(Ribosome);
+
+    Processes = { "Replication", "Transcription", "Translation" };
+
+    for (auto& process : Processes) {
+        ofs << in+ in+ in+ in+ process + "s = {} # map from id --> VisObjectData" << endl;
+    }
     ofs << endl;
 
     if (!Organisms.empty()) {
         for (auto& organism : Organisms) {
             auto Organism = dynamic_cast<FOrganism*>(organism);
+
+            // For an organism position
+
             ofs << in+ in+ in+ in+ "# " << Organism->Name << " State" << endl;
             ofs << in+ in+ in+ in+ "ReplicationCompletionRate = self.SimM.GetReplicationCompletionRateByCompartmentName('" << Organism->Name << "')" << endl;
 
@@ -286,33 +341,66 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ ")" << endl;
             ofs << endl;
             
-            std::string DNAP = "DNAP";
-            std::string RNAP = "RNAP";
-            std::string Ribosome = "Ribosome";
+            // Organize Central dogma info in the organism
 
-            std::vector<std::string> VisObjectFamilyListInOrganism;
-            
-            VisObjectFamilyListInOrganism.push_back(DNAP);
-            //VisObjectFamilyListInOrganism.push_back(RNAP);
-            //VisObjectFamilyListInOrganism.push_back(Ribosome);
-            
-            for (auto& VisObjectFamilyName : VisObjectFamilyListInOrganism) {
-                GenerateVisObjects(ofs, 5, VisObjectFamilyName, "self.State.Pos_Pol_Replication.shape[1]");
+            for (int i = 0; i < VisObjectFamilyListInOrganism.size(); i++) {
+                GenerateVisObjects(ofs, 5, VisObjectFamilyListInOrganism[i], "Pos_Pol_" + Processes[i] + ".shape[1]");
             }
 
-            ofs << in+ in+ in+ in+ in+ "DNAReplications[ObjID] = lccsimulation_pb2.MState_DNAReplication(" << endl;
+            // Packaging DNA Replication message in the organism
+
+            VisObjectFamily = DNAP;
+            Process = Processes[0];
+
+
+            ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i][0] * 100," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Objects_DNAP = VisObjects_" << DNAP << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_DNAP_bp = self.State.Pos_Pol_Replication[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Dir_DNAP_bp = self.State.Dir_Pol_Replication[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ ")" << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i] * 100," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = Pos_Pol_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = Dir_Pol_" << Process << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ ")" << endl;    
+
+            // Packaging Transcription in the organism
+
+            VisObjectFamily = RNAP;
+            Process = Processes[1];
+
+
+            ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = Pos_Pol_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = Dir_Pol_" << Process << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ ")" << endl;    
+
+            // Packaging Translation in the organism
+
+            VisObjectFamily = Ribosome;
+            Process = Processes[2];
+
+            ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = Pos_Pol_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ ")" << endl;    
+
         }
     }
 
     ofs << endl;
-    ofs << in+ in+ in+ in+ "CurState = lccsimulation_pb2.MSimUnitState(SimulationStep=self.SimM.GetSimStep(), SimulatedTime=self.SimM.GetSimTime(), Objects=VisObjects, DNAReplication=DNAReplications)" << endl;
+
+    // Packaging current state
+    ofs << in+ in+ in+ in+ "CurState = lccsimulation_pb2.MSimUnitState(";
+    // current state items
+    ofs << "SimulationStep=self.SimM.GetSimStep(), ";
+    ofs << "SimulatedTime=self.SimM.GetSimTime(), ";
+    ofs << "Objects=VisObjects, "; 
+    for (auto& process : Processes) {
+        ofs << process + "=" + process + "s, ";
+    } ofs << ")" << endl;
     ofs << endl;
+
     ofs << in+ in+ in+ in+ "response = lccsimulation_pb2.MRunData(State=CurState, Info='Any arbitrary message')" << endl;
     ofs << endl;
     ofs << in+ in+ in+ in+ "time.sleep(max(1./14 - (time.time() - start), 0))" << endl;

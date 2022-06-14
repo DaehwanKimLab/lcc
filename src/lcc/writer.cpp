@@ -431,106 +431,137 @@ void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<st
 
     std::vector<std::string> List_ForProcess;
 
-    // For All genetic info processing
-    if (!PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
-        List_ForProcess = {
-            BB_Ch,                                  BB_RNA,             BB_Protein,
-            Max_Ch,                                 Max_RNA,            Max_Protein,
-            Len_Ch,                                 Len_RNA,            Len_Protein,
-            Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
-            Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
-                                Dir_Gene,
-            Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
-        };
+    // Initialize all variables regardless of polymerase types in the system.
+    List_ForProcess = {
+        BB_Ch,                                  BB_RNA,             BB_Protein,
+        Max_Ch,                                 Max_RNA,            Max_Protein,
+        Len_Ch,                                 Len_RNA,            Len_Protein,
+        Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
+        Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
+                            Dir_Gene,
+        Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
+    };
 
-        for (auto& item : List_ForProcess) {
-            ofs << in+ in+ item << endl;
-        }
+    for (auto& item : List_ForProcess) {
+        ofs << in+ in+ item << endl;
+    }
+    
+    // Conditional initialization has been deactivated for unconditional initialization of variables used to communicate to visualization
 
-     // For Replication
-    } else if (!PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
-        ofs << in+ in+ BB_Ch << endl;
-        ofs << in+ in+ Max_Ch << endl;
-        ofs << in+ in+ Len_Ch << endl;
-        ofs << in+ in+ Count_Nascent_Ch << endl;
+    //if (!PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+    //    List_ForProcess = {
+    //        BB_Ch,                                  BB_RNA,             BB_Protein,
+    //        Max_Ch,                                 Max_RNA,            Max_Protein,
+    //        Len_Ch,                                 Len_RNA,            Len_Protein,
+    //        Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
+    //        Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
+    //                            Dir_Gene,
+    //        Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
+    //    };
 
-    // For Transcription (and Replication)
-    } else if (!PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
-        List_ForProcess = {
-            BB_Ch,                                  BB_RNA,             
-            Max_Ch,                                 Max_RNA,            
-            Len_Ch,                                 Len_RNA,            
-            Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      
-            Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,      
-                                Dir_Gene,
-            Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  
-        };
+    //    for (auto& item : List_ForProcess) {
+    //        ofs << in+ in+ item << endl;
+    //    }
 
-        for (auto& item : List_ForProcess) {
-            ofs << in+ in+ item << endl;
-        }
+    // // For Replication
+    //} else if (!PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
+    //    ofs << in+ in+ BB_Ch << endl;
+    //    ofs << in+ in+ Max_Ch << endl;
+    //    ofs << in+ in+ Len_Ch << endl;
+    //    ofs << in+ in+ Count_Nascent_Ch << endl;
 
-    // For Translation
-    } else if (PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
-        List_ForProcess = {
-                                                    BB_RNA,             BB_Protein,
-                                                    Max_RNA,            Max_Protein,
-                                                    Len_RNA,            Len_Protein,
-                                Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
-                                Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
-                                Dir_Gene,
-                                Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
-        };
+    //// For Transcription (and Replication)
+    //} else if (!PolymeraseTypes[1].empty() & PolymeraseTypes[2].empty()) {
+    //    List_ForProcess = {
+    //        BB_Ch,                                  BB_RNA,             
+    //        Max_Ch,                                 Max_RNA,            
+    //        Len_Ch,                                 Len_RNA,            
+    //        Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      
+    //        Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,      
+    //                            Dir_Gene,
+    //        Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  
+    //    };
 
-        for (auto& item : List_ForProcess) {
-            ofs << in+ in+ item << endl;
-        }
+    //    for (auto& item : List_ForProcess) {
+    //        ofs << in+ in+ item << endl;
+    //    }
 
-    // For Transcription and Translation
-    } else if (PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
-        List_ForProcess = {
-            BB_Ch,                                  BB_RNA,             BB_Protein,
-            Max_Ch,                                 Max_RNA,            Max_Protein,
-            Len_Ch,                                 Len_RNA,            Len_Protein,
-            Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
-            Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
-                                Dir_Gene,
-            Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
-        };
+    //// For Translation
+    //} else if (PolymeraseTypes[0].empty() & PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+    //    List_ForProcess = {
+    //                                                BB_RNA,             BB_Protein,
+    //                                                Max_RNA,            Max_Protein,
+    //                                                Len_RNA,            Len_Protein,
+    //                            Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
+    //                            Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
+    //                            Dir_Gene,
+    //                            Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
+    //    };
 
-        for (auto& item : List_ForProcess) {
-            ofs << in+ in+ item << endl;
-        }
+    //    for (auto& item : List_ForProcess) {
+    //        ofs << in+ in+ item << endl;
+    //    }
 
-    } ofs << endl;
+    //// For Transcription and Translation
+    //} else if (PolymeraseTypes[0].empty() & !PolymeraseTypes[1].empty() & !PolymeraseTypes[2].empty()) {
+    //    List_ForProcess = {
+    //        BB_Ch,                                  BB_RNA,             BB_Protein,
+    //        Max_Ch,                                 Max_RNA,            Max_Protein,
+    //        Len_Ch,                                 Len_RNA,            Len_Protein,
+    //        Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
+    //        Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
+    //                            Dir_Gene,
+    //        Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
+    //    };
+
+    //    for (auto& item : List_ForProcess) {
+    //        ofs << in+ in+ item << endl;
+    //    }
+
+    //} 
+    ofs << endl;
 
 }
 
 void FWriter::Initialize_PolymeraseReaction_DNAP(ofstream& ofs, std::vector<FMolecule *> Polymerases)
 {
+    std::string Process = "Replication"; // for unconditional initialization purposes
+    if (!Polymerases.empty()) {
+        Utils::Assertion(dynamic_cast<FPolymerase*>(Polymerases[0])->Process == Process, "Process must match: Initialize_PolymeraseReaction_DNAP");
+    }
+
     // Polymerases for future uses
 
     // std::string InitiationSite
     // std::string TerminationSite
 
     // initialize common for all polymerase
-    Initialize_PolymeraseReaction_Index(ofs, dynamic_cast<FPolymerase *>(Polymerases[0])->Process);
+    Initialize_PolymeraseReaction_Index(ofs, Process);
 }
 
 void FWriter::Initialize_PolymeraseReaction_RNAP(ofstream& ofs, std::vector<FMolecule *> Polymerases)
 {
+    std::string Process = "Transcription"; // for unconditional initialization purposes
+    if (!Polymerases.empty()) {
+        Utils::Assertion(dynamic_cast<FPolymerase*>(Polymerases[0])->Process == Process, "Process must match: Initialize_PolymeraseReaction_RNAP");
+    }
+
     // Polymerases for future uses
 
     // std::string InitiationSite
     // std::string TerminationSite
 
     // initialize common for all polymerase
-    Initialize_PolymeraseReaction_Index(ofs, dynamic_cast<FPolymerase *>(Polymerases[0])->Process);
+    Initialize_PolymeraseReaction_Index(ofs, Process);
 }
 
 void FWriter::Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule *> Polymerases, std::string Name_mRNASubIdx)
 {
     // Polymerases for future uses
+    std::string Process = "Translation";
+    if (!Polymerases.empty()) {
+        Utils::Assertion(dynamic_cast<FPolymerase*>(Polymerases[0])->Process == Process, "Process must match: Initialize_PolymeraseReaction_Ribosome");
+    }
 
     // std::string InitiationSite
     // std::string TerminationSite
@@ -538,9 +569,8 @@ void FWriter::Initialize_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<
 
     ofs << in+ in+ "self." << Name_mRNASubIdx << " = None" << endl;
     // initialize common for all polymerase   
-    Initialize_PolymeraseReaction_Index(ofs, dynamic_cast<FPolymerase *>(Polymerases[0])->Process);
-    
 
+    Initialize_PolymeraseReaction_Index(ofs, Process);
 }
 
 void FWriter::Initialize_PolymeraseReaction_Index(ofstream& ofs, std::string Process)
