@@ -23,6 +23,13 @@ public:
     FCompilerContext Context;
 
     std::string in;
+
+    std::string Str_Empty = "";
+    std::string Str_Comma = ", ";
+    std::string Str_Equal = " = ";
+    std::string Str_LRB = "(";
+    std::string Str_RRB = ")";
+
     int N_MoleculesAllowed;
     std::string Name_Pseudo;
     float Float_Init = Numbers::GetFloatDefault(); // random initialized float
@@ -33,6 +40,9 @@ public:
     // Initialize
     void LinkOptionContext(FOption InOption, FCompilerContext InContext) { Option = InOption; Context = InContext; }
     void SetUpDefaultVariables(int InN_MoleculesAllowed, std::string InName_Pseudo, float InFloat_Default, int InInt_Default);
+
+    // Writing Utility
+    void DisplayWriterFunctionName(ofstream& ofs, std::string WriterName);
 
     // StandardReaction
     void Initialize_StandardReaction(ofstream& ofs, std::string Type, std::string NameSpace_Pathway="");
