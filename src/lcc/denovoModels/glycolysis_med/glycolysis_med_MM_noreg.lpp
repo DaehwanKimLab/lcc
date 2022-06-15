@@ -1,0 +1,51 @@
+// Abbreviations:
+// F16BP: fructose 1,6-biphosphate
+// PEP: Phosphoenolpyruvate
+
+/*
+// Medium Resolution Glucose to pyruvate no regulation
+pathway Glycolysis_medium_MM_noreg
+{
+    // Mass action: Kinetic model of Escherichia coli central metabolism
+    protein hexokinase(glucose + ATP --> fructose6P + ADP, k = 4e3) // I think this is counts per second?
+    //protein phosphoglucoseIsomerase(glucose6P --> fructose6P, kcat = 8e6, KM = 250uM) // A bit of guessing; basically double the glucose rate I think...
+    // Assume ATP is saturating and input Km of F6P
+    // Using the "relaxed" conformation Km from Peskov et al 2008
+    // There's not really a good kcat for PFK b/c most people use the MWC model...
+    // I found one that says 93 Hz but that seems really really low. I'm going to assume its actually mM/s...
+    // https://www.nature.com/articles/327437a0.pdf?proof=t
+    protein phosphofructokinase(fructose6P + ATP --> F16BP + ADP, kcat = 9.3e4, KM = 0.21uM)
+    // Skip some steps.  guesstimate
+    protein SUMMARYmakePEPase(F16BP --> PEP, k = 1e6)
+    // Use relaxed Km from supplementals of: https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1005396&type=printable
+    // just used vmax for kcat
+    protein pyruvateKinase(PEP + ADP --> ATP, kcat = 7.47e4, KM = 6.47e-4uM)
+}
+
+// Init concentrations: metabolites
+glucose[:] = 500uM, ATP[:] = 5000uM, ADP[:] = 1700uM;
+
+// Init concentrations: enzymes -- no particular reason these values were chosen.
+hexokinase = 1e4uM, phosphoglucoseIsomerase = 1e4uM, phosphofructokinase = 1e3uM;
+SUMMARYmakePEPase = 1e4uM, pyruvateKinase = 1e4uM;
+
+*/
+
+// Medium Resolution Glucose to pyruvate no regulation
+pathway Glycolysis_medium_MM_noreg
+{
+    protein hexokinase(glucose + ATP --> fructose6P + ADP, k = 4e3) 
+    protein phosphofructokinase(fructose6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 0.21uM)
+    protein SUMMARYmakePEPase(F16BP --> PEP, k = 1e6)
+    protein pyruvateKinase(PEP + ADP --> ATP, kcat = 170, KM = 700uM)
+}
+
+// Init concentrations: metabolites
+glucose[:] = 500uM, ATP[:] = 5000uM, ADP[:] = 1700uM;
+
+// Init concentrations: enzymes -- no particular reason these values were chosen.
+hexokinase = 1uM, phosphoglucoseIsomerase = 1uM, phosphofructokinase = 1uM;
+SUMMARYmakePEPase = 1uM, pyruvateKinase = 1uM;
+
+
+

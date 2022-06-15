@@ -1,0 +1,62 @@
+// Medium Resolution Glucose to pyruvate no regulation
+pathway Glycolysis_medium_MM_noreg
+{
+    protein hexokinase(glucose + ATP --> fructose6P + ADP, kcat = 4e3, KM = 5uM); 
+    protein phosphofructokinaseActive(fructose6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 0.21uM);
+    //protein phosphofructokinaseInactive(fructose6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
+    protein SUMMARYmakePEPase(F16BP --> PEP, k = 1e6);
+    protein pyruvateKinase(PEP + ADP --> ATP, kcat = 170, KM = 700uM);
+}
+
+// PFK regulation
+reaction feedForwardActivation_PFKActive(ADP --> phosphofructokinaseActive, Ka = 74uM, n = 1);
+//reaction feedBackInhibition_PFKActive(PEP --| phosphofructokinaseActive, Ki = 2e4uM, n = 1);
+//reaction feedForwardActivation_PFKInactive(ADP --> phosphofructokinaseInactive, Ka = 9e3uM, n = 1);
+//reaction feedBackInhibition_PFKInactive(PEP --| phosphofructokinaseInactive, Ki = 2.6e2uM, n = 1);
+
+// PK Regulation
+//reaction feedForwardActivation_PK(F16BP --> pyruvateKinase, Ka = 0.1uM, n = 1); // guessing on the Ka here
+reaction feedBackInhibition_PK(ATP --| pyruvateKinase, Ki = 5mM, n = 1); // just guess the ki here
+
+// Init concentrations: metabolites
+glucose = 500uM;
+//glucose[:] = 500uM;
+//glucose[:] = 500uM, ATP = 5000uM, ADP = 1700uM;
+//glucose[:] = 500uM, ATP[:] = 5000uM, ADP[:] = 1700uM;
+
+// Disturb system at certain points
+//PEP[10:11] = 1000uM;
+ADP[0] = 1700uM, ADP[20:25] = 3400uM, ADP[25:50] = 1700uM;
+ATP[0] = 5000uM, ATP[20:25] = 3300uM, ATP[25:50] = 5000uM;
+
+// Init concentrations: enzymes -- no particular reason these values were chosen.
+phosphofructokinaseActive = 4000;
+//phosphofructokinaseInactive = 4000;
+hexokinase = 0.01uM, phosphoglucoseIsomerase = 1uM, SUMMARYmakePEPase = 1uM, pyruvateKinase = 4000;
+// Make the simulation longer
+SimSteps = 5000, SimRes = 100;
+
+
+/*
+protein phosphofructokinase; // make it Kd instead of Km by annulling kcat
+{
+    reaction(ADP --> phosphofructokinaseActive, kcat = 5e4, KM = 1uM);
+    reaction(PEP --> phosphofructokinaseInactive, kcat = 5e4, KM = 1uM);
+}
+*/
+
+/*
+reaction PFKBaseToInactive(phosphofructokinase + PEP --> phosphofructokinaseInactive, kcat = 5e4, KM = 1uM);
+reaction PFKActiveToBase(phosphofructokinaseActive --> phosphofructokinase + ADP, kcat = 5e4, KM = 1uM); // make it Kd instead of Km by annulling kcat
+reaction PFKInactiveToBase(phosphofructokinaseInactive --> phosphofructokinase + PEP, kcat = 5e4, KM = 1uM);
+*/
+
+/*
+protein balancePFK
+{
+    reaction PFKBaseToActive(phosphofructokinase + ADP --> phosphofructokinaseActive, kcat = 1, KM = 74uM);
+    reaction PFKBaseToInactive(phosphofructokinase + PEP --> phosphofructokinaseInactive, kcat = 1, KM = 2e4uM);
+    reaction PFKActiveToBase(phosphofructokinaseActive --> phosphofructokinase + ADP, kcat = 1, KM = 9e3uM); // make it Kd instead of Km by annulling kcat
+    reaction PFKInactiveToBase(phosphofructokinaseInactive --> phosphofructokinase + PEP, kcat = 1, KM = 2.6e2uM);
+}
+*/

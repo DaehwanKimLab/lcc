@@ -173,7 +173,7 @@ class RegulatoryEquations:
         pass
 
     def andLogic2Activators(self, conc_1, conc_2, Kd1, Kd2, n1 = 1, n2 = 1, Kd = 1):
-        return ((conc_1 / Kd1) ** n1 * (conc_2 / Kd2) ** n2) / ( 1 +(conc_1 / Kd1) ** n1 * (conc_2 / Kd2) ** n2 ) 
+        return ((conc_1 / Kd1) ** n1 * (conc_2 / Kd2) ** n2) / ( 1 + (conc_1 / Kd1) ** n1 * (conc_2 / Kd2) ** n2 ) 
 
     def orLogic2Activators(self, conc_1, conc_2, Kd1, Kd2, n1 = 1, n2 = 1, Kd = 1):
         return ((conc_1 / Kd1) ** n1 + (conc_2 / Kd2) ** n2) / ( 1 +(conc_1 / Kd1) ** n1 + (conc_2 / Kd2) ** n2 ) 

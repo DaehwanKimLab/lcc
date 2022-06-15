@@ -1,0 +1,21 @@
+// Abbreviations:
+// F16BP: fructose 1,6-biphosphate
+// PEP: Phosphoenolpyruvate
+
+// Medium Resolution Glucose to pyruvate no regulation
+pathway Glycolysis_medium_massaction_noreg
+{
+    protein hexokinase(glucose + ATP --> glucose6P + ADP + H, k = 1e4)
+    protein phosphoglucoseIsomerase(glucose6P --> fructose6P, k = 1e6)
+    protein phosphofructokinase(fructose6P + ATP --> F16BP + ADP + H, k = 1e6)
+    protein SUMMARYmakePEPase(F16BP --> PEP, k = 1e6)
+    protein pyruvateKinase(PEP + ADP + H --> pyruvate + ATP, k = 1e6)
+}
+
+// Init concentrations: metabolites
+glucose = 500uM, P = 5300uM, ATP = 5000uM, ADP = 1700uM, NAD = 4700uM;
+
+// Init concentrations: enzymes
+hexokinase = 1e4uM, phosphoglucoseIsomerase = 1e4uM, phosphofructokinase = 1e3uM;
+SUMMARYmakePEPase = 1e4uM, pyruvateKinase = 1e4uM;
+
