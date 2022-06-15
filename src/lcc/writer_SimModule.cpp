@@ -1338,6 +1338,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         if (!DNAPs.empty())        { ofs << in+ in+ "self.Replication()" << endl; }
         if (!RNAPs.empty())        { ofs << in+ in+ "self.Transcription()" << endl; }
         if (!Ribosomes.empty())    { ofs << in+ in+ "self.Translation()" << endl; }
+        ofs << in+ in+ "self.UpdatePolymeraseArrayShapes()" << endl;
         ofs << endl;
 
 //        ofs << in+ in+ "self.Polymerase_InitiationReactions()" << endl;
@@ -1554,6 +1555,35 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
 
     ofs << in+ "# Central dogma routines" << endl;
     ofs << endl;
+
+    if (!PolymeraseList.empty()) {
+        ofs << in+ "def UpdatePolymeraseArrayShapes(self):" << endl;
+        ofs << in+ in+ "# Updating the size of Polymerase-related arrays to the current maximum count of the indexed molecule " << endl;
+
+        //if (!DNAPs.empty()) {
+        //    ofs << in+ in+ "Count_DNAP = np.max(self.GetCount(self.State.Idx_Pol_Replication))" << endl;
+        //    ofs << in+ in+ "self.State.Pos_Pol_Replication = SimF.ExtendArraySize(self.State.Pos_Pol_Replication, Count_DNAP, -1)" << endl;
+        //    ofs << in+ in+ "self.State.Pos_Pol_End_Replication = SimF.ExtendArraySize(self.State.Pos_Pol_End_Replication, Count_DNAP, 0)" << endl;
+        //    ofs << in+ in+ "self.State.Pos_Pol_Template_Replication = SimF.ExtendArraySize(self.State.Pos_Pol_Template_Replication, Count_DNAP, -1)" << endl;
+        //    ofs << in+ in+ "self.State.Dir_Pol_Replication = SimF.ExtendArraySize(self.State.Dir_Pol_Replication, Count_DNAP, 0)" << endl;
+        //    ofs << endl;
+        //}
+        if (!RNAPs.empty()) {
+            ofs << in+ in+ "Count_RNAP = np.max(self.GetCount(self.State.Idx_Pol_Transcription)).astype(int)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_Transcription = SimF.ExtendArraySize(self.State.Pos_Pol_Transcription, Count_RNAP, -1)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_End_Transcription = SimF.ExtendArraySize(self.State.Pos_Pol_End_Transcription, Count_RNAP, 0)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_Template_Transcription = SimF.ExtendArraySize(self.State.Pos_Pol_Template_Transcription, Count_RNAP, -1)" << endl;
+            ofs << in+ in+ "self.State.Dir_Pol_Transcription = SimF.ExtendArraySize(self.State.Dir_Pol_Transcription, Count_RNAP, 0)" << endl;
+            ofs << endl;
+        }
+        if (!Ribosomes.empty()) {
+            ofs << in+ in+ "Count_Ribosome = np.max(self.GetCount(self.State.Idx_Pol_Translation)).astype(int)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_Translation = SimF.ExtendArraySize(self.State.Pos_Pol_Translation, Count_Ribosome, -1)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_End_Translation = SimF.ExtendArraySize(self.State.Pos_Pol_End_Translation, Count_Ribosome, 0)" << endl;
+            ofs << in+ in+ "self.State.Pos_Pol_Template_Translation = SimF.ExtendArraySize(self.State.Pos_Pol_Template_Translation, Count_Ribosome, -1)" << endl;
+            ofs << endl;
+        }
+    }
 
     ofs << in+ "def OverElongationCorrection(self, Len_Elongated, Max):   # Some polymerization process may not have max" << endl;
     ofs << in+ in+ "dLen = Len_Elongated - Max" << endl;

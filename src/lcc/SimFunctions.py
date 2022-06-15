@@ -186,6 +186,14 @@ def ReplaceValueInArrayOnlyAtIdx(InputArray, Idx, Value):
 def GetIdxOfEmptyElement(InputArray, axis=1):
     return np.argmin(InputArray, axis=axis)
 
+def ExtendArraySize(Input2DArray, Length, DefaultValue):
+    Extension = Length - Input2DArray.shape[1]
+    Extension = np.where(Extension > 0, Extension, 0)
+    ExtendedColumns = np.full([Input2DArray.shape[0], Extension], DefaultValue)
+    Input2DArray_Extended = np.hstack([Input2DArray, ExtendedColumns])
+    return Input2DArray_Extended
+
+
 # Spatial simulation functions
 def InitializeDistribution(Width, Height, X_Ori, Y_Ori, MaxAmount=0, BasalAmount=0, shape='', size=0, pattern='diffuse'):
     '''
