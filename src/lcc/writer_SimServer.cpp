@@ -242,7 +242,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
     ofs << endl;
 
-    ofs << in + in + "# Setup Central Dogma Numpy Arrays" << endl;
+    ofs << in+ in+ "# Setup Central Dogma Numpy Arrays" << endl;
 
     ofs << in+ in+ "if np.any(self.State.Pos_Pol_Replication):" << endl;
     ofs << in+ in+ in+ "Pos_Pol_Replication = self.State.Pos_Pol_Replication" << endl;
