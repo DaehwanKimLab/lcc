@@ -1043,7 +1043,7 @@ public:
     std::vector<FLocation *> GetSubList_LocationList(std::string Type);
     std::vector<std::string> GetNames_LocationList(std::string Type);
     std::vector<std::string> GetUniqueNames_LocationList(std::string Type);
-    std::vector<FContainer*> FCompilerContext::GetUniqueContainers_LocationList(std::string Type);
+    std::vector<FContainer*> GetUniqueContainers_LocationList(std::string Type);
     int GetCounts_LocationList(std::string Type);
 
     // CountList

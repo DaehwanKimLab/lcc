@@ -24,6 +24,7 @@ enum {
     ARG_SIMMODULE,
     ARG_SIMVIS2D,
     ARG_SIMSERVER,
+    ARG_MAX_N_GENES,
     ARG_RUNOMVISIM
 };
 
@@ -44,6 +45,7 @@ int FOption::Parse(int argc, char *argv[])
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {"simvis2d", required_argument, NULL, ARG_SIMVIS2D},
             {"simserver", required_argument, NULL, ARG_SIMSERVER},
+            {"maxgenes", required_argument, NULL, ARG_MAX_N_GENES},
             {"run-omvisim", no_argument, NULL, ARG_RUNOMVISIM},
             {NULL, 0, NULL, 0},
     };
@@ -116,6 +118,12 @@ int FOption::Parse(int argc, char *argv[])
                 SimServerFile = std::string(optarg);
                 break;
 
+            case ARG_MAX_N_GENES:
+                std::cout << "before" << Max_N_Genes;
+                Max_N_Genes = std::stoi(std::string(optarg));
+                std::cout << "after" << Max_N_Genes;
+                break;
+
             case ARG_RUNOMVISIM:
                 bRunInOmVisim = true;
                 break;
@@ -154,6 +162,7 @@ void FOption::Reset() {
     SimVis2DFile = "";
     SimServerFile = "";
     SimResultFile = "";
+    Max_N_Genes = 0;
     bRunInOmVisim = false;
 }
 
@@ -195,6 +204,7 @@ void FOption::Usage(const char *argv0)
     os << "  " << "--simmodule <name>  Write simulation module code to <name> file" << std::endl;
     os << "  " << "--simvis2d <name>   Write visualization module code to <name> file" << std::endl;
     os << "  " << "--simserver <name>  Write server code to <name> file" << std::endl;
+    os << "  " << "--maxgenes <number> Limit maximum number of genes imported from the genome (default:5000)" << std::endl;
     os << "  " << "--simimp <mode>     Use <mode> simulation implementation. mode: python, c++" << std::endl;
     os << "  " << "--run-omvisim" << std::endl;
 }
@@ -231,4 +241,5 @@ void FOption::PreferredSetting()
     SimVis2DFile = "SimVis2D.py";
     SimServerFile = "SimServer.py";
     SimResultFile = "SimOut.tsv";
+    Max_N_Genes = 5000;
 }

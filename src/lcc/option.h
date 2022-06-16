@@ -35,6 +35,7 @@ public:
 
     bool bSimCpp;
     bool bSimPython = true;
+    int Max_N_Genes;
 
     bool bDebug;
     bool bVersion;
