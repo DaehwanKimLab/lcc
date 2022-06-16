@@ -118,10 +118,10 @@ def run():
         arr2DEnzymeStepTurnover[step][3] = pyruvateKinase(arr2DCounts[step-1][2]) / STEPS_PER_SECOND      # In: PEP   ; Out: Pyruvate
 
         # Get percent substrate Saturation:
-        arr2DEnzymePercentSubstrateSaturation[step] = saturation(CONC_GLUCOSE_T0, KM_HEXOKINASE_GLUCOSE)
-        arr2DEnzymePercentSubstrateSaturation[step] = saturation(arr2DCounts[step-1][0], KM_PFK_ACTIVE)
-        arr2DEnzymePercentSubstrateSaturation[step] = saturation(arr2DCounts[step-1][1], KM_SUMMARY_MAKE_PEPASE)
-        arr2DEnzymePercentSubstrateSaturation[step] = saturation(arr2DCounts[step-1][2], KM_PK_PEP)
+        arr2DEnzymePercentSubstrateSaturation[step][0] = saturation(CONC_GLUCOSE_T0, KM_HEXOKINASE_GLUCOSE) * 100 
+        arr2DEnzymePercentSubstrateSaturation[step][1] = saturation(arr2DCounts[step-1][0], KM_PFK_ACTIVE) * 100
+        arr2DEnzymePercentSubstrateSaturation[step][2] = saturation(arr2DCounts[step-1][1], KM_SUMMARY_MAKE_PEPASE) * 100
+        arr2DEnzymePercentSubstrateSaturation[step][3] = saturation(arr2DCounts[step-1][2], KM_PK_PEP) * 100
 
         # Get Percent Max Activity
         arr2DEnzymePercentMaxActivty[step][0] = round(arr2DEnzymeStepTurnover[step][0] / (KCAT_HEXOKINASE * CONC_HEXOKINASE) * 100 * STEPS_PER_SECOND, 2)

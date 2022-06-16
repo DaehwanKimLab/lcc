@@ -229,7 +229,6 @@ def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, en
                 mode = 'lines', name = enzymeLegend[i],
                 line = dict(color = enzymeColors[i]),
                 connectgaps = True,
-                showlegend = False
             ), row = 1, col = 2)
         # Points at t0 and tn (start and end)
         fig.add_trace(go.Scatter(
@@ -268,7 +267,6 @@ def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, en
                 mode = 'lines', name = enzymeLegend[i],
                 line = dict(color = enzymeColors[i]),
                 connectgaps = True,
-                showlegend = False
             ), row = 2, col = 2)
         # Points at t0 and tn (start and end)
         fig.add_trace(go.Scatter(
