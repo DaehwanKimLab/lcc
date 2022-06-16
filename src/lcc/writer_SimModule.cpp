@@ -1560,6 +1560,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
         ofs << in+ "def UpdatePolymeraseArrayShapes(self):" << endl;
         ofs << in+ in+ "# Updating the size of Polymerase-related arrays to the current maximum count of the indexed molecule " << endl;
 
+        // For now Replication only supports one bidirectional procession (two replication forks), hence updating is not necessary..
         //if (!DNAPs.empty()) {
         //    ofs << in+ in+ "Count_DNAP = np.max(self.GetCount(self.State.Idx_Pol_Replication))" << endl;
         //    ofs << in+ in+ "self.State.Pos_Pol_Replication = SimF.ExtendArraySize(self.State.Pos_Pol_Replication, Count_DNAP, -1)" << endl;
@@ -1581,6 +1582,10 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Ma
             ofs << in+ in+ "self.State.Pos_Pol_Translation = SimF.ExtendArraySize(self.State.Pos_Pol_Translation, Count_Ribosome, -1)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_End_Translation = SimF.ExtendArraySize(self.State.Pos_Pol_End_Translation, Count_Ribosome, 0)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_Template_Translation = SimF.ExtendArraySize(self.State.Pos_Pol_Template_Translation, Count_Ribosome, -1)" << endl;
+            ofs << endl;
+        }
+        if (RNAPs.empty() & Ribosomes.empty()) {
+            ofs << in+ in+ "pass" << endl;
             ofs << endl;
         }
     }

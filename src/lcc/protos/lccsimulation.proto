@@ -51,8 +51,9 @@ service LCCSimulation
 message MInitData
 {
     repeated MVisObjectData InitObjects = 1;
-    MDNA_InitData InitDNA = 2;
-
+    repeated MDNA_InitData InitDNA = 2;
+    repeated MNames InitName = 3;
+    repeated MIdx InitIdx = 4;
 }
 
 message MRunData
@@ -76,9 +77,10 @@ message MSimUnitState
     float SimulationStep = 1;
     float SimulatedTime = 2;
     map<uint32, MVisObjectData> Objects = 3;
-    map<uint32, MState_Replication> Replication = 4;
-    map<uint32, MState_Transcription> Transcription = 5;
-    map<uint32, MState_Translation> Translation = 6;
+    map<uint32, MState_Count> Counts = 4;
+    map<uint32, MState_Replication> Replication = 5;
+    map<uint32, MState_Transcription> Transcription = 6;
+    map<uint32, MState_Translation> Translation = 7;
 
 }
 
@@ -99,8 +101,8 @@ message MVisObjectData
 
 message MDNA_InitData
 {
-    repeated MDNA_AnnotationData DNA_Annotations = 1;
-    repeated MDNA_PositionData DNA_Positions = 2;
+    MDNA_AnnotationData DNA_Annotations = 1;
+    MDNA_PositionData DNA_Positions = 2;
 }
 
 message MDNA_AnnotationData
@@ -114,6 +116,36 @@ message MDNA_AnnotationData
 message MDNA_PositionData
 {
     repeated MVector3 Points = 1;
+}
+
+message MNames
+{
+    // all indexing refers to Name_Count_All variable and Count_All (communicated through Run)
+    repeated string Name_Count_All = 1;
+}
+
+message MIdx
+{
+    repeated uint32 Gene = 1;
+    repeated uint32 RNA = 2;
+    repeated uint32 mRNA = 3;
+    repeated uint32 Protein = 4;
+    map<int32, int32> Gene2RNA = 5;
+    map<int32, int32> RNA2Protein = 6;
+    map<int32, int32> Gene2Protein = 7;
+
+}
+
+// State
+
+message MState_Count
+{
+    uint32 ID = 1;
+    repeated float Count_All = 2;
+    repeated float Count_Nascent_Chromosome = 3;
+    repeated float Count_Nascent_Gene = 4;
+    repeated float Count_Nascent_RNA = 5;
+    repeated float Count_Nascent_Protein = 6;
 }
 
 message MState_Replication
@@ -137,7 +169,7 @@ message MState_Translation
 {
     uint32 ID = 1;
     map<uint32, MVisObjectData> Objects_Ribosome = 2;
-    repeated float Pos_Ribosome_bp = 4;
+    repeated float Pos_Ribosome_bp = 3;
 }
 
 //

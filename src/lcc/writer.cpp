@@ -835,7 +835,7 @@ void FWriter::SetUp_Idx_mRNAInRNA(ofstream& ofs, std::string Name_mRNASubIdx)
     Utils::Assertion(Idx_mRNAInRNA.size() == Context.GetSubList_MoleculeList("Protein").size(), "ERROR: # of mRNA and Proteins do not match. mRNAs: " + to_string(Idx_mRNAInRNA.size()) + " | Proteins: " + to_string(Context.GetSubList_MoleculeList("Protein").size()));
     ofs << in+ in+ "self." << Name_mRNASubIdx << " = np.array([" << Utils::JoinInt2Str_Idx(Idx_mRNAInRNA) << "])" << endl;
     ofs << in+ in+ "self.Idx_TemplateSubset_" << "Translation" << " = self." << Name_mRNASubIdx << endl; // local indexing within the template population for mRNA in RNA for protein translation
-
+    ofs << endl;
 }
 
 void FWriter::SetUp_PolymeraseReaction_Ribosome(ofstream& ofs, std::vector<FMolecule*> Polymerases, std::string Name_mRNASubIdx)

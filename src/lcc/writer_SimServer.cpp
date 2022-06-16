@@ -31,6 +31,8 @@ void FWriter::SimServer() {
     std::ofstream ofs(Option.SimServerFile.c_str());
     std::string endl = "\n";
 
+    ofs << "# Compile 'Models/CentralDogma/4_Replication_Transcription_Translation.lpp'" << endl;
+    ofs << "# Use option '--maxgenes <number> to control the maximum number of genes imported from the genome'" << endl;
     ofs << endl;
     ofs << "## lcc" << endl;
     ofs << "import random" << endl;
@@ -180,42 +182,95 @@ void FWriter::SimServer() {
     if (!Chromosomes.empty()) {
 
         ofs << in+ in+ "# DNA Annotation" << endl;
-        ofs << in+ in+ "DNA_Annotations = []" << endl;
         ofs << endl;
 
         ofs << in+ in+ "# Temporary halving" << endl;
         ofs << in+ in+ "Sequence=self.SimM.State.OpenFASTADatabase(r'./Database/EscherichiaColi.fasta')[0]" << endl;
         ofs << endl;
 
-        ofs << in+ in+ "DNA_Annotations.append(lccsimulation_pb2.MDNA_AnnotationData(" << endl;
+        ofs << in+ in+ "DNA_Annotations = lccsimulation_pb2.MDNA_AnnotationData(" << endl;
         //ofs << in+ in+ in+ "Sequence='ACGT'," << endl;
         //ofs << in+ in+ in+ "Sequence=self.SimM.State.OpenFASTADatabase(r'./Database/EscherichiaColi.fasta')," << endl;
         ofs << in+ in+ in+ "Sequence=Sequence," << endl;
         ofs << in+ in+ in+ "Gene_StartIndex_bp=self.State.Pos_Gene_Start_bp[0]," << endl;
         ofs << in+ in+ in+ "Gene_EndIndex_bp=self.State.Pos_Gene_End_bp[0]," << endl;
         ofs << in+ in+ in+ "Gene_Symbol=self.State.Name_Genes," << endl;
-        ofs << in+ in+ "))" << endl;
+        ofs << in+ in+ ")" << endl;
         ofs << endl;
         
         ofs << in+ in+ "# DNA Position" << endl;
-        ofs << in+ in+ "DNA_Positions = []" << endl;
         ofs << endl;
         ofs << in+ in+ "Positions = []" << endl;
         ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
         ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos[0], Y=pos[1], Z=pos[2]))" << endl;
         ofs << endl;
-        ofs << in+ in+ "DNA_Positions.append(lccsimulation_pb2.MDNA_PositionData(" << endl;
+        ofs << in+ in+ "DNA_Positions = lccsimulation_pb2.MDNA_PositionData(" << endl;
         ofs << in+ in+ in+ "Points=Positions" << endl;
-        ofs << in+ in+ "))" << endl;
+        ofs << in+ in+ ")" << endl;
         ofs << endl;
         
-        ofs << in+ in+ "DNA_Init = lccsimulation_pb2.MDNA_InitData(" << endl;
+        ofs << in+ in+ "DNA_Init.append(lccsimulation_pb2.MDNA_InitData(" << endl;
         ofs << in+ in+ in+ "DNA_Annotations=DNA_Annotations," << endl;
         ofs << in+ in+ in+ "DNA_Positions=DNA_Positions," << endl;
-        ofs << in+ in+ ")" << endl;
+        ofs << in+ in+ "))" << endl;
     }
 
-    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init)" << endl;
+    ofs << in+ in+ "# Name Init Data" << endl;
+    ofs << in+ in+ "Name_Init = []" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Name_Init.append(lccsimulation_pb2.MNames(" << endl;
+    ofs << in+ in+ in+ "Name_Count_All=self.State.Mol_Names," << endl;
+    ofs << in+ in+ "))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Idx Init Data" << endl;
+    ofs << in+ in+ "Idx_Init = []" << endl;
+    ofs << endl;
+
+    ofs << in + in + "# Organize Indices" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Idx_Genes = self.State.Idx_Template_Transcription" << endl;
+    ofs << in+ in+ "Idx_RNAs = self.State.Idx_Target_Transcription" << endl;
+    ofs << in+ in+ "Idx_mRNAs = self.State.Idx_Template_Translation" << endl;
+    ofs << in+ in+ "Idx_Proteins = self.State.Idx_Target_Translation" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Dict_mRNA2Protein = {}" << endl;
+    ofs << in+ in+ "for i in range(Idx_Proteins.shape[0]):" << endl;
+    ofs << in+ in+ in+ "Dict_mRNA2Protein[Idx_mRNAs[i]] = Idx_Proteins[i]" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Idx_Gene2RNA = {}" << endl;
+    ofs << in+ in+ "Idx_RNA2Protein = {}" << endl;
+    ofs << in+ in+ "Idx_Gene2Protein = {}" << endl;
+    ofs << endl;
+    ofs << in+ in+ "for i in range(Idx_Genes.shape[0]):" << endl;
+    ofs << in+ in+ in+ "idx_gene = Idx_Genes[i]" << endl;
+    ofs << in+ in+ in+ "idx_rna = Idx_RNAs[i]" << endl;
+    ofs << in+ in+ in+ "Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "idx_protein = -1   # -1 for non-coding genes (only generates non-coding type RNA (not mRNA), hence no protein)" << endl;
+    ofs << in+ in+ in+ "if idx_rna in Idx_mRNAs:" << endl;
+    ofs << in+ in+ in+ in+ "idx_protein = Dict_mRNA2Protein[idx_rna]" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "Idx_RNA2Protein[idx_rna] = idx_protein" << endl;
+    ofs << in+ in+ in+ "Idx_Gene2Protein[idx_gene] = idx_protein" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Idx_Init.append(lccsimulation_pb2.MIdx(" << endl;
+    ofs << in+ in+ in+ "Gene=Idx_Genes," << endl;
+    ofs << in+ in+ in+ "RNA=Idx_RNAs," << endl;
+    ofs << in+ in+ in+ "mRNA=Idx_mRNAs," << endl;
+    ofs << in+ in+ in+ "Protein=Idx_Proteins," << endl;
+    ofs << in+ in+ in+ "Gene2RNA=Idx_Gene2RNA," << endl;
+    ofs << in+ in+ in+ "RNA2Protein=Idx_RNA2Protein," << endl;
+    ofs << in+ in+ in+ "Gene2Protein=Idx_Gene2Protein," << endl;
+    ofs << in+ in+ "))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init)" << endl;
     ofs << endl;
 
     // TODO: stream run
@@ -295,6 +350,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "# Temporary: The following state is at the organism level (highest container level)" << endl;
 
     ofs << in+ in+ in+ in+ "VisObjects = {} # map from id --> VisObjectData" << endl;
+    ofs << in+ in+ in+ in+ "Counts = {} # map from id --> VisObjectData" << endl;
     ofs << endl;
 
     std::vector<std::string> VisObjectFamilyListInOrganism, Processes;
@@ -338,6 +394,18 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ in+ "Rotation=RotVec," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "# Scale =, # Scale doesn't change, leave it out" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "# Color =, # Color doesn't change, leave it out" << endl;
+            ofs << in+ in+ in+ in+ in+ ")" << endl;
+            ofs << endl;
+
+            // Count_All
+
+            ofs << in+ in+ in+ in+ in+ "Counts[ObjID] = lccsimulation_pb2.MState_Count(" << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_All=self.State.Count_All[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Chromosome=self.State.Count_Nascent_Chromosome[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Gene=self.State.Count_Nascent_Gene[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_RNA=self.State.Count_Nascent_RNA[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Protein=self.State.Count_Nascent_Protein[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
             ofs << endl;
             
@@ -396,6 +464,7 @@ void FWriter::SimServer() {
     ofs << "SimulationStep=self.SimM.GetSimStep(), ";
     ofs << "SimulatedTime=self.SimM.GetSimTime(), ";
     ofs << "Objects=VisObjects, ";
+    ofs << "Counts=Counts, ";
     for (auto& process : Processes) {
         ofs << process + "=" + process + "s, ";
     } ofs << ")" << endl;
