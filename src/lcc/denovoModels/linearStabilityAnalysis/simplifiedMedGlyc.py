@@ -35,7 +35,7 @@ KCAT_PFK_ACTIVE = 1.7e4
 KCAT_PFK_INACTIVE = 1.7e4
 KCAT_PK = 170
 ##
-KCAT_SUMMARY_MAKE_PEPASE = 1e4 # Arbitrary
+KCAT_SUMMARY_MAKE_PEPASE = 1e2 # Arbitrary
 # ks
 K_SUMMARY_MAKE_PEPASE = 1e4
 
@@ -61,7 +61,7 @@ CONC_F16P = 0
 CONC_PEP = 0
 CONC_PYRUVATE = 0
 ## Enzymes
-CONC_PFK = 4000 / Avogadro
+CONC_PFK = uMtoCount(1e-3)
 CONC_PFK_ACTIVE = 0
 CONC_PFK_INACTIVE = 0
 CONC_HEXOKINASE = uMtoCount(0.01)
@@ -99,16 +99,15 @@ def pyruvateKinase(Conc_Substrate = CONC_PEP, Conc_Inhibitor = CONC_ATP, Ki = KI
 
 def run():
     # reimplement simulation: 
-    metaboliteLegend = ['F6P', 'F16BP', 'PEP', 'pyruvate']
+    metaboliteLegend = ['F6P', 'F16BP', 'PEP', 'pyruvate', 'ATP', 'ADP']
     enzymeLegend = ['HK', 'PFK', 'PS', 'PK']
     time = np.linspace(0, SIM_DURATION_SECONDS, TOTAL_STEPS)
 
     # For now only worry about F6P, F16BP, PEP, pyruvate
-    arr2DCounts= np.zeros([TOTAL_STEPS, 4]) 
-    arr2DEnzymePercentSubstrateSaturation = np.zeros([TOTAL_STEPS, 4])
-    arr2DEnzymePercentMaxActivty = np.zeros([TOTAL_STEPS, 4])
-    # 4 enzymes atm
-    arr2DEnzymeStepTurnover = np.zeros([TOTAL_STEPS, 4])
+    arr2DCounts= np.zeros([TOTAL_STEPS, len(metaboliteLegend)]) 
+    arr2DEnzymePercentSubstrateSaturation = np.zeros([TOTAL_STEPS, len(enzymeLegend)])
+    arr2DEnzymePercentMaxActivty = np.zeros([TOTAL_STEPS, len(enzymeLegend)])
+    arr2DEnzymeStepTurnover = np.zeros([TOTAL_STEPS, len(enzymeLegend)])
 
     for step in range(1,TOTAL_STEPS):
         # Get turnover for each enzyme

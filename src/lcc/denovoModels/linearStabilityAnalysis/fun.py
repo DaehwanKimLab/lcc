@@ -181,7 +181,7 @@ def extractKVals(lstOfStrings:list):
     return outputDict
 
 
-def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, enzymeSubstrateSaturationData, enzymePercentMaxActivityData, enzymeLegend, metaboliteLegend):
+def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, enzymeSubstrateSaturationData, enzymePercentMaxActivityData, enzymeLegend, metaboliteLegend, enzymeMetaboliteLegend):
     X = Time
     # convert to uM
     metaboliteCountData = np.multiply(metaboliteCountData, 1e6) 
@@ -195,6 +195,7 @@ def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, en
 
     metaboliteColors = generateRGBList(len(metaboliteLegend))
     enzymeColors = generateRGBList(len(enzymeLegend))
+    enzymeMetaboliteColors = generateRGBList(len(enzymeMetaboliteLegend))
 
     fig = make_subplots(
         rows = 2, cols = 2, shared_xaxes= True,
@@ -239,21 +240,21 @@ def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, en
             showlegend = False
         ), row = 1, col = 2)
     # Enzyme Percent substrate Saturation
-    for i in range(len(enzymeLegend)):
+    for i in range(len(enzymeMetaboliteLegend)):
         fig.add_trace(
             # The line
             go.Scatter(
                 x = X, y = Y[2][i],
-                mode = 'lines', name = enzymeLegend[i],
-                line = dict(color = enzymeColors[i]),
+                mode = 'lines', name = enzymeMetaboliteLegend[i],
+                line = dict(color = enzymeMetaboliteColors[i]),
                 connectgaps = True,
             ), row = 2, col = 1)
         # Points at t0 and tn (start and end)
         fig.add_trace(go.Scatter(
             x=[X[0], X[-1]],
             y=[Y[2][i][0], Y[2][i][-1]],
-            mode='markers', name = enzymeLegend[i],
-            marker = dict(color = enzymeColors[i]),
+            mode='markers', name = enzymeMetaboliteLegend[i],
+            marker = dict(color = enzymeMetaboliteColors[i]),
             showlegend = False
         ), row = 2, col = 1)
     # Enzyme Percent max activity
