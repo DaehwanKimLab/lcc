@@ -5,6 +5,8 @@ import numpy as np
 from random import randint
 import os
 import re
+from scipy.constants import Avogadro
+from plotly.subplots import make_subplots
 
 NA = 6.0221409e+23
 
@@ -177,3 +179,201 @@ def extractKVals(lstOfStrings:list):
             outputDict[l[8:re.search('\(', l).span()[0]]] = {'kcat':l.split(',')[1].split('=')[1].strip()}
     del outputDict[''] 
     return outputDict
+
+
+def Plotly_Simulation_Overview(Time, metaboliteCountData, enzymeTurnoverData, enzymeSubstrateSaturationData, enzymePercentMaxActivityData, enzymeLegend, metaboliteLegend):
+    X = Time
+    # convert to uM
+    metaboliteCountData = np.multiply(metaboliteCountData, 1e6) 
+    metaboliteCountData = np.divide(metaboliteCountData, Avogadro)
+    # uM / step
+    enzymeTurnoverData = np.multiply(enzymeTurnoverData, 1e6)
+    enzymeTurnoverData = np.divide(enzymeTurnoverData, Avogadro)
+
+    Y = [metaboliteCountData, enzymeTurnoverData, enzymeSubstrateSaturationData, enzymePercentMaxActivityData]
+
+
+    metaboliteColors = generateRGBList(len(metaboliteLegend))
+    enzymeColors = generateRGBList(len(enzymeLegend))
+
+    fig = make_subplots(
+        rows = 2, cols = 2, shared_xaxes= True,
+        subplot_titles=("[metabolites]", "Enzyme: Turnover (uM/step)", "Enzyme: Percent Substrate Saturation", "Enzyme: Percent Max Activity")
+    )
+
+
+    # [metabolites]
+    for i in range(len(metaboliteLegend)):
+        fig.add_trace(
+            # The line
+            go.Scatter(
+                x = X, y = Y[0][i],
+                mode = 'lines', name = metaboliteLegend[i],
+                line = dict(color = metaboliteColors[i]),
+                connectgaps = True,
+            ), row = 1, col = 1)
+        # Points at t0 and tn (start and end)
+        fig.add_trace(go.Scatter(
+            x=[X[0], X[-1]],
+            y=[Y[0][i][0], Y[0][i][-1]],
+            mode='markers', name = metaboliteLegend[i],
+            marker = dict(color = metaboliteColors[i]),
+            showlegend = False
+        ), row = 1, col = 1)
+    # Enzyme Turnover
+    for i in range(len(enzymeLegend)):
+        fig.add_trace(
+            # The line
+            go.Scatter(
+                x = X, y = Y[1][i],
+                mode = 'lines', name = enzymeLegend[i],
+                line = dict(color = enzymeColors[i]),
+                connectgaps = True,
+                showlegend = False
+            ), row = 1, col = 2)
+        # Points at t0 and tn (start and end)
+        fig.add_trace(go.Scatter(
+            x=[X[0], X[-1]],
+            y=[Y[1][i][0], Y[1][i][-1]],
+            mode='markers', name = enzymeLegend[i],
+            marker = dict(color = enzymeColors[i]),
+            showlegend = False
+        ), row = 1, col = 2)
+    # Enzyme Percent substrate Saturation
+    for i in range(len(enzymeLegend)):
+        fig.add_trace(
+            # The line
+            go.Scatter(
+                x = X, y = Y[2][i],
+                mode = 'lines', name = enzymeLegend[i],
+                line = dict(color = enzymeColors[i]),
+                connectgaps = True,
+            ), row = 2, col = 1)
+        # Points at t0 and tn (start and end)
+        fig.add_trace(go.Scatter(
+            x=[X[0], X[-1]],
+            y=[Y[2][i][0], Y[2][i][-1]],
+            mode='markers', name = enzymeLegend[i],
+            marker = dict(color = enzymeColors[i]),
+            showlegend = False
+        ), row = 2, col = 1)
+    # Enzyme Percent max activity
+    for i in range(len(enzymeLegend)):
+
+        
+        fig.add_trace(
+            # The line
+            go.Scatter(
+                x = X, y = Y[3][i],
+                mode = 'lines', name = enzymeLegend[i],
+                line = dict(color = enzymeColors[i]),
+                connectgaps = True,
+                showlegend = False
+            ), row = 2, col = 2)
+        # Points at t0 and tn (start and end)
+        fig.add_trace(go.Scatter(
+            x=[X[0], X[-1]],
+            y=[Y[3][i][0], Y[3][i][-1]],
+            mode='markers', name = enzymeLegend[i],
+            marker = dict(color = enzymeColors[i]),
+            showlegend = False
+        ), row = 2, col = 2)
+    
+    fig.update_xaxes(title_text = "Time (s)", titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ))
+
+    fig.update_yaxes(title_text = "Concentration (uM)", 
+            titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ), row = 1, col = 1)  
+
+    fig.update_yaxes(title_text = "Concentration Turnover per Step (uM / step)", 
+            titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ), row = 1, col = 2) 
+
+    fig.update_yaxes(title_text = "Percent Substrate Saturation", 
+            titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ), row = 2, col = 1) 
+
+    fig.update_yaxes(title_text = "Percent Max Activity", 
+            titlefont = dict(
+                family = 'Arial',
+                size = 16,
+                color = 'rgb(0,0,0)'
+            ),
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ), row = 2, col = 2) 
+
+    fig.update_layout(
+         autosize=True,   
+        legend = dict(
+            orientation = "h",
+        ),
+        plot_bgcolor='white'
+        )
+    
+    return fig
