@@ -1,7 +1,8 @@
 
 from fun import Plotly_Simulation_Overview
 # from simplifiedMedGlyc import run
-from medGlyc_atpadp_reg import run
+#from medGlyc_atpadp_reg import run
+from medGlyc_reg import run
 
 if __name__ == '__main__':
     
