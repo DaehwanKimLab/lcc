@@ -8,13 +8,15 @@ def counttouM(inVal:float):
     return inVal / Avogadro / 10**-6
 
 # constants
-SIM_DURATION_SECONDS = 600
+SIM_DURATION_SECONDS = 0.6
+#SIM_DURATION_SECONDS = 600
+#SIM_DURATION_SECONDS = 2000
 STEPS_PER_SECOND = 100
 
 TOTAL_STEPS = SIM_DURATION_SECONDS * STEPS_PER_SECOND
 
 # kcats
-KCAT_HEXOKINASE =  2e3
+KCAT_HEXOKINASE =  4000
 KCAT_PFK = 1.7e4
 KCAT_PFK_ACTIVE = 1.7e4
 KCAT_PFK_INACTIVE = 1.7e4
@@ -64,7 +66,7 @@ KI_PEP_PFK = uMtoCount(10)
 KA_F16BP_PK = uMtoCount(3)            # file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
 KI_ATP_PK = uMtoCount(84000)            # Ki_r of ATP ~ 84mM : file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
 
-KI_F6P_HK = uMtoCount(50)
+KI_F6P_HK = uMtoCount(8000)
 
 
 PFK_STATE_TRANSITION_CONSTANT = 14.4   #https://www.researchgate.net/publication/23230008_Kinetic_Model_of_Phosphofructokinase-1_from_Escherichia_coli?enrichId=rgreq-40a860a066e1fe2f49a81d0a30616e86-XXX&enrichSource=Y292ZXJQYWdlOzIzMjMwMDA4O0FTOjIyMTQ0NDY4MTI3NzQ0MEAxNDI5ODA3OTM0NDgw&el=1_x_2&_esc=publicationCoverPdf
