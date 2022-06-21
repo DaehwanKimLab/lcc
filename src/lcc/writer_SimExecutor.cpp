@@ -7,7 +7,7 @@ void FWriter::SimExecutor()
 {
     std::cout << std::endl << "Generating simulation executor..." << std::endl;
 
-    // write SimModule.py
+    // write SimExecutor.py
     std::ofstream ofs(Option.SimExecutorFile.c_str());
     std::string endl = "\n";
 

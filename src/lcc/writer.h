@@ -93,7 +93,8 @@ public:
     // Simulation
     void SimIdx();  // to store long arrays to call from SimModule
     void SimExecutor();
-    void SimModule(int Sim_Steps, int Sim_Resolution, int Map_Width, int Map_Height);
+    void SimState(int Map_Width, int Map_Height);
+    void SimModule(int Sim_Steps, int Sim_Resolution);
     void SimVis2D();
     void SimServer();
 

@@ -1337,7 +1337,10 @@ int main(int argc, char *argv[])
         Writer.SimExecutor();
         os << Option.SimExecutorFile << endl;
 
-        Writer.SimModule(Sim_Steps, Sim_Resolution, Map_Width, Map_Height);
+        Writer.SimState(Map_Width, Map_Height);
+        os << Option.SimStateFile << endl;
+
+        Writer.SimModule(Sim_Steps, Sim_Resolution);
         os << Option.SimModuleFile << endl;
 
         if (!Context.LocationList.empty()) {

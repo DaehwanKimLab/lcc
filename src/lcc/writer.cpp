@@ -631,11 +631,6 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
     std::string Dir_Ch, Dir_Gene;
     std::string Count_Nascent_Ch, Count_Nascent_Gene, Count_Nascent_RNA, Count_Nascent_Protein;
 
-    // Temporary database from tsv
-    ofs << in+ in+ "DatabaseFileName = r'./Database/genes.tsv'" << endl;
-    ofs << in+ in+ "Database = self.OpenTSVDatabase(DatabaseFileName)" << endl;
-    ofs << endl;
-
     auto Chromosome = Context.GetSubList_MoleculeList("Chromosome");
     auto Genes = Context.GetSubList_MoleculeList("Gene");
     auto RNAs = Context.GetSubList_MoleculeList("RNA");

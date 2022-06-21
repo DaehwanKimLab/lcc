@@ -23,6 +23,7 @@ void FWriter::SimVis2D() {
     ofs << "from datetime import datetime" << endl;
     ofs << "import numpy as np" << endl;
     ofs << "import SimModule" << endl;
+    ofs << "import SimState as SimS" << endl;
     ofs << "import SimFunctions as SimF" << endl;
     ofs << endl;
 
@@ -82,9 +83,9 @@ void FWriter::SimVis2D() {
     ofs << "pygame.init()" << endl;
     ofs << endl;
     ofs << "# Load model" << endl;
-    ofs << "State = SimModule.FState()" << endl;
-    ofs << "Dataset = SimModule.FDataset()" << endl;
-    ofs << "DataManager = SimModule.FDataManager()" << endl;
+    ofs << "State = SimS.FState()" << endl;
+    ofs << "Dataset = SimS.FDataset()" << endl;
+    ofs << "DataManager = SimS.FDataManager()" << endl;
     ofs << "SimM = SimModule.FSimulation(State, Dataset, DataManager)" << endl;
     ofs << endl;
     ofs << "# Initialize model" << endl;

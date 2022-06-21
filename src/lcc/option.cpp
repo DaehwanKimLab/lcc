@@ -21,6 +21,7 @@ enum {
 	ARG_SIMOUT,
     ARG_SIMIMP,
     ARG_SIMEXECUTOR,
+    ARG_SIMSTATE,
     ARG_SIMMODULE,
     ARG_SIMVIS2D,
     ARG_SIMSERVER,
@@ -42,6 +43,7 @@ int FOption::Parse(int argc, char *argv[])
 	        {"simout", required_argument, NULL, ARG_SIMOUT},
     	    {"simimp", required_argument, NULL, ARG_SIMIMP},
             {"simexecutor", required_argument, NULL, ARG_SIMEXECUTOR},
+            {"simstate", required_argument, NULL, ARG_SIMSTATE},
             {"simmodule", required_argument, NULL, ARG_SIMMODULE},
             {"simvis2d", required_argument, NULL, ARG_SIMVIS2D},
             {"simserver", required_argument, NULL, ARG_SIMSERVER},
@@ -106,6 +108,10 @@ int FOption::Parse(int argc, char *argv[])
                 SimExecutorFile = std::string(optarg);
                 break;
 
+            case ARG_SIMSTATE:
+                SimStateFile = std::string(optarg);
+                break;
+
             case ARG_SIMMODULE:
                 SimModuleFile = std::string(optarg);
                 break;
@@ -158,6 +164,7 @@ void FOption::Reset() {
     bSimCpp = false;
     bSimPython = true;    
     SimExecutorFile = "";
+    SimStateFile = "";
     SimModuleFile = "";
     SimVis2DFile = "";
     SimServerFile = "";
@@ -201,6 +208,7 @@ void FOption::Usage(const char *argv0)
     os << "  " << "--parse-only        Check syntax" << std::endl;
     os << "  " << "--simout <name>     Write simulation result to <name> file" << std::endl;
     os << "  " << "--simexecutor <name>Write simulation executor code to <name> file" << std::endl;
+    os << "  " << "--simstate <name>   Write simulation state code to <name> file" << std::endl;
     os << "  " << "--simmodule <name>  Write simulation module code to <name> file" << std::endl;
     os << "  " << "--simvis2d <name>   Write visualization module code to <name> file" << std::endl;
     os << "  " << "--simserver <name>  Write server code to <name> file" << std::endl;
@@ -237,6 +245,7 @@ void FOption::PreferredSetting()
 {
     bSimPython = true;
     SimExecutorFile = "SimExecutor.py";
+    SimStateFile = "SimState.py";
     SimModuleFile = "SimModule.py";
     SimVis2DFile = "SimVis2D.py";
     SimServerFile = "SimServer.py";
