@@ -37,7 +37,8 @@ void FWriter::SimServer() {
     ofs << "## lcc" << endl;
     ofs << "import random" << endl;
     ofs << "import SimModule" << endl;
-    ofs << "import SimVis2D as SimV" << endl;
+    //ofs << "import SimVis2D as SimV" << endl;
+    ofs << "import SimState as SimS" << endl;
     ofs << "import numpy as np" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import time" << endl;
@@ -64,6 +65,10 @@ void FWriter::SimServer() {
     ofs << in+ "return lccsimulation_pb2.MVector3(X=RandomInt(256),Y=RandomInt(256),Z=RandomInt(256))" << endl;
     ofs << endl;
 
+    ofs << "def GenGreenToRedColor(ValueBTWZeroAndOne):" << endl;
+    ofs << in+ "return lccsimulation_pb2.MVector3(X = int(255 * ValueBTWZeroAndOne), Y = int(255 * (1 - ValueBTWZeroAndOne)), Z = 50)" << endl;
+    ofs << endl;
+
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
     auto Organisms = Context.GetUniqueContainers_LocationList("Organism");
 
@@ -88,9 +93,9 @@ void FWriter::SimServer() {
     ofs << in+ "def Initialize(self, request, context):" << endl;
     ofs << in+ in+ "print('initializing')" << endl;
     ofs << in+ in+ "# Load model" << endl;
-    ofs << in+ in+ "self.State = SimModule.FState()" << endl;
-    ofs << in+ in+ "self.Data = SimModule.FDataset()" << endl;
-    ofs << in+ in+ "self.DataManager = SimModule.FDataManager()" << endl;
+    ofs << in+ in+ "self.State = SimS.FState()" << endl;
+    ofs << in+ in+ "self.Data = SimS.FDataset()" << endl;
+    ofs << in+ in+ "self.DataManager = SimS.FDataManager()" << endl;
     ofs << in+ in+ "self.SimM = SimModule.FSimulation(self.State, self.Data, self.DataManager)" << endl;
     ofs << endl;
     ofs << in+ in+ "# Initialize model" << endl;
@@ -112,6 +117,8 @@ void FWriter::SimServer() {
     ofs << in+ in+ "ZeroVec = lccsimulation_pb2.MVector3(X=0, Y=0, Z=0)" << endl;
     ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
     ofs << in+ in+ "White = lccsimulation_pb2.MVector3(X=255, Y=255, Z=255)" << endl;
+    ofs << in+ in+ "Green = lccsimulation_pb2.MVector3(X=0, Y=255, Z=50)" << endl;
+    ofs << in+ in+ "Red = lccsimulation_pb2.MVector3(X=255, Y=0, Z=50)" << endl;
     ofs << in+ in+ "Blue = lccsimulation_pb2.MVector3(X=143, Y=186, Z=255)" << endl;
     ofs << in+ in+ "Yellow = lccsimulation_pb2.MVector3(X=255, Y=255, Z=102)" << endl;
     ofs << endl;
@@ -169,7 +176,7 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ "Position = PosVec," << endl;
             ofs << in+ in+ in+ in+ "Rotation = RotVec," << endl;
             ofs << in+ in+ in+ in+ "Scale = lccsimulation_pb2.MVector3(X=0.2,Y=0.2,Z=0.2)," << endl;
-            ofs << in+ in+ in+ in+ "Color = GenRandomColor()," << endl;
+            ofs << in+ in+ in+ in+ "Color = Green," << endl;
             ofs << in+ in+ in+ "))" << endl;
             ofs << endl;
         }
@@ -385,6 +392,8 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ "for i in range(len(X)):   # i here is an organism ID" << endl;
             ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i], Y=Y[i], Z=0)" << endl;
             ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
+            ofs << in+ in+ in+ in+ in+ "GrowthVec = lccsimulation_pb2.MVector3(X=0.2, Y=0.2 * (1 + ReplicationCompletionRate[i]), Z=0.2)" << endl;
+            ofs << in+ in+ in+ in+ in+ "ColorVec = GenGreenToRedColor(ReplicationCompletionRate[i])" << endl;
             ofs << endl;
             ofs << in+ in+ in+ in+ in+ "ObjID = i + 1   # ID 0 is used for static objects" << endl;
             ofs << in+ in+ in+ in+ in+ "VisObjects[ObjID] = lccsimulation_pb2.MVisObjectData(" << endl;
@@ -392,8 +401,8 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_" << Utils::UpperCaseStr(Organism->Species) << "," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Position=PosVec," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Rotation=RotVec," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "# Scale =, # Scale doesn't change, leave it out" << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "# Color =, # Color doesn't change, leave it out" << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Scale=GrowthVec," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Color=ColorVec," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
             ofs << endl;
 
@@ -423,7 +432,6 @@ void FWriter::SimServer() {
 
             ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i] * 100," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = self.State.Dir_Pol_" << Process << "[i]," << endl;

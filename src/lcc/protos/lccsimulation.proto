@@ -151,10 +151,9 @@ message MState_Count
 message MState_Replication
 {
     uint32 ID = 1;
-    float ReplicationCompletionRate = 2;
-    map<uint32, MVisObjectData> Objects_DNAP = 3;
-    repeated float Pos_DNAP_bp = 4;
-    repeated float Dir_DNAP = 5;
+    map<uint32, MVisObjectData> Objects_DNAP = 2;
+    repeated float Pos_DNAP_bp = 3;
+    repeated float Dir_DNAP = 4;
 }
 
 message MState_Transcription
