@@ -11,9 +11,9 @@ void FWriter::GenerateVisObjects(std::ofstream& ofs, int indents, std::string Ob
     ofs << IN+ "# For " << ObjectFamilyName << " VisObjects" << endl;
     ofs << IN+ "VisObjects_" << ObjectFamilyName << " = {}" << endl;
     ofs << IN+ "for " << Idx << " in range(" << N_Objects_Str << "):" << endl;
-    ofs << IN+ in+ "ObjID = " << Idx << " + 1   # ID 0 is used for static objects" << endl;
-    ofs << IN+ in+ "VisObjects[ObjID] = lccsimulation_pb2.MVisObjectData(" << endl;
-    ofs << IN+ in+ in+ "ID=ObjID," << endl;
+    ofs << IN+ in+ "VisObjID = " << Idx << " + 1   # ID 0 is used for static objects" << endl;
+    ofs << IN+ in+ "VisObjects_" << ObjectFamilyName << "[VisObjID] = lccsimulation_pb2.MVisObjectData(" << endl;
+    ofs << IN+ in+ in+ "ID=VisObjID," << endl;
     ofs << IN+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_" << Utils::UpperCaseStr(ObjectFamilyName) << ", " << endl;
     ofs << IN+ in+ in+ "Position=ZeroVec,   # TODO: Requires a check with visualization" << endl;
     ofs << IN+ in+ in+ "Rotation=ZeroVec,   # TODO: Requires a check with visualization" << endl;
@@ -286,30 +286,30 @@ void FWriter::SimServer() {
     ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# Setup Default Numpy Arrays" << endl;
+    //ofs << in+ in+ "# Setup Default Numpy Arrays" << endl;
 
-    ofs << in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
-    ofs << in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
-    ofs << in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
-    ofs << in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
-    ofs << in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
-    ofs << in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
-    ofs << in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
-    ofs << endl;
+    //ofs << in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
+    //ofs << in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
+    //ofs << in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
+    //ofs << in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
+    //ofs << in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
+    //ofs << in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
+    //ofs << in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
+    //ofs << endl;
 
-    ofs << in+ in+ "# Setup Central Dogma Numpy Arrays" << endl;
+    //ofs << in+ in+ "# Setup Central Dogma Numpy Arrays" << endl;
 
-    ofs << in+ in+ "if np.any(self.State.Pos_Pol_Replication):" << endl;
-    ofs << in+ in+ in+ "Pos_Pol_Replication = self.State.Pos_Pol_Replication" << endl;
-    ofs << in+ in+ "if np.any(self.State.Pos_Pol_Transcription):" << endl;
-    ofs << in+ in+ in+ "Pos_Pol_Transcription = self.State.Pos_Pol_Transcription" << endl;
-    ofs << in+ in+ "if np.any(self.State.Pos_Pol_Translation):" << endl;
-    ofs << in+ in+ in+ "Pos_Pol_Translation = self.State.Pos_Pol_Translation" << endl;
-    ofs << in+ in+ "if np.any(self.State.Dir_Pol_Replication):" << endl;
-    ofs << in+ in+ in+ "Dir_Pol_Replication = self.State.Dir_Pol_Replication" << endl;
-    ofs << in+ in+ "if np.any(self.State.Dir_Pol_Transcription):" << endl;
-    ofs << in+ in+ in+ "Dir_Pol_Transcription = self.State.Dir_Pol_Transcription" << endl;
-    ofs << endl;
+    //ofs << in+ in+ "if np.any(self.State.Pos_Pol_Replication):" << endl;
+    //ofs << in+ in+ in+ "Pos_Pol_Replication = self.State.Pos_Pol_Replication" << endl;
+    //ofs << in+ in+ "if np.any(self.State.Pos_Pol_Transcription):" << endl;
+    //ofs << in+ in+ in+ "Pos_Pol_Transcription = self.State.Pos_Pol_Transcription" << endl;
+    //ofs << in+ in+ "if np.any(self.State.Pos_Pol_Translation):" << endl;
+    //ofs << in+ in+ in+ "Pos_Pol_Translation = self.State.Pos_Pol_Translation" << endl;
+    //ofs << in+ in+ "if np.any(self.State.Dir_Pol_Replication):" << endl;
+    //ofs << in+ in+ in+ "Dir_Pol_Replication = self.State.Dir_Pol_Replication" << endl;
+    //ofs << in+ in+ "if np.any(self.State.Dir_Pol_Transcription):" << endl;
+    //ofs << in+ in+ in+ "Dir_Pol_Transcription = self.State.Dir_Pol_Transcription" << endl;
+    //ofs << endl;
 
 
     ofs << in+ in+ "def response_messages():" << endl;
@@ -412,7 +412,7 @@ void FWriter::SimServer() {
             // Organize Central dogma info in the organism
 
             for (int i = 0; i < VisObjectFamilyListInOrganism.size(); i++) {
-                GenerateVisObjects(ofs, 5, VisObjectFamilyListInOrganism[i], "Pos_Pol_" + Processes[i] + ".shape[1]");
+                GenerateVisObjects(ofs, 5, VisObjectFamilyListInOrganism[i], "self.State.Pos_Pol_" + Processes[i] + ".shape[1]");
             }
 
             // Packaging DNA Replication message in the organism
@@ -425,8 +425,8 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ReplicationCompletionRate = ReplicationCompletionRate[i] * 100," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = Pos_Pol_" << Process << "[i], " << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = Dir_Pol_" << Process << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = self.State.Dir_Pol_" << Process << "[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
             // Packaging Transcription in the organism
@@ -438,8 +438,8 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = Pos_Pol_" << Process << "[i], " << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = Dir_Pol_" << Process << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = self.State.Dir_Pol_" << Process << "[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
             // Packaging Translation in the organism
@@ -450,7 +450,7 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = Pos_Pol_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
         }
