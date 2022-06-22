@@ -1398,8 +1398,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "return Pos_Pol_Initiated, Pos_Pol_End_Initiated, Dir_Pol_Initiated, Count_NascentTarget_Initiated" << endl;
         ofs << endl;
                 
-        ofs << in+ "def Replication_Elongation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
+        ofs << in+ "def Replication_Elongation(self, Pos_Pol, Pos_Pol_End, Dir_Pol, Rate, Freq_BB, Idx_PolSub, Idx_PolBB, Idx_Genes, Genes_Positive, Genes_Negative):" << endl;
         //    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
+        ofs << in+ in+ "# Determine genes not passed yet" << endl;
+        ofs << in+ in+ "Pol_Positive_Before = np.array(Pos_Pol[:, 0], ndmin = 2).T" << endl;
+        ofs << in+ in+ "Pol_Negative_Before = np.array(Pos_Pol[:, 1], ndmin = 2).T" << endl;
+        ofs << in+ in+ "bGene_Positive_ToComplete = Genes_Positive > Pol_Positive_Before" << endl;
+        ofs << in+ in+ "bGene_Negative_ToComplete = Genes_Negative < Pol_Negative_Before" << endl;
+
+        ofs << in+ in+ "# Elongation" << endl;
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength * Dir_Pol, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrectionWithDirection(Pos_Pol_Elongated, Pos_Pol_End, Dir_Pol)" << endl;
@@ -1418,18 +1425,26 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "self.AddTodCount(Idx_PolSub, N_Elongated_Total)" << endl;
         ofs << endl;
 
-        //ofs << in+ in+ "# Update Gene Count" << endl;
+        ofs << in+ in+ "# Determine genes now passed" << endl;
+        ofs << in+ in+ "Pol_Positive_After = np.array(Pos_Pol_Trimmed[:, 0], ndmin = 2).T" << endl;
+        ofs << in+ in+ "Pol_Negative_After = np.array(Pos_Pol_Trimmed[:, 1], ndmin = 2).T" << endl;
+        ofs << in+ in+ "bGene_Positive_Completed = Genes_Positive < Pol_Positive_After" << endl;
+        ofs << in+ in+ "bGene_Negative_Completed = Genes_Negative > Pol_Negative_After" << endl;
+        ofs << endl;
 
-        //ofs << in+ in+ "bGene_Completed = Pos_Pol == Pos_Pol_End" << endl;
-        //ofs << in+ in+ "Idx_Pol_Completed = np.where(bPol_Completed)" << endl;
-        //ofs << in+ in+ "Idx_Cell_Completed = np.where(np.reshape(np.any(bPol_Completed, axis=1), [-1, 1]))" << endl;
-        //ofs << in+ in+ "Idx_Pol_Completed_Rows = Idx_Cell_Completed[0]" << endl;
-        //ofs << in+ in+ "self.State.dCount_All = SimF.AddValueToArrayOnlyAtIdx(self.State.dCount_All, (Idx_Pol_Completed_Rows, Idx_Mol_Completed), 1)" << endl;
-        //if (Option.bDebug) {
-        //    ofs << in+ in+ "print('Replication_Elongation: self.State.dCount_All After\\n', self.State.dCount_All)" << endl;
-        //}
-        //ofs << endl;
+        ofs << in+ in+ "# Determine genes completed in this round" << endl;
+        ofs << in+ in+ "bGene_Positive_Complete = np.logical_and(bGene_Positive_ToComplete, bGene_Positive_Completed)" << endl;
+        ofs << in+ in+ "bGene_Negative_Complete = np.logical_and(bGene_Negative_ToComplete, bGene_Negative_Completed)" << endl;
+        ofs << in+ in+ "bGene_Complete = np.logical_or(bGene_Positive_Complete, bGene_Negative_Complete)" << endl;
+        ofs << in+ in+ "Idx_Gene_Complete = np.where(bGene_Complete)" << endl;
 
+        ofs << in+ in+ "# Update Gene Count" << endl;
+        ofs << in+ in+ "self.State.dCount_All = SimF.AddValueToArrayOnlyAtIdx(self.State.dCount_All, (Idx_Gene_Complete[0], Idx_Genes[Idx_Gene_Complete[1]]), 1)" << endl;
+
+        if (Option.bDebug) {
+            ofs << in+ in+ "print('Replication_Elongation: self.State.dCount_All After\\n', self.State.dCount_All)" << endl;
+        }
+        ofs << endl;
 
         ofs << in+ in+ "return Pos_Pol_Trimmed" << endl;
         ofs << endl;

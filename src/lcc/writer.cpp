@@ -397,6 +397,7 @@ void FWriter::SetUp_EnzymeReaction(ofstream& ofs, std::string Type, std::vector<
     ofs << endl;
 }
 
+// Bring the string variables into writer class attributes, which are currently copied and pasted in every function below
 void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::vector<FMolecule *>> PolymeraseTypes)
 {
     DisplayWriterFunctionName(ofs, "Initialize_PolymeraseReaction_Matrix");
@@ -406,8 +407,14 @@ void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<st
     std::string Len_Ch,                                 Len_RNA,            Len_Protein;
     std::string Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein;
     std::string Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein;
-    std::string                     Dir_Gene;
+    std::string Dir_Ch,             Dir_Gene;
     std::string Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein;
+
+    // Gene specific
+    std::string                     Idx_Gene;
+    std::string                     Pos_Gene_Positive;
+    std::string                     Pos_Gene_Negative;
+
 
     Max_Ch =                "self.MaxLen_NascentChromosome = None";
     Max_RNA =               "self.MaxLen_NascentRNA = None";
@@ -425,6 +432,7 @@ void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<st
     Pos_End_RNA =           "self.Pos_End_RNA = None";
     Pos_End_Protein =       "self.Pos_End_Protein = None";
     
+    Dir_Ch =                "self.Dir_Chromosome = None";
     Dir_Gene =              "self.Dir_Gene = None";
 
     Len_Ch =                "self.Len_NascentChromosome = None";
@@ -436,6 +444,11 @@ void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<st
     Count_Nascent_RNA =     "self.Count_Nascent_RNA = None";
     Count_Nascent_Protein = "self.Count_Nascent_Protein = None";
 
+    // Gene specific
+    Idx_Gene =              "self.Idx_Gene = None";
+    Pos_Gene_Positive =     "self.Pos_Gene_Positive = None";
+    Pos_Gene_Negative =     "self.Pos_Gene_Negative = None";
+
     std::vector<std::string> List_ForProcess;
 
     // Initialize all variables regardless of polymerase types in the system.
@@ -445,8 +458,13 @@ void FWriter::Initialize_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<st
         Len_Ch,                                 Len_RNA,            Len_Protein,
         Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein,
         Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
-                            Dir_Gene,
+        Dir_Ch,             Dir_Gene,
         Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
+
+                            Idx_Gene,
+                            Pos_Gene_Positive,
+                            Pos_Gene_Negative,
+
     };
 
     for (auto& item : List_ForProcess) {
@@ -623,13 +641,17 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
 {
     DisplayWriterFunctionName(ofs, "SetUp_PolymeraseReaction_Matrix");
 
-    std::string BB_Ch, BB_RNA, BB_Protein;
-    //std::string Max_Ch,                                 Max_RNA,            Max_Protein;
-    //std::string Len_Ch,                                 Len_RNA,            Len_Protein;
-    std::string Pos_Start_Ch, Pos_Start_Gene, Pos_Start_RNA, Pos_Start_Protein;
-    std::string Pos_End_Ch, Pos_End_Gene, Pos_End_RNA, Pos_End_Protein;
-    std::string Dir_Ch, Dir_Gene;
-    std::string Count_Nascent_Ch, Count_Nascent_Gene, Count_Nascent_RNA, Count_Nascent_Protein;
+    std::string BB_Ch,                                  BB_RNA,             BB_Protein;
+    std::string Pos_Start_Ch,       Pos_Start_Gene,     Pos_Start_RNA,      Pos_Start_Protein;
+    std::string Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein;
+    std::string Dir_Ch,             Dir_Gene;
+    std::string Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein;
+    
+    // Gene specific
+    std::string                     Idx_Gene;
+    std::string                     Pos_Gene_Positive;
+    std::string                     Pos_Gene_Negative;
+
 
     auto Chromosome = Context.GetSubList_MoleculeList("Chromosome");
     auto Genes = Context.GetSubList_MoleculeList("Gene");
@@ -640,6 +662,8 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
     std::vector<int> RNA_End, RNA_Length, Protein_Length;
     std::vector<std::string> Gene_Freq_BB, RNA_Freq_BB, Protein_Freq_BB;
 
+    std::vector<int> Gene_Idx;
+
     for (auto& gene : Genes) {
         auto Gene = dynamic_cast<FGene*>(gene);
         Gene_Start.push_back(Gene->Coord);
@@ -647,6 +671,8 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
         Gene_Dir.push_back(Gene->Dir);
         Gene_Length.push_back(Gene->Size);
         Protein_Length.push_back(Gene->Size / 3 - 1);
+
+        Gene_Idx.push_back(Context.GetIdxByName_MoleculeList(Gene->Name));
 
         std::string Freq_BB = "[";
         std::vector<std::pair<std::string, float>> Composition = Gene->Composition;
@@ -713,6 +739,12 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
     Count_Nascent_RNA =     "self.Count_Nascent_RNA = np.full([self.Count_All.shape[0], " + std::to_string(RNAs.size()) + "], 0)";
     Count_Nascent_Protein = "self.Count_Nascent_Protein = np.full([self.Count_All.shape[0], " + std::to_string(Proteins.size()) + "], 0)";
 
+    // Gene specific
+    Idx_Gene =              "self.Idx_Gene = np.array([" + Utils::JoinInt2Str(Gene_Idx) + "])";
+    Pos_Gene_Positive =     "self.Pos_Gene_Positive = np.where(self.Dir_Gene > 0, self.Pos_End_Gene, self.Pos_Start_Gene)";
+    Pos_Gene_Negative =     "self.Pos_Gene_Negative = np.where(self.Dir_Gene < 0, self.Pos_End_Gene, self.Pos_Start_Gene)";
+
+
     std::vector<std::string> List_ForProcess;
 
     // For All genetic info processing
@@ -725,6 +757,11 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
             Pos_End_Ch,         Pos_End_Gene,       Pos_End_RNA,        Pos_End_Protein,
             Dir_Ch,             Dir_Gene,
             Count_Nascent_Ch,   Count_Nascent_Gene, Count_Nascent_RNA,  Count_Nascent_Protein,
+            
+                                Idx_Gene,
+                                Pos_Gene_Positive,
+                                Pos_Gene_Negative,
+
         };
 
         for (auto& item : List_ForProcess) {
@@ -740,7 +777,12 @@ void FWriter::SetUp_PolymeraseReaction_Matrix(ofstream& ofs, std::vector<std::ve
             Pos_Start_Ch,       Pos_Start_Gene,     
             Pos_End_Ch,         Pos_End_Gene,       
             Dir_Ch,             Dir_Gene,
-            Count_Nascent_Ch,   Count_Nascent_Gene, 
+            Count_Nascent_Ch,   Count_Nascent_Gene,
+
+                                Idx_Gene,
+                                Pos_Gene_Positive,
+                                Pos_Gene_Negative,
+
         };
 
         for (auto& item : List_ForProcess) {
@@ -1072,7 +1114,7 @@ void FWriter::Polymerase_ElongationReaction_DNAP(ofstream& ofs, std::vector<FMol
 
     FPolymerase* Pol = dynamic_cast<FPolymerase*>(Polymerases[0]);
 
-    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight;
+    std::string Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Pos_Pol_Target, Dir_Pol, Freq_BB_Pol, Pos_Start_Template, Pos_End_Template, Dir_Template, Count_Nascent_Template, Count_Nascent_Target, Rate, Freq_BB, Idx_Pol, Idx_Template, Idx_Target, Idx_PolSub, Idx_PolBB, Pol_Threshold, Weight, Idx_Gene, Gene_Positive, Gene_Negative;
     Pos_Pol =                   "self.State.Pos_Pol_"           + Pol->Process;
     Pos_Pol_End =               "self.State.Pos_Pol_End_"       + Pol->Process;
     Pos_Pol_Template =          "self.State.Pos_Pol_Template_"  + Pol->Process;
@@ -1094,12 +1136,18 @@ void FWriter::Polymerase_ElongationReaction_DNAP(ofstream& ofs, std::vector<FMol
     Idx_PolSub =                "self.State.Idx_PolSub_"        + Pol->Process;
     Idx_PolBB =                 "self.State.Idx_PolBB_"         + Pol->Process;
     Pol_Threshold =             "self.State.Pol_Threshold_"     + Pol->Process;
-    
+ 
+    Idx_Gene =                  "self.State.Idx_Gene";
+    Gene_Positive =             "self.State.Pos_Gene_Positive";
+    Gene_Negative =             "self.State.Pos_Gene_Negative";
+
     Weight = "1"; // TODO: Update with sigma factor
+
+
 
     std::vector<std::string> Output = { Pos_Pol };
     std::string Function = "self." + Pol->Process + "_Elongation";
-    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
+    std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Rate, Freq_BB, Idx_PolSub, Idx_PolBB, Idx_Gene, Gene_Positive, Gene_Negative };
     //std::vector<std::string> Input = { Pos_Pol, Pos_Pol_End, Dir_Pol, Freq_BB_Pol, Count_Nascent_Target, Rate, Freq_BB, Idx_PolSub, Idx_PolBB };
 
     std::string OutputText = Utils::JoinStr2Str(Output, Str_Empty, Str_Empty);
