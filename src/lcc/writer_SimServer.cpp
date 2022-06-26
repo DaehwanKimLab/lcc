@@ -293,14 +293,16 @@ void FWriter::SimServer() {
     ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
     ofs << endl;
 
-    //ofs << in+ in+ "# Setup Default Numpy Arrays" << endl;
+    ofs << in+ in+ "# Setup Default Numpy Arrays" << endl;
 
-    //ofs << in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
-    //ofs << in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
-    //ofs << in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
+    ofs << in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
+    ofs << in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
+
+    ofs << in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
+    ofs << in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
+
     //ofs << in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
     //ofs << in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
-    //ofs << in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
     //ofs << in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
     //ofs << endl;
 
@@ -421,7 +423,11 @@ void FWriter::SimServer() {
             // Organize Central dogma info in the organism
 
             for (int i = 0; i < VisObjectFamilyListInOrganism.size(); i++) {
-                GenerateVisObjects(ofs, 5, VisObjectFamilyListInOrganism[i], "self.State.Pos_Pol_" + Processes[i] + ".shape[1]");
+                std::string Text_Pos_Pol = "self.State.Pos_Pol_";
+                if ((VisObjectFamilyListInOrganism[i] == "DNAP") & (DNAPs.empty())) {
+                    Text_Pos_Pol = "Pos_Pol_";
+                }
+                GenerateVisObjects(ofs, 5, VisObjectFamilyListInOrganism[i], Text_Pos_Pol + Processes[i] + ".shape[1]");
             }
 
             // Packaging DNA Replication message in the organism
@@ -433,8 +439,16 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = self.State.Dir_Pol_" << Process << "[i]," << endl;
+            
+            std::string Text_Pos_Pol = "self.State.Pos_Pol_";
+            std::string Text_Dir_Pol = "self.State.Dir_Pol_";
+            if (DNAPs.empty()) {
+                Text_Pos_Pol = "Pos_Pol_";
+                Text_Dir_Pol = "Dir_Pol_";
+            }
+
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = " << Text_Pos_Pol << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = " << Text_Dir_Pol << Process << "[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
             // Packaging Transcription in the organism
