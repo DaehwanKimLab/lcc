@@ -74,6 +74,8 @@ void FWriter::SimServer() {
 
     auto Chromosomes = Context.GetSubList_MoleculeList("Chromosome");
     auto DNAPs = Context.GetSubList_MoleculeList("DNAP");
+    auto RNAPs = Context.GetSubList_MoleculeList("RNAP");
+    auto Ribosomes = Context.GetSubList_MoleculeList("Ribosome");
 
     ofs << endl;
     ofs << "class LCCSimulation(lccsimulation_pb2_grpc.LCCSimulationServicer):" << endl;
@@ -245,25 +247,27 @@ void FWriter::SimServer() {
     ofs << endl;
 
     ofs << in+ in+ "Dict_mRNA2Protein = {}" << endl;
-    ofs << in+ in+ "for i in range(Idx_Proteins.shape[0]):" << endl;
-    ofs << in+ in+ in+ "Dict_mRNA2Protein[Idx_mRNAs[i]] = Idx_Proteins[i]" << endl;
+    ofs << in+ in+ "if np.any(Idx_Proteins):" << endl;
+    ofs << in+ in+ in+ "for i in range(Idx_Proteins.shape[0]):" << endl;
+    ofs << in+ in+ in+ in+ "Dict_mRNA2Protein[Idx_mRNAs[i]] = Idx_Proteins[i]" << endl;
     ofs << endl;
 
     ofs << in+ in+ "Idx_Gene2RNA = {}" << endl;
     ofs << in+ in+ "Idx_RNA2Protein = {}" << endl;
     ofs << in+ in+ "Idx_Gene2Protein = {}" << endl;
     ofs << endl;
-    ofs << in+ in+ "for i in range(Idx_Genes.shape[0]):" << endl;
-    ofs << in+ in+ in+ "idx_gene = Idx_Genes[i]" << endl;
-    ofs << in+ in+ in+ "idx_rna = Idx_RNAs[i]" << endl;
-    ofs << in+ in+ in+ "Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
+    ofs << in+ in+ "if np.any(Idx_Genes):" << endl;
+    ofs << in+ in+ in+ "for i in range(Idx_Genes.shape[0]):" << endl;
+    ofs << in+ in+ in+ in+ "idx_gene = Idx_Genes[i]" << endl;
+    ofs << in+ in+ in+ in + "idx_rna = Idx_RNAs[i]" << endl;
+    ofs << in+ in+ in+ in + "Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
     ofs << endl;
-    ofs << in+ in+ in+ "idx_protein = -1   # -1 for non-coding genes (only generates non-coding type RNA (not mRNA), hence no protein)" << endl;
-    ofs << in+ in+ in+ "if idx_rna in Idx_mRNAs:" << endl;
-    ofs << in+ in+ in+ in+ "idx_protein = Dict_mRNA2Protein[idx_rna]" << endl;
+    ofs << in+ in+ in+ in+ "idx_protein = -1   # -1 for non-coding genes (only generates non-coding type RNA (not mRNA), hence no protein)" << endl;
+    ofs << in+ in+ in+ in+ "if idx_rna in Idx_mRNAs:" << endl;
+    ofs << in+ in+ in+ in+ in+ "idx_protein = Dict_mRNA2Protein[idx_rna]" << endl;
     ofs << endl;
-    ofs << in+ in+ in+ "Idx_RNA2Protein[idx_rna] = idx_protein" << endl;
-    ofs << in+ in+ in+ "Idx_Gene2Protein[idx_gene] = idx_protein" << endl;
+    ofs << in+ in+ in+ in+ "Idx_RNA2Protein[idx_rna] = idx_protein" << endl;
+    ofs << in+ in+ in+ in+ "Idx_Gene2Protein[idx_gene] = idx_protein" << endl;
     ofs << endl;
 
     ofs << in+ in+ "Idx_Init.append(lccsimulation_pb2.MIdx(" << endl;
@@ -293,18 +297,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "# Setup Default Numpy Arrays" << endl;
 
-    ofs << in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
-    ofs << in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
-
-    ofs << in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
-    ofs << in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
-
-    //ofs << in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
-    //ofs << in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
-    //ofs << in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
-    //ofs << endl;
 
     //ofs << in+ in+ "# Setup Central Dogma Numpy Arrays" << endl;
 
@@ -362,6 +355,25 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "Counts = {} # map from id --> VisObjectData" << endl;
     ofs << endl;
 
+    ofs << in+ in+ in+ in+ "# Setup Default Numpy Arrays" << endl;
+
+    ofs << in+ in+ in+ in+ "ZeroArray = np.zeros([self.State.Count_All.shape[0], 1])" << endl;
+    ofs << in+ in+ in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
+
+    ofs << in+ in+ in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
+    ofs << in+ in+ in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
+    ofs << in+ in+ in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
+    ofs << in+ in+ in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
+    ofs << in+ in+ in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ in+ "Count_Nascent_Chromosome = ZeroArray" << endl;
+    ofs << in+ in+ in+ in+ "Count_Nascent_Gene = ZeroArray" << endl;
+    ofs << in+ in+ in+ in+ "Count_Nascent_RNA = ZeroArray" << endl;
+    ofs << in+ in+ in+ in+ "Count_Nascent_Protein = ZeroArray" << endl;
+    ofs << endl;
+
+
     std::vector<std::string> VisObjectFamilyListInOrganism, Processes;
     std::string VisObjectFamily, Process;
     std::string DNAP, RNAP, Ribosome;
@@ -413,10 +425,27 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ "Counts[ObjID] = lccsimulation_pb2.MState_Count(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Count_All=self.State.Count_All[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Chromosome=self.State.Count_Nascent_Chromosome[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Gene=self.State.Count_Nascent_Gene[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_RNA=self.State.Count_Nascent_RNA[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Protein=self.State.Count_Nascent_Protein[i]," << endl;
+
+            std::string Text_Count_Nascent_Chromosome = "self.State.Count_Nascent_Chromosome";
+            std::string Text_Count_Nascent_Gene = "self.State.Count_Nascent_Gene";
+            std::string Text_Count_Nascent_RNA = "self.State.Count_Nascent_RNA";
+            std::string Text_Count_Nascent_Protein = "self.State.Count_Nascent_Protein";
+            if (DNAPs.empty()) {
+                Text_Count_Nascent_Chromosome = "Count_Nascent_Chromosome";
+                Text_Count_Nascent_Gene = "Count_Nascent_Gene";
+            }
+            if (RNAPs.empty()) {
+                Text_Count_Nascent_Gene = "Count_Nascent_Gene";
+                Text_Count_Nascent_RNA = "Count_Nascent_RNA";
+            }
+            if (Ribosomes.empty()) {
+                Text_Count_Nascent_Protein = "Count_Nascent_Protein";
+            }
+
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Chromosome=" << Text_Count_Nascent_Chromosome << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Gene=" << Text_Count_Nascent_Gene << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_RNA=" << Text_Count_Nascent_RNA << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Count_Nascent_Protein=" << Text_Count_Nascent_Protein << "[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
             ofs << endl;
             
@@ -425,6 +454,12 @@ void FWriter::SimServer() {
             for (int i = 0; i < VisObjectFamilyListInOrganism.size(); i++) {
                 std::string Text_Pos_Pol = "self.State.Pos_Pol_";
                 if ((VisObjectFamilyListInOrganism[i] == "DNAP") & (DNAPs.empty())) {
+                    Text_Pos_Pol = "Pos_Pol_";
+                } 
+                else if ((VisObjectFamilyListInOrganism[i] == "RNAP") & (RNAPs.empty())) {
+                    Text_Pos_Pol = "Pos_Pol_";
+                }
+                else if ((VisObjectFamilyListInOrganism[i] == "Ribosome") & (Ribosomes.empty())) {
                     Text_Pos_Pol = "Pos_Pol_";
                 }
                 GenerateVisObjects(ofs, 5, VisObjectFamilyListInOrganism[i], Text_Pos_Pol + Processes[i] + ".shape[1]");
@@ -460,8 +495,16 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = self.State.Dir_Pol_" << Process << "[i]," << endl;
+
+            Text_Pos_Pol = "self.State.Pos_Pol_";
+            Text_Dir_Pol = "self.State.Dir_Pol_";
+            if (RNAPs.empty()) {
+                Text_Pos_Pol = "Pos_Pol_";
+                Text_Dir_Pol = "Dir_Pol_";
+            }
+
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = " << Text_Pos_Pol << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = " << Text_Dir_Pol << Process << "[i]," << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
             // Packaging Translation in the organism
@@ -472,7 +515,13 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ Process << "s[ObjID] = lccsimulation_pb2.MState_" << Process << "(" << endl;
             ofs << in+ in+ in+ in+ in+ in+ "ID=ObjID," << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = self.State.Pos_Pol_" << Process << "[i], " << endl;
+
+            Text_Pos_Pol = "self.State.Pos_Pol_";
+            if (RNAPs.empty()) {
+                Text_Pos_Pol = "Pos_Pol_";
+            }
+
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = " << Text_Pos_Pol << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
         }

@@ -125,9 +125,9 @@ int FOption::Parse(int argc, char *argv[])
                 break;
 
             case ARG_MAX_N_GENES:
-                std::cout << "before" << Max_N_Genes;
+//                std::cout << "before" << Max_N_Genes;
                 Max_N_Genes = std::stoi(std::string(optarg));
-                std::cout << "after" << Max_N_Genes;
+//                std::cout << "after" << Max_N_Genes;
                 break;
 
             case ARG_RUNOMVISIM:
