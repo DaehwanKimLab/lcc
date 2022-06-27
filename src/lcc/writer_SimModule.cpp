@@ -1215,7 +1215,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "Idx = self.GetPosIdx(Name)" << endl;
         ofs << in+ in+ "return self.GetReplicationCompletionRate()[Idx]" << endl;
     } else {
-        ofs << in+ in+ "return np.zeros([self.State.Count_All.shape[0], 1])" << endl;
+        ofs << in+ in+ "return np.zeros([self.State.Count_All.shape[0]])" << endl;
     }
     ofs << endl;
     
