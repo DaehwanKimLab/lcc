@@ -66,7 +66,7 @@ void FWriter::SimServer() {
     ofs << endl;
 
     ofs << "def GenGreenToRedColor(ValueBTWZeroAndOne):" << endl;
-    ofs << in+ "return lccsimulation_pb2.MVector3(X = int(255 * ValueBTWZeroAndOne), Y = int(255 * (1 - ValueBTWZeroAndOne)), Z = 50)" << endl;
+    ofs << in+ "return lccsimulation_pb2.MVector3(X = int(255 * ValueBTWZeroAndOne), Y = int(255 * (1 - ValueBTWZeroAndOne)), Z = 0)" << endl;
     ofs << endl;
 
     auto MolLoc = Context.GetSubList_LocationList("Molecule");
@@ -209,8 +209,22 @@ void FWriter::SimServer() {
         
         ofs << in+ in+ "# DNA Position" << endl;
         ofs << endl;
+
+        // temporary code for visualization
+        ofs << in+ in+ "DNAScale = 7" << endl; 
+        ofs << endl;
+        ofs << in+ in+ "# Center the DNA" << endl;
+        ofs << in+ in+ "pos_avg = self.State.Pos_Ref[0]" << endl;
+        ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
+        ofs << in+ in+ in+ "pos_avg += pos" << endl;
+        ofs << endl;
+        ofs << in+ in+ "pos_avg /= len(self.State.Pos_Ref)" << endl;
+        ofs << endl;
+        // 
+        
         ofs << in+ in+ "Positions = []" << endl;
         ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
+        ofs << in+ in+ in+ "pos_temp = DNAScale * (pos - pos_avg)" << endl; // temporary code for visualization
         ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos[0], Y=pos[1], Z=pos[2]))" << endl;
         ofs << endl;
         ofs << in+ in+ "DNA_Positions = lccsimulation_pb2.MDNA_PositionData(" << endl;
@@ -406,7 +420,7 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ "for i in range(len(X)):   # i here is an organism ID" << endl;
             ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i], Y=Y[i], Z=0)" << endl;
             ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
-            ofs << in+ in+ in+ in+ in+ "GrowthVec = lccsimulation_pb2.MVector3(X=0.2, Y=0.2 * (1 + ReplicationCompletionRate[i]), Z=0.2)" << endl;
+            ofs << in+ in+ in+ in+ in+ "GrowthVec = lccsimulation_pb2.MVector3(X=0.2 * (1 + ReplicationCompletionRate[i]), Y=0.2, Z=0.2)" << endl;
             ofs << in+ in+ in+ in+ in+ "ColorVec = GenGreenToRedColor(ReplicationCompletionRate[i])" << endl;
             ofs << endl;
             ofs << in+ in+ in+ in+ in+ "ObjID = i + 1   # ID 0 is used for static objects" << endl;
