@@ -225,7 +225,7 @@ void FWriter::SimServer() {
         ofs << in+ in+ "Positions = []" << endl;
         ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
         ofs << in+ in+ in+ "pos_temp = DNAScale * (pos - pos_avg)" << endl; // temporary code for visualization
-        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos[0], Y=pos[1], Z=pos[2]))" << endl;
+        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos_temp[0], Y=pos_temp[1], Z=pos_temp[2]))" << endl;
         ofs << endl;
         ofs << in+ in+ "DNA_Positions = lccsimulation_pb2.MDNA_PositionData(" << endl;
         ofs << in+ in+ in+ "Points=Positions" << endl;
