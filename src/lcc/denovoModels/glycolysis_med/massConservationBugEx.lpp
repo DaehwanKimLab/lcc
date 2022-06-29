@@ -1,13 +1,11 @@
-
-// A to Fast/Slow
+// Total to Fast/Slow
 protein total;
-reaction totalToFast(total + act --> Fast, k = 5e4, krev= 1e3); // make it Kd instead of Km by annulling kcat
+reaction totalToFast(total + act --> Fast, k = 5e4, krev= 1e3);
 reaction totalToSlow(total + inhib --> Slow, k = 5e4, krev = 1e3);
-
 // Init concentrations: metabolites
 act = 1700uM, inhib = 100uM;
-act[0.2:0.5] = 3400uM;
-// Init concentrations: enzymes 
+// Note: mass conservation issue when activator increases
+act[0.2:0.5] = 3400uM; 
 total = 1uM;
 // Simulation Duration
 SimSteps = 125, SimRes = 125;
