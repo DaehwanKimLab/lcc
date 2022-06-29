@@ -1,0 +1,16 @@
+
+// A to Fast/Slow
+protein total;
+reaction totalToFast(total + act --> Fast, k = 5e4, krev= 1e3); // make it Kd instead of Km by annulling kcat
+reaction totalToSlow(total + inhib --> Slow, k = 5e4, krev = 1e3);
+// Fast/Slow reaction
+protein Fast(input --> output, kcat = 1.7e4, KM = 0.21uM);
+protein Slow(input --> output, kcat = 1.7e4, KM = 3.1e7uM);
+
+// Init concentrations: metabolites
+input[:] = 500uM, act = 1700uM, inhib = 100uM, output[:] = 0;
+act[0.2:0.5] = 3400uM;
+// Init concentrations: enzymes 
+total = 1uM;
+// Simulation Duration
+SimSteps = 125, SimRes = 125;

@@ -10,6 +10,9 @@ def counttouM(inVal:float):
 # constants
 #SIM_DURATION_SECONDS = 0.6
 #SIM_DURATION_SECONDS = 6
+#SIM_DURATION_SECONDS = 60
+#SIM_DURATION_SECONDS = 120
+#SIM_DURATION_SECONDS = 200
 SIM_DURATION_SECONDS = 600
 #SIM_DURATION_SECONDS = 2000
 STEPS_PER_SECOND = 100
@@ -18,15 +21,15 @@ STEPS_PER_SECOND = 100
 TOTAL_STEPS = SIM_DURATION_SECONDS * STEPS_PER_SECOND
 
 # kcats
-KCAT_HEXOKINASE =  200
+KCAT_HEXOKINASE =  2000
 KCAT_PFK = 1.7e4
 KCAT_PFK_ACTIVE = 1.7e4
 KCAT_PFK_INACTIVE = 1.7e4
-KCAT_PK = 170
+KCAT_PK = 1438
 ##
-KCAT_SUMMARY_MAKE_PEPASE = 5e3 # Arbitrary
+KCAT_SUMMARY_MAKE_PEPASE = 4e3 # Arbitrary
 # ks
-K_SUMMARY_MAKE_PEPASE = 1e4
+#K_SUMMARY_MAKE_PEPASE = 1e4
 
 # KMs
 KM_HEXOKINASE_GLUCOSE = uMtoCount(5)  # yeast
@@ -38,7 +41,7 @@ KM_PK_PEP = uMtoCount(700)
 KM_PK_ADP = uMtoCount(50) # Guesstimate from lit, most bact seem around this
 
 #####
-KM_SUMMARY_MAKE_PEPASE = uMtoCount(3) # just guessing.
+KM_SUMMARY_MAKE_PEPASE = uMtoCount(0.18) # just guessing.
 
 # Concentrations
 ## Metabolites
@@ -53,24 +56,29 @@ CONC_F16P = 0                       # Goal: 15.0mM - https://www.nature.com/arti
 CONC_PEP = 0                        # Goal: 0.18mM - https://www.nature.com/articles/nchembio.186.pdf
 CONC_PYRUVATE = 0                   
 ## Enzymes
-CONC_PFK = uMtoCount(33e-3) # 33nM https://masspy.readthedocs.io/en/v0.1.6/education/sb2/chapters/sb2_chapter14.html
+CONC_PFK = uMtoCount(33e-3)         # 33nM https://masspy.readthedocs.io/en/v0.1.6/education/sb2/chapters/sb2_chapter14.html
 CONC_PFK_ACTIVE = 0
 CONC_PFK_INACTIVE = 0
-CONC_HEXOKINASE = uMtoCount(50e-2)
+CONC_HEXOKINASE = uMtoCount(5e-2)
 CONC_SUMMARY_MAKE_PEPASE = uMtoCount(6e-2)
 CONC_PYRUVATE_KINASE = uMtoCount(50e-3)
 
 ## Current exploratory values
 KA_ADP_PFK = uMtoCount(25)
-#KI_PEP_PFK = uMtoCount(260)             # use Keft_pep from file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
-KI_PEP_PFK = uMtoCount(10)
-#KA_F16BP_PK = uMtoCount(390)            # file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
-KA_F16BP_PK = uMtoCount(3)            # file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
+KI_PEP_PFK = uMtoCount(260)             # use Keft_pep from file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
+#KI_PEP_PFK = uMtoCount(10)
+KA_F16BP_PK = uMtoCount(390)            # file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
+#KA_F16BP_PK = uMtoCount(3)            
 KI_ATP_PK = uMtoCount(84000)            # Ki_r of ATP ~ 84mM : file:///D:/Documents/Gradschool/KimLab/lit/someEcoliODEs.pdf
 
-KI_F6P_HK = uMtoCount(160)
 
-KI_PEP_HK = uMtoCount(1.5)
+#KI_F6P_HK = uMtoCount(160)
+#KI_PEP_HK = uMtoCount(1.5)
+KI_ATP_HK = uMtoCount(9000)
+KA_ADP_HK = uMtoCount(5000)
+
+#KI_PYR_HK = uMtoCount(9000)
+#KA_PYR_HK = uMtoCount(5000)
 
 PFK_STATE_TRANSITION_CONSTANT = 14.4   #https://www.researchgate.net/publication/23230008_Kinetic_Model_of_Phosphofructokinase-1_from_Escherichia_coli?enrichId=rgreq-40a860a066e1fe2f49a81d0a30616e86-XXX&enrichSource=Y292ZXJQYWdlOzIzMjMwMDA4O0FTOjIyMTQ0NDY4MTI3NzQ0MEAxNDI5ODA3OTM0NDgw&el=1_x_2&_esc=publicationCoverPdf
 
@@ -85,9 +93,9 @@ def competAlloOneActOneInhib(actConc, Ka, inhibConc, Ki):
 
 
 # Attempting to base
-def hexokinase(Conc_Substrate1 = CONC_GLUCOSE_T0, Conc_Substrate2 = CONC_ATP_T0,Conc_Inhibitor1 = CONC_F6P, Conc_Inhibitor2 = CONC_PEP, Ki1 =KI_F6P_HK,Ki2 = KI_PEP_HK, Conc_Enzyme = CONC_HEXOKINASE, kcat = KCAT_HEXOKINASE, KM1 = KM_HEXOKINASE_GLUCOSE,KM2 =  KM_HK_ATP):
+def hexokinase(Conc_Substrate1 = CONC_GLUCOSE_T0, Conc_Substrate2 = CONC_ATP_T0,Conc_Inhibitor1 = CONC_ATP, Conc_Activator1 = CONC_ADP, Ka1 = KA_ADP_HK, Ki1 =KI_ATP_HK, Conc_Enzyme = CONC_HEXOKINASE, kcat = KCAT_HEXOKINASE, KM1 = KM_HEXOKINASE_GLUCOSE,KM2 =  KM_HK_ATP):
     # Note: glucose is not decreasing...
-    return (kcat * Conc_Enzyme / activate(Conc_Inhibitor1, Ki1) / activate(Conc_Inhibitor2, Ki2) * saturation(Conc_Substrate1, KM1) * saturation(Conc_Substrate2, KM2))
+    return (kcat * Conc_Enzyme / activate(Conc_Inhibitor1, Ki1) * activate(Conc_Activator1, Ka1) * saturation(Conc_Substrate1, KM1) * saturation(Conc_Substrate2, KM2))
 
 if useOneStatePFK:
     #def pfk(Conc_Substrate1 = CONC_F6P, Conc_Substrate2 = CONC_ATP, Conc_Activator = CONC_ADP,Conc_Inhibitor = CONC_PEP, Ka = KA_ADP_PFK, Ki = KI_PEP_PFK, Conc_Enzyme = CONC_PFK, kcat = KCAT_PFK_ACTIVE, KM1 = KM_PFK_ACTIVE_F6P, KM2 = KM_PFK_ACTIVE_ATP):
@@ -127,7 +135,7 @@ def run():
 
     for step in range(1,TOTAL_STEPS):
         # Get turnover for each enzyme
-        arr2DEnzymeStepTurnover[step][0] = hexokinase(Conc_Substrate2=arr2DCounts[step-1][4], Conc_Inhibitor1=arr2DCounts[step-1][0], Conc_Inhibitor2= arr2DCounts[step-1][2]) / STEPS_PER_SECOND                               # In: Gluc + ATP  ; Out: F6P
+        arr2DEnzymeStepTurnover[step][0] = hexokinase(Conc_Substrate2=arr2DCounts[step-1][4], Conc_Inhibitor1=arr2DCounts[step-1][4], Conc_Activator1 = arr2DCounts[step-1][5]) / STEPS_PER_SECOND                               # In: Gluc + ATP  ; Out: F6P
         arr2DEnzymeStepTurnover[step][1] = pfk(arr2DCounts[step-1][0], arr2DCounts[step-1][4], arr2DCounts[step-1][5],arr2DCounts[step-1][2]) / STEPS_PER_SECOND                               # In: F6P + ATP (ADP reg); Out: F16BP
         arr2DEnzymeStepTurnover[step][2] = summaryMakePEPase(arr2DCounts[step-1][1]) / STEPS_PER_SECOND                                         # In: F16BP ; Out: PEP
         arr2DEnzymeStepTurnover[step][3] = pyruvateKinase(arr2DCounts[step-1][2], arr2DCounts[step-1][5], arr2DCounts[step-1][4]) / STEPS_PER_SECOND      # In: PEP  (ATP reg) ; Out: Pyruvate
@@ -160,11 +168,11 @@ def run():
         arr2DCounts[step][3] = min(uMtoCount(10000), max(0, arr2DCounts[step-1][3] + arr2DEnzymeStepTurnover[step][3]))
         
         # ATP
-        #arr2DCounts[step][4] = max(0, arr2DCounts[step-1][4] + 2*arr2DEnzymeStepTurnover[step][3] - arr2DEnzymeStepTurnover[step][1] - arr2DEnzymeStepTurnover[step][0])
-        arr2DCounts[step][4] = CONC_ATP_T0
+        arr2DCounts[step][4] = max(0, arr2DCounts[step-1][4] + 2*arr2DEnzymeStepTurnover[step][3] - arr2DEnzymeStepTurnover[step][1] - arr2DEnzymeStepTurnover[step][0])
+        #arr2DCounts[step][4] = CONC_ATP_T0
         # ADP
-        #arr2DCounts[step][5] = max(0, arr2DCounts[step-1][5] - 2*arr2DEnzymeStepTurnover[step][3] + arr2DEnzymeStepTurnover[step][1] + arr2DEnzymeStepTurnover[step][0])
-        arr2DCounts[step][5] = CONC_ADP_T0
+        arr2DCounts[step][5] = max(0, arr2DCounts[step-1][5] - 2*arr2DEnzymeStepTurnover[step][3] + arr2DEnzymeStepTurnover[step][1] + arr2DEnzymeStepTurnover[step][0])
+        #arr2DCounts[step][5] = CONC_ADP_T0
 
     return time, arr2DCounts.T, arr2DEnzymeStepTurnover.T, arr2DEnzymePercentSubstrateSaturation.T, arr2DEnzymePercentMaxActivty.T, enzymeLegend, metaboliteLegend, enzymeMetaboliteLegend
 

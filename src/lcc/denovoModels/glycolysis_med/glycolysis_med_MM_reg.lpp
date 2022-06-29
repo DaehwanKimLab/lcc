@@ -19,14 +19,14 @@ reaction feedForwardActivation_PFKActive(ADP --> phosphofructokinaseActive, Ka =
 reaction feedBackInhibition_PK(ATP --| pyruvateKinase, Ki = 5mM, n = 1); // just guess the ki here
 
 // Init concentrations: metabolites
-glucose = 500uM;
+//glucose = 500uM;
 //glucose[:] = 500uM;
 //glucose[:] = 500uM, ATP = 5000uM, ADP = 1700uM;
-//glucose[:] = 500uM, ATP[:] = 5000uM, ADP[:] = 1700uM;
+glucose[:] = 500uM, ATP[:] = 5000uM, ADP[:] = 1700uM;
 
 // Disturb system at certain points
 //PEP[10:11] = 1000uM;
-ADP[0] = 1700uM, ADP[20:25] = 3400uM, ADP[25:50] = 1700uM;
+//ADP[0] = 1700uM, ADP[20:25] = 3400uM, ADP[25:50] = 1700uM;
 ATP[0] = 5000uM, ATP[20:25] = 3300uM, ATP[25:50] = 5000uM;
 
 // Init concentrations: enzymes -- no particular reason these values were chosen.
