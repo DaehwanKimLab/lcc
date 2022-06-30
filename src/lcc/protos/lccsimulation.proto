@@ -134,6 +134,9 @@ message MIdx
     map<int32, int32> RNA2Protein = 6;
     map<int32, int32> Gene2Protein = 7;
 
+    // local within a pool of proteins to a pool of genes and RNA
+    map<int32, int32> ProteinOrmRNA2GeneOrRNA_Local = 8;
+
 }
 
 // State
@@ -170,7 +173,7 @@ message MState_Translation
     uint32 ID = 1;
     map<uint32, MVisObjectData> Objects_Ribosome = 2;
     repeated float Pos_Ribosome_nt = 3;
-    repeated float Pos_Ribosome_RNA = 4;
+    repeated float Pos_Ribosome_mRNA = 4;
 }
 
 //

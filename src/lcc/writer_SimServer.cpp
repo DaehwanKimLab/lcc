@@ -269,8 +269,10 @@ void FWriter::SimServer() {
     ofs << in+ in+ "Idx_Gene2RNA = {}" << endl;
     ofs << in+ in+ "Idx_RNA2Protein = {}" << endl;
     ofs << in+ in+ "Idx_Gene2Protein = {}" << endl;
+    ofs << in+ in+ "Idx_ProteinOrmRNA2GeneOrRNA_Local = {}" << endl;
     ofs << endl;
     ofs << in+ in+ "if np.any(Idx_Genes):" << endl;
+    ofs << in+ in+ in+ "nth_protein_or_mRNA = 0" << endl;
     ofs << in+ in+ in+ "for i in range(Idx_Genes.shape[0]):" << endl;
     ofs << in+ in+ in+ in+ "idx_gene = Idx_Genes[i]" << endl;
     ofs << in+ in+ in+ in + "idx_rna = Idx_RNAs[i]" << endl;
@@ -279,6 +281,8 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "idx_protein = -1   # -1 for non-coding genes (only generates non-coding type RNA (not mRNA), hence no protein)" << endl;
     ofs << in+ in+ in+ in+ "if idx_rna in Idx_mRNAs:" << endl;
     ofs << in+ in+ in+ in+ in+ "idx_protein = Dict_mRNA2Protein[idx_rna]" << endl;
+    ofs << in+ in+ in+ in+ in+ "Idx_ProteinOrmRNA2GeneOrRNA_Local[nth_protein_or_mRNA] = i" << endl;
+    ofs << in+ in+ in+ in+ in+ "nth_protein_or_mRNA += 1" << endl;
     ofs << endl;
     ofs << in+ in+ in+ in+ "Idx_RNA2Protein[idx_rna] = idx_protein" << endl;
     ofs << in+ in+ in+ in+ "Idx_Gene2Protein[idx_gene] = idx_protein" << endl;
@@ -292,6 +296,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ "Gene2RNA=Idx_Gene2RNA," << endl;
     ofs << in+ in+ in+ "RNA2Protein=Idx_RNA2Protein," << endl;
     ofs << in+ in+ in+ "Gene2Protein=Idx_Gene2Protein," << endl;
+    ofs << in+ in+ in+ "ProteinOrmRNA2GeneOrRNA_Local=Idx_ProteinOrmRNA2GeneOrRNA_Local," << endl;
     ofs << in+ in+ "))" << endl;
     ofs << endl;
 
@@ -543,7 +548,7 @@ void FWriter::SimServer() {
             }
 
             ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_nt = " << Text_Pos_Pol << Process << "[i], " << endl;
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_RNA = " << Text_Pos_Pol << "Template_" << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_mRNA = " << Text_Pos_Pol << "Template_" << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
         }
