@@ -375,10 +375,16 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "NegOneArray = np.full([self.State.Count_All.shape[0], 1], -1)" << endl;
 
     ofs << in+ in+ in+ in+ "Pos_Pol_Replication = NegOneArray" << endl;
-    ofs << in+ in+ in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
     ofs << in+ in+ in+ in+ "Pos_Pol_Transcription = NegOneArray" << endl;
     ofs << in+ in+ in+ in+ "Pos_Pol_Translation = NegOneArray" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ in+ "Dir_Pol_Replication = ZeroArray" << endl;
     ofs << in+ in+ in+ in+ "Dir_Pol_Transcription = ZeroArray" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ in+ "Pos_Pol_Template_Transcription = NegOneArray" << endl;
+    ofs << in+ in+ in+ in+ "Pos_Pol_Template_Translation = NegOneArray" << endl;
     ofs << endl;
 
     ofs << in+ in+ in+ in+ "Count_Nascent_Chromosome = ZeroArray" << endl;
@@ -519,6 +525,7 @@ void FWriter::SimServer() {
 
             ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = " << Text_Pos_Pol << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ in+ "Dir_" << VisObjectFamily << " = " << Text_Dir_Pol << Process << "[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_Gene = " << Text_Pos_Pol << "Template_" << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
             // Packaging Translation in the organism
@@ -531,11 +538,12 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ in+ in+ "Objects_" << VisObjectFamily << " = VisObjects_" << VisObjectFamily << "," << endl;
 
             Text_Pos_Pol = "self.State.Pos_Pol_";
-            if (RNAPs.empty()) {
+            if (Ribosomes.empty()) {
                 Text_Pos_Pol = "Pos_Pol_";
             }
 
-            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_bp = " << Text_Pos_Pol << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_nt = " << Text_Pos_Pol << Process << "[i], " << endl;
+            ofs << in+ in+ in+ in+ in+ in+ "Pos_" << VisObjectFamily << "_RNA = " << Text_Pos_Pol << "Template_" << Process << "[i], " << endl;
             ofs << in+ in+ in+ in+ in+ ")" << endl;
 
         }

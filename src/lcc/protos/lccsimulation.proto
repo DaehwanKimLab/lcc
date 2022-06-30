@@ -162,13 +162,15 @@ message MState_Transcription
     map<uint32, MVisObjectData> Objects_RNAP = 2;
     repeated float Pos_RNAP_bp = 3;
     repeated float Dir_RNAP = 4;
+    repeated float Pos_RNAP_Gene = 5;
 }
 
 message MState_Translation
 {
     uint32 ID = 1;
     map<uint32, MVisObjectData> Objects_Ribosome = 2;
-    repeated float Pos_Ribosome_bp = 3;
+    repeated float Pos_Ribosome_nt = 3;
+    repeated float Pos_Ribosome_RNA = 4;
 }
 
 //
