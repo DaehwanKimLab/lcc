@@ -80,11 +80,13 @@ void FTable::LoadFromTSV(const char *Filename)
 		Fields.clear();
         Utils::tokenize(buf, "\t", Fields);
 
-		if (Fields.size() != Headers.size()) {
-			cerr << "Wrong line: " << buf << endl;
-			continue;
-		}
-
+        if (Option.bDebug) {
+            if (Fields.size() != Headers.size()) {
+                cerr << "Wrong line: " << buf << endl;
+                continue;
+            }
+        }
+		
 		// Alloc new Record
 		FTableRecord Record;
 
@@ -372,7 +374,51 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         ListOfNewMolecules.push_back(Chromosome);
     }
 
-    FTable EcoliGeneList;
+    FTable EcoliGeneList, EcoliUniprotIDList, EcoliPDBIDList;
+    
+    // temporary addition 
+    EcoliUniprotIDList.LoadFromTSV("./Database/UniprotID_Ecoli.tsv");
+    std::map<std::string, std::string> GeneToUniprotID;
+
+    for (int i = 0; i < EcoliUniprotIDList.Records.size(); i++) {
+        std::string GeneName = EcoliUniprotIDList.Records[i]["Gene Names"];
+        GeneName = GeneName.substr(0, GeneName.find(" "));
+        std::string UniprotID = EcoliUniprotIDList.Records[i]["Entry"];
+        
+        if (Option.bDebug) {
+            std::cout << i << "\t" << GeneName << "\t" << UniprotID << std::endl;
+        }
+        if (GeneToUniprotID[GeneName].empty()) {
+            GeneToUniprotID[GeneName] = UniprotID;
+        }
+        else {
+            if (Option.bDebug) {
+                std::cout << "GeneToUniprotID map: '" << GeneName << "' has been previously added to the map." << std::endl;
+            }
+        }
+    }
+    
+    EcoliPDBIDList.LoadFromTSV("./Database/Gene2PDBID.tsv");
+    std::map<std::string, std::string> GeneToPDBID;
+
+    for (int i = 0; i < EcoliPDBIDList.Records.size(); i++) {
+        std::string GeneName = EcoliPDBIDList.Records[i]["Symbol"];
+        GeneName = GeneName.substr(0, GeneName.find(" "));
+        std::string PDBID = EcoliPDBIDList.Records[i]["PDBID"];
+        
+        if (Option.bDebug) {
+            std::cout << i << "\t" << GeneName << "\t" << PDBID << std::endl;
+        }
+        if (GeneToPDBID[GeneName].empty()) {
+            GeneToPDBID[GeneName] = PDBID;
+        } else {
+            if (Option.bDebug) {
+                std::cout << "GeneToPDBID map: '" << GeneName << "' has been previously added to the map." << std::endl;
+
+            }
+        }
+    }
+
     EcoliGeneList.LoadFromTSV("./Database/genes.tsv");
     int LimitRecordSize = Option.Max_N_Genes; // here temporary cap to
 
@@ -423,6 +469,12 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
             if (RNAType != "mRNA") { continue; }
             Protein = GenerateCounterpart_Protein(Name, int(Size / 3 - 1), 0);
             Protein->SetTemplate(RNA);
+            if (!GeneToUniprotID[Name].empty()) {
+                Protein->SetId(GeneToUniprotID[Name]);
+            }
+            if (!GeneToPDBID[Name].empty()) {
+                Protein->SetMesh(GeneToPDBID[Name]);
+            }
             ListOfNewMolecules.push_back(Protein);
         }
     }

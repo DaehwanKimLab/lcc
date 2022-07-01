@@ -195,6 +195,7 @@ void FWriter::SimServer() {
 
         ofs << in+ in+ "# Temporary halving" << endl;
         ofs << in+ in+ "Sequence=self.SimM.State.OpenFASTADatabase(r'./Database/EscherichiaColi.fasta')[0]" << endl;
+        ofs << in+ in+ "UniprotLinkTag='https://www.uniprot.org/uniprotkb/'" << endl;
         ofs << endl;
 
         ofs << in+ in+ "DNA_Annotations = lccsimulation_pb2.MDNA_AnnotationData(" << endl;
@@ -204,6 +205,8 @@ void FWriter::SimServer() {
         ofs << in+ in+ in+ "Gene_StartIndex_bp=self.State.Pos_Gene_Start_bp[0]," << endl;
         ofs << in+ in+ in+ "Gene_EndIndex_bp=self.State.Pos_Gene_End_bp[0]," << endl;
         ofs << in+ in+ in+ "Gene_Symbol=self.State.Name_Genes," << endl;
+        ofs << in+ in+ in+ "Gene_PDBID=self.State.Name_PDBIDs," << endl;
+        ofs << in+ in+ in+ "Gene_UniprotLink=[UniprotLinkTag + i for i in self.State.Name_UniprotIDs]," << endl;
         ofs << in+ in+ ")" << endl;
         ofs << endl;
         

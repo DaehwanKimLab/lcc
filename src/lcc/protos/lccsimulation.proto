@@ -111,6 +111,8 @@ message MDNA_AnnotationData
     repeated float Gene_StartIndex_bp = 2;
     repeated float Gene_EndIndex_bp = 3;
     repeated string Gene_Symbol = 4;
+    repeated string Gene_PDBID = 5;
+    repeated string Gene_UniprotLink = 6;
 }
 
 message MDNA_PositionData

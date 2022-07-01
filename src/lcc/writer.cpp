@@ -1728,6 +1728,8 @@ void FWriter::SetUp_ChromosomeSimulation(ofstream& ofs)
     //ofs << in+ in+ "self.Pos_Gene_End_XYZ = SimF.GetXYZForGenomePositionsInBP(Gene_End_bp, Nodes, Distances)" << endl;
     //ofs << endl;
     ofs << in+ in+ "self.Name_Genes = Database['Symbol']" << endl;
+    ofs << in+ in+ "self.Name_PDBIDs = Database['PDBID']" << endl;
+    ofs << in+ in+ "self.Name_UniprotIDs = Database['UniprotID']" << endl;
     ofs << endl;
 
 }

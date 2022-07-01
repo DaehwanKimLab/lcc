@@ -332,6 +332,22 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << endl;
 
     ofs << in+ "def ParseGenes(self, db_genes):" << endl;
+    ofs << in+ in+ "Gene2UniprotID = dict()" << endl;
+    ofs << in+ in+ "db_UniprotID = self.LoadTSVDatabase(r'./Database/UniprotID_Ecoli.tsv')" << endl;
+    ofs << in+ in+ "for i, Value in enumerate(db_UniprotID):" << endl;
+    ofs << in+ in+ in+ "Entry, Reviewed, Entry_Name, Protein_names, Gene_Names, Organism, Length = Value" << endl;
+    ofs << in+ in+ in+ "Gene2UniprotID[Gene_Names.split(' ')[0]] = Entry" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "Gene2PDBID = dict()" << endl;
+    ofs << in+ in+ "db_PDBID = self.LoadTSVDatabase(r'./Database/Gene2PDBID.tsv')" << endl;
+    ofs << in+ in+ "for i, Value in enumerate(db_PDBID):" << endl;
+    ofs << in+ in+ in+ "Symbol, PDBID = Value" << endl;
+    //ofs << in+ in+ in+ "if not PDBID:" << endl;
+    //ofs << in+ in+ in+ in+ "PDBID = ''" << endl;
+    ofs << in+ in+ in+ "Gene2PDBID[Symbol] = PDBID" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "db = dict()" << endl;
     ofs << in+ in+ "NUniq_Genes = len(db_genes)" << endl;
     ofs << in+ in+ "db['Symbol'] = list()" << endl;
@@ -339,6 +355,8 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << in+ in+ "db['Coord'] = np.zeros(NUniq_Genes)" << endl;
     ofs << in+ in+ "db['Dir'] = np.zeros(NUniq_Genes)" << endl;
     ofs << in+ in+ "db['Seq'] = list()" << endl;
+    ofs << in+ in+ "db['UniprotID'] = list()" << endl;
+    ofs << in+ in+ "db['PDBID'] = list()" << endl;
     ofs << endl;
     ofs << in+ in+ "Dir = dict()" << endl;
     ofs << in+ in+ "Dir['+'] = 1" << endl;
@@ -351,6 +369,16 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << in+ in+ in+ "db['Coord'][i] = int(Coordinate)" << endl;
     ofs << in+ in+ in+ "db['Dir'][i] = Dir[Direction]" << endl;
     ofs << in+ in+ in+ "db['Seq'].append(Seq)" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "UniprotID = ''" << endl;
+    ofs << in+ in+ in+ "if Symbol in Gene2UniprotID:" << endl;
+    ofs << in+ in+ in+ in+ "UniprotID = Gene2UniprotID[Symbol]" << endl;
+    ofs << in+ in+ in+ "db['UniprotID'].append(UniprotID)" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "PDBID = ''" << endl;
+    ofs << in+ in+ in+ "if Symbol in Gene2PDBID:" << endl;
+    ofs << in+ in+ in+ in+ "PDBID = Gene2PDBID[Symbol]" << endl;
+    ofs << in+ in+ in+ "db['PDBID'].append(PDBID)" << endl;
     ofs << endl;
     ofs << in+ in+ "return db" << endl;
     ofs << endl;

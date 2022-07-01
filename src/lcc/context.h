@@ -240,16 +240,18 @@ public:
 class FMolecule {
 public:
     std::string Name;
-    std::string Id;
+    std::string Id; // PDBID or chemicalID, etc
     
     float Threshold = -1;
+
+    std::string Mesh;
 
     FMolecule() {}
     virtual ~FMolecule() {}
 
-    FMolecule(std::string InName) : Name(InName), Id(InName) {}
+    FMolecule(std::string InName) : Name(InName){}
 
-    FMolecule(std::string InName, std::string InId) : Name(InName), Id(InId) {}
+    FMolecule(std::string InName, std::string InId) : Name(InName){}
 
     std::string GetName() {
         return Name;
@@ -257,10 +259,15 @@ public:
     std::string GetId() {
         return Id;
     }
+    void SetId(std::string InId) {
+        Id = InId;
+    }
     void SetThreshold(float InThreshold) {
         Threshold = InThreshold;
     }
-
+    void SetMesh(std::string InMesh) {
+        Mesh = InMesh;
+    }
     void Print(std::ostream& os) {
         os << "[Molecule] Id: " << Id << std::endl;
     }
