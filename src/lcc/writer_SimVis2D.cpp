@@ -374,6 +374,7 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "self.Radar_Switch = switch" << endl;
     ofs << in+ in+ "self.Radar_Sampling = sampling" << endl;
     ofs << in+ in+ "self.Radar_Spacing = spacing" << endl;
+    ofs << endl;
 
     // temporary hardcoding
     ofs << in+ in+ "self.Radar_MolList = [";
@@ -385,6 +386,8 @@ void FWriter::SimVis2D() {
     for (int i = 0; i < MolLoc.size(); i++) { ofs << Radar_MolColor[i] << ", "; }
     ofs << "]" << endl;
 
+    ofs << in+ "def Receptivity_WithoutPolymerase(self, N_SimulationsToPass):" << endl;
+    ofs << in+ in+ "SimM.Receptivity_WithoutPolymerase(N_SimulationsToPass)" << endl;
     ofs << endl;
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;
     ofs << in+ in+ "SimM.Receptivity(N_SimulationsToPass)" << endl;
@@ -454,26 +457,18 @@ void FWriter::SimVis2D() {
     ofs << in+ in+ "# Particle Drawing" << endl;
     ofs << in+ in+ "self.Particle_N = 300" << endl;
     ofs << in+ in+ "self.Particle_PerLayer = 3" << endl;
-    ofs << in+ in+ "self.Particle_Radius = 2" << endl;
+    ofs << in+ in+ "self.Particle_Radius = 1" << endl;
     ofs << in+ in+ "self.Particle_SpreadFactor = 1.2" << endl;
-    ofs << in+ in+ "self.Particle_XY_Static = []" << endl;
-    ofs << in+ in+ "self.InitializeStaticParticles()" << endl;
+    ofs << in+ in+ "self.Particle_XY_Static = SimF.InitializeStaticParticles(self.X, self.Y)" << endl;
     ofs << endl;
     ofs << in+ "def InitializeHeatmapMax(self):" << endl;
     ofs << in+ in+ "self.MaxAmount = np.max(SimM.GetDistributionByName(self.Name))" << endl;
-    ofs << endl;
-    ofs << in+ "def InitializeStaticParticles(self):" << endl;
-    ofs << in+ in+ "for i in range(int(self.Particle_N / self.Particle_PerLayer)):" << endl;
-    ofs << in+ in+ in+ "for j in range(self.Particle_PerLayer):" << endl;
-    ofs << in+ in+ in+ in+ "X = self.X + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))" << endl;
-    ofs << in+ in+ in+ in+ "Y = self.Y + random.randint(-int(i ** self.Particle_SpreadFactor), int(i ** self.Particle_SpreadFactor))" << endl;
-    ofs << in+ in+ in+ in+ "self.Particle_XY_Static.append((X, Y))" << endl;
     ofs << endl;
     ofs << in+ "def Reposition(self):" << endl;
     ofs << in+ in+ "self.X = np.random.randint(W_S * 2 / 5, W_S * 3 / 5)" << endl;
     ofs << in+ in+ "self.Y = np.random.randint(H_S * 2 / 5, H_S * 3 / 5)" << endl;
     ofs << in+ in+ "self.Particle_XY_Static = []" << endl;
-    ofs << in+ in+ "self.InitializeStaticParticles()" << endl;
+    ofs << in+ in+ "self.Particle_XY_Static = SimF.InitializeStaticParticles(self.X, self.Y)" << endl;
     ofs << endl;
     ofs << in+ "def Move(self, dX, dY):" << endl;
     ofs << in+ in+ "New_Particle_XY_Static = []" << endl;
@@ -827,7 +822,7 @@ void FWriter::SimVis2D() {
             //        ofs << "# ";
                     if (!Context.ThresholdList.empty()) {
                         if (Context.ThresholdList[0].first == "Am") {
-                            ofs << in+ OrganismName << ".Receptivity(20000)   # Pass time" << endl;
+                            ofs << in+ OrganismName << ".Receptivity_WithoutPolymerase(20000)   # Pass time" << endl;
                         }
                     }
                 }

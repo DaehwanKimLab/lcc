@@ -350,6 +350,83 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     // simloop for receptivity
+    ofs << in+ "def SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution_WithoutPolymerase(self):" << endl;
+    ofs << in+ in+ "self.IncrementSimStep()" << endl;
+
+    if (!Option.bDebug) { ofs << "# ";}
+    ofs << in+ in+ "self.Debug_PrintSimStepTime()" << endl;
+    if (!Option.bDebug) { ofs << "# ";}
+    ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "self.NonSpatialSimulation_WithoutPolymerase()" << endl;
+
+    //    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+//
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
+
+    ofs << in+ in+ "self.UpdateCounts()" << endl;
+    ofs << in+ in+ "self.UpdateVolume()" << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after UpdateCounts')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
+//    ofs << in+ in+ "self.CountToDistribution()" << endl;
+//
+//    if (bDebug_SimFlow) {
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "print('@ after CountToDistribution')" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+//        if (!Option.bDebug) { ofs << "# "; }
+//        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+//        ofs << endl;
+//    }
+
+    ofs << in+ in+ "self.RestoreMoleculeCount()" << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after RestoreMoleculeCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+
+    ofs << in+ in+ "self.DistributionToCount()" << endl;
+
+    if (bDebug_SimFlow) {
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "print('@ after DistributionToCount')" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintCounts(DisplayCount)" << endl;
+        if (!Option.bDebug) { ofs << "# "; }
+        ofs << in+ in+ "self.Debug_PrintDistributions()" << endl;
+        ofs << endl;
+    }
+    ofs << endl;
+
+    ofs << in+ in+ "self.CellDivision()" << endl;
+    ofs << endl;
+    
+    // simloop for receptivity
     ofs << in+ "def SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution(self):" << endl;
     ofs << in+ in+ "self.IncrementSimStep()" << endl;
 
@@ -805,6 +882,35 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
     ofs << endl;
 
+    ofs << in+ "def NonSpatialSimulation_WithoutPolymerase(self):" << endl;
+    PassSwitch = true;
+    if (!StandardReactionTypes.empty()) {
+        for (auto& Type : StandardReactionTypes) {
+            std::vector<FReaction*> ReactionSubList = Context.GetSubList_ReactionList(Type);
+            if (!ReactionSubList.empty()) {
+                ofs << in+ in+ "self.StandardReactions()" << endl;
+                ofs << endl;
+                PassSwitch = false;
+                break;
+            }
+        }
+    }
+
+    if (!EnzReactionTypes.empty()) {
+        for (auto& Type : EnzReactionTypes) {
+            std::vector<FReaction*> ReactionSubList = Context.GetSubList_ReactionList(Type);
+            if (!ReactionSubList.empty()) {
+                ofs << in+ in+ "self.EnzymaticReactions()" << endl;
+                ofs << endl;
+                PassSwitch = false;
+                break;
+            }
+        }
+    }
+    
+    if (PassSwitch) { ofs << in+ in+ "pass" << endl; }
+    ofs << endl;
+
     ofs << in+ "# Biochemical Reaction related routines" << endl;
     // StandardReaction function
     for (auto& Type : StandardReactionTypes) {
@@ -1149,6 +1255,14 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "# External Simulation Control routines" << endl;
+    ofs << endl;
+
+    ofs << in+ "def Receptivity_WithoutPolymerase(self, N_SimulationsToPass=50):" << endl;
+    ofs << in+ in+ "for _ in range(N_SimulationsToPass):" << endl;
+    ofs << in+ in+ in+ "self.SimLoop_WithoutSpatialSimulation_WithMoleculeDistribution_WithoutPolymerase()" << endl;
+    ofs << in+ in+ in+ "self.ExportData()" << endl;
+    ofs << in+ in+ "self.SimLoop_WithSpatialSimulation()" << endl;
+    ofs << in+ in+ "self.ExportData()" << endl;
     ofs << endl;
 
     ofs << in+ "def Receptivity(self, N_SimulationsToPass=50):" << endl;

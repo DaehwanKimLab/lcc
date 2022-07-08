@@ -58,6 +58,11 @@ void FWriter::SimServer() {
     ofs << "from protos import lccsimulation_pb2_grpc" << endl;
     ofs << endl;
 
+    
+    ofs << "# Position scale factor for visualization" << endl;
+    ofs << "PosScale = 4" << endl;
+    ofs << endl;
+
     ofs << "def RandomInt(maxInt):" << endl;
     ofs << in+ "return np.random.randint(0, high=maxInt)" << endl;
     ofs << endl;
@@ -109,7 +114,7 @@ void FWriter::SimServer() {
 
     if (!Context.ThresholdList.empty()) {
         if (Context.ThresholdList[0].first == "Am") {
-            ofs << in+ in+ "self.SimM.Receptivity(20000)   # Pass time" << endl;
+            ofs << in+ in+ "self.SimM.Receptivity_WithoutPolymerase(20000)   # Pass time" << endl;
             ofs << endl;
         }
     }
@@ -130,7 +135,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ "InitVisObjects.append(lccsimulation_pb2.MVisObjectData(" << endl;
     ofs << in+ in+ in+ in+ "ID=0, " << endl;
     ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_PETRI_DISH," << endl;
-    ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=100, Y=100, Z=0)," << endl;
+    ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=100 * PosScale, Y=100 * PosScale, Z=0)," << endl;
     ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
     ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=self.SimM.State.Dimension_X, Y=self.SimM.State.Dimension_Y, Z=1)," << endl;
     ofs << in+ in+ in+ in+ "Color=Yellow))" << endl;
@@ -149,9 +154,9 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ "NewObj = lccsimulation_pb2.MVisObjectData(" << endl;
             ofs << in+ in+ in+ in+ "ID=" << i + 1 << ", " << endl;
             ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_GLUCOSE,   # same as M_SPHERE?" << endl;
-            ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=Pos[0], Y=Pos[1], Z=0)," << endl;
+            ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=Pos[0] * PosScale, Y=Pos[1] * PosScale, Z=0)," << endl;
             ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
-            ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=3,Y=3,Z=3)," << endl;
+            ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=10,Y=3,Z=10)," << endl;
             ofs << in+ in+ in+ in+ "Color=Blue)" << endl;
             ofs << in+ in+ in+ "" << endl;
             ofs << in+ in+ in+ "InitVisObjects.append(NewObj)" << endl;
@@ -169,7 +174,7 @@ void FWriter::SimServer() {
             auto Organism = dynamic_cast<FOrganism*>(organism);
             ofs << in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << Organism->Name << "')" << endl;
              ofs << in+ in+ "for i in range(len(X)):" << endl;
-            ofs << in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i], Y=Y[i], Z=0)" << endl;
+            ofs << in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i] * PosScale, Y=Y[i] * PosScale, Z=0)" << endl;
             ofs << in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
             ofs << in+ in+ in+ "" << endl;
             ofs << in+ in+ in+ "InitVisObjects.append(lccsimulation_pb2.MVisObjectData(" << endl;
@@ -228,7 +233,7 @@ void FWriter::SimServer() {
         ofs << in+ in+ "Positions = []" << endl;
         ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
         ofs << in+ in+ in+ "pos_temp = DNAScale * (pos - pos_avg)" << endl; // temporary code for visualization
-        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos_temp[0], Y=pos_temp[1], Z=pos_temp[2]))" << endl;
+        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos_temp[0] * PosScale, Y=pos_temp[1] * PosScale, Z=pos_temp[2] * PosScale))" << endl;
         ofs << endl;
         ofs << in+ in+ "DNA_Positions = lccsimulation_pb2.MDNA_PositionData(" << endl;
         ofs << in+ in+ in+ "Points=Positions" << endl;
@@ -432,7 +437,7 @@ void FWriter::SimServer() {
 
             ofs << in+ in+ in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << organism->Name << "')" << endl;
             ofs << in+ in+ in+ in+ "for i in range(len(X)):   # i here is an organism ID" << endl;
-            ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i], Y=Y[i], Z=0)" << endl;
+            ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i] * PosScale, Y=Y[i] * PosScale, Z=0)" << endl;
             ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
             ofs << in+ in+ in+ in+ in+ "GrowthVec = lccsimulation_pb2.MVector3(X=0.2 * (1 + ReplicationCompletionRate[i]), Y=0.2, Z=0.2)" << endl;
             ofs << in+ in+ in+ in+ in+ "ColorVec = GenGreenToRedColor(ReplicationCompletionRate[i])" << endl;
