@@ -252,6 +252,19 @@ def InitialPattern(X, Y, Width, Height, X_Ori, Y_Ori, Max, ):
     Dist = np.sqrt(((X - X_Ori) / Width) ** 2 + ((Y - Y_Ori) / Height) ** 2)
     return Max / max(1, Dist * 50)
 
+def InitializeStaticParticles(X, Y, Particle_N=5000, Particle_PerLayer=20, Particle_SpreadFactor=1.2):
+    Particle_XY_Static = []
+    for i in range(int(Particle_N / Particle_PerLayer)):
+        for j in range(Particle_PerLayer):
+            High = i ** Particle_SpreadFactor
+            Low = -High
+            if High < 1:
+                continue
+            X_Rand = X + np.random.randint(Low, High)
+            Y_Rand = Y + np.random.randint(Low, High)
+            Particle_XY_Static.append((X_Rand, Y_Rand))
+    return Particle_XY_Static
+
 def Eqn_Transporter_Unregulated(Conc_Transporter, Conc_Inside, Conc_Outside, ki, ko):
     return Conc_Transporter * (Conc_Inside * ko - Conc_Outside * ki)
 

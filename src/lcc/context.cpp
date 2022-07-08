@@ -557,7 +557,6 @@ void FCompilerContext::ApplyDefaultGeneticInformationProcessingOnMoleculeList() 
     }
 
     if (!ListOfNewMolecules.empty()) {
-        std::cout << std::endl;
         for (auto& molecule : ListOfNewMolecules) {
             if (Option.bDebug) {
                 std::string TextOutputTag = "[Counterpart Molecule Added] ";

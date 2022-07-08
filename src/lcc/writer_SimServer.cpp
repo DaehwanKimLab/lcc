@@ -37,6 +37,7 @@ void FWriter::SimServer() {
     ofs << "## lcc" << endl;
     ofs << "import random" << endl;
     ofs << "import SimModule" << endl;
+    ofs << "import SimFunctions as SimF" << endl;
     //ofs << "import SimVis2D as SimV" << endl;
     ofs << "import SimState as SimS" << endl;
     ofs << "import numpy as np" << endl;
@@ -108,7 +109,7 @@ void FWriter::SimServer() {
 
     if (!Context.ThresholdList.empty()) {
         if (Context.ThresholdList[0].first == "Am") {
-            ofs << in+ in+ "SimM.Receptivity(20000)   # Pass time" << endl;
+            ofs << in+ in+ "self.SimM.Receptivity(20000)   # Pass time" << endl;
             ofs << endl;
         }
     }
@@ -132,31 +133,30 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=100, Y=100, Z=0)," << endl;
     ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
     ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=self.SimM.State.Dimension_X, Y=self.SimM.State.Dimension_Y, Z=1)," << endl;
-    ofs << in+ in+ in+ in+ "Color=Blue))" << endl;
+    ofs << in+ in+ in+ in+ "Color=Yellow))" << endl;
     ofs << endl;
 
     // temporary static molecule 'distribution'
 // TODO: take dynamic distribution
 
-//for (int i = 0; i < MolLoc.size(); i++) {
-//    // instantiate
-//    ofs << in+ in+ MolLoc[i]->Name << " = SimV.FMolecule('" << MolLoc[i]->Name << "', '" << Identity[i] << "', ";
 
     if (!MolLoc.empty()) {
-    
-        ofs << in+ in+ "# Static Glucose" << endl;
-        ofs << in+ in+ "for Pos in L.Particle_XY_Static:" << endl;
-        ofs << in+ in+ in+ "NewObj = lccsimulation_pb2.MVisObjectData(" << endl;
-        ofs << in+ in+ in+ in+ "ID=0, " << endl;
-        ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_GLUCOSE," << endl;
-        ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=Pos[0], Y=Pos[1], Z=0)," << endl;
-        ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
-        ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=10,Y=10,Z=10)," << endl;
-        ofs << in+ in+ in+ in+ "Color=White)" << endl;
-        ofs << in+ in+ in+ "" << endl;
-        ofs << in+ in+ in+ "InitVisObjects.append(NewObj)" << endl;
-        ofs << in+ in+ "" << endl;
+        ofs << in+ in+ "# Static Molecule Distribution Data" << endl;
 
+        for (int i = 0; i < MolLoc.size(); i++) {
+            ofs << in+ in+ "# " << MolLoc[i]->Name << endl;
+            ofs << in+ in+ "for Pos in SimF.InitializeStaticParticles(" << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", Particle_N=5000, Particle_PerLayer=20, Particle_SpreadFactor=1.2):" << endl;
+            ofs << in+ in+ in+ "NewObj = lccsimulation_pb2.MVisObjectData(" << endl;
+            ofs << in+ in+ in+ in+ "ID=" << i + 1 << ", " << endl;
+            ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_GLUCOSE,   # same as M_SPHERE?" << endl;
+            ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=Pos[0], Y=Pos[1], Z=0)," << endl;
+            ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
+            ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=3,Y=3,Z=3)," << endl;
+            ofs << in+ in+ in+ in+ "Color=Blue)" << endl;
+            ofs << in+ in+ in+ "" << endl;
+            ofs << in+ in+ in+ "InitVisObjects.append(NewObj)" << endl;
+            ofs << in+ in+ "" << endl;
+        }
     }
 
     ofs << in+ in+ "# Setup Dynamic Objects" << endl;
