@@ -268,7 +268,7 @@ def Plot_Dynamics(Title, Time, Data, Legend):
 
     assert len(X) == Y.shape[-1]
 
-    ax = plt.axes(ylim=(0, Y.max() * 1.2))
+    ax = plt.axes(xlim=(0, X.max()), ylim=(0, Y.max() * 1.2))
 
     ax.set_ylabel('Amount (a.u.)')
     ax.set_xlabel('Time (s)')
@@ -277,9 +277,13 @@ def Plot_Dynamics(Title, Time, Data, Legend):
     for i in range(len(Legend)):
         if Legend[i] == "Pseudo":
             continue
-        ax.plot(X, Y[i], label=Legend[i])
 
-    ax.legend(loc='upper left')
+        if len(Legend) < 4:
+            ax.plot(X, Y[i], label=Legend[i])
+            ax.legend(loc='upper left')
+        else:
+            ax.plot(X, Y[i])
+            ax.text(X[-1] + 1, Y[i][-1], Legend[i], va="center")
 
     if SaveFilename:
         plt.savefig(SaveFilename)
