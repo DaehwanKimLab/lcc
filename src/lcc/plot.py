@@ -278,12 +278,10 @@ def Plot_Dynamics(Title, Time, Data, Legend):
         if Legend[i] == "Pseudo":
             continue
 
-        if len(Legend) < 4:
-            ax.plot(X, Y[i], label=Legend[i])
-            ax.legend(loc='upper left')
-        else:
-            ax.plot(X, Y[i])
-            ax.text(X[-1] + 1, Y[i][-1], Legend[i], va="center")
+        line, = ax.plot(X, Y[i], label=Legend[i])
+        ax.legend(loc='upper left')
+        if len(Legend) > 4:
+            ax.text(X[-1] * 1.01, Y[i][-1], Legend[i] + ": {}".format(Y[i][-1]), va="center", color=line.get_color())
 
     if SaveFilename:
         plt.savefig(SaveFilename)
