@@ -46,6 +46,9 @@ service LCCSimulation
     rpc Run         (MEmpty) returns (stream MRunData);
     rpc Pause       (MEmpty) returns (MControlSimulationResponse);
     rpc Stop        (MEmpty) returns (MControlSimulationResponse);
+
+    rpc GetStaticPlotData (MStaticPlotRequest) returns (MStaticPlotResponse);
+    rpc GetStaticTable (MStaticTableRequest) returns (MStaticTableResponse);
 }
 
 message MInitData
@@ -178,9 +181,74 @@ message MState_Translation
     repeated float Pos_Ribosome_mRNA = 4;
 }
 
+// Plot
+
+message MStaticPlotRequest
+{
+    string Identifier = 1;
+}
+
+message MStaticPlotResponse
+{
+    string Title = 1;
+    repeated MLineData LineData = 2;
+    MVector2 XRange = 3;
+    MVector2 YRange = 4;
+}
+
+message MLineData
+{
+    string Label = 1;
+    MVector3 Color = 2; // optional color, if not provided a random color will be used
+    repeated float XData = 3;
+    repeated float YData = 4;
+}
+
+
+// Table
+
+message MStaticTableRequest
+{
+    string Identifier = 1;
+}
+
+message MStaticTableResponse
+{
+    string Title = 1;
+    repeated MTableColumn Columns = 2;
+}
+
+message MTableColumn
+{
+    string Header = 1;
+    repeated MTableRow Rows = 2;
+}
+
+message MTableNumberRow
+{
+    float Data = 1;
+}
+
+message MTableStringRow
+{
+    string Data = 1;
+}
+
+message MTableRow
+{
+    google.protobuf.Any Content = 1;
+}
+
+
 //
 // Common
 //
+
+message MVector2
+{
+    float X = 1;
+    float Y = 2;
+}
 
 message MVector3
 {
