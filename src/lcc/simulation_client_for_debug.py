@@ -99,7 +99,7 @@ def run():
             Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
             with grpc.insecure_channel(ChannelName) as channel:
                 stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
-                response = stub.GetStaticTable(lccsimulation_pb2.MStaticTableRequest(Identifier=Query))
+                response = stub.GetStaticTableData(lccsimulation_pb2.MStaticTableRequest(Identifier=Query))
 
         elif cmd == "Quit" or cmd == "-1":
             sys.exit(0)

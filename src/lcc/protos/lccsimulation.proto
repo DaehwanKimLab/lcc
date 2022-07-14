@@ -48,7 +48,7 @@ service LCCSimulation
     rpc Stop        (MEmpty) returns (MControlSimulationResponse);
 
     rpc GetStaticPlotData (MStaticPlotRequest) returns (MStaticPlotResponse);
-    rpc GetStaticTable (MStaticTableRequest) returns (MStaticTableResponse);
+    rpc GetStaticTableData (MStaticTableRequest) returns (MStaticTableResponse);
 }
 
 message MInitData

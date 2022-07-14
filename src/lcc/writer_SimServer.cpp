@@ -56,6 +56,7 @@ void FWriter::SimServer() {
     ofs << "sys.path.insert(0, './protos')" << endl;
     ofs << "from protos import lccsimulation_pb2" << endl;
     ofs << "from protos import lccsimulation_pb2_grpc" << endl;
+    ofs << "from google.protobuf.any_pb2 import Any" << endl;
     ofs << endl;
 
     
@@ -601,6 +602,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ "LineData = None" << endl;
     ofs << in+ in+ "XRange = None" << endl;
     ofs << in+ in+ "YRange = None" << endl;
+    ofs << endl;
 
     if (!Context.PathwayList.empty()) {
         for (auto& pathway : Context.PathwayList) {
@@ -630,17 +632,52 @@ void FWriter::SimServer() {
             
             ofs << in+ in+ in+ "XRange = lccsimulation_pb2.MVector2(X=0, Y=SimTimeStamps[-1])" << endl;
             ofs << in+ in+ in+ "YRange = lccsimulation_pb2.MVector2(X=0, Y=max(DataMax))" << endl;
+            ofs << endl;
         }
     }
 
-    ofs << in+ in+ "print(Title, '... completed')" << endl;
+    ofs << in+ in+ "print(Title + '... completed')" << endl;
     ofs << in+ in+ "return lccsimulation_pb2.MStaticPlotResponse(Title=Title, LineData=LineData, XRange=XRange, YRange=YRange)" << endl;
     ofs << endl;
 
     ofs << in+ "def GetStaticTableData(self, request, context):" << endl;
-    ofs << in+ in+ "print('sending StaticTableData: ', str(request))" << endl;
+    ofs << in+ in+ "print('sending StaticTableData: ', end='')" << endl;
     ofs << in+ in+ "Title = ''" << endl;
-    ofs << in+ in+ "Columns = lccsimulation_pb2.MTableColumn(Header='', Rows=[lccsimulation_pb2.MTableRow(Content=lccsimulation_pb2.MTableNumberRow(Data=[1]))])" << endl;
+    ofs << in+ in+ "Columns = []" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Add Time Column" << endl;
+    ofs << in+ in+ "Header = 'Time'" << endl;
+    ofs << in+ in+ "Rows = []" << endl;
+    ofs << in+ in+ "for row in self.DataManager.DataBuffer[:, 0]:" << endl;
+    ofs << in+ in+ in+ "Value = Any()" << endl;
+    ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
+    ofs << in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
+    ofs << endl;
+            
+    if (!Context.PathwayList.empty()) {
+        for (auto& pathway : Context.PathwayList) {
+            ofs << in+ in+ "if request.Identifier == '"<< pathway->Name << "':" << endl;
+            ofs << in+ in+ in+ "Title = '[Pathway] " << pathway->Name << "'" << endl;
+
+            std::vector<std::string> molNames = pathway->GetMoleculeNames();
+            std::vector<int> molIdx = Context.GetIdxList_MoleculeList(pathway->MolecularComponents);
+            ofs << in+ in+ in+ "# Add Molecule Columns" << endl;
+            ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
+            ofs << in+ in+ in+ "MolIdx = [" << Utils::JoinInt2Str_Idx(molIdx) << "]" << endl;
+
+            ofs << in+ in+ in+ "for i in range(len(MolNames)):" << endl;
+            ofs << in+ in+ in+ in+ "Header = MolNames[i]" << endl;
+            ofs << in+ in+ in+ in+ "Rows = []" << endl;
+            ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, MolIdx[i] + 2]:" << endl;
+            ofs << in+ in+ in+ in+ in+ "Value = Any()" << endl;
+            ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
+            ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
+            ofs << endl;
+        }
+    }
+
+    ofs << in+ in+ "print(Title + '... completed')" << endl;
     ofs << in+ in+ "return lccsimulation_pb2.MStaticTableResponse(Title=Title, Columns=Columns)" << endl;
     ofs << endl;
 
