@@ -88,13 +88,15 @@ def run():
                 response = stub.Stop(lccsimulation_pb2.MEmpty())
 
         elif cmd[:4] == "Plot":
-            Query = cmd[5:]
+            cmd_parsed = cmd.split(' ')
+            Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
             with grpc.insecure_channel(ChannelName) as channel:
                 stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
                 response = stub.GetStaticPlotData(lccsimulation_pb2.MStaticPlotRequest(Identifier=Query))
 
         elif cmd[:5] == "Table":
-            Query = cmd[6:]
+            cmd_parsed = cmd.split(' ')
+            Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
             with grpc.insecure_channel(ChannelName) as channel:
                 stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
                 response = stub.GetStaticTable(lccsimulation_pb2.MStaticTableRequest(Identifier=Query))

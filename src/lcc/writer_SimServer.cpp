@@ -594,6 +594,55 @@ void FWriter::SimServer() {
     ofs << in+ in+ "print('stopping')" << endl;
     ofs << in+ in+ "return lccsimulation_pb2.MControlSimulationResponse()" << endl;
     ofs << endl;
+        
+    ofs << in+ "def GetStaticPlotData(self, request, context):" << endl;
+    ofs << in+ in+ "print('sending StaticPlotData: ', end='')" << endl;
+    ofs << in+ in+ "Title = ''" << endl;
+    ofs << in+ in+ "LineData = None" << endl;
+    ofs << in+ in+ "XRange = None" << endl;
+    ofs << in+ in+ "YRange = None" << endl;
+
+    if (!Context.PathwayList.empty()) {
+        for (auto& pathway : Context.PathwayList) {
+            ofs << in+ in+ "if request.Identifier == '"<< pathway->Name << "':" << endl;
+            ofs << in+ in+ in+ "Title = '[Pathway] " << pathway->Name << "'" << endl;
+            ofs << in+ in+ in+ "LineData = []" << endl;
+
+            // LineData
+            std::vector<std::string> molNames = pathway->GetMoleculeNames();
+            std::vector<int> molIdx = Context.GetIdxList_MoleculeList(pathway->MolecularComponents);
+            ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
+            ofs << in+ in+ in+ "MolIdx = [" << Utils::JoinInt2Str_Idx(molIdx) << "]" << endl;
+            ofs << in+ in+ in+ "SimTimeStamps = self.DataManager.DataBuffer[:, 0]" << endl;
+            ofs << in+ in+ in+ "DataMax = np.zeros(len(MolNames))" << endl;
+            ofs << endl;
+
+            ofs << in+ in+ in+ "for i in range(len(MolNames)):" << endl;
+            ofs << in+ in+ in+ in+ "MolCounts = self.DataManager.DataBuffer[:, MolIdx[i] + 2]" << endl;
+            ofs << in+ in+ in+ in+ "LineData_Single = lccsimulation_pb2.MLineData(" << endl;
+            ofs << in+ in+ in+ in+ in+ "Label = MolNames[i]," << endl;
+            ofs << in+ in+ in+ in+ in+ "# Color = ," << endl;// optional color, if not provided a random color will be used
+            ofs << in+ in+ in+ in+ in+ "XData = SimTimeStamps," << endl;
+            ofs << in+ in+ in+ in+ in+ "YData = MolCounts," << endl;
+            ofs << in+ in+ in+ in+ ")" << endl;
+            ofs << in+ in+ in+ in+ "LineData.append(LineData_Single)" << endl;
+            ofs << in+ in+ in+ in+ "DataMax[i] = np.max(MolCounts) * 1.2" << endl;
+            
+            ofs << in+ in+ in+ "XRange = lccsimulation_pb2.MVector2(X=0, Y=SimTimeStamps[-1])" << endl;
+            ofs << in+ in+ in+ "YRange = lccsimulation_pb2.MVector2(X=0, Y=max(DataMax))" << endl;
+        }
+    }
+
+    ofs << in+ in+ "print(Title, '... completed')" << endl;
+    ofs << in+ in+ "return lccsimulation_pb2.MStaticPlotResponse(Title=Title, LineData=LineData, XRange=XRange, YRange=YRange)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def GetStaticTableData(self, request, context):" << endl;
+    ofs << in+ in+ "print('sending StaticTableData: ', str(request))" << endl;
+    ofs << in+ in+ "Title = ''" << endl;
+    ofs << in+ in+ "Columns = lccsimulation_pb2.MTableColumn(Header='', Rows=[lccsimulation_pb2.MTableRow(Content=lccsimulation_pb2.MTableNumberRow(Data=[1]))])" << endl;
+    ofs << in+ in+ "return lccsimulation_pb2.MStaticTableResponse(Title=Title, Columns=Columns)" << endl;
+    ofs << endl;
 
     ofs << "def main():   # add verbose" << endl;
     ofs << in+ "server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))" << endl;
