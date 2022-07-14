@@ -385,9 +385,9 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         GeneName = GeneName.substr(0, GeneName.find(" "));
         std::string UniprotID = EcoliUniprotIDList.Records[i]["Entry"];
         
-        if (Option.bDebug) {
-            std::cout << i << "\t" << GeneName << "\t" << UniprotID << std::endl;
-        }
+//        if (Option.bDebug) {
+//            std::cout << i << "\t" << GeneName << "\t" << UniprotID << std::endl;
+//        }
         if (GeneToUniprotID[GeneName].empty()) {
             GeneToUniprotID[GeneName] = UniprotID;
         }
@@ -406,9 +406,9 @@ void FCompilerContext::DefaultSetUp_Ecoli() {
         GeneName = GeneName.substr(0, GeneName.find(" "));
         std::string PDBID = EcoliPDBIDList.Records[i]["PDBID"];
         
-        if (Option.bDebug) {
-            std::cout << i << "\t" << GeneName << "\t" << PDBID << std::endl;
-        }
+//        if (Option.bDebug) {
+//            std::cout << i << "\t" << GeneName << "\t" << PDBID << std::endl;
+//        }
         if (GeneToPDBID[GeneName].empty()) {
             GeneToPDBID[GeneName] = PDBID;
         } else {

@@ -278,18 +278,31 @@ class FPathway {
 public:
     std::string Name;
     std::vector<std::string> Sequence;
+    std::vector<FMolecule *> MolecularComponents;
 
     FPathway(std::string InName)
         : Name(InName) {}
     FPathway(std::string InName, std::vector<std::string>& InSequence)
         : Name(InName), Sequence(InSequence) {}
+    FPathway(std::string InName, std::vector<FMolecule *>& InMolecularComponents)
+        : Name(InName), MolecularComponents(InMolecularComponents) {}
 
     void Print(std::ostream& os) {
         os << "[Pathway] Id: " << Name;
         if (!Sequence.empty()) {
             os << ", Sequence: [" << Utils::JoinStr2Str(Sequence) << "]";
         }
+        if (!MolecularComponents.empty()) {
+            os << ", MolecularComponents: [" << Utils::JoinStr2Str(GetMoleculeNames()) << "]";
+        }
         os << std::endl;
+    }
+    std::vector<std::string> GetMoleculeNames() {
+        std::vector<std::string> MolNameList;
+        for (auto& molecule : MolecularComponents) {
+            MolNameList.push_back(molecule->Name);
+        }
+        return MolNameList;
     }
 };
 

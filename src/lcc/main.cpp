@@ -60,6 +60,7 @@ int Map_Height = 800;
 // temporary namespace-like info for molecules at the pathway level
 // implemented to be used to find threshold within a pathway
 std::string NameSpace_Pathway;
+std::vector<FMolecule *> MolecularComponents_Pathway;
 
 const char *VersionString = "1.0.0";
 
@@ -132,6 +133,9 @@ std::vector<std::pair<std::string, int>> GetStoichFromReaction(const NReaction* 
         FMolecule * NewMolecule = new FMolecule(stoich.first);
         if (Option.bDebug) { NewMolecule->Print(os); }
         Context.AddToMoleculeList(NewMolecule);
+
+        // temporary
+        MolecularComponents_Pathway.push_back(NewMolecule);
     } 
 
     return Stoichiometry_Ordered;
@@ -374,6 +378,9 @@ void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NE
         FMolecule * NewMolecule = new FMolecule(ReactantName);
         if (Option.bDebug) { NewMolecule->Print(os); }
         Context.AddToMoleculeList(NewMolecule);
+
+        // temporary
+        MolecularComponents_Pathway.push_back(NewMolecule);
     }
 
     for (const auto& product : ElongationReaction.Products) {
@@ -389,6 +396,9 @@ void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NE
         FMolecule * NewMolecule = new FMolecule(ProductName);
         if (Option.bDebug) { NewMolecule->Print(os); }
         Context.AddToMoleculeList(NewMolecule);
+
+        // temporary
+        MolecularComponents_Pathway.push_back(NewMolecule);
     }
 
     if (!Location.empty()) {
@@ -403,6 +413,9 @@ void ParsePolymeraseElongationStatement(std::string PolName, const shared_ptr<NE
 //        os << NewMolecule->Name << ", ";
         if (Option.bDebug) { NewMolecule->Print(os); }
         Context.AddToMoleculeList(NewMolecule);
+
+        // temporary
+        MolecularComponents_Pathway.push_back(NewMolecule);
     }
 //    os << "]" << endl;
 
@@ -642,11 +655,17 @@ void TraversalNode_Core(NNode * node)
             FEnzyme * NewEnzyme = new FEnzyme(EnzymeName);
             if (Option.bDebug) { NewEnzyme->Print(os); }
             Context.AddToMoleculeList(NewEnzyme);
+
+            // temporary
+            MolecularComponents_Pathway.push_back(NewEnzyme);
         }
         else {
             FEnzyme * NewEnzyme = new FEnzyme(EnzymeName, Kinetics);
             if (Option.bDebug) { NewEnzyme->Print(os); }
             Context.AddToMoleculeList(NewEnzyme);
+
+            // temporary
+            MolecularComponents_Pathway.push_back(NewEnzyme);
         }
 
     } else if (Utils::is_class_of<NPathwayDeclaration, NNode>(node)) {
@@ -657,6 +676,7 @@ void TraversalNode_Core(NNode * node)
                     NameSpace_Pathway = Name;
                     os << NameSpace_Pathway;
         vector<string> Sequence;
+        MolecularComponents_Pathway.clear();
 
         if (N_Pathway->PathwayChainReaction) {
             auto& PathwayChainReaction = N_Pathway->PathwayChainReaction;
@@ -700,7 +720,18 @@ void TraversalNode_Core(NNode * node)
 
         } // closing if block
 
-        FPathway * NewPathway = new FPathway(Name); // Fixme
+        // temporary cleaning up of MolecularComponents_Pathway
+        std::vector<FMolecule* >MolecularComponents;
+        for (auto& molecule : MolecularComponents_Pathway) {
+            if (std::find(MolecularComponents.begin(), MolecularComponents.end(), molecule) == MolecularComponents.end()) {
+                //if (Option.bDebug) {
+                //    os << "Pathway: " << Name << ", Molecular Components: " << molecule->Name << endl;
+                //}
+                MolecularComponents.push_back(molecule);
+            }
+        }
+
+        FPathway * NewPathway = new FPathway(Name, MolecularComponents); // Fixme
         if (Option.bDebug) { NewPathway->Print(os); }
         Context.AddToPathwayList(NewPathway);
 
@@ -763,6 +794,10 @@ void TraversalNode_Core(NNode * node)
 
         if (Option.bDebug) { NewPolymerase->Print(os); }
         Context.AddToMoleculeList(NewPolymerase);
+
+        // temporary
+        MolecularComponents_Pathway.push_back(NewPolymerase);
+
 
     } else if (Utils::is_class_of<NAExpression, NNode>(node)) {
         auto AExpression = dynamic_cast<const NAExpression *>(node);
