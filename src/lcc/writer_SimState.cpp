@@ -283,7 +283,7 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << endl;
 
     ofs << in+ "def ExportData(self, Time):" << endl;
-    ofs << in+ in+ "Data = np.asmatrix(np.zeros(2 + " << MolNames.size() << "))" << endl;
+    ofs << in+ in+ "Data = np.zeros([1, 2 + " << MolNames.size() << "])" << endl;
     int Initial = 0;
     int i_SimStep = Initial + 1;
     ofs << in+ in+ "Data[:, " << Initial << ":" << i_SimStep << "] = Time" << endl;
@@ -408,7 +408,7 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << in+ "def __init__(self):" << endl;
     ofs << in+ in+ "# SimOut" << endl;
     ofs << in+ in+ "self.Legend = list()" << endl;
-    ofs << in+ in+ "self.DataBuffer = list()" << endl;
+    ofs << in+ in+ "self.DataBuffer = np.empty([0, " << Context.MoleculeList.size() << " + 2])" << endl;
     ofs << endl;
 
     ofs << in+ "def SetLegend(self, InLegend):" << endl;
@@ -416,7 +416,7 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << endl;
 
     ofs << in+ "def Add(self, InData):" << endl;
-    ofs << in+ in+ "self.DataBuffer.append(InData)" << endl;
+    ofs << in+ in+ "self.DataBuffer = np.vstack([self.DataBuffer, InData])" << endl;
     ofs << endl;
 
     ofs << in+ "def SaveToTsvFile(self, Legend, Data, InFileName):" << endl;
@@ -425,7 +425,7 @@ void FWriter::SimState(int Map_Width, int Map_Height)
     ofs << in+ in+ in+ "if Legend:" << endl;
     ofs << in+ in+ in+ in+ "TsvWriter.writerow(Legend)" << endl;
     ofs << in+ in+ in+ "for Row in Data:" << endl;
-    ofs << in+ in+ in+ in+ "TsvWriter.writerow(np.array(Row).flatten().tolist())" << endl;
+    ofs << in+ in+ in+ in+ "TsvWriter.writerow(Row.tolist())" << endl;
     ofs << endl;
 
     ofs << in+ "def SaveToNpyFile(self, Data, InFileName):" << endl;
