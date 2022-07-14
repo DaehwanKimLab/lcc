@@ -721,13 +721,16 @@ void TraversalNode_Core(NNode * node)
         } // closing if block
 
         // temporary cleaning up of MolecularComponents_Pathway
-        std::vector<FMolecule* >MolecularComponents;
+        std::vector<FMolecule* > MolecularComponents;
+        std::vector<std::string> MolecularComponents_Name;
+
         for (auto& molecule : MolecularComponents_Pathway) {
-            if (std::find(MolecularComponents.begin(), MolecularComponents.end(), molecule) == MolecularComponents.end()) {
+            if ((std::find(MolecularComponents.begin(), MolecularComponents.end(), molecule) == MolecularComponents.end()) & (std::find(MolecularComponents_Name.begin(), MolecularComponents_Name.end(), molecule->Name) == MolecularComponents_Name.end())) {
                 //if (Option.bDebug) {
                 //    os << "Pathway: " << Name << ", Molecular Components: " << molecule->Name << endl;
                 //}
                 MolecularComponents.push_back(molecule);
+                MolecularComponents_Name.push_back(molecule->Name);
             }
         }
 
