@@ -599,23 +599,26 @@ void FWriter::SimServer() {
     ofs << in+ "def GetStaticPlotData(self, request, context):" << endl;
     ofs << in+ in+ "print('sending StaticPlotData: ', end='')" << endl;
     ofs << in+ in+ "Title = ''" << endl;
-    ofs << in+ in+ "LineData = None" << endl;
-    ofs << in+ in+ "XRange = None" << endl;
+    ofs << in+ in+ "LineData = []" << endl;
     ofs << in+ in+ "YRange = None" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "# Time" << endl;
+    ofs << in+ in+ "SimTimeStamps = self.DataManager.DataBuffer[:, 0]" << endl;
+    ofs << in+ in+ "XRange = lccsimulation_pb2.MVector2(X=0, Y=SimTimeStamps[-1])" << endl;
     ofs << endl;
 
     if (!Context.PathwayList.empty()) {
         for (auto& pathway : Context.PathwayList) {
             ofs << in+ in+ "if request.Identifier == '"<< pathway->Name << "':" << endl;
             ofs << in+ in+ in+ "Title = '[Pathway] " << pathway->Name << "'" << endl;
-            ofs << in+ in+ in+ "LineData = []" << endl;
+
 
             // LineData
             std::vector<std::string> molNames = pathway->GetMoleculeNames();
             std::vector<int> molIdx = Context.GetIdxList_MoleculeList(pathway->MolecularComponents);
             ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
             ofs << in+ in+ in+ "MolIdx = [" << Utils::JoinInt2Str_Idx(molIdx) << "]" << endl;
-            ofs << in+ in+ in+ "SimTimeStamps = self.DataManager.DataBuffer[:, 0]" << endl;
             ofs << in+ in+ in+ "DataMax = np.zeros(len(MolNames))" << endl;
             ofs << endl;
 
@@ -629,8 +632,6 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ ")" << endl;
             ofs << in+ in+ in+ in+ "LineData.append(LineData_Single)" << endl;
             ofs << in+ in+ in+ in+ "DataMax[i] = np.max(MolCounts) * 1.2" << endl;
-            
-            ofs << in+ in+ in+ "XRange = lccsimulation_pb2.MVector2(X=0, Y=SimTimeStamps[-1])" << endl;
             ofs << in+ in+ in+ "YRange = lccsimulation_pb2.MVector2(X=0, Y=max(DataMax))" << endl;
             ofs << endl;
         }
