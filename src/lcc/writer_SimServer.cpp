@@ -261,7 +261,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ "Idx_Init = []" << endl;
     ofs << endl;
 
-    ofs << in + in + "# Organize Indices" << endl;
+    ofs << in+ in+ "# Organize Indices" << endl;
     ofs << endl;
 
     ofs << in+ in+ "Idx_Genes = self.State.Idx_Template_Transcription" << endl;
@@ -305,7 +305,21 @@ void FWriter::SimServer() {
     ofs << in+ in+ "))" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init)" << endl;
+    ofs << in+ in+ "# Plot Init Data" << endl;
+    ofs << in+ in+ "Plot_Init = []" << endl;
+    ofs << endl;
+
+    if (!Context.PlotList.empty()) {
+        ofs << in+ in+ "# User defined plot inputs" << endl;
+        for (auto& plot : Context.PlotList) {
+            ofs << in+ in+ "Plot_Init.append(lccsimulation_pb2.MPlotPreset(" << endl;
+            ofs << in+ in+ in+ "Identifier=[" <<Utils::JoinStr2Str(plot->Inputs) << "], " << endl;
+            ofs << in+ in+ "))" << endl;
+        }
+        ofs << endl;
+    }
+
+    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init)" << endl;
     ofs << endl;
 
     // TODO: stream run

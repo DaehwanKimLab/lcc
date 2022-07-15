@@ -57,6 +57,7 @@ message MInitData
     repeated MDNA_InitData InitDNA = 2;
     repeated MNames InitName = 3;
     repeated MIdx InitIdx = 4;
+    repeated MPlotPreset InitPlot = 5;
 }
 
 message MRunData
@@ -142,6 +143,11 @@ message MIdx
     // local within a pool of proteins to a pool of genes and RNA
     map<int32, int32> ProteinOrmRNA2GeneOrRNA_Local = 8;
 
+}
+
+message MPlotPreset
+{
+    repeated string Identifier = 1;
 }
 
 // State

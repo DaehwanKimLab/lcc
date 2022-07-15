@@ -313,7 +313,7 @@ void FCompilerContext::AddToMotilityList(FMotility *NewMotility)
 void FCompilerContext::AddToPlotList(FPlot* NewPlot)
 {   // special: this one does not check redundant entries
     PlotList.push_back(NewPlot);
-            std::cout << "Plot " << Utils::JoinStr2Str(NewPlot->Inputs) << " has been added to the system" << std::endl;
+//        std::cout << "Plot " << Utils::JoinStr2Str(NewPlot->Inputs) << " has been added to the system" << std::endl;
 }
 
 void FCompilerContext::Organize()
