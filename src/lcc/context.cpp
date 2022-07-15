@@ -310,10 +310,16 @@ void FCompilerContext::AddToMotilityList(FMotility *NewMotility)
 //        std::cout << "Motility "<< NewMotility->Name << " has been added to the system" << std::endl;
 }
 
-void FCompilerContext::AddToPlotList(FPlot* NewPlot)
+void FCompilerContext::AddToPlotRequestList(FPlotRequest* NewPlotRequest)
 {   // special: this one does not check redundant entries
-    PlotList.push_back(NewPlot);
-//        std::cout << "Plot " << Utils::JoinStr2Str(NewPlot->Inputs) << " has been added to the system" << std::endl;
+    PlotRequestList.push_back(NewPlotRequest);
+//        std::cout << "PlotRequest " << Utils::JoinStr2Str(NewPlotRequest->Inputs) << " has been added to the system" << std::endl;
+}
+
+void FCompilerContext::AddToTableRequestList(FTableRequest* NewTableRequest)
+{   // special: this one does not check redundant entries
+    TableRequestList.push_back(NewTableRequest);
+//        std::cout << "TableRequest " << Utils::JoinStr2Str(NewTableRequest->Inputs) << " has been added to the system" << std::endl;
 }
 
 void FCompilerContext::Organize()

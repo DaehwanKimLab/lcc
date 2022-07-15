@@ -45,16 +45,35 @@ public:
     }
 };
 
-class FPlot {
+class FPlotRequest {
 public:
     std::vector<std::string> Inputs;
 
-    FPlot() {}
+    FPlotRequest() {}
     
-    FPlot(std::vector<std::string> InInputs) : Inputs(InInputs) {}
+    FPlotRequest(std::vector<std::string> InInputs) : Inputs(InInputs) {}
 
     void Print(std::ostream& os) {
-        os << "Plots: ";
+        os << "Plot: ";
+        if (!Inputs.empty()) {
+            for (auto& input : Inputs) {
+                os << input << ", ";
+            }
+            os << std::endl;
+        }
+    }
+};
+
+class FTableRequest {
+public:
+    std::vector<std::string> Inputs;
+
+    FTableRequest() {}
+
+    FTableRequest(std::vector<std::string> InInputs) : Inputs(InInputs) {}
+
+    void Print(std::ostream& os) {
+        os << "Table: ";
         if (!Inputs.empty()) {
             for (auto& input : Inputs) {
                 os << input << ", ";
@@ -1006,7 +1025,8 @@ public:
     std::vector<FComposition*>  CompositionList;
     std::vector<FMotility*>     MotilityList;
             std::vector<std::pair<std::string, float>>     ThresholdList; // temporary, list of mol name and threshold value pairs
-    std::vector<FPlot*>         PlotList;
+    std::vector<FPlotRequest*>  PlotRequestList;
+    std::vector<FTableRequest*>  TableRequestList;
 
 
     void PrintLists(std::ostream& os);
@@ -1024,7 +1044,8 @@ public:
     void AddToLocationList(FLocation *NewLocation);
     void AddToMotilityList(FMotility *NewMotility);
 //    void AddToCompositionList(FComposition *NewComposition);
-    void AddToPlotList(FPlot *NewPlot);
+    void AddToPlotRequestList(FPlotRequest *NewPlot);
+    void AddToTableRequestList(FTableRequest *NewPlot);
 
     // Compiler organization
     void Organize();

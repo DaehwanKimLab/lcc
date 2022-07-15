@@ -58,6 +58,7 @@ message MInitData
     repeated MNames InitName = 3;
     repeated MIdx InitIdx = 4;
     repeated MPlotPreset InitPlot = 5;
+    repeated MTablePreset InitTable = 6;
 }
 
 message MRunData
@@ -146,6 +147,11 @@ message MIdx
 }
 
 message MPlotPreset
+{
+    repeated string Identifier = 1;
+}
+
+message MTablePreset
 {
     repeated string Identifier = 1;
 }

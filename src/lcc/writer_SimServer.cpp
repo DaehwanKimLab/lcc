@@ -309,17 +309,31 @@ void FWriter::SimServer() {
     ofs << in+ in+ "Plot_Init = []" << endl;
     ofs << endl;
 
-    if (!Context.PlotList.empty()) {
+    if (!Context.PlotRequestList.empty()) {
         ofs << in+ in+ "# User defined plot inputs" << endl;
-        for (auto& plot : Context.PlotList) {
+        for (auto& plot : Context.PlotRequestList) {
             ofs << in+ in+ "Plot_Init.append(lccsimulation_pb2.MPlotPreset(" << endl;
             ofs << in+ in+ in+ "Identifier=[" <<Utils::JoinStr2Str(plot->Inputs) << "], " << endl;
             ofs << in+ in+ "))" << endl;
         }
         ofs << endl;
     }
+    
+    ofs << in+ in+ "# Table Init Data" << endl;
+    ofs << in+ in+ "Table_Init = []" << endl;
+    ofs << endl;
 
-    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init)" << endl;
+    if (!Context.TableRequestList.empty()) {
+        ofs << in+ in+ "# User defined table inputs" << endl;
+        for (auto& table : Context.TableRequestList) {
+            ofs << in+ in+ "Table_Init.append(lccsimulation_pb2.MTablePreset(" << endl;
+            ofs << in+ in+ in+ "Identifier=[" <<Utils::JoinStr2Str(table->Inputs) << "], " << endl;
+            ofs << in+ in+ "))" << endl;
+        }
+        ofs << endl;
+    }
+
+    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init, InitTable=Table_Init)" << endl;
     ofs << endl;
 
     // TODO: stream run

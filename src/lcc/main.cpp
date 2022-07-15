@@ -1099,17 +1099,27 @@ void TraversalNode_Core(NNode * node)
 
         std::string Name = FCExp->GetName();
         std::vector<std::string> Inputs = FCExp->GetInputs();
+        
+        //if (Option.bDebug) {
+        //    os << Name << " : ";
+        //    for (auto& input : Inputs) {
+        //        os << input << ", ";
+        //    } os << endl;
+        //}
 
-        if (Option.bDebug) {
-            os << "Plot:" << Name << " : ";
-            for (auto& input : Inputs) {
-                os << input << ", ";
-            } os << endl;
+        if (Name == "plot") {
+
+            FPlotRequest* NewPlotRequest = new FPlotRequest(Inputs);
+            if (Option.bDebug) { NewPlotRequest->Print(os); }
+            Context.AddToPlotRequestList(NewPlotRequest);
+
+        } else if (Name == "table") {
+
+            FTableRequest* NewTableRequest = new FTableRequest(Inputs);
+            if (Option.bDebug) { NewTableRequest->Print(os); }
+            Context.AddToTableRequestList(NewTableRequest);
+
         }
-
-        FPlot* NewPlot = new FPlot(Inputs);
-        if (Option.bDebug) { NewPlot->Print(os); }
-        Context.AddToPlotList(NewPlot);
     }
 
 #if 0
