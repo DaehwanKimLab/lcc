@@ -59,6 +59,14 @@ void FWriter::SimServer() {
     ofs << "from google.protobuf.any_pb2 import Any" << endl;
     ofs << endl;
 
+    ofs << "ZeroVec = lccsimulation_pb2.MVector3(X=0, Y=0, Z=0)" << endl;
+    ofs << "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
+    ofs << "White = lccsimulation_pb2.MVector3(X=255, Y=255, Z=255)" << endl;
+    ofs << "Green = lccsimulation_pb2.MVector3(X=0, Y=255, Z=50)" << endl;
+    ofs << "Red = lccsimulation_pb2.MVector3(X=255, Y=0, Z=50)" << endl;
+    ofs << "Blue = lccsimulation_pb2.MVector3(X=143, Y=186, Z=255)" << endl;
+    ofs << "Yellow = lccsimulation_pb2.MVector3(X=255, Y=255, Z=102)" << endl;
+    ofs << endl;
     
     ofs << "# Position scale factor for visualization" << endl;
     ofs << "PosScale = 4" << endl;
@@ -94,9 +102,11 @@ void FWriter::SimServer() {
     ofs << in+ in+ "self.DataManager = None" << endl;
     ofs << in+ in+ "self.SimM = None" << endl;
     ofs << endl;
-    for (auto organism : Organisms) {
-        ofs << in+ in+ "self." << organism->Name << " = None" << endl;
-    }
+    ofs << in+ in+ "# Useful References" << endl;
+    ofs << in+ in+ "self.Idx_Gene2RNA = {}" << endl;
+    ofs << in+ in+ "self.Idx_RNA2Protein = {}" << endl;
+    ofs << in+ in+ "self.Idx_Gene2Protein = {}" << endl;
+    ofs << in+ in+ "self.Idx_ProteinOrmRNA2GeneOrRNA_Local = {}" << endl;
     ofs << endl;
 
     ofs << in+ "def Initialize(self, request, context):" << endl;
@@ -120,17 +130,8 @@ void FWriter::SimServer() {
         }
     }
 
-    ofs << in+ in+ "# Setup Static Objects" << endl;
-    
+    ofs << in+ in+ "# Setup Static Objects" << endl;    
     ofs << in+ in+ "InitVisObjects = []" << endl;
-    ofs << in+ in+ "ZeroVec = lccsimulation_pb2.MVector3(X=0, Y=0, Z=0)" << endl;
-    ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
-    ofs << in+ in+ "White = lccsimulation_pb2.MVector3(X=255, Y=255, Z=255)" << endl;
-    ofs << in+ in+ "Green = lccsimulation_pb2.MVector3(X=0, Y=255, Z=50)" << endl;
-    ofs << in+ in+ "Red = lccsimulation_pb2.MVector3(X=255, Y=0, Z=50)" << endl;
-    ofs << in+ in+ "Blue = lccsimulation_pb2.MVector3(X=143, Y=186, Z=255)" << endl;
-    ofs << in+ in+ "Yellow = lccsimulation_pb2.MVector3(X=255, Y=255, Z=102)" << endl;
-    ofs << endl;
 
     ofs << in+ in+ "# Static Petri Dish" << endl;
     ofs << in+ in+ "InitVisObjects.append(lccsimulation_pb2.MVisObjectData(" << endl;
@@ -275,26 +276,21 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "Dict_mRNA2Protein[Idx_mRNAs[i]] = Idx_Proteins[i]" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "Idx_Gene2RNA = {}" << endl;
-    ofs << in+ in+ "Idx_RNA2Protein = {}" << endl;
-    ofs << in+ in+ "Idx_Gene2Protein = {}" << endl;
-    ofs << in+ in+ "Idx_ProteinOrmRNA2GeneOrRNA_Local = {}" << endl;
-    ofs << endl;
     ofs << in+ in+ "if np.any(Idx_Genes):" << endl;
     ofs << in+ in+ in+ "nth_protein_or_mRNA = 0" << endl;
     ofs << in+ in+ in+ "for i in range(Idx_Genes.shape[0]):" << endl;
     ofs << in+ in+ in+ in+ "idx_gene = Idx_Genes[i]" << endl;
     ofs << in+ in+ in+ in + "idx_rna = Idx_RNAs[i]" << endl;
-    ofs << in+ in+ in+ in + "Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
+    ofs << in+ in+ in+ in + "self.Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
     ofs << endl;
     ofs << in+ in+ in+ in+ "idx_protein = -1   # -1 for non-coding genes (only generates non-coding type RNA (not mRNA), hence no protein)" << endl;
     ofs << in+ in+ in+ in+ "if idx_rna in Idx_mRNAs:" << endl;
     ofs << in+ in+ in+ in+ in+ "idx_protein = Dict_mRNA2Protein[idx_rna]" << endl;
-    ofs << in+ in+ in+ in+ in+ "Idx_ProteinOrmRNA2GeneOrRNA_Local[nth_protein_or_mRNA] = i" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.Idx_ProteinOrmRNA2GeneOrRNA_Local[nth_protein_or_mRNA] = i" << endl;
     ofs << in+ in+ in+ in+ in+ "nth_protein_or_mRNA += 1" << endl;
     ofs << endl;
-    ofs << in+ in+ in+ in+ "Idx_RNA2Protein[idx_rna] = idx_protein" << endl;
-    ofs << in+ in+ in+ in+ "Idx_Gene2Protein[idx_gene] = idx_protein" << endl;
+    ofs << in+ in+ in+ in+ "self.Idx_RNA2Protein[idx_rna] = idx_protein" << endl;
+    ofs << in+ in+ in+ in+ "self.Idx_Gene2Protein[idx_gene] = idx_protein" << endl;
     ofs << endl;
 
     ofs << in+ in+ "Idx_Init.append(lccsimulation_pb2.MIdx(" << endl;
@@ -302,10 +298,10 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ "RNA=Idx_RNAs," << endl;
     ofs << in+ in+ in+ "mRNA=Idx_mRNAs," << endl;
     ofs << in+ in+ in+ "Protein=Idx_Proteins," << endl;
-    ofs << in+ in+ in+ "Gene2RNA=Idx_Gene2RNA," << endl;
-    ofs << in+ in+ in+ "RNA2Protein=Idx_RNA2Protein," << endl;
-    ofs << in+ in+ in+ "Gene2Protein=Idx_Gene2Protein," << endl;
-    ofs << in+ in+ in+ "ProteinOrmRNA2GeneOrRNA_Local=Idx_ProteinOrmRNA2GeneOrRNA_Local," << endl;
+    ofs << in+ in+ in+ "Gene2RNA=self.Idx_Gene2RNA," << endl;
+    ofs << in+ in+ in+ "RNA2Protein=self.Idx_RNA2Protein," << endl;
+    ofs << in+ in+ in+ "Gene2Protein=self.Idx_Gene2Protein," << endl;
+    ofs << in+ in+ in+ "ProteinOrmRNA2GeneOrRNA_Local=self.Idx_ProteinOrmRNA2GeneOrRNA_Local," << endl;
     ofs << in+ in+ "))" << endl;
     ofs << endl;
 
@@ -321,11 +317,7 @@ void FWriter::SimServer() {
     ofs << in+ in+ "# Setup Static Objects" << endl;
 
     ofs << in+ in+ "InitVisObjects = []" << endl;
-    ofs << in+ in+ "ZeroVec = lccsimulation_pb2.MVector3(X=0, Y=0, Z=0)" << endl;
-    ofs << in+ in+ "UnitVec = lccsimulation_pb2.MVector3(X=1, Y=1, Z=1)" << endl;
     ofs << endl;
-
-
 
     //ofs << in+ in+ "# Setup Central Dogma Numpy Arrays" << endl;
 
@@ -599,45 +591,69 @@ void FWriter::SimServer() {
     ofs << in+ "def GetStaticPlotData(self, request, context):" << endl;
     ofs << in+ in+ "print('sending StaticPlotData: ', end='')" << endl;
     ofs << in+ in+ "Title = ''" << endl;
-    ofs << in+ in+ "LineData = []" << endl;
-    ofs << in+ in+ "YRange = None" << endl;
-    ofs << endl;
-
     ofs << in+ in+ "# Time" << endl;
     ofs << in+ in+ "SimTimeStamps = self.DataManager.DataBuffer[:, 0]" << endl;
     ofs << in+ in+ "XRange = lccsimulation_pb2.MVector2(X=0, Y=SimTimeStamps[-1])" << endl;
     ofs << endl;
 
+    ofs << in+ in+ "def construct_plotdata(InListOfMolNames):" << endl;
+    ofs << in+ in+ in+ "LineData = []" << endl;
+    ofs << in+ in+ in+ "ListOfMolNames = []" << endl;
+    ofs << in+ in+ in+ "ListOfMolIdx = []" << endl;
+    ofs << in+ in+ in+ "for molecule_name in InListOfMolNames:" << endl;
+    ofs << in+ in+ in+ in+ "if molecule_name not in self.State.Mol_Name2Idx:" << endl;
+    ofs << in+ in+ in+ in+ in+ "print('## ERROR' , molecule_name, ': not present in the system ##', end=' | ')" << endl;
+    ofs << in+ in+ in+ in+ in+ "continue" << endl;
+    ofs << in+ in+ in+ in+ "ListOfMolNames.append(molecule_name)" << endl;
+    ofs << in+ in+ in+ in+ "ListOfMolIdx.append(self.SimM.GetMolIdx(molecule_name))" << endl;
+    ofs << in+ in+ in+ "DataMax = np.zeros(len(ListOfMolNames))" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "if len(ListOfMolNames) == 0:" << endl;
+    ofs << in+ in+ in+ in+ "LineData_Single = lccsimulation_pb2.MLineData(" << endl;
+    ofs << in+ in+ in+ in+ in+ "Label='Error'," << endl;
+    ofs << in+ in+ in+ in+ in+ "# Color=," << endl;
+    ofs << in+ in+ in+ in+ in+ "XData=np.zeros(1)," << endl;
+    ofs << in+ in+ in+ in+ in+ "YData=np.zeros(1)," << endl;
+    ofs << in+ in+ in+ in+ ")" << endl;
+    ofs << in+ in+ in+ in+ "LineData.append(LineData_Single)" << endl;
+    ofs << in+ in+ in+ in+ "YRange = lccsimulation_pb2.MVector2(X=0, Y=1)" << endl;
+    ofs << in+ in+ in+ in+ "return LineData, YRange" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "for i in range(len(ListOfMolNames)):" << endl;
+    ofs << in+ in+ in+ in+ "MolCounts = self.DataManager.DataBuffer[:, ListOfMolIdx[i] + 2]" << endl;
+    ofs << in+ in+ in+ in+ "LineData_Single = lccsimulation_pb2.MLineData(" << endl;
+    ofs << in+ in+ in+ in+ in+ "Label=ListOfMolNames[i]," << endl;
+    ofs << in+ in+ in+ in+ in+ "# Color=," << endl;
+    ofs << in+ in+ in+ in+ in+ "XData=SimTimeStamps," << endl;
+    ofs << in+ in+ in+ in+ in+ "YData=MolCounts," << endl;
+    ofs << in+ in+ in+ in+ ")" << endl;
+    ofs << in+ in+ in+ in+ "LineData.append(LineData_Single)" << endl;
+    ofs << in+ in+ in+ in+ "DataMax[i] = np.max(MolCounts) * 1.2" << endl;
+    ofs << in+ in+ in+ "YRange = lccsimulation_pb2.MVector2(X=0, Y=max(DataMax))" << endl;
+    ofs << in+ in+ in+ "return LineData, YRange" << endl;
+    ofs << endl;
+
     if (!Context.PathwayList.empty()) {
-        for (auto& pathway : Context.PathwayList) {
-            ofs << in+ in+ "if request.Identifier == '"<< pathway->Name << "':" << endl;
-            ofs << in+ in+ in+ "Title = '[Pathway] " << pathway->Name << "'" << endl;
-
-
-            // LineData
-            std::vector<std::string> molNames = pathway->GetMoleculeNames();
-            std::vector<int> molIdx = Context.GetIdxList_MoleculeList(pathway->MolecularComponents);
-            ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
-            ofs << in+ in+ in+ "MolIdx = [" << Utils::JoinInt2Str_Idx(molIdx) << "]" << endl;
-            ofs << in+ in+ in+ "DataMax = np.zeros(len(MolNames))" << endl;
-            ofs << endl;
-
-            ofs << in+ in+ in+ "for i in range(len(MolNames)):" << endl;
-            ofs << in+ in+ in+ in+ "MolCounts = self.DataManager.DataBuffer[:, MolIdx[i] + 2]" << endl;
-            ofs << in+ in+ in+ in+ "LineData_Single = lccsimulation_pb2.MLineData(" << endl;
-            ofs << in+ in+ in+ in+ in+ "Label = MolNames[i]," << endl;
-            ofs << in+ in+ in+ in+ in+ "# Color = ," << endl;// optional color, if not provided a random color will be used
-            ofs << in+ in+ in+ in+ in+ "XData = SimTimeStamps," << endl;
-            ofs << in+ in+ in+ in+ in+ "YData = MolCounts," << endl;
-            ofs << in+ in+ in+ in+ ")" << endl;
-            ofs << in+ in+ in+ in+ "LineData.append(LineData_Single)" << endl;
-            ofs << in+ in+ in+ in+ "DataMax[i] = np.max(MolCounts) * 1.2" << endl;
-            ofs << in+ in+ in+ "YRange = lccsimulation_pb2.MVector2(X=0, Y=max(DataMax))" << endl;
-            ofs << endl;
+        for (int i = 0; i < Context.PathwayList.size(); i++) {
+            if (i == 0) { ofs << in+ in+ "if "; }
+            else        { ofs << in+ in+ "elif "; }
+            ofs << "request.Identifier == '"<< Context.PathwayList[i]->Name << "':" << endl;
+            ofs << in+ in+ in+ "Title = '[Pathway] " << Context.PathwayList[i]->Name << "'" << endl;
+            ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(Context.PathwayList[i]->GetMoleculeNames()) << "]" << endl;
+            ofs << in+ in+ in+ "LineData, YRange = construct_plotdata(MolNames)" << endl;
         }
     }
 
-    ofs << in+ in+ "print(Title + '... completed')" << endl;
+    // Individual Molecules
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "Title = '[Molecule] '" << endl;
+    ofs << in+ in+ in+ "MolNames = request.Identifier.replace(',', ' ').replace('  ', ' ').split(' ')" << endl;
+    ofs << in+ in+ in+ "for molname in MolNames:" << endl;
+    ofs << in+ in+ in+ in+ "Title += molname + ' '" << endl;
+    ofs << in+ in+ in+ "LineData, YRange = construct_plotdata(MolNames)" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ "print(Title + '...' + 'sent')" << endl;
     ofs << in+ in+ "return lccsimulation_pb2.MStaticPlotResponse(Title=Title, LineData=LineData, XRange=XRange, YRange=YRange)" << endl;
     ofs << endl;
 

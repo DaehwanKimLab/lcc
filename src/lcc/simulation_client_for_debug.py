@@ -88,8 +88,7 @@ def run():
                 response = stub.Stop(lccsimulation_pb2.MEmpty())
 
         elif cmd[:4] == "Plot":
-            cmd_parsed = cmd.split(' ')
-            Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
+            Query = cmd[5:]   # Currently, it does not accept indexing for the organism
 
             Max_Message_Length = 10000000
             channel = grpc.insecure_channel(
@@ -103,8 +102,7 @@ def run():
             response = stub.GetStaticPlotData(lccsimulation_pb2.MStaticPlotRequest(Identifier=Query))
 
         elif cmd[:5] == "Table":
-            cmd_parsed = cmd.split(' ')
-            Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
+            Query = cmd[6:]   # Currently, it does not accept indexing for the organism
 
             Max_Message_Length = 10000000
             channel = grpc.insecure_channel(
