@@ -45,6 +45,23 @@ public:
     }
 };
 
+class FPlot {
+public:
+    std::vector<std::string> Inputs;
+
+    FPlot() {}
+
+    void Print(std::ostream& os) {
+        os << "Plots: ";
+        if (!Inputs.empty()) {
+            for (auto& input : Inputs) {
+                os << input << ", ";
+            }
+            os << std::endl;
+        }
+    }
+};
+
 class FContainerSpace {
 public:
     std::vector<std::string> Names;

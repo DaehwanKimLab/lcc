@@ -566,6 +566,20 @@ std::vector<float> NFunctionCallExpression::GetParameters(int ControlVar, std::s
     return Parameters;
 }
 
+std::vector<std::string> NFunctionCallExpression::GetInputs() const {
+    std::vector<std::string> Inputs;
+
+    for (const auto& arg : *Args) {
+
+        if (Utils::is_class_of<NVariableExpression, NExpression>(arg.get())) {
+            const auto& input = dynamic_cast<const NVariableExpression*>(arg.get());
+            Inputs.push_back(input->GetName());
+        }
+    }
+
+    return Inputs;
+}
+
 std::vector<float> NFunctionCallExpression::RandomNumbers() const {
    Utils::Assertion(((GetName() == "random") || (GetName() == "rand")), "Not a random function" + GetName());
 

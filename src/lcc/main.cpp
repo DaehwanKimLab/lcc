@@ -524,6 +524,7 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
     } else if (Name == "Map_Height") {
         Map_Height = static_cast<int>(Amount);
         os << "\n# Temp Spatial Control : Map Height = " << Map_Height << endl;
+
     } else {
         // Add to Count and location
         FCount *NewCount = new FCount(Name, Amount, Range, bMolarity);
@@ -1092,6 +1093,20 @@ void TraversalNode_Core(NNode * node)
             if (Option.bDebug) { NewTransporter->Print(os); }
             Context.AddToMoleculeList(NewTransporter);
         }
+
+    } else if (Utils::is_class_of<NFunctionCallExpression, NNode>(node)) {
+        auto FCExp = dynamic_cast<const NFunctionCallExpression*>(node);
+
+        std::string Name = FCExp->GetName();
+        std::vector<std::string> Inputs = FCExp->GetInputs();
+
+        if (Option.bDebug) {
+            os << "Plot:" << Name << " : ";
+            for (auto& input : Inputs) {
+                os << input << ", ";
+            } os << endl;
+        }
+
     }
 
 #if 0
