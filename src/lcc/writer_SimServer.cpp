@@ -671,31 +671,66 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
     ofs << in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;
+        
+    ofs << in+ in+ "def construct_tabledata(InListOfMolNames):" << endl;
+    ofs << in+ in+ in+ "Columns = []" << endl;
+    ofs << in+ in+ in+ "ListOfMolNames = []" << endl;
+    ofs << in+ in+ in+ "ListOfMolIdx = []" << endl;
+    ofs << in+ in+ in+ "for molecule_name in InListOfMolNames:" << endl;
+    ofs << in+ in+ in+ in+ "if molecule_name not in self.State.Mol_Name2Idx:" << endl;
+    ofs << in+ in+ in+ in+ in+ "print('## ERROR' , molecule_name, ': not present in the system ##', end=' | ')" << endl;
+    ofs << in+ in+ in+ in+ in+ "continue" << endl;
+    ofs << in+ in+ in+ in+ "ListOfMolNames.append(molecule_name)" << endl;
+    ofs << in+ in+ in+ in+ "ListOfMolIdx.append(self.SimM.GetMolIdx(molecule_name))" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "if len(ListOfMolNames) == 0:" << endl;
+    ofs << in+ in+ in+ in+ "Header = 'Error'" << endl;
+    ofs << in+ in+ in+ in+ "Rows = []" << endl;
+    ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, 0]" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=0))" << endl;
+    ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
+    ofs << in+ in+ in+ in+ "return Columns" << endl;
+    ofs << endl;
+
+    ofs << in+ in+ in+ "for i in range(len(ListOfMolNames)):" << endl;
+    ofs << in+ in+ in+ in+ "Header = ListOfMolNames[i]" << endl;
+    ofs << in+ in+ in+ in+ "Rows = []" << endl;
+    ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, ListOfMolIdx[i] + 2]:" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))" << endl;
+    ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
+    ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
+    ofs << endl;
+    ofs << in+ in+ in+ "return Columns" << endl;
+    ofs << endl;
             
     if (!Context.PathwayList.empty()) {
-        for (auto& pathway : Context.PathwayList) {
-            ofs << in+ in+ "if request.Identifier == '"<< pathway->Name << "':" << endl;
-            ofs << in+ in+ in+ "Title = '[Pathway] " << pathway->Name << "'" << endl;
+        for (int i = 0; i < Context.PathwayList.size(); i++) {
+            if (i == 0) { ofs << in+ in+ "if "; }
+            else        { ofs << in+ in+ "elif "; }
+            ofs << "request.Identifier == '"<< Context.PathwayList[i]->Name << "':" << endl;
+            ofs << in+ in+ in+ "Title = '[Pathway] " << Context.PathwayList[i]->Name << "'" << endl;
 
-            std::vector<std::string> molNames = pathway->GetMoleculeNames();
-            std::vector<int> molIdx = Context.GetIdxList_MoleculeList(pathway->MolecularComponents);
+            std::vector<std::string> molNames = Context.PathwayList[i]->GetMoleculeNames();
             ofs << in+ in+ in+ "# Add Molecule Columns" << endl;
             ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
-            ofs << in+ in+ in+ "MolIdx = [" << Utils::JoinInt2Str_Idx(molIdx) << "]" << endl;
-
-            ofs << in+ in+ in+ "for i in range(len(MolNames)):" << endl;
-            ofs << in+ in+ in+ in+ "Header = MolNames[i]" << endl;
-            ofs << in+ in+ in+ in+ "Rows = []" << endl;
-            ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, MolIdx[i] + 2]:" << endl;
-            ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
-            ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))" << endl;
-            ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
-            ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
-            ofs << endl;
+            ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames)" << endl;
         }
     }
 
-    ofs << in+ in+ "print(Title + '... completed')" << endl;
+    // Individual Molecules
+    ofs << in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ "Title = '[Molecule] '" << endl;
+    ofs << in+ in+ in+ "MolNames = request.Identifier.replace(',', ' ').replace('  ', ' ').split(' ')" << endl;
+    ofs << in+ in+ in+ "for molname in MolNames:" << endl;
+    ofs << in+ in+ in+ in+ "Title += molname + ' '" << endl;
+    ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames)" << endl;
+    ofs << endl;
+
+
+    ofs << in+ in+ "print(Title + '... sent')" << endl;
     ofs << in+ in+ "return lccsimulation_pb2.MStaticTableResponse(Title=Title, Columns=Columns)" << endl;
     ofs << endl;
 
