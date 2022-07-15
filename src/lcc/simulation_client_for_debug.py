@@ -90,16 +90,32 @@ def run():
         elif cmd[:4] == "Plot":
             cmd_parsed = cmd.split(' ')
             Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
-            with grpc.insecure_channel(ChannelName) as channel:
-                stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
-                response = stub.GetStaticPlotData(lccsimulation_pb2.MStaticPlotRequest(Identifier=Query))
+
+            Max_Message_Length = 10000000
+            channel = grpc.insecure_channel(
+                ChannelName,
+                options=[
+                    ('grpc.max_send_message_length', Max_Message_Length),
+                    ('grpc.max_receive_message_length', Max_Message_Length),
+                ],
+            )
+            stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
+            response = stub.GetStaticPlotData(lccsimulation_pb2.MStaticPlotRequest(Identifier=Query))
 
         elif cmd[:5] == "Table":
             cmd_parsed = cmd.split(' ')
             Query = cmd_parsed[1]   # Currently, it does not accept indexing for the organism
-            with grpc.insecure_channel(ChannelName) as channel:
-                stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
-                response = stub.GetStaticTableData(lccsimulation_pb2.MStaticTableRequest(Identifier=Query))
+
+            Max_Message_Length = 10000000
+            channel = grpc.insecure_channel(
+                ChannelName,
+                options=[
+                    ('grpc.max_send_message_length', Max_Message_Length),
+                    ('grpc.max_receive_message_length', Max_Message_Length),
+                ],
+            )
+            stub = lccsimulation_pb2_grpc.LCCSimulationStub(channel)
+            response = stub.GetStaticTableData(lccsimulation_pb2.MStaticTableRequest(Identifier=Query))
 
         elif cmd == "Quit" or cmd == "-1":
             sys.exit(0)

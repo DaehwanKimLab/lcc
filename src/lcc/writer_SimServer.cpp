@@ -670,8 +670,9 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ in+ "Header = MolNames[i]" << endl;
             ofs << in+ in+ in+ in+ "Rows = []" << endl;
             ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, MolIdx[i] + 2]:" << endl;
-            ofs << in+ in+ in+ in+ in+ "Value = Any()" << endl;
-            ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
+            ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
+            ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))" << endl;
+            ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
             ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
             ofs << endl;
         }
