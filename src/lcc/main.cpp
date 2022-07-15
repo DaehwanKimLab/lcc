@@ -1107,6 +1107,9 @@ void TraversalNode_Core(NNode * node)
             } os << endl;
         }
 
+        FPlot* NewPlot = new FPlot(Inputs);
+        if (Option.bDebug) { NewPlot->Print(os); }
+        Context.AddToPlotList(NewPlot);
     }
 
 #if 0

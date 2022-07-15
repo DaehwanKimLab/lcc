@@ -50,6 +50,8 @@ public:
     std::vector<std::string> Inputs;
 
     FPlot() {}
+    
+    FPlot(std::vector<std::string> InInputs) : Inputs(InInputs) {}
 
     void Print(std::ostream& os) {
         os << "Plots: ";
@@ -1004,6 +1006,7 @@ public:
     std::vector<FComposition*>  CompositionList;
     std::vector<FMotility*>     MotilityList;
             std::vector<std::pair<std::string, float>>     ThresholdList; // temporary, list of mol name and threshold value pairs
+    std::vector<FPlot*>         PlotList;
 
 
     void PrintLists(std::ostream& os);
@@ -1021,6 +1024,7 @@ public:
     void AddToLocationList(FLocation *NewLocation);
     void AddToMotilityList(FMotility *NewMotility);
 //    void AddToCompositionList(FComposition *NewComposition);
+    void AddToPlotList(FPlot *NewPlot);
 
     // Compiler organization
     void Organize();

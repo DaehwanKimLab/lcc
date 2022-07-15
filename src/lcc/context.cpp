@@ -310,6 +310,12 @@ void FCompilerContext::AddToMotilityList(FMotility *NewMotility)
 //        std::cout << "Motility "<< NewMotility->Name << " has been added to the system" << std::endl;
 }
 
+void FCompilerContext::AddToPlotList(FPlot* NewPlot)
+{   // special: this one does not check redundant entries
+    PlotList.push_back(NewPlot);
+            std::cout << "Plot " << Utils::JoinStr2Str(NewPlot->Inputs) << " has been added to the system" << std::endl;
+}
+
 void FCompilerContext::Organize()
 {
     std::cout << "\n\n## Organizing Compiler Data ## " << std::endl;
