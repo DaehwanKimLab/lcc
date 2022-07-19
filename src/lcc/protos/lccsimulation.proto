@@ -60,12 +60,14 @@ message MControlSimulationRequest {
 message MInitData
 {
     repeated MVisObjectData InitObjects = 1;
+
     repeated MDNA_InitData InitDNA = 2;
     repeated MNames InitName = 3;
     repeated MIdx InitIdx = 4;
+
     repeated MPlotPreset InitPlot = 5;
     repeated MTablePreset InitTable = 6;
-    repeated MOrganization InitOrganization = 7;
+    MDataVisualizationTreeViewInfo InitDataVisualizationTreeViewInfo = 7;
 }
 
 message MRunData
@@ -163,10 +165,17 @@ message MTablePreset
     repeated string Identifier = 1;
 }
 
-message MOrganization
+message MDataVisualizationTreeViewInfo
 {
-    string Node = 1;
-    repeated MOrganization Leaf = 2;
+    MDataVisualizationTreeViewNode RootNode = 1;
+}
+
+message MDataVisualizationTreeViewNode
+{
+    string DisplayName = 1;
+    string PlotIdentifier = 2;
+    string TableIdentifier = 3;
+    repeated MDataVisualizationTreeViewNode Leaves = 4;
 }
 
 // State

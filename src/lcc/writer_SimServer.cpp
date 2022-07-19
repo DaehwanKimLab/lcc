@@ -130,6 +130,7 @@ void FWriter::SimServer() {
     ofs << endl;
     ofs << in+ in+ "# Simulation control variables" << endl;
     ofs << in+ in+ "self.SimUnitTime = 0.2" << endl;
+    ofs << endl;
 
     ofs << in+ in+ "# Useful References" << endl;
     ofs << in+ in+ "self.Idx_Gene2RNA = {}" << endl;
@@ -361,24 +362,28 @@ void FWriter::SimServer() {
     }
     
     ofs << in+ in+ "# Organization Init Data" << endl;
-    ofs << in+ in+ "Organization_Init = []" << endl;
+    ofs << in+ in+ "DataVisualizationTreeViewInfo_Init = []" << endl;
     ofs << endl;
     //std::vector<std::string> List_Organism, List_Pathway, List_Molecules;
 
     // hardcoded for ecoli code
     if (!Organisms.empty()) {
         for (auto& organism : Organisms) {
-            ofs << in+ in+ "Organization_Init.append(lccsimulation_pb2.MOrganization(" << endl;
-            ofs << in+ in+ in+ "Node='" << organism->Name << "', " << endl;
-            ofs << in+ in+ in+ "Leaf=[" << endl;
+            ofs << in+ in+ "DataVisualizationTreeViewInfo_Init = lccsimulation_pb2.MDataVisualizationTreeViewInfo(RootNode=lccsimulation_pb2.MDataVisualizationTreeViewNode(" << endl;
+            ofs << in+ in+ in+ "DisplayName='" << organism->Name << "', " << endl;
+            ofs << in+ in+ in+ "PlotIdentifier='" << organism->Name << "', " << endl;
+            ofs << in+ in+ in+ "TableIdentifier='" << organism->Name << "', " << endl;
+            ofs << in+ in+ in+ "Leaves=[" << endl;
 
             if (!Context.PathwayList.empty()){
                 for (auto& pathway : Context.PathwayList) {
-                    ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(" << endl;
-                    ofs << in+ in+ in+ in+ in+ "Node='" << pathway->Name << "'," << endl;
-                    ofs << in+ in+ in+ in+ in+ "Leaf=[" << endl;
-                    for (auto& molecule : pathway->GetMoleculeNames()) {
-                        ofs << in+ in+ in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+                    ofs << in+ in+ in+ in+ "lccsimulation_pb2.MDataVisualizationTreeViewNode(" << endl;
+                    ofs << in+ in+ in+ in+ in+ "DisplayName='" << pathway->Name << "'," << endl;
+                    ofs << in+ in+ in+ in+ in+ "PlotIdentifier='" << pathway->Name << "'," << endl;
+                    ofs << in+ in+ in+ in+ in+ "TableIdentifier='" << pathway->Name << "'," << endl;
+                    ofs << in+ in+ in+ in+ in+ "Leaves=[" << endl;
+                    for (auto& molecule : pathway->MolecularComponents) {
+                        ofs << in+ in+ in+ in+ in+ in+ "lccsimulation_pb2.MDataVisualizationTreeViewNode(DisplayName='" << molecule->Name << "', PlotIdentifier='" << molecule->Name << "', TableIdentifier='" << molecule->Name << "', Leaves=[]), " << endl;
                     }
                     ofs << in+ in+ in+ in+ in+ "]), " << endl;
                 }
@@ -389,7 +394,7 @@ void FWriter::SimServer() {
                     if (molecule->Name == "Pseudo") {
                         continue;
                     }
-                        ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule->Name << "', Leaf=[]), " << endl;
+                        ofs << in+ in+ in+ in+ "lccsimulation_pb2.MDataVisualizationTreeViewNode(DisplayName='" << molecule->Name << "', PlotIdentifier='" << molecule->Name << "', TableIdentifier='" << molecule->Name << "', Leaves=[]), " << endl;
                     }
                 ofs << in+ in+ in+ "], " << endl;
             }
@@ -397,20 +402,22 @@ void FWriter::SimServer() {
         } 
         ofs << endl;
     } else {
-        ofs << in+ in+ "Organization_Init.append(lccsimulation_pb2.MOrganization(" << endl;
-        ofs << in+ in+ in+ "Node='Molecules', " << endl;
-        ofs << in+ in+ in+ "Leaf=[" << endl;
+        ofs << in+ in+ "DataVisualizationTreeViewInfo_Init = lccsimulation_pb2.MDataVisualizationTreeViewInfo(RootNode=lccsimulation_pb2.MDataVisualizationTreeViewNode(" << endl;
+        ofs << in+ in+ in+ "DisplayName='Molecules'," << endl;
+        ofs << in+ in+ in+ "PlotIdentifier='Molecules'," << endl;
+        ofs << in+ in+ in+ "TableIdentifier='Molecules'," << endl;
+        ofs << in+ in+ in+ "Leaves=[" << endl;
         for (auto& molecule : Context.MoleculeList) {
             if (molecule->Name == "Pseudo") {
                 continue;
             }
-            ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+            ofs << in+ in+ in+ in+ "lccsimulation_pb2.MDataVisualizationTreeViewNode(DisplayName='" << molecule->Name << "', PlotIdentifier='" << molecule->Name << "', TableIdentifier='" << molecule->Name << "', Leaves=[]), " << endl;
         }
         ofs << in+ in+ in+ "])), " << endl;
     }
         
 
-    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init, InitTable=Table_Init, InitOrganization=Organization_Init)" << endl;
+    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init, InitTable=Table_Init, InitDataVisualizationTreeViewInfo=DataVisualizationTreeViewInfo_Init)" << endl;
     ofs << endl;
 
     // TODO: stream run
