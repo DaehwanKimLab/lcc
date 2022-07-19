@@ -89,6 +89,7 @@ public:
 
     // SimServer Utility
     void GenerateVisObjects(std::ofstream& ofs, int indents, std::string ObjectFamilyName, std::string N_Objects_Str);
+    void GenerateOrganizationTree(std::ofstream& ofs, std::string Node, std::vector<std::string> Leaf); // not implemented yet
 
     // Simulation
     void SimIdx();  // to store long arrays to call from SimModule

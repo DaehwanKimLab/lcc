@@ -23,6 +23,32 @@ void FWriter::GenerateVisObjects(std::ofstream& ofs, int indents, std::string Ob
     ofs << endl;
 }
 
+void FWriter::GenerateOrganizationTree(std::ofstream& ofs, std::string Node, std::vector<std::string> Leaf) {
+    //std::string in = "    ";
+    //std::string IN = std::string(4 * indents, ' ');
+
+    //if (!Organisms.empty()) {
+    //    ofs << in+ in+ "# User defined table inputs" << endl;
+    //    for (auto& organism : Organisms) {
+    //        ofs << in+ in+ "Organization_Init.append(lccsimulation_pb2.MOrganization(" << endl;
+    //        ofs << in+ in+ in+ "Node='" << organism->Name << "', " << endl;
+    //        ofs << in+ in+ in+ "Leaf=[" << endl;
+    //        for (auto& pathway : Context.PathwayList) {
+    //            ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(" << endl;
+    //            ofs << in+ in+ in+ in+ in+ "Node='" << pathway->Name << "'," << endl;
+    //            ofs << in+ in+ in+ in+ in+ "Leaf=[" << endl;
+    //            for (auto& molecule : pathway->GetMoleculeNames()) {
+    //                ofs << in+ in+ in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+    //            }
+    //            ofs << in+ in+ in+ in+ in+ "]), " << endl;
+    //        }
+    //        ofs << in+ in+ in+ "], " << endl;
+    //        ofs << in+ in+ "))" << endl;
+    //    }
+    //    ofs << endl;
+    //}
+
+}
 
 void FWriter::SimServer() {
     std::cout << "Generating simulation server..." << std::endl;
@@ -102,6 +128,9 @@ void FWriter::SimServer() {
     ofs << in+ in+ "self.DataManager = None" << endl;
     ofs << in+ in+ "self.SimM = None" << endl;
     ofs << endl;
+    ofs << in+ in+ "# Simulation control variables" << endl;
+    ofs << in+ in+ "self.SimUnitTime = 0.2" << endl;
+
     ofs << in+ in+ "# Useful References" << endl;
     ofs << in+ in+ "self.Idx_Gene2RNA = {}" << endl;
     ofs << in+ in+ "self.Idx_RNA2Protein = {}" << endl;
@@ -120,8 +149,6 @@ void FWriter::SimServer() {
     ofs << in+ in+ "# Initialize model" << endl;
     ofs << in+ in+ "self.SimM.Initialize()" << endl;
     ofs << endl;
-
-    ofs << in+ in+ "SimUnitTime = 0.2" << endl;
 
     if (!Context.ThresholdList.empty()) {
         if (Context.ThresholdList[0].first == "Am") {
@@ -332,8 +359,36 @@ void FWriter::SimServer() {
         }
         ofs << endl;
     }
+    
+    ofs << in+ in+ "# Organization Init Data" << endl;
+    ofs << in+ in+ "Organization_Init = []" << endl;
+    ofs << endl;
 
-    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init, InitTable=Table_Init)" << endl;
+    //std::vector<std::string> List_Organism, List_Pathway, List_Molecules;
+
+    // hardcoded for ecoli code
+    if (!Organisms.empty()) {
+        ofs << in+ in+ "# User defined table inputs" << endl;
+        for (auto& organism : Organisms) {
+            ofs << in+ in+ "Organization_Init.append(lccsimulation_pb2.MOrganization(" << endl;
+            ofs << in+ in+ in+ "Node='" << organism->Name << "', " << endl;
+            ofs << in+ in+ in+ "Leaf=[" << endl;
+            for (auto& pathway : Context.PathwayList) {
+                ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(" << endl;
+                ofs << in+ in+ in+ in+ in+ "Node='" << pathway->Name << "'," << endl;
+                ofs << in+ in+ in+ in+ in+ "Leaf=[" << endl;
+                for (auto& molecule : pathway->GetMoleculeNames()) {
+                    ofs << in+ in+ in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+                }
+                ofs << in+ in+ in+ in+ in+ "]), " << endl;
+            }
+            ofs << in+ in+ in+ "], " << endl;
+            ofs << in+ in+ "))" << endl;
+        }
+        ofs << endl;
+    }
+
+    ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init, InitTable=Table_Init, InitOrganization=Organization_Init)" << endl;
     ofs << endl;
 
     // TODO: stream run
@@ -365,7 +420,6 @@ void FWriter::SimServer() {
     ofs << in+ in+ "def response_messages():" << endl;
     ofs << endl;
     
-    ofs << in+ in+ in+ "SimUnitTime = 0.2" << endl;
     ofs << in+ in+ in+ "MinElapsedTime = 0.2" << endl;
     ofs << in+ in+ in+ "ElapsedTime = 0" << endl;
     ofs << in+ in+ in+ "PrevTime = datetime.now()" << endl;
@@ -383,9 +437,9 @@ void FWriter::SimServer() {
     ofs << in+ in+ in+ in+ "PrevTime = CurrTime" << endl;
     ofs << endl;
     
-    ofs << in+ in+ in+ in+ "while ElapsedTime >= SimUnitTime:" << endl;
+    ofs << in+ in+ in+ in+ "while ElapsedTime >= self.SimUnitTime:" << endl;
     ofs << in+ in+ in+ in+ in+ "self.SimM.Receptivity(20)" << endl;
-    ofs << in+ in+ in+ in+ in+ "ElapsedTime -= SimUnitTime" << endl;
+    ofs << in+ in+ in+ in+ in+ "ElapsedTime -= self.SimUnitTime" << endl;
     ofs << endl;
     
     ofs << in+ in+ in+ in+ "CurrentSimStep = self.SimM.GetSimStep()" << endl;
@@ -616,6 +670,15 @@ void FWriter::SimServer() {
     ofs << in+ in+ "return lccsimulation_pb2.MControlSimulationResponse()" << endl;
     ofs << endl;
         
+    ofs << in+ "def ChangeSimulationSpeed(self, request, context):" << endl;
+    ofs << in+ in+ "self.ChangeSimUnitTime(request.SimulationSpeed)" << endl;
+    ofs << endl;
+
+    ofs << in+ "def ChangeSimUnitTime(self, Input):" << endl;
+    ofs << in+ in+ "if Input >= 0.2 and Input < 1:" << endl;
+    ofs << in+ in+ in+ "self.SimUnitTime = Input" << endl;
+    ofs << endl;
+
     ofs << in+ "def GetStaticPlotData(self, request, context):" << endl;
     ofs << in+ in+ "print('sending StaticPlotData: ', end='')" << endl;
     ofs << in+ in+ "Title = ''" << endl;
@@ -670,6 +733,10 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(Context.PathwayList[i]->GetMoleculeNames()) << "]" << endl;
             ofs << in+ in+ in+ "LineData, YRange = construct_plotdata(MolNames)" << endl;
         }
+    } else {
+        ofs << in+ in+ "if False:   # This appear when there is no pathway in the system" << endl;
+        ofs << in+ in+ in+ "pass" << endl;
+        ofs << endl;
     }
 
     // Individual Molecules
@@ -746,6 +813,10 @@ void FWriter::SimServer() {
             ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
             ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames)" << endl;
         }
+    } else {
+        ofs << in+ in+ "if False:   # This appear when there is no pathway in the system" << endl;
+        ofs << in+ in+ in+ "pass" << endl;
+        ofs << endl;
     }
 
     // Individual Molecules

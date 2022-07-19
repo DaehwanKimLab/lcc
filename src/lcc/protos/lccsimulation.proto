@@ -47,8 +47,14 @@ service LCCSimulation
     rpc Pause       (MEmpty) returns (MControlSimulationResponse);
     rpc Stop        (MEmpty) returns (MControlSimulationResponse);
 
+    rpc ChangeSimulationSpeed (MControlSimulationResponse) returns (MControlSimulationResponse);
+
     rpc GetStaticPlotData (MStaticPlotRequest) returns (MStaticPlotResponse);
     rpc GetStaticTableData (MStaticTableRequest) returns (MStaticTableResponse);
+}
+
+message MControlSimulationRequest {
+    float SimulationSpeed = 1;
 }
 
 message MInitData
@@ -59,6 +65,7 @@ message MInitData
     repeated MIdx InitIdx = 4;
     repeated MPlotPreset InitPlot = 5;
     repeated MTablePreset InitTable = 6;
+    repeated MOrganization InitOrganization = 7;
 }
 
 message MRunData
@@ -154,6 +161,12 @@ message MPlotPreset
 message MTablePreset
 {
     repeated string Identifier = 1;
+}
+
+message MOrganization
+{
+    string Node = 1;
+    repeated MOrganization Leaf = 2;
 }
 
 // State
