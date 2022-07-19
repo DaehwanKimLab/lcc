@@ -363,30 +363,52 @@ void FWriter::SimServer() {
     ofs << in+ in+ "# Organization Init Data" << endl;
     ofs << in+ in+ "Organization_Init = []" << endl;
     ofs << endl;
-
     //std::vector<std::string> List_Organism, List_Pathway, List_Molecules;
 
     // hardcoded for ecoli code
     if (!Organisms.empty()) {
-        ofs << in+ in+ "# User defined table inputs" << endl;
         for (auto& organism : Organisms) {
             ofs << in+ in+ "Organization_Init.append(lccsimulation_pb2.MOrganization(" << endl;
             ofs << in+ in+ in+ "Node='" << organism->Name << "', " << endl;
             ofs << in+ in+ in+ "Leaf=[" << endl;
-            for (auto& pathway : Context.PathwayList) {
-                ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(" << endl;
-                ofs << in+ in+ in+ in+ in+ "Node='" << pathway->Name << "'," << endl;
-                ofs << in+ in+ in+ in+ in+ "Leaf=[" << endl;
-                for (auto& molecule : pathway->GetMoleculeNames()) {
-                    ofs << in+ in+ in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+
+            if (!Context.PathwayList.empty()){
+                for (auto& pathway : Context.PathwayList) {
+                    ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(" << endl;
+                    ofs << in+ in+ in+ in+ in+ "Node='" << pathway->Name << "'," << endl;
+                    ofs << in+ in+ in+ in+ in+ "Leaf=[" << endl;
+                    for (auto& molecule : pathway->GetMoleculeNames()) {
+                        ofs << in+ in+ in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+                    }
+                    ofs << in+ in+ in+ in+ in+ "]), " << endl;
                 }
-                ofs << in+ in+ in+ in+ in+ "]), " << endl;
+                ofs << in+ in+ in+ "], " << endl;
             }
-            ofs << in+ in+ in+ "], " << endl;
+            else {
+                for (auto& molecule : Context.MoleculeList) {
+                    if (molecule->Name == "Pseudo") {
+                        continue;
+                    }
+                        ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule->Name << "', Leaf=[]), " << endl;
+                    }
+                ofs << in+ in+ in+ "], " << endl;
+            }
             ofs << in+ in+ "))" << endl;
-        }
+        } 
         ofs << endl;
+    } else {
+        ofs << in+ in+ "Organization_Init.append(lccsimulation_pb2.MOrganization(" << endl;
+        ofs << in+ in+ in+ "Node='Molecules', " << endl;
+        ofs << in+ in+ in+ "Leaf=[" << endl;
+        for (auto& molecule : Context.MoleculeList) {
+            if (molecule->Name == "Pseudo") {
+                continue;
+            }
+            ofs << in+ in+ in+ in+ "lccsimulation_pb2.MOrganization(Node='" << molecule << "', Leaf=[]), " << endl;
+        }
+        ofs << in+ in+ in+ "])), " << endl;
     }
+        
 
     ofs << in+ in+ "return lccsimulation_pb2.MInitData(InitObjects=InitVisObjects, InitDNA=DNA_Init, InitName=Name_Init, InitIdx=Idx_Init, InitPlot=Plot_Init, InitTable=Table_Init, InitOrganization=Organization_Init)" << endl;
     ofs << endl;
