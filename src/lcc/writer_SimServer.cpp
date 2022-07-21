@@ -261,7 +261,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
         ofs << in+ in+ "Positions = []" << endl;
         ofs << in+ in+ "for pos in self.State.Pos_Ref:" << endl;
         ofs << in+ in+ in+ "pos_temp = DNAScale * (pos - pos_avg)" << endl; // temporary code for visualization
-        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos_temp[0] * PosScale, Y=pos_temp[1] * PosScale, Z=pos_temp[2] * PosScale))" << endl;
+        ofs << in+ in+ in+ "Positions.append(lccsimulation_pb2.MVector3(X=pos_temp[0], Y=pos_temp[1], Z=pos_temp[2]))" << endl;
         ofs << endl;
         ofs << in+ in+ "DNA_Positions = lccsimulation_pb2.MDNA_PositionData(" << endl;
         ofs << in+ in+ in+ "Points=Positions" << endl;
@@ -826,7 +826,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
     ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, ListOfMolIdx[i] + 2]:" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
-    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row[0]))" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
     ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;
