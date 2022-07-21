@@ -50,7 +50,7 @@ void FWriter::GenerateOrganizationTree(std::ofstream& ofs, std::string Node, std
 
 }
 
-void FWriter::SimServer() {
+void FWriter::SimServer(int Sim_Steps_SteadyState) {
     std::cout << "Generating simulation server..." << std::endl;
 
     // write SimServer.py
@@ -151,11 +151,9 @@ void FWriter::SimServer() {
     ofs << in+ in+ "self.SimM.Initialize()" << endl;
     ofs << endl;
 
-    if (!Context.ThresholdList.empty()) {
-        if (Context.ThresholdList[0].first == "Am") {
-            ofs << in+ in+ "self.SimM.Receptivity_WithoutPolymerase(20000)   # Pass time" << endl;
-            ofs << endl;
-        }
+    if (Sim_Steps_SteadyState != 0) {
+        ofs << in+ in+ "self.SimM.Receptivity_WithoutPolymerase(" << Sim_Steps_SteadyState << ")   # Pass time" << endl;
+        ofs << endl;
     }
 
     ofs << in+ in+ "# Setup Static Objects" << endl;    

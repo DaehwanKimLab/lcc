@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void FWriter::SimVis2D() {
+void FWriter::SimVis2D(int Sim_Steps_SteadyState) {
     std::cout << "Generating 2D Visualization module..." << std::endl;
 
     // write SimVis2D.py
@@ -820,10 +820,8 @@ void FWriter::SimVis2D() {
                 for (auto& OrganismName : OrgNames) {
                     ofs << in+ OrganismName << ".Initialize()" << endl;
             //        ofs << "# ";
-                    if (!Context.ThresholdList.empty()) {
-                        if (Context.ThresholdList[0].first == "Am") {
-                            ofs << in+ OrganismName << ".Receptivity_WithoutPolymerase(20000)   # Pass time" << endl;
-                        }
+                    if (Sim_Steps_SteadyState != 0) {
+                        ofs << in+ OrganismName << ".Receptivity_WithoutPolymerase(" << Sim_Steps_SteadyState << ")   # Pass time" << endl;
                     }
                 }
                 ofs << endl;

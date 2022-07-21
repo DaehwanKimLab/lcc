@@ -96,8 +96,8 @@ public:
     void SimExecutor();
     void SimState(int Map_Width, int Map_Height);
     void SimModule(int Sim_Steps, int Sim_Resolution);
-    void SimVis2D();
-    void SimServer();
+    void SimVis2D(int Sim_Steps_SteadyState);
+    void SimServer(int Sim_Steps_SteadyState);
 
 };
 
