@@ -795,7 +795,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ "Rows = []" << endl;
     ofs << in+ in+ "for row in self.DataManager.DataBuffer[:, 0]:" << endl;
     ofs << in+ in+ in+ "Value = Any()" << endl;
-    ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row[0]))))" << endl;
+    ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
     ofs << in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;
         
