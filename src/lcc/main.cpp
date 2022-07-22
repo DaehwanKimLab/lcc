@@ -993,6 +993,7 @@ void TraversalNode_Core(NNode * node)
         if (DeclStmt->Type == "flagellum") {
             std::string Name_Motility = DeclStmt->Id.Name;
             std::vector<std::pair<std::string, float>> Thresholds;
+            float Speed = 10;
 
             if (DeclStmt->Initializer) {
                 auto Inits = dynamic_cast<const NInitializerExpression *>(DeclStmt->Initializer.get());
@@ -1008,6 +1009,27 @@ void TraversalNode_Core(NNode * node)
                     } else if (Utils::is_class_of<NConstantExpression, NExpression>(Exp.get())) {
                         auto ConstExp = dynamic_pointer_cast<NConstantExpression>(Exp);
                         ThresholdValue = ConstExp->EvaluateInFloat();
+                    } else if (Utils::is_class_of<NAExpression, NExpression>(Exp.get())) {
+                        auto AExpression = dynamic_pointer_cast<NAExpression>(Exp);
+                        if (AExpression->Oper == T_ASSIGN) {
+                            std::string Name;
+                            float Amount = Float_Init;
+                            
+                            if (Utils::is_class_of<const NVariableExpression, const NExpression>(AExpression->OpA.get())) {
+                                const auto& VarExp = dynamic_pointer_cast<const NVariableExpression>(AExpression->OpA);
+                                // parsing VarExp (may be made into a function in the future)
+                                Name = VarExp->GetName();
+                            }
+                            if (Utils::is_class_of<const NConstantExpression, const NExpression>(AExpression->OpB.get())) {
+                                const auto& VarAssigned = dynamic_pointer_cast<const NConstantExpression>(AExpression->OpB);
+                                Amount = VarAssigned->EvaluateInFloat();
+                            }
+
+                            if (Name == "speed") {
+                                Speed = Amount;
+                            }
+                        } 
+
                     } else {
                         std::cout << "Unsupported expression found in: " << Name_Motility;
                     }
@@ -1018,7 +1040,7 @@ void TraversalNode_Core(NNode * node)
                 Thresholds.push_back(Threshold);
             }
 
-            FMotility * NewMotility = new FSwim(Name_Motility, Thresholds);
+            FMotility * NewMotility = new FSwim(Name_Motility, Thresholds, Speed);
             if (Option.bDebug) { NewMotility->Print(os); }
             Context.AddToMotilityList(NewMotility);
 

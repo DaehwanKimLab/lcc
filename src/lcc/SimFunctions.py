@@ -360,21 +360,21 @@ def BilinearExtrapolation(Distribution, X, Y, Value):
     return Distribution
 
 # Temporary chemotaxis simulation functions. 
-def BacterialChemotaxis(Evaluations, X, Y, Angle):
+def BacterialChemotaxis(Evaluations, X, Y, Angle, Distance_Run=15, Distance_Tumble=5):
     # optimize the following code into additions and subtractions
     Decision = np.any(Evaluations, axis=0)
-    X_Run, Y_Run, Angle_Run  = Chemotaxis_Run(X, Y, Angle)
-    X_Tumble, Y_Tumble, Angle_Tumble = Chemotaxis_Tumble(X, Y, Angle)
+    X_Run, Y_Run, Angle_Run  = Chemotaxis_Run(X, Y, Angle, Distance_Run)
+    X_Tumble, Y_Tumble, Angle_Tumble = Chemotaxis_Tumble(X, Y, Angle, Distance_Tumble)
     X_New = np.where(Decision, X_Run, X_Tumble)
     Y_New = np.where(Decision, Y_Run, Y_Tumble)
     Angle_New = np.where(Decision, Angle_Run, Angle_Tumble)
     return X_New, Y_New, Angle_New
 
-def Chemotaxis_Run(X, Y, Angle, Distance = 15):
+def Chemotaxis_Run(X, Y, Angle, Distance):
     dX, dY = Displacement_2D(Distance, Angle)
     return X + dX, Y + dY, Angle
 
-def Chemotaxis_Tumble(X, Y, Angle, Distance = 5):
+def Chemotaxis_Tumble(X, Y, Angle, Distance):
     dX, dY = Displacement_2D(Distance, Angle)
     NewAngle = GetRandomAngle(Angle.shape)
     return X + dX, Y + dY, NewAngle

@@ -840,6 +840,13 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     }
 
     if (!Context.MotilityList.empty()) {
+        // temporary
+        float Speed = 0;
+        for (auto& motility : Context.MotilityList) {
+            Speed = motility->Speed;
+            if (Speed > 0) { break; }
+        }
+
         ofs << in+ "def SpatialLocation(self):" << endl;
         ofs << in+ in+ "Evaluations = self.EvaluateChemotaxisThreshold()" << endl;
         ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(Evaluations, self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle)" << endl;

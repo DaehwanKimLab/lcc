@@ -943,15 +943,21 @@ public:
 class FMotility {
 public:
     std::string Name;
+    float Speed;
+
 
     FMotility() {}
     virtual ~FMotility() {}
 
     FMotility(std::string InName) : Name(InName) {}
 
+    FMotility(std::string InName, float InSpeed) : Name(InName), Speed(InSpeed) {}
+
     virtual void Print(std::ostream& os) {
         os << "[Motility]" ;
         os << "  Name: " << Name;
+        os << ", Speed: " << Speed;
+        os << std::endl;
     }
 };
 
@@ -964,12 +970,13 @@ public:
     FSwim(std::string InName)
             : FMotility(InName) {}
 
-    FSwim(std::string InName, std::vector<std::pair<std::string, float>> InThresholds)
-            : Thresholds(InThresholds), FMotility(InName) {}
+    FSwim(std::string InName, std::vector<std::pair<std::string, float>> InThresholds, float InSpeed)
+            : Thresholds(InThresholds), FMotility(InName, InSpeed) {}
 
     void Print(std::ostream& os) override {
         os << "[Swim]" ;
         os << " Name: " << Name;
+        os << ", Speed: " << Speed;
         if (!Thresholds.empty()) {
             os << ", Thresholds: ";
             for (int i = 0; i < Thresholds.size(); i++) {
