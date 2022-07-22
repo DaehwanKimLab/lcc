@@ -34,6 +34,7 @@ set(SOURCEFILE
 	writer.cpp
 	writer_SimExecutor.cpp
 	writer_SimState.cpp
+	writer_SimData.cpp
 	writer_SimModule.cpp
 	writer_SimVis2D.cpp
 	writer_SimServer.cpp

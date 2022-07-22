@@ -26,6 +26,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "import csv" << endl;
     ofs << "import SimFunctions as SimF" << endl;
     ofs << "import SimState as SimS" << endl;
+    ofs << "import SimData as SimD" << endl;
     // ofs << "import SimIdx as idx" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
@@ -2183,8 +2184,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
         // Instantiate Objects
         ofs << in+ "State = SimS.FState()" << endl;
-        ofs << in+ "Data = SimS.FDataset()" << endl;
-        ofs << in+ "DataManager = SimS.FDataManager()" << endl;
+        ofs << in+ "Data = SimD.FDataset()" << endl;
+        ofs << in+ "DataManager = SimD.FDataManager()" << endl;
         ofs << in+ "Simulation = FSimulation(State, Data, DataManager)" << endl;
         ofs << endl;
 

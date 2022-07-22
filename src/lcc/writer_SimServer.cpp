@@ -65,6 +65,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << "import SimFunctions as SimF" << endl;
     //ofs << "import SimVis2D as SimV" << endl;
     ofs << "import SimState as SimS" << endl;
+    ofs << "import SimData as SimD" << endl;
     ofs << "import numpy as np" << endl;
     ofs << "from datetime import datetime" << endl;
     ofs << "import time" << endl;
@@ -143,8 +144,8 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ "print('initializing')" << endl;
     ofs << in+ in+ "# Load model" << endl;
     ofs << in+ in+ "self.State = SimS.FState()" << endl;
-    ofs << in+ in+ "self.Data = SimS.FDataset()" << endl;
-    ofs << in+ in+ "self.DataManager = SimS.FDataManager()" << endl;
+    ofs << in+ in+ "self.Data = SimD.FDataset()" << endl;
+    ofs << in+ in+ "self.DataManager = SimD.FDataManager()" << endl;
     ofs << in+ in+ "self.SimM = SimModule.FSimulation(self.State, self.Data, self.DataManager)" << endl;
     ofs << endl;
     ofs << in+ in+ "# Initialize model" << endl;
@@ -306,8 +307,8 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ in+ "nth_protein_or_mRNA = 0" << endl;
     ofs << in+ in+ in+ "for i in range(Idx_Genes.shape[0]):" << endl;
     ofs << in+ in+ in+ in+ "idx_gene = Idx_Genes[i]" << endl;
-    ofs << in+ in+ in+ in + "idx_rna = Idx_RNAs[i]" << endl;
-    ofs << in+ in+ in+ in + "self.Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
+    ofs << in+ in+ in+ in+ "idx_rna = Idx_RNAs[i]" << endl;
+    ofs << in+ in+ in+ in+ "self.Idx_Gene2RNA[idx_gene] = idx_rna" << endl;
     ofs << endl;
     ofs << in+ in+ in+ in+ "idx_protein = -1   # -1 for non-coding genes (only generates non-coding type RNA (not mRNA), hence no protein)" << endl;
     ofs << in+ in+ in+ in+ "if idx_rna in Idx_mRNAs:" << endl;
@@ -708,9 +709,10 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
 
     ofs << in+ "def GetStaticPlotData(self, request, context):" << endl;
     ofs << in+ in+ "print('sending StaticPlotData: ', end='')" << endl;
+    ofs << in+ in+ "Data = np.array(self.DataManager.DataBuffer)" << endl;
     ofs << in+ in+ "Title = ''" << endl;
     ofs << in+ in+ "# Time" << endl;
-    ofs << in+ in+ "SimTimeStamps = self.DataManager.DataBuffer[:, 0]" << endl;
+    ofs << in+ in+ "SimTimeStamps = Data[:, 0]" << endl;
     ofs << in+ in+ "XRange = lccsimulation_pb2.MVector2(X=0, Y=SimTimeStamps[-1])" << endl;
     ofs << endl;
 
@@ -739,7 +741,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ in+ in+ in+ "return LineData, YRange" << endl;
     ofs << endl;
     ofs << in+ in+ in+ in+ "for i in range(len(ListOfMolNames)):" << endl;
-    ofs << in+ in+ in+ in+ in+ "MolCounts = self.DataManager.DataBuffer[:, ListOfMolIdx[i] + 2]" << endl;
+    ofs << in+ in+ in+ in+ in+ "MolCounts = Data[:, ListOfMolIdx[i] + 2]" << endl;
     ofs << in+ in+ in+ in+ in+ "LineData_Single = lccsimulation_pb2.MLineData(" << endl;
     ofs << in+ in+ in+ in+ in+ in+ "Label=ListOfMolNames[i]," << endl;
     ofs << in+ in+ in+ in+ in+ in+ "# Color=," << endl;
@@ -786,6 +788,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
 
     ofs << in+ "def GetStaticTableData(self, request, context):" << endl;
     ofs << in+ in+ "print('sending StaticTableData: ', end='')" << endl;
+    ofs << in+ in+ "Data = np.array(self.DataManager.DataBuffer)" << endl;
     ofs << in+ in+ "Title = ''" << endl;
     ofs << in+ in+ "Columns = []" << endl;
     ofs << endl;
@@ -793,7 +796,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ "# Add Time Column" << endl;
     ofs << in+ in+ "Header = 'Time'" << endl;
     ofs << in+ in+ "Rows = []" << endl;
-    ofs << in+ in+ "for row in self.DataManager.DataBuffer[:, 0]:" << endl;
+    ofs << in+ in+ "for row in Data[:, 0]:" << endl;
     ofs << in+ in+ in+ "Value = Any()" << endl;
     ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
     ofs << in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
@@ -814,7 +817,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ in+ "if len(ListOfMolNames) == 0:" << endl;
     ofs << in+ in+ in+ in+ "Header = 'Error'" << endl;
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
-    ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, 0]:   " << endl;
+    ofs << in+ in+ in+ in+ "for row in Data[:, 0]:   " << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=0))" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
@@ -824,7 +827,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << in+ in+ in+ "for i in range(len(ListOfMolNames)):" << endl;
     ofs << in+ in+ in+ in+ "Header = ListOfMolNames[i]" << endl;
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
-    ofs << in+ in+ in+ in+ "for row in self.DataManager.DataBuffer[:, ListOfMolIdx[i] + 2]:" << endl;
+    ofs << in+ in+ in+ in+ "for row in Data[:, ListOfMolIdx[i] + 2]:" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row[0]))" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;

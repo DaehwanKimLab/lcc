@@ -95,6 +95,7 @@ public:
     void SimIdx();  // to store long arrays to call from SimModule
     void SimExecutor();
     void SimState(int Map_Width, int Map_Height);
+    void SimData();
     void SimModule(int Sim_Steps, int Sim_Resolution);
     void SimVis2D(int Sim_Steps_SteadyState);
     void SimServer(int Sim_Steps_SteadyState);

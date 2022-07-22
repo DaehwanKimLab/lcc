@@ -1431,6 +1431,9 @@ int main(int argc, char *argv[])
         Writer.SimState(Map_Width, Map_Height);
         os << Option.SimStateFile << endl;
 
+        Writer.SimData();
+        os << Option.SimDataFile << endl;
+
         Writer.SimModule(Sim_Steps, Sim_Resolution);
         os << Option.SimModuleFile << endl;
 
