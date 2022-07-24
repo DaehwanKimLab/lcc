@@ -1438,6 +1438,9 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
     ofs << in+ "def BuildingBlockConsumption(self, Freq, N_Elongated_PerSpecies):" << endl;
     ofs << in+ in+ "Raw = np.array(SimF.DetermineAmountOfBuildingBlocks(Freq, N_Elongated_PerSpecies))" << endl;
+    if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
+        ofs << in+ in+ "Raw *= 1e10   # compensatory scaling for volume of 1 vs. 0.7 um3 when with other biochemical reactions" << endl;
+    }
     ofs << in+ in+ "Rounded = np.around(Raw)" << endl;
     ofs << in+ in+ "return Rounded" << endl;
     ofs << endl;
