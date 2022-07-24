@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void FWriter::SimVis2D(int Sim_Steps_SteadyState) {
+void FWriter::SimVis2D(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     std::cout << "Generating 2D Visualization module..." << std::endl;
 
     // write SimVis2D.py
@@ -900,7 +900,7 @@ void FWriter::SimVis2D(int Sim_Steps_SteadyState) {
     ofs << endl;
 
     for (auto& OrganismName : OrgNames) {
-        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(20)" << endl;
+        ofs << in+ in+ in+ in+ OrganismName << ".Receptivity(" << Sim_Receptivity << ")" << endl;
         ofs << in+ in+ in+ in+ OrganismName << ".SetPosition(SimM.GetPositionXYAngleByName('" << OrganismName << "'))" << endl;
         if (!DNAPs.empty()) {
             ofs << in+ in+ in+ in+ OrganismName << ".SetReplicationCompletionRate(SimM.GetReplicationCompletionRateByCompartmentName('" << OrganismName << "'))" << endl;

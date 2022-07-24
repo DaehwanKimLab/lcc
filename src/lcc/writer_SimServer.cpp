@@ -50,7 +50,7 @@ void FWriter::GenerateOrganizationTree(std::ofstream& ofs, std::string Node, std
 
 }
 
-void FWriter::SimServer(int Sim_Steps_SteadyState) {
+void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     std::cout << "Generating simulation server..." << std::endl;
 
     // write SimServer.py
@@ -466,7 +466,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState) {
     ofs << endl;
     
     ofs << in+ in+ in+ in+ "while ElapsedTime >= self.SimUnitTime:" << endl;
-    ofs << in+ in+ in+ in+ in+ "self.SimM.Receptivity(20)" << endl;
+    ofs << in+ in+ in+ in+ in+ "self.SimM.Receptivity(" << Sim_Receptivity << ")" << endl;
     ofs << in+ in+ in+ in+ in+ "ElapsedTime -= self.SimUnitTime" << endl;
     ofs << endl;
     

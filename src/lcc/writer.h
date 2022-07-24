@@ -97,8 +97,8 @@ public:
     void SimState(int Map_Width, int Map_Height);
     void SimData();
     void SimModule(int Sim_Steps, int Sim_Resolution);
-    void SimVis2D(int Sim_Steps_SteadyState);
-    void SimServer(int Sim_Steps_SteadyState);
+    void SimVis2D(int Sim_Steps_SteadyState, int Sim_Receptivity);
+    void SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity);
 
 };
 

@@ -53,6 +53,7 @@ int Int_Init = Numbers::GetIntDefault(); // random initialized int
 int Sim_Steps = 1000;
 int Sim_Resolution = 100;
 int Sim_Steps_SteadyState = 0;
+int Sim_Receptivity = 20;
 
 // temporary spatial simulation map control parameters
 int Map_Width = 1200;
@@ -520,6 +521,9 @@ void ParseCountLocation_AExpression(const NAExpression *AExpression, int Control
     } else if (Name == "SimSteps_SteadyState") {
         Sim_Steps_SteadyState = static_cast<int>(Amount);
         os << "\n# Temp Sim Control: SimSteps before SteadyState = " << Sim_Steps_SteadyState << endl;
+    } else if (Name == "SimReceptivity") {
+        Sim_Receptivity = static_cast<int>(Amount);
+        os << "\n# Temp Sim Control: SimReceptivity = " << Sim_Receptivity << endl;
     // temporary simulation control system
     } else if (Name == "Map_Width") {
         Map_Width = static_cast<int>(Amount);
@@ -1438,9 +1442,9 @@ int main(int argc, char *argv[])
         os << Option.SimModuleFile << endl;
 
         if (!Context.LocationList.empty()) {
-            Writer.SimVis2D(Sim_Steps_SteadyState);
+            Writer.SimVis2D(Sim_Steps_SteadyState, Sim_Receptivity);
             os << Option.SimVis2DFile << endl;
-            Writer.SimServer(Sim_Steps_SteadyState);
+            Writer.SimServer(Sim_Steps_SteadyState, Sim_Receptivity);
             os << Option.SimServerFile << endl;
         }
 
