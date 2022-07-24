@@ -35,8 +35,14 @@ def PlotData(Dataset):
     Legend = Dataset[0]
     Data = Dataset[1:]
 
+    DataCap = 40
+    if len(Legend) > DataCap:
+        Legend = Legend[:DataCap]
+    else:
+        DataCap = len(Legend)
+
     for i, Row in enumerate(Data):
-        Data[i] = [float(NumStr) for NumStr in Row]
+        Data[i] = [float(NumStr) for NumStr in Row[:DataCap]]
 
     Data_Transposed = np.array(Data).transpose()
     Data_Time = Data_Transposed[0:1]
