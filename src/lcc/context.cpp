@@ -287,7 +287,21 @@ void FCompilerContext::AddToContainerList(FContainer *NewContainer)
 
 void FCompilerContext::AddToCountList(FCount *NewCount)
 {   // special: this one does not check redundant entries
-    CountList.push_back(NewCount);
+    bool Addition = true;
+    // std::cout<< "Checking if " << NewCount->Name << " Exists in CountList" << std::endl;
+    if (NewCount->Name == "Pseudo") {
+        for (auto& count : CountList) {
+            if (count->Name == "Pseudo") {
+                Addition = false;
+                std::cout << "Pseudo Molecule exists in the system" << std::endl;
+                break;
+            }
+        }
+    }
+
+    if (Addition) {
+        CountList.push_back(NewCount);
+    }
 //        std::cout << "Count "<< NewCount->Name << " has been added to the system" << std::endl;
 }
 
@@ -666,7 +680,10 @@ void FCompilerContext::MakeListsFromMotilityList()
         if (Utils::is_class_of<FSwim, FMotility>(motility)) {
             auto swim = dynamic_cast<FSwim *>(motility);
             for (auto threshold : swim->Thresholds) {
-                ThresholdList.push_back(threshold);
+                if (std::find(ThresholdList.begin(), ThresholdList.end(), threshold) == ThresholdList.end()) {
+                    std::cout << "[Threshold] " << threshold.first << " : " << threshold.second << std::endl;
+                    ThresholdList.push_back(threshold);
+                }
             }
         }
     }
