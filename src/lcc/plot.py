@@ -274,16 +274,42 @@ def Plot_Dynamics(Title, Time, Data, Legend):
 
     assert len(X) == Y.shape[-1]
 
+    # Data display filtering
+    IdxToDelete = list()
+    for i in range(len(Legend)):
+        if Legend[i] == "Pseudo":
+            IdxToDelete.append(i)
+        if Legend[i] == "H2O" or Legend[i] == "CO2":
+            IdxToDelete.append(i)
+
+    if IdxToDelete:
+        Legend = [j for i, j in enumerate(Legend) if i not in IdxToDelete]
+        Y = np.delete(Y, np.array(IdxToDelete), axis=0)
+
+    unit_txt = 'a.u.'
+
+    array_unit = {
+        'nM' : 1e-9,
+        'uM' : 1e-6,
+        'mM' : 1e-3
+    }
+
+    for utxt, uval in array_unit.items():
+        if np.any(Y > uval):
+            print('Unit has been set to', utxt)
+            unit_txt = utxt
+
+    if unit_txt in array_unit:
+        Y = Y / NA / array_unit[unit_txt]
+        print('Final unit:', unit_txt)
+
     ax = plt.axes(xlim=(0, X.max()), ylim=(0, Y.max() * 1.2))
 
-    ax.set_ylabel('Amount (a.u.)')
+    ax.set_ylabel('Amount (' + unit_txt + ')')
     ax.set_xlabel('Time (s)')
     ax.set_title(Title + " over Time")
 
     for i in range(len(Legend)):
-        if Legend[i] == "Pseudo":
-            continue
-
         line, = ax.plot(X, Y[i], label=Legend[i])
         ax.legend(loc='upper left')
         if len(Legend) > 4:
