@@ -850,7 +850,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
         ofs << in+ "def SpatialLocation(self):" << endl;
         ofs << in+ in+ "Evaluations = self.EvaluateChemotaxisThreshold()" << endl;
-        ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(Evaluations, self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle)" << endl;
+        ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.BacterialChemotaxis(Evaluations, self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, Distance_Run=" << int(Speed) << ", Distance_Tumble=" << int(Speed / 3) << ")" << endl;
         ofs << in+ in+ "self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle = SimF.CorrectOutOfBounds(self.State.Pos_X, self.State.Pos_Y, self.State.Pos_Angle, self.State.Dimension_X, self.State.Dimension_Y)" << endl;
         ofs << endl;
     }

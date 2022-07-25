@@ -997,7 +997,7 @@ void TraversalNode_Core(NNode * node)
         if (DeclStmt->Type == "flagellum") {
             std::string Name_Motility = DeclStmt->Id.Name;
             std::vector<std::pair<std::string, float>> Thresholds;
-            float Speed = 10;
+            float Speed = 15;
 
             if (DeclStmt->Initializer) {
                 auto Inits = dynamic_cast<const NInitializerExpression *>(DeclStmt->Initializer.get());
