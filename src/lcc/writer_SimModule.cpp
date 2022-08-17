@@ -1537,6 +1537,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
 
         ofs << in+ in+ "# Elongation" << endl;
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
+        
+        if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
+            ofs << in+ in+ "dLength *= 100   # temporary " << endl;
+        }
+
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength * Dir_Pol, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrectionWithDirection(Pos_Pol_Elongated, Pos_Pol_End, Dir_Pol)" << endl;
         ofs << endl;
