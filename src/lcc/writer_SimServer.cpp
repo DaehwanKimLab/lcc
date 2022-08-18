@@ -803,7 +803,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << endl;
         
     ofs << in+ in+ "def construct_tabledata(InListOfMolNames):" << endl;
-    ofs << in+ in+ in+ "Columns = []" << endl;
+    //ofs << in+ in+ in+ "Columns = []" << endl;
     ofs << in+ in+ in+ "ListOfMolNames = []" << endl;
     ofs << in+ in+ in+ "ListOfMolIdx = []" << endl;
     ofs << in+ in+ in+ "for molecule_name in InListOfMolNames:" << endl;
@@ -827,9 +827,10 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ "for i in range(len(ListOfMolNames)):" << endl;
     ofs << in+ in+ in+ in+ "Header = ListOfMolNames[i]" << endl;
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
-    ofs << in+ in+ in+ in+ "for row in Data[:, ListOfMolIdx[i] + 2]:" << endl;
+    ofs << in+ in+ in+ in+ "for j, row in enumerate(Data[:, ListOfMolIdx[i] + 2]):" << endl;
+    ofs << in+ in+ in+ in+ in+ "Volume = Data[j, 1]" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
-    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row[0]))" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row[0] / " << Utils::SciFloat2Str(Numbers::GetAvogadro()) << " / Volume ))   # Molecular concentration" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
     ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;

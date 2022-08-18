@@ -917,8 +917,9 @@ void FWriter::SimVis2D(int Sim_Steps_SteadyState, int Sim_Receptivity) {
         if (!Context.ThresholdList.empty()) {
             if (Context.ThresholdList[0].first == "Am") {
                 for (auto& OrganismName : OrgNames) {
-                    ofs << in+ in+ "if len(" << OrganismName << ".Trajectory[0]) =! " << OrganismName << ".X.shape[0]:" << endl;
+                    ofs << in+ in+ "if len(" << OrganismName << ".Trajectory) != " << OrganismName << ".X.shape[0]:" << endl;
                     ofs << in+ in+ in+ OrganismName << ".TrajectorySwitch = False" << endl;
+                    ofs << endl;
 
                     ofs << in+ in+ "if " << OrganismName << ".TrajectorySwitch:" << endl;
                     ofs << in+ in+ in+ OrganismName << ".AddToTrajectory()" << endl;

@@ -25,8 +25,6 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
     ofs << "import SimFunctions as SimF" << endl;
-    ofs << "import SimState as SimS" << endl;
-    ofs << "import SimData as SimD" << endl;
     // ofs << "import SimIdx as idx" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
@@ -1354,7 +1352,15 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << endl;
 
     ofs << in+ "def UpdateVolume(self):" << endl;
-    ofs << in+ in+ "self.State.Vol = self.State.VolInit * (1 + np.reshape(self.GetReplicationCompletionRate(), [-1, 1]))" << endl;
+
+    // temporary: for disabling volume change for demo
+    if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
+        ofs << in+ in+ "pass" << endl;
+    } 
+
+    else {
+        ofs << in+ in+ "self.State.Vol = self.State.VolInit * (1 + np.reshape(self.GetReplicationCompletionRate(), [-1, 1]))" << endl;
+    }
     ofs << endl;
 
     ofs << in+ "def Rescale(self, X, Y):" << endl;
@@ -1539,7 +1545,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
         
         if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
-            ofs << in+ in+ "dLength *= 100   # temporary " << endl;
+            ofs << in+ in+ "dLength *= 50   # temporary scaling to run with biochemical reactions" << endl;
         }
 
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength * Dir_Pol, Pos_Pol)" << endl;
@@ -1713,6 +1719,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         ofs << in+ "def Transcription_Elongation(self, Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Dir_Pol, Count_NascentTarget, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
         //    ofs << in+ in+ "dLength = np.matmul(SMatrix,Rate)
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate)   # this is not necessarily true based on the reaction input" << endl;
+                        
+        if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
+            ofs << in+ in+ "dLength *= 4   # temporary scaling to run with biochemical reactions" << endl;
+        }
+                
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength * Dir_Pol, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrectionWithDirection(Pos_Pol_Elongated, Pos_Pol_End, Dir_Pol)" << endl;
         ofs << in+ in+ "N_NT_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol * Dir_Pol" << endl;
@@ -1863,6 +1874,11 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         
         ofs << in+ "def Translation_Elongation(self, Pos_Pol, Pos_Pol_End, Pos_Pol_Template, Count_NascentTarget, Rate, Freq_BB, Idx_PolSub, Idx_PolBB):" << endl;
         ofs << in+ in+ "dLength = self.ApplySimTimeResolution(Rate * 3)   # Account for codon (3nt procession of pol on mRNA template vs. 1aa polypeptides synthesized)" << endl;
+        
+        if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
+            ofs << in+ in+ "dLength *= 4   # temporary scaling to run with biochemical reactions" << endl;
+        }
+                
         ofs << in+ in+ "Pos_Pol_Elongated = np.where(Pos_Pol >= 0, Pos_Pol + dLength, Pos_Pol)" << endl;
         ofs << in+ in+ "Pos_Pol_Trimmed = self.OverElongationCorrection(Pos_Pol_Elongated, Pos_Pol_End)" << endl;
         ofs << in+ in+ "N_AA_Elongated_PerPol = Pos_Pol_Trimmed - Pos_Pol" << endl;
@@ -1968,20 +1984,31 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
             ofs << endl;
         }
 
-        ofs << in+ in+ "self.State.Count_All = SimF.DuplicateCells(self.State.Count_All, Idx_DividingCells)" << endl;
-        ofs << in+ in+ "self.State.dCount_All = SimF.DuplicateCells(self.State.dCount_All, Idx_DividingCells)" << endl;
-        ofs << in+ in+ "self.State.Vol = SimF.DuplicateCells(self.State.Vol, Idx_DividingCells)" << endl;
+        // temporary: for keeping molecular quantity the same for demo
+        if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
+            ofs << in+ in+ "# Simple duplication of all cell contents (hardcoded to run proper chemotaxis after cell division)" << endl;
+            ofs << in+ in+ "self.State.Count_All[Idx_DividingCells, self.State.Idx_Template_Replication] = self.State.Count_All[Idx_DividingCells, self.State.Idx_Template_Replication] / 2   # Resets chromosome" << endl;
+            ofs << in+ in+ "self.State.Count_All = SimF.MirrorCells(self.State.Count_All, Idx_DividingCells)   # maintain molecule amounts" << endl;
+            ofs << in+ in+ "self.State.dCount_All = SimF.MirrorCells(self.State.dCount_All, Idx_DividingCells)   # maintain delta molecule amounts" << endl;
+            ofs << in+ in+ "self.State.Vol = SimF.MirrorCells(self.State.Vol, Idx_DividingCells)   # maintain volume" << endl;
+        } 
+        else {
+            ofs << in+ in+ "# Distribution of all cell contents (default)" << endl;
+            ofs << in+ in+ "self.State.Count_All = SimF.SplitCells(self.State.Count_All, Idx_DividingCells)" << endl;
+            ofs << in+ in+ "self.State.dCount_All = SimF.SplitCells(self.State.dCount_All, Idx_DividingCells)" << endl;
+            ofs << in+ in+ "self.State.Vol = SimF.SplitCells(self.State.Vol, Idx_DividingCells)" << endl;
+        }
         ofs << endl;
 
-        ofs << in+ in+ "self.State.Count_Nascent_Chromosome = SimF.DuplicateCells(self.State.Count_Nascent_Chromosome, Idx_DividingCells)" << endl;
-        ofs << in+ in+ "self.State.Count_Nascent_Gene = SimF.DuplicateCells(self.State.Count_Nascent_Gene, Idx_DividingCells)" << endl;
+        ofs << in+ in+ "self.State.Count_Nascent_Chromosome = SimF.SplitCells(self.State.Count_Nascent_Chromosome, Idx_DividingCells)" << endl;
+        ofs << in+ in+ "self.State.Count_Nascent_Gene = SimF.SplitCells(self.State.Count_Nascent_Gene, Idx_DividingCells)" << endl;
         ofs << in+ in+ "self.State.Pos_Pol_Replication = SimF.AddCells(self.State.Pos_Pol_Replication, Idx_DividingCells, -1)" << endl;
         ofs << in+ in+ "self.State.Pos_Pol_End_Replication = SimF.AddCells(self.State.Pos_Pol_End_Replication, Idx_DividingCells, 0)" << endl;
         ofs << in+ in+ "self.State.Pos_Pol_Template_Replication = SimF.AddCells(self.State.Pos_Pol_Template_Replication, Idx_DividingCells, -1)" << endl;
         ofs << in+ in+ "self.State.Dir_Pol_Replication = SimF.AddCells(self.State.Dir_Pol_Replication, Idx_DividingCells, 0)" << endl;
         
         if (!RNAPs.empty()) {
-            ofs << in+ in+ "self.State.Count_Nascent_RNA = SimF.DuplicateCells(self.State.Count_Nascent_RNA, Idx_DividingCells)" << endl;
+            ofs << in+ in+ "self.State.Count_Nascent_RNA = SimF.SplitCells(self.State.Count_Nascent_RNA, Idx_DividingCells)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_Transcription = SimF.AddCells(self.State.Pos_Pol_Transcription, Idx_DividingCells, -1)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_End_Transcription = SimF.AddCells(self.State.Pos_Pol_End_Transcription, Idx_DividingCells, 0)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_Template_Transcription = SimF.AddCells(self.State.Pos_Pol_Template_Transcription, Idx_DividingCells, -1)" << endl;
@@ -1990,7 +2017,7 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         }
 
         if (!Ribosomes.empty()) {
-            ofs << in+ in+ "self.State.Count_Nascent_Protein = SimF.DuplicateCells(self.State.Count_Nascent_Protein, Idx_DividingCells)" << endl;
+            ofs << in+ in+ "self.State.Count_Nascent_Protein = SimF.SplitCells(self.State.Count_Nascent_Protein, Idx_DividingCells)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_Translation = SimF.AddCells(self.State.Pos_Pol_Translation, Idx_DividingCells, -1)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_End_Translation = SimF.AddCells(self.State.Pos_Pol_End_Translation, Idx_DividingCells, 0)" << endl;
             ofs << in+ in+ "self.State.Pos_Pol_Template_Translation = SimF.AddCells(self.State.Pos_Pol_Template_Translation, Idx_DividingCells, -1)" << endl;
