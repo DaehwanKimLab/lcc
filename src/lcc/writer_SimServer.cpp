@@ -166,7 +166,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_PETRI_DISH," << endl;
     ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=100 * PosScale, Y=100 * PosScale, Z=0)," << endl;
     ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
-    ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=self.SimM.State.Dimension_X, Y=self.SimM.State.Dimension_Y, Z=1)," << endl;
+    ofs << in+ in+ in+ in+ "Scale=lccsimulation_pb2.MVector3(X=self.SimM.State.Dimension_X * PosScale, Y=self.SimM.State.Dimension_Y * PosScale, Z=1)," << endl;
     ofs << in+ in+ in+ in+ "Color=Yellow))" << endl;
     ofs << endl;
 
@@ -181,7 +181,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
             ofs << in+ in+ "# " << MolLoc[i]->Name << endl;
             ofs << in+ in+ "for Pos in SimF.InitializeStaticParticles(" << MolLoc[i]->Coord[0] << ", " << MolLoc[i]->Coord[1] << ", Particle_N=5000, Particle_PerLayer=20, Particle_SpreadFactor=1.2):" << endl;
             ofs << in+ in+ in+ "NewObj = lccsimulation_pb2.MVisObjectData(" << endl;
-            ofs << in+ in+ in+ in+ "ID=" << i + 1 << ", " << endl;
+            ofs << in+ in+ in+ in+ "ID=0, " << endl;
             ofs << in+ in+ in+ in+ "ObjType=lccsimulation_pb2.VisObjectType.M_GLUCOSE,   # same as M_SPHERE?" << endl;
             ofs << in+ in+ in+ in+ "Position=lccsimulation_pb2.MVector3(X=Pos[0] * PosScale, Y=Pos[1] * PosScale, Z=0)," << endl;
             ofs << in+ in+ in+ in+ "Rotation=ZeroVec," << endl;
@@ -204,7 +204,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
             ofs << in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << Organism->Name << "')" << endl;
              ofs << in+ in+ "for i in range(len(X)):" << endl;
             ofs << in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i] * PosScale, Y=Y[i] * PosScale, Z=0)" << endl;
-            ofs << in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
+            ofs << in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (-180/np.pi), Z=0)" << endl;
             ofs << in+ in+ in+ "" << endl;
             ofs << in+ in+ in+ "InitVisObjects.append(lccsimulation_pb2.MVisObjectData(" << endl;
             ofs << in+ in+ in+ in+ "ID = i + 1," << endl;
