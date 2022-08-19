@@ -822,7 +822,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ "return Unit, Value_Adjusted" << endl;
     ofs << endl;
 
-    ofs << in+ in+ "def construct_tabledata(InListOfMolNames):" << endl;
+    ofs << in+ in+ "def construct_tabledata(InListOfMolNames, ConcentrationSwitch):" << endl;
     ofs << in+ in+ in+ "ListOfMolNames = []" << endl;
     ofs << in+ in+ in+ "ListOfMolIdx = []" << endl;
     ofs << in+ in+ in+ "for molecule_name in InListOfMolNames:" << endl;
@@ -838,7 +838,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
     ofs << in+ in+ in+ in+ "for row in Data[:, 0]:   " << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
-    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=0))" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableStringRow(Data=str(0)))" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
     ofs << in+ in+ in+ in+ "return Columns" << endl;
     ofs << endl;
@@ -847,17 +847,26 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ in+ "Header = ListOfMolNames[i]" << endl;
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
     ofs << in+ in+ in+ in+ "for j, row in enumerate(Data[:, ListOfMolIdx[i] + 2]):" << endl;
-    ofs << in+ in+ in+ in+ in+ "Volume = Data[j, 1]" << endl;
-    ofs << in+ in+ in+ in+ in+ "Value = row[0] / " << Utils::SciFloat2Str(Numbers::GetAvogadro()) << " / Volume   # Molecular concentration" << endl;
-    ofs << in+ in+ in+ in+ in+ "Unit, Value = GetUnitAndValueAdjustment(Value)" << endl;
+    ofs << in+ in+ in+ in+ in+ "data = FormatValueToStr(row[0])" << endl;
+    ofs << in+ in+ in+ in+ in+ "if ConcentrationSwitch:" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "Volume = Data[j, 1]" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "Conc = row[0] / " << Utils::SciFloat2Str(Numbers::GetAvogadro()) << " / Volume" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "Unit, Conc = GetUnitAndValueAdjustment(Conc)" << endl;
+    ofs << in+ in+ in+ in+ in+ in+ "data = FormatValueToStr(Conc) + Unit" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
-    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableStringRow(Data=FormatValueToStr(Value) + Unit))" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableStringRow(Data=data))" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
     ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;
     ofs << in+ in+ in+ "return Columns" << endl;
     ofs << endl;
-            
+
+    ofs << in+ in+ "ConcentrationSwitch = True" << endl;
+    ofs << in+ in+ "if request.Identifier[0] == '#':   # absolute molecule count request" << endl;
+    ofs << in+ in+ in+ "ConcentrationSwitch = False" << endl;
+    ofs << in+ in+ in+ "request.Identifier = request.Identifier[1:]" << endl;
+    ofs << endl;
+
     if (!Context.PathwayList.empty()) {
         for (int i = 0; i < Context.PathwayList.size(); i++) {
             if (i == 0) { ofs << in+ in+ "if "; }
@@ -868,7 +877,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
             std::vector<std::string> molNames = Context.PathwayList[i]->GetMoleculeNames();
             ofs << in+ in+ in+ "# Add Molecule Columns" << endl;
             ofs << in+ in+ in+ "MolNames = [" << Utils::JoinStr2Str(molNames) << "]" << endl;
-            ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames)" << endl;
+            ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames, ConcentrationSwitch)" << endl;
         }
     } else {
         ofs << in+ in+ "if False:   # This appear when there is no pathway in the system" << endl;
@@ -882,7 +891,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ "MolNames = request.Identifier.replace(',', ' ').replace('  ', ' ').split(' ')" << endl;
     ofs << in+ in+ in+ "for molname in MolNames:" << endl;
     ofs << in+ in+ in+ in+ "Title += molname + ' '" << endl;
-    ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames)" << endl;
+    ofs << in+ in+ in+ "Columns = construct_tabledata(MolNames, ConcentrationSwitch)" << endl;
     ofs << endl;
 
     ofs << in+ in+ "print(Title + '... sent')" << endl;
