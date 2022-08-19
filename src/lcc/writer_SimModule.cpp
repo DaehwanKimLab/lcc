@@ -25,6 +25,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
     ofs << "from datetime import datetime" << endl;
     ofs << "import csv" << endl;
     ofs << "import SimFunctions as SimF" << endl;
+    ofs << "import SimState as SimS" << endl;
+    ofs << "import SimData as SimD" << endl;
     // ofs << "import SimIdx as idx" << endl;
     ofs << "from argparse import ArgumentParser" << endl;
     ofs << endl;
