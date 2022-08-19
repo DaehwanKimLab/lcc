@@ -797,13 +797,32 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ "Header = 'Time'" << endl;
     ofs << in+ in+ "Rows = []" << endl;
     ofs << in+ in+ "for row in Data[:, 0]:" << endl;
-    ofs << in+ in+ in+ "Value = Any()" << endl;
-    ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=Value.Pack(lccsimulation_pb2.MTableNumberRow(Data=row))))" << endl;
+    ofs << in+ in+ in+ "AnyToPush = Any()" << endl;
+    ofs << in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableStringRow(Data=str(row) + 's'))" << endl;
+    ofs << in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
     ofs << in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;
         
+    ofs << in+ in+ "def FormatValueToStr(Value):" << endl;
+    ofs << in+ in+ in+ "if Value < 0.01:" << endl;
+    ofs << in+ in+ in+ in+ "return SimF.SciFloat(Value, InPrecision=2, InExp_digits=2)" << endl;
+    ofs << in+ in+ in+ "else:" << endl;
+    ofs << in+ in+ in+ in+ "return '{:.3f}'.format(Value)" << endl;
+    ofs << endl;
+            
+    ofs << in+ in+ "def GetUnitAndValueAdjustment(Value):" << endl;
+    ofs << in+ in+ in+ "Value_Adjusted = Value" << endl;
+    ofs << in+ in+ in+ "Unit = 'M'" << endl;
+    ofs << in+ in+ in+ "Dict_Units = {'z': 1e-21, 'a': 1e-18, 'f': 1e-15, 'p': 1e-12, 'n': 1e-9, 'u': 1e-6, 'm': 1e-3}" << endl;
+    ofs << in+ in+ in+ "for unit, amount in Dict_Units.items():" << endl;
+    ofs << in+ in+ in+ in+ "if Value < amount:" << endl;
+    ofs << in+ in+ in+ in+ in+ "Value_Adjusted = Value / amount" << endl;
+    ofs << in+ in+ in+ in+ in+ "Unit = unit + Unit" << endl;
+    ofs << in+ in+ in+ in+ in+ "break" << endl;
+    ofs << in+ in+ in+ "return Unit, Value_Adjusted" << endl;
+    ofs << endl;
+
     ofs << in+ in+ "def construct_tabledata(InListOfMolNames):" << endl;
-    //ofs << in+ in+ in+ "Columns = []" << endl;
     ofs << in+ in+ in+ "ListOfMolNames = []" << endl;
     ofs << in+ in+ in+ "ListOfMolIdx = []" << endl;
     ofs << in+ in+ in+ "for molecule_name in InListOfMolNames:" << endl;
@@ -829,8 +848,10 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
     ofs << in+ in+ in+ in+ "Rows = []" << endl;
     ofs << in+ in+ in+ in+ "for j, row in enumerate(Data[:, ListOfMolIdx[i] + 2]):" << endl;
     ofs << in+ in+ in+ in+ in+ "Volume = Data[j, 1]" << endl;
+    ofs << in+ in+ in+ in+ in+ "Value = row[0] / " << Utils::SciFloat2Str(Numbers::GetAvogadro()) << " / Volume   # Molecular concentration" << endl;
+    ofs << in+ in+ in+ in+ in+ "Unit, Value = GetUnitAndValueAdjustment(Value)" << endl;
     ofs << in+ in+ in+ in+ in+ "AnyToPush = Any()" << endl;
-    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableNumberRow(Data=row[0] / " << Utils::SciFloat2Str(Numbers::GetAvogadro()) << " / Volume ))   # Molecular concentration" << endl;
+    ofs << in+ in+ in+ in+ in+ "AnyToPush.Pack(lccsimulation_pb2.MTableStringRow(Data=FormatValueToStr(Value) + Unit))" << endl;
     ofs << in+ in+ in+ in+ in+ "Rows.append(lccsimulation_pb2.MTableRow(Content=AnyToPush))" << endl;
     ofs << in+ in+ in+ in+ "Columns.append(lccsimulation_pb2.MTableColumn(Header=Header, Rows=Rows))" << endl;
     ofs << endl;
