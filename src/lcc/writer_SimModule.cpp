@@ -1990,7 +1990,8 @@ void FWriter::SimModule(int Sim_Steps, int Sim_Resolution)
         if (!Context.GetSubList_MoleculeList("Enzyme").empty()) {
             ofs << in+ in+ "# Simple duplication of all cell contents (hardcoded to run proper chemotaxis after cell division)" << endl;
             ofs << in+ in+ "self.State.Count_All[Idx_DividingCells, self.State.Idx_Template_Replication] = self.State.Count_All[Idx_DividingCells, self.State.Idx_Template_Replication] / 2   # Resets chromosome" << endl;
-            ofs << in+ in+ "self.State.Count_All[Idx_DividingCells, self.State.Idx_Template_Transcription] = 1   # Resets genes" << endl;
+            ofs << in+ in+ "if np.any(bDividingCells) > 0:   # hardcoded" << endl;
+            ofs << in+ in+ in+ "self.State.Count_All[Idx_DividingCells, self.State.Idx_Template_Transcription] = 1   # Resets genes" << endl;
             ofs << in+ in+ "self.State.Count_All = SimF.MirrorCells(self.State.Count_All, Idx_DividingCells)   # maintain molecule amounts" << endl;
             ofs << in+ in+ "self.State.dCount_All = SimF.MirrorCells(self.State.dCount_All, Idx_DividingCells)   # maintain delta molecule amounts" << endl;
             ofs << in+ in+ "self.State.Vol = SimF.MirrorCells(self.State.Vol, Idx_DividingCells)   # maintain volume" << endl;
