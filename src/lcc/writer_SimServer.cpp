@@ -541,7 +541,7 @@ void FWriter::SimServer(int Sim_Steps_SteadyState, int Sim_Receptivity) {
             ofs << in+ in+ in+ in+ "X, Y, Angle = self.SimM.GetPositionXYAngleByName('" << organism->Name << "')" << endl;
             ofs << in+ in+ in+ in+ "for i in range(len(X)):   # i here is an organism ID" << endl;
             ofs << in+ in+ in+ in+ in+ "PosVec = lccsimulation_pb2.MVector3(X=X[i] * PosScale, Y=Y[i] * PosScale, Z=0)" << endl;
-            ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=Angle[i] * (180/np.pi), Z=0)" << endl;
+            ofs << in+ in+ in+ in+ in+ "RotVec = lccsimulation_pb2.MVector3(X=0, Y=-Angle[i] * (180/np.pi), Z=0)" << endl;
             ofs << in+ in+ in+ in+ in+ "GrowthVec = lccsimulation_pb2.MVector3(X=0.2 * (1 + ReplicationCompletionRate[i]), Y=0.2, Z=0.2)" << endl;
             ofs << in+ in+ in+ in+ in+ "ColorVec = GenGreenToRedColor(ReplicationCompletionRate[i])" << endl;
             ofs << endl;
