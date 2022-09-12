@@ -1,0 +1,79 @@
+//@# DNA Replication
+//@
+//@```
+
+petridish P
+{
+    ecoli E
+    {
+        pathway Transcription
+        {
+            polymerase_binding_site promoter;
+            transcription_terminus stop_codon;
+            polymerase rnap(initiation: promoter,
+                            elongation: rna_{n} + nt -->
+                                       rna_{n+1} + ppi,
+                            termination: stop_codon);
+        }
+
+        rnap = 300;
+        ATP = 3mM, CTP = 3mM, GTP = 3mM, UTP = 3mM;
+
+        pathway Translation
+        {
+            ribosome_binding_site rbs1;
+            translation_terminator tt1;
+            polymerase r1(initiation: rbs1,
+                        elongation: peptide_{n} + aa -->
+                                    peptide_{n+1} + H2O,
+                        termination: tt1);
+        }
+
+        r1 = 100;
+        ALA = 1mM, ARG = 1mM, ASN = 1mM, ASP = 1mM, CYS = 1mM, GLT = 1mM, GLN = 1mM;
+        GLY = 1mM, HIS = 1mM, ILE = 1mM, LEU = 1mM, LYS = 1mM, MET = 1mM, PHE = 1mM;
+        PRO = 1mM, SER = 1mM, THR = 1mM, TRP = 1mM, TYR = 1mM, SEL = 1mM, VAL = 1mM;
+
+
+        pathway Chemotaxis
+        {
+          protein R
+          {
+            reaction R1(A --> Am, kcat=1, KM=1e-10nM);
+            reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
+          }
+
+          protein BP
+          {
+            reaction R1(Am --> A, kcat=200, KM=1nM);
+            reaction R2(AmL --> AL, kcat=1, KM=1nM);
+          }
+
+          protein Am
+          {
+            reaction R(B --> BP, k=0.05e9, krev=0.005);
+          }
+
+          reaction R1(Am + L --> AmL, k=1e9, krev=1);
+          reaction R2(A + L --> AL, k=1e9, krev=1);
+
+        }
+
+        flagellum F(Am, 0.982 nM);
+
+        // ready for chemotaxis
+        A = 71.8427613591777nM, Am = 0.981898985528965nM, AL = 416.50705244703nM, AmL = 10.6682041813149nM, R = 4.9999991697305nM, BP = 0.0999990715618419nM, B = 9.28438157983415E-07nM;
+    }
+
+    for (i = 0; i < 2 ; i = i + 1)
+    {
+        E(rand(200, 1000), rand(200, 600), 0) = 1;
+    }
+
+    glucose L;
+    L(800, 600, 0) = 5 nmol;
+}
+
+SimRes = 20;
+
+//@```

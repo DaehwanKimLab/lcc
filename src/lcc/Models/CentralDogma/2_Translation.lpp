@@ -1,0 +1,39 @@
+//@# Translation
+//@
+//@```
+//@```
+
+petridish P
+{
+    ecoli E
+    {
+        pathway Translation
+        {
+            ribosome_binding_site rbs1;
+            translation_terminator tt1;
+            polymerase r1(initiation: rbs1,
+                        elongation: peptide_{n} + aa -->
+                                    peptide_{n+1} + H2O,
+                        termination: tt1);
+        }
+
+        r1 = 100;
+        ALA = 1mM, ARG = 1mM, ASN = 1mM, ASP = 1mM, CYS = 1mM, GLT = 1mM, GLN = 1mM;
+        GLY = 1mM, HIS = 1mM, ILE = 1mM, LEU = 1mM, LYS = 1mM, MET = 1mM, PHE = 1mM;
+        PRO = 1mM, SER = 1mM, THR = 1mM, TRP = 1mM, TYR = 1mM, SEL = 1mM, VAL = 1mM;
+
+        //ALA = 1000, ARG = 1000, ASN = 1000, ASP = 1000, CYS = 1000, GLT = 1000, GLN = 1000;
+        //GLY = 1000, HIS = 1000, ILE = 1000, LEU = 1000, LYS = 1000, MET = 1000, PHE = 1000;
+        //PRO = 1000, SER = 1000, THR = 1000, TRP = 1000, TYR = 1000, SEL = 1000, VAL = 1000;
+
+    }
+
+    for (i = 0; i < 3 ; i = i + 1)
+    {
+        E(rand(200, 1000), rand(200, 600), 0) = 1;
+    }
+}
+
+SimRes = 20;
+
+//@```

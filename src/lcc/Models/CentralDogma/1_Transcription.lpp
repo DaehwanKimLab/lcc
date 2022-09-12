@@ -1,0 +1,34 @@
+//@# Transcription
+//@
+//@```
+//@```
+
+petridish P
+{
+    ecoli E
+    {
+        pathway Transcription
+        {
+            polymerase_binding_site promoter;
+            transcription_terminus stop_codon;
+            polymerase rnap(initiation: promoter,
+                            elongation: rna_{n} + nt -->
+                                       rna_{n+1} + ppi,
+                            termination: stop_codon);
+        }
+
+        rnap = 300;
+        ATP = 3mM, CTP = 3mM, GTP = 3mM, TTP = 3mM;
+//        ATP = 10000, CTP = 10000, GTP = 10000, TTP = 10000;
+
+    }
+
+    for (i = 0; i < 3 ; i = i + 1)
+    {
+        E(rand(200, 1000), rand(200, 600), 0) = 1;
+    }
+}
+
+SimRes = 20;
+
+//@```

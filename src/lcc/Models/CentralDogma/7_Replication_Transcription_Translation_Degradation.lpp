@@ -1,0 +1,66 @@
+//@# DNA Replication
+//@
+//@```
+
+petridish P
+{
+    ecoli E
+    {
+        pathway Transcription
+        {
+            polymerase_binding_site promoter;
+            transcription_terminus stop_codon;
+            polymerase rnap(initiation: promoter,
+                            elongation: rna_{n} + nt -->
+                                       rna_{n+1} + ppi,
+                            termination: stop_codon);
+        }
+
+        rnap = 300;
+        ATP = 3mM, CTP = 3mM, GTP = 3mM, TTP = 3mM;
+
+        pathway Translation
+        {
+            ribosome_binding_site rbs1;
+            translation_terminator tt1;
+            polymerase r1(initiation: rbs1,
+                        elongation: peptide_{n} + aa -->
+                                    peptide_{n+1} + H2O,
+                        termination: tt1);
+        }
+
+        r1 = 100;
+        ALA = 1mM, ARG = 1mM, ASN = 1mM, ASP = 1mM, CYS = 1mM, GLT = 1mM, GLN = 1mM;
+        GLY = 1mM, HIS = 1mM, ILE = 1mM, LEU = 1mM, LYS = 1mM, MET = 1mM, PHE = 1mM;
+        PRO = 1mM, SER = 1mM, THR = 1mM, TRP = 1mM, TYR = 1mM, SEL = 1mM, VAL = 1mM;
+
+
+//        flagellum F(pol1, 50);
+
+        pathway RNA_Degradation
+        {
+            endonuclease RNaseE(A --> B);
+//            endonuclease RNaseE(rna_{n} + H2O --> rna_{a} + rna_{n-a});
+//            exonuclease PNPase(rna_{n} + H2O --> rna_{n-1} + rna_{1});
+//            exonuclease RNaseII(rna_{n} + Pi --> rna_{n-1} + rna_{1});
+        }
+
+        pathway Protein_Degradation
+        {
+//            protease ClpC1P(rna_{n} + Pi --> rna_{n-1} + rna_{1});
+        }
+
+        RNaseE = 100;
+        PNPase = 100;
+        RNaseII = 10;
+        ClpC1P = 50;
+    }
+
+    for (i = 0; i < 2 ; i = i + 1)
+    {
+        E(rand(200, 1000), rand(200, 600), 0) = 1;
+    }
+
+}
+
+//@```
