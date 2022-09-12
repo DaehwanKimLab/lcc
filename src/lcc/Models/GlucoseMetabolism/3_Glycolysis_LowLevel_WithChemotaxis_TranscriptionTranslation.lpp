@@ -1,0 +1,129 @@
+//@# DNA Replication
+//@
+//@```
+
+
+// implement API to control rate of chemotaxis speed and transcription translation replication
+
+
+petridish P
+{
+  ecoli E
+  {
+        pathway Transcription
+        {
+            polymerase_binding_site promoter;
+            transcription_terminus stop_codon;
+            polymerase rnap(initiation: promoter,
+                            elongation: rna_{n} + nt -->
+                                       rna_{n+1} + ppi,
+                            termination: stop_codon);
+        }
+
+        rnap = 100;
+        //ATP = 1mM;
+        CTP = 3mM, GTP = 3mM, UTP = 3mM;
+
+        pathway Translation
+        {
+            ribosome_binding_site rbs1;
+            translation_terminator tt1;
+            polymerase r1(initiation: rbs1,
+                        elongation: peptide_{n} + aa -->
+                                    peptide_{n+1} + H2O,
+                        termination: tt1);
+        }
+
+        r1 = 35;
+        ALA = 1mM, ARG = 1mM, ASN = 1mM, ASP = 1mM, CYS = 1mM, GLT = 1mM, GLN = 1mM;
+        GLY = 1mM, HIS = 1mM, ILE = 1mM, LEU = 1mM, LYS = 1mM, MET = 1mM, PHE = 1mM;
+        PRO = 1mM, SER = 1mM, THR = 1mM, TRP = 1mM, TYR = 1mM, SEL = 1mM, VAL = 1mM;
+
+    pathway Chemotaxis
+    {
+      protein R
+      {
+        reaction R1(A --> Am, kcat=1, KM=1e-10nM);
+        reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
+      }
+
+      protein BP
+      {
+        reaction R1(Am --> A, kcat=200, KM=1nM);
+        reaction R2(AmL --> AL, kcat=1, KM=1nM);
+      }
+
+      protein Am
+      {
+        reaction R(B --> BP, k=0.05e9, krev=0.005);
+      }
+
+      reaction R1(Am + L --> AmL, k=1e9, krev=1);
+      reaction R2(A + L --> AL, k=1e9, krev=1);
+
+    }
+    // ready for chemotaxis
+    A = 71.8427613591777nM, Am = 0.981898985528965nM, AL = 416.50705244703nM, AmL = 10.6682041813149nM, R = 4.9999991697305nM, BP = 0.0999990715618419nM, B = 9.28438157983415E-07nM;
+
+    // flagellar movement and energy consumption
+    flagellum F(Am, 0.982 nM);
+    //protein FlagellarATP(ATP --> ADP + Pi, kcat=1.5e6, KM=1);
+
+    // initial conditions for flagellar ATP
+    FlagellarATP = 1uM;
+
+    pathway GlucoseMetabolism
+    {
+      protein Glycolysis(glucose + 2 Pi + 2 ADP + 2 NAD --> 2 pyruvate + 2 ATP + 2 NADH + 2 H + 2 H2O, kcat=9.51e28, KM=1e29 uM);
+      protein pyruvateDehydrogenase(pyruvate + NAD + CoA --> acetylCoA + CO2 + NADH + H, kcat=6.8e19, KM=1e20 uM);
+      protein TCACycle(acetylCoA + 3 NAD + FAD + ADP + Pi + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA, kcat=5.19e19, KM=1e20 uM);
+    }
+
+    pathway OxidativePhosphorylation
+    {
+      protein ElectronTransportChain(2 NADH + O2 + 2 H --> 2 H2O + 2 NAD, kcat=8.18e37, KM=1e38 uM);
+      protein ATPSynthase(ADP + Pi + H --> ATP + H2O, kcat=4.72e7, KM=1e6 uM);
+    }
+
+    // Set constant and variable concentrations:
+    //glucose[:] = 0.5 mM;
+    H2O[:] = 8 M, O2[:] = 5 mM, CO2[:] = 0 mM;
+    Pi = 5 mM, ADP = 0.17 mM, FAD = 2 mM, NAD = 2.6 mM, NADH = 83 uM, ATP = 5.5 mM, CoA = 2.0 mM;
+
+    // Initial conditions for enzymes
+    Glycolysis = 0.32uM, pyruvateDehydrogenase = 0.48uM, TCACycle = 0.8uM, ElectronTransportChain = 1uM, ATPSynthase = 1uM;
+
+    // Regenerate Metabolites:
+    protein FADRegen(FADH2 --> FAD, kcat=9e5, KM=1);
+    protein NADRegen(NADH --> NAD, kcat=2e7, KM=1);
+    //protein ATPRegen(ATP --> ADP + Pi, kcat=1.5e6, KM=1);
+
+    // Initial conditions for regeneration
+    FADRegen = 1uM, NADRegen = 1uM;
+    //ATPRegen = 1uM;
+
+
+    // Test L to glucose conversion
+    //protein GlucoseTransport(G --> glucose, kcat=1e9, KM=1);
+    protein GlucoseTransport(L --> glucose, kcat=1e9, KM=1);
+
+    // Initial conditions for transporter test
+    //G = 0.5 mM;
+    GlucoseTransport = 0.5uM;
+  }
+
+  // spatially distributed entities on petridish
+
+  //E(350, 200, 0) = 1;
+  E(600, 400, 0) = 1;
+
+  glucose L;
+  L(800, 600, 0) = 100 nmol;
+
+}
+
+// Temporary Simulation Control Variables:
+SimRes = 50;
+SimReceptivity = 10;
+
+//@```
