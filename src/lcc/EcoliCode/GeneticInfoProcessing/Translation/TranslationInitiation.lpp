@@ -1,0 +1,20 @@
+// Translation initiation
+
+global_import tRNAs;
+global_import InitiationFactors;
+import Ribosomes;
+
+complex 30S_PIC = Ribosomes.30SPreinitiationComplex;
+complex 30S_IC = Ribosomes.30SInitiationComplex;
+complex 70S_PIC = Ribosomes.70SPreinitiationComplex;
+complex 70S_IC = Ribosomes.70SInitiationComplex;
+complex 70S_EC = Ribosomes.70SElongationComplex;
+
+pathway TranslationInitiation
+{
+    30S_PIC.complex(); // 30S + IF1 + IF2 + GTP + IF3
+    30S_IC.complex(); // 30S_PIC + tRNA_initiator_Met + mrna
+    70S_PIC.complex(); // 30SInitiationComplex + 50S
+    70S_IC.complex(); // 70SPreinitiationComplex - IF1 - IF2 - GDP - Pi
+    70S_EC.complex(); // 70SInitiationComplex + any(tRNAs)
+}

@@ -1,0 +1,17 @@
+// Translation
+
+// Translation in Prokaryotes
+// Marina V Rodnina
+// Cold Spring Harb Perspect Biol. 2018 Sep 4;10(9):a032664.
+// https://cshperspectives.cshlp.org/content/10/9/a032664.long
+
+import TranslationInitiation as Initiation
+import TranslationElongation as Elongation
+import TranslationTermination as Termination
+
+pathway Translation
+{
+    pathway Initiation;
+    pathway Elongation;
+    pathway Termination;
+}

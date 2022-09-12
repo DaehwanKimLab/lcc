@@ -1,0 +1,20 @@
+// Translation elongation
+
+import Ribosomes
+
+polymerase 70S_EC = Ribosomes.RNAPCore;
+
+pathway TranslationElongation
+{
+    70S_EC.polymerize();
+
+    // or write out sequence of actions for high resolution
+    // A-site tRNA loading: eg) 70S_EC.ASite.associate(EF-Tu, aa-tRNA);
+    // GTP hydrolysis
+    // accommodation
+    // peptidyl transfer
+    // Hybrid state formation and EF-G binding
+    // GTP hydrolysis
+    // translocation
+    // repetitive elongation cycles (for loop, control variable: RNA)
+}

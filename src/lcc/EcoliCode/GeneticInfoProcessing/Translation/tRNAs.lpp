@@ -1,0 +1,29 @@
+// tRNAs
+
+// trna tRNA_initiator Met;
+trna tRNA_Ala, tRNA_Arg, tRNA_Asn, tRNA_Asp, tRNA_Cys, tRNA_Gln, tRNA_Glu, tRNA_Gly, tRNA_His, trna tRNA_Ile, tRNA_Met, tRNA_Leu, tRNA_Lys, trna tRNA_Phe, tRNA_Pro, tRNA_Ser, tRNA_Thr, tRNA_Trp, tRNA_Tyr, tRNA_Val;
+
+
+// save for copy and paste purpose
+
+// trna tRNA_initiator_Met;
+// trna tRNA_Ala;
+// trna tRNA_Arg;
+// trna tRNA_Asn;
+// trna tRNA_Asp;
+// trna tRNA_Cys;
+// trna tRNA_Gln;
+// trna tRNA_Glu;
+// trna tRNA_Gly;
+// trna tRNA_His;
+// trna tRNA_Ile;
+// trna tRNA_Leu;
+// trna tRNA_Lys;
+// trna tRNA_Met;
+// trna tRNA_Phe;
+// trna tRNA_Pro;
+// trna tRNA_Ser;
+// trna tRNA_Thr;
+// trna tRNA_Trp;
+// trna tRNA_Tyr;
+// trna tRNA_Val;
