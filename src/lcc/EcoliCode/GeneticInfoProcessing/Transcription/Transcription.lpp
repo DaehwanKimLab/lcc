@@ -1,0 +1,12 @@
+// Transcription
+
+import TranscriptionInitiation as Initiation
+import TranscriptionElongation as Elongation
+import TranscriptionTermination as Termination
+
+pathway Transcription 
+{
+    pathway Initiation;
+    pathway Elongation;
+    pathway Termination;
+}

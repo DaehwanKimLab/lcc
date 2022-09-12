@@ -1,0 +1,19 @@
+// Transcription initiation
+
+import RNAPolymerases
+
+RNAPHolo = RNAPolymerase.RNAPHolo; // complex
+RNAPCore = RNAPolymerase.RNAPCore; // complex
+
+Promoter = RNAPHoloenzyme.regulator_1.DNA_binding;
+dna TranscriptionStartSite(ATG);
+
+pathway TranscriptionInitiation
+{
+    RNAPHolo.associate(Promoter); // shows what it associates with
+    if (RNAPHolo.encounter(Promoter))
+    {
+        RNAPHolo.decomplex(); // shows how it decomplexes
+    }
+    RNAPCore.associate(TranscriptionStartSite);
+}

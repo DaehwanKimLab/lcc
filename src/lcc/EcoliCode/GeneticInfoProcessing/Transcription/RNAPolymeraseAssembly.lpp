@@ -1,0 +1,9 @@
+// RNA polymerase assembly
+
+import RNAPolymerases
+
+pathway RNAPolymeraseAssembly
+{
+    RNAPolymerases.RNAPCore.complex();
+    RNAPolymerases.RNAPHolo.complex();
+}

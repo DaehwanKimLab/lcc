@@ -1,0 +1,12 @@
+// Rho-independent transcription termination
+
+// Mechanisms of Bacterial Transcription Termination: All Good Things Must End
+// Annual Review of Biochemistry
+// Vol. 85:319-347 (Volume publication date June 2016)
+// First published online as a Review in Advance on March 17, 2016
+// https://doi.org/10.1146/annurev-biochem-060815-014844
+
+pathway RhoIndependentTranscriptionTermination
+{
+
+}

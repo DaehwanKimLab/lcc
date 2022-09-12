@@ -1,0 +1,10 @@
+// Transcription elongation
+
+import RNAPolymerase
+
+RNAPCore = RNAPolymerase.RNAPCore;
+
+pathway TranscriptionElongation
+{
+    RNAPCore.polymerize();
+}

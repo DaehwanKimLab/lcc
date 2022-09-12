@@ -1,0 +1,15 @@
+// RNA polymerases
+
+import SigmaFactors
+
+polymerase RNAPCore(rna_{n} + nt --> rna_{n+1} + ppi, rate=60 nt/s, template=gene)  // define gene somewhere?
+                                                                                    // polymerase syntax allows .polymerize method
+{
+    complex rpoB + rpoC + rpoA + rpoZ, Kd=1e-10;   // beta, beta', alpha, omega (core becomes holoenzyme with sigma)
+                                                // complex syntax. provide complex and decomplex methods for simulation and visualization
+}
+
+complex RNAPHolo(RNAPCore + regulator_1=any(SigmaFactors), Kd=1e-7) // another way to declare complex
+{
+    DNA_binding promoter; // define promoter
+}
