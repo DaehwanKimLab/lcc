@@ -1,0 +1,101 @@
+// Replication machineries
+
+// Brock Biology of Microorganisms 15e, p.147
+// Table 4.2 Major enzymes that participate in DNA replication in Bacteria
+
+// Enzyme                          Encoding genes      Function
+// DNA gyrase                      gyrAB               Replaces supercoils ahead of replisome
+// Origin-binding protein          dnaA                Binds origin of replication to open double helix
+// Helicase loader                 dnaC                Loads helicase at origin
+// Helicase                        dnaB                Unwinds double helix at replication fork
+// Single-strand binding protein   ssb                 Prevents single strands from annealing
+// Primase                         dnaG                Primes new strands of DNA
+// DNA polymerase III                                  Main polymerizing enzyme
+// Sliding clamp                   dnaN                Holds Pol III on DNA
+// Clamp loader                    holA-E              Loads Pol III onto sliding clamp
+// Dimerization subunit (Tau)      dnaX                Holds together the two core enzymes for the leading and lagging strands
+// Polymerase subunit              dnaE                Strand elongation
+// Proofreading subunit            dnaQ                Proofreading
+// DNA polymerase I                polA                Excises RNA primer and fills in gaps 
+// DNA ligase                      ligA, ligB          Seals nicks in DNA
+// Tus protein                     tus                 Binds terminus and blocks progress of the replication fork
+// Topoisomerase IV                parCE               Unlinking of interlocked circles
+
+from Transcription import RNAPolymerases // update the path
+
+dna OriginOfReplication
+{
+    motif DnaABox // GmATC, where mA indicates methylated Adenine
+    {
+        modification MethylationSite(CH3);
+    }
+    motif SegregationSite = 10;
+    gene dnaA = 1;
+}
+
+DnaABox = OriginOfReplication.DnaABox.MethylationSite;
+Hemimethylated_DnaABox = DnaABox--CH3/rev_comp(DnaABox);
+Methylated_DnaABox = DnaABox--CH3/rev_comp(DnaBox--CH3);
+
+protein gyrAB(scDNA --> dsDNA_{n}); // DNA gyrase that resolves supercoiled DNA
+
+protein DnaA // Origin-binding protein; Binds origin of replication to open double helix
+{
+    modification ATPBindingSite(ATP);
+    if (ATPBindingSite--ATP)
+    {
+        DNA_Binding Methylated_DnaABox;
+    }
+    reaction R(dsDNA --> 2 ssDNA); // unwinding where associated
+}
+
+protein DnaB(dsDNA --> 2 ssDNA); // Helicase; Loads helicase at origin
+protein DnaC; // Helicase loader; Unwinds double helix at replication fork
+
+protein DnaE; // Polymerase subunit; Strand elongation
+protein DnaQ; // Proofreading subunit; Proofreading
+
+protein DnaG(dna --> dna + rna_{10}); // primase
+protein DnaN; // Sliding clamp; Holds Pol III on DNA
+
+protein LigA(N^N --> NN); // DNA ligase
+
+protein Ssb
+{
+    DNA_binding ssDNA; // prevents hybridization of ssDNAs
+}
+
+protein SeqA
+{
+    DNA_binding Hemimethylated_DnaABox;
+    repress RNAPolymerases.RNAPHolo.DNA_binding(Promoter);
+    repress DnaA.DNA_Binding(Methylated_DnaBox);
+}
+
+complex DNAPIII(DnaE + DnaQ) // currently subunits are not assigned function for low resolution description
+{
+    reaction R1(dna_{n} + nt --> dna_{n+1} + ppi, rate=1000 nt/s, template=chromosome); // Main polymerizing enzyme
+    // update with more double stranded dna context later (dna_{n}/dna + nt --> dna_{n+1}/dna + ppi)
+}
+
+protein PolA // DNA polymerase I
+{
+    reaction R1(rna/dna --> -/dna); // 5'-end exonuclease; Excises RNA primer
+    reaction R2(dna_{n} + nt --> dna_{n+1} + ppi, rate=1000 nt/s, template=chromosome); // polymerization; fills in gaps
+}
+
+complex Primosome(DnaB + DnaG);
+
+complex Replisome(gyrAB + 2 DNAPIII + Primosome);
+
+
+// for termination
+dna TerminusOfReplication // terminus of replication
+{
+    motif Ter = 10;
+}
+
+protein Tus
+{
+    DNA_binding TerminusOfReplication.Ter;
+}

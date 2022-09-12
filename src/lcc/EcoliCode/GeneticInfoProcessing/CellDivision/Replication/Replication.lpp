@@ -1,0 +1,12 @@
+// Replication
+
+import ReplicationInitiation as Initiation
+import ReplicationElongation as Elongation
+import ReplicationTermination as Termination
+
+pathway Replication 
+{
+    pathway Initiation;
+    pathway Elongation;
+    pathway Termination;
+}
