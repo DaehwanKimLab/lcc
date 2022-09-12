@@ -1,0 +1,18 @@
+// Cell cycle (binary fission)
+
+from Replication import Replication
+from DNASegregation import DNASegregation
+from SeptumFormation import SeptumFormation
+import 
+
+pathway CellDivision
+{
+    pathway Replication;
+    pathway Segregation;
+    pathway SeptumFormation;
+}
+
+// add a function for drawing the cell cycle schematics:
+// B phase (gap phase)
+// C phase (replication)
+// D phase (cell division)

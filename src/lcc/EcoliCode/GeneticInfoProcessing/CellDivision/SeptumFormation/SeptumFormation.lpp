@@ -1,0 +1,10 @@
+// SeptumFormation
+
+import 
+
+pathway Replication 
+{
+    pathway Initiation;
+    pathway Elongation;
+    pathway Termination;
+}
