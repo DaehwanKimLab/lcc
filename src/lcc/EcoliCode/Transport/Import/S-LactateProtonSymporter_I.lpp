@@ -1,0 +1,9 @@
+// S-LactateProtonSymporter_I
+// target: S-lactate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-104
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-104
+// Notes: 
+// glcA
+Transporter S-LactateProtonSymporter_I(S-lactate_periplasm + H_periplasm --> S-lactate_cytosol + H_cytosol);

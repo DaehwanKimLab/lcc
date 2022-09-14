@@ -1,0 +1,10 @@
+// BtsSR
+// input: BtsS + ATP
+// output: BtsR-P + ADP
+// DB: EcoCyc
+// - PWY0-1559
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1559
+pathway BtsSR(BtsS + ATP --> BtsR-P + ADP)
+{
+
+}

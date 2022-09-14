@@ -1,0 +1,10 @@
+// threonineDegredationIII
+// input: threonine
+// output: methylglyoxal
+// DB: EcoCyc
+// - THRDLCTCAT-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=THRDLCTCAT-PWY
+pathway threonineDegredationIII(threonine --> methylglyoxal)
+{
+
+}

@@ -1,0 +1,8 @@
+// MolybdateABCTransporter_I
+// target: molybdate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-19-RXN
+// EC Number: 7.3.2.5
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-19-RXN
+Transporter MolybdateABCTransporter_I(molybdate_periplasm + ATP + H2O --> molybdate_cytosol + ADP + P + H);

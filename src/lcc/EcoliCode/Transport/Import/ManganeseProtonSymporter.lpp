@@ -1,0 +1,9 @@
+// ManganeseProtonSymporter
+// target: manganese
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-2421
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-2421
+// Notes: 
+// mntH
+Transporter ManganeseProtonSymporter(manganese_periplasm + H_periplasm --> manganese_cytosol + H_cytosol);

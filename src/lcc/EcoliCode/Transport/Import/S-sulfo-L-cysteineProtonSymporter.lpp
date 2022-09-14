@@ -1,0 +1,9 @@
+// S-sulfo-L-cysteineProtonSymporter
+// target: S-sulfo-L-cysteine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-330
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-330
+// Notes: 
+// tcyP
+Transporter S-sulfo-L-cysteineProtonSymporter(S-sulfo-L-cysteine_periplasm + H_periplasm --> S-sulfo-L-cysteine_cytosol + H_cytosol);

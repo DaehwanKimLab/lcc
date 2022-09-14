@@ -1,0 +1,10 @@
+// ArbutinPTSTransporter_II
+// target: arbutin
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-518
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-518
+// Notes: 
+// BglF
+Transporter ArbutinPTSTransporter_II(arbutin_periplasm + HPr-P --> arbutin-6P_cytosol + HPr);

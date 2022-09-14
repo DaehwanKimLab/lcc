@@ -1,0 +1,9 @@
+// L,L-homocystineProtonSymporter
+// target: L,L-homocystine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-330
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-330
+// Notes: 
+// tcyP
+Transporter L,L-homocystineProtonSymporter(L,L-homocystine_periplasm + H_periplasm --> L,L-homocystine_cytosol + H_cytosol);

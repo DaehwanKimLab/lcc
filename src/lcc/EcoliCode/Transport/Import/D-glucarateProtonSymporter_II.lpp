@@ -1,0 +1,9 @@
+// D-glucarateProtonSymporter_II
+// target: D-glucarate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-203
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-203
+// Notes: 
+// I -- gudP; II -- garP
+Transporter D-glucarateProtonSymporter_II(D-glucarate_periplasm + H_periplasm --> D-glucarate_cytosol + H_cytosol);

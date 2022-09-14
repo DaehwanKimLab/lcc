@@ -1,0 +1,10 @@
+// D-xyloseABCTransporter
+// target: D-xylose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-33-RXN
+// EC Number: 7.5.2.10, 7.5.2.13
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-33-RXN
+// Notes: 
+// xylG, xylH, xylF
+Transporter D-xyloseABCTransporter(D-xylose_periplasm + ATP + H2O --> D-xylose_cytosol + ADP + P + H);

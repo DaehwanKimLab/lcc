@@ -1,0 +1,12 @@
+// glycerophosphodiesterDegredation
+// input: {glycerophosphodiester}
+// output: glyceronePhosphate
+// DB: EcoCyc
+// - PWY0-381
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-381
+// Notes: 
+// glycerophosphodiester is a class of molecules 
+pathway glycerophosphodiesterDegredation({glycerophosphodiester} --> glyceronePhosphate)
+{
+
+}

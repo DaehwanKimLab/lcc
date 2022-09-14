@@ -1,0 +1,10 @@
+// serineDegredation
+// input: serine
+// output: pyruvate
+// DB: EcoCyc
+// - SERDEG-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=SERDEG-PWY
+pathway serineDegredation(serine --> pyruvate)
+{
+
+}

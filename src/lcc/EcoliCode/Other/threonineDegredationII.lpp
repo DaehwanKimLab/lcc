@@ -1,0 +1,10 @@
+// threonineDegredationII
+// input: threonine
+// output: glycine
+// DB: EcoCyc
+// - THREONINE-DEG2-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=THREONINE-DEG2-PWY
+pathway threonineDegredationII(threonine --> glycine)
+{
+
+}

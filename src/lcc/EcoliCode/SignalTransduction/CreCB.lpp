@@ -1,0 +1,10 @@
+// CreCB
+// input: CreC + ATP
+// output: CreB-P + ADP
+// DB: EcoCyc
+// - PWY0-1487
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1487
+pathway CreCB(CreC + ATP --> CreB-P + ADP)
+{
+
+}

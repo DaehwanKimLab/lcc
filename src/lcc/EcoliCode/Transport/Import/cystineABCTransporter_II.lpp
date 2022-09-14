@@ -1,0 +1,8 @@
+// cystineABCTransporter_II
+// target: L-djenkolate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-291
+// EC Number: 7.4.2.-
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-291
+Transporter cystineABCTransporter_II(L-djenkolate_periplasm + ATP + H2O --> L-djenkolate_cytosol + ADP + P + H);

@@ -1,0 +1,7 @@
+// Glycerol-3PPhosphateAntiporter
+// target: sn-glycerol-3P
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-22
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-22
+Transporter Glycerol-3PPhosphateAntiporter(sn-glycerol-3P_periplasm + phosphate_cytosol --> sn-glycerol-3P_cytosol + phosphate_periplasm);

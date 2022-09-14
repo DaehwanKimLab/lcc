@@ -1,0 +1,7 @@
+// D-Mannopyranose-6PPhosphateAntiporter
+// target: D-Mannopyranose-6P
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-502
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-502
+Transporter D-Mannopyranose-6PPhosphateAntiporter(D-Mannopyranose-6P_periplasm + phosphate_cytosol --> D-Mannopyranose-6P_cytosol + phosphate_periplasm);

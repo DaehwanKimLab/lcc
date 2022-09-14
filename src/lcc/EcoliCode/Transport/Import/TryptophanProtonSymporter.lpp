@@ -1,0 +1,9 @@
+// TryptophanProtonSymporter
+// target: Tryptophan
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-56
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-56
+// Notes: 
+// aroP
+Transporter TryptophanProtonSymporter(Tryptophan_periplasm + H_periplasm --> Tryptophan_cytosol + H_cytosol);

@@ -1,0 +1,7 @@
+// FumarateSuccinateAntiporter
+// target: fumarate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-106
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-106
+Transporter FumarateSuccinateAntiporter(fumarate_periplasm + succinate_cytosol --> fumarate_cytosol + succinate_periplasm);

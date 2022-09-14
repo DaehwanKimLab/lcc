@@ -1,0 +1,10 @@
+// ArcAB
+// input: ArcB + ATP
+// output: ArcA-P + ADP
+// DB: EcoCyc
+// - PWY0-1505
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1505
+pathway ArcAB(ArcB + ATP --> ArcA-P + ADP)
+{
+
+}

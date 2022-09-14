@@ -1,0 +1,9 @@
+// L-tyrosineProtonSymporter
+// target: L-tyrosine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-77
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-77
+// Notes: 
+// tyrP, aroP
+Transporter L-tyrosineProtonSymporter(L-tyrosine_periplasm + H_periplasm --> L-tyrosine_cytosol + H_cytosol);

@@ -1,0 +1,9 @@
+// AcetoacetateTransporter
+// target: acetoacetate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-281
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-281
+// Notes: 
+// AtoE
+Transporter AcetoacetateTransporter(acetoacetate_periplasm --> acetoacetate_cytosol);

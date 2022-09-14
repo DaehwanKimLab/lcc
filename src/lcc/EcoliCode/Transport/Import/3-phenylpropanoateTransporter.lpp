@@ -1,0 +1,9 @@
+// 3-phenylpropanoateTransporter
+// target: 3-phenylpropanoate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-282
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-282
+// Notes: 
+// hcaT
+Transporter 3-phenylpropanoateTransporter(3-phenylpropanoate_periplasm --> 3-phenylpropanoate_cytosol);

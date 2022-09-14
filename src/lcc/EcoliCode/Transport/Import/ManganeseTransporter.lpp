@@ -1,0 +1,9 @@
+// ManganeseTransporter
+// target: manganese
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-8
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-8
+// Notes: 
+// zupT
+Transporter ManganeseTransporter(manganese_periplasm --> manganese_cytosol);

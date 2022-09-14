@@ -1,0 +1,12 @@
+// EthanolamineUtilization
+// input: ethanolamine
+// intermediate: acetaldehyde
+// output: ethanol + acetate
+// DB: EcoCyc
+// - PWY0-1477
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-1477
+pathway EthanolamineUtilization
+{
+    reaction ethanolamine2acetaldehyde(ethanolamine --> acetaldehyde);
+    reaction acetaldehyde2ethanol + acetate(acetaldehyde --> ethanol + acetate);
+}

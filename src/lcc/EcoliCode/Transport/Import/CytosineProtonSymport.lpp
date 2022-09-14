@@ -1,0 +1,9 @@
+// CytosineProtonSymport
+// target: cytosine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-116
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-116
+// Notes: 
+// codB
+Transporter CytosineProtonSymport(cytosine_periplasm + H_periplasm --> cytosine_cytosol + H_cytosol);

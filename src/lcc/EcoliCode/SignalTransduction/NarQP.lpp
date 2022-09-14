@@ -1,0 +1,10 @@
+// NarQP
+// input: NarQ + ATP
+// output: NarP-P + ADP
+// DB: EcoCyc
+// - PWY0-1514
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1514
+pathway NarQP(NarQ + ATP --> NarP-P + ADP)
+{
+
+}

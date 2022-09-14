@@ -1,0 +1,10 @@
+// SpermidineABCTranporter
+// target: spermidine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-24-RXN
+// EC Number: 7.6.2.11
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-24-RXN
+// Notes: 
+// potA, potB, potC, potD
+Transporter SpermidineABCTranporter(spermidine_periplasm + ATP + H2O --> spermidine_cytosol + ADP + P + H);

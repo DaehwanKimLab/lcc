@@ -1,0 +1,9 @@
+// L-valineSodiumSymporter
+// target: L-valine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-126B
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-126B
+// Notes: 
+// brnQ
+Transporter L-valineSodiumSymporter(L-valine_periplasm + Na_periplasm --> L-valine_cytosol + Na_cytosol);

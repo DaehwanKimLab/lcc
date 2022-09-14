@@ -1,0 +1,10 @@
+// ZincABCTransporter
+// target: zinc
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-63-RXN
+// EC Number: 7.2.2.20
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-63-RXN
+// Notes: 
+// znuC, znuB, znuA
+Transporter ZincABCTransporter(zinc_periplasm + ATP + H2O --> zinc_cytosol + ADP + P + H);

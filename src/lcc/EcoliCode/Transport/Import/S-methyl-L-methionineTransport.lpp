@@ -1,0 +1,9 @@
+// S-methyl-L-methionineTransport
+// target: S-methyl-L-methionine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-486
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-486
+// Notes: 
+// mmuP
+Transporter S-methyl-L-methionineTransport(S-methyl-L-methionine_periplasm --> S-methyl-L-methionine_cytosol);

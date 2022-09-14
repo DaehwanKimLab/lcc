@@ -1,0 +1,9 @@
+// GalactonateProtonSymporter_II
+// target: galactonate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-16
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-16
+// Notes: 
+// dgoT
+Transporter GalactonateProtonSymporter_II(galactonate_periplasm + H_periplasm --> galactonate_cytosol + H_cytosol);

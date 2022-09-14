@@ -1,0 +1,10 @@
+// PotassiumABCTranporter
+// target: potassium
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-2
+// EC Number: 7.2.2.6
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-2
+// Notes: 
+// kdpF, kdpA, kdpB, kdpC
+Transporter PotassiumABCTranporter(potassium_periplasm + ATP + H2O --> potassium_cytosol + ADP + P + H);

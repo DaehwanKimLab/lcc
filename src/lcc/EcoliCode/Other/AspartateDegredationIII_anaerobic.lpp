@@ -1,0 +1,10 @@
+// AspartateDegredationIII_anaerobic
+// input: aspartate
+// output: glutamine + fumarate
+// DB: EcoCyc
+// - PWY-8294
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY-8294
+pathway AspartateDegredationIII_anaerobic(aspartate --> glutamine + fumarate)
+{
+
+}

@@ -1,0 +1,13 @@
+// MixedAcidFermentation_II
+// input: phosphoenolpyruvate
+// intermediate: ['oxaloacetate', 'citrate']
+// output: 2-oxoglutarate
+// DB: EcoCyc
+// - FERMENTATION-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=FERMENTATION-PWY
+pathway MixedAcidFermentation_II
+{
+    reaction phosphoenolpyruvate2oxaloacetate(phosphoenolpyruvate --> oxaloacetate);
+    reaction oxaloacetate2citrate(oxaloacetate --> citrate);
+    reaction citrate22-oxoglutarate(citrate --> 2-oxoglutarate);
+}

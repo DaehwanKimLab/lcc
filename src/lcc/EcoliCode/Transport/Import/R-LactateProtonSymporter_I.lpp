@@ -1,0 +1,9 @@
+// R-LactateProtonSymporter_I
+// target: R-lactate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-515
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-515
+// Notes: 
+// glcA
+Transporter R-LactateProtonSymporter_I(R-lactate_periplasm + H_periplasm --> R-lactate_cytosol + H_cytosol);

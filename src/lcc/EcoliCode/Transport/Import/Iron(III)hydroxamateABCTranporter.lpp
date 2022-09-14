@@ -1,0 +1,10 @@
+// Iron(III)hydroxamateABCTranporter
+// target: iron(III)hydroxamate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-11-RXN
+// EC Number: 7.2.2.16
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-11-RXN
+// Notes: 
+// fhuC, fhuB, fhuD
+Transporter Iron(III)hydroxamateABCTranporter(iron(III)hydroxamate_periplasm + ATP + H2O --> iron(III)hydroxamate_cytosol + ADP + P + H);

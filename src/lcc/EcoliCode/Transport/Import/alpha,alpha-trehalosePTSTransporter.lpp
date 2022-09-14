@@ -1,0 +1,10 @@
+// alpha,alpha-trehalosePTSTransporter
+// target: alpha,alpha-trehalose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-168
+// EC Number: 2.7.1.201
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-168
+// Notes: 
+// treB,crr
+Transporter alpha,alpha-trehalosePTSTransporter(alpha,alpha-trehalose_periplasm + HPr-P --> alpha,alpha-trehalose_cytosol + HPr);

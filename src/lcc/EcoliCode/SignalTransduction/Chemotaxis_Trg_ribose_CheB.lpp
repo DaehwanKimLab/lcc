@@ -1,0 +1,10 @@
+// Chemotaxis_Trg_ribose_CheB
+// input: Trg + ATP + ribose
+// output: CheB-P + ADP
+// DB: EcoCyc
+// - PWY0-1518
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1518
+pathway Chemotaxis_Trg_ribose_CheB(Trg + ATP + ribose --> CheB-P + ADP)
+{
+
+}

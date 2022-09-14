@@ -1,0 +1,10 @@
+// Methyl-alpha-D-GlucosidePTSTransporter
+// target: Methyl-alpha-D-Glucoside
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-157
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-157
+// Notes: 
+// Glucose Specific PTS enzymeII: ptsG, crr
+Transporter Methyl-alpha-D-GlucosidePTSTransporter(Methyl-alpha-D-Glucoside_periplasm + HPr-P --> Methyl-alpha-D-Glucoside-6P_cytosol + HPr);

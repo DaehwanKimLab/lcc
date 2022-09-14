@@ -1,0 +1,7 @@
+// PyridoxineTransporter
+// target: pyridoxine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-205
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-205
+Transporter PyridoxineTransporter(pyridoxine_periplasm --> pyridoxine_cytosol);

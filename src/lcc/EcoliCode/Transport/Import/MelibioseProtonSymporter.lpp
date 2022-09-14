@@ -1,0 +1,7 @@
+// MelibioseProtonSymporter
+// target: melibiose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-94A
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-94A
+Transporter MelibioseProtonSymporter(melibiose_periplasm + H_periplasm --> melibiose_cytosol + H_cytosol);

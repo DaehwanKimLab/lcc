@@ -1,0 +1,9 @@
+// methyl-alpha-D-glucosidePTSTranporter
+// target: methyl-alpha-D-glucoside
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-583
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-583
+// Notes: 
+// ptsG, crr
+Transporter methyl-alpha-D-glucosidePTSTranporter(methyl-alpha-D-glucoside_periplasm + HPr-P --> methyl-alpha-D-glucoside-6P_cytosol + HPr);

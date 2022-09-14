@@ -1,0 +1,10 @@
+// Chemotaxis_Tsr_CheY
+// input: Tsr + ATP + serine
+// output: CheY-P + ADP
+// DB: EcoCyc
+// - PWY0-1518
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1518
+pathway Chemotaxis_Tsr_CheY(Tsr + ATP + serine --> CheY-P + ADP)
+{
+
+}

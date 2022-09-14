@@ -1,0 +1,10 @@
+// AtoSC
+// input: AtoS + ATP
+// output: AtoC-P + ADP
+// DB: EcoCyc
+// - PWY0-1474
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1474
+pathway AtoSC(AtoS + ATP --> AtoC-P + ADP)
+{
+
+}

@@ -1,0 +1,7 @@
+// D-glucopyranose-6PPhosphateAntiporter
+// target: D-glucopyranose-6P
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-33
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-33
+Transporter D-glucopyranose-6PPhosphateAntiporter(D-glucopyranose-6P_periplasm + phosphate_cytosol --> D-glucopyranose-6P_cytosol + phosphate_periplasm);

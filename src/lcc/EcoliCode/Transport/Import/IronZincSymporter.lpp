@@ -1,0 +1,9 @@
+// IronZincSymporter
+// target: Iron
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-499
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-499
+// Notes: 
+// zupT
+Transporter IronZincSymporter(Iron_periplasm --> Iron_cytosol);

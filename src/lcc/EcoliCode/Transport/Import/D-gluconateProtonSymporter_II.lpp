@@ -1,0 +1,9 @@
+// D-gluconateProtonSymporter_II
+// target: D-gluconate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-209
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-209
+// Notes: 
+// D-gluconateProtonSymporter_I -- High affinity gntT; D-gluconateProtonSymporter_II -- Low affinity gntU
+Transporter D-gluconateProtonSymporter_II(D-gluconate_periplasm + H_periplasm --> D-gluconate_cytosol + H_cytosol);

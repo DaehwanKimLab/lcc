@@ -1,0 +1,9 @@
+// p-aminobenzoylGlutamateProtonSymporter
+// target: p-aminobenzoylGlutamate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-452
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-452
+// Notes: 
+// abgT
+Transporter p-aminobenzoylGlutamateProtonSymporter(p-aminobenzoylGlutamate_periplasm + H_periplasm --> p-aminobenzoylGlutamate_cytosol + H_cytosol);

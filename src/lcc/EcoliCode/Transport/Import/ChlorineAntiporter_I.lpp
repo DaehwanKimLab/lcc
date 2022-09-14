@@ -1,0 +1,9 @@
+// ChlorineAntiporter_I
+// target: 2 chlorine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-2501
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-2501
+// Notes: 
+// clcB
+Transporter ChlorineAntiporter_I(2 chlorine_periplasm + H_cytosol --> 2 chlorine_cytosol + H_periplasm);

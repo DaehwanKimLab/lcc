@@ -1,0 +1,9 @@
+// L-leucineSodiumSymporter
+// target: L-leucine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-126B
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-126B
+// Notes: 
+// brnQ
+Transporter L-leucineSodiumSymporter(L-leucine_periplasm + Na_periplasm --> L-leucine_cytosol + Na_cytosol);

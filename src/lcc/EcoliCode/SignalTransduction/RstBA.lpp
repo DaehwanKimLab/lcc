@@ -1,0 +1,10 @@
+// RstBA
+// input: RscB + ATP
+// output: RcsA-P + ADP
+// DB: EcoCyc
+// - PWY0-1497
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1497
+pathway RstBA(RscB + ATP --> RcsA-P + ADP)
+{
+
+}

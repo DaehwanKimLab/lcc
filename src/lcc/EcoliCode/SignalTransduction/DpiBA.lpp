@@ -1,0 +1,10 @@
+// DpiBA
+// input: DpiB + ATP
+// output: DpiA-P + ADP
+// DB: EcoCyc
+// - PWY0-1499
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1499
+pathway DpiBA(DpiB + ATP --> DpiA-P + ADP)
+{
+
+}

@@ -1,0 +1,10 @@
+// Chemotaxis_Trg_glucose_CheB
+// input: Trg + ATP + glucose
+// output: CheB-P + ADP
+// DB: EcoCyc
+// - PWY0-1518
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1518
+pathway Chemotaxis_Trg_glucose_CheB(Trg + ATP + glucose --> CheB-P + ADP)
+{
+
+}

@@ -1,0 +1,10 @@
+// threonineDegredationIV
+// input: threonine
+// output: acetyl-CoA + glycine
+// DB: EcoCyc
+// - PWY-5436
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY-5436
+pathway threonineDegredationIV(threonine --> acetyl-CoA + glycine)
+{
+
+}

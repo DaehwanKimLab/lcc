@@ -1,0 +1,10 @@
+// Autoinducer-2ABCTranporter
+// target: autoinducer-2
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-454
+// EC Number: 7.6.2.13
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-454
+// Notes: 
+// lsrB, lsrD, lsrC, lsrA
+Transporter Autoinducer-2ABCTranporter(autoinducer-2_periplasm + ATP + H2O --> autoinducer-2_cytosol + ADP + P + H);

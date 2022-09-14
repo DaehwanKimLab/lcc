@@ -1,0 +1,10 @@
+// LactaldehydeDegredationAnaerobic
+// input: lactaldehyde
+// output: (S)-propane-1,2-diol
+// DB: EcoCyc
+// - PWY0-1315
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-1315
+pathway LactaldehydeDegredationAnaerobic
+{
+    protein fucO(lactaldehyde --> (S)-propane-1,2-diol);
+}

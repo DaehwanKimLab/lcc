@@ -1,0 +1,10 @@
+// GlutamateDegredationII
+// input: glutamate
+// output: fumarate
+// DB: EcoCyc
+// - GLUTDEG-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=GLUTDEG-PWY
+pathway GlutamateDegredationII(glutamate --> fumarate)
+{
+
+}

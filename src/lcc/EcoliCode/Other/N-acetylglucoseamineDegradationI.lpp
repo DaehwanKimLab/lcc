@@ -1,0 +1,10 @@
+// N-acetylglucoseamineDegradationI
+// input: N-acetyl-D-glucosamine6P
+// output: fructose-6P
+// DB: EcoCyc
+// - GLUAMCAT-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=GLUAMCAT-PWY
+pathway N-acetylglucoseamineDegradationI(N-acetyl-D-glucosamine6P --> fructose-6P)
+{
+
+}

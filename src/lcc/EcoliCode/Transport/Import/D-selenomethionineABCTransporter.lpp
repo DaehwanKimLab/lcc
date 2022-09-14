@@ -1,0 +1,10 @@
+// D-selenomethionineABCTransporter
+// target: D-selenomethionine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-4522
+// EC Number: 7.4.2.11
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-4522
+// Notes: 
+// metN, metI, metQ
+Transporter D-selenomethionineABCTransporter(D-selenomethionine_periplasm + ATP + H2O --> D-selenomethionine_cytosol + ADP + P + H);

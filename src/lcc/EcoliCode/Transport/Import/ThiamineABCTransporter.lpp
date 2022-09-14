@@ -1,0 +1,10 @@
+// ThiamineABCTransporter
+// target: thiamine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-32-RXN
+// EC Number: 7.6.2.15
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-32-RXN
+// Notes: 
+// thiQ, thiP, thiB
+Transporter ThiamineABCTransporter(thiamine_periplasm + ATP + H2O --> thiamine_cytosol + ADP + P + H);

@@ -1,0 +1,10 @@
+// CpxAR
+// input: CpxA + ATP
+// output: CpxR-P + ADP
+// DB: EcoCyc
+// - PWY0-1485
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1485
+pathway CpxAR(CpxA + ATP --> CpxR-P + ADP)
+{
+
+}

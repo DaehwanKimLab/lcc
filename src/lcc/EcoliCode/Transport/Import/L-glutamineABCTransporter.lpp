@@ -1,0 +1,10 @@
+// L-glutamineABCTransporter
+// target: L-glutamine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-12-RXN
+// EC Number: 7.4.2.1
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-12-RXN
+// Notes: 
+// glnQ, glnP, glnH
+Transporter L-glutamineABCTransporter(L-glutamine_periplasm + ATP + H2O --> L-glutamine_cytosol + ADP + P + H);

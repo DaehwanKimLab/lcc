@@ -1,0 +1,10 @@
+// AliphaticSulfonateABCTranporter
+// target: aliphaticSulfonate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-56-RXN
+// EC Number: 7.6.2.14
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-56-RXN
+// Notes: 
+// ssuA, ssuC, ssuB
+Transporter AliphaticSulfonateABCTranporter(aliphaticSulfonate_periplasm + ATP + H2O --> aliphaticSulfonate_cytosol + ADP + P + H);

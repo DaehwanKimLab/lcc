@@ -1,0 +1,10 @@
+// N-acetyl-DL-methionineABCTransporter
+// target: N-acetyl-DL-methionine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-4522
+// EC Number: 7.4.2.11
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-4522
+// Notes: 
+// metN, metI, metQ
+Transporter N-acetyl-DL-methionineABCTransporter(N-acetyl-DL-methionine_periplasm + ATP + H2O --> N-acetyl-DL-methionine_cytosol + ADP + P + H);

@@ -1,0 +1,10 @@
+// UhpBA
+// input: UhpB + ATP
+// output: UhpA-P + ADP
+// DB: EcoCyc
+// - PWY0-1492
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1492
+pathway UhpBA(UhpB + ATP --> UhpA-P + ADP)
+{
+
+}

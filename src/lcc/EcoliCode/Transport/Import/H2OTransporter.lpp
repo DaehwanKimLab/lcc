@@ -1,0 +1,9 @@
+// H2OTransporter
+// target: H2O
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-145
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-145
+// Notes: 
+// aqpZ
+Transporter H2OTransporter(H2O_periplasm --> H2O_cytosol);

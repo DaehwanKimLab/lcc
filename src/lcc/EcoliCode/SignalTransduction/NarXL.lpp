@@ -1,0 +1,10 @@
+// NarXL
+// input: NarX + ATP
+// output: NarL-P + ADP
+// DB: EcoCyc
+// - PWY0-1515
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1515
+pathway NarXL(NarX + ATP --> NarL-P + ADP)
+{
+
+}

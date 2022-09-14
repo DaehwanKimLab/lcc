@@ -1,0 +1,9 @@
+// L-lyxopyranoseProtonSymport
+// target: L-lyxopyranose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-112
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-112
+// Notes: 
+// rhaT
+Transporter L-lyxopyranoseProtonSymport(L-lyxopyranose_periplasm + H_periplasm --> L-lyxopyranose_cytosol + H_cytosol);

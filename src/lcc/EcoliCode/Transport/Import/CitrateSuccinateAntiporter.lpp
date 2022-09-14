@@ -1,0 +1,7 @@
+// CitrateSuccinateAntiporter
+// target: citrate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-201
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-201
+Transporter CitrateSuccinateAntiporter(citrate_periplasm + succinate_cytosol --> citrate_cytosol + succinate_periplasm);

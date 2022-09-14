@@ -1,0 +1,9 @@
+// FructosePTSTranporter
+// target: D-Fructose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-582
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-582
+// Notes: 
+// fruB, fruA
+Transporter FructosePTSTranporter(D-Fructose_periplasm + HPr-P --> D-Fructose-1P_cytosol + HPr);

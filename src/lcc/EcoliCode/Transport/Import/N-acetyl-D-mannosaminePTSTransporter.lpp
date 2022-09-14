@@ -1,0 +1,10 @@
+// N-acetyl-D-mannosaminePTSTransporter
+// target: N-acetyl-D-mannosamine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-157
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-157
+// Notes: 
+// Mannose Specific PTS enzymeII: manZ, manY, manX
+Transporter N-acetyl-D-mannosaminePTSTransporter(N-acetyl-D-mannosamine_periplasm + HPr-P --> N-acetyl-D-mannosamine-6P_cytosol + HPr);

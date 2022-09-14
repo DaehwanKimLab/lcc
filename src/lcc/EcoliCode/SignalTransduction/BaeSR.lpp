@@ -1,0 +1,10 @@
+// BaeSR
+// input: BaeS + ATP
+// output: BaeR-P + ADP
+// DB: EcoCyc
+// - PWY0-1481
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1481
+pathway BaeSR(BaeS + ATP --> BaeR-P + ADP)
+{
+
+}

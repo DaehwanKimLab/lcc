@@ -1,0 +1,10 @@
+// LactaldehydeDegredationAerobic
+// input: lactaldehyde
+// output: pyruvate
+// DB: EcoCyc
+// - PWY0-1317
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-1317
+pathway LactaldehydeDegredationAerobic(lactaldehyde --> pyruvate)
+{
+
+}

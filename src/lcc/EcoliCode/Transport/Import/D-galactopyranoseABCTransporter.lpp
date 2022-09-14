@@ -1,0 +1,7 @@
+// D-galactopyranoseABCTransporter
+// target: D-galactopyranose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-18-RXN
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-18-RXN
+Transporter D-galactopyranoseABCTransporter(D-galactopyranose_periplasm + ATP + H2O --> D-galactopyranose_cytosol + ADP + P + H);

@@ -1,0 +1,7 @@
+// PutrescineOrnithineAntiporter
+// target: putrescine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-99
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-99
+Transporter PutrescineOrnithineAntiporter(putrescine_periplasm + ornithine_cytosol --> putrescine_cytosol + ornithine_periplasm);

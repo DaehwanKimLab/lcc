@@ -1,0 +1,7 @@
+// MaltosePTSTransporter
+// target: maltose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-575
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-575
+Transporter MaltosePTSTransporter(maltose_periplasm --> maltose_cytosol);

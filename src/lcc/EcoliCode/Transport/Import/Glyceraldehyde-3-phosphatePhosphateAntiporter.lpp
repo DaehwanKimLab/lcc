@@ -1,0 +1,7 @@
+// Glyceraldehyde-3-phosphatePhosphateAntiporter
+// target: glyceraldehyde-3P
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-534
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-534
+Transporter Glyceraldehyde-3-phosphatePhosphateAntiporter(glyceraldehyde-3P_periplasm + phosphate_cytosol --> glyceraldehyde-3P_cytosol + phosphate_periplasm);

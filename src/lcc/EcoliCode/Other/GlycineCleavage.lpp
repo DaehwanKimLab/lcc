@@ -1,0 +1,12 @@
+// GlycineCleavage
+// input: glycine + tetrahydrofolate + NAD
+// output: <5,10-methylenetetrahydrofolate> + ammonium + CO2 + NADH
+// DB: EcoCyc
+// - GLYCLEAV-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=GLYCLEAV-PWY
+// Notes: 
+// reversible
+pathway GlycineCleavage(glycine + tetrahydrofolate + NAD --> <5,10-methylenetetrahydrofolate> + ammonium + CO2 + NADH)
+{
+
+}

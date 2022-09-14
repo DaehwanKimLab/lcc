@@ -1,0 +1,9 @@
+// 6-sulfo-D-quinovoseTranporter
+// target: 6-sulfo-D-quinovose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-580
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-580
+// Notes: 
+// yihO
+Transporter 6-sulfo-D-quinovoseTranporter(6-sulfo-D-quinovose_periplasm --> 6-sulfo-D-quinovose_cytosol);

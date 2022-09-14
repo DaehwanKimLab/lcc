@@ -1,0 +1,7 @@
+// CholineProtonSymporter
+// target: choline
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-99
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-99
+Transporter CholineProtonSymporter(choline_periplasm + H_periplasm --> choline_cytosol + H_cytosol);

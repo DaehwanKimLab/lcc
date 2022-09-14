@@ -1,0 +1,12 @@
+// Chemotaxis_Tap_CheY
+// input: Tap + ATP + {dipeptide} 
+// output: CheY-P + ADP
+// DB: EcoCyc
+// - PWY0-1518
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1518
+// Notes: 
+// Tap has an affinity towards a class of molecules (i.e. dipeptides).  This is quite different from everything else... I really do not know how to handle this at the moment.
+pathway Chemotaxis_Tap_CheY(Tap + ATP + {dipeptide}  --> CheY-P + ADP)
+{
+
+}

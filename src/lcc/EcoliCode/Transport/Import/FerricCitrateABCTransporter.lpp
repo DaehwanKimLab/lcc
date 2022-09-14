@@ -1,0 +1,10 @@
+// FerricCitrateABCTransporter
+// target: ferricCitrate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-9-RXN
+// EC Number: 7.2.2.18
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-9-RXN
+// Notes: 
+// fecE, fecC, fecD, fecB
+Transporter FerricCitrateABCTransporter(ferricCitrate_periplasm + ATP + H2O --> ferricCitrate_cytosol + ADP + P + H);

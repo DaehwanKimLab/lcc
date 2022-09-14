@@ -1,0 +1,9 @@
+// GlycineBetaineABCTransporter
+// target: glycineBetaine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-283
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-283
+// Notes: 
+// Osmoregulatory: proV, proW, proX; non-osmoregulatory: osmF, yehY, yehX, yehW
+Transporter GlycineBetaineABCTransporter(glycineBetaine_periplasm + ATP + H2O --> glycineBetaine_cytosol + ADP + P + H);

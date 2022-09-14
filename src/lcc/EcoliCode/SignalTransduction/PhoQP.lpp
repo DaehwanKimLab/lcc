@@ -1,0 +1,10 @@
+// PhoQP
+// input: PhoQ + ATP
+// output: PhoP-P + ADP
+// DB: EcoCyc
+// - PWY0-1458
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1458
+pathway PhoQP(PhoQ + ATP --> PhoP-P + ADP)
+{
+
+}

@@ -1,0 +1,11 @@
+// Aerotaxis_Aer
+// input: Aer-CheW-CheA + CheY + ATP
+// output: CheY-P + ADP
+// DB: EcoCyc
+// - PWY0-1519
+// Aer sense redox state changes via FAD cofactor 
+// See: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1519
+pathway Aerotaxis_Aer(Aer-CheW-CheA + CheY + ATP --> CheY-P + ADP)
+{
+
+}

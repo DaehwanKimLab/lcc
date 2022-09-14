@@ -1,0 +1,9 @@
+// IronGPCTranporter
+// target: iron
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-424
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-424
+// Notes: 
+// feoB
+Transporter IronGPCTranporter(iron_periplasm + GTP + H2O --> iron_cytosol + GDP + P + H);

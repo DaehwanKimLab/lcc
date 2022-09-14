@@ -1,0 +1,10 @@
+// 2-O-alpha-mannosyl-D-glyceratePTSTransporter
+// target: 2-O-alpha-mannosyl-D-glycerate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-2522
+// EC Number: 2.7.1.195
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-2522
+// Notes: 
+// mngA
+Transporter 2-O-alpha-mannosyl-D-glyceratePTSTransporter(2-O-alpha-mannosyl-D-glycerate_periplasm + HPr-P --> 2-O-(6P-alpha-mannosyl)-D-glycerate_cytosol + HPr);

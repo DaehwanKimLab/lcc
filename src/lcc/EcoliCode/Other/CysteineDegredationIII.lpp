@@ -1,0 +1,10 @@
+// CysteineDegredationIII
+// input: cysteine
+// output: pyruvate + hydrogensulfide
+// DB: EcoCyc
+// - PWY-5329
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY-5329
+pathway CysteineDegredationIII(cysteine --> pyruvate + hydrogensulfide)
+{
+
+}

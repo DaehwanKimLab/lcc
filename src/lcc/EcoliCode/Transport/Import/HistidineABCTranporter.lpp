@@ -1,0 +1,10 @@
+// HistidineABCTranporter
+// target: histidine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-14-RXN
+// EC Number: 7.4.2.1
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-14-RXN
+// Notes: 
+// hisP, hisM, hisQ, hisJ
+Transporter HistidineABCTranporter(histidine_periplasm + ATP + H2O --> histidine_cytosol + ADP + P + H);

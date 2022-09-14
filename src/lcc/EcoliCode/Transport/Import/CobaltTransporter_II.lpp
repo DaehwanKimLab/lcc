@@ -1,0 +1,9 @@
+// CobaltTransporter_II
+// target: cobalt
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-8
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-8
+// Notes: 
+// zupT
+Transporter CobaltTransporter_II(cobalt_periplasm --> cobalt_cytosol);

@@ -1,0 +1,10 @@
+// LeucineABCTransporter
+// target: leucine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-312
+// EC Number: 7.4.2.2
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-312
+// Notes: 
+// livK, livM, livH, livG, livF, livJ
+Transporter LeucineABCTransporter(leucine_periplasm + ATP + H2O --> leucine_cytosol + ADP + P + H);

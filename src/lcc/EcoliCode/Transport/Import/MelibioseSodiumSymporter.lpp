@@ -1,0 +1,7 @@
+// MelibioseSodiumSymporter
+// target: melibiose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-94A
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-94A
+Transporter MelibioseSodiumSymporter(melibiose_periplasm + Na_periplasm --> melibiose_cytosol + Na_cytosol);

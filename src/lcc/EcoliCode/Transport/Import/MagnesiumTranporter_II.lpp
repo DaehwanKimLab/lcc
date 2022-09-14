@@ -1,0 +1,10 @@
+// MagnesiumTranporter_II
+// target: magnesium
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-250
+// EC Number: 7.2.2.14
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-250
+// Notes: 
+// MgtA
+Transporter MagnesiumTranporter_II(magnesium_periplasm --> magnesium_cytosol);

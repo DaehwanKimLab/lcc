@@ -1,0 +1,10 @@
+// D-glucopyranosePTSTransporter_III
+// target: D-glucopyranose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-518
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-518
+// Notes: 
+// BglF
+Transporter D-glucopyranosePTSTransporter_III(D-glucopyranose_periplasm + HPr-P --> D-glucopyranose-6P_cytosol + HPr);

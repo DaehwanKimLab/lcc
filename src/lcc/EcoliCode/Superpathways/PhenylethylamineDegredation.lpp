@@ -1,0 +1,10 @@
+// PhenylethylamineDegredation
+// input: 2-phenylethylamine
+// output: succinyl-CoA
+// DB: EcoCyc
+// - PWY-6071
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY-6071
+pathway PhenylethylamineDegredation(2-phenylethylamine --> succinyl-CoA)
+{
+
+}

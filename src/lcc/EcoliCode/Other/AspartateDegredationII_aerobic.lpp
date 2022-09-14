@@ -1,0 +1,10 @@
+// AspartateDegredationII_aerobic
+// input: aspartate
+// output: glutamine
+// DB: EcoCyc
+// - PWY-8291
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY-8291
+pathway AspartateDegredationII_aerobic(aspartate --> glutamine)
+{
+
+}

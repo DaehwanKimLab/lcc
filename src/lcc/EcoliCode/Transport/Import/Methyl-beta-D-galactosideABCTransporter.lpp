@@ -1,0 +1,7 @@
+// Methyl-beta-D-galactosideABCTransporter
+// target: methyl-beta-D-galactoside
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-541
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-541
+Transporter Methyl-beta-D-galactosideABCTransporter(methyl-beta-D-galactoside_periplasm + ATP + H2O --> methyl-beta-D-galactoside_cytosol + ADP + P + H);

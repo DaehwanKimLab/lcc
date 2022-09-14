@@ -1,0 +1,7 @@
+// SulfateProtonSymporter
+// target: sulfate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-586
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-586
+Transporter SulfateProtonSymporter(sulfate_periplasm + H_periplasm --> sulfate_cytosol + H_cytosol);

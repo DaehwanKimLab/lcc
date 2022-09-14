@@ -1,0 +1,9 @@
+// FumarateProtonSymport_II
+// target: fumarate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-299
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-299
+// Notes: 
+// FumarateProtonSymport_II uses DcuB and is anaerobic.
+Transporter FumarateProtonSymport_II(fumarate_periplasm + 3 H_periplasm --> fumarate_cytosol + 3 H_cytosol);

@@ -1,0 +1,12 @@
+// ArginineDegredation_III
+// input: arginine
+// intermediate: agmatine
+// output: putrescine
+// DB: EcoCyc
+// - PWY0-823
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-823
+pathway ArginineDegredation_III
+{
+    reaction arginine2agmatine(arginine --> agmatine);
+    reaction agmatine2putrescine(agmatine --> putrescine);
+}

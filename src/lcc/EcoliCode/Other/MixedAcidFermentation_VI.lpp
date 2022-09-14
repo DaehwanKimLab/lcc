@@ -1,0 +1,13 @@
+// MixedAcidFermentation_VI
+// input: phosphoenolpyruvate
+// intermediate: ['pyruvate', 'acetyl-CoA']
+// output: ethanol
+// DB: EcoCyc
+// - FERMENTATION-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=FERMENTATION-PWY
+pathway MixedAcidFermentation_VI
+{
+    reaction phosphoenolpyruvate2pyruvate(phosphoenolpyruvate --> pyruvate);
+    reaction pyruvate2acetyl-CoA(pyruvate --> acetyl-CoA);
+    reaction acetyl-CoA2ethanol(acetyl-CoA --> ethanol);
+}

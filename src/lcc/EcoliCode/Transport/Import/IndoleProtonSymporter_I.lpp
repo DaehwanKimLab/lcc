@@ -1,0 +1,9 @@
+// IndoleProtonSymporter_I
+// target: tryptophan
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-142
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-142
+// Notes: 
+// Mtr
+Transporter IndoleProtonSymporter_I(tryptophan_periplasm + H_periplasm --> tryptophan_cytosol + H_cytosol);

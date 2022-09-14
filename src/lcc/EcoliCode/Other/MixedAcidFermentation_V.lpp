@@ -1,0 +1,13 @@
+// MixedAcidFermentation_V
+// input: phosphoenolpyruvate
+// intermediate: ['pyruvate', 'formate']
+// output: CO2 + H2
+// DB: EcoCyc
+// - FERMENTATION-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=FERMENTATION-PWY
+pathway MixedAcidFermentation_V
+{
+    reaction phosphoenolpyruvate2pyruvate(phosphoenolpyruvate --> pyruvate);
+    reaction pyruvate2formate(pyruvate --> formate);
+    reaction formate2CO2 + H2(formate --> CO2 + H2);
+}

@@ -1,0 +1,9 @@
+// IndoleProtonSymporter_II
+// target: <indole>
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-142
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-142
+// Notes: 
+// Mtr
+Transporter IndoleProtonSymporter_II(<indole>_periplasm + H_periplasm --> <indole>_cytosol + H_cytosol);

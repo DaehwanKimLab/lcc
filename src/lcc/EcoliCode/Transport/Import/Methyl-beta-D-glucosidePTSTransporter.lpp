@@ -1,0 +1,10 @@
+// Methyl-beta-D-glucosidePTSTransporter
+// target: Methyl-beta-D-glucoside
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-518
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-518
+// Notes: 
+// BglF
+Transporter Methyl-beta-D-glucosidePTSTransporter(Methyl-beta-D-glucoside_periplasm + HPr-P --> Methyl-beta-D-glucoside-6P_cytosol + HPr);

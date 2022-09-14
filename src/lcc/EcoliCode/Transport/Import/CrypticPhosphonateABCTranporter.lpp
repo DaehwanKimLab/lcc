@@ -1,0 +1,10 @@
+// CrypticPhosphonateABCTranporter
+// target: crypticPhosphonate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-23-RXN
+// EC Number: 7.3.2.2
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-23-RXN
+// Notes: 
+// phnC, phnE, phnD
+Transporter CrypticPhosphonateABCTranporter(crypticPhosphonate_periplasm + ATP + H2O --> crypticPhosphonate_cytosol + ADP + P + H);

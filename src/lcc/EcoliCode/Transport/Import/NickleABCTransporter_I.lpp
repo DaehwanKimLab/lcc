@@ -1,0 +1,8 @@
+// NickleABCTransporter_I
+// target: Ni2+
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-20-RXN
+// EC Number: 7.2.2.-
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-20-RXN
+Transporter NickleABCTransporter_I(Ni2+_periplasm + ATP + H2O --> Ni2+_cytosol + ADP + P + H);

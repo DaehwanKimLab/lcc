@@ -1,0 +1,10 @@
+// EvgSA
+// input: EvgS + ATP
+// output: EvgA-P + ADP
+// DB: EcoCyc
+// - PWY0-1490
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1490
+pathway EvgSA(EvgS + ATP --> EvgA-P + ADP)
+{
+
+}

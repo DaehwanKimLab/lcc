@@ -1,0 +1,9 @@
+// D-ribopyranoseABCTranporter
+// target: D-ribopyranose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - ABC-28-RXN
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=ABC-28-RXN
+// Notes: 
+// rbsA, rbsC, rbsB
+Transporter D-ribopyranoseABCTranporter(D-ribopyranose_periplasm + ATP + H2O --> D-ribopyranose_cytosol + ADP + P + H);

@@ -1,0 +1,7 @@
+// Fructose-6PPhosphateAntiporter
+// target: Fructose-6P
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-501
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-501
+Transporter Fructose-6PPhosphateAntiporter(Fructose-6P_periplasm + phosphate_cytosol --> Fructose-6P_cytosol + phosphate_periplasm);

@@ -1,0 +1,12 @@
+// ethyleneglycolDegredation
+// input: ethyleneGlycol
+// intermediate: glycolaldehyde
+// output: glycolate
+// DB: EcoCyc
+// - PWY0-1280
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-1280
+pathway ethyleneglycolDegredation
+{
+    protein fucO(ethyleneGlycol --> glycolaldehyde);
+    protein aldA(glycolaldehyde --> glycolate);
+}

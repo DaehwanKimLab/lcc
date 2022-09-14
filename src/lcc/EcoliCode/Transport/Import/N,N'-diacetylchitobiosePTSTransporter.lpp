@@ -1,0 +1,10 @@
+// N,N'-diacetylchitobiosePTSTransporter
+// target: N,N'-diacetylchitobiose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-155B
+// EC Number: 2.7.1.196
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-155B
+// Notes: 
+// chbA, chbC, chbB
+Transporter N,N'-diacetylchitobiosePTSTransporter(N,N'-diacetylchitobiose_periplasm + HPr-P --> N,N'-diacetylchitobiose-6'P_cytosol + HPr);

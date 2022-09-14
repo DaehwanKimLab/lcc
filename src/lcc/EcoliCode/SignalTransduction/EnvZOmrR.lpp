@@ -1,0 +1,10 @@
+// EnvZOmrR
+// input: EnvZ + ATP
+// output: OmrR-P + ADP
+// DB: EcoCyc
+// - PWY0-1500
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1500
+pathway EnvZOmrR(EnvZ + ATP --> OmrR-P + ADP)
+{
+
+}

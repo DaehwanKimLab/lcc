@@ -1,0 +1,8 @@
+// MaltotrioseABCTransporter
+// target: maltotriose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-504
+// EC Number: 7.5.2.1
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-504
+Transporter MaltotrioseABCTransporter(maltotriose_periplasm + ATP + H2O --> maltotriose_cytosol + ADP + P + H);

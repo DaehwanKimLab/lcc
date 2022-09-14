@@ -1,0 +1,7 @@
+// NicotinamideRibosideTransporter_I
+// target: nicotinamideRibose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-481
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-481
+Transporter NicotinamideRibosideTransporter_I(nicotinamideRibose_periplasm --> nicotinamideRibose_cytosol);

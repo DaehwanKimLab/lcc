@@ -1,0 +1,7 @@
+// Methyl-beta-D-GalactosideProtonSymporter
+// target: Methyl-beta-D-Galactoside
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-94A
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-94A
+Transporter Methyl-beta-D-GalactosideProtonSymporter(Methyl-beta-D-Galactoside_periplasm + H_periplasm --> Methyl-beta-D-Galactoside_cytosol + H_cytosol);

@@ -1,0 +1,12 @@
+// Aerotaxis_Tsr
+// input: Tsr-CheW-CheA + CheY + ATP
+// output: CheY-P + ADP
+// DB: EcoCyc
+// - PWY0-1519
+// Notes: 
+// Tsr changes in proton motive force 
+// See: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1519
+pathway Aerotaxis_Tsr(Tsr-CheW-CheA + CheY + ATP --> CheY-P + ADP)
+{
+
+}

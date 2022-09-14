@@ -1,0 +1,8 @@
+// D-glucosaminePTSTransporter
+// target: D-glucosamine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-167A
+// EC Number: 2.7.1.191
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-167A
+Transporter D-glucosaminePTSTransporter(D-glucosamine_periplasm + HPr-P --> D-glucosamine-6P_cytosol + HPr);

@@ -1,0 +1,10 @@
+// GlutathioneABCTransporter
+// target: glutathione
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-11
+// EC Number: 7.4.2.10
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-11
+// Notes: 
+// gsiA, gsiB, gsiD, gsiC
+Transporter GlutathioneABCTransporter(glutathione_periplasm + ATP + H2O --> glutathione_cytosol + ADP + P + H);

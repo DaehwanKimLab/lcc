@@ -1,0 +1,10 @@
+// GlutamineDegredation
+// input: glutamine
+// output: glutamate
+// DB: EcoCyc
+// - GLUTAMINDEG-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=GLUTAMINDEG-PWY
+pathway GlutamineDegredation(glutamine --> glutamate)
+{
+
+}

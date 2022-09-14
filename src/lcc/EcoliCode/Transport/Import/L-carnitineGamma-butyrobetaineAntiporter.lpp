@@ -1,0 +1,9 @@
+// L-carnitineGamma-butyrobetaineAntiporter
+// target: L-carnitine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-100
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-100
+// Notes: 
+// caiT
+Transporter L-carnitineGamma-butyrobetaineAntiporter(L-carnitine_periplasm + gamma-butyrobetaine_cytosol --> L-carnitine_cytosol + gamma-butyrobetaine_periplasm);

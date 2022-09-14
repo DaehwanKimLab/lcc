@@ -1,0 +1,9 @@
+// NitriteTransporter
+// target: Nitrite
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-239
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-239
+// Notes: 
+// NarU, NarK
+Transporter NitriteTransporter(Nitrite_periplasm --> Nitrite_cytosol);

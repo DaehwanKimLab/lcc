@@ -1,0 +1,10 @@
+// DcuSR
+// input: DcuS + ATP
+// output: DcuR-P + ADP
+// DB: EcoCyc
+// - PWY0-1468
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1468
+pathway DcuSR(DcuS + ATP --> DcuR-P + ADP)
+{
+
+}

@@ -1,0 +1,7 @@
+// preQ0Transporter
+// target: preQ0
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-412
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-412
+Transporter preQ0Transporter(preQ0_periplasm --> preQ0_cytosol);

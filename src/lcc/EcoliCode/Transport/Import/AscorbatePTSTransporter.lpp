@@ -1,0 +1,8 @@
+// AscorbatePTSTransporter
+// target: L-ascorbate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-2461
+// EC Number: 2.7.1.194
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-2461
+Transporter AscorbatePTSTransporter(L-ascorbate_periplasm + HPr-P --> L-ascorbate-6P_cytosol + HPr);

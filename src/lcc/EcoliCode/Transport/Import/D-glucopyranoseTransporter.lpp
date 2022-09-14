@@ -1,0 +1,7 @@
+// D-glucopyranoseTransporter
+// target: D-glucopyranose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-574
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-574
+Transporter D-glucopyranoseTransporter(D-glucopyranose_periplasm --> D-glucopyranose_cytosol);

@@ -1,0 +1,10 @@
+// GlrKR
+// input: GlrK + ATP
+// output: GlrR-P + ADP
+// DB: EcoCyc
+// - PWY0-1503
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1503
+pathway GlrKR(GlrK + ATP --> GlrR-P + ADP)
+{
+
+}

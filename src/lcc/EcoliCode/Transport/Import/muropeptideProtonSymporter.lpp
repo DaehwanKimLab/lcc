@@ -1,0 +1,9 @@
+// muropeptideProtonSymporter
+// target: <muropeptide>
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-258
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-258
+// Notes: 
+// ampG
+Transporter muropeptideProtonSymporter(<muropeptide>_periplasm + H_periplasm --> <muropeptide>_cytosol + H_cytosol);

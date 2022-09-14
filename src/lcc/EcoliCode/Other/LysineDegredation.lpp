@@ -1,0 +1,10 @@
+// LysineDegredation
+// input: lysine
+// output: succinate + 2-oxoglutarate
+// DB: EcoCyc
+// - PWY0-461
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-461
+pathway LysineDegredation(lysine --> succinate + 2-oxoglutarate)
+{
+
+}

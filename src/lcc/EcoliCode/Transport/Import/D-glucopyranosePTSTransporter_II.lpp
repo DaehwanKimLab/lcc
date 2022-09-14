@@ -1,0 +1,10 @@
+// D-glucopyranosePTSTransporter_II
+// target: D-glucopyranose
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-157
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-157
+// Notes: 
+// Mannose Specific PTS enzymeII: manZ, manY, manX
+Transporter D-glucopyranosePTSTransporter_II(D-glucopyranose_periplasm + HPr-P --> D-glucopyranose-6P_cytosol + HPr);

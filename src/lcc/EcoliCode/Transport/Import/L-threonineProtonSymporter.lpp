@@ -1,0 +1,9 @@
+// L-threonineProtonSymporter
+// target: L-threonine
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-72
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-72
+// Notes: 
+// tdcC
+Transporter L-threonineProtonSymporter(L-threonine_periplasm + H_periplasm --> L-threonine_cytosol + H_cytosol);

@@ -1,0 +1,9 @@
+// D-galactarateProtonSymporter_II
+// target: D-galactarate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-203
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-203
+// Notes: 
+// GalactarateProtonSymporter_I -- gudP; GalactarateProtonSymporter_II -- garP
+Transporter D-galactarateProtonSymporter_II(D-galactarate_periplasm + H_periplasm --> D-galactarate_cytosol + H_cytosol);

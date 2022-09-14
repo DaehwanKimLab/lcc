@@ -1,0 +1,7 @@
+// OrotateProtonSymporter
+// target: orotate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-121C
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-121C
+Transporter OrotateProtonSymporter(orotate_periplasm + 2 H_periplasm --> orotate_cytosol + 2 H_cytosol);

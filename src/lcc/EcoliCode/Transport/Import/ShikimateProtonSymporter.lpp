@@ -1,0 +1,9 @@
+// ShikimateProtonSymporter
+// target: shikimate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-27
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-27
+// Notes: 
+// shiA
+Transporter ShikimateProtonSymporter(shikimate_periplasm + H_periplasm --> shikimate_cytosol + H_cytosol);

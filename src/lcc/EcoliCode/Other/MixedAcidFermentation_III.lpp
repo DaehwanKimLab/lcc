@@ -1,0 +1,12 @@
+// MixedAcidFermentation_III
+// input: phosphoenolpyruvate
+// intermediate: ['pyruvate']
+// output: R-lactate
+// DB: EcoCyc
+// - FERMENTATION-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=FERMENTATION-PWY
+pathway MixedAcidFermentation_III
+{
+    reaction phosphoenolpyruvate2pyruvate(phosphoenolpyruvate --> pyruvate);
+    reaction pyruvate2R-lactate(pyruvate --> R-lactate);
+}

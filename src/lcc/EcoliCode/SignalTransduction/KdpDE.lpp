@@ -1,0 +1,10 @@
+// KdpDE
+// input: KdpD + ATP
+// output: KdpE-P + ADP
+// DB: EcoCyc
+// - PWY0-1495
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1495
+pathway KdpDE(KdpD + ATP --> KdpE-P + ADP)
+{
+
+}

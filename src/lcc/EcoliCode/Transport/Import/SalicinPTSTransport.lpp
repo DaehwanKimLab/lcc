@@ -1,0 +1,10 @@
+// SalicinPTSTransport
+// target: salicin
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-153A
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-153A
+// Notes: 
+// AscF
+Transporter SalicinPTSTransport(salicin_periplasm + HPr-P --> salicin-6P_cytosol + HPr);

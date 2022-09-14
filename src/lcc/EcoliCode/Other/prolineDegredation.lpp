@@ -1,0 +1,10 @@
+// prolineDegredation
+// input: proline
+// output: glutamate
+// DB: EcoCyc
+// - PROUT-PWY-I
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PROUT-PWY-I
+pathway prolineDegredation(proline --> glutamate)
+{
+
+}

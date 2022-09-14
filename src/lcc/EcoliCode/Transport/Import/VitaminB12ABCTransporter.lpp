@@ -1,0 +1,8 @@
+// VitaminB12ABCTransporter
+// target: cob(II)inamide
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-296
+// EC Number: 7.6.2.8r
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-296
+Transporter VitaminB12ABCTransporter(cob(II)inamide_periplasm + ATP + H2O --> cob(II)inamide_cytosol + ADP + P + H);

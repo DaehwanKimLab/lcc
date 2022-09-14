@@ -1,0 +1,10 @@
+// Chemotaxis_Trg_galactose_CheY
+// input: Trg + ATP + galactose
+// output: CheY-P + ADP
+// DB: EcoCyc
+// - PWY0-1518
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1518
+pathway Chemotaxis_Trg_galactose_CheY(Trg + ATP + galactose --> CheY-P + ADP)
+{
+
+}

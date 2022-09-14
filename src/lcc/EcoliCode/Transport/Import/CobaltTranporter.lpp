@@ -1,0 +1,9 @@
+// CobaltTranporter
+// target: cobalt
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-141
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-141
+// Notes: 
+// corA
+Transporter CobaltTranporter(cobalt_periplasm --> cobalt_cytosol);

@@ -1,0 +1,10 @@
+// GlutamateDegredationIX
+// input: glutamate
+// output: GABA
+// DB: EcoCyc
+// - PWY0-1305
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=PWY0-1305
+pathway GlutamateDegredationIX(glutamate --> GABA)
+{
+
+}

@@ -1,0 +1,12 @@
+// MixedAcidFermentation_I
+// input: phosphoenolpyruvate
+// intermediate: oxaloacetate
+// output: succinate
+// DB: EcoCyc
+// - FERMENTATION-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=FERMENTATION-PWY
+pathway MixedAcidFermentation_I
+{
+    reaction phosphoenolpyruvate2oxaloacetate(phosphoenolpyruvate --> oxaloacetate);
+    reaction oxaloacetate2succinate(oxaloacetate --> succinate);
+}

@@ -1,0 +1,10 @@
+// TorTSR
+// input: TorS + ATP
+// output: TorR-P + ADP
+// DB: EcoCyc
+// - PWY0-1506
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1506
+pathway TorTSR(TorS + ATP --> TorR-P + ADP)
+{
+
+}

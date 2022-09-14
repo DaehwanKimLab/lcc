@@ -1,0 +1,10 @@
+// glycerophosphodieseterABCTransporter
+// target: <glycerophosphodieseter>
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-573
+// EC Number: 7.6.2.10
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-573
+// Notes: 
+// ugpC, ugpA, ugpE, ugpB
+Transporter glycerophosphodieseterABCTransporter(<glycerophosphodieseter>_periplasm + ATP + H2O --> <glycerophosphodieseter>_cytosol + ADP + P + H);

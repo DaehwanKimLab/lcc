@@ -1,0 +1,7 @@
+//  2,3-dioxo-L-gulonateSodiumSymporter
+// target: 2,3-dioxo-L-gulonate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-235
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-235
+Transporter 2,3-dioxo-L-gulonateSodiumSymporter(2,3-dioxo-L-gulonate_periplasm + Na_periplasm --> 2,3-dioxo-L-gulonate_cytosol + Na_cytosol);

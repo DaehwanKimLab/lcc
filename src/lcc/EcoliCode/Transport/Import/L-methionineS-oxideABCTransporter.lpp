@@ -1,0 +1,10 @@
+// L-methionineS-oxideABCTransporter
+// target: L-methionineS-oxide
+// periplasm --> cytosol
+// DB: EcoCyc
+// - RXN0-4522
+// EC Number: 7.4.2.11
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=RXN0-4522
+// Notes: 
+// metN, metI, metQ
+Transporter L-methionineS-oxideABCTransporter(L-methionineS-oxide_periplasm + ATP + H2O --> L-methionineS-oxide_cytosol + ADP + P + H);

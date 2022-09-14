@@ -1,0 +1,10 @@
+// NtrBC
+// input: NtrB + ATP
+// output: NtrC-P + ADP
+// DB: EcoCyc
+// - PWY0-1509
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1509
+pathway NtrBC(NtrB + ATP --> NtrC-P + ADP)
+{
+
+}

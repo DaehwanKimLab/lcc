@@ -1,0 +1,7 @@
+// fructofuronateProtonSymporter
+// target: fructofuronate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-81
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-81
+Transporter fructofuronateProtonSymporter(fructofuronate_periplasm + H_periplasm --> fructofuronate_cytosol + H_cytosol);

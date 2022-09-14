@@ -1,0 +1,7 @@
+// PantothenateSodiumSymporter
+// target: (R)-pantothenate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-117
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-117
+Transporter PantothenateSodiumSymporter((R)-pantothenate_periplasm + Na_periplasm --> (R)-pantothenate_cytosol + Na_cytosol);

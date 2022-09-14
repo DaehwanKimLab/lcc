@@ -1,0 +1,7 @@
+// FumarateProtonSymport_I
+// target: fumarate
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-299
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-299
+Transporter FumarateProtonSymport_I(fumarate_periplasm + 3 H_periplasm --> fumarate_cytosol + 3 H_cytosol);

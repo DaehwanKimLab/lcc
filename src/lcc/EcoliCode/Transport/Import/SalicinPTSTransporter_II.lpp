@@ -1,0 +1,10 @@
+// SalicinPTSTransporter_II
+// target: salicin
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN0-518
+// EC Number: 2.7.1.199
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN0-518
+// Notes: 
+// BglF
+Transporter SalicinPTSTransporter_II(salicin_periplasm + HPr-P --> salicin-6P_cytosol + HPr);

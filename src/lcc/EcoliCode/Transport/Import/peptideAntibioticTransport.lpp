@@ -1,0 +1,9 @@
+// peptideAntibioticTransport
+// target: <PeptideAntibiotic>
+// periplasm --> cytosol
+// DB: EcoCyc
+// - TRANS-RXN-205A
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?object=TRANS-RXN-205A
+// Notes: 
+// sbmA
+Transporter peptideAntibioticTransport(<PeptideAntibiotic>_periplasm --> <PeptideAntibiotic>_cytosol);
