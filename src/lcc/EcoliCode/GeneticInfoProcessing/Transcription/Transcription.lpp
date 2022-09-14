@@ -1,16 +1,20 @@
+// Donghoon M. Lee
 // Transcription
 
 import SigmaFactor
 import RNAP
-// import Rho
+import Rho
 
-process Transcription 
+pathway Transcription 
 {
-    DNA Promoter = sigmafactor.consensusbindingsite;
+    // Sigma factors for initial RNAP recruitment to the promoter
+    sigmafactor SigmaFactor.sigmafactor;
     
-    polymerase p(RNAP.RNAPCore); 
-    initiation i(transcriptionstartsite);
-    termination t(stopcodons); // temporary termination mechanism
+    // RNA polymerase for transcription
+    polymerase RNAPCore = RNAP.RNAPCore;
+    copmlex RNAPHolo = RNAP.RNAPHolo;
     
-    complex RNAPHolo(RNAPCore + sigma_factor + Promoter, Kd=1e-10;);
+    // Rho-dependent termination for an additional termination mechanism
+    protein Rho = Rho.Rho;
+    complex RC, RC_RNA = Rho.RC, Rho.RC_RNA;
 }

@@ -1,35 +1,33 @@
+// Donghoon M. Lee
 // RNA polymerase
 
-protein RpoB, RpoC, RpoA, RpoZ; // RNAP subunits
-DNA Promoter = sigmafactor.consensusbindingsite;
+import SigmaFactor
+
+// protein RpoB, RpoC, RpoA, RpoZ; // RNAP subunits
+DNA Promoter = sigmafactor.consensus_binding_site;
 
 polymerase RNAPCore // temporary termination mechanism
 {
-    complex c(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);   // complex syntax understood beta, beta', alpha, omega --> core
+    // complex c(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);   // complex syntax understood beta, beta', alpha, omega --> core
     reaction r1(dsDNA --> ssDNA + ssDNA);   // unwinding dsDNA
-    reaction r2(RNA_{n} + nt --> RNA_{n+1} + ppi, r=60, template=ssDNA);   // ssDNA-dependent RNA polymerization reaction
-    
+    reaction r2(RNA_{n} + NTP + RNAPCore@RNA_{n} --> RNA_{n+1} + NDP + ppi + RNAPCore@{n+1}, // TODO: of RNA??
+                r=60, 
+                template=ssDNA, 
+                start=transcriptionstartsite, 
+                end=terminatorhairpin);   // ssDNA-dependent RNA polymerization reaction
+
     domain SFbinding
     {
-        bind b(sigmafactor, Kd=1e-10);
+        bind b(sigmafactor, Kd=1e-5);
     }
+    
     domain DNAbinding
     {
         bind b(dsDNA, Kd=1e-3); // relatively weak binding on its own, where sigma factor binding will drive its initial recruitment to the dsDNA
-    }
-
-    if (DNAbinding--transcriptionstartsite)
-    {
-        SFbinding.b(Kd=1);
     }
 }
 
 complex RNAPHolo
 {
-    complex c(RNAPCore + sigmafactor--Promoter --> RNAPHolo + Promoter, Kd=1e-7); // is Kd appropriate?
-    
+    complex c(RNAPCore + sigmafactor@Promoter --> RNAPHolo@Promoter, Kd=1e-7); // is Kd appropriate?
 }
-
-// or 
-// complex RNAPHolo;
-// reaction R(RNAPCore + sigmafactor--Promoter --> RNAPHolo + Promoter, Kd=1e-7);
