@@ -1,12 +1,16 @@
 // Transcription
 
-import TranscriptionInitiation as Initiation
-import TranscriptionElongation as Elongation
-import TranscriptionTermination as Termination
+import SigmaFactor
+import RNAP
+// import Rho
 
-pathway Transcription 
+process Transcription 
 {
-    pathway Initiation;
-    pathway Elongation;
-    pathway Termination;
+    DNA Promoter = sigmafactor.consensusbindingsite;
+    
+    polymerase p(RNAP.RNAPCore); 
+    initiation i(transcriptionstartsite);
+    termination t(stopcodons); // temporary termination mechanism
+    
+    complex RNAPHolo(RNAPCore + sigma_factor + Promoter, Kd=1e-10;);
 }

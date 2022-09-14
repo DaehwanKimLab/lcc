@@ -1,9 +1,0 @@
-// Sigma Factors
-
-protein RpoD(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma70, housekeeping, –10 (TATAAT) and –35 (TTGACA)
-protein FecI(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma19, ferric citrate sigma factor for iron transport and metabolism
-protein RpoE(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma24, extreme heat stress response and extracellular proteins
-protein RpoF(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma28 (or FliA), flagellar synthesis and chemotaxis
-protein RpoH(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma32, heat shock
-protein RpoS(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma38, starvation phase
-protein RpoN(DNA_binding = dsDNA.promoter @ -10 & -35); // sigma54, nitrogen-limitation

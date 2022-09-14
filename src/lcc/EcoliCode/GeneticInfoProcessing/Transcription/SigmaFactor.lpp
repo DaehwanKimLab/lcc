@@ -1,0 +1,33 @@
+// Sigma Factor
+
+// Reference:
+// Sigma Factors, R.R. Burgess, Encyclopedia of Genetics, 2001
+// Table 1. The seven sigma factors of Escherichia coli
+// Factor[a]	Gene	    Number of amino acid residues	Size (kDa)	Consensus binding site[b]	Genes regulated
+// σ70 (σD)	    rpoD	    613	                            70	        TTGACA–N17–TATAAT	        Housekeeping
+// σ54 (σN)	    rpoN (ntrA)	477	                            54	        CTGGCAC–N5–TTGCA	        Nitrogen metabolism
+// σS	        rpoS (katF)	362	                            38	        TTGACA–N12–TGTGCTATACT	    Stationary phase
+// σ32 (σH)	    rpoH (htpR)	284	                            32	        CTTGAA–N14–CCCCATNT	        Heat shock
+// σF (σ28)	    fliA	    239	                            28	        TAAA–N15–GCCGATAA	        Flagellar proteins
+// σE	        rpoE	    191	                            24	        GAACTT–N16–TCTGA	        Extreme heat shock
+// σfecI	    fecI	    173	                            19	        GGAAAT–N17–TC	            Iron transport
+// [a] Alternative names are given in parenthesis.
+// [b] Nx indicates any x number of nucleotides.
+
+sigmafactor RpoD(ds(TTGACANNNN NNNNNNNNNN NNNTATAATN)); // sigma70, housekeeping, –10 (TATAAT) and –35 (TTGACA)
+sigmafactor FecI(ds(GGAAATNNNN NNNNNNNNNN NNNTCNNNNN)); // sigma19, ferric citrate sigma factor for iron transport and metabolism
+sigmafactor RpoE(ds(GAACTTNNNN NNNNNNNNNN NNTCTGANNN)); // sigma24, extreme heat stress response and extracellular proteins
+sigmafactor RpoF(ds(TAAANNNNNN NNNNNNNNNG CCGATAANNN)); // sigma28 (or FliA), flagellar synthesis and chemotaxis
+sigmafactor RpoH(ds(CTTGAANNNN NNNNNNNNNN CCCCATNTNN)); // sigma32, heat shock
+sigmafactor RpoS(ds(TTGACANNNN NNNNNNNNTG TGCTATACTN)); // sigma38, starvation phase
+sigmafactor RpoN(ds(CTGGCACNNN NNTTGCANNN NNNNNNNNNN)); // sigma54, nitrogen-limitation
+
+    // All sigma factors will have internal compilation as follows
+    //  sigmafactor RpoD
+    //  {
+    //      domain PromoterBinding
+    //      {
+    //          bind b(ds(TTGACANNNN NNNNNNNNNN NNNTATAATN), Kd=1e-15);
+    //      }
+    //  }
+    
