@@ -1,0 +1,11 @@
+// CobalaminBiosynthesis_aerobic
+// input: uroporphyrinogen-III
+// intermediate: precorrin2
+// output: cobyrinate_a,c-diamide
+// DB: KEGG
+// - M00925
+pathway CobalaminBiosynthesis_aerobic
+{
+    reaction uroporphyrinogen-III2precorrin2(uroporphyrinogen-III --> precorrin2);
+    reaction precorrin22cobyrinate_a,c-diamide(precorrin2 --> cobyrinate_a,c-diamide);
+}

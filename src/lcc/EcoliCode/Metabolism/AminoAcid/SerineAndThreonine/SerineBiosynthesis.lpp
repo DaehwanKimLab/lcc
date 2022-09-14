@@ -1,0 +1,9 @@
+// Serine Biosynthesis
+// input: glycerate-3P   
+// output: serine
+// DB: 
+// - KEGG M00020
+pathway SerineBiosynthesis(glycerate-3P --> serine)
+{
+    
+}

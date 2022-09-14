@@ -1,0 +1,9 @@
+// L-threo-TetrahydrobiopterinBiosynthesis
+// input: GTP
+// output: L-threo-BH4
+// DB: KEGG
+// - M00843
+pathway L-threo-TetrahydrobiopterinBiosynthesis(GTP --> L-threo-BH4)
+{
+
+}

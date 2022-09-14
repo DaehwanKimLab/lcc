@@ -1,0 +1,11 @@
+// LysineDependentAcidResistance
+// input: lysine + H
+// output: cadaverine + CO2
+// DB: EcoCyc
+// - PWY0-1601
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1601
+pathway LysineDependentAcidResistance
+{
+    protein ldcC(lysine + H --> cadaverine + CO2);
+    protein cadA(lysine + H --> cadaverine + CO2);
+}

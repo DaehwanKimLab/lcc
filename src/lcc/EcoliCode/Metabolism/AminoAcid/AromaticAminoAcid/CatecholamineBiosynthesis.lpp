@@ -1,0 +1,12 @@
+// CatecholamineBiosynthesis
+// input: tyrosine
+// intermediate: ['dopamine', 'noradrenaline']
+// output: adrenaline
+// DB: KEGG
+// - M00042
+pathway CatecholamineBiosynthesis
+{
+    reaction tyrosine2dopamine(tyrosine --> dopamine);
+    reaction dopamine2noradrenaline(dopamine --> noradrenaline);
+    reaction noradrenaline2adrenaline(noradrenaline --> adrenaline);
+}

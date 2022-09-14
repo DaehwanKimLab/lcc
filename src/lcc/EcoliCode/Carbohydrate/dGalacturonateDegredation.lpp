@@ -1,0 +1,6 @@
+// D-Galacturonate Degredation
+// input: D-galacturonate   
+// output: pyruvate + D-glyceraldehyde 3P
+// DB: 
+// - KEGG M00631
+pathway dGalacturonateDegredation(D-galacturonate --> pyruvate + D-glyceraldehyde-3P);

@@ -1,0 +1,4 @@
+pathway PyrimidineDeoxyribonucleotideBiosynthesis(UDP --> dTTP) // UTP, CDP, CTP
+{
+
+}

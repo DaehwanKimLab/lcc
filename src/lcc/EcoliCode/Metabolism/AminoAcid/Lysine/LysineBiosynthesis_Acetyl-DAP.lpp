@@ -1,0 +1,9 @@
+// LysineBiosynthesis_Acetyl-DAP
+// input: aspartate
+// output: lysine
+// DB: KEGG
+// - M00525
+pathway LysineBiosynthesis_Acetyl-DAP(aspartate --> lysine)
+{
+
+}

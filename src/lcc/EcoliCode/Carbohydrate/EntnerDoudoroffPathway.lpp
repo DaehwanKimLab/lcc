@@ -1,0 +1,6 @@
+// Entner-Doudoroff Pathway
+// input: glucose-6P
+// output: glyceraldehyde-3P + pyruvate
+// DB: 
+// - KEGG M00008
+pathway EntnerDoudoroffPathway(glucose-6P --> glyceraldehyde-3P + pyruvate);

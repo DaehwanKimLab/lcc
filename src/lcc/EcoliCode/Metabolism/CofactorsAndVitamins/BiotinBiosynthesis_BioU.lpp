@@ -1,0 +1,9 @@
+// BiotinBiosynthesis_BioU
+// input: pimeloyl-ACP + CoA
+// output: biotin
+// DB: KEGG
+// - M00950
+pathway BiotinBiosynthesis_BioU(pimeloyl-ACP + CoA --> biotin)
+{
+
+}

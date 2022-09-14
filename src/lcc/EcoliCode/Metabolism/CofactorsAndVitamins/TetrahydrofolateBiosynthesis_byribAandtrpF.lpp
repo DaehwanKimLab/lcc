@@ -1,0 +1,9 @@
+// TetrahydrofolateBiosynthesis_byribAandtrpF
+// input: GTP
+// output: THF
+// DB: KEGG
+// - M00840
+pathway TetrahydrofolateBiosynthesis_byribAandtrpF(GTP --> THF)
+{
+
+}

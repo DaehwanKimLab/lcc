@@ -1,0 +1,6 @@
+// Pentose phosphate pathway, non-oxidative phase
+// input: fructose-6P  
+// output: ribose-5P
+// DB: 
+// - KEGG M00007
+pathway PentosePhosphatePathway_NonOxPhase(fructose-6P --> ribose-5P);

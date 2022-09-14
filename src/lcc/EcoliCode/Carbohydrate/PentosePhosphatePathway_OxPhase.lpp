@@ -1,0 +1,6 @@
+// Pentose phosphate pathway, oxidative phase
+// input: glucose-6P   
+// output: ribulose-5P
+// DB: 
+// - KEGG M00006
+pathway PentosePhosphatePathway_OxPhase(glucose-6P --> ribulose-5P);

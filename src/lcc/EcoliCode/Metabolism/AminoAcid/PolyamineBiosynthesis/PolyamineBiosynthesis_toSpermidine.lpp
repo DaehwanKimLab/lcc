@@ -1,0 +1,12 @@
+// PolyamineBiosynthesis_toSpermidine
+// input: arginine
+// intermediate: ['agmatine', 'putrescine']
+// output: spermidine
+// DB: KEGG
+// - M00133
+pathway PolyamineBiosynthesis_toSpermidine
+{
+    reaction arginine2agmatine(arginine --> agmatine);
+    reaction agmatine2putrescine(agmatine --> putrescine);
+    reaction putrescine2spermidine(putrescine --> spermidine);
+}

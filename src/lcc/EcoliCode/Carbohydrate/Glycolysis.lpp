@@ -1,0 +1,6 @@
+// Glycolysis
+// input: Glucose   
+// output: 2 pyruvate + 2 NADH + 2 ATP
+// DB: 
+// - KEGG M00001
+pathway Glycolysis(glucose + 2 Pi + 2 ADP + 2 NAD --> 2 pyruvate + 2 ATP + 2 NADH + 2 H + 2 H2O);

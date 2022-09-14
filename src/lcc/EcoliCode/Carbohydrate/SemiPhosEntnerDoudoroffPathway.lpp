@@ -1,0 +1,9 @@
+// Semi-phosphorylative Entner-Doudoroff pathway
+// input: gluconate/galactonate
+// output: glycerate-3P 
+// DB: 
+// - KEGG M00308, M00633
+pathway SemiPhosEntnerDoudoroffPathway{
+    reaction fromGluconate(gluconate --> glycerate-3P);
+    reaction fromGalactonate(galactonate --> glycerate-3P);
+}

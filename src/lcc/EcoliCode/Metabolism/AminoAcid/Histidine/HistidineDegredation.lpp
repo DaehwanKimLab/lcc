@@ -1,0 +1,11 @@
+// HistidineDegredation
+// input: histidine
+// intermediate: N-formiminoglutamate
+// output: glutamate
+// DB: KEGG
+// - M00045
+pathway HistidineDegredation
+{
+    reaction histidine2N-formiminoglutamate(histidine --> N-formiminoglutamate);
+    reaction N-formiminoglutamate2glutamate(N-formiminoglutamate --> glutamate);
+}

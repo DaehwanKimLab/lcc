@@ -1,0 +1,6 @@
+// D-galactonate Degredation
+// input: D-galactonate  
+// output: glycerate-3P
+// DB: 
+// - KEGG M00552
+pathway dGalactonateDegredation(D-galactonate --> glycerate-3P);

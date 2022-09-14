@@ -1,0 +1,6 @@
+// Galactose Degredation
+// input: galactose   
+// output: alpha-D-glucose-1P
+// DB: 
+// - KEGG M00632
+pathway galactoseDegredation(galactose --> alpha-D-glucose-1P);

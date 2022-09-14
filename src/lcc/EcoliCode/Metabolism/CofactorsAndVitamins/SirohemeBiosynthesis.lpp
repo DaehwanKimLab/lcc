@@ -1,0 +1,9 @@
+// SirohemeBiosynthesis
+// input: glutamyl-tRNA
+// output: siroheme
+// DB: KEGG
+// - M00846
+pathway SirohemeBiosynthesis(glutamyl-tRNA --> siroheme)
+{
+
+}

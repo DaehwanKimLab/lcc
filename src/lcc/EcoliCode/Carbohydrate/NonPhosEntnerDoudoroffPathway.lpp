@@ -1,0 +1,9 @@
+// Non-phosphorylative Entner-Doudoroff pathway
+// input: gluconate/galactonate
+// output: glycerate
+// DB: 
+// - KEGG M00309
+pathway NonPhosEntnerDoudoroffPathway{
+    reaction fromGluconate(gluconate --> glycerate);
+    reaction fromGalactonate(galactonate --> glycerate);
+}

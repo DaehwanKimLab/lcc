@@ -1,0 +1,9 @@
+// CyanogenicGlycosideBiosynthesis
+// input: tyrosine
+// output: dhurrin
+// DB: KEGG
+// - M00369
+pathway CyanogenicGlycosideBiosynthesis(tyrosine --> dhurrin)
+{
+
+}

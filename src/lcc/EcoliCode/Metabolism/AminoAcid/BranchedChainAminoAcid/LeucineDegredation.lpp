@@ -1,0 +1,9 @@
+// LeucineDegredation
+// input: leucine
+// output: acetoacetate + Acetyl-CoA
+// DB: KEGG
+// - M00036
+pathway LeucineDegredation(leucine --> acetoacetate + Acetyl-CoA)
+{
+
+}

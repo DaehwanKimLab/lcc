@@ -1,0 +1,12 @@
+// ArsenicDetox
+// input: arsenate + glutathione + 2 H + {reduced glutaredoxin}
+// output: arsenousAcid + {[glutaredoxin]-glutathione disulfide} + H2O
+// DB: EcoCyc
+// - PWY-4621
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY-4621
+// Notes: 
+// Again this one had a class of molecules instead of a specific one
+pathway ArsenicDetox
+{
+    protein arsC(arsenate + glutathione + 2 H + {reduced glutaredoxin} --> arsenousAcid + {[glutaredoxin]-glutathione disulfide} + H2O);
+}

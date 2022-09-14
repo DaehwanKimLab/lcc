@@ -1,0 +1,4 @@
+pathway DeoxyribonucleotideBiosynthesis(ADP --> dATP) // also for ADP, GCP, UDP
+{
+
+}

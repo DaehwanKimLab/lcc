@@ -1,0 +1,12 @@
+// SuperoxideRadicalDegredation
+// input: 4 superoxide
+// intermediate: 2 H2O2
+// output: O2
+// DB: EcoCyc
+// - DETOX1-PWY
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=DETOX1-PWY
+pathway SuperoxideRadicalDegredation
+{
+    reaction superoxidetToH2O2(4 superoxide --> 2 H2O2);
+    reaction H2O2ToO2(2 H2O2 --> O2);
+}

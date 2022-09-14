@@ -1,0 +1,7 @@
+// oxidative:       G6P + NADP+ --> R5P + NADPH + CO2
+// non-oxidative:   F6P --> R5P
+
+pathway PentosePhosphatePathway(G6P + NADP+ + H2O--> R5P + NADPH + CO2)
+{
+
+}

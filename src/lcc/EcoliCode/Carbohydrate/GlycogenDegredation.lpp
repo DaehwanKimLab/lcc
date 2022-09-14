@@ -1,0 +1,6 @@
+// Glycogen Degredation
+// input: glycogen 
+// output: glucose-6P
+// DB: 
+// - KEGG M00855
+pathway GlycogenDegredation(glycogen --> glucose-6P);

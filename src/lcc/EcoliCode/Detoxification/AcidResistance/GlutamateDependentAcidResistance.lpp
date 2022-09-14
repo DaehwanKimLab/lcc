@@ -1,0 +1,11 @@
+// GlutamateDependentAcidResistance
+// input: glutamate + H
+// output: 4-aminobutanoate + CO2
+// DB: EcoCyc
+// - PWY0-1305
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1305
+pathway GlutamateDependentAcidResistance
+{
+    protein gadB(glutamate + H --> 4-aminobutanoate + CO2);
+    protein gadA(glutamate + H --> 4-aminobutanoate + CO2);
+}

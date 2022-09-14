@@ -1,0 +1,9 @@
+// CoenzymeF430Biosynthesis
+// input: sirohydrochlorin
+// output: CoenzymeF430
+// DB: KEGG
+// - M00836
+pathway CoenzymeF430Biosynthesis(sirohydrochlorin --> CoenzymeF430)
+{
+
+}

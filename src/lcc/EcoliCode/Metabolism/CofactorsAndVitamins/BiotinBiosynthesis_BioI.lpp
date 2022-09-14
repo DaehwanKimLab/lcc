@@ -1,0 +1,11 @@
+// BiotinBiosynthesis_BioI
+// input: long-chain-acyl-ACP
+// intermediate: pimeloyl-ACP
+// output: biotin
+// DB: KEGG
+// - M00573
+pathway BiotinBiosynthesis_BioI
+{
+    reaction long-chain-acyl-ACP2pimeloyl-ACP(long-chain-acyl-ACP --> pimeloyl-ACP);
+    reaction pimeloyl-ACP2biotin(pimeloyl-ACP --> biotin);
+}

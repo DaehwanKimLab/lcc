@@ -1,0 +1,4 @@
+pathway AdenineRibonucleotideBiosynthesis(IMP --> ADP) // and ATP
+{
+
+}

@@ -1,0 +1,6 @@
+// Gluconeogenesis
+// input: oxaloacetate   
+// output: F6P
+// DB: 
+// - KEGG M00003
+pathway Gluconeogenesis(oxaloacetate --> fructose-6P);

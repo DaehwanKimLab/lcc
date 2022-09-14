@@ -1,0 +1,10 @@
+// MethylglyoxalDegredation_III
+// input: methylglyoxal
+// output: (S)-propane-1,2-diol
+// DB: EcoCyc
+// - PWY-5453
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY-5453
+pathway MethylglyoxalDegredation_III(methylglyoxal --> (S)-propane-1,2-diol)
+{
+
+}

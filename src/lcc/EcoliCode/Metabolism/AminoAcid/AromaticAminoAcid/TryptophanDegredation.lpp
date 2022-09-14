@@ -1,0 +1,11 @@
+// TryptophanDegredation
+// input: tryptophan
+// intermediate: kynurenine
+// output: 2-aminomuconate
+// DB: KEGG
+// - M00038
+pathway TryptophanDegredation
+{
+    reaction tryptophan2kynurenine(tryptophan --> kynurenine);
+    reaction kynurenine22-aminomuconate(kynurenine --> 2-aminomuconate);
+}

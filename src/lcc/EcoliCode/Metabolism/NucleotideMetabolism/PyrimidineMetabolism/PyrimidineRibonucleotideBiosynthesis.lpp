@@ -1,0 +1,4 @@
+pathway PyrimidineRibonucleotideBiosynthesis(UMP --> UDP) // UTP, CDP, CTP
+{
+
+}

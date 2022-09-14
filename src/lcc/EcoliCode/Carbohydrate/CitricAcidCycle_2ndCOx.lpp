@@ -1,0 +1,6 @@
+// Citrate cycle, second carbon oxidation
+// input: alpha-ketoglutarate  
+// output: oxaloacetate
+// DB: 
+// - KEGG M00011
+pathway CitricAcidCycle_2ndCOx(alpha-ketoglutarate --> oxaloacetate);

@@ -1,0 +1,6 @@
+// Glycogen Biosynthesis
+// input: glucose-1P  
+// output: glycogen
+// DB: 
+// - KEGG M00854
+pathway GlycogenBiosynthesis(glucose-1P --> glycogen);

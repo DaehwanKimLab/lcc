@@ -1,0 +1,9 @@
+// HomoprotocatechuateDegredation
+// input: homoprotocatechuate
+// output: 2-oxohept-3-enedioate
+// DB: KEGG
+// - M00533
+pathway HomoprotocatechuateDegredation(homoprotocatechuate --> 2-oxohept-3-enedioate)
+{
+
+}

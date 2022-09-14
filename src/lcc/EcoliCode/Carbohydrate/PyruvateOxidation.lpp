@@ -1,0 +1,10 @@
+// Pyruvate Oxidation
+// input: pyruvate   
+// output: acetyl-CoA
+// DB: 
+// - KEGG M00307
+pathway PyruvateOxidation(pyruvate --> acetyl-CoA)
+{
+    
+}
+

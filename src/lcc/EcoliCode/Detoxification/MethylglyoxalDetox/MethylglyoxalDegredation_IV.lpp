@@ -1,0 +1,10 @@
+// MethylglyoxalDegredation_IV
+// input: methylglyoxal
+// output: pyruvate
+// DB: EcoCyc
+// - PWY-5459
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY-5459
+pathway MethylglyoxalDegredation_IV(methylglyoxal --> pyruvate)
+{
+
+}

@@ -1,0 +1,4 @@
+pathway PyruvateOxidation(pyruvate + NAD + CoA --> acetyl-CoA + CO2 + NADH + H)
+{
+
+}

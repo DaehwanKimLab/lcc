@@ -1,0 +1,9 @@
+// UbiquinoneBiosynthesis
+// input: chorismate + polyprenyl-PP
+// output: ubiquinol
+// DB: KEGG
+// - M00117
+pathway UbiquinoneBiosynthesis(chorismate + polyprenyl-PP --> ubiquinol)
+{
+
+}

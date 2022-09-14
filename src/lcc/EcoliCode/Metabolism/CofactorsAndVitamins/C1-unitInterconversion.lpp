@@ -1,0 +1,9 @@
+// C1-unitInterconversion
+// input: THF
+// output: 10-CHO-THF
+// DB: KEGG
+// - M00140
+pathway C1-unitInterconversion(THF --> 10-CHO-THF)
+{
+
+}

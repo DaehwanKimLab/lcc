@@ -1,0 +1,11 @@
+// IsoleucineBiosynthesis_threonine
+// input: threonine
+// intermediate: 2-oxobutanoate
+// output: isoleucine
+// DB: KEGG
+// - M00570
+pathway IsoleucineBiosynthesis_threonine
+{
+    reaction threonine22-oxobutanoate(threonine --> 2-oxobutanoate);
+    reaction 2-oxobutanoate2isoleucine(2-oxobutanoate --> isoleucine);
+}

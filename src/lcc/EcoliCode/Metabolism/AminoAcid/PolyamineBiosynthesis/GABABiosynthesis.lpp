@@ -1,0 +1,9 @@
+// GABABiosynthesis
+// input: putrescine
+// output: GABA
+// DB: KEGG
+// - M00136
+pathway GABABiosynthesis(putrescine --> GABA)
+{
+
+}

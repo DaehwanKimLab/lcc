@@ -1,0 +1,9 @@
+// TyrosineDegredation
+// input: tyrosine
+// output: homogentisate
+// DB: KEGG
+// - M00044
+pathway TyrosineDegredation(tyrosine --> homogentisate)
+{
+
+}

@@ -1,0 +1,6 @@
+// Ascorbate Degredation
+// input: ascorbate  
+// output: D-xylulose-5P
+// DB: 
+// - KEGG M00550
+pathway AscorbateDegredation(ascorbate --> D-xylulose-5P);

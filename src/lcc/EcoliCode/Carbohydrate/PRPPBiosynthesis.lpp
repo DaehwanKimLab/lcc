@@ -1,0 +1,6 @@
+// PRPP biosynthesis
+// input: ribose-5P  
+// output: PRPP
+// DB: 
+// - KEGG M00005
+pathway PRPPBiosynthesis(ribose-5P --> PRPP);

@@ -1,0 +1,9 @@
+// Nucleotide Sugar Biosynthesis
+// input: glucose/galactose
+// output: UDP-glucose/UDP-galactose
+// DB: 
+// - KEGG M00549/M00554
+pathway NucleotideSugarBiosynthesis{
+    reaction fromGlucose(glucose --> UDP-glucose);
+    reaction fromGalactose(galactose --> UDP-galactose);
+}

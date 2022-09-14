@@ -1,0 +1,10 @@
+// ArginineDependentAcidResistance
+// input: arginine + H
+// output: agmatine + CO2
+// DB: EcoCyc
+// - PWY0-1299
+// Link: https://biocyc.org/ECOLI/NEW-IMAGE?type=PATHWAY&object=PWY0-1299
+pathway ArginineDependentAcidResistance
+{
+    protein adiA(arginine + H --> agmatine + CO2)
+}

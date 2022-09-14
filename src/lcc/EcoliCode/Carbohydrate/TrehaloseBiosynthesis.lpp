@@ -1,0 +1,6 @@
+// Trehalose Biosynthesis
+// input: D-glucose-1P 
+// output: trehalose
+// DB: 
+// - KEGG M00565
+pathway TrehaloseBiosynthesis(D-glucose-1P --> trehalose);

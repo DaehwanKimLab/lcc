@@ -1,0 +1,6 @@
+// Pectin Degredation
+// input: Pectin   
+// output: D-galacturonate
+// DB: 
+// - KEGG M00081
+pathway pectinDegredation(pectin --> D-galacturonate);
