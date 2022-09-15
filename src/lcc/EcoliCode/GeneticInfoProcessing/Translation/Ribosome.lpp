@@ -24,20 +24,20 @@ complex 70SInitiationComplex(70SPreinitiationComplex - IF1 - IF2 - GDP - Pi);
 
 polymerase 70SElongationComplex(peptide_{n} + aa --> peptide_{n+1} + H2O, r=20, template=mRNA)
 {
-    complex 70SInitiationComplex + tRNA;
+    complex c(70SInitiationComplex + tRNA);
 
     domain ASite
     {
-        bind aminoacy-tRNA;
+        bind b(aminoacy-tRNA);
     }
 
     domain PSite
     {
-        bind peptidyl-tRNA;
+        bind b(peptidyl-tRNA);
     }
 
     domain ESite
     {
-        bind tRNA;
+        bind b(tRNA);
     }
 }
