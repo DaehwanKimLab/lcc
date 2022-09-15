@@ -18,20 +18,21 @@ complex RNAPHolo
     // All Kd values need to be figured out.
     
     // scenario #1: a sigma factor binds to its cognate promoter, then a RNAPCore binds to a DNA-bound sigma factor 
-    reaction SFtoDNA(sigmafactor + promoter --> sigmafactor|promoter, Kd=1e-7);
+    reaction SFtoDNA(sigmafactor + promoter --> sigmafactor|promoter);
     reaction all(RNAPCore + sigmafactor|promoter --> self, Kd=1e-7);
 
     // scenario #2
-    reaction RNAPtoDNA(RNAPHolo + promoter --> RNAPHolo|promoter, Kd=1e-10);
-    reaction all2(RNAHolo|promoter + sigmafactor --> self, Kd=1e-7);
+    reaction RNAPtoDNA(RNAPCore + promoter --> RNAPCore|promoter, Kd=1e-4);
+    reaction all2(RNAPCore|promoter + sigmafactor --> self, Kd=1e-7);
 }
 
 polymerase RNAP
 {
-    reaction complexation(RNAPHolo + dsDNA --> RNACore|dsDNA + sigmafactor|promoter);
-    self = RNACore|dsDNA; // equivalent to reaction r(RNACore|dsDNA --> self);
-    
-    reaction unwinding(self|dsDNA --> self|ssDNA + ssDNA, r=60);
-    reaction elongation(self|ssDNA@{n} + self|RNA_{n} + NTP --> self|ssDNA@{n+1} + self|RNA_{n+1} + PPi, r=60);
-    reaction termination(Rho|(self|RNA) + self --> RNAPCore + RhoCore + RNA + ssDNA);
+    reaction complexation(RNAPHolo + dsDNA --> self + sigmafactor|promoter); // self = RNACore|dsDNA; or alternatively reaction r(RNACore|dsDNA --> self);
+    sync s
+    {
+        reaction unwinding(self|dsDNA@{n-10:n+10} --> self|ssDNA@{n-10:n+10} + ssDNA@{n-10:n+10});
+        reaction elongation(self|ssDNA@{n} + self|RNA_{n} + NTP --> self|ssDNA@{n+1} + self|RNA_{n+1} + PPi, r=60);
+    }
+    reaction termination(RhoCore|(self|RNA) + self --> RNAPCore + RhoCore + RNA + ssDNA);
 }
