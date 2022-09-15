@@ -7,7 +7,7 @@ protein IF1 = InitiationFactor.IF1;
 protein IF2 = InitiationFactor.IF2;
 protein IF3 = InitiationFactor.IF3;
 
-trna tRNA_initiator_Met;
+tRNA tRNA_initiator_Met;
 
 protein 30S; // update to complex (many subunits)
 protein 50S; // update to complex (many subunits)
