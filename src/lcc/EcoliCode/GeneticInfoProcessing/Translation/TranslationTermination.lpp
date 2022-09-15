@@ -1,22 +1,19 @@
 // Translation termination
 
-import RNAPolymerase
+import Ribosome
 // import TerminationFactors as RFs
 
 // protein RF1 = RFs.RF1;
 // protein RF2 = RFs.RF2;
 // protein RF3 = RFs.RF3;
 
-complex 70S_EC = Ribosomes.70SElongationComplex;
-
-group<rna> StopCodons(UAA, UAG, UGA);
-
+complex 70S_EC = Ribosome.70SElongationComplex;
 
 pathway TranslationTermination
 {
-    if (70S_EC.ASite.read() == any(StopCodons))
+    if (70S_EC.ASite.read() == stopcodon)
     {
-        70S_EC.dissociate(StopCodon);
+        70S_EC.dissociate(stopcodon);
         // add: hydrolysis of the ester bond of the peptidyl-tRNA
         // 70S_EC.dissociate(RF1, RF2); // assisted by RF3
 

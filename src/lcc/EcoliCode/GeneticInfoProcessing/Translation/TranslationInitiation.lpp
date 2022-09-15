@@ -1,14 +1,14 @@
 // Translation initiation
 
-global_import tRNAs;
-global_import InitiationFactors;
-import Ribosomes;
+global_import tRNA;
+global_import InitiationFactor;
+import Ribosome;
 
-complex 30S_PIC = Ribosomes.30SPreinitiationComplex;
-complex 30S_IC = Ribosomes.30SInitiationComplex;
-complex 70S_PIC = Ribosomes.70SPreinitiationComplex;
-complex 70S_IC = Ribosomes.70SInitiationComplex;
-complex 70S_EC = Ribosomes.70SElongationComplex;
+complex 30S_PIC = Ribosome.30SPreinitiationComplex;
+complex 30S_IC = Ribosome.30SInitiationComplex;
+complex 70S_PIC = Ribosome.70SPreinitiationComplex;
+complex 70S_IC = Ribosome.70SInitiationComplex;
+complex 70S_EC = Ribosome.70SElongationComplex;
 
 pathway TranslationInitiation
 {

@@ -1,11 +1,11 @@
 // Ribosomes
 
-import InitiationFactors;
-import tRNAs;
+import InitiationFactor;
+import tRNA;
 
-protein IF1 = InitiationFactors.IF1;
-protein IF2 = InitiationFactors.IF2;
-protein IF3 = InitiationFactors.IF3;
+protein IF1 = InitiationFactor.IF1;
+protein IF2 = InitiationFactor.IF2;
+protein IF3 = InitiationFactor.IF3;
 
 trna tRNA_initiator_Met;
 
@@ -13,7 +13,7 @@ protein 30S; // update to complex (many subunits)
 protein 50S; // update to complex (many subunits)
 
 complex 30SPreinitiationComplex(30S + IF1 + IF2 + GTP + IF3);
-complex 30SInitiationComplex(30SPreinitiationComplex + tRNA_initiator_Met + mrna); // mrna needs to be defined
+complex 30SInitiationComplex(30SPreinitiationComplex + tRNA_initiator_Met + mRNA); // mrna needs to be defined
 
 complex 70SPreinitiationComplex(30SInitiationComplex + 50S)
 {
@@ -22,13 +22,13 @@ complex 70SPreinitiationComplex(30SInitiationComplex + 50S)
 
 complex 70SInitiationComplex(70SPreinitiationComplex - IF1 - IF2 - GDP - Pi);
 
-polymerase 70SElongationComplex(peptide_{n} + aa --> peptide_{n+1} + H2O, rate=20 aa/s, template=mrna)
+polymerase 70SElongationComplex(peptide_{n} + aa --> peptide_{n+1} + H2O, r=20, template=mRNA)
 {
-    complex 70SInitiationComplex + any(tRNAs);
+    complex 70SInitiationComplex + tRNA;
 
     domain ASite
     {
-        bind aminoacy-tRNAs;
+        bind aminoacy-tRNA;
     }
 
     domain PSite

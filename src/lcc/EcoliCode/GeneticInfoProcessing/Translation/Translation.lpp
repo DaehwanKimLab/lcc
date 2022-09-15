@@ -11,7 +11,7 @@ import TranslationTermination as Termination
 
 pathway Translation
 {
-    pathway Initiation;
-    pathway Elongation;
-    pathway Termination;
+    pathway Initiation = TranslationInitiation.TranslationInitiation;
+    pathway Elongation = TranslationElongation.TranslationElongation;
+    pathway Termination = TranslationTermination.TranslationTermination;
 }

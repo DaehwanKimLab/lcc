@@ -1,8 +1,8 @@
 // Translation elongation
 
-import Ribosomes
+import Ribosome
 
-polymerase 70S_EC = Ribosomes.RNAPCore;
+polymerase 70S_EC = Ribosome.RNAPCore;
 
 pathway TranslationElongation
 {
