@@ -10,7 +10,12 @@
 import RNAP
 
 RNA rut(NNNNNNNNNN NNNC); // Rho utilization site, unstructured and ribosome-free C-rich and G-poor nascent RNA, of at least 70–80 nt, with regularly spaced cytosines
-protein Rho; // homohexameric RecA-family helicase Rho
+
+protein Rho // homohexameric RecA-family helicase Rho
+{
+    bind b(Rho);
+}
+
 // protein NusG; // negative regulator of Rho
 
 complex RC // Rho complex
