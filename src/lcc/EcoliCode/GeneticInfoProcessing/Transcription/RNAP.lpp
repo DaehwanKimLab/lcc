@@ -9,7 +9,7 @@ DNA Promoter = sigmafactor.consensus_binding_site;
 polymerase RNAPCore // temporary termination mechanism
 {
     // complex c(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);   // complex syntax understood beta, beta', alpha, omega --> core
-    reaction r1(dsDNA --> ssDNA + ssDNA);   // unwinding dsDNA
+    reaction r1(dsDNA --> ssDNA + ssDNA, r=60);   // unwinding dsDNA
     reaction r2(RNA_{n} + NTP + RNAPCore@RNA_{n} --> RNA_{n+1} + NDP + ppi + RNAPCore@{n+1}, // TODO: of RNA??
                 r=60, 
                 template=ssDNA, 
