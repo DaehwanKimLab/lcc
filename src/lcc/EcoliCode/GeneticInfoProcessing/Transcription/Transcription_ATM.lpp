@@ -1,28 +1,18 @@
-// Austin Marckx
-// 2022-09-13 
-// Transcription: Sample
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// 2022-09-15
+// Version: 0.2
+// Transcription: 
+
+
+// New Syntax
+// @: location
+// |: binding
 
 from SigmaFactor import sigmafactor
 
 pathway Transcription
 {
-    // Step 1: Sigma factor binding to Promoter region:
-    // Note: I expect that the Promter container to contain all the positional information that I need 
-    reaction sigmaFactorBindPromoter({sigmafactor}_cytosol --> {sigmafactor}_promoter) 
-
-    // Step 2: RNAP binds to sigmafactor:
-    reaction sigmaRNAPComplex(RNAP_cytosol + {sigmafactor}_promoter --> sigfactRNAP_promoter)
-
-    // Step 2.5: DNA unwinding -- skip for now.
-
-    // Step 3: RNAP binds first NTP: 
-    // Syntax Note: we will need syntax that supports classes of molecules {NTP} (another example: Chemotaxis_Tap_CheY.lpp)
-    // Syntax Note: I am separating RNAP from RNAPnascent RNA so we can have ribosome binding to nascent RNA.
-    reaction RNAPInitiation(sigfactRNAP_promoter + {NTP} --> RNAP_{1} + RNAPnascentRNA_{1} + {NDP} + {sigmafactor}_promoter) // {sigmafactor}_cytosol?
-
-    // Step 4: Elongate Nascent RNA: (repeat)
-    reaction RNAPElongation(RNAP_{n} + {NTP} --> RNAP_{n+1} + RNAPnascentRNA_{n+1} + {NDP})
-
-    // Step 5: Termination:
-    reaction RNAPTermination(RNAP_{n} + RNAPnascentRNA_{n} --> RNAP_cytosol + nascentRNA_cytosol)
+    reaction initiation(RNAP + sigmafactor + promoter --> RNAPCore|RNA@promoter + sigmafactor);
+    reaction elongation(RNAPCore|RNA@{n} + NTP --> RNAPCore|RNA@{n+1} + NDP);
+    reaction termination(RNAPCore|RNA@terminator --> RNAP + RNA);
 }
