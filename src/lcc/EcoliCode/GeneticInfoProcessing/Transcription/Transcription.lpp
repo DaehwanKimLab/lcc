@@ -14,7 +14,7 @@ pathway Transcription
     polymerase RNApol = RNAP.RNAP;
     
     protein Rho = Rho.Rho;
-    complex RhoComplex = Rho.RC;
+    complex RhoComplex = Rho.RhoComplex;
 
     // Step 1. Initiation: see RNAP
     // sigma factors recruit RNAPCore to the promoter and form Holoenzyme

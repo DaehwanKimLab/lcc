@@ -10,7 +10,7 @@ import Rho
 
 complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
 complex RNAPHolo(RNAPCore + sigmafactor~promoter, Kd=1e-7);
-complex RhoComplex = Rho.RC;
+complex RhoComplex = Rho.RhoComplex;
 
 polymerase RNAP
 {
