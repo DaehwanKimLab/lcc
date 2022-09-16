@@ -1,20 +1,27 @@
-// Austin Marckx
-// 2022-09-14 
-// Translation: Sample
-// Notes:
-// step 1: mRNA ID?  As we will want (at minimum) positional information from the mRNA + template sequence 
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// 2022-09-16
+// Version: 0.2
+// Translation: 
+
+
+// New Syntax
+// _: position
+// @: location
+// |: binding
 
 from tRNA import tRNA
 
 pathway Translation
 {
     // Step 1: Ribosomal complex attaching to mRNA:
-    reaction Initiation(30S + 70S + GTP + mRNA --> activeRibosome_mRNA_{0})
+    reaction initiation(30S + 70S + GTP + mRNA --> Ribosome|nascentPolypeptide@mRNA_{0} + GDP)
 
     // Step 2: utilize charged tRNA to build nascent polypeptide
-    reaction Elongation(activeRibosome_mRNA_{i} + nascentPolypeptide_{j} + {tRNA_{charged}} --> activeRibosome_mRNA_{i+3} + nascentPolypeptide_{j+1} + {tRNA}) 
+
+    // Limitation: nascent Polypeptide is unavailable for binding until termination
+    reaction elongation(Ribosome|nascentPolypeptide@mRNA_{i} + ctRNA --> Ribosome|nascentPolypeptide@mRNA_{i+3} + tRNA) 
 
     // Step 3: Termination
-    reaction Termination(activeRibosome_mRNA_{i} + nascentPolypeptide_{j} --> 30S + 70S + mRNA + <proteinID>)
+    reaction termination(Ribosome|nascentPolypeptide@mRNA_{terminator} --> 30S + 70S + mRNA + <proteinID>)
 }
 
