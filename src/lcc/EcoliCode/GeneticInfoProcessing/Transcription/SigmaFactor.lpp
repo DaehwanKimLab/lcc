@@ -1,4 +1,4 @@
-// Donghoon M. Lee
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Sigma Factor
 
 // Reference:
@@ -24,9 +24,9 @@ sigmafactor RpoH(ds(CTTGAANNNN NNNNNNNNNN CCCCATNTNN), Kd=1e-15); // sigma32, he
 sigmafactor RpoS(ds(TTGACANNNN NNNNNNNNTG TGCTATACTN), Kd=1e-15); // sigma38, starvation phase
 sigmafactor RpoN(ds(CTGGCACNNN NNTTGCANNN NNNNNNNNNN), Kd=1e-15); // sigma54, nitrogen-limitation
 
-    // All sigma factors will have internal compilation as follows
-    //  sigmafactor RpoD
-    //  {
-    //      consensus_binding_site  ds(TTGACANNNN NNNNNNNNNN NNNTATAATN);
-    //      Kd                      1e-15;
-    //  }
+// All sigma factors will have internal compilation as follows
+//  sigmafactor RpoD
+//  {
+//      DNA promoter = ds(TTGACANNNN NNNNNNNNNN NNNTATAATN);
+//      reaction DNAbinding(self + promoter --> self~promoter, Kd=1e-15);
+//  }

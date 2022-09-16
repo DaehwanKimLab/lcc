@@ -3,36 +3,31 @@
 
 // _: length
 // @: location
-// |: binding
+// ~: binding
 
 import SigmaFactor
 import Rho
 
-complex RNAPCore
-{
-    // complex c(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10); 
-}
-
-complex RNAPHolo
-{
-    // All Kd values need to be figured out.
-    
-    // scenario #1: a sigma factor binds to its cognate promoter, then a RNAPCore binds to a DNA-bound sigma factor 
-    reaction SFtoDNA(sigmafactor + promoter --> sigmafactor|promoter);
-    reaction all(RNAPCore + sigmafactor|promoter --> self, Kd=1e-7);
-
-    // scenario #2
-    reaction RNAPtoDNA(RNAPCore + promoter --> RNAPCore|promoter, Kd=1e-4);
-    reaction all2(RNAPCore|promoter + sigmafactor --> self, Kd=1e-7);
-}
+complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
+complex RNAPHolo(RNAPCore + sigmafactor~promoter, Kd=1e-7);
+complex RhoComplex = Rho.RC;
 
 polymerase RNAP
 {
-    reaction complexation(RNAPHolo + dsDNA --> self + sigmafactor|promoter); // self = RNACore|dsDNA; or alternatively reaction r(RNACore|dsDNA --> self);
+    // transcription initiation
+    reaction loadDNA(RNAPHolo + dsDNA --> self + sigmafactor~promoter); // self = RNACore~dsDNA; or alternatively reaction r(RNACore~dsDNA --> self);
+    
+    // transcription elongation
     sync s
     {
-        reaction unwinding(self|dsDNA@{n-10:n+10} --> self|ssDNA@{n-10:n+10} + ssDNA@{n-10:n+10});
-        reaction elongation(self|ssDNA@{n} + self|RNA_{n} + NTP --> self|ssDNA@{n+1} + self|RNA_{n+1} + PPi, r=60);
+        number R = 60;
+        reaction dsDNAunwinding(self~dsDNA@{n-10:n+10} --> self~ssDNA@{n-10:n+10} + ssDNA@{n-10:n+10}, k=1e9);
+        reaction DNAtranslocation(self~ssDNA@{n} --> self~ssDNA@{n+1}, r=R);
+        reaction RNAelongation(self~RNA_{n} + NTP --> self~RNA_{n+1} + PPi, r=R);
     }
-    reaction termination(RhoCore|(self|RNA) + self --> RNAPCore + RhoCore + RNA + ssDNA);
+    
+    // transcription termination
+    reaction intrinsictermination(self@terminatorhairpin--> RNAPCore + dsDNA);
+    reaction rhodependenttermination(RhoComplex~RNA + self --> RhoComplex + RNAPCore + RNA + dsDNA);
+
 }
