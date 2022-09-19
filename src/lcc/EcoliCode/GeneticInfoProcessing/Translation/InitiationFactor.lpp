@@ -1,3 +1,12 @@
 // IFs: initiation factors
 
-protein IF1, IF2, IF3;
+protein IF1; 
+protein IF2
+{
+    // IF2 GTP loading and recycling
+    reaction GDPloading(self + GDP --> self~GDP);
+    reaction GDP2GTPexchange(self~GDP + GTP --> self~GTP + GDP);
+
+    // Note: IF2~GTP hydrolysis occurs in 70S preinitiation complex, hence is written in Ribosome.lp
+}
+protein IF3;

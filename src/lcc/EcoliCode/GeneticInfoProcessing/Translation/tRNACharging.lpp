@@ -1,6 +1,6 @@
 // tRNA charging
 
-global_import tRNAs
+global_import tRNA
 
 pathway tRNACharging
 {

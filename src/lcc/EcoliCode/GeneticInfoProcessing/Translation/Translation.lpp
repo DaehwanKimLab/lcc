@@ -5,13 +5,15 @@
 // Cold Spring Harb Perspect Biol. 2018 Sep 4;10(9):a032664.
 // https://cshperspectives.cshlp.org/content/10/9/a032664.long
 
-import TranslationInitiation as Initiation
-import TranslationElongation as Elongation
-import TranslationTermination as Termination
+import Ribosome
+import InitiationFactor as IF
+import TerminationFactor as RF
 
 pathway Translation
 {
-    pathway Initiation = TranslationInitiation.TranslationInitiation;
-    pathway Elongation = TranslationElongation.TranslationElongation;
-    pathway Termination = TranslationTermination.TranslationTermination;
+    protein IF1, IF2, IF3 = IF.IF1, IF.IF2, IF.IF3;
+    protein 30S, 50S = Ribosome.30S, Ribosome.50S;
+    complex 30S_PIC, 30S_IC, 70S_PIC, 70S_IC, 70S_EC;
+    protein RF1, RF2, RF3 = RF.RF1, RF.RF2, RF.RF3;
+    
 }

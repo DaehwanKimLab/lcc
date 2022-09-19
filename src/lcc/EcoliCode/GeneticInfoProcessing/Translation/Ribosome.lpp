@@ -9,35 +9,54 @@ protein IF3 = InitiationFactor.IF3;
 
 tRNA tRNA_initiator_Met;
 
-protein 30S; // update to complex (many subunits)
-protein 50S; // update to complex (many subunits)
-
-complex 30SPreinitiationComplex(30S + IF1 + IF2 + GTP + IF3);
-complex 30SInitiationComplex(30SPreinitiationComplex + tRNA_initiator_Met + mRNA); // mrna needs to be defined
-
-complex 70SPreinitiationComplex(30SInitiationComplex + 50S)
+protein 30S; // update to complex (23S, 5s, rRNAs: ~34 proteins)
+protein 50S // update to complex (16S, rRNA: ~21 proteins)
 {
-    reaction R(self.GTP --> self.GDP + self.Pi); // GTPhydrolysis
+    domain ASite; // aminoacyl (or acceptor) site
+    domain PSite; // peptidyl site
+    domain ESite; // exit site
 }
 
-complex 70SInitiationComplex(70SPreinitiationComplex - IF1 - IF2 - GDP - Pi);
-
-polymerase 70SElongationComplex(peptide_{n} + aa --> peptide_{n+1} + H2O, r=20, template=mRNA)
+complex 30S_PIC
 {
-    complex c(70SInitiationComplex + tRNA);
+    reaction PICassembly(30S + IF1 + IF2~GTP + IF3); // 30S Preinitiation Complex
+    reaction InitiatortRNAloading(self@PSite + tRNA_initiator_Met --> self@PSite~tRNA_initiator_Met); // initiator tRNA loading
+}
 
-    domain ASite
+complex 30S_IC(30S_PIC.PSite~tRNA_initiator_Met + mRNA.startcodon); // 30S Initiation Complex, codon recognition reaction
+complex 70S_PIC(30SInitiationComplex + 50S); // 70S Preinitiation Complex
+
+complex 70S_IC // 70S Initiation Complex
+{
+    reaction GTPhydrolysis(70SPIC --> self + IF1 + IF2~GDP + Pi);   
+}
+
+polymerase 70S_EC // 70S Elongation Complex
+{
+    // A-site tRNA loading: eg) 70S_EC.ASite.associate(EF-Tu, aa-tRNA);
+    // GTP hydrolysis
+    // accommodation
+    // peptidyl transfer
+    // Hybrid state formation and EF-G binding
+    // GTP hydrolysis
+    // translocation
+    // repetitive elongation cycles (for loop, control variable: RNA)
+
+
+    reaction tRNAloading(70S_IC@Asite + tRNA + GTP --> self + GDP + Pi); // Question: multisite binding expression?
+
+    sync s
     {
-        bind b(aminoacy-tRNA);
+        xx
+        reaction RNAtranslocation(self.Asite + self.PSite ~mRNA@{n} --> self~mRNA@{n+1}, r=R); // requires EF-Tu and EF-Ts
+        reaction peptideElongation(self~peptide_{n} + aa --> self~peptide_{n+1} + H2O, r=R);
+        xx
     }
 
-    domain PSite
-    {
-        bind b(peptidyl-tRNA);
-    }
+    // termination:
+    // https://www.onlinebiologynotes.com/translation-in-prokaryotes/
 
-    domain ESite
-    {
-        bind b(tRNA);
-    }
+    reaction termination(self.ASite@stopcodon--> );
+
+    
 }
