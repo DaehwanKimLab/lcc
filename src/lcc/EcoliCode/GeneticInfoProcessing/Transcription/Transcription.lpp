@@ -1,22 +1,22 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Transcription
 
-import RNAP;
+import RNAPolymerase;
 
 pathway Transcription 
 {
     RNAP.RNAPCore = 10nM;
     Rho.Rho = 10nM;
     
-    // Step 1. Initiation: see RNAP
+    // Step 1. Initiation: see RNAPolymerase
     // sigma factors recruit RNAPCore to the promoter and form Holoenzyme
-    set<reaction> initiation = RNAP.initiation;
+    set<reaction> initiation = RNAPolymerase.RNAP.initiation;
 
-    // Step 2. Elongation: see RNAP
+    // Step 2. Elongation: see RNAPolymerase
     // RNA polymerase moves along and unwinds dsDNA and generates and elongates RNA using gene as a template
-    set<reaction> elongation = RNAP.elongation;
+    set<reaction> elongation = RNAPolymerase.RNAP.elongation;
 
-    // Step 3. Termination: see RNAP
+    // Step 3. Termination: see RNAPolymerase
     // Transcription is either terminated by either the terminator hairpin or the RNA translocase activity of Rho complex
-    set<reaction> termination = RNAP.termination;
+    set<reaction> termination = RNAPolymerase.RNAP.termination;
 }
