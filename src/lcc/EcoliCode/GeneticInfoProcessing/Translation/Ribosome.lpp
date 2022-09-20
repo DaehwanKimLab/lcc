@@ -9,7 +9,7 @@ protein IF3 = InitiationFactor.IF3;
 
 tRNA tRNA_initiator_Met;
 
-protein 30S; // update to complex (23S, 5s, rRNAs: ~34 proteins)
+protein 30S; // update to complex (23S, 5S, rRNAs: ~34 proteins)
 protein 50S // update to complex (16S, rRNA: ~21 proteins)
 {
     domain ASite; // aminoacyl (or acceptor) site
@@ -42,10 +42,8 @@ polymerase 70S_EC // 70S Elongation Complex
     // translocation
     // repetitive elongation cycles (for loop, control variable: RNA)
 
-
     reaction tRNAloading(70S_IC@Asite + tRNA + GTP --> self + GDP + Pi); // Question: multisite binding expression?
 
-    sync s
     {
         xx
         reaction RNAtranslocation(self.Asite + self.PSite ~mRNA@{n} --> self~mRNA@{n+1}, r=R); // requires EF-Tu and EF-Ts
@@ -56,7 +54,5 @@ polymerase 70S_EC // 70S Elongation Complex
     // termination:
     // https://www.onlinebiologynotes.com/translation-in-prokaryotes/
 
-    reaction termination(self.ASite@stopcodon--> );
-
-    
+    reaction termination(self.ASite~mRNA.stopcodon--> );    
 }
