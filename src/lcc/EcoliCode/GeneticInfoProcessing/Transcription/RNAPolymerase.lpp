@@ -24,7 +24,7 @@ polymerase RNAP
         float R = 60;
         reaction dsDNAunwinding(self~dsDNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
         reaction DNAtranslocation(self~ssDNA{n} --> self~ssDNA{n+1}, r=R);
-        reaction RNAelongation(self~ssDNA.N{n} + self~RNA_{n} + NTP --> self~RNA_{n+1} + PPi, r=R);
+        reaction RNAelongation(self~RNA_{n} + NTP(self~ssDNA.N{n}) --> self~RNA_{n+1} + PPi, r=R);
     }
     
     // transcription termination
