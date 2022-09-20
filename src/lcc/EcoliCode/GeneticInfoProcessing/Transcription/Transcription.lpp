@@ -11,13 +11,13 @@ pathway Transcription
     // Step 1. Initiation: see RNAP
     // sigma factors recruit RNAPCore to the promoter and form Holoenzyme
     // see RNAP
-    reaction initiation = RNAP.loadDNA;
+    set<reaction> initiation = RNAP.initiation;
 
     // Step 2. Elongation: see RNAP
     // RNA polymerase generates and elongates RNA using gene as a template
-    reaction elongation = RNAP.elongation;
+    set<reaction> elongation = RNAP.elongation;
 
     // Step 3. Termination: see RNAP
     // Transcription is either terminated by either the terminator hairpin or the RNA translocase activity of Rho complex
-    reaction termination = RNAP.termination;
+    set<reaction> termination = RNAP.termination;
 }

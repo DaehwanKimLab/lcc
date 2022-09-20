@@ -30,3 +30,20 @@ sigmafactor RpoN(ds(CTGGCACNNN NNTTGCANNN NNNNNNNNNN), Kd=1e-15); // sigma54, ni
 //      DNA promoter = ds(TTGACANNNN NNNNNNNNNN NNNTATAATN);
 //      reaction DNAbinding(self + promoter --> self~promoter, Kd=1e-15);
 //  }
+
+RpoD = 5nM;
+FecI = 1nM;
+RpoE = 1nM;
+RpoF = 5nM;
+RpoH = 5nM;
+RpoS = 1nM;
+RpoN = 1nM;
+
+reference RichardBurgess_2013
+{
+    title = "Sigma Factors";
+    doi = "10.1006/rwgn.2001.1192";
+    // vol = "Vol. 2001, Pages 1831-1834";
+    // date = "December 6, 2003";
+    // doi_url = "doi.org/10.1006/rwgn.2001.1192";
+}

@@ -1,9 +1,11 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // RNA polymerase
 
-// _: length
-// .: location
-// ~: binding
+// _ : length
+// . : location
+// ~ : binding
+// []: absolute time
+// {}: positional reference (subject to reivision)
 
 import SigmaFactor;
 import Rho;
@@ -15,17 +17,26 @@ complex RhoComplex = Rho.RhoComplex;
 polymerase RNAP
 {
     // transcription initiation
-    reaction loadDNA(RNAPHolo + dsDNA --> self + sigmafactor~promoter); // self = RNACore~dsDNA; or alternatively reaction r(RNACore~dsDNA --> self);
-
-    // transcription elongation
+    set<reaction> initiation
     {
-   	 float R = 60;
-    	 reaction dsDNAunwinding(self~dsDNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
-    	 reaction DNAtranslocation(self~ssDNA{n} --> self~ssDNA{n+1}, r=R);
-    	 reaction RNAelongation(self~ssDNA.N{n} + self~RNA_{n} + NTP --> self~RNA_{n+1} + PPi, r=R);
+        reaction DNAloading(RNAPHolo + dsDNA --> self + sigmafactor~promoter); // self = RNACore~dsDNA; or alternatively reaction r(RNACore~dsDNA --> self);
+    }
+    
+    // transcription elongation
+    set<reaction> elongation
+    {
+   	    {
+            float R = 60;
+    	    reaction dsDNAunwinding(self~dsDNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
+    	    reaction DNAtranslocation(self~ssDNA{n} --> self~ssDNA{n+1}, r=R);
+    	    reaction RNAelongation(self~ssDNA.N{n} + self~RNA_{n} + NTP --> self~RNA_{n+1} + PPi, r=R);
+        }
     }
     
     // transcription termination
-    reaction intrinsictermination(self@terminatorhairpin--> RNAPCore + dsDNA);
-    reaction rhodependenttermination(RhoComplex~RNA + self --> RhoComplex + RNAPCore + RNA + dsDNA);
+    set<reaction> termination
+    {
+        reaction intrinsicTermination(self~RNA.terminatorhairpin --> RNAPCore + dsDNA);
+        reaction rhoDependentTermination(RhoComplex~RNA + self --> RhoComplex + RNAPCore + RNA + dsDNA);
+    }
 }

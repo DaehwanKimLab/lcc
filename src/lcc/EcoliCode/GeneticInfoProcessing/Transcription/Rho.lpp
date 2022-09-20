@@ -14,7 +14,7 @@ complex RhoComplex // Rho complex
 {
     reaction complexation(6 Rho --> self, Kd=1e-10);
     reaction RNAbinding(self + rut_repeat -> self~rut_repeat);
-    reaction translocation(self~rut_repeat@{n} + ATP --> self~rut_repeat@{n+1} + ADP + Pi, r=120); // faster RNA translocation of RhoComplex than RNA elongation by RNAP
+    reaction translocation(self~rut_repeat{n} + ATP --> self~rut_repeat{n+1} + ADP + Pi, r=120); // faster RNA translocation of RhoComplex than RNA elongation by RNAP
 }
 
 reference RaySoni_2016
