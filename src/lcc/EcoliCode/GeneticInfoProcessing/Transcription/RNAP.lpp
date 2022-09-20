@@ -2,11 +2,11 @@
 // RNA polymerase
 
 // _: length
-// @: location
+// .: location
 // ~: binding
 
-import SigmaFactor
-import Rho
+import SigmaFactor;
+import Rho;
 
 complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
 complex RNAPHolo(RNAPCore + sigmafactor~promoter, Kd=1e-7);
@@ -19,14 +19,13 @@ polymerase RNAP
 
     // transcription elongation
     {
-   	 number R = 60;
-    	 reaction dsDNAunwinding(self~dsDNA@{n-10:n+10} --> self~ssDNA@{n-10:n+10} + ssDNA@{n-10:n+10}, k=1e9);
-    	 reaction DNAtranslocation(self~ssDNA@{n} --> self~ssDNA@{n+1}, r=R);
-    	 reaction RNAelongation(self~ssDNA@N{n} + self~RNA_{n} + NTP --> self~RNA_{n+1} + PPi, r=R);
+   	 float R = 60;
+    	 reaction dsDNAunwinding(self~dsDNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
+    	 reaction DNAtranslocation(self~ssDNA{n} --> self~ssDNA{n+1}, r=R);
+    	 reaction RNAelongation(self~ssDNA.N{n} + self~RNA_{n} + NTP --> self~RNA_{n+1} + PPi, r=R);
     }
     
     // transcription termination
     reaction intrinsictermination(self@terminatorhairpin--> RNAPCore + dsDNA);
     reaction rhodependenttermination(RhoComplex~RNA + self --> RhoComplex + RNAPCore + RNA + dsDNA);
-
 }

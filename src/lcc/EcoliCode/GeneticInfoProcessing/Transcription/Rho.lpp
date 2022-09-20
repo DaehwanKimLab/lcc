@@ -1,13 +1,7 @@
 // Donghoon M. Lee
 // Rho-dependent transcription termination
 
-// Mechanisms of Bacterial Transcription Termination: All Good Things Must End
-// Annual Review of Biochemistry
-// Vol. 85:319-347 (Volume publication date June 2016)
-// First published online as a Review in Advance on March 17, 2016
-// https://doi.org/10.1146/annurev-biochem-060815-014844
-
-import RNAP
+import RNAP;
 
 RNA rut(NNNNNNNNNN NNNC); // Rho utilization site, unstructured and ribosome-free C-rich and G-poor nascent RNA, of at least 70–80 nt, with regularly spaced cytosines
 RNA RNA_rut_repeat = rut^{n};
@@ -16,9 +10,19 @@ protein Rho; // homohexameric RecA-family helicase Rho
 
 // protein NusG; // negative regulator of Rho
 
-complex RhoComplex(); // Rho complex
+complex RhoComplex // Rho complex
 {
     reaction complexation(6 Rho --> self, Kd=1e-10);
     reaction RNAbinding(self + rut_repeat -> self~rut_repeat);
     reaction translocation(self~rut_repeat@{n} + ATP --> self~rut_repeat@{n+1} + ADP + Pi, r=120); // faster RNA translocation of RhoComplex than RNA elongation by RNAP
+}
+
+reference RaySoni_2016
+{
+    title = "Mechanisms of Bacterial Transcription Termination: All Good Things Must End";
+    doi = "10.1146/annurev-biochem-060815-014844";
+    // journal = "Annual Review of Biochemistry";
+    // vol = "Vol. 85:319-347 (Volume publication date June 2016)";
+    // date = "March 17, 2016";
+    // doi_url = "doi.org/10.1146/annurev-biochem-060815-014844";
 }
