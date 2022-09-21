@@ -69,16 +69,19 @@ Ecocyc : (EcocycID)[link to Ecocyc]
 
 References
 ----------
-/* 1 */ 
-    Some reference to my claim in docstring.
-/* 2 */ : table 1, sigma factor promoter regions
-    Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
-/* 3 */ : Kd, RpoD
-    Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
-/* 3 */ : Kd, RpoE
-    Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
+/* 1 */ : Some reference to my claim in docstring.
+/* 1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
+    table 1, sigma factor promoter regions
+/* 1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
+    Kd, RpoD
+    Kd, RpoE
+    ...
 
 """
+
+# Some code
+sigmafactor RpoD(ds(TTGACANNNN NNNNNNNNNN NNNTATAATN), Kd=1e-15); /* 1 */
+
 ```
 
 
