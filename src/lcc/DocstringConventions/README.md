@@ -43,39 +43,54 @@ If you wish to inline cite material (such as within docstring)
 
 If a specific value is cited (such as a Kd), this should be specified in the reference section, if multiple values are cited from the same source...
 
+
+`value` -- indicates another LPP file 
+(hyperlinkTitle)[hyperlink] -- indicates text with associated hyperlink
+
+In line reference IDs will be **in future** automatically parsed into the journal citation format of your choice.  
+
 Ex: 
 ```sh
-""" These Proteins are involved in Transcription initiation /* 1 */
+""" Sigma Factors  
 
-A Short description of the protein. This protein is involved in glycolysis 
+There are 7 sigma factors in E. Coli which facilitate `RNAP` binding during transcription initiation /* RefID1 */. Here, each sigma factor is defined on the basis of its Kd and promoter binding region.
 
-Comments
---------
-I have this and that to say about this process that is more opinion or experimental observation.
+Discussion
+----------
+I have this and that to say about this process that is more opinion or experimental observation. This model does better than X model by /* RefID2 */ as shown by x, y, z.
 
 See Also
 --------
-`Glycolysis` 
+`Transcription` : LPP implementation of transcription 
+`RNAP` : LPP implementation of RNA polymerase
 
 Background
 ----------
-(Glycolysis)[https://en.wikipedia.org/wiki/Glycolysis] : A Wikipedia article describing glycolysis.
-(Glycolysis)[https://www.sciencedirect.com/topics/neuroscience/glycolysis] : Science Direct glycolysis topic  
+(Transcription)[https://en.wikipedia.org/wiki/Transcription_(biology)] : A Wikipedia article describing transcription.
+(RNAP)[https://en.wikipedia.org/wiki/RNA_polymerase] : A Wikipedia article describing RNA polymerase
 
 Database
 --------
 Uniprot : (UniprotID)[link to protein in uniprot]
 Ecocyc : (EcocycID)[link to Ecocyc]
 
+About
+-----
+Author : 
+Journal : Not published
+Version : v0.1
+VersionRelease : 
+
 References
 ----------
-/* 1 */ : Some reference to my claim in docstring.
-/* 1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
+/* RefID1 */ : Some reference to my claim in docstring.
+/* RefID1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
     table 1, sigma factor promoter regions
-/* 1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
+/* RefID1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
     Kd, RpoD
     Kd, RpoE
     ...
+/* RefID2 */ : SomeAuthor (2072) Some Title about a Model _Some Journal_ doi: someDoi
 
 """
 
