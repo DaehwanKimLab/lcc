@@ -1,14 +1,26 @@
+// Donghoon M. Lee
 // Ribosomes
 
-import InitiationFactor;
 import tRNA;
+import InitiationFactor;
+import ElongationFactor;
+import TerminationFactor;
 
 protein IF1 = InitiationFactor.IF1;
 protein IF2 = InitiationFactor.IF2;
 protein IF3 = InitiationFactor.IF3;
 
+protein EF-Tu = ElongationFactor.EF-Tu;
+protein EF-Ts = ElongationFactor.EF-Ts;
+protein EF-G = ElongationFactor.EF-G;
+
+protein RF1 = TerminationFactor.RF1;
+protein RF2 = TerminationFactor.RF2;
+protein RF3 = TerminationFactor.RF3;
+
 tRNA tRNA_initiator_Met;
 
+// initiation
 protein 30S; // update to complex (23S, 5S, rRNAs: ~34 proteins)
 protein 50S // update to complex (16S, rRNA: ~21 proteins)
 {
@@ -20,7 +32,7 @@ protein 50S // update to complex (16S, rRNA: ~21 proteins)
 complex 30S_PIC
 {
     reaction PICassembly(30S + IF1 + IF2~GTP + IF3); // 30S Preinitiation Complex
-    reaction InitiatortRNAloading(self@PSite + tRNA_initiator_Met --> self@PSite~tRNA_initiator_Met); // initiator tRNA loading
+    reaction InitiatortRNAloading(self.PSite + tRNA_initiator_Met --> self.PSite~tRNA_initiator_Met); // initiator tRNA loading
 }
 
 complex 30S_IC(30S_PIC.PSite~tRNA_initiator_Met + mRNA.startcodon); // 30S Initiation Complex, codon recognition reaction
@@ -30,6 +42,7 @@ complex 70S_IC // 70S Initiation Complex
 {
     reaction GTPhydrolysis(70SPIC --> self + IF1 + IF2~GDP + Pi);   
 }
+
 
 polymerase 70S_EC // 70S Elongation Complex
 {
@@ -42,11 +55,16 @@ polymerase 70S_EC // 70S Elongation Complex
     // translocation
     // repetitive elongation cycles (for loop, control variable: RNA)
 
-    reaction tRNAloading(70S_IC@Asite + tRNA + GTP --> self + GDP + Pi); // Question: multisite binding expression?
+    // elongation
+    {
+        reaction tRNAloading(70S_IC.ASite + EF-Tu~GTP~aa_tRNA(70S_IC~mRNA.codon{n}) --> self~EF-Tu~GTP); // self = 70S_IC~aa_tRNA
+        reaction tRNArelease(self.ESite~tRNA --> 70) // deacylated tRNA is released on next aa_tRNA loading
+    }
+    reaction GTPhydrolysis(self~GTP --> self + GDP + Pi
 
     {
         xx
-        reaction RNAtranslocation(self.Asite + self.PSite ~mRNA@{n} --> self~mRNA@{n+1}, r=R); // requires EF-Tu and EF-Ts
+        reaction RNAtranslocation(self.ASite + self.PSite~mRNA{3n} --> self~mRNA{3n+3}, r=R); // requires EF-Tu and EF-Ts
         reaction peptideElongation(self~peptide_{n} + aa --> self~peptide_{n+1} + H2O, r=R);
         xx
     }

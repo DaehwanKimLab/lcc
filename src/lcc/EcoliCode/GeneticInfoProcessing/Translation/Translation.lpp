@@ -1,3 +1,4 @@
+// Donghoon M. Lee
 // Translation
 
 // Translation in Prokaryotes
@@ -5,15 +6,45 @@
 // Cold Spring Harb Perspect Biol. 2018 Sep 4;10(9):a032664.
 // https://cshperspectives.cshlp.org/content/10/9/a032664.long
 
-import Ribosome
-import InitiationFactor as IF
-import TerminationFactor as RF
+import Ribosome;
 
 pathway Translation
 {
-    protein IF1, IF2, IF3 = IF.IF1, IF.IF2, IF.IF3;
-    protein 30S, 50S = Ribosome.30S, Ribosome.50S;
-    complex 30S_PIC, 30S_IC, 70S_PIC, 70S_IC, 70S_EC;
-    protein RF1, RF2, RF3 = RF.RF1, RF.RF2, RF.RF3;
+    Ribosome.30S = 10nM;
+    Ribosome.50S = 10nM;
+
+    // Step 1. Initiation: see Ribosome
+    // 
+    set<reaction> initiation
+    {
+        Ribosome.30S_PIC.PICassembly,
+        Ribosome.30S_PIC.InitiatortRNAloading,
+        Ribosome.30S_IC.complexation,  // default single reaction name for complex   
+        Ribosome.70S_PIC.complexation, // default single reaction name for complex   
+        Ribosome.70S_IC.GTPhydrolysis 
+    }
     
+    // Step 2. Elongation: see Ribosome
+    // 
+    set<reaction> elongation
+    {
+
+    }
+
+    // Step 3. Termination: see Ribosome
+    // 
+    set<reaction> termination 
+    {
+
+    }
+}
+
+reference ThomasSteitz_2008
+{
+    title = "A structural understanding of the dynamic ribosome machine";
+    doi = "10.1038/nrm2352";
+    // journal = "Nat Rev Mol Cell Biol";
+    // vol = "9, 242–253";
+    // date = "March, 2008";
+    // doi_url = "https://doi.org/10.1038/nrm2352";
 }

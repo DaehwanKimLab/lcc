@@ -1,11 +1,11 @@
 // Translation termination
 
-import Ribosome
-// import TerminationFactors as RFs
+import Ribosome;
+import TerminationFactor;
 
-// protein RF1 = RFs.RF1;
-// protein RF2 = RFs.RF2;
-// protein RF3 = RFs.RF3;
+protein RF1 = TerminationFactor.RF1;
+protein RF2 = TerminationFactor.RF2;
+protein RF3 = TerminationFactor.RF3;
 
 complex 70S_EC = Ribosome.70SElongationComplex;
 

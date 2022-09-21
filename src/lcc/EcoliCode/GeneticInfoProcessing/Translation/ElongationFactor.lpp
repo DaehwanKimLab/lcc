@@ -1,0 +1,18 @@
+// Donghoon M Lee
+// EFs: elongation factors
+
+protein EF-Tu // Binds GTP; bring Aminoacyl-tRNA to A-site of ribosome
+{
+    reaction ternarycomplexformation(self~GTP + aa_tRNA --> self~GTP~aminoacyl_tRNA);
+}
+
+protein EF-Ts // Generates EF-TU
+{
+    reaction GDP2GTPexchange(EF-Tu~GDP + self --> EF-Tu~self + GDP);
+    reaction GTPloading(EF-Tu~self + GTP --> EF-Tu~GTP + self);
+}
+
+protein EF-G // Helps in translocation of ribosome
+{
+    reaction GTPloading(self + GTP --> self~GTP);
+}

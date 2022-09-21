@@ -1,3 +1,6 @@
+// Donghoon M. Lee
 // RFs: Termination (Release) Factors
 
-protein RF1, RF2, RF3;
+protein RF1; // Helps to dissociates polypeptide from tRNA ribosome complex; specific for UAA and UAG
+protein RF2; // Helps to dissociates polypeptide; specific for UGA and UAA
+protein RF3; // Stimulates RF-1 and RF-2
