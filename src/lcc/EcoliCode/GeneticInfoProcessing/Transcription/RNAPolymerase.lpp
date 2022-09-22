@@ -10,6 +10,7 @@
 import SigmaFactor;
 import Rho;
 
+protein RpoB, RpoC, RpoA, RpoZ;
 complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
 complex RNAPHolo(RNAPCore + sigmafactor~promoter, Kd=1e-7);
 complex RhoComplex = Rho.RhoComplex;
@@ -17,14 +18,16 @@ complex RhoComplex = Rho.RhoComplex;
 polymerase RNAP
 {
     // transcription initiation
-    reaction DNAloading(RNAPHolo + dsDNA --> self + sigmafactor~promoter); // self = RNACore~dsDNA; or alternatively reaction r(RNACore~dsDNA --> self);
+    // self = RNACore~dsDNA
+    reaction DNAloading(RNAPHolo + dsDNA --> self + sigmafactor~promoter); 
     
     // transcription elongation
+    reaction elongation
     {
-        float R = 60;
+        float R = 60.0;
         reaction dsDNAunwinding(self~dsDNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
         reaction DNAtranslocation(self~ssDNA{n} --> self~ssDNA{n+1}, r=R);
-        reaction RNAelongation(self~RNA_{n} + NTP(self~ssDNA.N{n}) --> self~RNA_{n+1} + PPi, r=R);
+        reaction RNAelongation(self~RNA_{n} + c(NTP) + self~ssDNA.N{n} --> self~RNA_{n+1} + PPi, r=R);
     }
     
     // transcription termination

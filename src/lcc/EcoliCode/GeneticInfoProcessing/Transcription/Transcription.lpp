@@ -10,7 +10,7 @@ pathway Transcription
     
     // Step 1. Initiation: see RNAPolymerase
     // sigma factors recruit RNAPCore to the promoter and form Holoenzyme
-    set<reaction> initiation
+    reaction initiation
     {
         RNAPolymerase.RNAP.DNAloading
     }

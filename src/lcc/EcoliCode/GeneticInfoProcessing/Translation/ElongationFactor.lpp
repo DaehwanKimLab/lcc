@@ -3,7 +3,7 @@
 
 protein EF-Tu // Binds GTP; bring Aminoacyl-tRNA to A-site of ribosome
 {
-    reaction ternarycomplexformation(self~GTP + aa_tRNA --> self~GTP~aminoacyl_tRNA);
+    reaction ternarycomplexformation(self~GTP + tRNA(AA) --> self~GTP~tRNA(AA));
 }
 
 protein EF-Ts // Generates EF-TU
