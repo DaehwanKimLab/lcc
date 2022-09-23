@@ -1,0 +1,33 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Transcription
+
+import RNAPolymerase;
+
+pathway Transcription 
+{
+    RNAP.RNAPCore = 10nM;
+    Rho.Rho = 10nM;
+    
+    pathway Initiation
+    {
+        reaction RNAPCoreAssembly = RNAPolymerase.RNAPCore.Complexation;
+        reaction RNAPHoloAssembly = RNAPolymerase.RNAPHolo.Complexation;
+        reaction PromotorBinding = RNAPolymerase.RNAPHolo.PromotorBinding;
+        reaction dsDNAUnwinding = RNAPolymerase.RNAPHolo.dsDNAUnwinding;
+        reaction NascentRNAsynthesis = RNAPolymerase.RNAPHolo.NascentRNAsynthesis;
+        reaction SigmaFactorRelease = RNAPolymerase.RNAPOpen.SigmaFactorRelease;
+    }
+
+    pathway Elongation
+    {
+        reaction dsDNAUnwinding = RNAPolymerase.RNAPOpen.Elongation.dsDNAUnwinding;
+        reaction DNATranslocation = RNAPolymerase.RNAPOpen.Elongation.DNATranslocation;
+        reaction RNAElongation = RNAPolymerase.RNAPOpen.Elongation.RNAElongation;
+    }
+
+    pathway Termination
+    {
+        reaction IntrinsicTermination = RNAPolymerase.RNAPOpen.IntrinsicTermination;
+        reaction RhoDependentTermination = RNAPolymerase.RNAPOpen.RhoDependentTermination;
+    }
+}
