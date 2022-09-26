@@ -1,18 +1,17 @@
-// Donghoon M. Lee
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Rho-dependent transcription termination
 
 RNA rut(NNNNNNNNNN NNNC); // Rho utilization site, unstructured and ribosome-free C-rich and G-poor nascent RNA, of at least 70–80 nt, with regularly spaced cytosines
-RNA rut_repeat = rut^{n};
+RNA rut_repeat = rut+;
 
 protein Rho; // homohexameric RecA-family helicase Rho
-
 // protein NusG; // negative regulator of Rho
 
 complex RhoComplex // Rho complex
 {
     reaction Complexation(6 Rho, Kd=1e-10);
-    reaction RNABinding(self + rut^{6} -> self~rut^{6});
-    reaction Translocation(self~rut^{6}{n} + ATP --> self~rut^{6}{n+1} + ADP + Pi, r=120); // faster RNA translocation of RhoComplex than RNA elongation by RNAP
+    reaction RNABinding(self + rut_repeat -> self~rut_repeat);
+    reaction Translocation(self~rut_repeat{n} + ATP --> self~rut_repeat{n+1} + ADP + Pi, r=120); // faster RNA translocation of RhoComplex than RNA elongation by RNAP
 }
 
 reference RaySoni_2016

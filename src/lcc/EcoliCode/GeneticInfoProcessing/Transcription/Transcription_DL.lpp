@@ -20,9 +20,9 @@ pathway Transcription
 
     pathway Elongation
     {
-        reaction dsDNAUnwinding = RNAPolymerase.RNAPOpen.Elongation.dsDNAUnwinding;
-        reaction DNATranslocation = RNAPolymerase.RNAPOpen.Elongation.DNATranslocation;
-        reaction RNAElongation = RNAPolymerase.RNAPOpen.Elongation.RNAElongation;
+        reaction dsDNAUnwinding = RNAPolymerase.RNAPOpen.Polymerization.dsDNAUnwinding;
+        reaction DNATranslocation = RNAPolymerase.RNAPOpen.Polymerization.DNATranslocation;
+        reaction RNAElongation = RNAPolymerase.RNAPOpen.Polymerization.RNAElongation;
     }
 
     pathway Termination
