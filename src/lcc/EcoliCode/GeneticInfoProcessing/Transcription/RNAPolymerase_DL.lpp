@@ -6,7 +6,7 @@
 // ~ : binding
 // ^ : repeat
 // []: absolute time
-// {}: positional reference (subject to reivision)
+// {}: positional reference (subject to revision)
 
 import SigmaFactor;
 import Rho;

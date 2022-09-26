@@ -14,28 +14,34 @@ pathway Translation
     Ribosome.50S = 10nM;
 
     // Step 1. Initiation: see Ribosome
-    // 
-    set<reaction> initiation
+    reaction Initiation
     {
-        Ribosome.30S_PIC.PICassembly,
-        Ribosome.30S_PIC.InitiatortRNAloading,
-        Ribosome.30S_IC.complexation,  // default single reaction name for complex   
-        Ribosome.70S_PIC.complexation, // default single reaction name for complex   
-        Ribosome.70S_IC.GTPhydrolysis 
+        reaction 30S_PICAssembly = Ribosome.30S_PIC.PICAssembly;
+        reaction InitiatortRNAloading = Ribosome.30S_PIC.InitiatortRNAloading;
+        reaction 30S_ICAssembly = Ribosome.30S_IC.complexation;  // default single reaction name for complex   
+        reaction 70S_PICAssembly = Ribosome.70S_PIC.complexation; // default single reaction name for complex   
+        reaction 70S_ICAssembly = Ribosome.70S.70S_ICAssembly;
     }
     
     // Step 2. Elongation: see Ribosome
-    // 
-    set<reaction> elongation
+    reaction Elongation
     {
-
+        reaction CodonRecognition = 70S.CodonRecognition;
+        reaction GTPHydrolysis = 70S.GTPHydrolysis;
+        reaction PeptidylTransfer = 70S.PeptidylTransfer;
+        reaction EF-G_Binding = 70S.EF-G_Binding;
+        reaction RNATranslocation = 70S.RNATranslocation;
     }
 
     // Step 3. Termination: see Ribosome
-    // 
-    set<reaction> termination 
+    reaction Termination 
     {
-
+        reaction StopCodonRecognition = 70S.StopCodonRecognition;
+        reaction PeptideRelease = 70S.PeptideRelease;
+        reaction RF12Release = 70S.RF12Release;
+        reaction RF3Release = 70S.RF3Release;
+        reaction RRFEF-GBinding = 70S.RRFEF-GBinding;
+        reaction 70SDissociation = 70S.70SDissociation;
     }
 }
 
