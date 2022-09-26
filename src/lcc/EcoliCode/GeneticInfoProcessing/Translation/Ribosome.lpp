@@ -37,11 +37,28 @@ complex 30S_PIC
 complex 30S_IC(30S_PIC.PSite~tRNA_Init + mRNA.startcodon); // 30S Initiation Complex, codon recognition reaction
 complex 70S_PIC(30S_IC + 50S); // 70S Preinitiation Complex
 
+
+/*
+polymerase 70S
+{
+  self_loaded = self.A~a + self.B~c;
+  reaction r1        (self.A~a + self.B~c + self.D~e --> self.A~a~c + self.B, k = 10);
+  reaction r1_shorter(self_loaded         + self.D~e --> self.A~a~c + self.B + self.D~e, k = 10);
+  reaction r2(self.A~a + self.B~c + self.D --> self.XXX + self.D, k = 20);
+}
+
+
+70S ribosome1[0.0](x1, y2, z2) = 1;
+70S ribosome2[0.0](x1, y2, z2) = 1;
+reaction r1(ribosome1.ASite + ribosome2.PSite --> );
+*/
+
+
 polymerase 70S // 70S Initiation Complex
 {
     self = 30S~50S;
     70S_IC = self.30S.PSite~tRNA_Init~mRNA.startcodon;
-    70S_tRNALoaded = self.(50S.ESite)&(50S.PSite~tRNA~peptide)&(50S.ASite~AA_tRNA)&(30S~mRNA);
+    70S_tRNALoaded = self.50S.ESite + self.50S.PSite~tRNA~peptide + self.50S.ASite~AA_tRNA + self.30S~mRNA;
     70S_PreTranslocation = self.(50S.ESite)&(50S.PSite~tRNA)&(50S.ASite~tRNA~peptide)&(30S~mRNA);
     70S_PostTranslocation = self.(50S.ESite~tRNA)&(50S.PSite~tRNA~peptide)&(50S.ASite)&(30S~mRNA);
 
@@ -65,7 +82,7 @@ polymerase 70S // 70S Initiation Complex
     
     // new syntax &? to describe multisites, e.g.
     // reaction PeptidylTransfer(self.PSite~tRNA~peptide_{n}&ASite~tRNA~AA_tRNA --> self.PSite~tRNA&ASite~tRNA~peptide_{n+1}, r=20.0); or
-    reaction PeptidylTransfer(self.(PSite~tRNA~peptide_{n})&(ASite~tRNA~AA_tRNA) --> self.(PSite~tRNA)&(ASite~tRNA~peptide_{n+1}), r=20.0);
+    reaction PeptidylTransfer(self.50S.PSite~tRNA~peptide_{n} + self.50S.ASite~tRNA~AA_tRNA --> self.50S.PSite~tRNA~peptide_{n+1} + self.50S.ASite~tRNA, r=20.0);
 
     // reaction PeptidylTransfer // sync'd
     // {
@@ -88,7 +105,7 @@ polymerase 70S // 70S Initiation Complex
     70S_Term = self.(50S.PSite~tRNA)&(30S~mRNA)
 
     // Peptide release, RF3~GDP binding
-    reaction PeptideRelease(self.50S.(PSite~tRNA)&(ASite~(RF1|RF2)) + RF3~GDP --> self.50S.(PSite~tRNA)&(ASite~(RF1|RF2)~(RF3~GDP)), k=1e9); // ambiguous location to bind
+    reaction PeptideRelease(self.50S.PSite~tRNA + self.50S.ASite~(RF1|RF2) + RF3~GDP --> self.50S.PSite~tRNA + self.50S.ASite~(RF1|RF2)~(RF3~GDP), k=1e9); // ambiguous location to bind
     // RF1/2 release and GDP to GTP exchange
     reaction RF12Release(self.50S.(PSite~tRNA)&(ASite~(RF1|RF2)~RF3~GDP + GTP --> self.50S.(PSite~tRNA)&(ASite~(RF3~GTP) + GDP, k=1e9);
     // RF3~GDP release by GTP hydrolysis
