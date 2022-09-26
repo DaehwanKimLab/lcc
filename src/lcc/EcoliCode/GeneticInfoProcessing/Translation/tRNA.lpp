@@ -1,28 +1,28 @@
 // Donghoon M. Lee
 // tRNAs
 
-// tRNA tRNA_initiator Met; // declared in Ribosome.lpp
-tRNA tRNA_Ala, tRNA_Arg, tRNA_Asn, tRNA_Asp, tRNA_Cys, tRNA_Gln, tRNA_Glu, tRNA_Gly, tRNA_His, tRNA tRNA_Ile, tRNA_Met, tRNA_Leu, tRNA_Lys, tRNA tRNA_Phe, tRNA_Pro, tRNA_Ser, tRNA_Thr, tRNA_Trp, tRNA_Tyr, tRNA_Val;
+tRNA tRNA_Init; // tRNA_Initiator_Met
+tRNA tRNA(Ala), tRNA(Arg), tRNA(Asn), tRNA(Asp), tRNA(Cys), tRNA(Gln), tRNA(Glu), tRNA(Gly), tRNA(His), tRNA(Ile), tRNA(Met), tRNA(Leu), tRNA(Lys), tRNA(Phe), tRNA(Pro), tRNA(Ser), tRNA(Thr), tRNA(Trp), tRNA(Tyr), tRNA(Val);
 
 // save for copy and paste purpose
-// tRNA tRNA_initiator_Met;
-// tRNA tRNA_Ala;
-// tRNA tRNA_Arg;
-// tRNA tRNA_Asn;
-// tRNA tRNA_Asp;
-// tRNA tRNA_Cys;
-// tRNA tRNA_Gln;
-// tRNA tRNA_Glu;
-// tRNA tRNA_Gly;
-// tRNA tRNA_His;
-// tRNA tRNA_Ile;
-// tRNA tRNA_Leu;
-// tRNA tRNA_Lys;
-// tRNA tRNA_Met;
-// tRNA tRNA_Phe;
-// tRNA tRNA_Pro;
-// tRNA tRNA_Ser;
-// tRNA tRNA_Thr;
-// tRNA tRNA_Trp;
-// tRNA tRNA_Tyr;
-// tRNA tRNA_Val;
+// tRNA tRNA(initiator(Met);
+// tRNA tRNA(Ala);
+// tRNA tRNA(Arg);
+// tRNA tRNA(Asn);
+// tRNA tRNA(Asp);
+// tRNA tRNA(Cys);
+// tRNA tRNA(Gln);
+// tRNA tRNA(Glu);
+// tRNA tRNA(Gly);
+// tRNA tRNA(His);
+// tRNA tRNA(Ile);
+// tRNA tRNA(Leu);
+// tRNA tRNA(Lys);
+// tRNA tRNA(Met);
+// tRNA tRNA(Phe);
+// tRNA tRNA(Pro);
+// tRNA tRNA(Ser);
+// tRNA tRNA(Thr);
+// tRNA tRNA(Trp);
+// tRNA tRNA(Tyr);
+// tRNA tRNA(Val);

@@ -2,6 +2,7 @@
 // Ribosomes
 
 import tRNA;
+
 import InitiationFactor;
 import ElongationFactor;
 import TerminationFactor;
@@ -18,8 +19,6 @@ protein RF1 = TerminationFactor.RF1;
 protein RF2 = TerminationFactor.RF2;
 protein RF3 = TerminationFactor.RF3;
 
-tRNA tRNA_initiator_Met;
-
 // initiation
 protein 30S; // update to complex (23S, 5S, rRNAs: ~34 proteins)
 protein 50S // update to complex (16S, rRNA: ~21 proteins)
@@ -31,45 +30,71 @@ protein 50S // update to complex (16S, rRNA: ~21 proteins)
 
 complex 30S_PIC
 {
-    reaction PICassembly(30S + IF1 + IF2~GTP + IF3); // 30S Preinitiation Complex
-    reaction InitiatortRNAloading(self.PSite + tRNA_initiator_Met --> self.PSite~tRNA_initiator_Met); // initiator tRNA loading
+    reaction PICAssembly(30S + IF1 + IF2~GTP + IF3); // 30S Preinitiation Complex
+    reaction InitiatortRNAloading(self.PSite + tRNA_Init --> self.PSite~tRNA.tRNA_Init); // initiator tRNA loading
 }
 
-complex 30S_IC(30S_PIC.PSite~tRNA_initiator_Met + mRNA.startcodon); // 30S Initiation Complex, codon recognition reaction
-complex 70S_PIC(30SInitiationComplex + 50S); // 70S Preinitiation Complex
+complex 30S_IC(30S_PIC.PSite~tRNA_Init + mRNA.startcodon); // 30S Initiation Complex, codon recognition reaction
+complex 70S_PIC(30S_IC + 50S); // 70S Preinitiation Complex
 
-complex 70S_IC // 70S Initiation Complex
+polymerase 70S // 70S Initiation Complex
 {
-    reaction GTPhydrolysis(70SPIC --> self + IF1 + IF2~GDP + Pi);   
-}
+    self = 30S~50S;
+    70S_IC = self.30S.PSite~tRNA_Init~mRNA.startcodon;
+    70S_tRNALoaded = self.(50S.ESite)&(50S.PSite~tRNA~peptide)&(50S.ASite~AA_tRNA)&(30S~mRNA);
+    70S_PreTranslocation = self.(50S.ESite)&(50S.PSite~tRNA)&(50S.ASite~tRNA~peptide)&(30S~mRNA);
+    70S_PostTranslocation = self.(50S.ESite~tRNA)&(50S.PSite~tRNA~peptide)&(50S.ASite)&(30S~mRNA);
 
-polymerase 70S_EC // 70S Elongation Complex
-{
-    // A-site tRNA loading: eg) 70S_EC.ASite.associate(EF-Tu, tRNA(AA));
-    // GTP hydrolysis
-    // accommodation
-    // peptidyl transfer
-    // Hybrid state formation and EF-G binding
-    // GTP hydrolysis
-    // translocation
-    // repetitive elongation cycles (for loop, control variable: RNA)
+    reaction 70S_ICAssembly(70SPIC + H2O --> 70S_IC + IF1 + IF2~GDP + Pi + IF3);
 
-    // elongation
+    // elongation:
+    // "concurrent" multisite molecular interactions within a single molecule using () and & in a single reaction
+    reaction CodonRecognition(70S_PostTranslocation.(50S.ESite~tRNA)&(30S~mRNA.NNN{n}) + EF-Tu~GTP~AA_tRNA --> 70S_tRNALoaded~EF-Tu~GTP + tRNA); // tRNALoadingAndRelease
+    
+    // alternative to tRNALoadingAndRelease?
+    // reaction CodonRecognition
+    // {
+    //     reaction tRNALoading(70S_PostTranslocation.30S~mRNA.NNN{n} + EF-Tu~GTP~AA_tRNA --> 70S_PostTranslocation.ASite~AA_tRNA~EF-Tu~GTP); // self = 70S_IC~AA_tRNA
+    //     reaction tRNARelease(70S_PostTranslocation.50S.ESite~tRNA --> 70S_PostTranslocation.50S.ESite + tRNA) // deacylated tRNA is released on next aa_tRNA loading
+    // } // generates 70S_tRNALoaded~EF-Tu~GTP
+
+    reaction GTPHydrolysis(70S_tRNALoaded~EF-Tu~GTP + H2O --> 70S_tRNALoaded + EF-Tu~GDP + Pi);
+
+    
+    // reaction PeptidylTransfer(self.PSite~tRNA~peptide_{n} + self.ASite~tRNA~AA_tRNA --> self.PSite~tRNA + self.ASite~tRNA~peptide_{n+1}, r=20.0);
+    
+    // new syntax &? to describe multisites, e.g.
+    // reaction PeptidylTransfer(self.PSite~tRNA~peptide_{n}&ASite~tRNA~AA_tRNA --> self.PSite~tRNA&ASite~tRNA~peptide_{n+1}, r=20.0); or
+    reaction PeptidylTransfer(self.(PSite~tRNA~peptide_{n})&(ASite~tRNA~AA_tRNA) --> self.(PSite~tRNA)&(ASite~tRNA~peptide_{n+1}), r=20.0);
+
+    // reaction PeptidylTransfer // sync'd
+    // {
+    //     float R = 20.0;
+    //     reaction PSiteDetachment(self.PSite~tRNA~peptide_{n} --> self.PSite~tRNA, r=R);
+    //     reaction ASiteAttachment(self.ASite~tRNA~AA_tRNA --> self.ASite~tRNA~peptide_{n+1}, r=R);
+    // }
+
+    reaction EF-G_Binding(70S_PreTranslocation + EF-G~GTP --> 70S_PreTranslocation~EF-G~GTP);
+    reaction RNATranslocation
     {
-        reaction tRNAloading(70S_IC.ASite + EF-Tu~GTP~aa_tRNA + 70S_IC~mRNA.NNN{n} --> self~EF-Tu~GTP); // self = 70S_IC~aa_tRNA
-        reaction tRNArelease(self.ESite~tRNA --> 70) // deacylated tRNA is released on next aa_tRNA loading
+        reaction EF-G_GTPHydrolysis(70S_PreTranslocation~EF-G~GTP + H2O --> 70S_PostTranslocation~EF-G~GDP + Pi);
+        reaction EF-G_Release(70S_PostTranslocation~EF-G~GDP --> 70S_PostTranslocation + EF-G~GDP);
     }
-    reaction GTPhydrolysis(self~GTP --> self + GDP + Pi
-
-    {
-        xx
-        reaction RNAtranslocation(self.ASite + self.PSite~mRNA{3n} --> self~mRNA{3n+3}, r=R); // requires EF-Tu and EF-Ts
-        reaction peptideElongation(self~peptide_{n} + aa --> self~peptide_{n+1} + H2O, r=R);
-        xx
-    }
-
+    
     // termination:
-    // https://www.onlinebiologynotes.com/translation-in-prokaryotes/
+    // RF1/2 binding upon encountering stop codon (concurrent ESite tRNA release)
+    reaction StopCodonRecognition(70S_PostTranslocation.(50S.ESite~tRNA)&(30S~mRNA.stopcodon) + RF1|RF2 --> 70S_PostTranslocation.(50S.ESite)&(50S.ASite~(RF1|RF2)), k=1e9);
+    
+    70S_Term = self.(50S.PSite~tRNA)&(30S~mRNA)
 
-    reaction termination(self.ASite~mRNA.stopcodon--> );    
+    // Peptide release, RF3~GDP binding
+    reaction PeptideRelease(self.50S.(PSite~tRNA)&(ASite~(RF1|RF2)) + RF3~GDP --> self.50S.(PSite~tRNA)&(ASite~(RF1|RF2)~(RF3~GDP)), k=1e9); // ambiguous location to bind
+    // RF1/2 release and GDP to GTP exchange
+    reaction RF12Release(self.50S.(PSite~tRNA)&(ASite~(RF1|RF2)~RF3~GDP + GTP --> self.50S.(PSite~tRNA)&(ASite~(RF3~GTP) + GDP, k=1e9);
+    // RF3~GDP release by GTP hydrolysis
+    reaction RF3Release(self.50S.(PSite~tRNA)&(ASite~(RF3~GTP) --> self.50S.PSite~tRNA + RF3~GTP, k=1e9);
+    // RRF, EF-G binding
+    reaction RRFEF-GBinding(self.50S.PSite~tRNA + RRF + EF-G~GTP --> self.50S.(PSite~tRNA)&(ASite~(RRF + EF-G~GTP), k=1e9);
+    // 70S dissociation
+    reaction 70SDissociation(self.50S.(PSite~tRNA)&(ASite~(RRF + EF-G~GTP) + H2O --> 30S + 50S + tRNA + RRF + EF-G~GDP + Pi + mRNA, k=1e9);
 }
