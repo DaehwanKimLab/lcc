@@ -7,6 +7,7 @@
 // https://cshperspectives.cshlp.org/content/10/9/a032664.long
 
 import Ribosome;
+import tRNACharging;
 
 pathway Translation
 {
@@ -26,6 +27,7 @@ pathway Translation
     // Step 2. Elongation: see Ribosome
     reaction Elongation
     {
+        pathway tRNACharging = tRNACharging.tRNACharging;
         reaction CodonRecognition = 70S.CodonRecognition;
         reaction GTPHydrolysis = 70S.GTPHydrolysis;
         reaction PeptidylTransfer = 70S.PeptidylTransfer;

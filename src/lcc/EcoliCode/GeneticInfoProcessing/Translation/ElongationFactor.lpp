@@ -3,19 +3,19 @@
 
 protein EF-Tu // Binds GTP; bring Aminoacyl-tRNA to A-site of ribosome
 {
-    reaction TernaryComplexFormation(self~GTP + AA-tRNA --> self~GTP~AA-tRNA);
+    reaction TernaryComplexFormation(self~GTP + AA-tRNA --> self~GTP~AA-tRNA, Kd=1e-9);
 }
 
 protein EF-Ts // Generates EF-Tu
 {
-    reaction TsToGTPSwap(EF-Tu~self + GTP --> EF-Tu~GTP + self);
-    reaction GDPToTsSwap(EF-Tu~GDP + self --> EF-Tu~self + GDP);
+    reaction TsToGTPSwap(EF-Tu~self + GTP --> EF-Tu~GTP + self, k=1e9);
+    reaction GDPToTsSwap(EF-Tu~GDP + self --> EF-Tu~self + GDP, k=1e9);
 }
 
 protein EF-G // Helps in translocation of ribosome
 {
-    reaction GTPLoading(self + GTP --> self~GTP);
-    reaction GDPtoGTPExchange(self~GDP + GTP --> self~GTP + GDP);
+    reaction GTPLoading(self + GTP --> self~GTP, k=1e9);
+    reaction GDPtoGTPExchange(self~GDP + GTP --> self~GTP + GDP, k=1e9);
 }
 
 EF-Tu = 5nM;

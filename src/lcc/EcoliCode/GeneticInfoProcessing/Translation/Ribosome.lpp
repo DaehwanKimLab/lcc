@@ -1,4 +1,4 @@
-// Donghoon M. Lee
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Ribosomes
 
 import tRNA;
@@ -6,6 +6,8 @@ import tRNA;
 import InitiationFactor;
 import ElongationFactor;
 import TerminationFactor;
+
+tRNA tRNA_Init = tRNA.tRNA_Init;
 
 protein IF1 = InitiationFactor.IF1;
 protein IF2 = InitiationFactor.IF2;
@@ -38,49 +40,43 @@ protein 50S;
 
 complex 30S_PIC
 {
-    reaction 30S_PICAssembly(30S + IF1 + IF2~GTP + IF3, Kd=1e9); // 30S Preinitiation Complex
-    reaction InitiatortRNAloading(self.PSite + tRNA_Init --> self.PSite~tRNA.tRNA_Init, Kd=1e9); // initiator tRNA loading
+    reaction 30S_PICAssembly(30S + IF1 + IF2~GTP + IF3, k=1e9); // 30S Preinitiation Complex
+    reaction InitiatortRNAloading(self + tRNA_Init --> self.PSite~tRNA_Init, Kd=1e-9); // initiator tRNA loading
 }
 
 complex 30S_IC
 {
-    self = 30S_PIC.PSite~tRNA_Init~mRNA.startcodon;
-    reaction 30S_ICAssembly(30S_PIC.PSite~tRNA_Init + mRNA.startcodon --> self, Kd=1e9); // 30S Initiation Complex, codon recognition reaction
+    self = 30S_PIC.PSite~tRNA_Init + 30S_PIC~mRNA.startcodon;
+    reaction 30S_ICAssembly(30S_PIC.PSite~tRNA_Init + mRNA.startcodon --> self, Kd=1e-9); // 30S Initiation Complex, codon recognition reaction
 }
-complex 70S_PIC(30S_IC + 50S, Kd=1e9); // 70S Preinitiation Complex
+complex 70S_PIC(30S_IC + 50S, Kd=1e-9); // 70S Preinitiation Complex
 
-polymerase 70S // 70S Initiation Complex
+complex 70S // 70S Initiation Complex
 {
     self        = 30S~50S;
-    70S_tRNA    = self.ESite        + self.PSite~tRNA~peptide   + self.ASite~AA_tRNA        + self.30S~mRNA;
-    70S_Pre     = self.ESite        + self.PSite~tRNA           + self.ASite~tRNA~peptide   + self.30S~mRNA;
-    70S_Post    = self.ESite~tRNA   + self.PSite~tRNA~peptide   + self.ASite                + self.30S~mRNA;
+    70S_tRNA    = self.ESite        + self.PSite~tRNA~peptide   + self.ASite~AA_tRNA        + self.30S~mRNA; // tRNA loaded
+    70S_Pre     = self.ESite        + self.PSite~tRNA           + self.ASite~tRNA~peptide   + self.30S~mRNA; // pretranslocation
+    70S_Post    = self.ESite~tRNA   + self.PSite~tRNA~peptide   + self.ASite                + self.30S~mRNA; // posttranslocation
     70S_Term    = self.ESite        + self.PSite~tRNA           + self.ASite                + self.30S~mRNA;
 
-    reaction 70S_ICAssembly(70SPIC + H2O --> self.PSite~tRNA_Init~mRNA.startcodon + IF1 + IF2~GDP + Pi + IF3, Kd=1e9);
+    reaction 70S_ICAssembly(70SPIC + H2O --> self.PSite~tRNA_Init~mRNA.startcodon + IF1 + IF2~GDP + Pi + IF3, Kd=1e-9);
 
     // elongation:
-    reaction CodonRecognition(70S_Post + 70S_Post.30S~mRNA.NNN{n} + EF-Tu~GTP~AA_tRNA --> 70S_tRNA~EF-Tu~GTP + tRNA); // tRNALoadingAndRelease
-    reaction GTPHydrolysis(70S_tRNA~EF-Tu~GTP + H2O --> 70S_tRNA + EF-Tu~GDP + Pi);
+    reaction CodonRecognition(70S_Post + 70S_Post.30S~mRNA.NNN{n} + EF-Tu~GTP~AA_tRNA --> 70S_tRNA~EF-Tu~GTP + tRNA, k=1e9); // tRNALoadingAndRelease
+    reaction GTPHydrolysis(70S_tRNA~EF-Tu~GTP + H2O --> 70S_tRNA + EF-Tu~GDP + Pi, k=1e9);
     reaction PeptidylTransfer(self.PSite~tRNA~peptide_{n} + self.ASite~tRNA~AA_tRNA --> self.PSite~tRNA + self.ASite~tRNA~peptide_{n+1}, r=20.0);
-    reaction EF-G_Binding(70S_Pre + EF-G~GTP --> 70S_Pre.50S~EF-G~GTP);
+    reaction EF-G_Binding(70S_Pre + EF-G~GTP --> 70S_Pre.50S~EF-G~GTP, Kd=1e-9);
     reaction RNATranslocation
     {
-        reaction EF-G_GTPHydrolysis(70S_Pre.50S~EF-G~GTP + H2O --> 70S_Post.50S~EF-G~GDP + Pi);
-        reaction EF-G_Release(70S_Post.50S~EF-G~GDP --> 70S_Post + EF-G~GDP);
+        reaction EF-G_GTPHydrolysis(70S_Pre.50S~EF-G~GTP + H2O --> 70S_Post.50S~EF-G~GDP + Pi, k=1e9);
+        reaction EF-G_Release(70S_Post.50S~EF-G~GDP --> 70S_Post + EF-G~GDP, k=1e9);
     }
     
     // termination:
-    // RF1/2 binding upon encountering stop codon (concurrent ESite tRNA release)
-    reaction StopCodonRecognition(70S_Post.ESite~tRNA + 70S_Post.30S~mRNA.stopcodon + RFstopcodon --> 70S_Post.ASite~RFstopcodon + tRNA, k=1e9);
-    // Peptide release, RF3~GDP binding
-    reaction PeptideRelease(70S_Post.ASite~RFstopcodon + RF3~GDP --> 70S_Term.ASite~RFstopcodon + 70S_Term~RF3~GDP + peptide, k=1e9);
-    // RF1/2 release and GDP to GTP exchange
-    reaction RF12Release(70S_Term.ASite~RFstopcodon + 70S_Term~RF3~GDP + GTP --> 70S_Term~RF3~GTP + GDP + RFstopcodon, k=1e9);
-    // RF3~GDP release by GTP hydrolysis
+    reaction StopCodonRecognition(70S_Post.ESite~tRNA + 70S_Post.30S~mRNA.stopcodon + RFstopcodon --> 70S_Post.ASite~RFstopcodon + tRNA, k=1e9); // RF1 or RF2 binding
+    reaction PeptideRelease(70S_Post.ASite~RFstopcodon + RF3~GDP --> 70S_Term.ASite~RFstopcodon + 70S_Term~RF3~GDP + peptide, k=1e9); // RF3 binding
+    reaction RF12Release(70S_Term.ASite~RFstopcodon + 70S_Term~RF3~GDP + GTP --> 70S_Term~RF3~GTP + GDP + RFstopcodon, k=1e9); 
     reaction RF3Release(70S_Term~RF3~GTP + H2O --> 70S_Term + RF3~GDP + Pi, k=1e9);
-    // RRF, EF-G binding
     reaction RRF_EF-G_Binding(70S_Term + RRF + EF-G~GTP --> 70S_Term.ASite~RRF + 70S_Term.50S~EF-G~GTP, k=1e9);
-    // 70S dissociation
     reaction 70SDissociation(70S_Term.ASite~RRF + 70S_Term.50S~EF-G~GTP + H2O --> 30S + 50S + tRNA + RRF + EF-G~GDP + Pi + mRNA, k=1e9);
 }
