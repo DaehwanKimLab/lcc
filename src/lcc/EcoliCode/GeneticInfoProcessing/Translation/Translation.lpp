@@ -1,4 +1,4 @@
-// Donghoon M. Lee
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Translation
 
 // Translation in Prokaryotes
@@ -18,8 +18,8 @@ pathway Translation
     {
         reaction 30S_PICAssembly = Ribosome.30S_PIC.PICAssembly;
         reaction InitiatortRNAloading = Ribosome.30S_PIC.InitiatortRNAloading;
-        reaction 30S_ICAssembly = Ribosome.30S_IC.complexation;  // default single reaction name for complex   
-        reaction 70S_PICAssembly = Ribosome.70S_PIC.complexation; // default single reaction name for complex   
+        reaction 30S_ICAssembly = Ribosome.30S_IC.30S_ICAssembly;
+        reaction 70S_PICAssembly = Ribosome.70S_PIC.70S_PIC;
         reaction 70S_ICAssembly = Ribosome.70S.70S_ICAssembly;
     }
     
@@ -40,7 +40,7 @@ pathway Translation
         reaction PeptideRelease = 70S.PeptideRelease;
         reaction RF12Release = 70S.RF12Release;
         reaction RF3Release = 70S.RF3Release;
-        reaction RRFEF-GBinding = 70S.RRFEF-GBinding;
+        reaction RRFEF-GBinding = 70S.RRF_EF-G_Binding;
         reaction 70SDissociation = 70S.70SDissociation;
     }
 }
