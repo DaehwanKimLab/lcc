@@ -31,3 +31,5 @@ pathway tRNACharging
     protein TyrS(L-tyrosine + tRNA(Tyr) + ATP --> L-tyrosyl-tRNA(Tyr) + PPi + AMP, k=1e9);
     protein ValS(L-valine + tRNA(Val) + ATP --> L-valyl-tRNA(Val) + PPi + AMP, k=1e9);
 }
+
+// TODO: specify concentrations of each molecules from above reactions

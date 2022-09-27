@@ -11,6 +11,8 @@ import tRNACharging;
 
 pathway Translation
 {
+    70S = Ribosome.70S;
+    
     Ribosome.30S = 10nM;
     Ribosome.50S = 10nM;
 
@@ -21,7 +23,7 @@ pathway Translation
         reaction InitiatortRNAloading = Ribosome.30S_PIC.InitiatortRNAloading;
         reaction 30S_ICAssembly = Ribosome.30S_IC.30S_ICAssembly;
         reaction 70S_PICAssembly = Ribosome.70S_PIC.70S_PIC;
-        reaction 70S_ICAssembly = Ribosome.70S.70S_ICAssembly;
+        reaction 70S_ICAssembly = 70S.70S_ICAssembly;
     }
     
     // Step 2. Elongation: see Ribosome
