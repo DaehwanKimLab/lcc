@@ -60,42 +60,41 @@ This portion introduces the syntax and implementation of L++ code.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- Symbol Table -->
-## Reserved Symbol table
+## Reserved Symbol (single) table
 
-|Symbol|Meaning| Example|
-|:-----|:---:|-------:|
-|  **.**   |Location|       | 
-|  **.**   | method |       | 
-|  **_**   | "of length" |  | 
-| **~** | "bound to" | reaction r1(x + y --> x~y);     |
-| **-->** | Reaction formula| x --> y|
-| **=** | set to, is|  x = y|
-| **+** | "and" | reaction r1(x + y --> z); |
-| **;** | end of line| reaction r1(x + y --> z);|
-| **""" ... """** | Docstring| See [DocstringSyntax](./DocstringSyntax/)|
-| **/* ... */**   | | |
-| **//** | | | 
-| **#** | | |
-| **{...}** | | | 
+|Symbol| Symbol Name |Meaning| Example|
+|:-----|:---:|:---:|-------:|
+|  **`.`** | period  |Location|       | 
+|  **`.`** | period  | method |       | 
+|  **`_`** | underscore | "of length" |  | 
+| **`~`** | tilde | "bound to" | reaction r1(x + y --> x~y);     |
+| **`-->`** | right arrow | Reaction formula| x --> y|
+| **`=`** | equals | set to, is|  x = y|
+| **`+`** | plus | "and" | reaction r1(x + y --> z); |
+| **`;`** | semi-colon| end of line| reaction r1(x + y --> z);|
+| **`//`** | double-forwardSlash | Comment | // Some descriptive text not compiled | 
+| **`#`** | hashtag | Comment | # Some descriptive text not compiled | 
+
+<!-- Symbol Table -->
+## Reserved Symbol (paired) table
+
+|Symbol| Symbol Name |Meaning| Example|
+|:-----|:---:|:---:|-------:|
+| **`"""` ... `"""`** | triple-quotes | Docstring| See [DocstringSyntax](./DocstringSyntax/)|
+| **`/*` ... `*/`**   | forwardSlash-star star-forwardSlash | ReferenceID | See [DocstringSyntax](./DocstringSyntax/) |
+| **`{`...`}`** | braces | | | 
+| **`[`...`]`** | brackets | | |  
+| **`(`...`)`** | parentheses | | |
 
 
-= 	"set to/ is"
-+ 	"and" used within reaction formulas
-; 	End of line/statement
-""" … """	Docstring
-/* … */ 	Reference ID
-// 	comment
-#	 comment
 sometext{}	Positional reference…
-
-
 
 ## UNreserved Symbol table
 Unreserved, but conventions
 
-|Symbol|Conventions|
-|------|-------|
-| -    | Variable names |
+|Symbol|Symbol Name|Conventions|
+|:----:|:---------:|-------|
+| -    | Dash |Variable names |
 
 
 
@@ -105,22 +104,26 @@ Unreserved, but conventions
 
 Insert table of keywords and short summary of each
 
-protein
-complex
-reaction
-DNA
-RNA/tRNA/mRNA/etc.
-NTP
-AA
+|Keyword| Isoforms |Meaning| Example|
+|:-----|:---:|:---:|-------:|
+protein| | | |
+complex| | | |
+reaction|| | |
+DNA| `ssDNA`, `dsDNA` | | |
+RNA | `tRNA`, `tRNA(AA)`, `mRNA`, etc. | 
+NTP| | | |
+AA| | | |
+import| | | |
+domain| | | | 
+motif | | | |
+transporter| | | |
+polymerase| | | |
+pathway| | | | 
 
-_ : "of length"
-. : "at position" / method
-~ : "bound to"
 
-import
+
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 <!-- WIP -->
 ## WIP
