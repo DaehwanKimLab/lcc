@@ -53,6 +53,38 @@ This portion introduces the syntax and implementation of L++ code.
 | **`[`...`]`** | brackets | | |  
 | **`(`...`)`** | parentheses | | |
 
+Braces, brackets, and parentheses will likely need their own section as they are the most context dependent
+
+### Reserved Symbol Brackets Isoforms
+
+|Symbol| Symbol Name |Meaning| Example|
+|:-----|:---:|:---:|-------:|
+| **`someText{...}` OR `someText \n {...}`** |  | | |
+| **`reaction r1(someText{int i} ...);`** |  | | |
+
+### Reserved Symbol Brackets Isoforms
+
+|Symbol| Symbol Name |Meaning| Example|
+|:-----|:---:|:---:|-------:|
+| **`[`...`]`** | brackets | | |
+| **`variableName[:]`** | constant-variable-brackets | net change to variable quantity = 0 after simulation step |`variableName[:] = 1 nM` |  
+| **`variableName[ int i ]`** | impulse-variable-brackets | variable quantity at simulation step i (must be integer) | `variableName[1] = 100 nM` |
+
+### Reserved Symbol Parentheses Isoforms
+
+|Symbol| Symbol Name |Meaning| Example|
+|:-----|:---:|:---:|-------:|
+| **`(`...`)`** | brackets | | |
+| **`reaction someText();`** |  | | |
+| **`pathway someText();`** |  | | |
+| **`protein someText();`** |  | | |
+| **`transporter someText();`** |  | | |
+| **`c(NTP);`** |  |Complementary NTP | |
+| **`tRNA(AA);`** |  | tRNA charged with AA | |
+| **`protein some(complicated)variablename(...);`** |  |  | `transporter Iron(III)hydroxamateABCTranporter(iron(III)hydroxamate_periplasm + ATP + H2O --> iron(III)hydroxamate_cytosol + ADP + P + H);`|
+
+
+
 ## UNreserved Symbol table
 Unreserved, but conventions
 
@@ -71,6 +103,7 @@ Insert table of keywords and short summary of each
 protein| | | |
 complex| | | |
 reaction|| | |
+pathway| | | | 
 DNA| `ssDNA`, `dsDNA` | | |
 RNA | `tRNA`, `tRNA(AA)`, `mRNA`, etc. | 
 NTP| | | |
@@ -80,13 +113,18 @@ domain| | | |
 motif | | | |
 transporter| | | |
 polymerase| | | |
-pathway| | | | 
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- WIP -->
 ## WIP
+
+WIP: commas in compound names
+EX: -- This would be a parsing nightmare
+```sh
+transporter alpha,alpha-trehalosePTSTransporter(alpha,alpha-trehalose_periplasm + HPr-P --> alpha,alpha-trehalose_cytosol + HPr);
+```
 
 WIP: syntax for molecules changing containers
 Ex:
