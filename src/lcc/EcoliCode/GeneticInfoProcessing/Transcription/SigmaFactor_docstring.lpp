@@ -16,20 +16,22 @@ See Also
 
 Background
 ----------
-(Transcription)[https://en.wikipedia.org/wiki/Transcription_(biology)] : A Wikipedia article describing transcription.
-(RNAP)[https://en.wikipedia.org/wiki/RNA_polymerase] : A Wikipedia article describing RNA polymerase
+[Transcription](https://en.wikipedia.org/wiki/Transcription_(biology)) : A Wikipedia article describing transcription.
+[RNAP](https://en.wikipedia.org/wiki/RNA_polymerase) : A Wikipedia article describing RNA polymerase
 
 Database
 --------
-Uniprot : (UniprotID)[link to protein in uniprot]
-Ecocyc : (EcocycID)[link to Ecocyc]
+Uniprot : 
+    Protein : [UniprotID](link to protein in uniprot)
+Ecocyc : [EcocycID](link to Ecocyc)
+    Reaction :  [EcocycID](link to Ecocyc)
 
 About
 -----
 Author : Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 Journal : Not published
-Version : v0.1
-VersionDate : 2022-09-21
+Version : v0.2
+VersionDate : 2022-09-22
 
 References
 ----------

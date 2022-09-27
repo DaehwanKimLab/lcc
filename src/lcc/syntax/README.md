@@ -1,0 +1,151 @@
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#03-L++-Syntax">L++ Syntax</a>
+        <ul>
+            <li><a href="#Introduction">Introduction</a></li> 
+            <li><a href="#Roadmap">Roadmap</a></li>   
+        </ul>
+    </li>
+    <li><a href="#Symbol-table">Symbol table</a></li> 
+    <li><a href="#Keyword-table">Keyword table</a></li> 
+    <li><a href="#WIP">Works In Progress</a></li>     
+  </ol>
+</details>
+
+
+<!-- L++ Syntax -->
+## L++ Syntax
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- Introduction -->
+## Introduction
+
+This portion introduces the syntax and implementation of L++ code. 
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- ROADMAP -->
+## Roadmap
+
+- [x] Implemented/described syntax
+- [ ] Unimplemented or undescribed syntax
+
+------
+
+- [ ] keyword table 
+
+- [ ] protein
+- [ ] CountsAndConcentration
+- [ ] units
+- [ ] pathway
+- [ ] reaction
+    - [ ] MassAction
+    - [ ] Michaelis Menten
+    - [ ] Monod-Wyman-Changeux (MWC) model aka "symmetry model"
+    - [ ] Sequential Model aka "Koshland-Nemethy-Filmer (KNF) model"
+- [ ] regulator
+
+- [ ] regulation mechanics
+    - [ ] competitive inhibition
+        - [ ] of substrate
+        
+        - [ ] of allosteric ligand
+    - [ ] Uncomptetitive (anti-competitive) inhibition
+    Where the inhibitor only binds to when enzyme and substrate are in complex
+    
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- Symbol Table -->
+## Reserved Symbol table
+
+|Symbol|Meaning| Example|
+|:-----|:---:|-------:|
+|  **.**   |Location|       | 
+|  **.**   | method |       | 
+|  **_**   | "of length" |  | 
+| **~** | "bound to" | reaction r1(x + y --> x~y);     |
+| **-->** | Reaction formula| x --> y|
+| **=** | set to, is|  x = y|
+| **+** | "and" | reaction r1(x + y --> z); |
+| **;** | end of line| reaction r1(x + y --> z);|
+| **""" ... """** | Docstring| See [DocstringSyntax](./DocstringSyntax/)|
+| **/* ... */**   | | |
+| **//** | | | 
+| **#** | | |
+| **{...}** | | | 
+
+
+= 	"set to/ is"
++ 	"and" used within reaction formulas
+; 	End of line/statement
+""" … """	Docstring
+/* … */ 	Reference ID
+// 	comment
+#	 comment
+sometext{}	Positional reference…
+
+
+
+## UNreserved Symbol table
+Unreserved, but conventions
+
+|Symbol|Conventions|
+|------|-------|
+| -    | Variable names |
+
+
+
+
+<!-- Keyword Table -->
+## Keyword table
+
+Insert table of keywords and short summary of each
+
+protein
+complex
+reaction
+DNA
+RNA/tRNA/mRNA/etc.
+NTP
+AA
+
+_ : "of length"
+. : "at position" / method
+~ : "bound to"
+
+import
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+<!-- WIP -->
+## WIP
+
+WIP: syntax for molecules changing containers
+Ex:
+```sh
+transporter IronTransporter(iron_periplasm --> iron_cytosol);
+```
+
+WIP: syntax for reactions that take classes of molecules (that are not set aside as keywords…)
+Ex: (muropeptide -- Any peptidoglycan associated with a cell wall. https://en.wiktionary.org/wiki/muropeptide)
+
+```sh
+transporter muropeptideProtonSymporter(<muropeptide>_periplasm + H_periplasm --> <muropeptide>_cytosol + H_cytosol);
+```
+
+WIP: covalent bonding syntax (when new "molecule" not appropriate")
+Ex: glycosylation (https://biopharmaspec.com/protein-characterization-services/glycan-characterization-carbohydrate-structure/)
+
+<figure>
+  <img src="./img/glycosylation.png", width = "720">
+  <figcaption><b>Glycosylation Example</b></figcaption>
+</figure>
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
