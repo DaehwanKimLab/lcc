@@ -5,7 +5,6 @@
     <li><a href="#03-L++-Syntax">L++ Syntax</a>
         <ul>
             <li><a href="#Introduction">Introduction</a></li> 
-            <li><a href="#Roadmap">Roadmap</a></li>   
         </ul>
     </li>
     <li><a href="#Symbol-table">Symbol table</a></li> 
@@ -24,38 +23,6 @@
 ## Introduction
 
 This portion introduces the syntax and implementation of L++ code. 
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [x] Implemented/described syntax
-- [ ] Unimplemented or undescribed syntax
-
-------
-
-- [ ] keyword table 
-
-- [ ] protein
-- [ ] CountsAndConcentration
-- [ ] units
-- [ ] pathway
-- [ ] reaction
-    - [ ] MassAction
-    - [ ] Michaelis Menten
-    - [ ] Monod-Wyman-Changeux (MWC) model aka "symmetry model"
-    - [ ] Sequential Model aka "Koshland-Nemethy-Filmer (KNF) model"
-- [ ] regulator
-
-- [ ] regulation mechanics
-    - [ ] competitive inhibition
-        - [ ] of substrate
-        
-        - [ ] of allosteric ligand
-    - [ ] Uncomptetitive (anti-competitive) inhibition
-    Where the inhibitor only binds to when enzyme and substrate are in complex
-    
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -86,17 +53,12 @@ This portion introduces the syntax and implementation of L++ code.
 | **`[`...`]`** | brackets | | |  
 | **`(`...`)`** | parentheses | | |
 
-
-sometext{}	Positional reference…
-
 ## UNreserved Symbol table
 Unreserved, but conventions
 
-|Symbol|Symbol Name|Conventions|
-|:----:|:---------:|-------|
-| -    | Dash |Variable names |
-
-
+|Symbol|Symbol Name|Conventions| Examples |  
+|:----:|:---------:|-------|----| 
+| `-`    | Dash |Variable names |  | 
 
 
 <!-- Keyword Table -->
@@ -119,8 +81,6 @@ motif | | | |
 transporter| | | |
 polymerase| | | |
 pathway| | | | 
-
-
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
