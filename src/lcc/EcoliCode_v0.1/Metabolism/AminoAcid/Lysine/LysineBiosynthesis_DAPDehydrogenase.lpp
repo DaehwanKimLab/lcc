@@ -1,0 +1,9 @@
+// LysineBiosynthesis_DAPDehydrogenase
+// input: aspartate
+// output: lysine
+// DB: KEGG
+// - M00526
+pathway LysineBiosynthesis_DAPDehydrogenase(aspartate --> lysine)
+{
+
+}

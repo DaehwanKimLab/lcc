@@ -1,0 +1,11 @@
+// LysineDegredation
+// input: lysine
+// intermediate: saccaropine
+// output: acetoacetyl-CoA
+// DB: KEGG
+// - M00032
+pathway LysineDegredation
+{
+    reaction lysine2saccaropine(lysine --> saccaropine);
+    reaction saccaropine2acetoacetyl-CoA(saccaropine --> acetoacetyl-CoA);
+}

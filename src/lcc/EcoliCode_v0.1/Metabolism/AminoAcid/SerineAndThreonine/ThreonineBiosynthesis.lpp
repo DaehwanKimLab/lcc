@@ -1,0 +1,11 @@
+// Threonine Biosynthesis
+// input: Aspartate
+// intermediate: homoserine
+// output: threonine
+// DB: 
+// - KEGG M00018
+pathway ThreonineBiosynthesis
+{
+    reaction aspartateToHomoserine(aspartate --> homoserine);
+    reaction homoserineToThreonine(homoserine --> threonine);
+}

@@ -1,0 +1,4 @@
+pathway GlycogenDegradation(glycogen --> G6P)
+{
+
+}

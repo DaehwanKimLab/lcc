@@ -1,0 +1,11 @@
+// MethionineBiosynthesis
+// input: aspartate
+// intermediate: homoserine
+// output: methionine
+// DB: KEGG
+// - M00017
+pathway MethionineBiosynthesis
+{
+    reaction aspartate2homoserine(aspartate --> homoserine);
+    reaction homoserine2methionine(homoserine --> methionine);
+}

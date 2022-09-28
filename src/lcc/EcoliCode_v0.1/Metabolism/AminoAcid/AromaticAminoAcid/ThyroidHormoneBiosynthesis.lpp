@@ -1,0 +1,9 @@
+// ThyroidHormoneBiosynthesis
+// input: tyrosine
+// output: triiodothyronine + thyroxine
+// DB: KEGG
+// - M00043
+pathway ThyroidHormoneBiosynthesis(tyrosine --> triiodothyronine + thyroxine)
+{
+
+}

@@ -1,0 +1,30 @@
+// Replication elongation
+
+global_import ReplicationMachineries
+
+pathway ReplicationElongation
+{    
+    Replisome.DnaG.associate(ssdna); // primase
+    
+    // leading end
+    Replisome.DNAPIII.associate(DnaB, ssdna); // polymerase behind helicase
+    //DNAPIII.polymerize(); // polymerization (this line may not be necessary?)
+
+    // lagging end
+    Replisome.Ssb.associate(ssDNA_{10}); // preventing hybridization of the unwound single stranded DNA
+
+    if (Replisome.DNAPIII.encounter(5'rna)) // recognizing the RNA generated ny the primase
+    {
+        Replisome.DNAPIII.dissociate();
+        PolA.associate(dna, 5'rna);
+        //PolA.polymerize(); // polymerization (this line may not be necessary?)
+    }
+    
+    if (PolA.encounter(5'dna))
+    {
+        PolA.dissociate(); // completed polymerization
+    }
+    
+    LigA.associate(N^N); // ligation
+
+}

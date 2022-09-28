@@ -1,0 +1,9 @@
+// ThiamineSalvagePathway
+// input: HMP + HET
+// output: TMP
+// DB: KEGG
+// - M00899
+pathway ThiamineSalvagePathway(HMP + HET --> TMP)
+{
+
+}

@@ -1,0 +1,43 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// RNA polymerase
+
+// _ : length
+// . : location
+// ~ : binding
+// ^ : repeat
+// []: absolute time
+// {}: positional reference (subject to revision)
+
+import SigmaFactor;
+import Rho;
+
+protein RpoB, RpoC, RpoA, RpoZ;
+
+// transcription initiation
+complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
+complex RNAPHolo
+{
+    reaction Complexation(RNAPCore + sigmafactor, Kd=1e-7);
+    reaction PromotorBinding(self + promoter --> self~promoter);
+    reaction dsDNAUnwinding(self~dsDNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
+    reaction NascentRNAsynthesis(self~ssDNA.N{n-11:n} + 11 c(NTP) --> self~RNA_{11} + 11 PPi, k=1); // slow due to productive and abortive outcomes
+}
+
+polymerase RNAPOpen // Open Complex
+{
+    // self = RNACore~ssDNA
+    reaction SigmaFactorRelease(RNAPHolo~ssDNA~RNA --> self~RNA + sigmafactor + promoter, k=1e9);
+    reaction dsDNAUnwinding(self~dsDNA~RNA{n-10:n+10} --> self~ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
+
+    // transcription elongation
+    reaction Polymerization
+    {
+        float R = 60.0;
+        reaction DNATranslocation(self~ssDNA{n} --> self~ssDNA{n+1}, r=R);
+        reaction RNAElongation(self.RNA_{n} + c(NTP) + self.ssDNA.N{n} --> self.RNA_{n+1} + PPi + self.ssDNA.N{n} , r=R);
+    }
+    
+    // transcription termination
+    reaction IntrinsicTermination(self~RNA.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + RNA, k=1e9);
+    reaction RhoDependentTermination(self~RNA + ssDNA + RhoComplex --> RNAPCore + dsDNA + RNA + RhoComplex, k=1e9);
+}

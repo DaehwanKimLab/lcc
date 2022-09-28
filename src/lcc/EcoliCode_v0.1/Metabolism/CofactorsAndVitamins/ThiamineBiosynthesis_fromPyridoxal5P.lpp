@@ -1,0 +1,9 @@
+// ThiamineBiosynthesis_fromPyridoxal5P
+// input: pyridoxal-5P
+// output: TMP + TPP + thiamine
+// DB: KEGG
+// - M00898
+pathway ThiamineBiosynthesis_fromPyridoxal5P(pyridoxal-5P --> TMP + TPP + thiamine)
+{
+
+}

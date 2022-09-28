@@ -1,0 +1,9 @@
+// TetrahydrobiopterinBiosynthesis
+// input: GTP
+// output: BH4
+// DB: KEGG
+// - M00842
+pathway TetrahydrobiopterinBiosynthesis(GTP --> BH4)
+{
+
+}

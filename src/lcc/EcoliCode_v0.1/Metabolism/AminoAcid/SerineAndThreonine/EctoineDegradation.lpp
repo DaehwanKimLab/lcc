@@ -1,0 +1,9 @@
+// EctoineDegradation
+// input: ectoine
+// output: aspartate
+// DB: KEGG
+// - M00919
+pathway EctoineDegradation(ectoine --> aspartate)
+{
+
+}

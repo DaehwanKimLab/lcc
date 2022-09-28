@@ -1,0 +1,9 @@
+// HistidineBiosynthesis
+// input: PRPP
+// output: Histidine
+// DB: KEGG
+// - M00026
+pathway HistidineBiosynthesis(PRPP --> Histidine)
+{
+
+}

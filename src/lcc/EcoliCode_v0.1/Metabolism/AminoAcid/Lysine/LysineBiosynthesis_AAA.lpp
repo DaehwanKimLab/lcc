@@ -1,0 +1,11 @@
+// LysineBiosynthesis_AAA
+// input: 2-oxoglutarate
+// intermediate: 2-aminoadipate
+// output: lysine
+// DB: KEGG
+// - M00030
+pathway LysineBiosynthesis_AAA
+{
+    reaction 2-oxoglutarate22-aminoadipate(2-oxoglutarate --> 2-aminoadipate);
+    reaction 2-aminoadipate2lysine(2-aminoadipate --> lysine);
+}

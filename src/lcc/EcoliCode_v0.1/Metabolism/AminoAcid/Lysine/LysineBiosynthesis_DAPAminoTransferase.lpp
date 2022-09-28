@@ -1,0 +1,9 @@
+// LysineBiosynthesis_DAPAminoTransferase
+// input: aspartate
+// output: lysine
+// DB: KEGG
+// - M00527
+pathway LysineBiosynthesis_DAPAminoTransferase(aspartate --> lysine)
+{
+
+}

@@ -1,0 +1,9 @@
+// HemeBiosynthesis_fromGlutamate
+// input: glutamate
+// output: heme
+// DB: KEGG
+// - M00121
+pathway HemeBiosynthesis_fromGlutamate(glutamate --> heme)
+{
+
+}

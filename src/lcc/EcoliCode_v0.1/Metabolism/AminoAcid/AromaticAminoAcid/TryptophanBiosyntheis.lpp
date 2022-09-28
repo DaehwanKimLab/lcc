@@ -1,0 +1,9 @@
+// TryptophanBiosyntheis
+// input: chorismate
+// output: tryptophan
+// DB: KEGG
+// - M00023
+pathway TryptophanBiosyntheis(chorismate --> tryptophan)
+{
+
+}

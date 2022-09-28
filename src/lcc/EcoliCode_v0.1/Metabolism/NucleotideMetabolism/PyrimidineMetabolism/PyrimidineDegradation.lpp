@@ -1,0 +1,4 @@
+pathway PyrimidineDegradation(uracil --> beta-alanine) // & thymine --> 3-aminoisobutanoate, uracil --> 3-hydroxypropanoate
+{
+
+}

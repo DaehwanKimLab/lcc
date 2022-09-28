@@ -1,0 +1,9 @@
+// PlastoquinoneBiosynthesis
+// input: homogentisate + solanesyl-PP
+// output: plastoquinol
+// DB: KEGG
+// - M00933
+pathway PlastoquinoneBiosynthesis(homogentisate + solanesyl-PP --> plastoquinol)
+{
+
+}

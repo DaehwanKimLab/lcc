@@ -1,0 +1,9 @@
+// MolybendumCofactorBiosynthesis
+// input: GTP
+// output: MolybdenumCofactor
+// DB: KEGG
+// - M00880
+pathway MolybendumCofactorBiosynthesis(GTP --> MolybdenumCofactor)
+{
+
+}

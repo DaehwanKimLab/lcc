@@ -1,0 +1,11 @@
+// HemeBiosynthesis_fromGlutamyltRNA
+// input: glutamyl-tRNA
+// intermediate: coproporphyrin-III
+// output: heme
+// DB: KEGG
+// - M00121
+pathway HemeBiosynthesis_fromGlutamyltRNA
+{
+    reaction glutamyl-tRNA2coproporphyrin-III(glutamyl-tRNA --> coproporphyrin-III);
+    reaction coproporphyrin-III2heme(coproporphyrin-III --> heme);
+}

@@ -1,0 +1,11 @@
+// CobalaminBiosynthesis_anaerobic
+// input: uroporphyrinogen-III
+// intermediate: sirohydrochlorin
+// output: cobyrinate_a,c-diamide
+// DB: KEGG
+// - M00924
+pathway CobalaminBiosynthesis_anaerobic
+{
+    reaction uroporphyrinogen-III2sirohydrochlorin(uroporphyrinogen-III --> sirohydrochlorin);
+    reaction sirohydrochlorin2cobyrinate_a,c-diamide(sirohydrochlorin --> cobyrinate_a,c-diamide);
+}

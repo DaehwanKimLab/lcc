@@ -1,0 +1,9 @@
+// GlutathioneBiosynthesis
+// input: glutamate
+// output: glutathione
+// DB: KEGG
+// - M00118
+pathway GlutathioneBiosynthesis(glutamate --> glutathione)
+{
+
+}

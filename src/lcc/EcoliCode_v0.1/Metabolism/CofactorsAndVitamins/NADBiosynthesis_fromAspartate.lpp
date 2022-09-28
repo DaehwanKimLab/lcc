@@ -1,0 +1,11 @@
+// NADBiosynthesis_fromAspartate
+// input: aspartate
+// intermediate: quinolinate
+// output: NAD
+// DB: KEGG
+// - M00115
+pathway NADBiosynthesis_fromAspartate
+{
+    reaction aspartate2quinolinate(aspartate --> quinolinate);
+    reaction quinolinate2NAD(quinolinate --> NAD);
+}

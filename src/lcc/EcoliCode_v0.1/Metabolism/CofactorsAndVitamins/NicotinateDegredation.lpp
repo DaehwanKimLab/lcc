@@ -1,0 +1,9 @@
+// NicotinateDegredation
+// input: nicotinate
+// output: fumarate
+// DB: KEGG
+// - M00622
+pathway NicotinateDegredation(nicotinate --> fumarate)
+{
+
+}

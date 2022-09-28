@@ -1,0 +1,60 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Translation
+
+// Translation in Prokaryotes
+// Marina V Rodnina
+// Cold Spring Harb Perspect Biol. 2018 Sep 4;10(9):a032664.
+// https://cshperspectives.cshlp.org/content/10/9/a032664.long
+
+import Ribosome;
+import tRNACharging;
+
+pathway Translation
+{
+    70S = Ribosome.70S;
+    
+    Ribosome.30S = 10nM;
+    Ribosome.50S = 10nM;
+
+    // Step 1. Initiation: see Ribosome
+    reaction Initiation
+    {
+        reaction 30S_PICAssembly = Ribosome.30S_PIC.PICAssembly;
+        reaction InitiatortRNAloading = Ribosome.30S_PIC.InitiatortRNAloading;
+        reaction 30S_ICAssembly = Ribosome.30S_IC.30S_ICAssembly;
+        reaction 70S_PICAssembly = Ribosome.70S_PIC.70S_PIC;
+        reaction 70S_ICAssembly = 70S.70S_ICAssembly;
+    }
+    
+    // Step 2. Elongation: see Ribosome
+    reaction Elongation
+    {
+        pathway tRNACharging = tRNACharging.tRNACharging;
+        reaction CodonRecognition = 70S.CodonRecognition;
+        reaction GTPHydrolysis = 70S.GTPHydrolysis;
+        reaction PeptidylTransfer = 70S.PeptidylTransfer;
+        reaction EF-G_Binding = 70S.EF-G_Binding;
+        reaction RNATranslocation = 70S.RNATranslocation;
+    }
+
+    // Step 3. Termination: see Ribosome
+    reaction Termination 
+    {
+        reaction StopCodonRecognition = 70S.StopCodonRecognition;
+        reaction PeptideRelease = 70S.PeptideRelease;
+        reaction RF12Release = 70S.RF12Release;
+        reaction RF3Release = 70S.RF3Release;
+        reaction RRFEF-GBinding = 70S.RRF_EF-G_Binding;
+        reaction 70SDissociation = 70S.70SDissociation;
+    }
+}
+
+reference ThomasSteitz_2008
+{
+    title = "A structural understanding of the dynamic ribosome machine";
+    doi = "10.1038/nrm2352";
+    // journal = "Nat Rev Mol Cell Biol";
+    // vol = "9, 242–253";
+    // date = "March, 2008";
+    // doi_url = "https://doi.org/10.1038/nrm2352";
+}
