@@ -10,7 +10,7 @@ protein Rho; // homohexameric RecA-family helicase Rho
 complex RhoComplex // Rho complex
 {
     reaction Complexation(6 Rho, Kd=1e-10);
-    reaction RNABinding(self + rut_repeat -> self~rut_repeat);
+    reaction RNABinding(self + rut_repeat -> self~rut_repeat, Kd=1e-7);
     reaction Translocation(self~rut_repeat{n} + ATP --> self~rut_repeat{n+1} + ADP + Pi, r=120); // faster RNA translocation of RhoComplex than RNA elongation by RNAP
 }
 
@@ -23,3 +23,5 @@ reference RaySoni_2016
     // date = "March 17, 2016";
     // doi_url = "doi.org/10.1146/annurev-biochem-060815-014844";
 }
+
+Rho = 10nM;

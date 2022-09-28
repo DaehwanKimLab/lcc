@@ -25,18 +25,19 @@ polymerase RNAP
 {
     // transcription initiation
     // self = RNACore~ssDNA
-    reaction SigmaFactorRelease(RNAPHolo --> self~dsDNA + sigmafactor + promoter, k=1e9);
-    reaction dsDNAUnwinding(self~dsDNA{n-10:n+10} --> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, k=1e9);
+    reaction SigmaFactorRelease(RNAPHolo --> self~dsDNA + sigmafactor + promoter, Kd=1e-7);
+    
     
     // transcription elongation
-    reaction Polymerization
+    reaction Elongation
     {
         float R = 60.0;
+        reaction dsDNAUnwinding(self~dsDNA{n-10:n+10} --> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, r=R);
         reaction DNATranslocation(self.ssDNA{n} --> self.ssDNA{n+1}, r=R);
         reaction RNAElongation(self~RNA_{n} + c(NTP) + self.ssDNA.N{n} --> self~RNA_{n+1} + PPi, r=R);
     }
     
     // transcription termination
-    reaction IntrinsicTermination(self~RNA.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + RNA, k=1e9);
-    reaction RhoDependentTermination(self~RNA + ssDNA + RhoComplex --> RNAPCore + dsDNA + RNA + RhoComplex, k=1e9);
+    reaction IntrinsicTermination(self~RNA.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + RNA, Kd=1e-7);
+    reaction RhoDependentTermination(self~RNA + ssDNA + RhoComplex --> RNAPCore + dsDNA + RNA + RhoComplex, Kd=1e-7);
 }

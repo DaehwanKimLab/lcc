@@ -5,29 +5,31 @@ import RNAPolymerase;
 
 pathway Transcription 
 {
-    RNAP.RNAPCore = 10nM;
-    Rho.Rho = 10nM;
+    RNAPHolo = RNAPolymerase.RNAPHolo;
+    RNAP = RNAPolymerase.RNAPOpen;
+    
+    RNAPolymerase.RNAPCore = 10nM;
     
     pathway Initiation
     {
         reaction RNAPCoreAssembly = RNAPolymerase.RNAPCore.Complexation;
-        reaction RNAPHoloAssembly = RNAPolymerase.RNAPHolo.Complexation;
-        reaction PromotorBinding = RNAPolymerase.RNAPHolo.PromotorBinding;
-        reaction dsDNAUnwinding = RNAPolymerase.RNAPHolo.dsDNAUnwinding;
-        reaction NascentRNAsynthesis = RNAPolymerase.RNAPHolo.NascentRNAsynthesis;
-        reaction SigmaFactorRelease = RNAPolymerase.RNAPOpen.SigmaFactorRelease;
+        reaction RNAPHoloAssembly = RNAPHolo.Complexation;
+        reaction PromotorBinding = RNAPHolo.PromotorBinding;
+        reaction dsDNAUnwinding = RNAPHolo.dsDNAUnwinding;
+        reaction NascentRNAsynthesis = RNAPHolo.NascentRNAsynthesis;
+        reaction SigmaFactorRelease = RNAP.SigmaFactorRelease;
     }
 
     pathway Elongation
     {
-        reaction dsDNAUnwinding = RNAPolymerase.RNAPOpen.Polymerization.dsDNAUnwinding;
-        reaction DNATranslocation = RNAPolymerase.RNAPOpen.Polymerization.DNATranslocation;
-        reaction RNAElongation = RNAPolymerase.RNAPOpen.Polymerization.RNAElongation;
+        reaction dsDNAUnwinding = RNAP.Polymerization.dsDNAUnwinding;
+        reaction DNATranslocation = RNAP.Polymerization.DNATranslocation;
+        reaction RNAElongation = RNAP.Polymerization.RNAElongation;
     }
 
     pathway Termination
     {
-        reaction IntrinsicTermination = RNAPolymerase.RNAPOpen.IntrinsicTermination;
-        reaction RhoDependentTermination = RNAPolymerase.RNAPOpen.RhoDependentTermination;
+        reaction IntrinsicTermination = RNAP.IntrinsicTermination;
+        reaction RhoDependentTermination = RNAP.RhoDependentTermination;
     }
 }

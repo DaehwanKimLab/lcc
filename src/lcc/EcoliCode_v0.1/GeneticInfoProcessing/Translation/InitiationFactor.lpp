@@ -5,8 +5,8 @@ protein IF1; // Helps to stabilize 30S ribosomal subunit
 protein IF2 // Binds fmet-tRNA with 30S subunit mRNA complex; bind GTP and hydrolyse
 {
     // IF2 GTP loading and recycling
-    reaction GDPLoading(self + GDP --> self~GDP, k=1e9);
-    reaction GDPtoGTPExchange(self~GDP + GTP --> self~GTP + GDP, k=1e9);
+    reaction GDPLoading(self + GDP --> self~GDP, Kd=1e-9);
+    reaction GDPtoGTPExchange(self~GDP + GTP --> self~GTP + GDP, Kd=1e-9);
 
     // Note: IF2~GTP hydrolysis occurs in 70S preinitiation complex, hence is written in Ribosome.lp
 }
