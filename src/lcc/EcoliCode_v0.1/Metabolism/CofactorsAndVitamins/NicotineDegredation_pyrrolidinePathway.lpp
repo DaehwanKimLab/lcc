@@ -1,9 +1,0 @@
-// NicotineDegredation_pyrrolidinePathway
-// input: nicotine
-// output: succinateSemialdehyde
-// DB: KEGG
-// - M00811
-pathway NicotineDegredation_pyrrolidinePathway(nicotine --> succinateSemialdehyde)
-{
-
-}

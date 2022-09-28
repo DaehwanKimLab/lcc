@@ -100,19 +100,19 @@ Insert table of keywords and short summary of each
 
 |Keyword| Isoforms |Meaning| Example|
 |:-----|:---:|:---:|-------:|
-protein| | | |
-complex| | | |
-reaction|| | |
-pathway| | | | 
-DNA| `ssDNA`, `dsDNA` | | |
-RNA | `tRNA`, `tRNA(AA)`, `mRNA`, etc. | 
-NTP| | | |
-AA| | | |
-import| | | |
-domain| | | | 
-motif | | | |
-transporter| | | |
-polymerase| | | |
+`protein`| | | |
+`complex`| | | |
+`reaction`|| | |
+`pathway`| | | | 
+`DNA`| `ssDNA`, `dsDNA` | | |
+`RNA` | `tRNA`, `tRNA(AA)`, `mRNA`, etc. | 
+`NTP`| | | |
+`AA`| | | |
+`import`| | | |
+`domain`| | | | 
+`motif` | | | |
+`transporter`| | | |
+`polymerase`| | | |
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>

@@ -1,0 +1,116 @@
+
+"""
+
+|-------------------|---------------------|-------------------|
+|     Amino Acid    | Three Letter Symbol | One Letter Symbol |
+|-------------------|---------------------|-------------------|
+| Alanine           | Ala                 | A                 |
+| Arginine          | Arg                 | R                 |
+| Asparagine        | Asn                 | N                 |
+| Aspartic Acid     | Asp                 | D                 | 
+| Cysteine          | Cys                 | C                 | 
+| Glutamic Acid     | Glu                 | E                 |
+| Glutamine         | Gln                 | Q                 | 
+| Glycine           | Gly                 | G                 | 
+| Histidine         | His                 | H                 |
+| Isoleucine        | Ile                 | I                 |
+| Leucine           | Leu                 | L                 |
+| Lysine            | Lys                 | K                 | 
+| Methionine        | Met                 | M                 |
+| Phenylalanine     | Phe                 | F                 | 
+| Proline           | Pro                 | P                 | 
+| Serine            | Ser                 | S                 |
+| Threonine         | Thr                 | T                 |
+| Tryptophan        | Trp                 | W                 | 
+| Tyrosine          | Tyr                 | Y                 |
+| Valine            | Val                 | V                 |
+|-------------------|---------------------|-------------------|
+
+"""
+
+pathway AlaBiosynth
+{
+    protein avtA(pyruvate + L-valine --> L-alanine + 3-methyl-2-oxobutanoate, k = 1, kr = 1); /* EC Number: 2.6.1.66 */
+    protein alaA(pyruvate + L-glutamate --> L-alanine + 2-oxoglutarate, k = 1, kr = 1); /* EC Number: 2.6.1.2 */
+    protein alaB(pyruvate + L-glutamate --> L-alanine + 2-oxoglutarate, k = 1, kr = 1); /* EC Number: 2.6.1.2 */
+    protein alaC(pyruvate + L-glutamate --> L-alanine + 2-oxoglutarate, k = 1, kr = 1); /* EC Number: 2.6.1.2 */
+    // This reaction is messy...
+    protein sufS(L-cysteine + unsulfurated<SulfurCarrier> --> L-alanine + sulfurated<SulfurCarrier>, k = 1); /* EC Number: 2.8.1.7 */
+    protein iscS(L-cysteine + unsulfurated<SulfurCarrier> --> L-alanine + sulfurated<SulfurCarrier>, k = 1); /* EC Number: 2.8.1.7 */
+}
+
+pathway ArgBiosynth
+{
+    protein argG(L-aspartate + L-citrulline + ATP --> L-arginino-succinate + AMP + PPi + H); /* EC Number: 6.3.4.5 */
+    protein argH(L-arginino-succinate --> L-arginine + fumarate, k = 1, kr = 1); /* EC Number: 4.3.2.1 */
+}
+
+pathway AsnBiosynth
+{
+    // Note, apparently same enzyme has two methods of amino transfer
+    protein asnB
+    {
+        reaction r1(L-aspartate + L-glutamine + H2O + ATP --> L-asparagine + L-glutamate + PPi + AMP + H, k = 1); /* BioCyc ID: ASPARAGINE-BIOSYNTHESIS */
+        reaction r2(L-aspartate + ammonium + ATP --> L-asparagine + PPi + AMP + H, k = 1); /* EC Number: 6.3.1.1 */
+    }
+    protein asnA(L-aspartate + ammonium + ATP --> L-asparagine + PPi + AMP + H, k = 1); /* EC Number: 6.3.1.1 */
+    
+}
+
+pathway AspBiosynth
+{
+    protein aspA(L-aspartate --> ammonium + fumarate, k = 1, kr = 1); /* EC Number: 4.3.1.1 */
+    protein aspC(L-aspartate + 2-oxoglutarate --> oxaloacetate + L-glutamate, k = 1, kr = 1); /* EC Number: 2.6.1.1 */
+    protein iaaA(L-asparagine + H2O --> L-aspartate + ammonium, k = 1); /* EC Number: 3.5.1.1 , 3.5.1.38 */
+    protein ansA(L-asparagine + H2O --> L-aspartate + ammonium, k = 1); /* EC Number: 3.5.1.1 , 3.5.1.38 */
+    protein ansB(L-asparagine + H2O --> L-aspartate + ammonium, k = 1); /* EC Number: 3.5.1.1 , 3.5.1.38 */
+}
+
+pathway CysBiosynth
+{
+    pathway CysFromSerine
+    {
+        protein cysE(L-serine + acetyl-CoA --> O-acetyl-L-serine + CoA); /* EC Number: 2.3.1.30 */
+        protein cysM(O-acetyl-L-serine + HydrogenSulfide --> L-cysteine + acetate + H) /* EC Number: 2.5.1.47 */
+        protein cysK(O-acetyl-L-serine + HydrogenSulfide --> L-cysteine + acetate + H) /* EC Number: 2.5.1.47 */
+    }
+    // There is also a pathway using thiosulfates (BioCyc ID: PWY-7870), but skip that for now.
+}
+
+pathway GluBiosynth
+{
+    protein gltB(ammonium + 2-oxoglutarate + 2 H + NADPH --> L-glutamate + NADP + H2O); /* BioCyc ID: GLUTSYN-PWY */
+    protein gltD(ammonium + 2-oxoglutarate + 2 H + NADPH --> L-glutamate + NADP + H2O); /* BioCyc ID: GLUTSYN-PWY */
+    protein gdhA(ammonium + 2-oxoglutarate + 2 H + NADPH --> L-glutamate + NADP + H2O, k = 1, kr = 1); /* EC Number: 1.4.1.4 */
+}
+
+pathway GlnBiosynth
+{
+    protein glnA(L-glutamate + ammonium + ATP --> L-glutamine + ADP + P + H); /* EC Number: 6.3.1.2 */ 
+}
+
+pathway GlyBiosynth
+{
+    protein glyA(L-serine + <tetrahydrofolate> --> glycine + <5,10-methylenetetrahydrofolate> + H2O, k = 1, kr = 1); /* EC Number: 2.1.2.1 */ 
+}
+
+pathway HisBiosynth
+{
+    // There are a lot of steps in this pathway, this is very low res.
+    reaction r1(PRPP --> AICAR + L-histidine) /* BioCyc ID: HISTSYN-PWY */ 
+
+}
+
+pathway IleBiosynth
+pathway LeuBiosynth
+pathway LysBiosynth
+pathway MetBiosynth
+pathway PheBiosynth
+pathway ProBiosynth
+pathway SerBiosynth
+pathway ThrBiosynth
+pathway TrpBiosynth
+pathway TyrBiosynth
+pathway ValBiosynth
+
+

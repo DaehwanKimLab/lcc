@@ -1,9 +1,0 @@
-// NicotineDegredation_pyridinePathway
-// input: nicotine
-// output: 2,6-dihydroxypyridine + succinateSemialdehyde
-// DB: KEGG
-// - M00810
-pathway NicotineDegredation_pyridinePathway(nicotine --> 2,6-dihydroxypyridine + succinateSemialdehyde)
-{
-
-}

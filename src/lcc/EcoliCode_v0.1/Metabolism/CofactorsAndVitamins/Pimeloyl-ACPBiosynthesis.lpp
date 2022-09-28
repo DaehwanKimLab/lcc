@@ -1,9 +1,0 @@
-// Pimeloyl-ACPBiosynthesis
-// input: malonyl-ACP
-// output: pimeloyl-ACP
-// DB: KEGG
-// - M00572
-pathway Pimeloyl-ACPBiosynthesis(malonyl-ACP --> pimeloyl-ACP)
-{
-
-}
