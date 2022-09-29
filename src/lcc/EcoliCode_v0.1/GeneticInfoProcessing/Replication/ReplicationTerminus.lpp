@@ -1,0 +1,12 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Replication Terminus
+
+DNA TerminusOfReplication
+{
+    motif ter;
+}
+
+protein Tus
+{
+    reaction TerBinding(self + TerminusOfReplication.ter --> self~TerminusOfReplication.ter, Kd=1e-10);
+}

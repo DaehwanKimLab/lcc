@@ -1,22 +1,36 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Replication
 
-import DNAMethylation;
+Import ReplicationOrigin;
+Import ReplicationTerminus;
+Import DNAPolymerase;
 
 pathway Replication 
 {
+    protein DnaA = ReplicationOrigin.DnaA;
+    protein Tus = ReplicationTerminus.Tus;
+    complex DNAP = DNAPolymerase.Replisome;
+
     reactions Initiation
     {
-
+        reaction DnaAPhosphorylation = DnaA.ATPBinding;
+        reaction DnaABoxBinding = DnaA.DnaABoxBinding;
+        reaction DNAPIIIAssembly = DNAPolymerase.DNAPIII.DNAPIII;
+        reaction DNAPAssembly = DNAP.Complexation;
+        reaction DNABinding = DNAP.DNABinding;
     }
 
     reaction Elongation
     {
-
+        reaction dsDNAUnwinding = DNAP.Polymerization.dsDNAUnwinding;
+        reaction DNATranslocation = DNAP.Polymerization.DNATranslocation;
+        reaction Elongation = DNAP.Polymerization.Elongation;
+        reaction OligoSynthesis = DNAP.OligoSynthesis;
     }
     
     reaction Termination
     {
-
+        reaction TusTerBinding = Tus.TerBinding;
+        reaction Termination = DNAP.Termination;
     }
 }

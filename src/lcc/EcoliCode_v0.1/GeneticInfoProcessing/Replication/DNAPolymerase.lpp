@@ -1,0 +1,56 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Replisome
+
+import ReplicationOrigin;
+import ReplicationTerminus;
+
+DNA Ori = ReplicationOrigin.OriginOfReplication;
+DNA Ter = ReplicationTerminus.TerminusOfReplication;
+
+protein DnaA = ReplicationOrigin.DnaA;
+protein Tus = ReplicationTerminus.Tus;
+
+// Replisome
+protein DnaB, DnaC, DnaG, DnaE, DnaQ, GyrAB;
+complex DNAPIII(DnaE + DnaQ, Kd=1e-10);
+
+complex Replisome
+{
+    // initiation
+    reaction Complexation(DnaB + DnaC + DnaG + GyrAB + 2 DNAPIII, Kd=1e-10);
+    reaction DNABinding(self + DnaA~ATP~Ori.DnaABox --> self~Ori.DnaABox + DnaA~ATP, Kd=1e-10);
+    
+    // elongation
+    reaction Polymerization
+    {
+        float R = 1000.0;
+        reaction dsDNAUnwinding(self~dsDNA --> self~ssDNA + ssDNA, r=R); // rate of initiation?
+        reaction DNATranslocation(self~dsDNA{n} --> self~dsDNA{n+1}, r=R);
+        reaction Elongation(DNA_{n} + dNTP --> DNA_{n+1} + ppi, r=R);
+    }
+    reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) --> self~dsDNA, r=1);
+    
+    // termination
+    reaction Termination(self~dsDNA + Tus~Ter.ter --> self + dsDNA + Tus~Ter.ter, Kd=1e-10);
+}
+
+reference Xu_Dixon_2018
+{
+    title = "Bacterial replisomes";
+    doi = "10.1016/j.sbi.2018.09.006";
+    // doi_url = "https://doi.org/10.1016/j.sbi.2018.09.006";
+}
+
+// reference BrockBiologyOfMicroorganisms_Table4_2
+// {
+//     title = "Brock Biology of Microorganisms";
+//     edition = 15;
+//     publisher = "Pearson";
+//     authors = "Madigan", "Bender", "Buckley", "Sattley", "Stahl";
+
+//     table T4_2
+//     {
+//         title = "Major enzymes that participate in DNA replication in Bacteria";
+//         page = 147;
+//     }
+// }
