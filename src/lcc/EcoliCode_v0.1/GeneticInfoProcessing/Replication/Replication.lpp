@@ -1,12 +1,22 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Replication
 
-import ReplicationInitiation as Initiation
-import ReplicationElongation as Elongation
-import ReplicationTermination as Termination
+import DNAMethylation;
 
 pathway Replication 
 {
-    pathway Initiation;
-    pathway Elongation;
-    pathway Termination;
+    reactions Initiation
+    {
+
+    }
+
+    reaction Elongation
+    {
+
+    }
+    
+    reaction Termination
+    {
+
+    }
 }

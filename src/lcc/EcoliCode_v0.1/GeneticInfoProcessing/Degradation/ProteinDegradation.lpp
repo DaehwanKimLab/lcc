@@ -1,0 +1,7 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// RNA polymerase
+
+pathway ProteinDegradation
+{
+    protein Protease(protein_{n} --> n AA, k=1e3);
+}

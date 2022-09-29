@@ -14,9 +14,10 @@ pathway ReplicationInitiation
     // blocking origin to prevent further initiation
     SeqA.associate(Hemimethylated_DnaABox);
     
-    // DNA methylation
     // Dam and Dcm Methylases of E. coli
     // Most laboratory strains of E. coli contain three site-specific DNA methylases. 
-    // The methylase encoded by the dam gene (Dam methylase) transfers a methyl group from S-adenosylmethionine (SAM) to the N6 position of the adenine residues in the sequence GATC (1,2). The Dcm methylase (encoded by the dcm gene; referred to as the Mec methylase in earlier references) methylates the internal (second) cytosine residues in the sequences CCAGG and CCTGG (1,3) at the C5 position. The EcoKI methylase, M. EcoKI, modifies adenine residues in the sequences AAC(N6)GTGC and GCAC(N6)GTT. EcoKI sites (~1 site per 8 kb) are much less common than Dam sites (~1 site per 256 bp) or Dcm sites (~1 site per 512 bp) in DNA of random sequence (GC=AT).
+    // 1. Dam methylase transfers a methyl group from S-adenosylmethionine (SAM) to the N6 position of the adenine residues in the sequence GATC (1,2). .
+    // 2. Dcm methylase methylates the internal (second) cytosine residues in the sequences CCAGG and CCTGG (1,3) at the C5 position. 
+    // 3. EcoKI methylase, modifies adenine residues in the sequences AAC(N6)GTGC and GCAC(N6)GTT. Note: EcoKI sites (~1 site per 8 kb) are much less common than Dam sites (~1 site per 256 bp) or Dcm sites (~1 site per 512 bp) in DNA of random sequence (GC=AT).
     protein Dam(GACT + S-adenosylmethionine --> GmACT + SAH, k=1e5); // write out SAH
 }

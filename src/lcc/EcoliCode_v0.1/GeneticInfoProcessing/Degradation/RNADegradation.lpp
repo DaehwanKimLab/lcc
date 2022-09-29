@@ -1,0 +1,7 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// RNA polymerase
+
+pathway RNADegradation
+{
+    protein Ribonuclease(RNA_{n} --> n NTP, k=1e6);
+}
