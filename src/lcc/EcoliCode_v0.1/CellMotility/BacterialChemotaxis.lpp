@@ -1,0 +1,34 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Bacterial Chemotaxis
+
+pathway BacterialChemotaxis 
+{
+    // CheA reference
+    A   = CheA.LBD          + CheA.RD;
+    AL  = CheA.LBD~Ligand   + CheA.RD;
+    Am  = CheA.LBD          + CheA.RD~CH3;
+    AmL = CheA.LBD~Ligand   + CheA.RD~CH3;
+
+    membrane CellMembrane
+    {
+        protein CheA
+        {
+            domain LBD{out}, RD{in}; // ligand binding domain, regulatory domain
+        
+            reaction A_Am_LigandBinding(self.LBD + Ligand --> self.LBD~Ligand, k=1e9, krev=1); // takes care of both A and Am
+            reaction B_Phosphorylation(Am + CheB + ATP --> Am + CheB~Pi + ADP + H, k=0.05e9, krev=0.005)
+        } 
+        CheA= 500nM;
+
+        space Cytosol
+        {
+            protein CheR(CheA.RD + CH3 --> CheA.RD~CH3, kcat=1, KM=1e-10nM); // A_AL_Methylation; takes care of both A and AL
+            protein CheB
+            {
+                reaction AmL_Demethylation(self~Pi + AmL --> self~Pi + AL + CH3, kcat=1, KM=1nM);
+                reaction Am_Demethylation(self~Pi + Am --> self~Pi + A + CH3, kcat=200, KM=1nM);
+            }
+            CheR = 5nM, CheB = 0.1nM;
+        }
+    }
+}
