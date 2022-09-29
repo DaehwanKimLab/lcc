@@ -1,9 +1,0 @@
-// EctoineBiosynthesis
-// input: aspartate
-// output: ectoine
-// DB: KEGG
-// - M00033
-pathway EctoineBiosynthesis(aspartate --> ectoine)
-{
-
-}

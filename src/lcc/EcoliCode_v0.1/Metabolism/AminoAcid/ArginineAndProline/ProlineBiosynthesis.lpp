@@ -1,9 +1,0 @@
-// ProlineBiosynthesis
-// input: glutamate
-// output: proline
-// DB: KEGG
-// - M00015
-pathway ProlineBiosynthesis(glutamate --> proline)
-{
-
-}

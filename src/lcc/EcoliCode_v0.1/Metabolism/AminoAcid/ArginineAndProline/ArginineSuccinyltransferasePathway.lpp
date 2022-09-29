@@ -1,9 +1,0 @@
-// ArginineSuccinyltransferasePathway
-// input: arginine
-// output: glutamate
-// DB: KEGG
-// - M00879
-pathway ArginineSuccinyltransferasePathway(arginine --> glutamate)
-{
-
-}

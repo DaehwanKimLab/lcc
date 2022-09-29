@@ -1,9 +1,0 @@
-// PhylloquinoneBiosynthesis
-// input: chorismate + phytyl-PP
-// output: phylloquinol
-// DB: KEGG
-// - M00932
-pathway PhylloquinoneBiosynthesis(chorismate + phytyl-PP --> phylloquinol)
-{
-
-}

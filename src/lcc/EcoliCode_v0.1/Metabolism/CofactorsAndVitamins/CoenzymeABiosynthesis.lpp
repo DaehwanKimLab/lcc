@@ -1,9 +1,0 @@
-// CoenzymeABiosynthesis
-// input: pantothenate
-// output: CoA
-// DB: KEGG
-// - M00120
-pathway CoenzymeABiosynthesis(pantothenate --> CoA)
-{
-
-}

@@ -1,9 +1,0 @@
-// UreaCycle
-// input: ammonia
-// output: ornithine + urea
-// DB: KEGG
-// - M00029
-pathway UreaCycle(ammonia --> ornithine + urea)
-{
-
-}

@@ -1,9 +1,0 @@
-// CysteineBiosynthesis_I
-// input: serine
-// output: cysteine
-// DB: KEGG
-// - M00021
-pathway CysteineBiosynthesis_I(serine --> cysteine)
-{
-
-}

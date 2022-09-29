@@ -1,9 +1,0 @@
-// ShikimatePathway
-// input: phosphoenopyruvate + erythrose-4P
-// output: chorismate
-// DB: KEGG
-// - M00022
-pathway ShikimatePathway(phosphoenopyruvate + erythrose-4P --> chorismate)
-{
-
-}

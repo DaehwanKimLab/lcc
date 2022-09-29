@@ -1,9 +1,0 @@
-// D-ArginineRacemization
-// input: D-Arginine
-// output: L-Arginine
-// DB: KEGG
-// - M00947
-pathway D-ArginineRacemization(D-Arginine --> L-Arginine)
-{
-
-}

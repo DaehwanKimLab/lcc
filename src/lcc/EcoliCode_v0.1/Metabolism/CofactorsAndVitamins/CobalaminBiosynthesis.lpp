@@ -1,9 +1,0 @@
-// CobalaminBiosynthesis
-// input: cobyrinate_a,c-diamide
-// output: cobalamin
-// DB: KEGG
-// - M00122
-pathway CobalaminBiosynthesis(cobyrinate_a,c-diamide --> cobalamin)
-{
-
-}

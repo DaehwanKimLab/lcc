@@ -1,9 +1,0 @@
-// CysteineBiosynthesis_III
-// input: methionine
-// output: cysteine
-// DB: KEGG
-// - M00609
-pathway CysteineBiosynthesis_III(methionine --> cysteine)
-{
-
-}

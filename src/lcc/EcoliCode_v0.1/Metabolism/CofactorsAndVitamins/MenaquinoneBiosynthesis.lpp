@@ -1,9 +1,0 @@
-// MenaquinoneBiosynthesis
-// input: chorismate + polyprenyl-PP
-// output: menaquinone
-// DB: KEGG
-// - M00116
-pathway MenaquinoneBiosynthesis(chorismate + polyprenyl-PP --> menaquinone)
-{
-
-}

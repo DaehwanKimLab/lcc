@@ -1,9 +1,0 @@
-// StaphylopineBiosynthesis
-// input: L-histidine
-// output: staphylopine
-// DB: KEGG
-// - M00949
-pathway StaphylopineBiosynthesis(L-histidine --> staphylopine)
-{
-
-}

@@ -1,9 +1,0 @@
-// CreatinePathway
-// input: arginine
-// output: creatine
-// DB: KEGG
-// - M00047
-pathway CreatinePathway(arginine --> creatine)
-{
-
-}

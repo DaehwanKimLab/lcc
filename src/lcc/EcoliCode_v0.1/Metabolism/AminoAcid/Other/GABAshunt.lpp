@@ -1,9 +1,0 @@
-// GABAshunt
-// input: GABA
-// output: succinate
-// DB: KEGG
-// - M00027
-pathway GABAshunt(GABA --> succinate)
-{
-
-}

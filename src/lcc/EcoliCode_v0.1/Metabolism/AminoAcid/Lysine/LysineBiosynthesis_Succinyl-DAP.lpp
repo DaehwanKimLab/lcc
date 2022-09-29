@@ -1,9 +1,0 @@
-// LysineBiosynthesis_Succinyl-DAP
-// input: aspartate
-// output: lysine
-// DB: KEGG
-// - M00016
-pathway LysineBiosynthesis_Succinyl-DAP(aspartate --> lysine)
-{
-
-}
