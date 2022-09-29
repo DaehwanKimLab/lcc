@@ -13,10 +13,10 @@ pathway BacterialChemotaxis
     {
         protein CheA
         {
-            domain LBD{out}, RD{in}; // ligand binding domain, regulatory domain
+            domain LBD, RD; // ligand binding domain, regulatory domain
         
-            reaction A_Am_LigandBinding(self.LBD + Ligand --> self.LBD~Ligand, k=1e9, krev=1); // takes care of both A and Am
-            reaction B_Phosphorylation(Am + CheB + ATP --> Am + CheB~Pi + ADP + H, k=0.05e9, krev=0.005)
+            reaction A_Am_LigandBinding(self.LBD + Ligand{out} --> self.LBD~Ligand, k=1e9, krev=1); // takes care of both A and Am, reversible
+            reaction B_Phosphorylation(Am + CheB{in} + ATP{in} --> Am + CheB~Pi{in} + ADP{in} + H{in}, k=0.05e9, krev=0.005) // reversible
         } 
         CheA= 500nM;
 
