@@ -1,9 +1,0 @@
-// PantothenateBiosynthesis_spermine
-// input: 2-oxoisovalerate + spermine
-// output: pantothenate
-// DB: KEGG
-// - M00913
-pathway PantothenateBiosynthesis_spermine(2-oxoisovalerate + spermine --> pantothenate)
-{
-
-}

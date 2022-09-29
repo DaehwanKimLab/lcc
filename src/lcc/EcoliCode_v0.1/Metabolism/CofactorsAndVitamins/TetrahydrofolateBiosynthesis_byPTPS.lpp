@@ -1,9 +1,0 @@
-// TetrahydrofolateBiosynthesis_byPTPS
-// input: GTP
-// output: THF
-// DB: KEGG
-// - M00841
-pathway TetrahydrofolateBiosynthesis_byPTPS(GTP --> THF)
-{
-
-}

@@ -1,9 +1,0 @@
-// LipoicAcidBiosynthesis
-// input: octanoyl-ACP
-// output: dihydrolipoyl-E2 + H
-// DB: KEGG
-// - M00881
-pathway LipoicAcidBiosynthesis(octanoyl-ACP --> dihydrolipoyl-E2 + H)
-{
-
-}

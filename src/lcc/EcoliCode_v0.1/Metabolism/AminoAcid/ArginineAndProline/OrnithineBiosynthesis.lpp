@@ -1,9 +1,0 @@
-// OrnithineBiosynthesis
-// input: glutamate
-// output: ornithine
-// DB: KEGG
-// - M00028
-pathway OrnithineBiosynthesis(glutamate --> ornithine)
-{
-
-}

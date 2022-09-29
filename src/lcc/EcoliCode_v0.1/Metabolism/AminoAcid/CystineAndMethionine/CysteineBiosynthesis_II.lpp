@@ -1,9 +1,0 @@
-// CysteineBiosynthesis_II
-// input: homocysteine + serine
-// output: cysteine
-// DB: KEGG
-// - M00338
-pathway CysteineBiosynthesis_II(homocysteine + serine --> cysteine)
-{
-
-}

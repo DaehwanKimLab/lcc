@@ -1,9 +1,0 @@
-// Pyridoxal-PBiosynthesis_fromGlyceraldehyde-3P
-// input: R5P + glyceraldehyde-3P + glutamine
-// output: pyridoxal-P
-// DB: KEGG
-// - M00916
-pathway Pyridoxal-PBiosynthesis_fromGlyceraldehyde-3P(R5P + glyceraldehyde-3P + glutamine --> pyridoxal-P)
-{
-
-}

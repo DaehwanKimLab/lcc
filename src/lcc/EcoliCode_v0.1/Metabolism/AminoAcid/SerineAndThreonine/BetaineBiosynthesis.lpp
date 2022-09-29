@@ -1,9 +1,0 @@
-// Betaine Biosynthesis
-// input: choline
-// output: betaine
-// DB: 
-// - KEGG M00555
-pathway BetaineBiosynthesis(choline --> betaine)
-{
-    
-}

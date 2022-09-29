@@ -1,9 +1,0 @@
-// PantothenateBiosynthesis_ValAsp
-// input: valine + aspartate
-// output: pantothenate
-// DB: KEGG
-// - M00119
-pathway PantothenateBiosynthesis_ValAsp(valine + aspartate --> pantothenate)
-{
-
-}

@@ -1,9 +1,0 @@
-// HydroxyprolineDegredation
-// input: trans-4-hydroxy-L-proline
-// output: 2-oxoglutarate
-// DB: KEGG
-// - M00948
-pathway HydroxyprolineDegredation(trans-4-hydroxy-L-proline --> 2-oxoglutarate)
-{
-
-}

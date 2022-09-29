@@ -1,9 +1,0 @@
-// Pyridoxal-PBiosynthesis_fromErythrose-4P
-// input: erythrose-4P
-// output: pyridoxal-P
-// DB: KEGG
-// - M00124
-pathway Pyridoxal-PBiosynthesis_fromErythrose-4P(erythrose-4P --> pyridoxal-P)
-{
-
-}

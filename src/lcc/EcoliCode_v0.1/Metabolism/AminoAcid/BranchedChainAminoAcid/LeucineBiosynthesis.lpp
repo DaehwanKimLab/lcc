@@ -1,9 +1,0 @@
-// LeucineBiosynthesis
-// input: 2-oxoisovalerate
-// output: leucine
-// DB: KEGG
-// - M00432
-pathway LeucineBiosynthesis(2-oxoisovalerate --> leucine)
-{
-
-}

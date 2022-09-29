@@ -1,9 +1,0 @@
-// ArginineBiosynthesis_ornithine
-// input: ornithine
-// output: arginine
-// DB: KEGG
-// - M00844
-pathway ArginineBiosynthesis_ornithine(ornithine --> arginine)
-{
-
-}

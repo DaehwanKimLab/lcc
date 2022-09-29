@@ -1,9 +1,0 @@
-// ThiamineBiosynthesis_byGlycine
-// input: AIR + DXP + glycine
-// output: TMP + TPP
-// DB: KEGG
-// - M00895
-pathway ThiamineBiosynthesis_byGlycine(AIR + DXP + glycine --> TMP + TPP)
-{
-
-}

@@ -1,9 +1,0 @@
-// MethionineSalvagePathway
-// input: methionine
-// output: 4-Methylthio-2-oxobutanoicAcid
-// DB: KEGG
-// - M00034
-pathway MethionineSalvagePathway(methionine --> 4-Methylthio-2-oxobutanoicAcid)
-{
-
-}

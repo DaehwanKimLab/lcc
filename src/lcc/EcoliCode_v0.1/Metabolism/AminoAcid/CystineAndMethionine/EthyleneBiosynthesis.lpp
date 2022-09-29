@@ -1,9 +1,0 @@
-// EthyleneBiosynthesis
-// input: methionine
-// output: ethylene
-// DB: KEGG
-// - M00368
-pathway EthyleneBiosynthesis(methionine --> ethylene)
-{
-
-}

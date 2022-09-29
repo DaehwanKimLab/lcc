@@ -1,9 +1,0 @@
-// MethionineDegredation
-// input: methionine
-// output: L-Cystathionine
-// DB: KEGG
-// - M00035
-pathway MethionineDegredation(methionine --> L-Cystathionine)
-{
-
-}

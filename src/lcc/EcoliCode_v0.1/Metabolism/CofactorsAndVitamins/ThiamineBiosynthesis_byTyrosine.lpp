@@ -1,9 +1,0 @@
-// ThiamineBiosynthesis_byTyrosine
-// input: AIR + DXP + tyrosine
-// output: TMP + TPP
-// DB: KEGG
-// - M00127
-pathway ThiamineBiosynthesis_byTyrosine(AIR + DXP + tyrosine --> TMP + TPP)
-{
-
-}

@@ -1,0 +1,5 @@
+// alias Hexose for set of molecules
+Hexose = {D-glucose, D-fructose}
+
+// Transport 6-carbon sugar into cell.
+transporter HexoseTransporter(Hexose{periplasm} --> Hexose{cytosol});

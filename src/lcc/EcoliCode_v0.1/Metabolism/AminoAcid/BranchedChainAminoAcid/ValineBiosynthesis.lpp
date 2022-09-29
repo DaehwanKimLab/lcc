@@ -1,9 +1,0 @@
-// ValineBiosynthesis
-// input: pyruvate
-// output: valine
-// DB: KEGG
-// - M00019
-pathway ValineBiosynthesis(pyruvate --> valine)
-{
-
-}

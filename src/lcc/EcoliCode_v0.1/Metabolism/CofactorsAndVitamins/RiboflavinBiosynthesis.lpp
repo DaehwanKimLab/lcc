@@ -1,9 +1,0 @@
-// RiboflavinBiosynthesis
-// input: GTP
-// output: riboflavin + FMN + FAD
-// DB: KEGG
-// - M00125
-pathway RiboflavinBiosynthesis(GTP --> riboflavin + FMN + FAD)
-{
-
-}
