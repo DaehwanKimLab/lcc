@@ -8,9 +8,6 @@
 // {}: positional reference (subject to reivision)
 
 import SigmaFactor;
-import Rho;
-
-complex RhoComplex = Rho.RhoComplex;
 
 protein RpoB, RpoC, RpoA, RpoZ;
 complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
@@ -19,7 +16,6 @@ complex RNAPHolo
     reaction SigmaFactorBinding(RNAPCore + sigmafactor, Kd=1e-7);
     reaction PromotorBinding(self + promoter --> self~promoter);
 }
-
 
 polymerase RNAP
 {
@@ -39,5 +35,4 @@ polymerase RNAP
     
     // transcription termination
     reaction IntrinsicTermination(self~RNA.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + RNA, Kd=1e-7);
-    reaction RhoDependentTermination(self~RNA + ssDNA + RhoComplex --> RNAPCore + dsDNA + RNA + RhoComplex, Kd=1e-7);
 }

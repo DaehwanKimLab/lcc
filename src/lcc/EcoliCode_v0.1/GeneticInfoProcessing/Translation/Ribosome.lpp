@@ -7,7 +7,7 @@ import InitiationFactor;
 import ElongationFactor;
 import TerminationFactor;
 
-tRNA tRNA_Init = tRNA.tRNA_Init;
+tRNA tRNA_Init = tRNA.tRNA(Met)_Init;
 
 protein IF1 = InitiationFactor.IF1;
 protein IF2 = InitiationFactor.IF2;
@@ -49,6 +49,7 @@ complex 30S_IC
     self = 30S_PIC.PSite~tRNA_Init + 30S_PIC~mRNA.startcodon;
     reaction 30S_ICAssembly(30S_PIC.PSite~tRNA_Init + mRNA.startcodon --> self, Kd=1e-9); // 30S Initiation Complex, codon recognition reaction
 }
+
 complex 70S_PIC(30S_IC + 50S, Kd=1e-9); // 70S Preinitiation Complex
 
 complex 70S // 70S Initiation Complex

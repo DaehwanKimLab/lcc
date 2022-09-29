@@ -5,8 +5,7 @@ import RNAPolymerase;
 
 pathway Transcription 
 {
-    RNAP = RNAPolymerase.RNAP;
-    
+    complex RNAP = RNAPolymerase.RNAP;
     RNAP.RNAPCore = 10nM;
     
     // Step 1. Initiation: see RNAPolymerase
@@ -32,6 +31,5 @@ pathway Transcription
     pathway Termination
     {
         reaction IntrinsicTermination = RNAP.IntrinsicTermination;
-        reaction RhoDependentTermination = RNAP.RhoDependentTermination;
     }
 }

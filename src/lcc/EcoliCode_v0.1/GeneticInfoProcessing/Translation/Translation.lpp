@@ -11,7 +11,7 @@ import tRNACharging;
 
 pathway Translation
 {
-    70S = Ribosome.70S;
+    complex 70S = Ribosome.70S;
     
     Ribosome.30S = 10nM;
     Ribosome.50S = 10nM;

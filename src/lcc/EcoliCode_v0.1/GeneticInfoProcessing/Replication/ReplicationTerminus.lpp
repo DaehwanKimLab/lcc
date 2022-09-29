@@ -10,3 +10,5 @@ protein Tus
 {
     reaction TerBinding(self + TerminusOfReplication.ter --> self~TerminusOfReplication.ter, Kd=1e-10);
 }
+
+Tus = 1nM;

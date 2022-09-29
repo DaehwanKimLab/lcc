@@ -1,7 +1,7 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // tRNAs
 
-tRNA tRNA_Init; // tRNA_Initiator_Met
+tRNA tRNA(Met)_Init; // tRNA_Initiator_Met
 tRNA tRNA(Ala), tRNA(Arg), tRNA(Asn), tRNA(Asp), tRNA(Cys), tRNA(Gln), tRNA(Glu), tRNA(Gly), tRNA(His), tRNA(Ile), tRNA(Met), tRNA(Leu), tRNA(Lys), tRNA(Phe), tRNA(Pro), tRNA(Ser), tRNA(Thr), tRNA(Trp), tRNA(Tyr), tRNA(Val);
 
 // save for copy and paste purpose

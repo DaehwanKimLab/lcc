@@ -11,3 +11,5 @@ protein DnaA // Origin-binding protein; Binds origin of replication to open doub
     reaction ATPBinding(self + ATP --> self~ATP, Kd=1e-10);
     reaction DnaABoxBinding(self~ATP + DnaABox --> DnaABox~self~ATP, Kd=1e-10);
 }
+
+DnaA = 1nM;

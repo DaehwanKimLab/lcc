@@ -20,8 +20,8 @@ pathway tRNACharging
     protein LeuS(L-leucine + tRNA(Leu) + ATP --> L-leucyl-tRNA(Leu) + PPi + AMP, k=1e9);
     protein LysS(L-lysine + tRNA(Lys) + ATP --> L-lysyl-tRNA(Lys) + PPi + AMP, k=1e9);
     protein LysU(L-lysine + tRNA(Lys) + ATP --> L-lysyl-tRNA(Lys) + PPi + AMP, k=1e9);
-    protein MetG(L-methionine + tRNA(initiator Met) + ATP --> L-methionyl-tRNA(initiator Met) + PPi + AMP, k=1e9);
-    protein MetG(L-methionine + tRNA(elongator Met) + ATP --> L-methionyl-tRNA(elongator Met) + PPi + AMP, k=1e9);
+    protein MetG(L-methionine + tRNA(Met)_Init + ATP --> L-methionyl-tRNA(Met)_Init + PPi + AMP, k=1e9);
+    protein MetG(L-methionine + tRNA(Met) + ATP --> L-methionyl-tRNA(Met) + PPi + AMP, k=1e9);
     protein PheS(L-phenylalanine + tRNA(Phe) + ATP --> L-phenylalanyl-tRNA(Phe) + PPi + AMP, k=1e9);
     protein PheT(L-phenylalanine + tRNA(Phe) + ATP --> L-phenylalanyl-tRNA(Phe) + PPi + AMP, k=1e9);
     protein ProS(L-proline + tRNA(Pro) + ATP --> L-prolyl-tRNA(Pro) + PPi + AMP, k=1e9);
