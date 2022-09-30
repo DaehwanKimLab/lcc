@@ -1,0 +1,34 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// Bacterial Chemotaxis
+// Network  6.13,   p.163
+// Model   6.12,    p.162
+// Figure  6.14,    p.164
+
+// N_SimSteps = 100000, SimStepTimeResolution = 100
+// Note: ligand induction time interval change similar to the python model
+
+protein R
+{
+  reaction R1(A --> Am, kcat=1, KM=1e-10nM);
+  reaction R2(AL --> AmL, kcat=1, kM=1e-10nM);
+}
+
+protein BP
+{
+  reaction R1(Am --> A, kcat=200, KM=1nM);
+  reaction R2(AmL --> AL, kcat=1, KM=1nM);
+}
+
+protein Am
+{
+  reaction R(B --> BP, k=0.05e9, krev=0.005);
+}
+
+reaction R1(Am + Ligand --> AmL, k=1e9, krev=1);
+reaction R2(A + Ligand --> AL, k=1e9, krev=1);
+
+R = 5nM, B = 0.1nM, A = 500nM;
+Ligand[0:100] = 20nM, Ligand[100:200] = 40nM, Ligand[200:300] = 80nM;
+
+SimSteps = 30000, SimRes = 100;

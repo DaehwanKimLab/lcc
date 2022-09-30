@@ -1,9 +1,9 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Replication
 
-Import ReplicationOrigin;
-Import ReplicationTerminus;
-Import DNAPolymerase;
+import ReplicationOrigin;
+import ReplicationTerminus;
+import DNAPolymerase;
 
 pathway Replication 
 {
@@ -11,7 +11,7 @@ pathway Replication
     protein Tus = ReplicationTerminus.Tus;
     complex DNAP = DNAPolymerase.Replisome;
 
-    reactions Initiation
+    reaction Initiation
     {
         reaction DnaAPhosphorylation = DnaA.ATPBinding;
         reaction DnaABoxBinding = DnaA.DnaABoxBinding;

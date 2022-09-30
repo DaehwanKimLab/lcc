@@ -20,7 +20,7 @@ pathway BacterialChemotaxis
         } 
         CheA= 500nM;
 
-        space Cytosol
+        cytosol Cytosol
         {
             protein CheR(CheA.RD + CH3 --> CheA.RD~CH3, kcat=1, KM=1e-10nM); // A_AL_Methylation; takes care of both A and AL
             protein CheB
