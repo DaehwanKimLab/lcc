@@ -1,9 +1,9 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Cell cycle (binary fission)
 
-from Replication import Replication
-from DNASegregation import DNASegregation
-from SeptumFormation import SeptumFormation
-import 
+from ../GeneticInfoProcessing import Replication
+import DNASegregation
+import SeptumFormation
 
 pathway CellDivision
 {
@@ -11,8 +11,3 @@ pathway CellDivision
     pathway Segregation;
     pathway SeptumFormation;
 }
-
-// add a function for drawing the cell cycle schematics:
-// B phase (gap phase)
-// C phase (replication)
-// D phase (cell division)
