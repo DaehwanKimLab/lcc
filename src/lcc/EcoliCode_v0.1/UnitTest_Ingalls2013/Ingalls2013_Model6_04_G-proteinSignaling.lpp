@@ -1,0 +1,24 @@
+// Ingalls 2013 Mathematical Modelling in Systems Biology
+//
+// G-protein Signaling
+// Network  6.4,   p.154
+// Model    6.4,   p.154
+// Figure   6.5,   p.154
+
+// InkRL=2e-3*1e9, InkRLm=1e-2, InkGa=1e-5 * 6.0221409e+23, InkGd0=0.11, InkG1=1 * 6.0221409e+23, InTotal_R=4000 / 6.0221409e+23, InTotal_G=10000 / 6.0221409e+23
+
+// Suggested N_SimSteps / SimStepTimeResolution : 1000
+// Otherwise, the automatic plotting will fall short, giving an error
+
+reaction R1(R + Ligand --> RL_Discrete, k=2.0e+6, krev=1e-2);
+reaction R2(G_Discrete + RL_Discrete --> Ga_Discrete + Gbg_Discrete + RL_Discrete, k=6.022140900000001e+18);
+reaction R3(Ga_Discrete --> Gd_Discrete, k=0.11);
+reaction R4(Gd_Discrete + Gbg_Discrete --> G_Discrete, k=6.0221409e+23);
+
+R[0]=6.6421561142815505e-21;
+Ligand[:]=0;
+Ligand[100:700]=1e-9;
+G_Discrete[0]=1.6605390285703877e-20;
+
+SimSteps = 10000, SimRes = 10;
+
