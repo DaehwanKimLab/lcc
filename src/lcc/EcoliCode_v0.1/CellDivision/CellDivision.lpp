@@ -1,13 +1,20 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
-// Cell cycle (binary fission)
+// Cell Division (binary fission)
 
-from ../GeneticInfoProcessing import Replication
-import DNASegregation
-import SeptumFormation
+import ../GeneticInfoProcessing.Replication.Replication;
+import DNASegregation;
+import SeptumFormation;
 
 pathway CellDivision
 {
-    pathway Replication;
-    pathway Segregation;
-    pathway SeptumFormation;
+    pathway DNAReplication = Replication.Replication;
+    pathway DNASegregation = DNASegregation;
+    pathway SeptumFormation = SeptumFormation;
+}
+
+reference LevinJanakiraman_2021
+{
+    title = "Localization, Assembly, and Activation of the Escherichia coli Cell Division Machinery";
+    doi = "10.1128/ecosalplus.ESP-0022-2021";
+    doi_url = "https://doi.org/10.1128/ecosalplus.ESP-0022-2021";
 }

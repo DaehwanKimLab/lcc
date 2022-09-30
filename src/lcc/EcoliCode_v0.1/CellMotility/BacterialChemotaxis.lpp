@@ -1,33 +1,38 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Bacterial Chemotaxis
 
+// CheA reference
+A   = CheA.LBD          + CheA.RD;
+AL  = CheA.LBD~Ligand   + CheA.RD;
+Am  = CheA.LBD          + CheA.RD~CH3;
+AmL = CheA.LBD~Ligand   + CheA.RD~CH3;
+
+protein CheA
+{
+    domain LBD, RD; // ligand binding domain, regulatory domain
+
+    reaction A_Am_LigandBinding(self.LBD + Ligand{out} --> self.LBD~Ligand, k=1e9, krev=1); // takes care of both A and Am, reversible
+    reaction B_Phosphorylation(Am + CheB{in} + ATP{in} --> Am + CheB~Pi{in} + ADP{in} + H{in}, k=0.05e9, krev=0.005) // reversible
+} 
+
+protein CheR(CheA.RD + CH3 --> CheA.RD~CH3, kcat=1, KM=1e-10nM); // A_AL_Methylation; takes care of both A and AL
+
+protein CheB
+{
+    reaction AmL_Demethylation(self~Pi + AmL --> self~Pi + AL + CH3, kcat=1, KM=1nM);
+    reaction Am_Demethylation(self~Pi + Am --> self~Pi + A + CH3, kcat=200, KM=1nM);
+}
+
 pathway BacterialChemotaxis 
 {
-    // CheA reference
-    A   = CheA.LBD          + CheA.RD;
-    AL  = CheA.LBD~Ligand   + CheA.RD;
-    Am  = CheA.LBD          + CheA.RD~CH3;
-    AmL = CheA.LBD~Ligand   + CheA.RD~CH3;
 
+    // spatial organization and molecular quantity specification
     membrane CellMembrane
     {
-        protein CheA
-        {
-            domain LBD, RD; // ligand binding domain, regulatory domain
-        
-            reaction A_Am_LigandBinding(self.LBD + Ligand{out} --> self.LBD~Ligand, k=1e9, krev=1); // takes care of both A and Am, reversible
-            reaction B_Phosphorylation(Am + CheB{in} + ATP{in} --> Am + CheB~Pi{in} + ADP{in} + H{in}, k=0.05e9, krev=0.005) // reversible
-        } 
         CheA= 500nM;
 
         cytosol Cytosol
         {
-            protein CheR(CheA.RD + CH3 --> CheA.RD~CH3, kcat=1, KM=1e-10nM); // A_AL_Methylation; takes care of both A and AL
-            protein CheB
-            {
-                reaction AmL_Demethylation(self~Pi + AmL --> self~Pi + AL + CH3, kcat=1, KM=1nM);
-                reaction Am_Demethylation(self~Pi + Am --> self~Pi + A + CH3, kcat=200, KM=1nM);
-            }
             CheR = 5nM, CheB = 0.1nM;
         }
     }

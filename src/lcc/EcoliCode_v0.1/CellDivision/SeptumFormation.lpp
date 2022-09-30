@@ -1,48 +1,25 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Septum Formation
 
+import Divisome;
+import MinCDE;
+
+FtsZ = Divisome.FtsZ;
+FtsA = FtsDivisome.FtsA;
+ZapA = Divisome.ZapA;
+FtsK = Divisome.FtsK;
+
 pathway SeptumFormation
 {
     membrane CellMembrane
     {
+        FtsA = 1nM;
+        ZapA = 1nM;
+        FtsK = 1nM;
+
         cytosol Cytosol
         {
-            protein FtsZ;
-            {
-                domain GB; // Guanine nucleotide binding
-                reaction GDPBinding(self.GB + GDP --> self.GB~GDP, Kd=1e-10);
-                reaction NucExchange(self.GB~GDP + GTP --> self.GB~GTP + GDP, Kd=1e-10);
-                reaction Nucleation(2 self.GB~GTP --> self.GB~GTP_{2}, Kd=1e-3);
-                reaction Polymerization(self.GB~GTP_{n} + self.GB~GTP_{m} --> self.GB~GTP_{n+m}, Kd=1e-6); // two different molecules
-
-                // reaction Hydrolysis(self.GB~GTP_{n} + n H2O --> self.GB~GTP_{n-1} + 1 GDP + Pi, Kd=1e-4); // reduced model for bending and removal
-                // reaction Dissociation(self.GB~GTP_{n} --> n self.GB~GTP, Kd=1e-7);
-            }
-        }
-
-        // membrane proteins
-        protein FtsA // and ZipA for FtsZ membrane recruitment
-        {
-            reaction FtsZMembraneRecruitment(self + FtsZ~GTP_{10}{in} --> self~FtsZ~GTP_{10}, k=1e5, krev=1e2);
-        }
-
-        protein ZapA; // and ZapC, ZapD for Z ring assembly
-
-        complex ZRing
-        {
-            reaction Assembly(FtsA~FtsZ~GTP_{10} + ZapA, k=1e5, krev=1e2); 
-        }
-
-        protein FtsK; // and FtsE/X, FtsQ/L/B, FtsW/I, PBP1b, FtsN for divisome formation and activation
-        // protein AmiB, AmiC, NlpD, Tol-Pal for divisome action to separate daughter cells
-
-        complex Divisome
-        {
-            reaction Complexation(ZRing + FtsK, k=1e5, krev=1e2);
-            reaction Oligomerization(self_{n} + self --> self_{n+1}, k=1e5, krev=1e2);
-            reaction Splitting(self_{n+m} --> self_{n} + self_{m}, Kd=1e-2);
-            reaction Constriction(self_{n} + 10 H2O --> self_{n-1} + self.GB~GDP + 10 Pi, Kd=1e-7); // reduced model for bending and removal
-            reaction Dissociation(self.GB~GDP --> FtsZ~GDP_{10} + FtsA + ZapA + FtsK, Kd=1e-2);
+            FtsZ = 10nM;
         }
     }
 }
