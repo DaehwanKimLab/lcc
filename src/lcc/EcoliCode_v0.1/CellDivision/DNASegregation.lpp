@@ -1,0 +1,19 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// DNA Segregation
+
+import MinCDE;
+import SMC;
+
+pathway DNASegregation
+{
+
+    membrane CellMembrane
+    {
+        
+        cytosol Cytosol
+        {
+
+
+        }
+    }
+}

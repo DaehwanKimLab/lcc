@@ -1,0 +1,7 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// MinCDE system
+
+protein MinC; // Binds to the core regio of FtsZ to inhibit FtsZ Polymerization
+protein MinD; // Walker-type ATPase, tethers MinC to membrane via MinE
+protein MinE; // Binds to MinD and stimulates ATPase activity of MinD, leading to the release of MinD from the membrane
+protein SlmA; // Effector of nucleoid occlusion
