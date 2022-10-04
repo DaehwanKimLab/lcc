@@ -11,7 +11,7 @@ EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
 
 DICT_TIME = {
-    'simDurationSeconds':50000, #172800, #48 hrs if 1s
+    'simDurationSeconds':5000, #172800, #48 hrs if 1s
     'simStepsPerSecond': 1,
     }
 # Format: moleculename: (concentration uM, type) 
@@ -46,8 +46,6 @@ DICT_K = {
     'PFKi-->PFKb':1e-7,
     'PFKb-->PFKa':1e-7,
     'PFKb-->PFKi':1e-7,
-    #'PFKa-->PFKi':cnt2mol(5e11, 'micro'),
-    #'PFKi-->PFKa':cnt2mol(5e11, 'micro'),
     }
 DICT_KM = {
     'PFKb_PFKb':5e-7,
@@ -65,32 +63,25 @@ DICT_KM = {
     'PK_PEP' : 35.0,
     'PK_ADP' : 50.0,
     }
+
+# Placeholder: currently not utilized
 DICT_K_REGULATORY = {
     # Format: Ka/Ki_Molecule_Target
     # Ki
-    'Ki_PYR_HK' : 50.0,
-    'Ki_PEP_PFK' : 100.0,
-    'Ki_ATP_PK' : 12000.0,
-    'Ki_PEP_PEPMAKER' : 400.0,
-    'Ki_F6P_HK' : 20.0,
-    # Ka
-    'Ka_F16BP_PK' : 100.0
+    'Placeholder' : 0.0,
 }
 
 DICT_ENZ_SUBSTRATE = {
-    'HK' : {'subs':[('Gluc','sat'), ('ATP','sat')], 'prod':[('F6P','sat'), ('ADP','sat')], 'alloI':[('F6P','AlloI')],},
+    'HK' : {'subs':[('Gluc','sat'), ('ATP','sat')], 'prod':[('F6P','sat'), ('ADP','sat')],},
     'PFKa' :  {'subs':[('F6P','sat'), ('ATP','sat')], 'prod':[('F16BP','sat'), ('ADP','sat')]},
     'PFKi' :{'subs':[('F6P','sat'), ('ATP','sat')], 'prod':[('F16BP','sat'), ('ADP','sat')]},
     'PFKb' : {'subs':[('ADP','sat'), ('PEP','sat')], 'prod':[('PFKa','sat'), ('PFKi','sat')]},
     'PEPMAKER' : {'subs':[('F16BP','sat')], 'prod':[('PEP','sat')]},
-    'PK' : {'subs':[('PEP','sat'), ('ADP','sat')], 'prod':[('PYR','sat'), ('ATP','sat')], 'alloI':[('ATP', 'AlloI')], 'alloA':[('F16BP', 'AlloA')]},    
+    'PK' : {'subs':[('PEP','sat'), ('ADP','sat')], 'prod':[('PYR','sat'), ('ATP','sat')],},    
 }
 
 # Breaking this down into molecules, stochiometry, and reactions
 Molecules = np.empty(shape = len(DICT_T0_CONC.keys()))
-
-
-
 
 class Glycolysis:
     """
@@ -103,7 +94,7 @@ class Glycolysis:
      --> current task --> Current model does not have Glucose saturation in the PFK, just assumes it is always at saturation.
         
     """
-    def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, verbose:bool = True, debug:bool = True):
+    def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, perturb:bool = True, verbose:bool = True, debug:bool = True):
         # Time parameters
         self.time_simDurationSeconds = dictTime['simDurationSeconds']
         self.time_simStepsPerSecond = dictTime['simStepsPerSecond']
@@ -127,17 +118,14 @@ class Glycolysis:
         self.molecules = {}  
 
         self.enzymeMetaboliteLegend = [""]
-        #self.enzymeMetaboliteLegend = [{'enz':key, 'subs':val} for key in DICT_ENZ_SUBSTRATE.keys() for val in DICT_ENZ_SUBSTRATE[key]]
-        #print(self.enzymeMetaboliteLegend)
 
-        # TODO: To be reimplemented
-        self.dictEnzymePercentSubstrateSaturation = {i:np.zeros([self.time_totalSteps]) for i in self.enzymeMetaboliteLegend}
-        self.dictEnzymePercentMaxActivty = {i:np.zeros([self.time_totalSteps]) for i in self.enzymeLegend} 
+        # Mass Conservation 
         self.dictRawStepTurnover = {i:np.zeros([self.time_totalSteps]) for i in self.concLegend}
         self.dictAdjustedStepTurnover = {i:np.zeros([self.time_totalSteps]) for i in self.concLegend}  
-        self.dictRawEnzymeStepTurnover = {i:np.zeros([self.time_totalSteps]) for i in self.enzymeLegend}
-        self.dictAdjustedEnzymeStepTurnover = {i:np.zeros([self.time_totalSteps]) for i in self.enzymeLegend}  
-    
+        
+        # Activity Containers (debuging/analysis)
+        self.dictEnzymePercentMaxActivty = {i:np.zeros([self.time_totalSteps]) for i in self.enzymeLegend} 
+
         # QSSA
         self.QSSAFlag = {f"{i}_{j[0]}":False for i in DICT_ENZ_SUBSTRATE.keys() for j in DICT_ENZ_SUBSTRATE[i]['subs']}
         self.QSSAThreshold = 0.01
@@ -152,6 +140,7 @@ class Glycolysis:
 
         self.debug = debug
         self.verbose = verbose
+        self.perturb = perturb
 
         self.passPYRConsumption = 0
         self.passATPConsumption = 0
@@ -167,25 +156,15 @@ class Glycolysis:
         return vmax * sat * allo
 
     # PFKi <--> PFKb <--> PFKa
+    # TODO: documentation
     def pfkActiveToBase(self):
         return  self.molecules['PFKa'] / self.dictKM['PFKb_PFKa'] * self.dictK['PFKa-->PFKb'] 
     def pfkInactiveToBase(self):
         return  self.molecules['PFKi'] / self.dictKM['PFKb_PFKi'] * self.dictK['PFKi-->PFKb'] 
-    
     def pfkBaseToActive(self):
         return  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * self.dictK['PFKb-->PFKa'] * saturation(self.molecules['ADP'],self.dictKM['PFKb_ADP'])
     def pfkBaseToInactive(self):
         return  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * self.dictK['PFKb-->PFKi'] * saturation(self.molecules['PEP'],self.dictKM['PFKb_PEP'])
-
-    #def reversible_PFK(self):
-    #    """ Reversible PFK (PFKa <--> PFKi) with Michaelis Menten Kinetics 1 Substrate 1 Product """
-    #    num =  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * (
-    #    self.dictK['PFKa-->PFKi'] * saturation(self.molecules['PFKa'], self.dictKM['PFKb_PFKa']) * saturation(self.molecules['ADP'],self.dictKM['PFKb_ADP']) -
-    #    self.dictK['PFKi-->PFKa'] * saturation(self.molecules['PFKi'], self.dictKM['PFKb_PFKi']) * saturation(self.molecules['PEP'],self.dictKM['PFKb_PEP'])
-    #    )
-    #    denom = 1 + (self.molecules['PFKa'] / self.dictKM['PFKb_PFKa'] ) + (self.molecules['PFKi'] / self.dictKM['PFKb_PFKi'])
-    #    return num / denom
-    
     
     # F6P --> F16BP
     def pfk_active(self):
@@ -215,7 +194,8 @@ class Glycolysis:
         allo = 1
         return vmax * sat * allo
 
-    # Passive ATP Consumption:
+    # Passive Consumption:
+    # TODO: Make user tuneable/perturbation response
     def passiveATPConsumption(self):
         return self.passATPConsumption * self.molecules['ATP']
     def passivePYRConsumption(self):
@@ -224,6 +204,7 @@ class Glycolysis:
         return self.passPEPConsumption * self.molecules['PEP']   
 
     # Concentration Change equations
+    # Delta intermediate carbons
     def dF6P_dt(self):
         influx = self.hexokinase()
         efflux = self.pfk_active() + self.pfk_inactive()
@@ -237,6 +218,7 @@ class Glycolysis:
         efflux = self.pfkBaseToInactive() + self.passivePEPConsumption()
         return influx - efflux
     
+    # Delta secondary metabolites
     def dATP_dt(self):
         influx = self.pyruvateKinase()
         efflux = self.hexokinase() + self.pfk_active() + self.pfk_inactive() + self.passiveATPConsumption()
@@ -246,6 +228,7 @@ class Glycolysis:
         efflux = self.pfkBaseToActive() + self.pyruvateKinase()
         return influx - efflux
     
+    # delta PFK states 
     def dPFKa_dt(self):
         influx = self.pfkBaseToActive()
         efflux = self.pfkActiveToBase()
@@ -259,7 +242,7 @@ class Glycolysis:
         efflux = self.pfkBaseToActive() + self.pfkBaseToInactive()  
         return influx - efflux
 
-    # 0 change values
+    # delta I/O Carbon values
     def dGluc_dt(self):
         influx = 0
         efflux = self.hexokinase() 
@@ -268,6 +251,8 @@ class Glycolysis:
         influx = self.pyruvateKinase()
         efflux = self.passivePYRConsumption()
         return influx - efflux
+    
+    # 0 Change
     def dZeroChange_dt(self):
         return 0
     def rate(self):
@@ -315,24 +300,22 @@ class Glycolysis:
         for key in self.molecules.keys():
             self.molecules[key] = self.dictCountArrays[key][step]
 
-    def perturbation(self, step):
-        # if step:
-        #     newGluc = 5*random() * 10 ** randrange(-12, -9, 1)
-        #     self.dictCountArrays['Gluc'][step] = newGluc
-        #     self.molecules['Gluc'] = newGluc           
+    # TODO: Document and add set of tuning perturbations
+    def perturbation(self, step):     
         
+        # Change passive consumption rates
         if step % 100 == 0:
             self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-2, -1, 1)
             #self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
             self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-3, -2, 1)            
             self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-2, -1, 1)   
 
+        # Change glucose concentration
         if step % 500 == 0:
             newGluc = 5*random() * 10 ** randrange(0,6, 1)
             self.dictCountArrays['Gluc'][step] = newGluc
             self.molecules['Gluc'] = newGluc   
 
-        pass
 
     def saveStepVmax(self, step):
         """ Look at each enzyme, get the current step vmax."""
@@ -366,9 +349,6 @@ class Glycolysis:
                 pass
             
             if self.verbose:
-                # print(f"Previous step values -- ATP: {self.dictCountArrays['ATP'][step-1]} ADP: {self.dictCountArrays['ADP'][step-1]} ADP-PFKa: {self.dictCountArrays['PFKa'][step-1]}")
-                # print(f"Current step values --  ATP: {self.dictCountArrays['ATP'][step]} ADP: {self.dictCountArrays['ADP'][step]} ADP-PFKa: {self.dictCountArrays['PFKa'][step]}")
-                # print(f"Difference -- ATP: {self.dictCountArrays['ATP'][step] - self.dictCountArrays['ATP'][step-1]} ADP: {self.dictCountArrays['ADP'][step] - self.dictCountArrays['ADP'][step-1]} ADP-PFKa: {self.dictCountArrays['PFKa'][step]-self.dictCountArrays['PFKa'][step-1]}")
                 print(f"Passive ATP Consumption: {self.passATPConsumption} Passive PEP Consumption: {self.passPEPConsumption} Passive PYR Consumption: {self.passPYRConsumption}")
 
         # Assert no concentration goes subatomic
@@ -408,24 +388,22 @@ class Glycolysis:
             rawRate = self.rate()
 
             # Debugging: Save the raw turnover rate
-            for key in rawRate.keys():
-                self.dictRawStepTurnover[key][step] = rawRate[key]
-                
+            if self.debug:
+                for key in rawRate.keys():
+                    self.dictRawStepTurnover[key][step] = rawRate[key]
+                    
             # Mass Conservation
             self.zerosCheck = { key:self.molecules[key] + rawRate[key] > ONE_COUNT_IN_MICROMOLAR for key in self.dictCountArrays.keys()}
-
             for key in self.dictCountArrays.keys():
                 self.dictAdjustedStepTurnover[key][step] = rawRate[key] * self.zerosCheck[key]
                 self.dictCountArrays[key][step] = self.molecules[key] + self.dictAdjustedStepTurnover[key][step]
-
-            # Save step vmax:
-            #self.saveStepVmax(step)
 
             # update current counts
             self.updateMolecules(step)
             
             # Check for purturbation:
-            self.perturbation(step)
+            if self.perturb:
+                self.perturbation(step)
 
             if self.debug:
                 self.checkAssertions(step)
@@ -453,13 +431,6 @@ if __name__ == '__main__':
     app.layout = html.Div([
         # The plot and time slider
         dcc.Graph(id='simulation-plot'),
-        dcc.RangeSlider(id='x-step-slider',
-            # min = min(),
-            # max = max(time),
-            # step=None,
-            # value=[min(time), max(time)],
-            # marks=None,
-        ),
         html.Br(),
         html.Div([
             html.Div([ # Plot Options e
@@ -492,18 +463,6 @@ if __name__ == '__main__':
                 ),
             ], style = {'width': '60%', 'display':'inline-block'}),
             
-            # # DICT_ENZ_SUBSTRATE
-            # html.Div([ # Enz-Subs Pair Datatable
-            #     dash_table.DataTable(id = 'ESP-table', 
-            #         columns = ([
-            #             dict(id = 'enz', name = 'enz'),
-            #             dict(id = 'subs', name = 'subs'),
-            #         ]),
-            #         data = [dict(**{'Enzyme': key, 'Substrate': subs } ) for key in DICT_ENZ_SUBSTRATE.keys() for subs in DICT_ENZ_SUBSTRATE[key]],
-            #         editable = False,
-            #         style_data= TABLE_STYLE_1
-            #     ),
-            # ], style = {'width': '30%', 'display':'inline-block'}),
         ]),
         # K-cat value container/ k-cat button
         html.Button('Resimulate', id='resim-button', n_clicks=0),html.Button('Plot', id='plot-button', n_clicks=0),
@@ -566,7 +525,6 @@ if __name__ == '__main__':
                     style_data=TABLE_STYLE_1
                 ),
             ], style = {'width': '20%', 'display':'inline-block'}),
-
         ]),
         html.Div([
             dcc.Dropdown(id = "ioEnz-enzName", placeholder="Select an Enzyme",
@@ -580,11 +538,8 @@ if __name__ == '__main__':
         ]),
         html.Div([
             dcc.Graph(id='ioEnz-plot'),
-
         ]),
         
-        # dcc.store 
-
         # store values 
         dcc.Store(id = 'simOut-time'),
         dcc.Store(id = 'simOut-stepSize'),
@@ -729,14 +684,9 @@ if __name__ == '__main__':
 
     @app.callback(
         Output('simOut-time', 'data'),
-#        Output('simOut-stepSize', 'data'),
         Output('simOut-counts', 'data'),
-        # Output('simOut-rawStepTurnover', 'data'),
-        # Output('simOut-adjustedStepTurnover', 'data'),
-        # Output('simOut-enzymePercentSubstrateSaturation', 'data'),
         Output('simOut-enzymePercentMaxActivity', 'data'),
         Output('simOut-qssa', 'data'),
-        
         Input('resim-button', 'n_clicks'),
         State('sim-time', 'data'),
         State('protein-conc-values', 'data'),
@@ -766,15 +716,9 @@ if __name__ == '__main__':
         Input('simulation-plot-metabolite-yaxis', 'value'),
         Input('delta-t-zero-checkbox', 'value'),
         Input('show-qsaa-checkbox', 'value'),
-        #Input('x-step-slider', 'value'),
         State('simOut-time', 'data'),
-        #State('simOut-stepSize', 'data'),
         State('simOut-counts', 'data'),
         State('simOut-qssa', 'data'),
-        # State('simOut-rawStepTurnover', 'data'),
-        # State('simOut-adjustedStepTurnover', 'data'),
-        # State('simOut-enzymePercentSubstrateSaturation', 'data'),
-        # State('simOut-enzymePercentMaxActivity', 'data'),
         prevent_initial_call = True
         )
     def update_figure(plot_button, metaboliteYAxis, deltaTZero, showQSSA, time, count, qssa):
@@ -807,9 +751,7 @@ if __name__ == '__main__':
         State('protein-kreg-values', 'data'), 
         prevent_initial_call = True
         )
-    def update_ioEnz_figure(plot_button,enzName, XName, YName, YType , count, time, km, kreg):
-        # convert data to the Plotly_Dynamics format
-       
+    def update_ioEnz_figure(plot_button,enzName, XName, YName, YType , count, time, km, kreg):     
         # Convert data to correct format:
         kmInput =  {km[i]['Name']: float(km[i]['KM']) for i in range(len(km))}
         kregInput =  {kreg[i]['Name']: float(kreg[i]['Kreg']) for i in range(len(kreg))}
