@@ -37,3 +37,27 @@ pathway BacterialChemotaxis
         }
     }
 }
+
+
+// independent simulation
+if (__name__ == "__main__") // python style
+{
+
+    lab L // default dimension (i.e. 1000 by 1000 by 0)
+    {
+        petridish P
+        {
+            specification P_S(shape = round, radius = 150mm);
+
+            ecoli E(400, 500, 0)
+            {
+                pathway BacterialChemotaxis;
+            }
+            E(500, 600, 0) = 1;
+            glucose Ligand(800, 500, 0) = 100nmol;
+        }
+        P(200, 400, 0) = 1;
+    }
+    L = 1;
+
+}
