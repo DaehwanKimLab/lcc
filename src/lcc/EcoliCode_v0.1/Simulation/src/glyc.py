@@ -11,7 +11,7 @@ EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
 
 DICT_TIME = {
-    'simDurationSeconds':8000, #172800, #48 hrs if 1s
+    'simDurationSeconds':50000, #172800, #48 hrs if 1s
     'simStepsPerSecond': 1,
     }
 # Format: moleculename: (concentration uM, type) 
@@ -42,10 +42,10 @@ DICT_KCAT = {
     'PEPMAKER' : 1e3
     }
 DICT_K = {
-    'PFKa-->PFKb':1e-9,
-    'PFKi-->PFKb':1e-9,
-    'PFKb-->PFKa':1e-9,
-    'PFKb-->PFKi':1e-9,
+    'PFKa-->PFKb':1e-7,
+    'PFKi-->PFKb':1e-7,
+    'PFKb-->PFKa':1e-7,
+    'PFKb-->PFKi':1e-7,
     #'PFKa-->PFKi':cnt2mol(5e11, 'micro'),
     #'PFKi-->PFKa':cnt2mol(5e11, 'micro'),
     }
@@ -272,7 +272,8 @@ class Glycolysis:
         return 0
     def rate(self):
         return {
-            'Gluc' : self.dZeroChange_dt(), #self.dGluc_dt() * self.time_stepResolution,
+            #'Gluc' : self.dZeroChange_dt(), 
+            'Gluc' : self.dGluc_dt() * self.time_stepResolution,
             'F6P' : self.dF6P_dt() * self.time_stepResolution, 
             'F16BP' : self.dF16BP_dt() * self.time_stepResolution, 
             'PEP' : self.dPEP_dt() * self.time_stepResolution, 
@@ -322,13 +323,14 @@ class Glycolysis:
         
         if step % 100 == 0:
             self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-2, -1, 1)
-            self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
+            #self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
+            self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-3, -2, 1)            
             self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-2, -1, 1)   
 
-        #if step % 500 == 0:
-        #    newGluc = 5*random() * 10 ** randrange(0,6, 1)
-        #    self.dictCountArrays['Gluc'][step] = newGluc
-        #    self.molecules['Gluc'] = newGluc   
+        if step % 500 == 0:
+            newGluc = 5*random() * 10 ** randrange(0,6, 1)
+            self.dictCountArrays['Gluc'][step] = newGluc
+            self.molecules['Gluc'] = newGluc   
 
         pass
 
