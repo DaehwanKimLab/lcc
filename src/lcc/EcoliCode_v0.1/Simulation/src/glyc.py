@@ -7,11 +7,11 @@ from util import printTimestamp, printBlockMessage
 from units import cnt2mol, mol2cnt
 from modelEq import saturation, alloAct, alloInhib
 
-EXCLUDE_FROM_PLOT = []#['HK', 'PEPWELD', 'PK']
+EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
 
 DICT_TIME = {
-    'simDurationSeconds':5000, #172800, #48 hrs if 1s
+    'simDurationSeconds':8000, #172800, #48 hrs if 1s
     'simStepsPerSecond': 1,
     }
 # Format: moleculename: (concentration uM, type) 
@@ -19,10 +19,10 @@ DICT_TIME = {
 DICT_T0_CONC = {
             # Changeable met concs
             'Gluc' : (5000, 'met'),
-            'F6P' :  (0, 'met'),          # Goal: 8.8mM - https://www.nature.com/articles/nchembio.186.pdf,
-            'F16BP' :(0, 'met'),        # Goal: 15.0mM - https://www.nature.com/articles/nchembio.186.pdf
-            'PEP' :  (0, 'met'),         # Goal: 0.18mM - https://www.nature.com/articles/nchembio.186.pdf
-            'ADP' :  (560, 'met'),           # Goal: 0.56mM - https://www.nature.com/articles/nchembio.186.pdf
+            'F6P' :  (0, 'met'),            # Goal: 8.8mM - https://www.nature.com/articles/nchembio.186.pdf,
+            'F16BP' :(0, 'met'),            # Goal: 15.0mM - https://www.nature.com/articles/nchembio.186.pdf
+            'PEP' :  (0, 'met'),            # Goal: 0.18mM - https://www.nature.com/articles/nchembio.186.pdf
+            'ADP' :  (560, 'met'),          # Goal: 0.56mM - https://www.nature.com/articles/nchembio.186.pdf
             'ATP' :  (9600, 'met'),
             'PYR' :  (0, 'met'),
             # Changeable enz concs
@@ -31,7 +31,7 @@ DICT_T0_CONC = {
             'PFKb' : (5e-3, 'enz'),
             # Unchanging Enzyme Concs:
             'HK' :   (7e-3, 'enz'),
-            'PEPWELD' : (4.5e-3, 'enz'),
+            'PEPMAKER' : (4.5e-3, 'enz'),
             'PK' :   (7.0e-2, 'enz'),
         }
 DICT_KCAT = {
@@ -39,13 +39,15 @@ DICT_KCAT = {
     'PFKi':1e2,
     'HK' : 4e3,
     'PK' : 1.7e3,
-    'PEPWELD' : 1e3
+    'PEPMAKER' : 1e3
     }
 DICT_K = {
-    'PFKa-->PFKb':1e-3,
-    'PFKi-->PFKb':1e-3,
-    'PFKa-->PFKi':cnt2mol(5e11, 'micro'),
-    'PFKi-->PFKa':cnt2mol(5e11, 'micro'),
+    'PFKa-->PFKb':1e-9,
+    'PFKi-->PFKb':1e-9,
+    'PFKb-->PFKa':1e-9,
+    'PFKb-->PFKi':1e-9,
+    #'PFKa-->PFKi':cnt2mol(5e11, 'micro'),
+    #'PFKi-->PFKa':cnt2mol(5e11, 'micro'),
     }
 DICT_KM = {
     'PFKb_PFKb':5e-7,
@@ -59,7 +61,7 @@ DICT_KM = {
     'PFKi_ATP': 60,
     'HK_Gluc' : 500.0,
     'HK_ATP' : 15000.0,
-    'PEPWELD_F16BP' : 5000.0,
+    'PEPMAKER_F16BP' : 5000.0,
     'PK_PEP' : 35.0,
     'PK_ADP' : 50.0,
     }
@@ -69,7 +71,7 @@ DICT_K_REGULATORY = {
     'Ki_PYR_HK' : 50.0,
     'Ki_PEP_PFK' : 100.0,
     'Ki_ATP_PK' : 12000.0,
-    'Ki_PEP_PEPWELD' : 400.0,
+    'Ki_PEP_PEPMAKER' : 400.0,
     'Ki_F6P_HK' : 20.0,
     # Ka
     'Ka_F16BP_PK' : 100.0
@@ -80,7 +82,7 @@ DICT_ENZ_SUBSTRATE = {
     'PFKa' :  {'subs':[('F6P','sat'), ('ATP','sat')], 'prod':[('F16BP','sat'), ('ADP','sat')]},
     'PFKi' :{'subs':[('F6P','sat'), ('ATP','sat')], 'prod':[('F16BP','sat'), ('ADP','sat')]},
     'PFKb' : {'subs':[('ADP','sat'), ('PEP','sat')], 'prod':[('PFKa','sat'), ('PFKi','sat')]},
-    'PEPWELD' : {'subs':[('F16BP','sat')], 'prod':[('PEP','sat')]},
+    'PEPMAKER' : {'subs':[('F16BP','sat')], 'prod':[('PEP','sat')]},
     'PK' : {'subs':[('PEP','sat'), ('ADP','sat')], 'prod':[('PYR','sat'), ('ATP','sat')], 'alloI':[('ATP', 'AlloI')], 'alloA':[('F16BP', 'AlloA')]},    
 }
 
@@ -151,32 +153,40 @@ class Glycolysis:
         self.debug = debug
         self.verbose = verbose
 
-        self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-3, -1, 1)
-        self.passATPConsumption = randint(7, 8) * 10 ** randrange(-3, -1, 1)            
-        self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-3, -1, 1)  
+        self.passPYRConsumption = 0
+        self.passATPConsumption = 0
+        self.passPEPConsumption = 0
 
     # Reaction Equations
     # Gluc --> F6P
     def hexokinase(self):
-        """ Gluc + ATP --> F6P + ADP; Catalyzed by HK; Allosterically inhibited by Pyruvate and F6P"""
+        """ Gluc + ATP --> F6P + ADP; Catalyzed by HK; """
         vmax = self.dictKcat['HK'] * self.molecules['HK'] 
         sat = saturation(self.molecules['Gluc'], self.dictKM['HK_Gluc']) * saturation(self.molecules['ATP'], self.dictKM['HK_ATP'])
-        allo =  alloInhib(self.molecules['F6P'], self.dictKreg['Ki_F6P_HK'])
+        allo = 1
         return vmax * sat * allo
 
     # PFKi <--> PFKb <--> PFKa
     def pfkActiveToBase(self):
-        return self.dictK['PFKa-->PFKb'] * saturation(self.molecules['PFKa'], self.dictKM['PFKb_PFKa']) 
+        return  self.molecules['PFKa'] / self.dictKM['PFKb_PFKa'] * self.dictK['PFKa-->PFKb'] 
     def pfkInactiveToBase(self):
-        return  self.dictK['PFKi-->PFKb'] * saturation(self.molecules['PFKi'], self.dictKM['PFKb_PFKi']) 
-    def reversible_PFK(self):
-        """ Reversible PFK (PFKa <--> PFKi) with Michaelis Menten Kinetics 1 Substrate 1 Product """
-        num =  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * (
-        self.dictK['PFKa-->PFKi'] * saturation(self.molecules['PFKa'], self.dictKM['PFKb_PFKa']) * saturation(self.molecules['ADP'],self.dictKM['PFKb_ADP']) -
-        self.dictK['PFKi-->PFKa'] * saturation(self.molecules['PFKi'], self.dictKM['PFKb_PFKi']) * saturation(self.molecules['PEP'],self.dictKM['PFKb_PEP'])
-        )
-        denom = 1 + (self.molecules['PFKa'] / self.dictKM['PFKb_PFKa'] ) + (self.molecules['PFKi'] / self.dictKM['PFKb_PFKi'])
-        return num / denom
+        return  self.molecules['PFKi'] / self.dictKM['PFKb_PFKi'] * self.dictK['PFKi-->PFKb'] 
+    
+    def pfkBaseToActive(self):
+        return  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * self.dictK['PFKb-->PFKa'] * saturation(self.molecules['ADP'],self.dictKM['PFKb_ADP'])
+    def pfkBaseToInactive(self):
+        return  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * self.dictK['PFKb-->PFKi'] * saturation(self.molecules['PEP'],self.dictKM['PFKb_PEP'])
+
+    #def reversible_PFK(self):
+    #    """ Reversible PFK (PFKa <--> PFKi) with Michaelis Menten Kinetics 1 Substrate 1 Product """
+    #    num =  self.molecules['PFKb'] / self.dictKM['PFKb_PFKb'] * (
+    #    self.dictK['PFKa-->PFKi'] * saturation(self.molecules['PFKa'], self.dictKM['PFKb_PFKa']) * saturation(self.molecules['ADP'],self.dictKM['PFKb_ADP']) -
+    #    self.dictK['PFKi-->PFKa'] * saturation(self.molecules['PFKi'], self.dictKM['PFKb_PFKi']) * saturation(self.molecules['PEP'],self.dictKM['PFKb_PEP'])
+    #    )
+    #    denom = 1 + (self.molecules['PFKa'] / self.dictKM['PFKb_PFKa'] ) + (self.molecules['PFKi'] / self.dictKM['PFKb_PFKi'])
+    #    return num / denom
+    
+    
     # F6P --> F16BP
     def pfk_active(self):
         """ PFKa Catalysis (F6P --> F16BP) Michaelis Menten 1 substrate irreversible"""
@@ -192,9 +202,9 @@ class Glycolysis:
         return vmax * sat * allo
 
     # F16BP --> PEP
-    def pepweldase(self):
-        vmax = self.dictKcat['PEPWELD'] * self.molecules['PEPWELD']
-        sat = saturation(self.molecules['F16BP'], self.dictKM['PEPWELD_F16BP']) 
+    def pepmaker(self):
+        vmax = self.dictKcat['PEPMAKER'] * self.molecules['PEPMAKER']
+        sat = saturation(self.molecules['F16BP'], self.dictKM['PEPMAKER_F16BP']) 
         allo = 1
         return vmax * sat * allo
 
@@ -202,7 +212,7 @@ class Glycolysis:
     def pyruvateKinase(self):
         vmax = self.dictKcat['PK'] * self.molecules['PK']
         sat = saturation(self.molecules['PEP'], self.dictKM['PK_PEP']) * saturation(self.molecules['ADP'], self.dictKM['PK_ADP'])
-        allo = alloInhib(self.molecules['ATP'], self.dictKreg['Ki_ATP_PK']) * alloAct(self.molecules['F16BP'], self.dictKreg['Ka_F16BP_PK'])
+        allo = 1
         return vmax * sat * allo
 
     # Passive ATP Consumption:
@@ -220,11 +230,11 @@ class Glycolysis:
         return influx - efflux
     def dF16BP_dt(self):
         influx = self.pfk_active() + self.pfk_inactive()
-        efflux = self.pepweldase()
+        efflux = self.pepmaker()
         return influx - efflux
     def dPEP_dt(self):
-        influx = self.pfkInactiveToBase() + self.pepweldase()
-        efflux = abs(min(0, self.reversible_PFK())) + self.passivePEPConsumption()
+        influx = self.pfkInactiveToBase() + self.pepmaker()
+        efflux = self.pfkBaseToInactive() + self.passivePEPConsumption()
         return influx - efflux
     
     def dATP_dt(self):
@@ -233,20 +243,20 @@ class Glycolysis:
         return influx - efflux 
     def dADP_dt(self):
         influx = self.pfkActiveToBase() + self.hexokinase() + self.pfk_active() + self.pfk_inactive() + self.passiveATPConsumption()
-        efflux = max(0, self.reversible_PFK()) + self.pyruvateKinase()
+        efflux = self.pfkBaseToActive() + self.pyruvateKinase()
         return influx - efflux
     
     def dPFKa_dt(self):
-        influx = max(0, self.reversible_PFK())
+        influx = self.pfkBaseToActive()
         efflux = self.pfkActiveToBase()
         return influx - efflux
     def dPFKi_dt(self):
-        influx = abs(min(0, self.reversible_PFK()))
+        influx = self.pfkBaseToInactive()
         efflux = self.pfkInactiveToBase()
         return influx - efflux
     def dPFKb_dt(self):
         influx = self.pfkActiveToBase() + self.pfkInactiveToBase()
-        efflux = abs(self.reversible_PFK()) # Basically always losing 
+        efflux = self.pfkBaseToActive() + self.pfkBaseToInactive()  
         return influx - efflux
 
     # 0 change values
@@ -262,7 +272,7 @@ class Glycolysis:
         return 0
     def rate(self):
         return {
-            'Gluc' : self.dGluc_dt() * self.time_stepResolution,
+            'Gluc' : self.dZeroChange_dt(), #self.dGluc_dt() * self.time_stepResolution,
             'F6P' : self.dF6P_dt() * self.time_stepResolution, 
             'F16BP' : self.dF16BP_dt() * self.time_stepResolution, 
             'PEP' : self.dPEP_dt() * self.time_stepResolution, 
@@ -274,7 +284,7 @@ class Glycolysis:
             'PYR' : self.dPYR_dt() * self.time_stepResolution,
             # Enzymes with fixed concentrations
             'HK' : self.dZeroChange_dt(),
-            'PEPWELD' : self.dZeroChange_dt(),
+            'PEPMAKER' : self.dZeroChange_dt(),
             'PK' : self.dZeroChange_dt()
         }
 
@@ -310,15 +320,15 @@ class Glycolysis:
         #     self.dictCountArrays['Gluc'][step] = newGluc
         #     self.molecules['Gluc'] = newGluc           
         
-        #if step % 100 == 0:
-            #self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-2, -1, 1)
-            #self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
-            #self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-2, -1, 1)   
+        if step % 100 == 0:
+            self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-2, -1, 1)
+            self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
+            self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-2, -1, 1)   
 
-        if step % 500 == 0:
-            newGluc = 5*random() * 10 ** randrange(0,6, 1)
-            self.dictCountArrays['Gluc'][step] = newGluc
-            self.molecules['Gluc'] = newGluc   
+        #if step % 500 == 0:
+        #    newGluc = 5*random() * 10 ** randrange(0,6, 1)
+        #    self.dictCountArrays['Gluc'][step] = newGluc
+        #    self.molecules['Gluc'] = newGluc   
 
         pass
 
