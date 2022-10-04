@@ -29,7 +29,7 @@ pathway BacterialChemotaxis
     // spatial organization and molecular quantity specification
     membrane CellMembrane
     {
-        CheA= 500nM;
+        CheA = 500nM;
 
         cytosol Cytosol
         {

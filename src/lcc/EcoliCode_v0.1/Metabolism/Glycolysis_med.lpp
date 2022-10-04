@@ -2,27 +2,27 @@
 
 pathway Glycolysis
 {
-    protein hexokinase(glucose + ATP --> F6P + ADP, k = 4e3);
+    protein HexoKinase(glucose + ATP --> F6P + ADP, k = 4e3);
     
-    protein phosphofructokinase
+    protein PhosphoFructoKinase
     {
         // Set up regulatory domain
-        domain regulatory
+        domain Regulatory
         {
-            reaction toActive(self.regulatory + ADP --> self.regulatory~ADP);
-            reaction toInhib(self.regulatory + PEP --> self.regulatory~PEP);
+            reaction ToActive(self.Regulatory + ADP --> self.Regulatory~ADP);
+            reaction ToInhib(self.Regulatory + PEP --> self.Regulatory~PEP);
         }
         // Alias active, inhibited, neutral PFK
-        PFKa = self.regulatory~ADP;
-        PFKn = self.regulatory;
-        PFKi = self.regulatory~PEP;
+        PFKa = self.Regulatory~ADP;
+        PFKn = self.Regulatory;
+        PFKi = self.Regulatory~PEP;
 
-        reaction active(PFKa + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 0.21uM);
-        reaction neutral(PFKn + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
-        reaction inhibited(PFKi + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
+        reaction Active(PFKa + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 0.21uM);
+        reaction Neutral(PFKn + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
+        reaction Inhibited(PFKi + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
     }
     // Fake Protein, add NADH in such that low and med have same outputs.
-    protein pepsynthase(F16BP --> 2 PEP + 2 NADH + 2 ATP, k = 1e6);
+    virtual protein PepSynthase(F16BP --> 2 PEP + 2 NADH + 2 ATP, k = 1e6);
 
-    protein pyruvateKinase(PEP + ADP --> ATP, kcat = 170, KM = 700uM);
+    protein PyruvateKinase(PEP + ADP --> ATP, kcat = 170, KM = 700uM);
 }
