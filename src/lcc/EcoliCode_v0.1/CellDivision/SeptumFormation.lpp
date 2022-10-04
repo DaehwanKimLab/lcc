@@ -27,7 +27,6 @@ pathway SeptumFormation
 reference CorbinErickson_2020
 {
     title = "A Unified Model for Treadmilling and Nucleation of Single-Stranded FtsZ Protofilaments";
-    doi = "10.1016/j.bpj.2020.05.041";
-    doi_url = "https://doi.org/10.1016/j.bpj.2020.05.041";
+    doi = "https://doi.org/10.1016/j.bpj.2020.05.041";
 }
 

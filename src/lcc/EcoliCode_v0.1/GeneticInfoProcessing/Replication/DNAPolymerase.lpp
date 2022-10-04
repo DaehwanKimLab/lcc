@@ -39,8 +39,7 @@ DnaB, DnaC, DnaG, DnaE, DnaQ, GyrAB = 5nM;
 reference Xu_Dixon_2018
 {
     title = "Bacterial replisomes";
-    doi = "10.1016/j.sbi.2018.09.006";
-    // doi_url = "https://doi.org/10.1016/j.sbi.2018.09.006";
+    doi = "https://doi.org/10.1016/j.sbi.2018.09.006";
 }
 
 // reference BrockBiologyOfMicroorganisms_Table4_2

@@ -17,11 +17,10 @@ complex RhoComplex // Rho complex
 reference RaySoni_2016
 {
     title = "Mechanisms of Bacterial Transcription Termination: All Good Things Must End";
-    doi = "10.1146/annurev-biochem-060815-014844";
+    doi = "https://doi.org/10.1146/annurev-biochem-060815-014844";
     // journal = "Annual Review of Biochemistry";
     // vol = "85:319-347 (Volume publication date June 2016)";
     // date = "March 17, 2016";
-    // doi_url = "doi.org/10.1146/annurev-biochem-060815-014844";
 }
 
 Rho = 10nM;

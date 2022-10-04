@@ -15,6 +15,5 @@ pathway CellDivision
 reference LevinJanakiraman_2021
 {
     title = "Localization, Assembly, and Activation of the Escherichia coli Cell Division Machinery";
-    doi = "10.1128/ecosalplus.ESP-0022-2021";
-    doi_url = "https://doi.org/10.1128/ecosalplus.ESP-0022-2021";
+    doi = "https://doi.org/10.1128/ecosalplus.ESP-0022-2021";
 }

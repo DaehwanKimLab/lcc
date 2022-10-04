@@ -52,9 +52,8 @@ pathway Translation
 reference ThomasSteitz_2008
 {
     title = "A structural understanding of the dynamic ribosome machine";
-    doi = "10.1038/nrm2352";
+    doi = "https://doi.org/10.1038/nrm2352";
     // journal = "Nat Rev Mol Cell Biol";
     // vol = "9, 242–253";
     // date = "March, 2008";
-    // doi_url = "https://doi.org/10.1038/nrm2352";
 }
