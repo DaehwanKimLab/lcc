@@ -1,4 +1,4 @@
-//pathway Glycolysis(glucose --> 2 pyruvate + 2 NADH + 2 ATP)
+// pathway Glycolysis(glucose --> 2 pyruvate + 2 NADH + 2 ATP)
 
 pathway Glycolysis
 {
@@ -21,8 +21,7 @@ pathway Glycolysis
         reaction Neutral(PFKn + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
         reaction Inhibited(PFKi + F6P + ATP --> F16BP + ADP, kcat = 1.7e4, KM = 3.1e7uM);
     }
-    // Fake Protein, add NADH in such that low and med have same outputs.
-    virtual protein PepSynthase(F16BP --> 2 PEP + 2 NADH + 2 ATP, k = 1e6);
+    virtual protein PepMaker(F16BP --> 2 PEP + 2 NADH + 2 ATP, k = 1e6);
 
     protein PyruvateKinase(PEP + ADP --> ATP, kcat = 170, KM = 700uM);
 }
