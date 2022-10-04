@@ -13,12 +13,48 @@ pathway SeptumFormation
 {
     membrane CellMembrane
     {
+        pathway MembranePolarization // check membrane reactions only
+        {
+            reaction MinDRecruitment = MinD.MembraneRecruitment_1;
+            reaction MinDRecruitment_PositiveFeedback = MinD.MembraneRecruitment_2;
+            reaction MinCRecruitment = MinD.MinCRecruitment;
+            reaction MinCToMinEReplacement = MinE.MembraneRecruitment;
+            reaction MinDInactivation = MinE.ATPaseActivity;
+            reaction MembraneDetatchment = MinE.MembraneDetatchment;
+        }
+
+        pathway Cytokinesis
+        {
+            reaction FtsZMembraneRecruitment = FtsA.FtsZMembraneRecruitment;
+            reaction ZRingAssembly = ZRing.Assembly;
+            reaction DivisomeAssembly = Divisome.Complexation;
+            reaction DivisomeOligomerization = Divisome.Oligomerization;
+            reaction DivisomeSplitting = Divisome.Splitting;
+            reaction Constriction = Divisome.Constriction;
+            reaction Dissociation = Divisome.Dissociation;
+        }
+
         FtsA = 1nM;
         ZapA = 1nM;
         FtsK = 1nM;
 
+        // special lipid at the midline
+
         cytosol Cytosol
         {
+            reaction FtsPolymerization
+            {
+                reaction GDPBinding = FtsZ.GDPBinding;
+                reaction NucExchange = FtsZ.NucExchange;
+                reaction Nucleation = FtsZ.Nucleation;
+                reaction Polymerization = FtsZ.Polymerization;
+                reaction FtsZInhibition
+                {
+                    reaction MonomerSequestration = MinC.FtsZSequestration;
+                    reaction PolymerInhibition = MinD.FtsZInhibition;
+                }
+            }
+            
             FtsZ = 10nM;
         }
     }
