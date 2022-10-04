@@ -18,7 +18,6 @@ protein MatP; // binds matS sites to prevent MukBEF-induced long-range contacts 
 // DNA dif;
 // protein XerC, XerD; // bind at the dif site in the terminus domain and catalyze the resolution of chromosome dimers that arise as a result of replication
 
-
 reference Gogou_2021
 {
     title = "Mechanisms for Chromosome Segregation in Bacteria";

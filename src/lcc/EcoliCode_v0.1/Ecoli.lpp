@@ -1,0 +1,30 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// E. coli Code v0.1
+
+organism Ecoli
+{
+    membrane CellMembrane
+    {
+        // membrane lipid composition for inner and outer membrane leaflets
+        composition C
+        {
+            Phosphatidylethanolamine PE = 0.7; // negative curvature
+            Phosphatidylglycerol PG = 0.2; // zero curvature
+            Cardiolipin CL = 0.05; // negative curvature
+            PhosphatidylAcid PA = 0.05; // negative curvature
+        }
+
+        cytosol Cytosol
+        {
+
+        }
+    }
+
+}
+
+reference RaetzDowhan_1990
+{
+    title = "Biosynthesis and function of phospholipids in Escherichia coli";
+    doi = "10.1016/S0021-9258(19)40001-X";
+    doi_url = "https://doi.org/10.1016/S0021-9258(19)40001-X";
+}
