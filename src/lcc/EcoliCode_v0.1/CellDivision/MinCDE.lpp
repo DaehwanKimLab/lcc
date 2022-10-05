@@ -27,7 +27,7 @@ protein MinE; // Binds to MinD and stimulates ATPase activity of MinD, leading t
 {
     reaction Dimerization(2 self --> self~self, Kd = 1e-9);
     MinE_Dimer = self~self;
-    reaction MembraneRecruitment(MinE~MinE{in} + MinD_Dimer~MinC_Dimer --> MinD_Dimer~MinE_Dimer + MinC_Dimer{in}, k = 1e9); // stronger than MinD.MembraneRecruitment_2
+    reaction MembraneRecruitment(MinE_Dimer{in} + MinD_Dimer~MinC_Dimer --> MinD_Dimer~MinE_Dimer + MinC_Dimer{in}, k = 1e9); // stronger than MinD.MembraneRecruitment_2
     reaction ATPaseActivity(MinD_Dimer~MinE_Dimer + 2 H2O{in} --> MinE_Dimer~(MinD~GDP)~(MinD~GDP) + 2 Pi{in}, k=1e9);
     reaction MembraneDetatchment(MinE_Dimer~(MinD~GDP)~(MinD~GDP) --> MinE_Dimer{in} + (MinD~GDP)~(MinD~GDP){in}, k=1e9);
     // reaction Reassociation(MinE_Dimer~(MinD~GDP)~(MinD~GDP) + MinD_Dimer --> MinE_Dimer~MinD_Dimer + 2 (MinD~GDP){in}, k=1e9);
@@ -38,3 +38,9 @@ protein SlmA; // Effector of nucleoid occlusion
 MinD = 10nM;
 MinC = 10nM;
 MinE = 5nM;
+
+reference Ramm_2019
+{
+    title = "The E. coli MinCDE system in the regulation of protein patterns and gradients";
+    doi = "https://doi.org/10.1007/s00018-019-03218-x";
+}
