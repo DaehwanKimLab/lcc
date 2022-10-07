@@ -1,7 +1,7 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Cell Division (binary fission)
 
-import ../GeneticInfoProcessing.Replication.Replication;
+import GeneticInfoProcessing.Replication.Replication;
 import DNASegregation;
 import SeptumFormation;
 

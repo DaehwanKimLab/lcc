@@ -18,7 +18,7 @@ protein FtsZ; // Tubulin-like principal regulator of septal PG synthesis
 protein FtsA // Primary membrane tether of FtsZ; recruitment of other division proteins
 // & ZipA for FtsZ membrane recruitment
 {
-    reaction FtsZMembraneRecruitment(self + FtsZ~GTP_{10}{in} --> self~FtsZ~GTP_{10}, k=1e5, krev=1e2);
+    reaction FtsZMembraneRecruitment(self + FtsZ~GTP_{10}{in} --> self~(FtsZ~GTP_{10}), k=1e5, krev=1e2); // for simplicity and due to limited syntax
 }
 
 protein ZipA; // Alternate membrane tether of FtsZ; enhances recruitment of other division proteins; preseptal PG synthesis
@@ -26,7 +26,7 @@ protein ZipA; // Alternate membrane tether of FtsZ; enhances recruitment of othe
 
 complex ZRing
 {
-    reaction Assembly(FtsA~FtsZ~GTP_{10} + ZipA, k=1e5, krev=1e2); 
+    reaction Assembly(FtsA~(FtsZ~GTP_{10}) + ZipA, k=1e5, krev=1e2); 
 }
 
 protein FtsK; // Recruitment of other division proteins; chromosome segregation; PG synthesis
@@ -38,7 +38,7 @@ complex Divisome
     reaction Complexation(ZRing + FtsK, k=1e5, krev=1e2);
     reaction Oligomerization(self_{n} + self --> self_{n+1}, k=1e5, krev=1e2);
     reaction Splitting(self_{n+m} --> self_{n} + self_{m}, Kd=1e-2);
-    reaction Constriction(self_{n} + 10 H2O --> self_{n-1} + self.GB~GDP + 10 Pi{in}, Kd=1e-7); // reduced model for bending and removal
+    reaction Constriction(self_{n} + 10 H2O --> self_{n-1} + self.GB~GDP + 10 Pi{in}, Kd=1e-7); // reduced model for bending and removal. Consider treadmilling mechanism in the updates.
     reaction Dissociation(self.GB~GDP --> FtsZ~GDP_{10}{in} + FtsA + ZipA + FtsK, Kd=1e-2);
 }    
 
@@ -46,4 +46,10 @@ reference LevinJanakiraman_2021
 {
     title = "Localization, Assembly, and Activation of the Escherichia coli Cell Division Machinery";
     doi = "https://doi.org/10.1128/ecosalplus.ESP-0022-2021";
+}
+
+reference Nguyen_2021
+{
+    title = "Simulations of Proposed Mechanisms of FtsZ-Driven Cell Constriction";
+    doi = "https://doi.org/10.1128/JB.00576-20";
 }

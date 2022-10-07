@@ -4,6 +4,7 @@
 DNA OriginOfReplication
 {
     motif DnaABox; // GmATC, where mA indicates methylated Adenine by Dam
+    DNA parS; // to temporarily enable DNA segregation by ParABS system
 }
 
 protein DnaA // Origin-binding protein; Binds origin of replication to open double helix
