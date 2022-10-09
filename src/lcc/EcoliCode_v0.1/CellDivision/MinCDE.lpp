@@ -1,5 +1,5 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
-// MinCDE system
+// MinCDE system - positioning the FtsZ ring precisely at the midcell
 
 import Divisome;
 
@@ -7,18 +7,18 @@ FtsZ = Divisome.FtsZ;
 FtsA = Divisome.FtsA;
 
 // all cytosolic proteins
-protein MinC; // Binds to the core region of FtsZ to inhibit FtsZ Polymerization
+protein MinC // Binds to the core region of FtsZ to inhibit FtsZ Polymerization
 {
     reaction Dimerization(2 self --> self~self, Kd = 1e9);
-    reaction FtsZSequestration(MinC_Dimer + FtsZ~GDP --> MinC_Dimer~FtsZ~GDP, k = 1e9);
+    reaction FtsZSequestration(self~self + FtsZ~GDP --> MinC_Dimer~FtsZ~GDP, k = 1e9);
 }
+MinC_Dimer = MinC~MinC;
 
 protein MinD // Walker-type ATPase, tethers MinC to membrane via MinE
 {
     reaction MembraneRecruitment_1(2 self~ADP{in} + 2 ATP{in} --> (self~ATP)~(self~ATP) + 2 ADP{in}, k = 1e9); // via ATP-dependent dimerization
     MinD_Dimer = (self~ATP)~(self~ATP);
     reaction MembraneRecruitment_2(MinD_Dimer + 2 MinD~ADP{in} + ATP{in} --> 2 MinD_Dimer + 2 ADP{in}, k = 1e9); // via positive feedback
-    MinC_Dimer = MinC~MinC;
     reaction MinCRecruitment(MinD_Dimer + MinC_Dimer{in} --> MinD_Dimer~MinC_Dimer, k = 1e9);
     FtsZInhibition(MinD_Dimer~MinC_Dimer + FtsA~(FtsZ~GTP_{10}) --> MinD_Dimer~MinC_Dimer + FtsA{in} + 10 FtsZ~GTP{in}, k = 1e9); // hypothetical model for simplicity
 }

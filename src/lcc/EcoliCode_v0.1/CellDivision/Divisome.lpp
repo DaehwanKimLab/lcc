@@ -7,8 +7,10 @@ protein FtsZ; // Tubulin-like principal regulator of septal PG synthesis
     domain GB; // Guanine nucleotide binding
     reaction GDPBinding(self.GB + GDP --> self.GB~GDP, Kd=1e-10);
     reaction NucExchange(self.GB~GDP + GTP --> self.GB~GTP + GDP, Kd=1e-10);
-    reaction Nucleation(2 self.GB~GTP --> self.GB~GTP_{2}, Kd=1e-3);
-    reaction Polymerization(self.GB~GTP_{n} + self.GB~GTP_{m} --> self.GB~GTP_{n+m}, Kd=1e-6); // two different molecules
+
+    // DK: the following line could be redundant with the general one, self.GB~GTP_{n} + self.GB~GTP_{m} --> self.GB~GTP_{n+m}
+    reaction Nucleation(2 self.GB~GTP --> (self.GB~GTP)_{2}, Kd=1e-3);
+    reaction Polymerization((self.GB~GTP)_{n} + (self.GB)~GTP_{m} --> (self.GB~GTP)_{n+m}, Kd=1e-6); // two different molecules
 
     // reaction Hydrolysis(self.GB~GTP_{n} + n H2O --> self.GB~GTP_{n-1} + 1 GDP + Pi, Kd=1e-4); // reduced model for bending and removal
     // reaction Dissociation(self.GB~GTP_{n} --> n self.GB~GTP, Kd=1e-7);
