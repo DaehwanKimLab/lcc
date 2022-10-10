@@ -10,15 +10,9 @@ FtsA = Divisome.FtsA;
 protein MinC // Binds to the core region of FtsZ to inhibit FtsZ Polymerization
 {
     reaction Dimerization(2 self --> self~self, Kd = 1e9);
-<<<<<<< HEAD
     reaction FtsZSequestration(self~self + FtsZ~GDP --> self~self~FtsZ~GDP, k = 1e9);
 }
-MinC_Dimer = self~self;
-=======
-    reaction FtsZSequestration(self~self + FtsZ~GDP --> MinC_Dimer~FtsZ~GDP, k = 1e9);
-}
 MinC_Dimer = MinC~MinC;
->>>>>>> refs/remotes/origin/ecoli0.1
 
 protein MinD // Walker-type ATPase, tethers MinC to membrane via MinE
 {
