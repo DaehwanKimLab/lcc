@@ -200,3 +200,114 @@ def pplot_sat_sim(
     fig.update_yaxes(title_text = f'{YName} (uM)', type = 'log', range= [start, stop])
     
     return fig
+
+
+
+def pplot_titration(
+    titrationOutput:dict,
+    yAxisScaleMetabolite = 'log'
+    ):
+    """
+    
+    Note: all experiemnts must have same step size (but not necessarily same max num steps)
+    """
+    FORMAT_TITLEFONT = dict(family = 'Arial',size = 16, color = 'rgb(0,0,0)')
+
+    fig = make_subplots(
+        rows = 1, cols = 6, 
+        specs = [
+            [{"colspan":6}, None, None, None, None, None],
+ #           [{"colspan":3}, None, None,{"colspan":3}, None, None],
+ #           [{"colspan":3}, None, None,{"colspan":3}, None, None],
+        ],
+        shared_xaxes= True,
+        subplot_titles=("Molecule Concentrations",)
+    )
+
+    # return the key from the titration with the largest 'time' value
+    X = titrationOutput[max([(key, titrationOutput[key]['time'][-1]) for key in titrationOutput.keys()], key=lambda tup: tup[1])[0]]['time']
+
+    # Ensure no "0" values (for the sake of log scale):
+    for expCondition in titrationOutput.keys():
+        for trackedMol in titrationOutput[expCondition]['conc'].keys():
+            if titrationOutput[expCondition]['conc'][trackedMol][0] == 0:
+                titrationOutput[expCondition]['conc'][trackedMol][0] = 1e-18
+
+    Y = [titrationOutput]
+
+    # TODO: scale line color based on concentration 
+    #metaboliteColors = {key:generateRGBList(1) for key in titrationOutput.keys()}
+    
+
+    # [metabolites]
+    for exp in titrationOutput.keys():
+        for mol in titrationOutput[exp]['conc'].keys():
+            fig.add_trace(
+                # The line
+                go.Scatter(
+                    x = X, y = Y[0][exp]['conc'][mol],
+                    mode = 'lines', name = f'{exp}_{mol}', text = f'{exp}_{mol}',
+                    #line = dict(color = metaboliteColors[key][0]),
+                    connectgaps = True,
+                ), row = 1, col = 1)
+        
+            fig.add_trace(go.Scatter(
+                x=[( X[0]+X[-1] + np.random.randint(-100,100)) // 2 ], # Add variable name (with a bit of random jitter so they don't overlap)
+                y=[Y[0][exp]['conc'][mol][len(X) // 2]],
+                mode='text', name = f'{exp}_{mol}', text = f'{exp}_{mol}',
+                #marker = dict(color = metaboliteColors[key][0]),
+                showlegend = False
+            ), row = 1, col = 1)
+
+            # Points at t0 and tn (start and end)
+            fig.add_trace(go.Scatter(
+                x=[X[0], X[-1]],
+                y=[Y[0][exp]['conc'][mol][0], Y[0][exp]['conc'][mol][-1]],
+                mode='markers', name = f'{exp}_{mol}', text = f'{exp}_{mol}',
+                #marker = dict(color = metaboliteColors[key][0]),
+                showlegend = False
+            ), row = 1, col = 1)
+
+    fig.update_xaxes(title_text = "steps", titlefont = FORMAT_TITLEFONT,
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ))
+
+    fig.update_yaxes(title_text = "Concentration (uM)", 
+            titlefont = FORMAT_TITLEFONT,
+            type = yAxisScaleMetabolite,
+            # TODO: Implement dynamic range
+            range = [-20, 5],
+            showline=True,
+            showgrid=True,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2, 
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=16,
+                color='rgb(0, 0, 0)',
+            ), row = 1, col = 1)  
+
+    fig.update_layout(
+        autosize=True,   
+        legend = dict(
+            orientation = "h",
+        ),
+        plot_bgcolor='white'
+        )
+
+    if yAxisScaleMetabolite == 'log':
+        fig.add_hline(y = 1.66e-18, line_dash = "dot",line_color = "red")
+        fig.add_annotation(x = max(X), y = math.log10(0.5e-18), text = "Zero Concentration Threshold", showarrow = False)
+
+    return fig

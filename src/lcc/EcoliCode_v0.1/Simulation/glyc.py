@@ -1,3 +1,4 @@
+from tkinter import E
 import numpy as np
 import warnings
 from random import random, randrange, randint
@@ -411,7 +412,7 @@ class Glycolysis:
             if self.debug:
                 self.checkAssertions(step)
             
-            if self.verbose:
+            if self.verbose and not self.silent:
                 self.printStatements(step, rawRate)
 
         if not self.silent:
@@ -424,7 +425,7 @@ if __name__ == '__main__':
     from dash import Dash, html, dcc, Input, Output, State, dash_table, no_update
     from dash.dash_table.Format import Format, Scheme, Trim
     from dash.exceptions import PreventUpdate
-    from vis import * #pplot, pplot_ioEnz, pplot_sat
+    from vis import * #pplot, pplot_ioEnz, pplot_sat, pplot_titration
     from experiment import Titration
     
     TABLE_STYLE_1 = {'width': '100px','maxWidth': '200px','minWidth': '100px',}
@@ -531,6 +532,20 @@ if __name__ == '__main__':
                 ),
             ], style = {'width': '20%', 'display':'inline-block'}),
         ]),
+        
+        html.Div([ # Titration experiment Visualization
+            dcc.Dropdown(id = "tit-input", placeholder="Select an input (concentration to vary)",
+            options = [key for key in DICT_T0_CONC.keys()]
+            ),#, multi = True),
+            dcc.Dropdown(id = "tit-output", placeholder="Select an output",
+            options = [key for key in DICT_T0_CONC.keys()]),
+            html.Button('Run Titration', id='run-titration-button', n_clicks=0),
+            html.Button('Plot Titration', id='plot-titration-button', n_clicks=0),
+            
+        ]),
+        html.Div([
+            dcc.Graph(id='titration-plot'),
+        ]),
         html.Div([
             dcc.Dropdown(id = "ioEnz-enzName", placeholder="Select an Enzyme",
                 options = [key for key in DICT_ENZ_SUBSTRATE.keys()],
@@ -554,6 +569,9 @@ if __name__ == '__main__':
         dcc.Store(id = 'simOut-enzymePercentSubstrateSaturation'),
         dcc.Store(id = 'simOut-enzymePercentMaxActivity'),
         dcc.Store(id = 'simOut-qssa'),
+        
+        # Titration results
+        dcc.Store(id = 'tit-out'),
 
         # Inputs to Sim
         dcc.Store(id = 'sim-time', data = DICT_TIME),
@@ -714,6 +732,31 @@ if __name__ == '__main__':
         outT, outC, outPercVmax, qssa = sim.run()
         return outT, outC, outPercVmax, qssa
 
+    @app.callback(
+        Output('tit-out', 'data'),
+        Input('run-titration-button', 'n_clicks'),
+        State('tit-input', 'value'),
+        State('tit-output', 'value'),
+        State('sim-time', 'data'),
+        State('protein-conc-values', 'data'),
+        State('protein-kcat-values', 'data'),
+        State('protein-k-values', 'data'),
+        State('protein-km-values', 'data'),
+        State('protein-kreg-values', 'data'), 
+        prevent_initial_call = True
+    )
+    def runTitration(resimbutton,titInput, titOutput, time, conc, kcat, k, km,kreg):
+        # Convert data to correct format:
+        timeInput = {key:int(time[0][key]) for key in time[0].keys()}
+        concInput = {conc[i]['Name']:(float(conc[i]['Conc']), conc[i]['Type']) for i in range(len(conc))}
+        kcatInput = {kcat[i]['Name']: float(kcat[i]['Kcat']) for i in range(len(kcat))}
+        kInput =  {k[i]['Name']: float(k[i]['K']) for i in range(len(k))}
+        kmInput =  {km[i]['Name']: float(km[i]['KM']) for i in range(len(km))}
+        kregInput =  {kreg[i]['Name']: float(kreg[i]['Kreg']) for i in range(len(kreg))}
+
+        exp = Titration(Glycolysis(timeInput, concInput, kcatInput, kInput, kmInput, kregInput), titInput, titOutput)
+        titrationResults = exp.run()
+        return titrationResults
 
     @app.callback(
         Output('simulation-plot', 'figure'),
@@ -736,6 +779,20 @@ if __name__ == '__main__':
                 deltaT0Scale=deltaTZero,
                 showQSSA = showQSSA,
                 excludedMolecules=EXCLUDE_FROM_PLOT,
+                )
+        return fig
+
+
+    @app.callback(
+        Output('titration-plot', 'figure'),
+        Input('plot-titration-button', 'n_clicks'),
+        State('tit-out', 'data'),
+        prevent_initial_call = True
+        )
+    def update_titration_figure(plot_button, titrationResults):
+        # convert data to the Plotly_Dynamics format
+        fig=pplot_titration(
+                titrationOutput = titrationResults
                 )
         return fig
 
