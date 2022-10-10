@@ -7,8 +7,8 @@ protein FtsZ; // Tubulin-like principal regulator of septal PG synthesis
     domain GB; // Guanine nucleotide binding
     reaction GDPBinding(self.GB + GDP --> self.GB~GDP, Kd=1e-10);
     reaction NucExchange(self.GB~GDP + GTP --> self.GB~GTP + GDP, Kd=1e-10);
-    reaction Nucleation(2 self.GB~GTP --> self.GB~GTP_{2}, Kd=1e-3);
-    reaction Polymerization(self.GB~GTP_{n} + self.GB~GTP_{m} --> self.GB~GTP_{n+m}, Kd=1e-6); // two different molecules
+    reaction Nucleation(2 self.GB~GTP --> (self.GB~GTP)_{2}, Kd=1e-3);
+    reaction Polymerization((self.GB~GTP)_{n} + (self.GB~GTP)_{m} --> (self.GB~GTP)_{n+m}, Kd=1e-6); // two different molecules
 
     // reaction Hydrolysis(self.GB~GTP_{n} + n H2O --> self.GB~GTP_{n-1} + 1 GDP + Pi, Kd=1e-4); // reduced model for bending and removal
     // reaction Dissociation(self.GB~GTP_{n} --> n self.GB~GTP, Kd=1e-7);
@@ -18,7 +18,7 @@ protein FtsZ; // Tubulin-like principal regulator of septal PG synthesis
 protein FtsA // Primary membrane tether of FtsZ; recruitment of other division proteins
 // & ZipA for FtsZ membrane recruitment
 {
-    reaction FtsZMembraneRecruitment(self + FtsZ~GTP_{10}{in} --> self~(FtsZ~GTP_{10}), k=1e5, krev=1e2); // for simplicity and due to limited syntax
+    reaction FtsZMembraneRecruitment(self + (FtsZ~GTP)_{10}{in} --> self~((FtsZ~GTP)_{10}), k=1e5, krev=1e2); // for simplicity and due to limited syntax
 }
 
 protein ZipA; // Alternate membrane tether of FtsZ; enhances recruitment of other division proteins; preseptal PG synthesis
@@ -26,7 +26,7 @@ protein ZipA; // Alternate membrane tether of FtsZ; enhances recruitment of othe
 
 complex ZRing
 {
-    reaction Assembly(FtsA~(FtsZ~GTP_{10}) + ZipA, k=1e5, krev=1e2); 
+    reaction Assembly(FtsA~((FtsZ~GTP)_{10}) + ZipA, k=1e5, krev=1e2); 
 }
 
 protein FtsK; // Recruitment of other division proteins; chromosome segregation; PG synthesis
@@ -39,7 +39,7 @@ complex Divisome
     reaction Oligomerization(self_{n} + self --> self_{n+1}, k=1e5, krev=1e2);
     reaction Splitting(self_{n+m} --> self_{n} + self_{m}, Kd=1e-2);
     reaction Constriction(self_{n} + 10 H2O --> self_{n-1} + self.GB~GDP + 10 Pi{in}, Kd=1e-7); // reduced model for bending and removal. Consider treadmilling mechanism in the updates.
-    reaction Dissociation(self.GB~GDP --> FtsZ~GDP_{10}{in} + FtsA + ZipA + FtsK, Kd=1e-2);
+    reaction Dissociation(self.GB~GDP --> (FtsZ~GDP)_{10}{in} + FtsA + ZipA + FtsK, Kd=1e-2);
 }    
 
 reference LevinJanakiraman_2021

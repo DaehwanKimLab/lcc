@@ -8,6 +8,9 @@ FtsZ = Divisome.FtsZ;
 FtsA = FtsDivisome.FtsA;
 ZapA = Divisome.ZapA;
 FtsK = Divisome.FtsK;
+MinC = MinCDE.MinC;
+MinD = MinCDE.MinD;
+MinE = MinCDE.MinE;
 
 pathway SeptumFormation
 {
