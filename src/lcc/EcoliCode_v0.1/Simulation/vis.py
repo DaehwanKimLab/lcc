@@ -1,5 +1,6 @@
 from distutils.log import warn
 import math
+from units import mol2cnt
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
@@ -206,6 +207,7 @@ def pplot_sat_sim(
 
 def pplot_titration(
     titrationOutput:dict,
+    countOrConc:str = 'conc',
     yAxisScaleMetabolite:str = 'log',
     showZeroConcLine:bool = False,
     ):
@@ -240,18 +242,25 @@ def pplot_titration(
 
     Y = [titrationOutput]
 
+    if countOrConc == 'count':
+        for exp in Y[0]:
+            if 'count' not in Y[0][exp].keys():
+                Y[0][exp]['count'] = {}
+                for mol in Y[0][exp]['conc'].keys():
+                    Y[0][exp]['count'][mol] = [mol2cnt(val,'micro') for val in Y[0][exp]['conc'][mol]]
+
     # TODO: scale line color based on concentration 
     #metaboliteColors = {key:generateRGBList(1) for key in titrationOutput.keys()}
     
 
     # [metabolites]
     for exp in titrationOutput.keys():
-        for mol in range(1, len(list(titrationOutput[exp]['conc'].keys())) + 1):
-            currMol = list(titrationOutput[exp]['conc'].keys())[mol-1]
+        for mol in range(1, len(list(titrationOutput[exp][countOrConc].keys())) + 1):
+            currMol = list(titrationOutput[exp][countOrConc].keys())[mol-1]
             fig.add_trace(
                 # The line
                 go.Scatter(
-                    x = X, y = Y[0][exp]['conc'][currMol],
+                    x = X, y = Y[0][exp][countOrConc][currMol],
                     mode = 'lines', name = f'{exp}_{currMol}', text = f'{exp}_{currMol}',
                     #line = dict(color = metaboliteColors[key][0]),
                     connectgaps = True,
@@ -259,7 +268,7 @@ def pplot_titration(
         
             fig.add_trace(go.Scatter(
                 x=[( X[0]+X[-1] + np.random.randint(-100,100)) // 2 ], # Add variable name (with a bit of random jitter so they don't overlap)
-                y=[Y[0][exp]['conc'][currMol][len(X) // 2]],
+                y=[Y[0][exp][countOrConc][currMol][len(X) // 2]],
                 mode='text', name = f'{exp}_{currMol}', text = f'{exp}_{currMol}',
                 #marker = dict(color = metaboliteColors[key][0]),
                 showlegend = False
@@ -268,13 +277,13 @@ def pplot_titration(
             # Points at t0 and tn (start and end)
             fig.add_trace(go.Scatter(
                 x=[X[0], X[-1]],
-                y=[Y[0][exp]['conc'][currMol][0], Y[0][exp]['conc'][currMol][-1]],
+                y=[Y[0][exp][countOrConc][currMol][0], Y[0][exp][countOrConc][currMol][-1]],
                 mode='markers', name = f'{exp}_{currMol}', text = f'{exp}_{currMol}',
                 #marker = dict(color = metaboliteColors[key][0]),
                 showlegend = False
             ), row = mol, col = 1)
 
-            fig.update_yaxes(title_text = "Concentration (uM)", 
+            fig.update_yaxes(title_text = f"{countOrConc} (uM/cnt)", 
                 titlefont = FORMAT_TITLEFONT,
                 type = yAxisScaleMetabolite,
                 # TODO: Implement dynamic range
@@ -292,7 +301,7 @@ def pplot_titration(
                 ), row = mol, col = 1) 
 
             if yAxisScaleMetabolite == 'log':
-                if showZeroConcLine:
+                if showZeroConcLine and countOrConc == 'conc':
                     fig.add_hline(y = 1.66e-18, line_dash = "dot",line_color = "red", row = mol, col = 1)
                     fig.add_annotation(x = max(X), y = math.log10(0.5e-18), text = "Zero Concentration Threshold", showarrow = False, row = mol, col = 1) 
 

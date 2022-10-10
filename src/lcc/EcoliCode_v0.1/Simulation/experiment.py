@@ -8,7 +8,7 @@ from util import printBlockMessage
 class Titration:
     """ Perform titration on a model.
     """
-    def __init__(self, model, inputName: str, outputName: list, inputGridSearchRange = np.logspace(-9, 2, 12), maxSteps = 2000) -> None:
+    def __init__(self, model, inputName: str, outputName: list, inputGridSearchRange = np.logspace(-9, 4, 14), maxSteps = 2000) -> None:
         self.model = model
         self.inputName = inputName
         self.outputName = outputName

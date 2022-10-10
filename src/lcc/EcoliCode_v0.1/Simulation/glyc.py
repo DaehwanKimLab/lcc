@@ -11,6 +11,7 @@ from modelEq import saturation, alloAct, alloInhib
 
 EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
+CELL_CYCLE_ATP_DEMAND = cnt2mol(1080, 'micro') # Replication, transcription, translation ATP Demand
 
 DICT_TIME = {
     'simDurationSeconds':200, #172800, #48 hrs if 1s
@@ -95,6 +96,13 @@ class Glycolysis:
     ------
      --> current task --> Current model does not have Glucose saturation in the PFK, just assumes it is always at saturation.
         
+    replication: 1000nt/sec
+    transcription: 60nt/sec
+    translation: 20aa/ sec
+
+    1080 nt/sec -> cnt2mol(1080, 'milli')
+    -- passive ATP demand  == 
+
     """
     def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, holdConstant = ['None'], perturb:bool = True, verbose:bool = True, silent:bool = False, debug:bool = True):
         # Time parameters
@@ -149,7 +157,7 @@ class Glycolysis:
         self.silent = silent
 
         self.passPYRConsumption = 0
-        self.passATPConsumption = 0
+        self.passATPConsumption = CELL_CYCLE_ATP_DEMAND
         self.passPEPConsumption = 0
 
     # Reaction Equations
@@ -257,7 +265,7 @@ class Glycolysis:
         influx = self.pyruvateKinase()
         efflux = self.passivePYRConsumption()
         return influx - efflux
-    
+
     # 0 Change
     def dZeroChange_dt(self):
         return 0
@@ -307,7 +315,7 @@ class Glycolysis:
         if step % 100 == 0:
             self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-2, -1, 1)
             #self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
-            self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-3, -2, 1)            
+            self.passATPConsumption = CELL_CYCLE_ATP_DEMAND + (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-3, -2, 1)            
             self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-2, -1, 1)   
 
         # Change glucose concentration
@@ -537,6 +545,14 @@ if __name__ == '__main__':
             ),#, multi = True),
             dcc.Dropdown(id = "tit-output", placeholder="Select an output",
             options = [key for key in DICT_T0_CONC.keys()], multi = True),
+            dcc.RadioItems(id = 'titration-plot-count-or-concentration',
+                    options = [
+                        {'label':'Concentration' , 'value':'conc'},
+                        {'label':'Count' , 'value':'count'}
+                        ],
+                    value = 'conc',
+                    inline = True
+                ),
             html.Button('Run Titration', id='run-titration-button', n_clicks=0),
             html.Button('Plot Titration', id='plot-titration-button', n_clicks=0),
             
@@ -764,7 +780,7 @@ if __name__ == '__main__':
         State('protein-kcat-values', 'data'),
         State('protein-k-values', 'data'),
         State('protein-km-values', 'data'),
-        State('protein-kreg-values', 'data'), 
+        State('protein-kreg-values', 'data'),
         prevent_initial_call = True
     )
     def runTitration(resimbutton, titInput, titOutput, time, conc, kcat, k, km,kreg):
@@ -791,13 +807,15 @@ if __name__ == '__main__':
         Output('titration-plot', 'figure'),
         Input('plot-titration-button', 'n_clicks'),
         State('tit-out', 'data'),
+        State('titration-plot-count-or-concentration', 'value'),
         prevent_initial_call = True
         )
-    def update_titration_figure(plot_button, titrationResults):
+    def update_titration_figure(plot_button, titrationResults, countorconc):
         assert titrationResults is not None, "Titration results appears to be empty! Did the `run` method get called?" 
 
         fig=pplot_titration(
-                titrationOutput = titrationResults
+                titrationOutput = titrationResults,
+                countOrConc = countorconc
                 )
         return fig
 
