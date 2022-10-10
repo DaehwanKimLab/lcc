@@ -94,7 +94,7 @@ class Glycolysis:
      --> current task --> Current model does not have Glucose saturation in the PFK, just assumes it is always at saturation.
         
     """
-    def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, perturb:bool = True, verbose:bool = True, debug:bool = True):
+    def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, perturb:bool = True, verbose:bool = True, silent:bool = False, debug:bool = True):
         # Time parameters
         self.time_simDurationSeconds = dictTime['simDurationSeconds']
         self.time_simStepsPerSecond = dictTime['simStepsPerSecond']
@@ -141,6 +141,7 @@ class Glycolysis:
         self.debug = debug
         self.verbose = verbose
         self.perturb = perturb
+        self.silent = silent
 
         self.passPYRConsumption = 0
         self.passATPConsumption = 0
@@ -382,7 +383,9 @@ class Glycolysis:
                 #print(rawRate)
 
     def run(self):
-        printBlockMessage("Begin simulation...", ts =True)
+        if not self.silent:
+            printBlockMessage("Begin simulation...", ts =True)
+        
         for step in range(1,self.time_totalSteps):       
             # Calculate raw concentration changes for current step.
             rawRate = self.rate()
@@ -411,7 +414,8 @@ class Glycolysis:
             if self.verbose:
                 self.printStatements(step, rawRate)
 
-        printBlockMessage("Simulation Complete!", ts =True)
+        if not self.silent:
+            printBlockMessage("Simulation Complete!", ts =True)
         return self.time, self.dictCountArrays, self.dictEnzymePercentMaxActivty, self.dictQSSACheck
 
 
@@ -421,6 +425,7 @@ if __name__ == '__main__':
     from dash.dash_table.Format import Format, Scheme, Trim
     from dash.exceptions import PreventUpdate
     from vis import * #pplot, pplot_ioEnz, pplot_sat
+    from experiment import Titration
     
     TABLE_STYLE_1 = {'width': '100px','maxWidth': '200px','minWidth': '100px',}
 

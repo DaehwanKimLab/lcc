@@ -1,5 +1,5 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
-// ParABS (temporarily used in E coli)
+// ParABS - distributing DNA along with the cell (temporarily used in E. coli)
 
 DNA parS;
 
