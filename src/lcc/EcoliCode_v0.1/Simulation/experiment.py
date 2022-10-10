@@ -8,7 +8,7 @@ from util import printBlockMessage
 class Titration:
     """ Perform titration on a model.
     """
-    def __init__(self, model, inputName: str, outputName: str, inputGridSearchRange = np.logspace(-9, 2, 12), maxSteps = 2000) -> None:
+    def __init__(self, model, inputName: str, outputName: list, inputGridSearchRange = np.logspace(-9, 2, 12), maxSteps = 2000) -> None:
         self.model = model
         self.inputName = inputName
         self.outputName = outputName
@@ -24,6 +24,7 @@ class Titration:
         return max(titrationTimes, key=lambda tup: tup[1])[0]
 
     def run(self):
+        assert self.outputName is not None, "The experiment has no output parameter! Please select an output and run again."
         # This is sloppy, but may work for now.
         # Basically I need to modify the inital condition of the concentration
         printBlockMessage("Beginning Titration experiment...", ts = True)
@@ -41,7 +42,7 @@ class Titration:
             outT, outC, _, _ = currModel.run()
 
             # Save sim results
-            self.titrationResults[f'{self.inputName}_{conc}'] = {'time':outT, 'conc':{key:outC[key] for key in outC.keys() if key in [self.inputName, self.outputName]}}
+            self.titrationResults[f'{self.inputName}_{conc}'] = {'time':outT, 'conc':{key:outC[key] for key in outC.keys() if key in self.outputName}}
             ## REPEAT
         
         printBlockMessage("Titration experiment complete!", ts = True)

@@ -1,3 +1,4 @@
+from pickle import NONE
 from tkinter import E
 import numpy as np
 import warnings
@@ -12,7 +13,7 @@ EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
 
 DICT_TIME = {
-    'simDurationSeconds':5000, #172800, #48 hrs if 1s
+    'simDurationSeconds':200, #172800, #48 hrs if 1s
     'simStepsPerSecond': 1,
     }
 # Format: moleculename: (concentration uM, type) 
@@ -95,7 +96,7 @@ class Glycolysis:
      --> current task --> Current model does not have Glucose saturation in the PFK, just assumes it is always at saturation.
         
     """
-    def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, perturb:bool = True, verbose:bool = True, silent:bool = False, debug:bool = True):
+    def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, holdConstant = ['None'], perturb:bool = True, verbose:bool = True, silent:bool = False, debug:bool = True):
         # Time parameters
         self.time_simDurationSeconds = dictTime['simDurationSeconds']
         self.time_simStepsPerSecond = dictTime['simStepsPerSecond']
@@ -108,6 +109,9 @@ class Glycolysis:
         self.dictK = dictK
         self.dictKM = dictKM
         self.dictKreg = dictKReg
+
+        # List of molecules to hold constant
+        self.constantMolecules = holdConstant
 
         # Init Enzymes, metabolites, etc.
         self.concLegend = [key for key in dictConc.keys()]
@@ -276,31 +280,25 @@ class Glycolysis:
             'PK' : self.dZeroChange_dt()
         }
 
-    def debugSetRatesToZero(self, lstMolecules:list, dictRates:dict) -> dict:
+    def debugSetRatesToZero(self, lstMolecules:list) -> None:
         """Set specific molecule turnover rates to zero (for debugging)
 
         Parameters:
         -----------
             lstMoleclues : `list`
-                List of molecule names which should have their rates set to 0. These values must match the keys of dictRates.
-            dictRates : `dict` 
-                Dictionary containing the step turn over (i.e. rate) and molecule name. format: {moleculeName : numberOfMoleculesToTurnOver} 
-        Returns:
-        --------
-            zeroedRates : `dict`
-                The input dictionary with zeroed rates matching the lstMolecules.
+                List of molecule names which should have their rates set to 0. These values must match the keys of dictK or dictKcat.
+            
         """ 
-        zeroedDictRates = {}
-        for key in dictRates.keys():
-            if key in lstMolecules:
-                zeroedDictRates[key] = 0
-            else:
-                zeroedDictRates[key] = dictRates[key]
-        return zeroedDictRates
+        for mol in lstMolecules:
+            if mol in self.dictK.keys():
+                self.dictK[mol] = 0
+            if mol in self.dictKcat.keys():
+                self.dictKcat[mol] = 0
 
     def updateMolecules(self, step):
         for key in self.molecules.keys():
-            self.molecules[key] = self.dictCountArrays[key][step]
+            if key not in self.constantMolecules: # This will be slow, should probably make a separate method for this
+                self.molecules[key] = self.dictCountArrays[key][step]
 
     # TODO: Document and add set of tuning perturbations
     def perturbation(self, step):     
@@ -436,7 +434,7 @@ if __name__ == '__main__':
 
     app.layout = html.Div([
         # The plot and time slider
-        dcc.Graph(id='simulation-plot'),
+        dcc.Graph(id='simulation-plot', figure= {'layout':{'height':640,}}),
         html.Br(),
         html.Div([
             html.Div([ # Plot Options e
@@ -538,14 +536,14 @@ if __name__ == '__main__':
             options = [key for key in DICT_T0_CONC.keys()]
             ),#, multi = True),
             dcc.Dropdown(id = "tit-output", placeholder="Select an output",
-            options = [key for key in DICT_T0_CONC.keys()]),
+            options = [key for key in DICT_T0_CONC.keys()], multi = True),
             html.Button('Run Titration', id='run-titration-button', n_clicks=0),
             html.Button('Plot Titration', id='plot-titration-button', n_clicks=0),
             
         ]),
         html.Div([
-            dcc.Graph(id='titration-plot'),
-        ]),
+            dcc.Graph(id='titration-plot', figure= {'layout':{'height':900,}}),
+        ],style={"maxHeight": "5000px", "overflow": "scroll"},),
         html.Div([
             dcc.Dropdown(id = "ioEnz-enzName", placeholder="Select an Enzyme",
                 options = [key for key in DICT_ENZ_SUBSTRATE.keys()],
@@ -557,7 +555,7 @@ if __name__ == '__main__':
             
         ]),
         html.Div([
-            dcc.Graph(id='ioEnz-plot'),
+            dcc.Graph(id='ioEnz-plot', figure= {'layout':{'height':900,}}),
         ]),
         
         # store values 
@@ -733,32 +731,6 @@ if __name__ == '__main__':
         return outT, outC, outPercVmax, qssa
 
     @app.callback(
-        Output('tit-out', 'data'),
-        Input('run-titration-button', 'n_clicks'),
-        State('tit-input', 'value'),
-        State('tit-output', 'value'),
-        State('sim-time', 'data'),
-        State('protein-conc-values', 'data'),
-        State('protein-kcat-values', 'data'),
-        State('protein-k-values', 'data'),
-        State('protein-km-values', 'data'),
-        State('protein-kreg-values', 'data'), 
-        prevent_initial_call = True
-    )
-    def runTitration(resimbutton,titInput, titOutput, time, conc, kcat, k, km,kreg):
-        # Convert data to correct format:
-        timeInput = {key:int(time[0][key]) for key in time[0].keys()}
-        concInput = {conc[i]['Name']:(float(conc[i]['Conc']), conc[i]['Type']) for i in range(len(conc))}
-        kcatInput = {kcat[i]['Name']: float(kcat[i]['Kcat']) for i in range(len(kcat))}
-        kInput =  {k[i]['Name']: float(k[i]['K']) for i in range(len(k))}
-        kmInput =  {km[i]['Name']: float(km[i]['KM']) for i in range(len(km))}
-        kregInput =  {kreg[i]['Name']: float(kreg[i]['Kreg']) for i in range(len(kreg))}
-
-        exp = Titration(Glycolysis(timeInput, concInput, kcatInput, kInput, kmInput, kregInput), titInput, titOutput)
-        titrationResults = exp.run()
-        return titrationResults
-
-    @app.callback(
         Output('simulation-plot', 'figure'),
         Input('plot-button', 'n_clicks'),
         Input('simulation-plot-metabolite-yaxis', 'value'),
@@ -769,7 +741,7 @@ if __name__ == '__main__':
         State('simOut-qssa', 'data'),
         prevent_initial_call = True
         )
-    def update_figure(plot_button, metaboliteYAxis, deltaTZero, showQSSA, time, count, qssa):
+    def update_sim_figure(plot_button, metaboliteYAxis, deltaTZero, showQSSA, time, count, qssa):
         # convert data to the Plotly_Dynamics format
         fig=pplot(
                 Time = time,
@@ -782,6 +754,38 @@ if __name__ == '__main__':
                 )
         return fig
 
+    @app.callback(
+        Output('tit-out', 'data'),
+        Input('run-titration-button', 'n_clicks'),
+        State('tit-input', 'value'),
+        State('tit-output', 'value'),
+        State('sim-time', 'data'),
+        State('protein-conc-values', 'data'),
+        State('protein-kcat-values', 'data'),
+        State('protein-k-values', 'data'),
+        State('protein-km-values', 'data'),
+        State('protein-kreg-values', 'data'), 
+        prevent_initial_call = True
+    )
+    def runTitration(resimbutton, titInput, titOutput, time, conc, kcat, k, km,kreg):
+        # Data checks:
+        assert titInput is not None, "Titration is missing an input! Please select an input to titrate." 
+        
+        # Convert data to correct format:
+        timeInput = {key:int(time[0][key]) for key in time[0].keys()}
+        concInput = {conc[i]['Name']:(float(conc[i]['Conc']), conc[i]['Type']) for i in range(len(conc))}
+        kcatInput = {kcat[i]['Name']: float(kcat[i]['Kcat']) for i in range(len(kcat))}
+        kInput =  {k[i]['Name']: float(k[i]['K']) for i in range(len(k))}
+        kmInput =  {km[i]['Name']: float(km[i]['KM']) for i in range(len(km))}
+        kregInput =  {kreg[i]['Name']: float(kreg[i]['Kreg']) for i in range(len(kreg))}
+
+        # TODO: Add in hold constant toggle
+
+        sim = Glycolysis(timeInput, concInput, kcatInput, kInput, kmInput, kregInput, holdConstant=[titInput])
+        exp = Titration(sim, titInput, titOutput, maxSteps=timeInput['simDurationSeconds']*timeInput['simStepsPerSecond'])
+        
+        titrationResults = exp.run()
+        return titrationResults
 
     @app.callback(
         Output('titration-plot', 'figure'),
@@ -790,7 +794,8 @@ if __name__ == '__main__':
         prevent_initial_call = True
         )
     def update_titration_figure(plot_button, titrationResults):
-        # convert data to the Plotly_Dynamics format
+        assert titrationResults is not None, "Titration results appears to be empty! Did the `run` method get called?" 
+
         fig=pplot_titration(
                 titrationOutput = titrationResults
                 )
@@ -823,7 +828,8 @@ if __name__ == '__main__':
                              kmInput, kregInput)
         return fig
 
-
+#####################################
+    # Start the server
     app.run_server(debug=True)
 
 
