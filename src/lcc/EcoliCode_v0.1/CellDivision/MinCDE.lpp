@@ -10,7 +10,7 @@ FtsA = Divisome.FtsA;
 protein MinC // Binds to the core region of FtsZ to inhibit FtsZ Polymerization
 {
     reaction Dimerization(2 self --> self~self, Kd = 1e9);
-    reaction FtsZSequestration(self~self + FtsZ~GDP --> MinC_Dimer~FtsZ~GDP, k = 1e9);
+    reaction FtsZSequestration(self~self + FtsZ~GDP --> self~self~FtsZ~GDP, k = 1e9);
 }
 MinC_Dimer = MinC~MinC;
 
@@ -20,7 +20,7 @@ protein MinD // Walker-type ATPase, tethers MinC to membrane via MinE
     MinD_Dimer = (self~ATP)~(self~ATP);
     reaction MembraneRecruitment_2(MinD_Dimer + 2 MinD~ADP{in} + ATP{in} --> 2 MinD_Dimer + 2 ADP{in}, k = 1e9); // via positive feedback
     reaction MinCRecruitment(MinD_Dimer + MinC_Dimer{in} --> MinD_Dimer~MinC_Dimer, k = 1e9);
-    FtsZInhibition(MinD_Dimer~MinC_Dimer + FtsA~(FtsZ~GTP_{10}) --> MinD_Dimer~MinC_Dimer + FtsA{in} + 10 FtsZ~GTP{in}, k = 1e9); // hypothetical model for simplicity
+    FtsZInhibition(MinD_Dimer~MinC_Dimer + FtsA~((FtsZ~GTP)_{10}) --> MinD_Dimer~MinC_Dimer + FtsA{in} + 10 FtsZ~GTP{in}, k = 1e9); // hypothetical model for simplicity
 }
 
 protein MinE; // Binds to MinD and stimulates ATPase activity of MinD, leading to the release of MinD from the membrane
