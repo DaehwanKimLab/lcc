@@ -1,6 +1,19 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // E. coli Code v0.1
 
+medium MinimalMedium
+{
+    glucose = 10nM;
+}
+
+medium RichMedium
+{
+    AA aa = {Gly, Ser, Ala, ...};
+    aa = 10nM;
+
+    glucose = 10nM;
+}
+
 organism Ecoli
 {
     membrane CellMembrane
