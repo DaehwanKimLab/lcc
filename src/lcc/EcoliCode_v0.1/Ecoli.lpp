@@ -38,8 +38,8 @@ reference Valgepea_2013
 if (__name__ == "__main__") // python style
 {
 
-    import Media.Media;
-    LB = Media.Media.LysogenyBroth;
+    import Medium.CommonMedium;
+    LB = Medium.CommonMedium.LysogenyBroth;
     
     lab L // default dimension (i.e. 1000 by 1000 by 0)
     {

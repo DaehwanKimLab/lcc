@@ -1,7 +1,7 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Media
 
-media M69
+medium M69
 {
     β-D-glucopyranose = 111.01 mM;
     K = 100 mM;
@@ -18,7 +18,7 @@ media M69
     }
 }
 
-media LysogenyBroth // LB
+medium LysogenyBroth // LB
 {
     chloride = 60.557 mM;
     Na+ = 50 mM;
