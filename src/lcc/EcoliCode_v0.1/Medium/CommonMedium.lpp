@@ -4,13 +4,22 @@
 medium M69
 {
     β-D-glucopyranose = 111.01 mM;
-    K = 100 mM;
+    K+ = 100 mM;
     phosphate = 100 mM;
     ammonium = 30 mM;
     sulfate = 16.002 mM;
     Mg2+ = 1 mM;
     Fe2+ = 1.8 µM;
     
+    recipe R_M69
+    {
+        β-D-glucopyranose = 20 g/l; //Source of C
+        ammonium sulfate = 15 mM; // Source of N
+        iron(II) sulfate = 1.8 µM; 
+        magnesium sulfate heptahydrate = 1 mM; // Source of S
+        potassium dihydrogen phosphate = 100 mM; // Source of P
+    }
+
     reference Pardee_1959
     {
         title = "The genetic control and cytoplasmic expression of 'Inducibility' in the synthesis of β-galactosidase by E. coli";
@@ -46,6 +55,42 @@ medium LysogenyBroth // LB
     molybdate = 3 nM;
     // tryptone
     // yeast extract
+
+    recipe R_LB
+    {
+        tryptone = 10 g/l; // Source of C N P S, 1%
+        yeast extract = 5 g/l; // Source of C N P S, 0.5%
+        sodium chloride = 10 g/l; // 1%
+        glucose = 1 g/l; // 0.1%
+        H2O;
+
+        pH(7.0, NaOH); // add NaOH to pH 7
+
+        // Mentioned in Gerdes_2003
+        // ammonium chloride	9.5 mM	Source of N
+        // magnesium dichloride	528 µM	 
+        // potassium sulfate	0.276 µM	 
+        // iron(II) sulfate	0.01 µM	 
+        // calcium chloride	500 nM	 
+        // dipotassium hydrogen phosphate	1.32 mM	Source of P
+
+        // Not sure about the source: (possibly description of the yeast extract?)
+        // nicotinamide	12 mg/l	 
+        // (R)-pantothenate	10.8 mg/l	 
+        // thiamine	4 mg/l	 
+        // pyridoxine	2.8 mg/l	 
+        // (R)-lipoate	2 mg/l	 
+        // 4-aminobenzoate	1.37 mg/l	 
+        // riboflavin	800.0 µg/l	 
+        // biotin	120.0 µg/l	 
+        // folate	80 µg/l	 
+        // ammonium molybdate	3 nM	 
+        // boric acid	40 nM	 
+        // cobalt chloride	30.0 nM	 
+        // copper sulfate	10 nM	 
+        // manganese chloride	80 nM	 
+        // zinc sulfate	10 nM	 
+    }
 
     reference Bertani_1951
     {
