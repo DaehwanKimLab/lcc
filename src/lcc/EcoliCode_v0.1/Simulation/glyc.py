@@ -6,12 +6,12 @@ from random import random, randrange, randint
 from dataclasses import dataclass
 
 from util import printTimestamp, printBlockMessage
-from units import cnt2mol, mol2cnt
+from units import cnt2mol, mol2cnt, counttouMPerEcoli
 from modelEq import saturation, alloAct, alloInhib
 
 EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
-CELL_CYCLE_ATP_DEMAND = cnt2mol(1080, 'micro') # Replication, transcription, translation ATP Demand
+CELL_CYCLE_ATP_DEMAND = counttouMPerEcoli(1080) # Replication, transcription, translation ATP Demand
 
 DICT_TIME = {
     'simDurationSeconds':200, #172800, #48 hrs if 1s

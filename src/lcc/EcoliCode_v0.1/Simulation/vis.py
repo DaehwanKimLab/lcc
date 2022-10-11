@@ -1,6 +1,6 @@
 from distutils.log import warn
 import math
-from units import mol2cnt
+from units import mol2cnt, umoltoCountPerEcoli
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
@@ -247,7 +247,7 @@ def pplot_titration(
             if 'count' not in Y[0][exp].keys():
                 Y[0][exp]['count'] = {}
                 for mol in Y[0][exp]['conc'].keys():
-                    Y[0][exp]['count'][mol] = [mol2cnt(val,'micro') for val in Y[0][exp]['conc'][mol]]
+                    Y[0][exp]['count'][mol] = [umoltoCountPerEcoli(val) for val in Y[0][exp]['conc'][mol]]
 
     # TODO: scale line color based on concentration 
     #metaboliteColors = {key:generateRGBList(1) for key in titrationOutput.keys()}
