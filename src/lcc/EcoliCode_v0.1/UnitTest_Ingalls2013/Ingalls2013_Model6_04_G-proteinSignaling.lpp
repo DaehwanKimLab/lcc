@@ -1,9 +1,16 @@
-// Ingalls 2013 Mathematical Modelling in Systems Biology
-//
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // G-protein Signaling
-// Network  6.4,   p.154
-// Model    6.4,   p.154
-// Figure   6.5,   p.154
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = 153;
+    figure = 6.4;       // Diagram
+    page += 154;
+    figure += 6.5.A;    // Plot
+    equation = 6.0;     // Network (6.0 for unannotated equation in chapter 6)
+    // Equation is no available from the text
+}
 
 // InkRL=2e-3*1e9, InkRLm=1e-2, InkGa=1e-5 * 6.0221409e+23, InkGd0=0.11, InkG1=1 * 6.0221409e+23, InTotal_R=4000 / 6.0221409e+23, InTotal_G=10000 / 6.0221409e+23
 

@@ -1,9 +1,15 @@
-// Ingalls 2013 Mathematical Modelling in Systems Biology
-//
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Limit Cycle Oscillations
-// Network  4.14,   p.93
-// Model   4.10,    p.93
-// Figure  4.15,    p.94
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = 93;
+    figure = 4.14;      // Network
+    equation = 4.10;    // Equation
+    page += 94;
+    figure += 4.15.A;   // Plot
+}
 
 reaction R1(In --> S1, k=8);
 reaction R2(S1 --> S2, k=1);

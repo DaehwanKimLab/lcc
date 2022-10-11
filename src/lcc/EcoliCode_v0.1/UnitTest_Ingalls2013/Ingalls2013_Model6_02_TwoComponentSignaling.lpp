@@ -1,9 +1,16 @@
-// Ingalls 2013 Mathematical Modelling in Systems Biology
-//
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Two Component Signaling
-// Network  6.2,   p.151
-// Model   6.2,    p.151
-// Figure  6.3,    p.152
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = 151;
+    figure = 6.2;       // Diagram
+    equation = 6.0;   // Network (6.0 for unannotated equation in chapter 6)
+    page += 152;
+    figure += 6.3.A;    // Plot
+    equation += 6.0;  // Equation (6.0 for unannotated equation in chapter 6)
+}
 
 reaction R1(R + Ligand --> R_Ligand, k=5, krev=1);
 reaction R2(P + R_Ligand --> pP + R_Ligand, k=6);

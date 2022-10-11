@@ -1,9 +1,15 @@
-// Ingalls 2013 Mathematical Modelling in Systems Biology
-//
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Stability
-// Network  4.6,   p.82
-// Model   4.2,    p.82
-// Figure  4.7,    p.83
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = 82;
+    figure = 4.6;   // Network
+    equation = 4.2; // Equation
+    page += 83;
+    figure += 4.7.A;  // Plot
+}
 
 // standard reactions
 reaction R1(In --> S1, k=20);
