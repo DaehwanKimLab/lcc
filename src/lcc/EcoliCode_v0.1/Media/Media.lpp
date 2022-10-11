@@ -1,0 +1,55 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Media
+
+media M69
+{
+    β-D-glucopyranose = 111.01 mM;
+    K = 100 mM;
+    phosphate = 100 mM;
+    ammonium = 30 mM;
+    sulfate = 16.002 mM;
+    Mg2+ = 1 mM;
+    Fe2+ = 1.8 µM;
+    
+    reference Pardee_1959
+    {
+        title = "The genetic control and cytoplasmic expression of 'Inducibility' in the synthesis of β-galactosidase by E. coli";
+        doi = "https://doi.org/10.1016/S0022-2836(59)80045-0";
+    }
+}
+
+media LysogenyBroth // LB
+{
+    chloride = 60.557 mM;
+    Na+ = 50 mM;
+    ammonium = 9.5 mM;
+    K+ = 2.6406 mM;
+    phosphate = 1.32 mM;
+    Mg2+ = 528 µM;
+    nicotinamide = 98.259 µM;
+    (R)-pantothenate = 49.489 µM;
+    pyridoxine = 16.55 µM;
+    thiamine = 15.074 µM;
+    4-aminobenzoate = 10.064 µM;
+    (R)-lipoate = 9.7414 µM;
+    riboflavin = 2.1313 µM;
+    Ca2+ = 500 nM;
+    biotin = 493.22 nM;
+    sulfate = 306.0 nM;
+    folate = 182.07 nM;
+    Mn2+ = 80 nM;
+    boric acid = 40 nM;
+    Co2+ = 30.0 nM;
+    Zn2+ = 10 nM;
+    Cu2+ = 10 nM;
+    Fe2+ = 10 nM;
+    molybdate = 3 nM;
+    // tryptone
+    // yeast extract
+
+    reference Bertani_1951
+    {
+        title = "Studies on lysogenesis. I. The mode of phage liberation by lysogenic Escherichia coli";
+        doi = "https://doi.org/10.1128/jb.62.3.293-300.1951";
+    }
+}
