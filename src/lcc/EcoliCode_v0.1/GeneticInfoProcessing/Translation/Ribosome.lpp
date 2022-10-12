@@ -65,7 +65,7 @@ complex 70S // 70S Initiation Complex
     // elongation:
     reaction CodonRecognition(70S_Post + 70S_Post.30S~mRNA.NNN{n} + EF-Tu~GTP~AA_tRNA --> 70S_tRNA~EF-Tu~GTP + tRNA, Kd=1e-9); // tRNALoadingAndRelease
     reaction GTPHydrolysis(70S_tRNA~EF-Tu~GTP + H2O --> 70S_tRNA + EF-Tu~GDP + Pi, Kd=1e-9);
-    reaction PeptidylTransfer(self.PSite~tRNA~peptide_{n} + self.ASite~tRNA~AA_tRNA --> self.PSite~tRNA + self.ASite~tRNA~peptide_{n+1}, r=20.0);
+    reaction PeptidylTransfer(self.PSite~tRNA~peptide_{n} + self.ASite~tRNA~AA_tRNA + 10 ATP --> self.PSite~tRNA + self.ASite~tRNA~peptide_{n+1} + 10 ADP + 10 Pi, r=20.0); // 4 ATP for building block synthesis, 5.5 ATP for the rest of the process in rich media
     reaction EF-G_Binding(70S_Pre + EF-G~GTP --> 70S_Pre.50S~EF-G~GTP, Kd=1e-9);
     reaction RNATranslocation
     {

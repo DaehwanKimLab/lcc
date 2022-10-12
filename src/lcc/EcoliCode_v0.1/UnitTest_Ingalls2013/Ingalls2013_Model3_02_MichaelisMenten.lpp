@@ -1,9 +1,15 @@
-// Ingalls 2013 Mathematical Modelling in Systems Biology
-//
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // MichaelisMenten
-// Network	3.2,	p.49
-// Figure	3.3,	p.50
 
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = 49;
+    equation = 3.2;     // Network
+    page += 50;
+    figure = 3.3;       // Plot
+    equation += 3.3;    // Equation
+}
 
 // k1 = 30;
 // krev1 = 1;

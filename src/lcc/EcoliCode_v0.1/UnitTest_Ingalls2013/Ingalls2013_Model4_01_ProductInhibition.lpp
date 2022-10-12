@@ -1,9 +1,15 @@
-// Ingalls 2013 Mathematical Modelling in Systems Biology
-//
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Product Inhibition
-// Network  4.1,   p.78
-// Model   4.1,    p.77
-// Figure  4.2,    p.78
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = 77;
+    equation = 4.1;     // Equation
+    page += 78;
+    figure = 4.1;       // Network
+    figure += 4.2.A;    // Plot
+}
 
 // standard reactions
 reaction R1(In --> S1, k=20);

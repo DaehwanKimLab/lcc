@@ -30,7 +30,7 @@ polymerase RNAP
         float R = 60.0;
         reaction dsDNAUnwinding(self~dsDNA{n-10:n+10} --> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, r=R);
         reaction DNATranslocation(self.ssDNA{n} --> self.ssDNA{n+1}, r=R);
-        reaction RNAElongation(self~RNA_{n} + c(NTP) + self.ssDNA.N{n} --> self~RNA_{n+1} + PPi, r=R);
+        reaction RNAElongation(self~RNA_{n} + c(NTP) + self.ssDNA.N{n} + 3 ATP --> self~RNA_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
     }
     
     // transcription termination
