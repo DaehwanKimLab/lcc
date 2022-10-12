@@ -45,8 +45,8 @@ if (__name__ == "__main__") // python style
     {
         petridish P // specification P_S(shape = round, radius = 150mm);
         {
-            Ecoli(500, 600, 0) = 1;
             LB = 10mL; // In this liquid media, E coli would grow radially with some random movement.
+            Ecoli(500, 600, 0) = 1;
         }
         P(200, 400, 0) = 1;
     }
