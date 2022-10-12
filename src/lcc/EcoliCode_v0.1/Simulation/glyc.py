@@ -11,17 +11,19 @@ from modelEq import saturation, alloAct, alloInhib
 
 EXCLUDE_FROM_PLOT = ['HK', 'PEPMAKER', 'PK']
 ONE_COUNT_IN_MICROMOLAR = 1.66e-18
-CELL_CYCLE_ATP_DEMAND = counttouMPerEcoli(1080) # Replication, transcription, translation ATP Demand
+#CELL_CYCLE_ATP_DEMAND = counttouMPerEcoli(1080) # Replication, transcription, translation ATP Demand
+#CELL_CYCLE_ATP_DEMAND = 0.0153 # uM demand of ATP
+CELL_CYCLE_ATP_DEMAND = 2975 # uM/sec
 
 DICT_TIME = {
-    'simDurationSeconds':200, #172800, #48 hrs if 1s
-    'simStepsPerSecond': 1,
+    'simDurationSeconds':3, #172800, #48 hrs if 1s
+    'simStepsPerSecond': 1000,
     }
 # Format: moleculename: (concentration uM, type) 
 # Type can be 'met' for metabolite or 'enz' for enzyme
 DICT_T0_CONC = {
             # Changeable met concs
-            'Gluc' : (5000, 'met'),
+            'Gluc' : (16650, 'met'),        # Minimal M9 ~ 16.65 mM glucose - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6441617/
             'F6P' :  (0, 'met'),            # Goal: 8.8mM - https://www.nature.com/articles/nchembio.186.pdf,
             'F16BP' :(0, 'met'),            # Goal: 15.0mM - https://www.nature.com/articles/nchembio.186.pdf
             'PEP' :  (0, 'met'),            # Goal: 0.18mM - https://www.nature.com/articles/nchembio.186.pdf
@@ -101,7 +103,49 @@ class Glycolysis:
     translation: 20aa/ sec
 
     1080 nt/sec -> cnt2mol(1080, 'milli')
-    -- passive ATP demand  == 
+    -- passive ATP demand  == CELL_CYCLE_ATP_DEMAND = 0.0153 # uM demand of ATP
+    https://ecmdb.ca/e_coli_stats
+    -- 
+    
+    assuming:
+    23 mmol ATP/g Dry Mass -- https://www.reddit.com/r/biology/comments/97fpyc/how_many_atp_are_required_for_dna_replication/
+     dry mass of 1 cell of ecoli is ~ 0.4pg -- https://www.aatbio.com/resources/faq-frequently-asked-questions/What-is-the-total-dry-weight-of-E-coli
+    assuming 0.6 uL per cell (this actually seems wrong)
+    -- 0.0153 uM ATP demand per cell
+
+    http://book.bionumbers.org/how-big-is-an-e-coli-cell-and-what-is-its-mass/#:~:text=A%20%E2%80%9Crule%20of%20thumb%E2%80%9D%20based,a%20cylinder%20with%20hemispherical%20caps.
+    ~ volume of 1 ecoli ~ 1 fL : https://bionumbers.hms.harvard.edu/bionumber.aspx?&id=101788
+    dry mass of 1 cell of ecoli is ~ 0.4pg -- https://www.aatbio.com/resources/faq-frequently-asked-questions/What-is-the-total-dry-weight-of-E-coli
+    for a cell with dry mass ~ 0.4pg, the gen time is ~ 40min = 2400s
+
+    9.2fmol ATP per cell demand ATP (Protein)
+    could round and say ~ 10 fmol total demand for 1 cell cycle.
+    -- results in ~ 10 M ATP demand per cell cycle 
+    ~ 4.1667mM/s demand ATP
+
+
+    Using minimal media conditions: https://www.reddit.com/r/biology/comments/97fpyc/how_many_atp_are_required_for_dna_replication/
+        protein: 23 mmol ATP/g Dry Mass
+        RNA: ~1.75 mmol ATP/g Dry Mass
+    +   DNA: ~0.75 mmol ATP/g Dry Mass
+    -------------------------------
+    total: 25.5 mmol ATP/ g Dry Mass
+
+    For cell doubling time of 40 min in minimal medium -- 0.28pg cell dry weight #https://bionumbers.hms.harvard.edu/bionumber.aspx?s=n&v=7&id=100008
+    Using a volume of 1 femtoLiter -- http://book.bionumbers.org/how-big-is-an-e-coli-cell-and-what-is-its-mass/#:~:text=A%20%E2%80%9Crule%20of%20thumb%E2%80%9D%20based,a%20cylinder%20with%20hemispherical%20caps.
+    
+    25.5 mmol ATP          | 0.28 * 10 **-12 g dry mass |
+    -----------------------|----------------------------| = 7.14 fmol ATP per cell per cell cycle 
+    1 g dry mass*cellcycle | 1 cell                     |
+
+    7.14 fmol ATP          |   1 cell                |
+    -----------------------|-------------------------| = 7.14 M ATP / cell cycle 
+    1 cellcycle * 1 cell   |   1 fL                  |
+
+    7.14 M    ATP          |   1 cellcycle           |
+    -----------------------|-------------------------| = 2.975 mM ATP / s 
+    1 cellcycle            |   2400 s                |
+
 
     """
     def __init__(self, dictTime, dictConc, dictKcat, dictK, dictKM, dictKReg, holdConstant = ['None'], perturb:bool = True, verbose:bool = True, silent:bool = False, debug:bool = True):
@@ -157,7 +201,7 @@ class Glycolysis:
         self.silent = silent
 
         self.passPYRConsumption = 0
-        self.passATPConsumption = CELL_CYCLE_ATP_DEMAND
+        self.passATPConsumption = CELL_CYCLE_ATP_DEMAND / self.time_simStepsPerSecond
         self.passPEPConsumption = 0
 
     # Reaction Equations
@@ -315,7 +359,7 @@ class Glycolysis:
         if step % 100 == 0:
             self.passPYRConsumption = randint(1, 5) * 10 ** randrange(-2, -1, 1)
             #self.passATPConsumption = (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-6, -5, 1)            
-            self.passATPConsumption = CELL_CYCLE_ATP_DEMAND + (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-3, -2, 1)            
+            self.passATPConsumption = CELL_CYCLE_ATP_DEMAND / self.time_simStepsPerSecond + (randint(1,12) - 1/randint(3, 8)) * 10 ** randrange(-3, -2, 1)            
             self.passPEPConsumption = randint(1, 3) * 10 ** randrange(-2, -1, 1)   
 
         # Change glucose concentration
@@ -461,6 +505,9 @@ if __name__ == '__main__':
                 ),
                 dcc.Checklist(id='show-qsaa-checkbox',
                     options = [{'label':'Show where QSSA Violated?', 'value':0}]
+                ),
+                dcc.Checklist(id='perturb-checkbox',
+                    options = [{'label':'Randomly perturb consumption rates of ATP, PEP, PYR?', 'value':0}]
                 ),
             ], style = {'width': '40%', 'display':'inline-block'}),
             html.Div([ # Time Datatable
@@ -730,10 +777,11 @@ if __name__ == '__main__':
         State('protein-kcat-values', 'data'),
         State('protein-k-values', 'data'),
         State('protein-km-values', 'data'),
-        State('protein-kreg-values', 'data'), 
+        State('protein-kreg-values', 'data'),
+        State('perturb-checkbox', 'value'), 
         prevent_initial_call = True
     )
-    def updateSim(resimbutton, time, conc, kcat, k, km,kreg):
+    def updateSim(resimbutton, time, conc, kcat, k, km,kreg, perturb):
         # Convert data to correct format:
         timeInput = {key:int(time[0][key]) for key in time[0].keys()}
         concInput = {conc[i]['Name']:(float(conc[i]['Conc']), conc[i]['Type']) for i in range(len(conc))}
@@ -742,7 +790,7 @@ if __name__ == '__main__':
         kmInput =  {km[i]['Name']: float(km[i]['KM']) for i in range(len(km))}
         kregInput =  {kreg[i]['Name']: float(kreg[i]['Kreg']) for i in range(len(kreg))}
 
-        sim = Glycolysis(timeInput, concInput, kcatInput, kInput, kmInput, kregInput)
+        sim = Glycolysis(timeInput, concInput, kcatInput, kInput, kmInput, kregInput, perturb = bool(perturb))
         outT, outC, outPercVmax, qssa = sim.run()
         return outT, outC, outPercVmax, qssa
 

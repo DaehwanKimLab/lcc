@@ -20,10 +20,10 @@ def cnt2mol(inVal:float, siPrefix='none'):
 
 
 
-def umoltoCountPerEcoli(inVal, Vol = 0.6e-6):
+def umoltoCountPerEcoli(inVal, Vol = 1.0e-15):
     """Convert input in umol to molecule counts per ecoli (i.e. scaled to ecoli volume)"""
-    return inVal*10**-6*Avogadro/Vol
+    return inVal*10**-6*Avogadro*Vol
 
-def counttouMPerEcoli(inVal, Vol = 0.6e-6):
+def counttouMPerEcoli(inVal, Vol = 1.0e-15):
     """Convert input molecule counts to uM"""
     return inVal / Avogadro / 1e-6 / Vol
