@@ -55,3 +55,30 @@ reference Nguyen_2021
     title = "Simulations of Proposed Mechanisms of FtsZ-Driven Cell Constriction";
     doi = "https://doi.org/10.1128/JB.00576-20";
 }
+
+// references for FtsZ quantity
+reference Kumar_2017
+{
+    title = "Z-ring Structure and Constriction Dynamics in E. coli";
+    doi = "https://doi.org/10.3389/fmicb.2017.01670";
+    // there are ~300 FtsZ proteins in low growth rate E. coli cells (generation time > 100 min) (Link et al., 1997) and 
+    // 3,000–15,000 in high growth rate E. coli (generation time ≃ 20 min) (Lu et al., 1998; Rueda et al., 2003). 
+}
+
+reference Link_1997
+{
+    title = "Comparing the predicted and observed properties of proteins encoded in the genome of Escherichia coli K-12";
+    doi = "https://doi.org/10.1002/elps.1150180807";
+}
+
+reference Lu_1998
+{
+    title = "FtsZ from Escherichia coli, Azotobacter vinelandii, and Thermotoga maritima–quantitation, GTP hydrolysis, and assembly.";
+    doi = "https://doi.org/10.1002/(SICI)1097-0169(1998)40:1<71::AID-CM7>3.0.CO;2-I";
+}
+
+reference Rueda_2003
+{
+    title = "Concentration and assembly of the division ring proteins FtsZ, FtsA, and ZipA during the Escherichia coli cell cycle";
+    doi = "https://doi.org/10.1128/JB.185.11.3344-3351.2003";
+}

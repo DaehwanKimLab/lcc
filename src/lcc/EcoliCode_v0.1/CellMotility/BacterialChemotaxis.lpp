@@ -36,6 +36,14 @@ pathway BacterialChemotaxis
     }
 }
 
+// more complete model found below
+reference BitbolWingreen_2015
+{
+    title = "Fundamental Constraints on the Abundances of Chemotaxis Proteins.";
+    doi = "https://doi.org/10.1016/j.bpj.2015.01.024";
+}
+// CheA = 2.97 uM, CheY = 9.73 uM, CheZ = 3.80 uM, CheB = 0.28 uM, CheR = 0.17 uM, FliM = 1.43 uM, where 16% of FliM that are free are discounted.
+
 
 // independent simulation
 if (__name__ == "__main__") // python style
