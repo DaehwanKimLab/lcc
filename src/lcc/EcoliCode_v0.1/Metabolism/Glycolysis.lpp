@@ -1,3 +1,6 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Glycolysis
+
 pathway Glycolysis(glucose --> 2 pyruvate + 2 NADH + 2 ATP)
 {
 

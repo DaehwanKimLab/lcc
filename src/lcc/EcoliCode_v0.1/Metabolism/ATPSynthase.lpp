@@ -1,1 +1,4 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// ATPSynthase
+
 protein ATPsynthase(ADP{in} + Pi{in} + 4 H+{out} --> ATP{in} + H2O{in} + 3 H+{in});

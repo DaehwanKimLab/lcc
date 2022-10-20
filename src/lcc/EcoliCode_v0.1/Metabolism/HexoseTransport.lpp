@@ -1,3 +1,6 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Hexose Transport
+
 // alias Hexose for set of molecules
 Hexose = {D-glucose, D-fructose};
 

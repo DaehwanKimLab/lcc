@@ -1,3 +1,6 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Pyruvate Oxidation
+
 pathway PyruvateOxidation(pyruvate + NAD + CoA --> acetyl-CoA + CO2 + NADH + H)
 {
 
