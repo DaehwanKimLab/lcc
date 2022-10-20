@@ -2,7 +2,7 @@
 // Divisome proteins
 
 // cytosolic proteins
-protein FtsZ; // Tubulin-like principal regulator of septal PG synthesis
+protein FtsZ // Tubulin-like principal regulator of septal PG synthesis
 {
     domain GB; // Guanine nucleotide binding
     reaction GDPBinding(self.GB + GDP --> self.GB~GDP, Kd=1e-10);
