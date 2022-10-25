@@ -1,0 +1,30 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Flagellar Rotation
+
+import BacterialChemotaxis;
+Am = BacterialChemotaxis.Am;
+
+pathway FlagellarRotation(membrane + Am{in} --> membrane + Am{in})
+func
+{
+    Ang = membrane.angle;
+    Pos = membrane.position;
+
+    cdist = 10nm/s; // constant for displacement
+    crot = rand(0, 360)°; // constant for rotation
+
+    float thAm = 0.982; // threshold set by the user. a fraction of the steadystate function may be another option
+
+    if (Am < thAm)
+    {
+        dPos/dt = cdist;
+        dAng/dt = 0;
+    }
+    else 
+    {
+        dPos/dt = cdist / 3;
+        dAng/dt = crot;
+    }
+}
+
+
