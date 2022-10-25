@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{E coli by numbers}
+\author{Donghoon Lee}
+\data{\today}
+
+\begin{document}
+    \maketitle
+
+    section{General}
+
+    \begin{itemize}
+        \item Avogadro's constant = 6.022 x 10^{23} ≈ 6 x 10^{23}
+        \item total protein density ≈ 2~4 x 10^{6} proteins / μm^{3}
+        \item mean diameter of protein ≈ 4~5 nm
+        \item 1 base pair volume ≈ 1 nm^{3}
+        \item time scale for transitions between protein states (active/inactive) ≈ 1~100 μs
+        \item time scale for transcription factor binding to DNA site ≈ 1 s
+        \item mutation rate ≈ 10^{-8} ~ 10^{-10} / bp / replication
+    \end{itemize}
+
+    section{Ecoli}
+    \begin{itemize}
+        subsection{Physical Specification}
+        \item cell volume ≈ 0.3~3 μm3    
+        \item cell dimension = 2 μm x 1 μm x 1 μm, rod shape
+        \item total dry mass ≈
+        
+        subsection{Chemical Composition}
+        \item water ≈ 2 x 10^{10}
+        \item inorganic ion ≈ 1 x 10^{8}
+        \item lipid ≈ 5 x 10^{7}
+        \item DNA / cell ≈ 4.6 x 10^{6} bp
+        \item RNA / cell ≈ 2 x 10^{3}
+        \item proteins / cell ≈ 3 x 10^{6}
+        \item RNA polymerases / cell ≈
+        \item ribosomes / cell ≈ 1 x 10^{4}
+
+        subsection{Genetic Info}
+        \item genome size ≈ 4.6 Mbp
+        \item # of protein coding genes ≈ 4300
+        \item regulator binding site length ≈ 10~20 bp
+        \item promoter length ≈ 100 bp
+        \item gene length ≈ 1000 bp
+
+        subsection{Dynamics}
+        \item transcription rate < 1 min (80 nts/s)
+        \item translation rate < 1 min (20 aa/s)
+        \item mRNA life time ≈ 3 min
+        \item protein life time ≈ 1 hr
+        \item minimal doubling time ≈ 20 min
+
+        subsection{Molecular Kinetics}
+        \item diffusion time of protein across cell ≈ 0.01 s
+        \item diffusion time of small molecule across cell ≈ 0.001 s
+        \item time scale for equilibrium binding of small molecule to protein ≈ 1 ~ 1000 ms (1uM ~ 1nM affinity)
+
+    \end{itemize}    
+
+    section{Ecoli Metabolite Concentration}
+    \begin{tabular}{ ||c|c|c||} 
+        \hline
+
+        \multicolumn{3}{|c|}{Glucose Metabolism} \\
+        \hline
+        Metabolite & mol L^{-1} (= M) & # of molecules \\ 
+        \hline
+        ATP & 9.6 x 10^{-3} & XX \\ 
+        ADP & 5.6 x 10^{-4} & XX \\ 
+        NAD+ & 2.6 x 10^{-3} & XX \\ 
+        \hline
+
+    \end{tabular}
+
+
+\end{document}
+
