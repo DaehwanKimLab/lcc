@@ -6,9 +6,9 @@ func
 {
     float cg = 10nmol;
     dATP/dt  = (ADP / ATP) * cg;
-    dADP/dt  = dPi/dt = -dATP/dt;
+    dADP/dt  = dPi/dt = - dATP/dt;
     dNADH/dt = dATP/dt;
-    dNAD+/dt = -dNADH/dt;
+    dNAD+/dt = - dNADH/dt;
     dG6P/dt  = dATP/dt / 2;
     dpyruvate/dt = dG6P/dt * 2;
 }
