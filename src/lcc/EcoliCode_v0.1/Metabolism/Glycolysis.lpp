@@ -2,7 +2,7 @@
 // Glycolysis
 
 pathway Glycolysis(G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP)
-func
+function
 {
     float cg = 10nmol;
     dATP/dt  = (ADP / ATP) * cg;
