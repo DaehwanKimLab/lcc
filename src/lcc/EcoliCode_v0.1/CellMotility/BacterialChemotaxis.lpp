@@ -23,7 +23,7 @@ protein CheB
     reaction Am_Demethylation(self~Pi + Am --> self~Pi + A + CH3, kcat=200, KM=1nM);
 }
 
-pathway BacterialChemotaxis(Am{in} + L --> Am{in} + L)
+pathway BacterialChemotaxis(Am{in} + L)
 func
 {
     float ssAm = 0.983; // use a steady state function like steadystate(Am)?
@@ -36,7 +36,8 @@ func
     }
     else 
     {
-        dAm/dt = (ssAm - Am) ** cRecov;
+        dist_ssAm = (ssAm - Am);
+        dAm/dt = (dist_ssAm ** cRecov) / dist_ssAm;
     }
 }
 {
