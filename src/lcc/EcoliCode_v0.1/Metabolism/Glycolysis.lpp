@@ -1,7 +1,17 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Glycolysis
 
-pathway Glycolysis(glucose --> 2 pyruvate + 2 NADH + 2 ATP)
+pathway Glycolysis(G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP)
+func
 {
-
+    float cg = 10nmol;
+    dATP/dt  = (ADP / ATP) * cg;
+    dADP/dt  = dPi/dt = -dATP/dt;
+    dNADH/dt = dATP/dt;
+    dNAD+/dt = -dNADH/dt;
+    dG6P/dt  = dATP/dt / 2;
+    dpyruvate/dt = dG6P/dt * 2;
+}
+{
+    domain A;
 }

@@ -23,7 +23,7 @@ protein CheB
     reaction Am_Demethylation(self~Pi + Am --> self~Pi + A + CH3, kcat=200, KM=1nM);
 }
 
-pathway BacterialChemotaxis 
+pathway BacterialChemotaxis
 {
     membrane CellMembrane
     {
