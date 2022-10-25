@@ -1,20 +1,20 @@
 # E coli by numbers
 
 ## General
-- Avogadro’s constant ≈ 6 × 1023
-- 1 M is about one per 1 nm3.
-- There are 2–4 million proteins per 1 μm3 of cell volume.
-- Water molecule volume ≈ 0.03 nm3
-- A base pair has a volume of ≈ 1 nm3
+- Avogadro’s constant ≈ 6E23
+- 1 M is about one per 1 nm<sup>3</sup>.
+- There are 2–4 million proteins per 1 μm<sup>3</sup> of cell volume.
+- Water molecule volume ≈ 0.03 nm<sup>3</sup>
+- A base pair has a volume of ≈ 1 nm<sup>3</sup>
 - A small metabolite diffuses 1 nm in ~ 1 ns.
-- proteins per um3 volume = 3 x 106
+- proteins per um3 volume = 3E6
 - A small metabolite diffuses 1 nm in ~ 1 ns.
 
 ## E coli
 - 1 nM is about 1 molecule
-- Cell volume = 1 um3
-- mRNA per cell ≈ 103
-- proteins per cell ≈106
+- Cell volume = 1 um<sup>3</sup>
+- mRNA per cell ≈ 1E3
+- proteins per cell ≈1E6
 - mean diameter of protein ≈ 4 nm
 - genome size ≈ 4.6 Mbp
 - number of protein coding genes ≈ 4300
@@ -26,14 +26,14 @@
 - typical mRNA life time ≈ 30 min
 - typical protein life time ≈ 1 hr
 - minimal doubling time ≈ 20 min
-- ribosomes / cell ≈ 104
+- ribosomes / cell ≈ 1E4
 - diffusion time of protein across cell ≈ 0.01 s
 - diffusion time of small molecule across cell ≈ 0.001 s
 - time scale for equilibrium binding of small molecule to protein ≈ 1 ~ 1000 ms (1uM ~ 1nM affinity)
 - time scale for transcription factor binding to DNA site ≈ 1 s
-- mutation rate ≈ 10-8 ~ 10-10 / bp / replication
+- mutation rate ≈ 1E-8 ~ 1E-10 / bp / replication
 
-## E coli Metabolite Concentrations (mol l−1 = M)
+## E coli Metabolite Concentrations (mol l<sup>−1</sup> = M)
 
 ### Glucose metabolism
 ATP	9.6E-03
