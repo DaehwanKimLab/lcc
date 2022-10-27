@@ -26,6 +26,7 @@ class FModel():
         # Dataset
         self.Data_A = list()
         self.Data_B = list()
+        self.Data_Time = list()
 
         # Set initial values
         self.InitializeSimStepZero()
@@ -56,6 +57,7 @@ class FModel():
 
             self.UpdateConcentration(dA, dB)
             self.AppendData()
+            self.Data_Time.append(i/TimeResolution)
 
             i += 1
 

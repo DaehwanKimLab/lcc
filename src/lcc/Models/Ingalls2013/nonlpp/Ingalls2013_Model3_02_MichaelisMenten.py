@@ -49,6 +49,8 @@ class FNetwork():
         self.Data_S_MM = list()
         self.Data_P_MM = list()
 
+        self.Data_Time = list()
+
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -107,7 +109,8 @@ class FNetwork():
             # Calculate new
             self.Model_Full(TimeResolution)
             self.Model_Reduced(TimeResolution)
-            
+
+            self.Data_Time.append(i/TimeResolution)
             if (abs(self.Data_S[-1] - self.Data_S[-2]) < Flat):
                 break
             i += 1

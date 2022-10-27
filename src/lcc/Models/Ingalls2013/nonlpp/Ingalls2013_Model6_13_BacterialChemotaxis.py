@@ -123,6 +123,8 @@ class FModel():
         self.Data_B = list()
         self.Data_BP = list()
 
+        self.Data_Time = list()
+
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -204,6 +206,7 @@ class FModel():
 
             L = self.L
             self.Simulate(L)
+            self.Data_Time.append(i/TimeResolution)
 
             # DK - debugging purposes
             Am = self.Data_Am[-1]

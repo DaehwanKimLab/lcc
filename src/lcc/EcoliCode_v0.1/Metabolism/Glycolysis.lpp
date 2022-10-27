@@ -5,12 +5,12 @@ pathway Glycolysis(G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP)
 mathfunc
 {
     float cg = 10nmol;
-    dATP/dt  = (ADP / ATP) * cg;
-    dADP/dt  = dPi/dt = - dATP/dt;
-    dNADH/dt = dATP/dt;
-    dNAD+/dt = - dNADH/dt;
-    dG6P/dt  = dATP/dt / 2;
-    dpyruvate/dt = dG6P/dt * 2;
+    ATP'  = (ADP / ATP) * cg;
+    ADP'  = Pi' = - ATP';
+    NADH' = ATP';
+    NAD+' = - NADH';
+    G6P'  = ATP' / 2;
+    pyruvate' = G6P' * 2;
 }
 {
     domain A;
