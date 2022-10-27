@@ -10,7 +10,6 @@ Figure   6.5,   p.154
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import UnitTestHelper
 
 def dRL_NumericalSimulation(kRL, kRLm, kGa, kGd0, kG1, R, L, RL, G, Ga, Gbg, Gd):
     return kRL * R * L - kRLm * RL
@@ -63,8 +62,6 @@ class FModel():
         self.Data_Gbg = list()
         self.Data_Gd = list()
 
-        self.Data_Time = list()
-
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -100,7 +97,7 @@ class FModel():
             Gbg = self.Data_Gbg[-1] / self.Vol
             Gd = self.Data_Gd[-1] / self.Vol
 
-            # print(i, "RL:", RL, "R:", R, "L:", L, "G:", G, "Ga:", Ga, "Gbg:", Gbg, "Gd:", Gd)
+            print(i, "RL:", RL, "R:", R, "L:", L, "G:", G, "Ga:", Ga, "Gbg:", Gbg, "Gd:", Gd)
 
             # Calculate delta Count (not concentration)
             dRL = dRL_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
@@ -109,11 +106,9 @@ class FModel():
             dGbg = dGbg_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
             dGd = dGd_NumericalSimulation(self.kRL, self.kRLm, self.kGa, self.kGd0, self.kG1, R, L, RL, G, Ga, Gbg, Gd) * self.Vol / TimeResolution
 
-            # print(i, "dRL:", dRL, "dG:", dG, "dGa:", dGa, "dGbg:", dGbg, "dGd:", dGd)
+            print(i, "dRL:", dRL, "dG:", dG, "dGa:", dGa, "dGbg:", dGbg, "dGd:", dGd)
 
             self.AppendData(L, self.Data_RL[-1] + dRL, self.Data_G[-1] + dG, self.Data_Ga[-1] + dGa, self.Data_Gbg[-1] + dGbg, self.Data_Gd[-1] + dGd)
-
-            self.Data_Time.append(i/TimeResolution)
 
             i += 1
 
@@ -139,17 +134,11 @@ class FModel():
 
         plt.show()
 
-def main(args):
+def main():
     Model = FModel()
     Model.Run()
-    if args.print_data:
-        UnitTestHelper.PrintData(Model)
-    else:
-        Model.PlotData()
+    Model.PlotData()
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('--print-data', dest='print_data', action='store_true', default=False,
-                        help="Print simulation data to screen")
-    args = parser.parse_args()
-    main(args)
+
+    main()

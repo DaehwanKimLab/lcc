@@ -10,7 +10,6 @@ Figure  4.15,    p.94
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import UnitTestHelper
 
 def dS1_NumericalSimulation(k0, k1, K, n, S1, S2):
     return k0 - (k1 * (1 + (S2 / K) ** n) * S1)
@@ -36,8 +35,6 @@ class FModel():
         self.Data_S1 = list()
         self.Data_S2 = list()
 
-        self.Data_Time = list()
-
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -61,8 +58,6 @@ class FModel():
             dS2 = dS2_NumericalSimulation(self.k1, self.k2, self.K, self.n, S1, S2) / TimeResolution
 
             self.AppendData(self.Data_S1[-1] + dS1, self.Data_S2[-1] + dS2)
-
-            self.Data_Time.append(i/TimeResolution)
 
             if (abs(self.Data_S1[-1] - self.Data_S1[-2]) < Flat):
                 break
@@ -101,20 +96,14 @@ class FModel():
 
         plt.show()
 
-def main(args):
+def main():
     Model = FModel()
     Model.Run()
-    if args.print_data:
-        UnitTestHelper.PrintData(Model)
-    else:
-        Model.PlotData()
+    Model.PlotData()
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('--print-data', dest='print_data', action='store_true', default=False,
-                        help="Print simulation data to screen")
-    args = parser.parse_args()
-    main(args)
+
+    main()
 
 
 # Animation option

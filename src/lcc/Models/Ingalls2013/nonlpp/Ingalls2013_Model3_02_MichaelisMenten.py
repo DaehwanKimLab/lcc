@@ -9,7 +9,6 @@ Figure 3.3, p.50
 '''
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
-import UnitTestHelper
 
 def MMequation(Vmax, S, KM):
     return (Vmax * S) / (KM + S)
@@ -49,8 +48,6 @@ class FNetwork():
 
         self.Data_S_MM = list()
         self.Data_P_MM = list()
-
-        self.Data_Time = list()
 
         # Set initial values
         self.InitializeSimStepZero()
@@ -110,7 +107,7 @@ class FNetwork():
             # Calculate new
             self.Model_Full(TimeResolution)
             self.Model_Reduced(TimeResolution)
-            self.Data_Time.append(i/TimeResolution)
+            
             if (abs(self.Data_S[-1] - self.Data_S[-2]) < Flat):
                 break
             i += 1
@@ -153,19 +150,11 @@ class FNetwork():
     
         plt.show()
 
-
-def main(args):
+def main():
     Network = FNetwork()
     Network.Run()
-
-    if args.print_data:
-        UnitTestHelper.PrintData(Network)
-    else:
-        Network.PlotData()
+    Network.PlotData()
     
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('--print-data', dest='print_data', action='store_true', default=False,
-                        help="Print simulation data to screen")
-    args = parser.parse_args()
-    main(args)
+
+    main()
