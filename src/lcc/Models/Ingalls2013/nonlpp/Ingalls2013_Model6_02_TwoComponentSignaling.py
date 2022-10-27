@@ -43,6 +43,8 @@ class FModel():
         self.Data_RL = list()
         self.Data_pP = list()
 
+        self.Data_Time = list()
+
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -76,6 +78,7 @@ class FModel():
             dpP = dpP_NumericalSimulation(self.k1, self.krev1, self.k2, self.k3, R, L, RL, P, pP) / TimeResolution
 
             self.AppendData(L, self.Data_RL[-1] + dRL, self.Data_pP[-1] + dpP)
+            self.Data_Time.append(i/TimeResolution)
 
             i += 1
 

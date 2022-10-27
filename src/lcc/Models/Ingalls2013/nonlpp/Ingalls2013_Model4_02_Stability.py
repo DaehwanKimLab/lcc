@@ -36,6 +36,8 @@ class FModel():
         self.Data_S1 = list()
         self.Data_S2 = list()
 
+        self.Data_Time = list()
+
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -59,6 +61,7 @@ class FModel():
             dS2 = dS2_NumericalSimulation(self.k2, self.k4, self.K1, self.n2, S1, S2) / TimeResolution
 
             self.AppendData(self.Data_S1[-1] + dS1, self.Data_S2[-1] + dS2)
+            self.Data_Time.append(i/TimeResolution)
 
             if (abs(self.Data_S1[-1] - self.Data_S1[-2]) < Flat):
                 break
