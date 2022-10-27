@@ -10,6 +10,7 @@ Figure  6.3,    p.152
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import UnitTestHelper
 
 def dR_NumericalSimulation(k1, krev1, k2, k3, R, L, RL, P, pP):
     return -k1 * R * L + krev1 * RL
@@ -42,6 +43,8 @@ class FModel():
         self.Data_L = list()
         self.Data_RL = list()
         self.Data_pP = list()
+
+        self.Data_Time = list()
 
         # Set initial values
         self.InitializeSimStepZero()
@@ -77,6 +80,8 @@ class FModel():
 
             self.AppendData(L, self.Data_RL[-1] + dRL, self.Data_pP[-1] + dpP)
 
+            self.Data_Time.append(i/TimeResolution)
+
             i += 1
 
     def PlotData(self):
@@ -101,11 +106,17 @@ class FModel():
 
         plt.show()
 
-def main():
+def main(args):
     Model = FModel()
     Model.Run()
-    Model.PlotData()
+    if args.print_data:
+        UnitTestHelper.PrintData(Model)
+    else:
+        Model.PlotData()
 
 if __name__ == '__main__':
-
-    main()
+    parser = ArgumentParser()
+    parser.add_argument('--print-data', dest='print_data', action='store_true', default=False,
+                        help="Print simulation data to screen")
+    args = parser.parse_args()
+    main(args)

@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
+import UnitTestHelper
 
 """
 Figure 6.14: Behavior of the chemotaxis signal transduction pathway. Starting at a low level of chemoattractant
@@ -123,6 +124,8 @@ class FModel():
         self.Data_B = list()
         self.Data_BP = list()
 
+        self.Data_Time = list()
+
         # Set initial values
         self.InitializeSimStepZero()
 
@@ -204,6 +207,8 @@ class FModel():
 
             L = self.L
             self.Simulate(L)
+
+            self.Data_Time.append(i/TimeResolution)
 
             # DK - debugging purposes
             Am = self.Data_Am[-1]
@@ -350,10 +355,17 @@ class FModel():
 
         plt.show()
 
-def main():
+def main(args):
     Model = FModel()
     Model.Run()
-    Model.PlotData()
+    if args.print_data:
+        UnitTestHelper.PrintData(Model)
+    else:
+        Model.PlotData()
 
 if __name__ == '__main__':
-    main()
+    parser = ArgumentParser()
+    parser.add_argument('--print-data', dest='print_data', action='store_true', default=False,
+                        help="Print simulation data to screen")
+    args = parser.parse_args()
+    main(args)
