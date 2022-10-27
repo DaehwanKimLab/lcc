@@ -24,7 +24,7 @@ protein CheB
 }
 
 pathway BacterialChemotaxis(Am{in} + L)
-func
+mathfunc
 {
     float ssAm = 0.983; // use a steady state function like steadystate(Am)?
     float cDrop = 100; // constant for dropping signal
@@ -77,7 +77,9 @@ if (__name__ == "__main__") // python style
             ecoli E(400, 500, 0)
             {
                 pathway Chemotaxis = BacterialChemotaxis;
-                pathway Motility = FlagellarRotation.FlagellarRotation;
+                float thAm = 0.982; // threshold set by the user. a fraction of the steadystate function may be another option
+                bool bRun(Am < thAm);
+                pathway Motility = FlagellarRotation.FlagellarRotation(bRun);
             }
             E(500, 600, 0) = 1;
         }
