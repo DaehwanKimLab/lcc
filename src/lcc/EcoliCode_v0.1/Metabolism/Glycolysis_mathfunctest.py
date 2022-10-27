@@ -1,126 +1,159 @@
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
-
+import math
 
 class FNetwork():
-    def __init__(self,
-                 G6P=20,
-                 ADP=5,
-                 NAD=10,
-                 Pi=15,
-                 pyruvate=0,
-                 NADH=1,
-                 ATP=10,
-                 cg=10):
-
-        # Initial Concentrations
-        self.G6P = G6P
-        self.ADP = ADP
-        self.NAD = NAD
-        self.Pi = Pi
-        self.pyruvate = pyruvate
-        self.NADH = NADH
-        self.ATP = ATP
+    def __init__(self):
+        # Molecule Concentration
+        self.MolConc = dict()   # current concentration
+        self.Dataset = dict()   # storing concentration
 
         # Constants
-        self.cg = cg
+        self.Constants = dict()
 
-        # Dataset
-        self.Data_G6P = list()
-        self.Data_ADP = list()
-        self.Data_NAD = list()
-        self.Data_Pi = list()
-        self.Data_pyruvate = list()
-        self.Data_NADH = list()
-        self.Data_ATP = list()
+        # Simulation Parameters
+        self.TotalSimulationTime = 0
+        self.SimulationTimeUnit = 0
+        self.SteadyStateBrake = False
+        self.SteadyStateCheckMolecule = None
+        self.SteadyStateThresholdFactor = 0
 
-        # Set initial values
-        self.InitializeSimStepZero()
+    def SetSimulationParameters(self, TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake, SteadyStateThresholdFactor):
+        self.TotalSimulationTime = TotalSimulationTime
+        self.SimulationTimeUnit = SimulationTimeUnit
+        self.SteadyStateBrake = SteadyStateBrake
+        self.SteadyStateThresholdFactor = SteadyStateThresholdFactor
 
-    def InitializeSimStepZero(self):
-        Data = self.G6P, \
-               self.ADP, \
-               self.NAD, \
-               self.Pi, \
-               self.pyruvate, \
-               self.NADH, \
-               self.ATP
-        self.AppendData(Data)
+    def PrintSimulationParameters(self):
+        print("Total Simulation Time :", self.TotalSimulationTime, "s", " | Simulation Time Unit :", self.SimulationTimeUnit, "s")
 
-    def AppendData(self, Data):
-        self.Data_G6P.append(Data[0])
-        self.Data_ADP.append(Data[1])
-        self.Data_NAD.append(Data[2])
-        self.Data_Pi.append(Data[3])
-        self.Data_pyruvate.append(Data[4])
-        self.Data_NADH.append(Data[5])
-        self.Data_ATP.append(Data[6])
+    def PrintSimulationSubject(self, Subject):
+        print("Simulating " + Subject + "...")
 
-    def Simulation(self, t):
-        G6P = self.Data_G6P[-1]
-        ADP = self.Data_ADP[-1]
-        NAD = self.Data_NAD[-1]
-        Pi = self.Data_Pi[-1]
-        pyruvate = self.Data_pyruvate[-1]
-        NADH = self.Data_NADH[-1]
-        ATP = self.Data_ATP[-1]
+    def InitializeDataset(self):
+        for MolName, Conc in self.MolConc.items():
+            self.Dataset[MolName] = [Conc]
 
-        dATP = ADP / ATP * self.cg * t
-        dADP = - dATP
-        dPi = -dATP
-        dNADH = dATP
-        dNAD = -dNADH
-        dG6P = - dATP / 2
-        dpyruvate = - dG6P * 2
+    def SetConstants(self, List_ConstantNames, List_ConstantValues):
+        for ConstantName, ConstantValue in zip(List_ConstantNames, List_ConstantValues):
+            self.Constants[ConstantName] = ConstantValue
+            
+    def AppendData(self):
+        for MolName, Conc in self.MolConc.items():
+            self.Dataset[MolName].append(Conc)
 
-        return G6P + dG6P, \
-               ADP + dADP, \
-               NAD + dNAD, \
-               Pi + dPi, \
-               pyruvate + dpyruvate, \
-               NADH + dNADH, \
-               ATP + dATP
+    def UpdateMolConc(self, NewMolConcentrations):
+        for MolName, Conc in self.MolConc.items():
+            self.MolConc[MolName] += NewMolConcentrations[MolName]
 
-    def Run(self, SimSteps, TimeResolution):
-        i = 0
-        Flat = 0.000001  # Steady state threshold
+    def PrintMolConc(self):
+        for MolName, Conc in self.MolConc.items():
+            print("[" + MolName + "] " + "{:.5f}".format(Conc), end=", \t")
 
-        while i < SimSteps:
-            NewData = self.Simulation(1 / TimeResolution)
-            self.AppendData(NewData)
-            if (abs(self.Data_G6P[-1] - self.Data_G6P[-2]) < Flat):
-                break
-            i += 1
+    def PrintSimTime(self, SimStep):
+        print("\n", SimStep, " | ", "{:.2f}".format(SimStep * self.SimulationTimeUnit), end=" s | ")
 
-    def PlotData(self):
-        G6P = self.Data_G6P
-        ADP = self.Data_ADP
-        NAD = self.Data_NAD
-        Pi = self.Data_Pi
-        pyruvate = self.Data_pyruvate
-        NADH = self.Data_NADH
-        ATP = self.Data_ATP
+    # Glycolysis
+    def Glycolysis(self):
+        self.PrintSimulationSubject("Glycolysis")
+        self.SteadyStateCheckMolecule = "G6P"
+        self.Initialize_Glycolysis()
+        self.Run_Glycolysis()
+        return self.Dataset
 
-        plt.plot(G6P, 'red', label="[G6P]")
-        plt.plot(ADP, 'green', label="[ADP]")
-        plt.plot(NAD, 'brown', label="[NAD]")
-        plt.plot(Pi, 'yellow', label="[Pi]")
-        plt.plot(pyruvate, 'magenta', label="[pyruvate]")
-        plt.plot(NADH, 'orange', label="[NADH]")
-        plt.plot(ATP, 'blue', label="[ATP]")
-        plt.title('Glycolysis')
-        plt.xlabel('Time (a.u.)')
-        plt.ylabel('Concentration (a.u.)')
-        plt.legend(loc='center right')
-        plt.grid()
+    def Initialize_Glycolysis(self):
+        # Initial Molecule Concentrations
+        self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
+        self.MolConc["ADP"]      = 5.6e-4
+        self.MolConc["NAD"]      = 2.6e-3
+        self.MolConc["Pi"]       = 6e-3   # undocumented
+        self.MolConc["pyruvate"] = 3.9e-4
+        self.MolConc["NADH"]     = 8.3e-3
+        self.MolConc["ATP"]      = 9.6e-3
 
-        plt.show()
+        # Constants
+        self.Constants["cg"]     = 10
+        self.InitializeDataset()
+
+    def Simulation_Glycolysis(self):
+        d = dict()
+
+        d["ATP"] = (self.Dataset["ADP"][-1] / self.Dataset["ATP"][-1] * self.Constants["cg"]) * self.SimulationTimeUnit
+        d["ADP"] = - d["ATP"]
+        d["Pi"] = -d["ATP"]
+        d["NADH"] = d["ATP"]
+        d["NAD"] = - d["NADH"]
+        d["G6P"] = - d["ATP"] / 2
+        d["pyruvate"] = - d["G6P"] * 2
+
+        self.UpdateMolConc(d)
+
+    def Run_Glycolysis(self):
+        SimStep = 0
+        while SimStep * self.SimulationTimeUnit < self.TotalSimulationTime:
+            # Debug
+            self.PrintSimTime(SimStep)
+            self.PrintMolConc()
+
+            self.Simulation_Glycolysis()
+            self.AppendData()
+            if self.SteadyStateBrake:
+                if (abs(self.Dataset[self.SteadyStateCheckMolecule][-1] - self.Dataset[self.SteadyStateCheckMolecule][-2]) / self.Dataset[self.SteadyStateCheckMolecule][-1] < self.SteadyStateThresholdFactor):
+                    break
+            SimStep += 1
+        
+
+def PlotData(Datasets, SimulationTimeUnit):
+    fig = plt.figure()
+    fig.subplots_adjust(wspace=0.2, hspace=0.3)
+
+    # Universal X axis (time)
+    Time = None
+    for Dataset in Datasets.values():
+        for Data in Dataset.values():
+            Time = [i * SimulationTimeUnit for i in range(len(Data))]
+            break
+
+    # Plot data
+    Rows = 1
+    if len(Datasets) > 1:
+        Rows = 2
+    for n, (Process, Dataset) in enumerate(Datasets.items()):
+        ax = fig.add_subplot(math.ceil(len(Datasets) / Rows), Rows, n + 1)
+
+        # Y axis (molecular concentrations)
+        for MolName, Conc in Dataset.items():
+            ax.plot(Time, Conc, label="[" + MolName + "]")
+
+        ax.set_title(Process)
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Concentration (mol L-1)')
+        ax.legend(loc='center right')
+        ax.grid()
+
+    plt.show()
 
 
 def main():
+    Datasets = dict()
+
+    # Initialization
     Network = FNetwork()
-    Network.Run(1000, 100)
-    Network.PlotData()
+
+    # Setting Simulation Parameters
+    TotalSimulationTime = 1e-2   # s
+    SimulationTimeUnit = 1e-6   # s
+    SteadyStateBrake = True
+    SteadyStateThresholdFactor = 0.0000001  # Steady state threshold
+    Network.SetSimulationParameters(TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake, SteadyStateThresholdFactor)
+    Network.PrintSimulationParameters()
+
+    # Glycolysis
+    Datasets["Glycolysis"] = Network.Glycolysis()
+    Datasets["Glycolysis_ATPConsumption_Linear"] = Network.Glycolysis()
+
+    # Plotting
+    PlotData(Datasets, SimulationTimeUnit)
 
 
 if __name__ == '__main__':
