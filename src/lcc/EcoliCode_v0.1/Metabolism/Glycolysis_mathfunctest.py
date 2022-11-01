@@ -3,6 +3,9 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import math
 
+PerturbationTag = "#"
+PerturbationName = "ATP_Consumption"
+
 class FNetwork():
     def __init__(self):
         # Molecule Concentration
@@ -53,8 +56,25 @@ class FNetwork():
             self.Dataset[PerturbationName].append(Conc)
 
     def UpdateMolConc(self, NewMolConcentrations):
+        # If concentrations getting below zero
+        if self.CheckBelowZero(NewMolConcentrations):
+            pass
+
+        # If concentrations all above zero
+        else:
+            for MolName, Conc in NewMolConcentrations.items():
+                self.MolConc[MolName] += NewMolConcentrations[MolName]
+
+    def CheckBelowZero(self, NewMolConcentrations):
+        bBelowZero = False
         for MolName, Conc in NewMolConcentrations.items():
-            self.MolConc[MolName] += NewMolConcentrations[MolName]
+            Test = self.MolConc[MolName] + NewMolConcentrations[MolName]
+            if Test < 0:
+                # print("Below zero: %s %s\t" % (MolName, str(Test)), end= " |\t")
+                # self.PrintSimTimeAndMolConc()
+                bBelowZero = True
+                break
+        return bBelowZero
 
     def PrintMolConc(self):
         for MolName, Conc in self.MolConc.items():
@@ -67,24 +87,29 @@ class FNetwork():
         self.PrintSimTime()
         self.PrintMolConc()
 
+    def TagPerturbationLabel(self):
+        for PerturbationName, Conc in self.Perturbation.items():
+            if self.Dataset[PerturbationName]:
+                self.Dataset[PerturbationTag + PerturbationName] = self.Dataset[PerturbationName]
+                del self.Dataset[PerturbationName]
+
     def Glycolysis(self, ATPProductionType, ATPConsumptionType):
         self.PrintSimulationSubject("Glycolysis" + "_" + ATPProductionType + "_" + ATPConsumptionType)
         self.SteadyStateCheckMolecule = "G6P"
         self.Initialize_Glycolysis()
         self.Run_Glycolysis(self.Convert2Int_ATPProductionType(ATPProductionType), self.Convert2Int_ATPConsumptionType(ATPConsumptionType))
+        self.TagPerturbationLabel()
         return self.Dataset.copy()
 
     def Convert2Int_ATPProductionType(self, ATPProductionType):
         if ATPProductionType == "No_ATPProduction":
             return 0
-        elif ATPProductionType == "dATP=[ADP]*cg":
+        elif ATPProductionType == "ATP'=cg":
             return 1
-        elif ATPProductionType == "dATP=[ADP]/[ATP]*cg":
+        elif ATPProductionType == "ATP'=[ADP]/[ATP]*cg":
             return 2
         elif ATPProductionType == "dATP=[G6P]*cg":
             return 3
-        elif ATPProductionType == "dATP=[G6P]/[ATP]*cg":
-            return 4
         else:
             print("[ERROR] Unsupported ATP Production Type for Glycolysis Model")
             sys.exit(1)
@@ -111,7 +136,7 @@ class FNetwork():
         self.MolConc["ATP"]      = 9.6e-3
 
         # Perturbations
-        self.Perturbation["Process"] = 0
+        self.Perturbation[PerturbationName] = 0
 
         # Constants
         self.Constants["cg"]     = 10
@@ -120,19 +145,17 @@ class FNetwork():
         self.InitializeSimStep()
 
 
-    def Simulation_Glycolysis(self, ATPProductionType=2):
+    def Simulation_Glycolysis(self, ATPProductionType):
         d = dict()
 
         # Production Rate Type
         Input = 0
         if ATPProductionType == 1:
-            Input = self.Dataset["ADP"][-1] * 10
+            Input = 0.01
         elif ATPProductionType == 2:
             Input = self.Dataset["ADP"][-1] / self.Dataset["ATP"][-1]
         elif ATPProductionType == 3:
             Input = self.Dataset["G6P"][-1] * 2
-        elif ATPProductionType == 4:
-            Input = self.Dataset["G6P"][-1] / self.Dataset["ATP"][-1] * 0.001
 
         d["ATP"] = (Input * self.Constants["cg"]) * self.SimulationTimeUnit
         d["ADP"] = - d["ATP"]
@@ -149,13 +172,16 @@ class FNetwork():
 
         # Perturbation
         if ATPConsumptionType == 1:   # linear
-            self.Perturbation["Process"] = (self.TotalSimulationTime * 0.2) * self.SimulationTimeUnit
+            self.Perturbation[PerturbationName] = (self.TotalSimulationTime * 1.4) * self.SimulationTimeUnit
         elif ATPConsumptionType == 2:   # non-linear
-            # self.Perturbation["Process"] = (self.TotalSimulationTime * 0.1) * self.SimulationTimeUnit * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
-            self.Perturbation["Process"] = (self.TotalSimulationTime * 0.0125) * self.SimulationTimeUnit * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
+            # self.Perturbation[PerturbationName] = (self.TotalSimulationTime * 0.1) * self.SimulationTimeUnit * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
+            self.Perturbation[PerturbationName] = (self.TotalSimulationTime * 0.1) * self.SimulationTimeUnit * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
 
-        d["ATP"] = - self.Perturbation["Process"]
-        d["ADP"] = self.Perturbation["Process"]
+        d["ATP"] = - self.Perturbation[PerturbationName]
+        d["ADP"] = self.Perturbation[PerturbationName]
+        d["Pi"] = self.Perturbation[PerturbationName]
+        d["NADH"] = - self.Perturbation[PerturbationName]
+        d["NAD"] = self.Perturbation[PerturbationName]
 
         self.UpdateMolConc(d)
 
@@ -194,10 +220,10 @@ class Plotter:
             Dataset_Filtered = dict()
             for Key_Data, Data in Dataset.items():
                 if self.Filter_Inclusion:
-                    if Key_Data in self.Filter_Inclusion:
+                    if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
                         Dataset_Filtered[Key_Data] = Data
                 if self.Filter_Exclusion:
-                    if Key_Data not in self.Filter_Exclusion:
+                    if (Key_Data not in self.Filter_Exclusion) or (Key_Data[1:] + Key_Data not in self.Filter_Exclusion):
                         Dataset_Filtered[Key_Data] = Data
             Datasets_Filtered[Key_Dataset] = Dataset_Filtered
 
@@ -210,31 +236,54 @@ class Plotter:
             Datasets = self.FilterDatasets(Datasets)
 
         fig = plt.figure()
-        fig.subplots_adjust(wspace=0.2, hspace=0.5)
+        fig.subplots_adjust(wspace=0.5, hspace=0.5)
 
-        # Universal X axis (time)
-        Time = None
+
+        Time = None   # Universal X axis (time)
+        Perturbation = False
         for Dataset in Datasets.values():
             for Data in Dataset.values():
                 Time = [i * SimulationTimeUnit for i in range(len(Data))]
                 break
+            for Key in Dataset.keys():
+                if Key[0] == PerturbationTag:
+                    Perturbation = True
+                    break
 
         # Plot data
-        Rows = 1
+        NPlotsInRows = len(Datasets)   # Default
+        MaxNPlotsInRows = 3
         if len(Datasets) > 1:
-            Rows = 3
+            for Remainder in range(MaxNPlotsInRows):
+                if len(Datasets) % (Remainder + 1) == 0:
+                    NPlotsInRows = Remainder + 1
+
         for n, (Process, Dataset) in enumerate(Datasets.items()):
-            ax = fig.add_subplot(math.ceil(len(Datasets) / Rows), Rows, n + 1)
+            ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
+            ax2 = None
+            if Perturbation:
+                ax2 = ax1.twinx()
 
             # Y axis (molecular concentrations)
             for MolName, Conc in Dataset.items():
-                ax.plot(Time, Conc, label="[" + MolName + "]")
+                if MolName[0] != PerturbationTag:
+                    ax1.plot(Time, Conc, label="[" + MolName + "]")
 
-            ax.set_title(Process)
-            ax.set_xlabel('Time (s)')
-            ax.set_ylabel('Concentration (mol L-1)')
-            ax.legend(loc='upper center')
-            ax.grid()
+                else:
+                    ax2.plot(Time, Conc, color='grey', label="[" + MolName[1:] + "]")
+                    # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
+
+            ax1.set_title(Process)
+            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('Concentration (mol L-1)')
+            ax1.set_ylim([0, 0.015])
+            ax1.legend(loc='upper left')
+            if Perturbation:
+                ax2.set_ylabel('Concentration (mol L-1)')
+                ax2.set_ylim([0, 3e-7])
+                ax2.legend(loc='upper right')
+
+            # ax1.grid()
 
         plt.show()
 
@@ -255,9 +304,13 @@ def main():
 
     # Glycolysis
     ModelName = "Glycolysis"
-    ATPProductionTypes = ["dATP=[ADP]*cg", "dATP=[ADP]/[ATP]*cg"]
+    ATPProductionTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
     # ATPProductionTypes = ["dATP=[G6P]*cg", "dATP=[G6P]/[ATP]*cg"]
     ATPConsumptionTypes = ["No_ATPConsumption", "Linear_ATPConsumption", "Burst_ATPConsumption"]
+    # ATPConsumptionTypes = ["Linear_ATPConsumption", "Burst_ATPConsumption"]
+
+    # Debugging
+
     for ATPProductionType in ATPProductionTypes:
         for ATPConsumptionType in ATPConsumptionTypes:
             Title = ModelName + "\n" + ATPProductionType + "\n" + ATPConsumptionType
@@ -267,11 +320,14 @@ def main():
     Plot = Plotter()
 
     # InclusionList = ["G6P", "ATP"]
-    InclusionList = ["Process"]
-    # Plot.SetFilter_Inclusion(InclusionList)
+    # InclusionList = [PerturbationName]
+    InclusionList = ["G6P", "ATP", "pyruvate", PerturbationName]
+    # InclusionList = ["pyruvate", "ATP", PerturbationName]
+    # InclusionList = ["G6P", "ATP", PerturbationName]
+    Plot.SetFilter_Inclusion(InclusionList)
 
     ExclusionList = ["Pi, NADH, NAD"]
-    Plot.SetFilter_Exclusion(ExclusionList)
+    # Plot.SetFilter_Exclusion(ExclusionList)
 
     Plot.PlotData(Datasets, SimulationTimeUnit)
 
