@@ -270,7 +270,7 @@ class Plotter:
                     ax1.plot(Time, Conc, label="[" + MolName + "]")
 
                 else:
-                    ax2.plot(Time, Conc, color='grey', label="[" + MolName[1:] + "]")
+                    ax2.plot(Time, Conc, color='brown', label="[" + MolName[1:] + "]")
                     # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
 
             ax1.set_title(Process)
@@ -321,9 +321,10 @@ def main():
 
     # InclusionList = ["G6P", "ATP"]
     # InclusionList = [PerturbationName]
-    InclusionList = ["G6P", "ATP", "pyruvate", PerturbationName]
+    # InclusionList = ["G6P", "ATP", "pyruvate", PerturbationName]
     # InclusionList = ["pyruvate", "ATP", PerturbationName]
     # InclusionList = ["G6P", "ATP", PerturbationName]
+    InclusionList = ["ATP", PerturbationName]
     Plot.SetFilter_Inclusion(InclusionList)
 
     ExclusionList = ["Pi, NADH, NAD"]
