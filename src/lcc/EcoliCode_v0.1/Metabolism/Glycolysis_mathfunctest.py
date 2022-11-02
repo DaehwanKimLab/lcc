@@ -5,6 +5,7 @@ import math
 
 PerturbationTag = "#"
 PerturbationName = "ATP_Consumption"
+G6P_Constant = 8.8e-3
 
 class FNetwork():
     def __init__(self):
@@ -95,7 +96,7 @@ class FNetwork():
 
     def Glycolysis(self, ATPProductionType, ATPConsumptionType):
         self.PrintSimulationSubject("Glycolysis" + "_" + ATPProductionType + "_" + ATPConsumptionType)
-        self.SteadyStateCheckMolecule = "G6P"
+        self.SteadyStateCheckMolecule = "pyruvate"
         self.Initialize_Glycolysis()
         self.Run_Glycolysis(self.Convert2Int_ATPProductionType(ATPProductionType), self.Convert2Int_ATPConsumptionType(ATPConsumptionType))
         self.TagPerturbationLabel()
@@ -127,7 +128,7 @@ class FNetwork():
 
     def Initialize_Glycolysis(self):
         # Initial Molecule Concentrations
-        self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
+        # self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
         self.MolConc["ADP"]      = 5.6e-4
         self.MolConc["NAD"]      = 2.6e-3
         self.MolConc["Pi"]       = 6e-3   # undocumented
@@ -162,8 +163,9 @@ class FNetwork():
         d["Pi"] = -d["ATP"]
         d["NADH"] = d["ATP"]
         d["NAD"] = - d["NADH"]
-        d["G6P"] = - d["ATP"] / 2
-        d["pyruvate"] = - d["G6P"] * 2
+        # d["G6P"] = - d["ATP"] / 2
+        # d["pyruvate"] = - d["G6P"] * 2
+        d["pyruvate"] = d["ATP"]   # use when G6P is constant
 
         self.UpdateMolConc(d)
 
@@ -325,6 +327,8 @@ def main():
     # InclusionList = ["pyruvate", "ATP", PerturbationName]
     # InclusionList = ["G6P", "ATP", PerturbationName]
     InclusionList = ["ATP", PerturbationName]
+    InclusionList = ["ATP", "ADP", PerturbationName]
+    InclusionList = ["ATP", "ADP", "pyruvate", PerturbationName]
     Plot.SetFilter_Inclusion(InclusionList)
 
     ExclusionList = ["Pi, NADH, NAD"]

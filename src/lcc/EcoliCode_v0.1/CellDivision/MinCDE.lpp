@@ -29,7 +29,7 @@ protein MinE; // Binds to MinD and stimulates ATPase activity of MinD, leading t
     MinE_Dimer = self~self;
     reaction MembraneRecruitment(MinE_Dimer{in} + MinD_Dimer~MinC_Dimer --> MinD_Dimer~MinE_Dimer + MinC_Dimer{in}, k = 1e9); // stronger than MinD.MembraneRecruitment_2
     reaction ATPaseActivity(MinD_Dimer~MinE_Dimer + 2 H2O{in} --> MinE_Dimer~(MinD~GDP)~(MinD~GDP) + 2 Pi{in}, k=1e9);
-    reaction MembraneDetatchment(MinE_Dimer~(MinD~GDP)~(MinD~GDP) --> MinE_Dimer{in} + (MinD~GDP)~(MinD~GDP){in}, k=1e9);
+    reaction MembraneDetachment(MinE_Dimer~(MinD~GDP)~(MinD~GDP) --> MinE_Dimer{in} + (MinD~GDP)~(MinD~GDP){in}, k=1e9);
     // reaction Reassociation(MinE_Dimer~(MinD~GDP)~(MinD~GDP) + MinD_Dimer --> MinE_Dimer~MinD_Dimer + 2 (MinD~GDP){in}, k=1e9);
 }
 

@@ -20,9 +20,7 @@ complex RNAPHolo
 polymerase RNAP
 {
     // transcription initiation
-    // self = RNACore~ssDNA
-    reaction SigmaFactorRelease(RNAPHolo --> self~dsDNA + sigmafactor + promoter, Kd=1e-7);
-    
+    reaction SigmaFactorRelease(RNAPHolo~promoter --> self~dsDNA + sigmafactor + promoter, Kd=1e-7);
     
     // transcription elongation
     reaction Elongation
