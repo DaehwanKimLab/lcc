@@ -133,11 +133,11 @@ class FSimulation():
     def SetATPConsumptionType(self, Type):
         self.ATPConsumptionType = self.Convert2Int_ATPConsumptionType(Type)
 
-    def Sim(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCA=0, OxidativePhosphorylation=0):
+    def Sim(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCA=0, OxidativePhosphorylation=0, ATPConsumption=0):
         self.PrintSimulationSubject()
         self.SteadyStateCheckMolecule = "pyruvate"
         self.Initialize(Chemotaxis, Glycolysis, PyruvateOxidation, TCA, OxidativePhosphorylation)
-        self.Run(Chemotaxis, Glycolysis, PyruvateOxidation, TCA, OxidativePhosphorylation)
+        self.Run(Chemotaxis, Glycolysis, PyruvateOxidation, TCA, OxidativePhosphorylation, ATPConsumption)
         self.TagPerturbationLabel()
         return self.Dataset.copy()
 
@@ -207,11 +207,11 @@ class FSimulation():
         if self.GlucoseAvailabilityType == 0:
             return 0
         elif self.GlucoseAvailabilityType == 1:
-            return 0.02
+            return 0.05
         elif self.GlucoseAvailabilityType == 2:
             return 0.000002 * self.SimStep
         elif self.GlucoseAvailabilityType == 3:
-            return 0.05 * math.sin(self.SimStep/2000) + 0.5e-7 / self.SimulationTimeUnit
+            return 0.05 * math.sin(self.SimStep/4000) + 0.5e-7 / self.SimulationTimeUnit
 
     def GetTransportFactor_Chemotaxis(self):
         if self.GlucoseTransportType == 0:
@@ -219,17 +219,19 @@ class FSimulation():
         elif self.GlucoseTransportType == 1:
             return 0.1
         elif self.GlucoseTransportType == 2:
-            return 1 / self.Dataset["G6P"][-1] * self.Constants["cgt"]
+            return 0.01 / (self.Dataset["G6P"][-1] ** 2) * self.Constants["cgt"]
 
     def Simulation_Chemotaxis(self):
         d = dict()
 
         # Production Rate Type
         InputFactor = self.GetInputFactor_Chemotaxis()
-        TransportDemand = self.GetTransportFactor_Chemotaxis()
-
         self.Perturbation["glucose_Available"] = InputFactor * self.SimulationTimeUnit
+
+        TransportFactor = self.GetTransportFactor_Chemotaxis()
+        TransportDemand = TransportFactor if TransportFactor <= 1 else 1
         self.Perturbation["glucose_Influx"] = self.Perturbation["glucose_Available"] * TransportDemand
+
         d["G6P"] = self.Perturbation["glucose_Influx"]
         d["ATP"] = - self.Constants["cc"] * self.SimulationTimeUnit
         d["ADP"] = - d["ATP"]   # use when G6P is constant
@@ -272,7 +274,7 @@ class FSimulation():
         d["Pi"] = - d["ATP"]
         d["NADH"] = d["ATP"]
         d["NAD"] = - d["NADH"]
-        d["G6P"] = - d["ATP"] / 2
+        d["G6P"] = - d["ATP"] / 2 if d["ATP"] / 2 < self.Dataset["G6P"][-1] else self.Dataset["G6P"][-1]
         # d["pyruvate"] = - d["G6P"] * 2
         d["pyruvate"] = d["ATP"]   # use when G6P is constant
 
@@ -290,13 +292,13 @@ class FSimulation():
     def Simulation_ATPConsumption(self):
         d = dict()
 
-        self.Perturbation[PerturbationName] = self.GetATPConsumptionRate() * self.SimulationTimeUnit
+        self.Perturbation["ATP_Consumption"] = self.GetATPConsumptionRate() * self.SimulationTimeUnit
 
-        d["ATP"] = - self.Perturbation[PerturbationName]
-        d["ADP"] = self.Perturbation[PerturbationName]
-        d["Pi"] = self.Perturbation[PerturbationName]
-        d["NADH"] = - self.Perturbation[PerturbationName]
-        d["NAD"] = self.Perturbation[PerturbationName]
+        d["ATP"] = - self.Perturbation["ATP_Consumption"]
+        d["ADP"] = self.Perturbation["ATP_Consumption"]
+        d["Pi"] = self.Perturbation["ATP_Consumption"]
+        d["NADH"] = - self.Perturbation["ATP_Consumption"]
+        d["NAD"] = self.Perturbation["ATP_Consumption"]
 
         self.AddToDeltaMolConc(d)
 
@@ -428,7 +430,7 @@ class FSimulation():
         self.InitializeSimStep()
 
 
-    def Run(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCA=0, OxidativePhosphorylation=0):
+    def Run(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCA=0, OxidativePhosphorylation=0, ATPConsumption=0):
         self.PrintSimTimeAndMolConc()
 
         while self.SimStep * self.SimulationTimeUnit < self.TotalSimulationTime:
@@ -445,7 +447,7 @@ class FSimulation():
                 self.Simulation_TCA()
             if OxidativePhosphorylation:
                 self.Simulation_OxidativePhosphorylation()
-            if self.ATPConsumptionType:
+            if ATPConsumption:
                 self.Simulation_ATPConsumption()
 
             self.UpdateMolConc()
@@ -503,7 +505,7 @@ class Plotter:
                 break
             for Key in Dataset.keys():
                 if Key[0] == PerturbationTag:
-                    PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)))
+                    PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)))
                     Perturbation += 1
 
 
@@ -529,9 +531,9 @@ class Plotter:
 
                 else:
                     ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
-                    print(PerturbationIndex)
-                    PerturbationIndex += 1
                     # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
+                    # print(PerturbationIndex)
+                    PerturbationIndex += 1
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
@@ -562,7 +564,7 @@ def main():
     Simulation.SetSimulationParameters(TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake, SteadyStateThresholdFactor)
     Simulation.PrintSimulationParameters()
 
-    ModelSwitch = 1
+    ModelSwitch = 11
 
     # Model Switch Options
     # 1:    Chemotaxis Unit Test
@@ -599,41 +601,27 @@ def main():
                 Simulation.SetATPProductionType(ATPProductionType)
                 Simulation.SetATPConsumptionType(ATPConsumptionType)
                 # Datasets[Title] = Simulation.Glycolysis()
-                Datasets[Title] = Simulation.Sim(Glycolysis=1)
+                Datasets[Title] = Simulation.Sim(Glycolysis=1, ATPConsumption=1)
 
 
     if ModelSwitch == 11:
         # Chemotaxis + Glycolysis
         ModelName = "Chemotaxis + Glycolysis"
-        GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Uniform_GlucoseAvailability", "Linear_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Uniform_GlucoseAvailability", "Linear_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Uniform_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
         # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Uniform_GlucoseAvailability", "Linear_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
-        ATPProductionTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
-        ATPProductionTypes = ["ATP'=cg"]
+        GlucoseTransportTypes = ["G6P'=1/[G6P]*cgt"]
         ATPProductionTypes = ["ATP'=[ADP]/[ATP]*cg"]
         for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
-            for ATPProductionType in ATPProductionTypes:
-                Title = ModelName + "\n" + GlucoseAvailabilityType + "\n" + ATPProductionType
-                Simulation.SetTitle(Title)
-                Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
-                Simulation.SetATPProductionType(ATPProductionType)
-                Simulation.SetATPConsumptionType("Burst_ATPConsumption")
-                Datasets[Title] = Simulation.Sim(Chemotaxis=1, Glycolysis=1)
-
-
-    if ModelSwitch == 1:
-        # Pyruvate Oxidation Only
-        Title = "Pyruvate Oxidation"
-
-        # ATPProductionTypes = ["ATP'=ct", "ATP'=[ADP]/[ATP]*ct"]
-        # ATPProductionTypes = ["dATP=[G6P]*cg", "dATP=[G6P]/[ATP]*cg"]
-        # ATPConsumptionTypes = ["No_ATPConsumption", "Linear_ATPConsumption", "Burst_ATPConsumption"]
-        # ATPConsumptionTypes = ["Linear_ATPConsumption", "Burst_ATPConsumption"]
-
-        # Debugging
-        # for ATPProductionType in ATPProductionTypes:
-        #     for ATPConsumptionType in ATPConsumptionTypes:
-        #         Title = ModelName + "\n" + ATPProductionType + "\n" + ATPConsumptionType
-        #         Datasets[Title] = Simulation.Glycolysis(ATPProductionType, ATPConsumptionType)
+            for GlucoseTransportType in GlucoseTransportTypes:
+                for ATPProductionType in ATPProductionTypes:
+                    Title = ModelName + "\n" + GlucoseAvailabilityType + "\n" + GlucoseTransportType + "\n" + ATPProductionType
+                    Simulation.SetTitle(Title)
+                    Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
+                    Simulation.SetGlucoseTransportType(GlucoseTransportType)
+                    Simulation.SetATPProductionType(ATPProductionType)
+                    Simulation.SetATPConsumptionType("Burst_ATPConsumption")
+                    Datasets[Title] = Simulation.Sim(Chemotaxis=1, Glycolysis=1, ATPConsumption=1)
 
 
     # Plotting
@@ -643,8 +631,8 @@ def main():
     # InclusionList = ["ATP", "ADP", "pyruvate", PerturbationName]
     # Plot.SetFilter_Inclusion(InclusionList)
 
-    ExclusionList = ["Pi, NADH, NAD"]
-    # Plot.SetFilter_Exclusion(ExclusionList)
+    ExclusionList = ["Pi, NADH, NAD", "pyruvate"]
+    Plot.SetFilter_Exclusion(ExclusionList)
 
     Plot.PlotData(Datasets, SimulationTimeUnit)
 
