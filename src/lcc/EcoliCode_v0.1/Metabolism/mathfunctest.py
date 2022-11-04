@@ -498,7 +498,7 @@ class Plotter:
 
         return Datasets_Filtered
 
-    def PlotData(self, Datasets, SimulationTimeUnit):
+    def PlotData(self, Datasets, SimulationTimeUnit, bSideLabel=True):
 
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
@@ -539,10 +539,15 @@ class Plotter:
             PerturbationIndex = 0
             for MolName, Conc in Dataset.items():
                 if MolName[0] != PerturbationTag:
-                    ax1.plot(Time, Conc, label="[" + MolName + "]")
+                    line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
+                    if bSideLabel:
+                        ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="center", color=line.get_color())
+                        # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
 
                 else:
-                    ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
+                    line, = ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
+                    if bSideLabel:
+                        ax2.text(Time[-1] * 0.5, Conc[int(len(Time) * 0.5)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
                     # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
                     # print(PerturbationIndex)
                     PerturbationIndex += 1
@@ -551,11 +556,13 @@ class Plotter:
             ax1.set_xlabel('Time (s)')
             ax1.set_ylabel('Concentration (mol L-1)')
             ax1.set_ylim([0, 0.015])
-            ax1.legend(loc='upper left')
+            if not bSideLabel:
+                ax1.legend(loc='upper left')
             if Perturbation:
                 ax2.set_ylabel('Concentration (mol L-1)')
                 ax2.set_ylim([0, 3e-7])
-                ax2.legend(loc='upper right')
+                if not bSideLabel:
+                    ax2.legend(loc='upper right')
 
             # ax1.grid()
 
@@ -644,7 +651,7 @@ def main():
     # Plot.SetFilter_Inclusion(InclusionList)
 
     ExclusionList = ["Pi", "NADH", "NAD", "pyruvate"]
-    Plot.SetFilter_Exclusion(ExclusionList)
+    # Plot.SetFilter_Exclusion(ExclusionList)
 
     Plot.PlotData(Datasets, SimulationTimeUnit)
 
