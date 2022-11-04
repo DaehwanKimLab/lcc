@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import math
 
 PerturbationTag = "#"
-PerturbationName = "ATP_Consumption"
 G6P_Constant = 8.8e-3
 
 class FSimulation():
@@ -229,7 +228,7 @@ class FSimulation():
         self.Perturbation["glucose_Available"] = InputFactor * self.SimulationTimeUnit
 
         TransportFactor = self.GetTransportFactor_Chemotaxis()
-        TransportDemand = TransportFactor if TransportFactor <= 1 else 1
+        TransportDemand = TransportFactor if TransportFactor <= 1 else 1   # TODO: make the limit approaching smooth
         self.Perturbation["glucose_Influx"] = self.Perturbation["glucose_Available"] * TransportDemand
 
         d["G6P"] = self.Perturbation["glucose_Influx"]
@@ -269,12 +268,14 @@ class FSimulation():
         # Production Rate Type
         InputFactor = self.GetInputFactor_Glycolysis()
 
-        d["ATP"] = (InputFactor * self.Constants["cg"]) * self.SimulationTimeUnit
+        dATP = (InputFactor * self.Constants["cg"]) * self.SimulationTimeUnit
+
+        d["ATP"] = dATP if dATP / 2 < self.Dataset["G6P"][-1] else self.Dataset["G6P"][-1] * 2   # TODO: make the limit approaching smooth
         d["ADP"] = - d["ATP"]
         d["Pi"] = - d["ATP"]
         d["NADH"] = d["ATP"]
         d["NAD"] = - d["NADH"]
-        d["G6P"] = - d["ATP"] / 2 if d["ATP"] / 2 < self.Dataset["G6P"][-1] else self.Dataset["G6P"][-1]
+        d["G6P"] = - d["ATP"] / 2
         # d["pyruvate"] = - d["G6P"] * 2
         d["pyruvate"] = d["ATP"]   # use when G6P is constant
 
@@ -471,18 +472,29 @@ class Plotter:
     def SetFilter_Exclusion(self, List):
         self.Filter_Exclusion = List
 
+    def CheckToIncludeOrExclude(self, Key_Data):
+        if self.Filter_Inclusion or self.Filter_Exclusion:
+            if self.Filter_Inclusion:
+                if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
+                    return True
+                else:
+                    return False
+            else:
+                if (Key_Data in self.Filter_Exclusion) or (Key_Data[1:] in self.Filter_Exclusion):
+                    return False
+                else:
+                    return True
+        else:
+            return True
+
     def FilterDatasets(self, Datasets):
         Datasets_Filtered = dict()
         for Key_Dataset, Dataset in Datasets.items():
             Dataset_Filtered = dict()
             for Key_Data, Data in Dataset.items():
-                if self.Filter_Inclusion:
-                    if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
-                        Dataset_Filtered[Key_Data] = Data
-                if self.Filter_Exclusion:
-                    if (Key_Data not in self.Filter_Exclusion) or (Key_Data[1:] + Key_Data not in self.Filter_Exclusion):
-                        Dataset_Filtered[Key_Data] = Data
-            Datasets_Filtered[Key_Dataset] = Dataset_Filtered
+                if self.CheckToIncludeOrExclude(Key_Data):
+                    Dataset_Filtered[Key_Data] = Data
+                    Datasets_Filtered[Key_Dataset] = Dataset_Filtered
 
         return Datasets_Filtered
 
@@ -627,11 +639,11 @@ def main():
     # Plotting
     Plot = Plotter()
 
-    InclusionList = ["ATP", PerturbationName]
+    InclusionList = ["ATP", "ATP_Consumption"]
     # InclusionList = ["ATP", "ADP", "pyruvate", PerturbationName]
     # Plot.SetFilter_Inclusion(InclusionList)
 
-    ExclusionList = ["Pi, NADH, NAD", "pyruvate"]
+    ExclusionList = ["Pi", "NADH", "NAD", "pyruvate"]
     Plot.SetFilter_Exclusion(ExclusionList)
 
     Plot.PlotData(Datasets, SimulationTimeUnit)
