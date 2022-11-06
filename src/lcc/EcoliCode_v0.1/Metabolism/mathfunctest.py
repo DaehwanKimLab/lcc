@@ -73,9 +73,9 @@ class FSimulation():
     def InitializeSupportedModelTypes(self):
         # Glucose Availability
         self.SupportedModelTypes2Int["No_GlucoseAvailability"] = 0
-        self.SupportedModelTypes2Int["Uniform_GlucoseAvailability"] = 1
-        self.SupportedModelTypes2Int["Linear_GlucoseAvailability"] = 2
-        self.SupportedModelTypes2Int["NonLinear_GlucoseAvailability"] = 3
+        self.SupportedModelTypes2Int["Constant_GlucoseAvailability"] = 1
+        self.SupportedModelTypes2Int["Increasing_GlucoseAvailability"] = 2
+        self.SupportedModelTypes2Int["Fluctuating_GlucoseAvailability"] = 3
 
         # Glucose Transport
         self.SupportedModelTypes2Int["G6P'=0"] = 0
@@ -203,7 +203,7 @@ class FSimulation():
         self.MolConc["ADP"] = 5.6e-4
 
         # Perturbations
-        self.Perturbation["glucose_Available"] = 0
+        self.Perturbation["glucose"] = 0
         self.Perturbation["glucose_Influx"] = 0
         self.Perturbation["G6P_Sink"] = 0
 
@@ -214,9 +214,9 @@ class FSimulation():
     def GetGlucoseAvailability_Chemotaxis(self):
         Model = self.GetModelType(Key_GlucoseAvailability)
         if Model == 1:
-            return 0.05
+            return 0.15
         elif Model == 2:
-            return 0.000002 * self.SimStep
+            return 0.000003 * self.SimStep
         elif Model == 3:
             return 0.1 * math.sin(self.SimStep/4000) + 1e-7 / self.SimulationTimeUnit
         else:
@@ -236,11 +236,11 @@ class FSimulation():
 
         # Production Rate Type
         GlucoseAvailability = self.GetGlucoseAvailability_Chemotaxis()
-        self.Perturbation["glucose_Available"] = GlucoseAvailability * self.SimulationTimeUnit
+        self.Perturbation["glucose"] = GlucoseAvailability * self.SimulationTimeUnit
 
         TransportFactor = self.GetTransportFactor_Chemotaxis()
         TransportDemand = TransportFactor if TransportFactor <= 1 else 1   # TODO: make the limit approaching smooth
-        self.Perturbation["glucose_Influx"] = self.Perturbation["glucose_Available"] * TransportDemand
+        self.Perturbation["glucose_Influx"] = self.Perturbation["glucose"] * TransportDemand
 
         d["G6P"] = self.Perturbation["glucose_Influx"]
         d["ATP"] = - self.Constants["cc"] * self.SimulationTimeUnit
@@ -515,16 +515,16 @@ class FModelRunner():
                 self.Model_Chemotaxis("Burst_G6PSink")
             if Model == 11:
                 self.Model_Glycolysis()
+            # if Model == 21:
+            #     self.Model_PyruvateOxidation()
             if Model == 101:
                 self.Model_Chemotaxis_Glycolysis()
 
     def Model_Chemotaxis(self, G6PSinkModel):
         self.InitializeDatasets()
         ModelName = "[Chemotaxis] glucose{out} --> G6P{in}"
-        InclusionList = []
-        ExclusionList = []
-        # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Uniform_GlucoseAvailability", "Linear_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
-        GlucoseAvailabilityTypes = ["Uniform_GlucoseAvailability", "Linear_GlucoseAvailability"]
+        # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
         # GlucoseTransportTypes = ["G6P'=0", "G6P'=cgt", "G6P'=0.0001/([G6P]*cgt)^2"]
         GlucoseTransportTypes = []
         # G6PSinkTypes = ["No_G6PSink", "Linear_G6PSink", "Burst_G6PSink"]
@@ -533,28 +533,28 @@ class FModelRunner():
         if G6PSinkModel == "No_G6PSink":
             # Chemotaxis without G6P Sink
             GlucoseTransportTypes = ["G6P'=0", "G6P'=cgt", "G6P'=0.0001/([G6P]*cgt)^2"]
-            InclusionList = ["G6P", "glucose_Available", "glucose_Influx"]
 
         else:
             GlucoseTransportTypes = ["G6P'=cgt", "G6P'=0.0001/([G6P]*cgt)^2"]
-            InclusionList = ["G6P", "glucose_Available", "glucose_Influx", "G6P_Sink"]
 
         for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
             for GlucoseTransportType in GlucoseTransportTypes:
                 for G6PSinkType in G6PSinkTypes:
-                    Title = ModelName + "\n" + G6PSinkModel + "\n" + GlucoseAvailabilityType + "\n" + GlucoseTransportType
-                    self.Simulation.SetTitle(Title)
+                    Subtitle = G6PSinkModel + "\n" + GlucoseAvailabilityType + "\n" + GlucoseTransportType
+                    self.Simulation.SetTitle(ModelName + "\n" + Subtitle)
                     self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
                     self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
                     self.Simulation.SetG6PSinkType(G6PSinkType)
-                    self.Datasets[Title] = self.Simulation.Sim(Chemotaxis=1, G6PSink=1)
+                    self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, G6PSink=1)
 
+        InclusionList = ["G6P", "glucose", "glucose_Influx", "G6P_Sink"]
+        ExclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=ModelName)
 
     def Model_Glycolysis(self):
         self.InitializeDatasets()
-        ModelName = "[Glycolysis] G6P + 2 ADP + 2 NAD+ + 2 Pi\n--> 2 pyruvate + 2 NADH + 2 ATP"
+        ModelName = "[Glycolysis] G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP"
         # GlycolysisATPTypes = ["ATP'=0", "ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         GlycolysisATPTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         # GlycolysisATPTypes = ["dATP=[G6P]*cg", "dATP=[G6P]/[ATP]*cg"]
@@ -563,37 +563,57 @@ class FModelRunner():
 
         for GlycolysisATPType in GlycolysisATPTypes:
             for ATPSinkType in ATPSinkTypes:
-                Title = ModelName + "\n" + GlycolysisATPType + "\n" + ATPSinkType
-                self.Simulation.SetTitle(Title)
+                Subtitle = GlycolysisATPType + "\n" + ATPSinkType
+                self.Simulation.SetTitle(ModelName + "\n" + Subtitle)
                 self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
                 self.Simulation.SetATPSinkType(ATPSinkType)
                 # Datasets[Title] = Simulation.Glycolysis()
-                self.Datasets[Title] = self.Simulation.Sim(Glycolysis=1, ATPSink=1)
+                self.Datasets[Subtitle] = self.Simulation.Sim(Glycolysis=1, ATPSink=1)
+
         InclusionList = ["ATP", "G6P", "pyruvate", "ATP_Sink"]
         ExclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=ModelName)
 
 
     def Model_Chemotaxis_Glycolysis(self):
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis"
-        # GlucoseAvailabilityTypes = ["Uniform_GlucoseAvailability", "Linear_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
-        GlucoseAvailabilityTypes = ["Uniform_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
-        # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Uniform_GlucoseAvailability", "Linear_GlucoseAvailability", "NonLinear_GlucoseAvailability"]
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
         GlucoseTransportTypes = ["G6P'=0.0001/([G6P]*cgt)^2"]
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         GlycolysisATPTypes = ["ATP'=[ADP]/[ATP]*cg"]
+        ATPSinkTypes = ["Linear_ATPSink", "Burst_ATPSink"]
+
         for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
             for GlucoseTransportType in GlucoseTransportTypes:
                 for GlycolysisATPType in GlycolysisATPTypes:
-                    Title = ModelName + "\n" + GlucoseAvailabilityType + "\n" + GlucoseTransportType + "\n" + GlycolysisATPType
-                    self.Simulation.SetTitle(Title)
-                    self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
-                    self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
-                    self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
-                    self.Simulation.SetATPSinkType("Burst_ATPSink")
-                    self.Datasets[Title] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, ATPSink=1)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit)
+                    for ATPSinkType in ATPSinkTypes:
+                        Subtitle = GlucoseAvailabilityType + "\n" + GlucoseTransportType + "\n" + GlycolysisATPType + "\n" + ATPSinkType
+                        self.Simulation.SetTitle(ModelName + "\n" + Subtitle)
+                        self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
+                        self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
+                        self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
+                        # self.Simulation.SetATPSinkType("Burst_ATPSink")
+                        self.Simulation.SetATPSinkType(ATPSinkType)
+                        self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, ATPSink=1)
+
+        PlottingPathway = "(Show all pathways)"
+        InclusionList = ["ATP", "ATP_Sink", "glucose", "glucose_Influx"]
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+
+        PlottingPathway = "(Show Chemotaxis Only)"
+        InclusionList = ["G6P", "glucose", "glucose_Influx"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+
+        PlottingPathway = "(Show Glycolysis Only)"
+        InclusionList = ["ATP", "G6P", "pyruvate", "ATP_Sink"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
 
 
 class FPlotter:
@@ -637,7 +657,7 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotData(self, Datasets, SimulationTimeUnit, bSideLabel=True):
+    def PlotData(self, Datasets, SimulationTimeUnit, bSideLabel=True, SuperTitle=""):
 
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
@@ -645,7 +665,8 @@ class FPlotter:
 
         fig = plt.figure()
         fig.subplots_adjust(wspace=0.5, hspace=0.5)
-
+        if SuperTitle:
+            fig.suptitle(SuperTitle, fontsize=14)
 
         Time = None   # Universal X axis (time)
         Perturbation = 0
@@ -732,13 +753,16 @@ def main():
     # 1:    Chemotaxis unit test without G6PSink
     # 2:    Chemotaxis unit test with Linear G6PSink
     # 3:    Chemotaxis unit test with Burst G6PSink
-    # 11:    Glycolysis unit test
-    # 101:   Chemotaxis + Glycolysis
+    # 11:   Glycolysis unit test with ATPSink
+    # 21:   Pyruvate Oxidation unit test
+    # 101:  Chemotaxis + Glycolysis
 
-    Models = [1]   # Chemotaxis unit test without G6PSink
-    Models = [2]   # Chemotaxis unit test with Linear G6PSink
-    Models = [3]   # Chemotaxis unit test with Burst G6PSink
-    Models = [11]   # Glycolysis unit test
+    Models = [1]    # Chemotaxis unit test without G6PSink
+    Models = [2]    # Chemotaxis unit test with Linear G6PSink
+    Models = [3]    # Chemotaxis unit test with Burst G6PSink
+    Models = [11]   # Glycolysis unit test with ATPSink
+    Models = [21]   # Pyruvate Oxidation unit test
+    Models = [101]  # Chemotaxis + Glycolysis
     # Models = [1, 2, 3, 11]
     ModelRunner.RunModel(Models)
 
