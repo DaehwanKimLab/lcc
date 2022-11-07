@@ -4,6 +4,8 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import math
 
+random.seed(1)
+
 PerturbationTag = "#"
 G6P_Constant = 8.8e-3
 
@@ -12,6 +14,7 @@ Key_GlucoseAvailability = "GlucoseAvailability"
 Key_G6PSink = "G6P_Sink"
 Key_GlycolysisATP = "GlycolysisATP"
 Key_ATPSink = "ATP_Sink"
+Key_GlycolysisEndProduct = "GlycolysisEndProduct"
 
 class FSimulation():
     def __init__(self):
@@ -38,10 +41,11 @@ class FSimulation():
         self.SupportedModelTypes2Int = dict()
         self.InitializeSupportedModelTypes()
 
-    def SetSimulationParameters(self, TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake, SteadyStateThresholdFactor):
+    def SetSimulationParameters(self, TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake=False, SteadyStateCheckMolecule=None, SteadyStateThresholdFactor=None):
         self.TotalSimulationTime = TotalSimulationTime
         self.SimulationTimeUnit = SimulationTimeUnit
         self.SteadyStateBrake = SteadyStateBrake
+        self.SteadyStateCheckMolecule = SteadyStateCheckMolecule
         self.SteadyStateThresholdFactor = SteadyStateThresholdFactor
 
     def PrintSimulationParameters(self):
@@ -69,6 +73,7 @@ class FSimulation():
         self.ModelType[Key_G6PSink] = 0
         self.ModelType[Key_GlycolysisATP] = 0
         self.ModelType[Key_ATPSink] = 0
+        self.ModelType[Key_GlycolysisEndProduct] = 0
 
     def InitializeSupportedModelTypes(self):
         # Glucose Availability
@@ -92,6 +97,10 @@ class FSimulation():
         self.SupportedModelTypes2Int["ATP'=cg"] = 1
         self.SupportedModelTypes2Int["ATP'=[ADP]/[ATP]*cg"] = 2
         self.SupportedModelTypes2Int["dATP=[G6P]*cg"] = 3
+
+        # Glycolysis - End product
+        self.SupportedModelTypes2Int["pyruvate"] = 0
+        self.SupportedModelTypes2Int["acetyl-CoA"] = 1
 
         # Arbitrary ATP Sink
         self.SupportedModelTypes2Int["No_ATPSink"] = 0
@@ -188,11 +197,13 @@ class FSimulation():
     def SetATPSinkType(self, Type):
         self.ModelType[Key_ATPSink] = self.GetSupportedModelType2Int(Type)
 
-    def Sim(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCA=0, OxidativePhosphorylation=0, G6PSink=0, ATPSink=0):
+    def SetGlycolysisEndProduct(self, EndProduct):
+        self.ModelType[Key_GlycolysisEndProduct] = self.GetSupportedModelType2Int(EndProduct)
+
+    def Sim(self, Chemotaxis=0, Glycolysis=0, TCA=0, OxidativePhosphorylation=0, G6PSink=0, ATPSink=0):
         self.PrintSimulationSubject()
-        self.SteadyStateCheckMolecule = "pyruvate"
-        self.Initialize(Chemotaxis, Glycolysis, PyruvateOxidation, TCA, OxidativePhosphorylation)
-        self.Run(Chemotaxis, Glycolysis, PyruvateOxidation, TCA, OxidativePhosphorylation, G6PSink, ATPSink)
+        self.Initialize(Chemotaxis, Glycolysis, TCA, OxidativePhosphorylation)
+        self.Run(Chemotaxis, Glycolysis, TCA, OxidativePhosphorylation, G6PSink, ATPSink)
         self.TagPerturbationLabel()
         return self.Dataset.copy()
 
@@ -256,9 +267,12 @@ class FSimulation():
         self.MolConc["ADP"]      = 5.6e-4
         self.MolConc["NAD"]      = 2.6e-3
         self.MolConc["Pi"]       = 6e-3   # undocumented
-        self.MolConc["pyruvate"] = 3.9e-4
         self.MolConc["NADH"]     = 8.3e-3
         self.MolConc["ATP"]      = 9.6e-3
+        if self.ModelType[Key_GlycolysisEndProduct] == 0:
+            self.MolConc["pyruvate"] = 3.9e-4
+        elif self.ModelType[Key_GlycolysisEndProduct] == 1:
+            self.MolConc["acetyl-CoA"] = 6.1e-4
 
         # Perturbations
         self.Perturbation["ATP_Sink"] = 0
@@ -287,11 +301,17 @@ class FSimulation():
         d["ATP"] = dATP if dATP / 2 < self.Dataset["G6P"][-1] else self.Dataset["G6P"][-1] * 2   # TODO: make the limit approaching smooth
         d["ADP"] = - d["ATP"]
         d["Pi"] = - d["ATP"]
-        d["NADH"] = d["ATP"]
-        d["NAD"] = - d["NADH"]
         d["G6P"] = - d["ATP"] / 2
         # d["pyruvate"] = - d["G6P"] * 2
-        d["pyruvate"] = d["ATP"]   # use when G6P is constant
+        if self.ModelType[Key_GlycolysisEndProduct] == 0:
+            d["pyruvate"] = d["ATP"]   # use when G6P is constant
+            d["NADH"] = d["ATP"]
+            d["NAD"] = - d["ATP"]
+
+        elif self.ModelType[Key_GlycolysisEndProduct] == 1:
+            d["acetyl-CoA"] = d["ATP"]   # use when G6P is constant
+            d["NADH"] = d["ATP"] * 1.5
+            d["NAD"] = - d["ATP"] * 1.5
 
         self.AddToDeltaMolConc(d)
 
@@ -332,42 +352,12 @@ class FSimulation():
         d["ATP"] = - self.Perturbation["ATP_Sink"]
         d["ADP"] = self.Perturbation["ATP_Sink"]
         d["Pi"] = self.Perturbation["ATP_Sink"]
-        d["NADH"] = - self.Perturbation["ATP_Sink"]
-        d["NAD"] = self.Perturbation["ATP_Sink"]
-
-        self.AddToDeltaMolConc(d)
-
-    def Initialize_PyruvateOxidation(self):
-        # pyruvate + NAD + CoA --> acetyl-CoA + CO2 + NADH + H
-
-        # Initial Molecule Concentrations
-        # self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
-        self.MolConc["pyruvate"] = 3.9e-4
-        self.MolConc["acetyl-CoA"]  = 6.1e-4
-        self.MolConc["NAD"]      = 2.6e-3
-        self.MolConc["NADH"]     = 8.3e-3
-
-        # Constants
-        self.Constants["cp"]     = 0.9
-
-    def GetInputFactor_PyruvateOxidation(self):
-        if self.AcetylCoAProductionType == 1:
-            return 0.01
-        elif self.AcetylCoAProductionType == 2:
-            return self.MolConc["pyruvate"][-1] / self.Dataset["ATP"][-1]
-        elif self.AcetylCoAProductionType == 3:
-            return self.MolConc["acetyl-CoA"][-1] * 2
-
-    def Simulation_PyruvateOxidation(self):
-        d = dict()
-
-        # Production Rate Type
-        InputFactor = self.GetInputFactor_PyruvateOxidation()
-
-        d["acetyl-CoA"] = (InputFactor * self.Constants["cp"]) * self.SimulationTimeUnit
-        d["pyruvate"] = - d["acetyl-CoA"]
-        d["NAD"] = d["pyruvate"]
-        d["NADH"] = - d["NAD"]
+        if self.ModelType[Key_GlycolysisEndProduct] == 0:
+            d["NADH"] = - self.Perturbation["ATP_Sink"]
+            d["NAD"] = self.Perturbation["ATP_Sink"]
+        elif self.ModelType[Key_GlycolysisEndProduct] == 1:
+            d["NADH"] = - self.Perturbation["ATP_Sink"] * 1.5
+            d["NAD"] = self.Perturbation["ATP_Sink"] * 1.5
 
         self.AddToDeltaMolConc(d)
 
@@ -388,7 +378,6 @@ class FSimulation():
 
         # Constants
         self.Constants["ct"]     = 10
-
 
     def Simulation_TCA(self):
         d = dict()
@@ -465,7 +454,7 @@ class FSimulation():
         self.InitializeSimStep()
 
 
-    def Run(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCA=0, OxidativePhosphorylation=0, G6PSink=0, ATPSink=0):
+    def Run(self, Chemotaxis=0, Glycolysis=0, TCA=0, OxidativePhosphorylation=0, G6PSink=0, ATPSink=0):
         self.PrintSimTimeAndMolConc()
 
         while self.SimStep * self.SimulationTimeUnit < self.TotalSimulationTime:
@@ -476,8 +465,6 @@ class FSimulation():
                 self.Simulation_Chemotaxis()
             if Glycolysis:
                 self.Simulation_Glycolysis()
-            if PyruvateOxidation:
-                self.Simulation_PyruvateOxidation()
             if TCA:
                 self.Simulation_TCA()
             if OxidativePhosphorylation:
@@ -508,19 +495,19 @@ class FModelRunner():
     def RunModel(self, ListOfModels):
         for Model in ListOfModels:
             if Model == 1:
-                self.Model_Chemotaxis("No_G6PSink")
+                self.Model_Chemotaxis(G6PSinkModel="No_G6PSink")
             if Model == 2:
-                self.Model_Chemotaxis("Linear_G6PSink")
+                self.Model_Chemotaxis(G6PSinkModel="Linear_G6PSink")
             if Model == 3:
-                self.Model_Chemotaxis("Burst_G6PSink")
+                self.Model_Chemotaxis(G6PSinkModel="Burst_G6PSink")
             if Model == 11:
-                self.Model_Glycolysis()
-            # if Model == 21:
-            #     self.Model_PyruvateOxidation()
+                self.Model_Glycolysis(EndProduct="pyruvate")
+            if Model == 12:
+                self.Model_Glycolysis(EndProduct="acetyl-CoA")
             if Model == 101:
                 self.Model_Chemotaxis_Glycolysis()
 
-    def Model_Chemotaxis(self, G6PSinkModel):
+    def Model_Chemotaxis(self, G6PSinkModel="Linear_G6PSink"):
         self.InitializeDatasets()
         ModelName = "[Chemotaxis] glucose{out} --> G6P{in}"
         # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
@@ -552,9 +539,17 @@ class FModelRunner():
         self.Plot.SetFilters(InclusionList, ExclusionList)
         self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=ModelName)
 
-    def Model_Glycolysis(self):
+    def Model_Glycolysis(self, EndProduct="pyruvate"):
         self.InitializeDatasets()
-        ModelName = "[Glycolysis] G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP"
+        ModelName = None
+        if EndProduct == "pyruvate":
+            ModelName = "[Glycolysis] G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP"
+        elif EndProduct =="acetyl-CoA":
+            ModelName = "[Glycolysis] G6P + 2 ADP + 3 NAD+ + 2 Pi --> 2 acetyl-CoA + 3 NADH + 2 ATP"
+        else:
+            print("[ERROR] Unsupported End Product: %s" % EndProduct)
+            sys.exit(1)
+
         # GlycolysisATPTypes = ["ATP'=0", "ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         GlycolysisATPTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         # GlycolysisATPTypes = ["dATP=[G6P]*cg", "dATP=[G6P]/[ATP]*cg"]
@@ -567,16 +562,17 @@ class FModelRunner():
                 self.Simulation.SetTitle(ModelName + "\n" + Subtitle)
                 self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
                 self.Simulation.SetATPSinkType(ATPSinkType)
+                self.Simulation.SetGlycolysisEndProduct(EndProduct)
                 # Datasets[Title] = Simulation.Glycolysis()
                 self.Datasets[Subtitle] = self.Simulation.Sim(Glycolysis=1, ATPSink=1)
 
-        InclusionList = ["ATP", "G6P", "pyruvate", "ATP_Sink"]
+        InclusionList = ["ATP", "G6P", EndProduct, "ATP_Sink"]
         ExclusionList = []
-        self.Plot.SetFilters(InclusionList, ExclusionList)
+        # self.Plot.SetFilters(InclusionList, ExclusionList)
         self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=ModelName)
 
 
-    def Model_Chemotaxis_Glycolysis(self):
+    def Model_Chemotaxis_Glycolysis(self, EndProduct="pyruvate"):
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis"
         # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
@@ -597,6 +593,7 @@ class FModelRunner():
                         self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
                         # self.Simulation.SetATPSinkType("Burst_ATPSink")
                         self.Simulation.SetATPSinkType(ATPSinkType)
+                        self.Simulation.SetGlycolysisEndProduct(EndProduct)
                         self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, ATPSink=1)
 
         PlottingPathway = "(Show all pathways)"
@@ -740,10 +737,11 @@ def main():
     # Setting Simulation Parameters
     TotalSimulationTime = 1e-1   # s
     SimulationTimeUnit = 1e-6   # s
-    SteadyStateBrake = False
-    SteadyStateThresholdFactor = 0.0000001  # Steady state threshold
+    # SteadyStateBrake = False
+    # SteadyStateCheckMolecule = "ATP"
+    # SteadyStateThresholdFactor = 0.0000001  # Steady state threshold
 
-    Simulation.SetSimulationParameters(TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake, SteadyStateThresholdFactor)
+    Simulation.SetSimulationParameters(TotalSimulationTime, SimulationTimeUnit)
     Simulation.PrintSimulationParameters()
 
     # Model Runner
@@ -761,8 +759,8 @@ def main():
     Models = [2]    # Chemotaxis unit test with Linear G6PSink
     Models = [3]    # Chemotaxis unit test with Burst G6PSink
     Models = [11]   # Glycolysis unit test with ATPSink
-    Models = [21]   # Pyruvate Oxidation unit test
-    Models = [101]  # Chemotaxis + Glycolysis
+    Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
+    # Models = [101]  # Chemotaxis + Glycolysis
     # Models = [1, 2, 3, 11]
     ModelRunner.RunModel(Models)
 
