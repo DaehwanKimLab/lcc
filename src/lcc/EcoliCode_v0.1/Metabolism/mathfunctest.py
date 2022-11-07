@@ -505,15 +505,20 @@ class FModelRunner():
             if Model == 12:
                 self.Model_Glycolysis(EndProduct="acetyl-CoA")
             if Model == 101:
-                self.Model_Chemotaxis_Glycolysis()
+                self.Model_Chemotaxis_Glycolysis(EndProduct="pyruvate")
+            if Model == 102:
+                self.Model_Chemotaxis_Glycolysis(EndProduct="acetyl-CoA")
 
     def Model_Chemotaxis(self, G6PSinkModel="Linear_G6PSink"):
         self.InitializeDatasets()
         ModelName = "[Chemotaxis] glucose{out} --> G6P{in}"
+
         # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
+
         # GlucoseTransportTypes = ["G6P'=0", "G6P'=cgt", "G6P'=0.0001/([G6P]*cgt)^2"]
         GlucoseTransportTypes = []
+
         # G6PSinkTypes = ["No_G6PSink", "Linear_G6PSink", "Burst_G6PSink"]
         G6PSinkTypes = [G6PSinkModel]
 
@@ -553,6 +558,7 @@ class FModelRunner():
         # GlycolysisATPTypes = ["ATP'=0", "ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         GlycolysisATPTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         # GlycolysisATPTypes = ["dATP=[G6P]*cg", "dATP=[G6P]/[ATP]*cg"]
+
         ATPSinkTypes = ["No_ATPSink", "Linear_ATPSink", "Burst_ATPSink"]
         # ATPSinkTypes = ["Linear_ATPSink", "Burst_ATPSink"]
 
@@ -575,11 +581,15 @@ class FModelRunner():
     def Model_Chemotaxis_Glycolysis(self, EndProduct="pyruvate"):
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis"
+
         # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
+
         GlucoseTransportTypes = ["G6P'=0.0001/([G6P]*cgt)^2"]
+
         # GlycolysisATPTypes = ["ATP'=cg", "ATP'=[ADP]/[ATP]*cg"]
         GlycolysisATPTypes = ["ATP'=[ADP]/[ATP]*cg"]
+
         ATPSinkTypes = ["Linear_ATPSink", "Burst_ATPSink"]
 
         for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
@@ -608,7 +618,12 @@ class FModelRunner():
         self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
 
         PlottingPathway = "(Show Glycolysis Only)"
-        InclusionList = ["ATP", "G6P", "pyruvate", "ATP_Sink"]
+        InclusionList = ["ATP", "G6P", EndProduct, "ATP_Sink"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+
+        PlottingPathway = "(Show all molecules)"
+        InclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
         self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
 
@@ -752,7 +767,8 @@ def main():
     # 2:    Chemotaxis unit test with Linear G6PSink
     # 3:    Chemotaxis unit test with Burst G6PSink
     # 11:   Glycolysis unit test with ATPSink
-    # 21:   Pyruvate Oxidation unit test
+    # 12:   Pyruvate Oxidation unit test
+    # 21:   TCA Cycle unit test
     # 101:  Chemotaxis + Glycolysis
 
     Models = [1]    # Chemotaxis unit test without G6PSink
@@ -760,7 +776,9 @@ def main():
     Models = [3]    # Chemotaxis unit test with Burst G6PSink
     Models = [11]   # Glycolysis unit test with ATPSink
     Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
-    # Models = [101]  # Chemotaxis + Glycolysis
+    Models = [21]   # TCA Cycle unit test
+    Models = [101]  # Chemotaxis + Glycolysis without Pyruvate Oxidation
+    Models = [102]  # Chemotaxis + Glycolysis with Pyruvate Oxidation
     # Models = [1, 2, 3, 11]
     ModelRunner.RunModel(Models)
 
