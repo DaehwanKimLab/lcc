@@ -1,12 +1,12 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Glycolysis
 
-pathway Glycolysis(G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP)
-mathfunc
+pathway Glycolysis(G6P + 2 ADP + 2 NAD+ --> 2 pyruvate + 2 NADH + 2 ATP)
+func
 {
-    float cg = 10nmol;
+    float cg = 10uM;
     ATP'  = (ADP / ATP) * cg;
-    ADP'  = Pi' = - ATP';
+    ADP'  = - ATP';
     NADH' = ATP';
     NAD+' = - NADH';
     G6P'  = ATP' / 2;

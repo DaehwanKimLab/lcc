@@ -1,7 +1,20 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Citrate Cycle
 
-pathway CitrateCycle(acetyl-CoA + 3 NAD + FAD + ADP + Pi + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA)
+pathway CitrateCycle(acetyl-CoA + 3 NAD+ + FAD + ADP --> CoA-SH + 3 NADH + FADH2 + ATP)
+func
+{
+    float cc = 1uM;
+    ATP'  = (ADP / ATP) * cc;
+    ADP'  = - ATP';
+    NADH' = 3 ATP';
+    NAD+' = - NADH';
+    FADH2' = ATP';
+    FAD' = - FADH2';
+    acetyl-CoA' = - ATP';
+    CoA-SH' = - acetyl-CoA';
+
+}
 {
 
 }
