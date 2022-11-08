@@ -3,7 +3,7 @@
 
 // temporary code with limited parsing
 reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
-func
+mathfunc
 {
     float co = 0.1uM;
     ATP'  = (ADP / ATP) * co;
@@ -12,7 +12,7 @@ func
     FADH2' = ATP' / 4;
     NAD' = 0 - NADH';
     FAD' = 0 - FADH2';
-}
+};
 
 FAD = 1.7e-4 M;
 NAD = 2.6e-3 M;

@@ -2,8 +2,8 @@
 // Citrate Cycle
 
 // temporary code with limited parsing
-reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP)
-func
+reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP, k=1)
+mathfunc
 {
     float cc = 1uM;
     ATP'  = (ADP / ATP) * cc;
@@ -14,7 +14,7 @@ func
     FAD' = 0 - FADH2';
     acetyl_CoA' = 0 - ATP';
     CoA_SH' = 0 - acetyl_CoA';
-}
+};
 
 acetyl-CoA = 6.1e-4 M;
 FAD = 1.7e-4 M;

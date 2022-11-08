@@ -3,12 +3,12 @@
 
 // Transport 6-carbon sugar into cell.
 reaction GlucoseTransporter(glucose --> G6P, k=1)
-func
+mathfunc
 {
     float cgt = 0.5uM;
     G6P' = glucose/G6P * cgt;
     glucose' = 0 - G6P';
-}
+};
 
 glucose = 0.15 M;
 G6P = 8.8e-3 M;
