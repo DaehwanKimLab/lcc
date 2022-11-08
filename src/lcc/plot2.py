@@ -82,6 +82,37 @@ class FPlotter:
                     Perturbation += 1
             return Perturbation, PerturbationPlotColor
 
+        def ApplyUnit(Dataset):
+            Unit = 'a.u.'
+            array_unit = {
+                'nM': 1e-9,
+                'uM': 1e-6,
+                'mM': 1e-3
+            }
+
+            DatasetArray = np.empty([0, 0])
+            DatasetKeyIndex = dict()
+            for i, (Key, Data) in enumerate(Dataset.items()):
+                if DatasetArray.shape[0] == 0:
+                    DatasetArray = np.array(Data, ndmin=2)
+                    continue
+                DatasetKeyIndex[Key] = i
+                DatasetArray = np.vstack([DatasetArray, np.array(Data, ndmin=2)])
+
+            for UnitText, UnitValue in array_unit.items():
+                if np.any(DatasetArray > UnitValue):
+                    # print('Unit has been set to', UnitText)
+                    Unit = UnitText
+
+            # Convert data to appropriate unit
+            if Unit in array_unit:
+                DatasetArray = DatasetArray / array_unit[Unit]
+                print('Final unit:', Unit)
+                for Key, i in DatasetKeyIndex.items():
+                    Dataset[Key] = DatasetArray[i].tolist()
+
+            return Unit, Dataset
+
         def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3):
             NPlotsInRows = len(Datasets)  # Default
             if len(Datasets) > 1:
@@ -100,6 +131,7 @@ class FPlotter:
         for n, (Process, Dataset) in enumerate(Datasets.items()):
             Time, Dataset = ExtractTime(Dataset, SimulationTimeUnit)
             Perturbation, PerturbationPlotColor = GetPerturbation(Dataset)
+            UnitTxt, Dataset = ApplyUnit(Dataset)
             ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
             ax2 = None
             if Perturbation:
@@ -111,7 +143,7 @@ class FPlotter:
                 if MolName[0] != PerturbationTag:
 
                     # Debug
-                    print(Process, "\t", MolName)
+                    # print(Process, "\t", MolName)
 
                     line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
                     if bSideLabel:
@@ -133,12 +165,12 @@ class FPlotter:
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
-            ax1.set_ylabel('Molecules: Concentration (mol L-1)')
+            ax1.set_ylabel('Molecules:\n Concentration (' + UnitTxt + ')')
             # ax1.set_ylim([0, 0.015])
             if not bSideLabel:
                 ax1.legend(loc='upper left')
             if Perturbation:
-                ax2.set_ylabel('Event: Concentration (mol L-1)')
+                ax2.set_ylabel('Event:\n Concentration (' + UnitTxt + ')')
                 # ax2.set_ylim([0, 3e-7])
                 if not bSideLabel:
                     ax2.legend(loc='upper right')
@@ -147,7 +179,6 @@ class FPlotter:
 
         plt.show()
 
-    # From plot.py
     def LoadRawData(self, Data_Dir):
         Datasets = dict()
 
@@ -190,15 +221,6 @@ class FPlotter:
                         Dataset[Name] = [float(x) / NA / Vol for x in Data[i]]
 
                 Datasets[FileName] = Dataset
-
-        # def List2Dictionary(Datasets):
-        #     for Title, Dataset in Datasets.items():
-        #         Dict_Dataset = dict()
-        #
-        #         Headings = Dataset[0]
-        #         Data_Transposed = np.array(Dataset).transpose()
-        #         Data_Time = list(Data_Transposed[0:1])
-        #         Data_Vol = list(Data_Transposed[1:2])
 
         for FileName in os.listdir(Data_Dir):
             if FileName.endswith('.tsv'):
