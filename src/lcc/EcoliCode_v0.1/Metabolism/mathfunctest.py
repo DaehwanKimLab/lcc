@@ -311,7 +311,7 @@ class FSimulation():
         self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
         self.MolConc["ADP"]      = 5.6e-4
         self.MolConc["NAD"]      = 2.6e-3
-        self.MolConc["Pi"]       = 6e-3   # undocumented
+        # self.MolConc["Pi"]       = 6e-3   # undocumented
         self.MolConc["NADH"]     = 8.3e-3
         self.MolConc["ATP"]      = 9.6e-3
         if self.ModelType[Key_GlycolysisEndProduct] == 0:
@@ -347,7 +347,7 @@ class FSimulation():
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
-        d["Pi"] = - d["ATP"]
+        # d["Pi"] = - d["ATP"]
         d["G6P"] = - d["ATP"] / 2
         # d["pyruvate"] = - d["G6P"] * 2
         if self.ModelType[Key_GlycolysisEndProduct] == 0:
@@ -437,7 +437,7 @@ class FSimulation():
         self.Perturbation["ATP_Sink"] = dATP
         d["ATP"] = - dATP
         d["ADP"] = dATP
-        d["Pi"] = dATP
+        # d["Pi"] = dATP
 
         self.AddToDeltaMolConc(d)
 
@@ -493,7 +493,7 @@ class FSimulation():
         self.MolConc["FAD"]     = 1.7e-4
         self.MolConc["NAD"]     = 2.6e-3
         self.MolConc["ADP"]     = 5.6e-4
-        self.MolConc["Pi"]      = 6e-3   # undocumented
+        # self.MolConc["Pi"]      = 6e-3   # undocumented
         self.MolConc["NADH"]    = 8.3e-3
         self.MolConc["FADH2"]   = 5e-4   # undocumented
         self.MolConc["ATP"]     = 9.6e-3
@@ -528,7 +528,7 @@ class FSimulation():
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
-        d["Pi"] = -d["ATP"]
+        # d["Pi"] = -d["ATP"]
 
         d["NADH"] = d["ATP"] * 3
         d["NAD"] = - d["NADH"]
@@ -542,13 +542,13 @@ class FSimulation():
         self.AddToDeltaMolConc(d)
 
     def Initialize_OxidativePhosphorylation(self):
-        # acetyl-CoA + 3 NAD + FAD + ADP + Pi + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA
+        # NADH + FADH2 + ADP + Pi --> NAD + FAD + 4 ATP
 
         # Initial Molecule Concentrations
         self.MolConc["FAD"]     = 1.7e-4
         self.MolConc["NAD"]     = 2.6e-3
         self.MolConc["ADP"]     = 5.6e-4
-        self.MolConc["Pi"]      = 6e-3   # undocumented
+        # self.MolConc["Pi"]      = 6e-3   # undocumented
         self.MolConc["NADH"]    = 8.3e-3
         self.MolConc["FADH2"]   = 5e-4   # undocumented
         self.MolConc["ATP"]     = 9.6e-3
@@ -571,7 +571,7 @@ class FSimulation():
             sys.exit(1)
 
     def Simulation_OxidativePhosphorylation(self):
-        # NADH + FADH2 + ADP + Pi --> NAD + FAD + 4 ATP
+        # NADH + FADH2 + 4 ADP + Pi --> NAD + FAD + 4 ATP
         d = dict()
 
         # Production Rate Type
@@ -580,7 +580,6 @@ class FSimulation():
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
-        d["Pi"] = -d["ATP"]
 
         d["NADH"] = d["ATP"] / 4
         d["NAD"] = - d["NADH"]
@@ -1260,34 +1259,22 @@ def main():
     ModelRunner = FModelRunner(Simulation, Plot)
 
     # Select Models
-    # 1:    Chemotaxis unit test without G6PSink
-    # 2:    Chemotaxis unit test with Linear G6PSink
-    # 3:    Chemotaxis unit test with Burst G6PSink
-    # 11:   Glycolysis unit test without Pyruvate Oxidation
-    # 12:   Glycolysis unit test with Pyruvate Oxidation
-    # 21:   Pyruvate Oxidation unit test
-    # 31:   TCA Cycle unit test without fixed acetyl-CoA
-    # 32:   TCA Cycle unit test with fixed acetyl-CoA
-    # 41:   Oxidative Phosphorylation unit test
-    # 101:  Chemotaxis + Glycolysis
-
-    Models = [1]    # Chemotaxis unit test without G6PSink
-    Models = [2]    # Chemotaxis unit test with Linear G6PSink
-    Models = [3]    # Chemotaxis unit test with Burst G6PSink
-    Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
-    Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
-    Models = [21]   # Pyruvate Oxidation unit test
-    Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
+    # Models = [1]    # Chemotaxis unit test without G6PSink
+    # Models = [2]    # Chemotaxis unit test with Linear G6PSink
+    # Models = [3]    # Chemotaxis unit test with Burst G6PSink
+    # Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
+    # Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
+    # Models = [21]   # Pyruvate Oxidation unit test
+    # Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
     # Models = [32]   # TCACycle Cycle unit test with fixed acetyl-CoA
     # Models = [41]   # Oxidative Phosphorylation unit test
     # Models = [101]  # Chemotaxis + Glycolysis (end product: pyruvate)
     # Models = [102]  # Chemotaxis + Glycolysis (end product: acetyl-CoA)
-    # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation with No ATP Burst
     # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
-    # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
-    Models = [104]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle
+    # Models = [104]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle
     Models = [105]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation
-    # Models = [1, 2, 3, 11, 12, 21, 22, 31]
+    # Models = [1, 2, 3, 11, 12, 21, 22, 31, 41]
+    # Models = [101, 102, 103, 104, 105]
     ModelRunner.RunModel(Models)
 
 if __name__ == '__main__':
