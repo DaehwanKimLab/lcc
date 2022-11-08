@@ -1,8 +1,0 @@
-// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
-// Hexose Transport
-
-// alias Hexose for set of molecules
-Hexose = {D-glucose, D-fructose};
-
-// Transport 6-carbon sugar into cell.
-transporter HexoseTransporter(Hexose{out} --> Hexose{in});
