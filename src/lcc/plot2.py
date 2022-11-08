@@ -7,6 +7,7 @@ import numpy as np
 import random
 
 random.seed(1)
+SaveFilename = None
 NA = 6.0221409e+23
 PerturbationTag = "#"
 
@@ -177,7 +178,10 @@ class FPlotter:
 
             # ax1.grid()
 
-        plt.show()
+        if SaveFilename:
+            plt.savefig(SaveFilename)
+        else:
+            plt.show()
 
     def LoadRawData(self, Data_Dir):
         Datasets = dict()
