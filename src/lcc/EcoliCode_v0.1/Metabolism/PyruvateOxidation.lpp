@@ -1,13 +1,21 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Pyruvate Oxidation
 
-pathway PyruvateOxidation(pyruvate + NAD+ + CoA-SH --> acetyl-CoA + NADH)
+// pathway PyruvateOxidation(pyruvate + NAD+ + CoA-SH --> acetyl-CoA + NADH)
+pathway PyruvateOxidation(pyruvate + NAD + CoA-SH --> acetyl-CoA + NADH)
 func
 {
+    // temporary code with limited parsing
     float cp = 1 uM;
-    pyruvate' = CoA-SH' = NAD+' = (pyruvate / acetyl-CoA) * cp;
-    acetyl-CoA' = NADH' = - pyruvate'
+    pyruvate' = (pyruvate / acetyl-CoA) * cp;
+    pyruvate' = pyruvate';
+    pyruvate' = pyruvate';
+    acetyl-CoA' = 0 - pyruvate'
+    NADH' = 0 - pyruvate'
 
+    // float cp = 1 uM;
+    // pyruvate' = CoA-SH' = NAD+' = (pyruvate / acetyl-CoA) * cp;
+    // acetyl-CoA' = NADH' = - pyruvate'
 }
 {
 

@@ -1,18 +1,29 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // ATPSynthase
 
-pathway OxidativePhosphorylation(NADH + FADH2 + ADP --> NAD+ + FAD + 4 ATP)
+// pathway OxidativePhosphorylation(NADH + FADH2 + ADP --> NAD+ + FAD + 4 ATP)
+pathway OxidativePhosphorylation(NADH + FADH2 + ADP --> NAD + FAD + 4 ATP)
 func
 {
+    // temporary code with limited parsing
     float co = 0.1uM;
     ATP'  = (ADP / ATP) * co;
-    ADP'  = - ATP';
-    NADH' = FADH2' = ATP' / 4;
-    NAD+' = - NADH';
-    FAD' = - FADH2';
-    acetyl-CoA' = - ATP';
-    CoA-SH' = - acetyl-CoA'
+    ADP'  = 0 - ATP';
+    NADH' = ATP' / 4;
+    FADH2' = ATP' / 4;
+    NAD+' = 0 - NADH';
+    FAD' = 0 - FADH2';
+    acetyl-CoA' = 0 - ATP';
+    CoA-SH' = 0 - acetyl-CoA'
 
+    // float co = 0.1uM;
+    // ATP'  = (ADP / ATP) * co;
+    // ADP'  = - ATP';
+    // NADH' = FADH2' = ATP' / 4;
+    // NAD+' = - NADH';
+    // FAD' = - FADH2';
+    // acetyl-CoA' = - ATP';
+    // CoA-SH' = - acetyl-CoA'
 }
 {
 

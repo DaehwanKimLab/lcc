@@ -1,16 +1,26 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Glycolysis
 
-pathway Glycolysis(G6P + 2 ADP + 2 NAD+ --> 2 pyruvate + 2 NADH + 2 ATP)
+// pathway Glycolysis(G6P + 2 ADP + 2 NAD+ --> 2 pyruvate + 2 NADH + 2 ATP)
+pathway Glycolysis(G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP)
 func
 {
+    // temporary code with limited parsing
     float cg = 10uM;
     ATP'  = (ADP / ATP) * cg;
-    ADP'  = - ATP';
+    ADP'  = 0 - ATP';
     NADH' = ATP';
-    NAD+' = - NADH';
+    NAD' = 0 - NADH';
     G6P'  = ATP' / 2;
     pyruvate' = G6P' * 2;
+
+    // float cg = 10uM;
+    // ATP'  = (ADP / ATP) * cg;
+    // ADP'  = - ATP';
+    // NADH' = ATP';
+    // NAD+' = - NADH';
+    // G6P'  = ATP' / 2;
+    // pyruvate' = G6P' * 2;
 }
 {
     domain A;

@@ -1,18 +1,30 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Citrate Cycle
 
-pathway CitrateCycle(acetyl-CoA + 3 NAD+ + FAD + ADP --> CoA-SH + 3 NADH + FADH2 + ATP)
+// pathway CitrateCycle(acetyl-CoA + 3 NAD+ + FAD + ADP --> CoA-SH + 3 NADH + FADH2 + ATP)
+pathway CitrateCycle(acetyl-CoA + 3 NAD + FAD + ADP --> CoA-SH + 3 NADH + FADH2 + ATP)
 func
 {
+    // temporary code with limited parsing
     float cc = 1uM;
     ATP'  = (ADP / ATP) * cc;
-    ADP'  = - ATP';
+    ADP'  = 0 - ATP';
     NADH' = 3 ATP';
-    NAD+' = - NADH';
+    NAD+' = 0 - NADH';
     FADH2' = ATP';
-    FAD' = - FADH2';
-    acetyl-CoA' = - ATP';
-    CoA-SH' = - acetyl-CoA';
+    FAD' = 0 - FADH2';
+    acetyl-CoA' = 0 - ATP';
+    CoA-SH' = 0 - acetyl-CoA';
+
+    // float cc = 1uM;
+    // ATP'  = (ADP / ATP) * cc;
+    // ADP'  = - ATP';
+    // NADH' = 3 ATP';
+    // NAD+' = - NADH';
+    // FADH2' = ATP';
+    // FAD' = - FADH2';
+    // acetyl-CoA' = - ATP';
+    // CoA-SH' = - acetyl-CoA';
 
 }
 {
