@@ -108,7 +108,7 @@ class FPlotter:
             # Convert data to appropriate unit
             if Unit in array_unit:
                 DatasetArray = DatasetArray / array_unit[Unit]
-                print('Final unit:', Unit)
+                # print('Final unit:', Unit)
                 for Key, i in DatasetKeyIndex.items():
                     Dataset[Key] = DatasetArray[i].tolist()
 
