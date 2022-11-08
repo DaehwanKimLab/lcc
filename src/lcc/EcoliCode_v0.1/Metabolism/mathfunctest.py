@@ -402,11 +402,13 @@ class FSimulation():
         dATP = self.GetATPSinkRate() * self.SimulationTimeUnit
 
         # Combinatorial case
+        if Chemotaxis and Glycolysis and PyruvateOxidation and TCACycle:
+            d["NADH"] = - dATP * 0.25
+            d["NAD"] = dATP * 0.25
+            d["FADH2"] = - dATP * 0.05
+            d["FAD"] = dATP * 0.05
         if Chemotaxis and Glycolysis and PyruvateOxidation:
             pass
-            # if self.ModelType[Key_GlycolysisEndProduct] == 0:
-            #     d["NADH"] = - dATP * 2
-            #     d["NAD"] = dATP * 2
         elif Chemotaxis and Glycolysis:
             if self.ModelType[Key_GlycolysisEndProduct] == 0:
                 d["NADH"] = - dATP
@@ -425,7 +427,10 @@ class FSimulation():
                 d["NADH"] = - dATP * 2
                 d["NAD"] = dATP * 2
         elif TCACycle:
-            pass
+            d["NADH"] = - dATP * 0.5
+            d["NAD"] = dATP * 0.5
+            d["FADH2"] = - dATP * 0.1
+            d["FAD"] = dATP * 0.1
         elif OxidativePhosphorylation:
             pass
 
@@ -498,7 +503,7 @@ class FSimulation():
         self.Perturbation["ATP_Sink"] = 0
 
         # Constants
-        self.Constants["ct"]     = 0.1
+        self.Constants["ct"]     = 0.3
 
     def GetInputFactor_TCACycle(self):
         Model = self.GetModelType(Key_TCACycleATP)
@@ -667,6 +672,10 @@ class FModelRunner():
                 self.Model_Chemotaxis_Glycolysis(EndProduct="acetyl-CoA")
             elif Model == 103:
                 self.Model_Chemotaxis_Glycolysis_PyruvateOxidation()
+            elif Model == 104:
+                self.Model_Chemotaxis_Glycolysis_PyruvateOxidation_TCACycle()
+            elif Model == 105:
+                self.Model_Chemotaxis_Glycolysis_PyruvateOxidation_TCACycle_OxidativePhosphorylation()
             else:
                 print("[ERROR] Unsupported Model: %s" % Model)
                 sys.exit(1)
@@ -868,27 +877,30 @@ class FModelRunner():
                         self.Simulation.SetGlycolysisEndProduct(EndProduct)
                         self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, ATPSink=1)
 
+        # spacing = "\n"
+        spacing = ", "
+
         PlottingPathway = "(Show all pathways)"
         InclusionList = ["ATP", "ATP_Sink", "glucose{out}", "glucose_Influx"]
         ExclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
         PlottingPathway = "(Show Chemotaxis Only)"
         InclusionList = ["G6P", "glucose{out}", "glucose_Influx"]
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
         PlottingPathway = "(Show Glycolysis Only)"
         InclusionList = ["ATP", "G6P", EndProduct, "ATP_Sink"]
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
         # Debugging
         PlottingPathway = "(Show all molecules)"
         InclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
 
     def Model_Chemotaxis_Glycolysis_PyruvateOxidation(self, EndProduct="pyruvate"):
@@ -916,7 +928,7 @@ class FModelRunner():
                 for GlycolysisATPType in GlycolysisATPTypes:
                     for PyruvateOxidationATPType in PyruvateOxidationATPTypes:
                         for ATPSinkType in ATPSinkTypes:
-                            Subtitle = GlucoseAvailabilityType + "\n" + GlucoseTransportType + "\n" + GlycolysisATPType + "\n" + PyruvateOxidationATPType + "\n" + ATPSinkType
+                            Subtitle = GlucoseAvailabilityType + ", " + GlucoseTransportType + "\n" + GlycolysisATPType + ", " + PyruvateOxidationATPType + "\n" + ATPSinkType
                             self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
                             self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
                             self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
@@ -926,27 +938,187 @@ class FModelRunner():
                             self.Simulation.SetGlycolysisEndProduct(EndProduct)
                             self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, PyruvateOxidation=1, ATPSink=1)
 
+        # spacing = "\n"
+        spacing = ", "
+
         PlottingPathway = "(Show all pathways)"
         InclusionList = ["ATP", "ATP_Sink", "glucose{out}", "glucose_Influx"]
         ExclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
         PlottingPathway = "(Show Chemotaxis Only)"
         InclusionList = ["G6P", "glucose{out}", "glucose_Influx"]
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
         PlottingPathway = "(Show Glycolysis Only)"
         InclusionList = ["ATP", "G6P", "pyruvate", "acetyl-CoA", "ATP_Sink"]
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
 
         # Debugging
         PlottingPathway = "(Show all molecules)"
         InclusionList = []
         self.Plot.SetFilters(InclusionList, ExclusionList)
-        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + "\n" + PlottingPathway))
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=(ModelName + spacing + PlottingPathway))
+
+
+    def Model_Chemotaxis_Glycolysis_PyruvateOxidation_TCACycle(self, EndProduct="pyruvate", AcetylCoALevel="Unfixed"):
+        self.InitializeDatasets()
+        ModelName = "Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle"
+
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Increasing_GlucoseAvailability"]
+
+        GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
+
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
+        GlycolysisATPTypes = ["ATP'=ADP/ATP*cg"]
+
+        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
+        PyruvateOxidationATPTypes = ["pyruvate'=pyruvate/acetyl-CoA*cp"]
+
+        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=ADP/ATP*ct"]
+        TCACycleATPTypes = ["ATP'=ct", "ATP'=ADP/ATP*ct"]
+
+        ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
+        # ATPSinkTypes = ["No_ATPSink"]
+        # ATPSinkTypes = ["Constant_ATPSink"]
+        # ATPSinkTypes = ["Burst_ATPSink"]
+
+        for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
+            for GlucoseTransportType in GlucoseTransportTypes:
+                for GlycolysisATPType in GlycolysisATPTypes:
+                    for PyruvateOxidationATPType in PyruvateOxidationATPTypes:
+                        for TCACycleATPType in TCACycleATPTypes:
+
+                            for ATPSinkType in ATPSinkTypes:
+                                Subtitle = GlucoseAvailabilityType + ", " + GlucoseTransportType + "\n" + GlycolysisATPType + ", " + PyruvateOxidationATPType + "\nTCA_ " + TCACycleATPType + ", " + ATPSinkType
+                                self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
+                                self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
+                                self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
+                                self.Simulation.SetPyruvateOxidationATPType(PyruvateOxidationATPType)
+                                self.Simulation.SetTCACycleATPType(TCACycleATPType)
+                                self.Simulation.SetATPSinkType(ATPSinkType)
+                                self.Simulation.SetGlycolysisEndProduct(EndProduct)
+                                self.Simulation.SetAcetylCoALevel(AcetylCoALevel)
+                                self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, PyruvateOxidation=1, TCACycle=1, ATPSink=1)
+
+        # spacing = "\n"
+        spacing = ", "
+
+        PlottingPathway = "(Show all pathways)"
+        InclusionList = ["ATP", "ATP_Sink", "glucose{out}", "glucose_Influx", "NADH", "FADH2"]
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        PlottingPathway = "(Show Chemotaxis Only)"
+        InclusionList = ["G6P", "glucose{out}", "glucose_Influx"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        PlottingPathway = "(Show Glycolysis + Pyruvate Oxidation Only)"
+        InclusionList = ["ATP", "G6P", "pyruvate", "acetyl-CoA", "ATP_Sink"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        PlottingPathway = "(Show TCA Only)"
+        InclusionList = ["ATP", "acetyl-CoA", "NADH", "FADH2", "ATP_Sink"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        # Debugging
+        PlottingPathway = "(Show all molecules)"
+        InclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+
+    def Model_Chemotaxis_Glycolysis_PyruvateOxidation_TCACycle_OxidativePhosphorylation(self, EndProduct="pyruvate", AcetylCoALevel="Unfixed"):
+        self.InitializeDatasets()
+        ModelName = "Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation"
+
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Increasing_GlucoseAvailability"]
+
+        GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
+
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
+        GlycolysisATPTypes = ["ATP'=ADP/ATP*cg"]
+
+        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
+        PyruvateOxidationATPTypes = ["pyruvate'=pyruvate/acetyl-CoA*cp"]
+
+        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=ADP/ATP*ct"]
+        TCACycleATPTypes = ["ATP'=ADP/ATP*ct"]
+
+        OxidativePhosphorylationATPTypes = ["ATP'=co", "ATP'=ADP/ATP*co"]
+
+        ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
+        # ATPSinkTypes = ["No_ATPSink"]
+        # ATPSinkTypes = ["Constant_ATPSink"]
+        # ATPSinkTypes = ["Burst_ATPSink"]
+
+        for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
+            for GlucoseTransportType in GlucoseTransportTypes:
+                for GlycolysisATPType in GlycolysisATPTypes:
+                    for PyruvateOxidationATPType in PyruvateOxidationATPTypes:
+                        for TCACycleATPType in TCACycleATPTypes:
+                            for OxidativePhosphorylationATPType in OxidativePhosphorylationATPTypes:
+                                for ATPSinkType in ATPSinkTypes:
+                                    Subtitle = GlucoseAvailabilityType + ", " + GlucoseTransportType + "\n" + GlycolysisATPType + ", " + PyruvateOxidationATPType + "\nTCA_ " + TCACycleATPType + ", " + ATPSinkType + ", " + OxidativePhosphorylationATPType
+                                    self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
+                                    self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
+                                    self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
+                                    self.Simulation.SetPyruvateOxidationATPType(PyruvateOxidationATPType)
+                                    self.Simulation.SetTCACycleATPType(TCACycleATPType)
+                                    self.Simulation.SetATPSinkType(ATPSinkType)
+                                    self.Simulation.SetGlycolysisEndProduct(EndProduct)
+                                    self.Simulation.SetAcetylCoALevel(AcetylCoALevel)
+                                    self.Simulation.SetOxidativePhosphorylationATPType(OxidativePhosphorylationATPType)
+                                    self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1, ATPSink=1)
+
+        # spacing = "\n"
+        spacing = ", "
+
+        PlottingPathway = "(Show all pathways)"
+        InclusionList = ["ATP", "ATP_Sink", "glucose{out}", "glucose_Influx", "NADH", "FADH2"]
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        PlottingPathway = "(Show Chemotaxis Only)"
+        InclusionList = ["G6P", "glucose{out}", "glucose_Influx"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        PlottingPathway = "(Show Glycolysis + Pyruvate Oxidation Only)"
+        InclusionList = ["ATP", "G6P", "pyruvate", "acetyl-CoA", "ATP_Sink"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        PlottingPathway = "(Show TCA Only)"
+        InclusionList = ["ATP", "acetyl-CoA", "NADH", "FADH2", "ATP_Sink"]
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        # Debugging
+        PlottingPathway = "(Show all molecules)"
+        InclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotData(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
 
 
 class FPlotter:
@@ -1105,14 +1277,16 @@ def main():
     Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
     Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
     Models = [21]   # Pyruvate Oxidation unit test
-    # Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
+    Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
     # Models = [32]   # TCACycle Cycle unit test with fixed acetyl-CoA
     # Models = [41]   # Oxidative Phosphorylation unit test
     # Models = [101]  # Chemotaxis + Glycolysis (end product: pyruvate)
     # Models = [102]  # Chemotaxis + Glycolysis (end product: acetyl-CoA)
-    Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation with No ATP Burst
-    Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
-    Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
+    # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation with No ATP Burst
+    # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
+    # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
+    Models = [104]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle
+    Models = [105]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation
     # Models = [1, 2, 3, 11, 12, 21, 22, 31]
     ModelRunner.RunModel(Models)
 
