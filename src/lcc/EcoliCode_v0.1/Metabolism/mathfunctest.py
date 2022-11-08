@@ -1,7 +1,5 @@
 import random
 import sys
-from argparse import ArgumentParser
-import matplotlib.pyplot as plt
 import math
 
 from src.lcc.plot2 import FPlotter
