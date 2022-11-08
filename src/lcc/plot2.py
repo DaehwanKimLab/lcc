@@ -166,12 +166,12 @@ class FPlotter:
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
-            ax1.set_ylabel('Molecules:\n Concentration (' + UnitTxt + ')')
+            ax1.set_ylabel('Molecules: Concentration (' + UnitTxt + ')')
             # ax1.set_ylim([0, 0.015])
             if not bSideLabel:
                 ax1.legend(loc='upper left')
             if Perturbation:
-                ax2.set_ylabel('Event:\n Concentration (' + UnitTxt + ')')
+                ax2.set_ylabel('Events: Concentration (' + UnitTxt + ')')
                 # ax2.set_ylim([0, 3e-7])
                 if not bSideLabel:
                     ax2.legend(loc='upper right')
