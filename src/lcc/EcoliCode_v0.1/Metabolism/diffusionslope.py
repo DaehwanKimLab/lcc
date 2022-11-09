@@ -4,7 +4,7 @@ import math
 
 from src.lcc.plot2 import FPlotter
 
-class FSimulation():
+class FDiffusion():
     def __init__(self):
         # Molecule Concentration
         self.MolConc = dict()   # current concentration
