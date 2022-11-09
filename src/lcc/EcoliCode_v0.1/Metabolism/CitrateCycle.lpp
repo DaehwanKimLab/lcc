@@ -5,7 +5,7 @@
 reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP, k=1)
 mathfunc
 {
-    float cc = 1uM;
+    float cc = 0.3 M;
     ATP'  = (ADP / ATP) * cc;
     ADP'  = 0 - ATP';
     NADH' = 3 ATP';
@@ -17,13 +17,13 @@ mathfunc
 };
 
 acetyl-CoA = 6.1e-4 M;
+CoA_SH = 1.4e-3 M;
 FAD = 1.7e-4 M;
 NAD = 2.6e-3 M;
 ADP = 5.6e-4 M;
 NADH = 8.3e-3 M;
 FADH2 = 5e-4 M;
 ATP = 9.6e-3 M;
-CoA = 1.4e-3 M;
 
 // pathway CitrateCycle(acetyl-CoA + 3 NAD+ + FAD + ADP --> CoA-SH + 3 NADH + FADH2 + ATP)
 // func

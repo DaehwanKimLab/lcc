@@ -5,7 +5,7 @@
 reaction Glycolysis(G6P + ADP + ADP + NAD + NAD --> pyruvate + pyruvate + NADH + NADH + ATP + ATP, k=1)
 mathfunc
 {
-    float cg = 10uM;
+    float cg = 10 M;
     ATP'  = (ADP / ATP) * cg;
     ADP'  = 0 - ATP';
     NADH' = ATP';

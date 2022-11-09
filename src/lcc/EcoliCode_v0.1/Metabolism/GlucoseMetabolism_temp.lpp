@@ -1,0 +1,72 @@
+// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// Glucose Metabolism (temporary without importing)
+
+reaction GlucoseTransporter(glucose --> G6P, k=1)
+mathfunc
+{
+    float cgt = 0.5 M;
+    G6P' = glucose/G6P * cgt;
+    glucose' = 0 - G6P';
+};
+
+reaction Glycolysis(G6P + ADP + ADP + NAD + NAD --> pyruvate + pyruvate + NADH + NADH + ATP + ATP, k=1)
+mathfunc
+{
+    float cg = 10 M;
+    ATP'  = (ADP / ATP) * cg;
+    ADP'  = 0 - ATP';
+    NADH' = ATP';
+    NAD' = 0 - NADH';
+    G6P'  = ATP' / 2;
+    pyruvate' = G6P' * 2;
+};
+
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
+mathfunc
+{
+    float cp = 1 M;
+    pyruvate' = (pyruvate / acetyl_CoA) * cp;
+    CoA_SH' = pyruvate';
+    NAD' = pyruvate';
+    acetyl_CoA' = 0 - pyruvate'
+    NADH' = 0 - pyruvate'
+};
+
+reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP, k=1)
+mathfunc
+{
+    float cc = 0.3 M;
+    ATP'  = (ADP / ATP) * cc;
+    ADP'  = 0 - ATP';
+    NADH' = 3 ATP';
+    NAD+' = 0 - NADH';
+    FADH2' = ATP';
+    FAD' = 0 - FADH2';
+    acetyl_CoA' = 0 - ATP';
+    CoA_SH' = 0 - acetyl_CoA';
+};
+
+// temporary code with limited parsing
+reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
+mathfunc
+{
+    float co = 1 M;
+    ATP'  = (ADP / ATP) * co;
+    ADP'  = 0 - ATP';
+    NADH' = ATP' / 4;
+    FADH2' = ATP' / 4;
+    NAD' = 0 - NADH';
+    FAD' = 0 - FADH2';
+};
+
+glucose[:] = 0.15e-6 M;
+G6P = 8.8e-3 M;
+ATP = 9.6e-3 M;
+ADP = 5.6e-4 M;
+NAD = 2.6e-3 M;
+NADH= 8.3e-3 M;
+pyruvate = 3.9e-4 M; 
+CoA_SH = 1.4e-3 M;
+acetyl-CoA = 6.1e-4 M;
+FAD = 1.7e-4 M;
+FADH2 = 5e-4 M;

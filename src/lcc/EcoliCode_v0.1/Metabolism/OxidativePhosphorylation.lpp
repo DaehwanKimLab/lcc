@@ -5,7 +5,7 @@
 reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
 mathfunc
 {
-    float co = 0.1uM;
+    float co = 1 M;
     ATP'  = (ADP / ATP) * co;
     ADP'  = 0 - ATP';
     NADH' = ATP' / 4;
