@@ -25,11 +25,11 @@ reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
 mathfunc
 {
     float cp = 1 M;
-    pyruvate' = (pyruvate / acetyl_CoA) * cp;
+    pyruvate' = - (pyruvate / acetyl_CoA) * cp;
     CoA_SH' = pyruvate';
     NAD' = pyruvate';
-    acetyl_CoA' = 0 - pyruvate'
-    NADH' = 0 - pyruvate'
+    acetyl_CoA' = 0 - pyruvate';
+    NADH' = 0 - pyruvate';
 };
 
 reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP, k=1)

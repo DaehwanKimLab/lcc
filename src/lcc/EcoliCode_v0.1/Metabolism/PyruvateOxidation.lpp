@@ -6,11 +6,11 @@ reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
 mathfunc
 {
     float cp = 1 M;
-    pyruvate' = (pyruvate / acetyl_CoA) * cp;
+    pyruvate' = 0 - (pyruvate / acetyl_CoA) * cp;
     CoA_SH' = pyruvate';
     NAD' = pyruvate';
-    acetyl_CoA' = 0 - pyruvate'
-    NADH' = 0 - pyruvate'
+    acetyl_CoA' = 0 - pyruvate';
+    NADH' = 0 - pyruvate';
 };
 
 pyruvate = 3.9e-4 M;
@@ -23,7 +23,7 @@ NADH = 8.3e-3 M;
 // func
 // {
 //     float cp = 1 uM;
-//     pyruvate' = CoA-SH' = NAD+' = (pyruvate / acetyl-CoA) * cp;
+//     pyruvate' = CoA-SH' = NAD+' = - (pyruvate / acetyl-CoA) * cp;
 //     acetyl-CoA' = NADH' = - pyruvate'
 // }
 // {
