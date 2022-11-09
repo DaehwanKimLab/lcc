@@ -96,7 +96,6 @@ class FPlotter:
             for i, (Key, Data) in enumerate(Dataset.items()):
                 if DatasetArray.shape[0] == 0:
                     DatasetArray = np.array(Data, ndmin=2)
-                    continue
                 DatasetKeyIndex[Key] = i
                 DatasetArray = np.vstack([DatasetArray, np.array(Data, ndmin=2)])
 
