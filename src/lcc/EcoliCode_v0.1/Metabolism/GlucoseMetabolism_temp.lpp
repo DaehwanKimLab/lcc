@@ -46,7 +46,6 @@ mathfunc
     CoA_SH' = 0 - acetyl_CoA';
 };
 
-// temporary code with limited parsing
 reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
 mathfunc
 {

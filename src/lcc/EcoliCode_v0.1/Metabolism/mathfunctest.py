@@ -1,6 +1,7 @@
 import random
 import sys
 import math
+import matplotlib.pyplot as plt
 
 from src.lcc.plot2 import FPlotter
 
@@ -451,9 +452,6 @@ class FSimulation():
         self.MolConc["NAD"]      = 2.6e-3
         self.MolConc["NADH"]     = 8.3e-3
 
-        # Perturbations
-        self.Perturbation["ATP_Sink"] = 0
-
         # Constants
         self.Constants["cp"]     = 1
 
@@ -479,8 +477,8 @@ class FSimulation():
 
         d["pyruvate"] = - dpyruvate
         d["acetyl-CoA"] = dpyruvate
-        d["NADH"] = - dpyruvate
-        d["NAD"] = dpyruvate
+        d["NADH"] = dpyruvate
+        d["NAD"] = - dpyruvate
 
         self.AddToDeltaMolConc(d)
 
@@ -1119,125 +1117,125 @@ class FModelRunner():
         self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
                            SuperTitle=(ModelName + spacing + PlottingPathway))
 
-#
-# class FPlotter:
-#     def __init__(self):
-#         self.Filter_Inclusion = None
-#         self.Filter_Exclusion = None
-#
-#     def ResetFilters(self):
-#         self.Filter_Inclusion = None
-#         self.Filter_Exclusion = None
-#
-#     def SetFilters(self, InclusionList, ExclusionList):
-#         self.ResetFilters()
-#         self.SetFilter_Inclusion(InclusionList)
-#         self.SetFilter_Exclusion(ExclusionList)
-#
-#     def SetFilter_Inclusion(self, List):
-#         self.Filter_Inclusion = List
-#
-#     def SetFilter_Exclusion(self, List):
-#         self.Filter_Exclusion = List
-#
-#     def CheckToIncludeOrExclude(self, Key_Data):
-#         if self.Filter_Inclusion or self.Filter_Exclusion:
-#             if self.Filter_Inclusion:
-#                 if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
-#                     return True
-#                 else:
-#                     return False
-#             else:
-#                 if (Key_Data in self.Filter_Exclusion) or (Key_Data[1:] in self.Filter_Exclusion):
-#                     return False
-#                 else:
-#                     return True
-#         else:
-#             return True
-#
-#     def FilterDatasets(self, Datasets):
-#         Datasets_Filtered = dict()
-#         for Key_Dataset, Dataset in Datasets.items():
-#             Dataset_Filtered = dict()
-#             for Key_Data, Data in Dataset.items():
-#                 if self.CheckToIncludeOrExclude(Key_Data):
-#                     Dataset_Filtered[Key_Data] = Data
-#                     Datasets_Filtered[Key_Dataset] = Dataset_Filtered
-#
-#         return Datasets_Filtered
-#
-#     def PlotDatasets(self, Datasets, SimulationTimeUnit, bSideLabel=True, SuperTitle=""):
-#
-#         # Filter Datasets
-#         if self.Filter_Inclusion or self.Filter_Exclusion:
-#             Datasets = self.FilterDatasets(Datasets)
-#
-#         fig = plt.figure()
-#         fig.subplots_adjust(wspace=0.5, hspace=0.5)
-#         if SuperTitle:
-#             fig.suptitle(SuperTitle, fontsize=14)
-#
-#         Time = None   # Universal X axis (time)
-#         Perturbation = 0
-#         PerturbationPlotColor = list()
-#         for Dataset in Datasets.values():
-#             for Data in Dataset.values():
-#                 Time = [i * SimulationTimeUnit for i in range(len(Data))]
-#                 break
-#             for Key in Dataset.keys():
-#                 if Key[0] == PerturbationTag:
-#                     PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)))
-#                     Perturbation += 1
-#
-#         # Plot data
-#         NPlotsInRows = len(Datasets)   # Default
-#         MaxNPlotsInRows = 3
-#         if len(Datasets) > 1:
-#             for Remainder in range(MaxNPlotsInRows):
-#                 if len(Datasets) % (Remainder + 1) == 0:
-#                     NPlotsInRows = Remainder + 1
-#
-#         for n, (Process, Dataset) in enumerate(Datasets.items()):
-#             ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
-#             ax2 = None
-#             if Perturbation:
-#                 ax2 = ax1.twinx()
-#
-#             # Y axis (molecular concentrations)
-#             PerturbationIndex = 0
-#             for MolName, Conc in Dataset.items():
-#                 if MolName[0] != PerturbationTag:
-#                     line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
-#                     if bSideLabel:
-#                         SelectedTimeFrameFromLeft = 0.1
-#                         ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
-#                         # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
-#                         # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
-#
-#                 else:
-#                     line, = ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
-#                     if bSideLabel:
-#                         SelectedTimeFrameFromLeft = 0.8
-#                         ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
-#                     # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
-#                     # print(PerturbationIndex)
-#                     PerturbationIndex += 1
-#
-#             ax1.set_title(Process)
-#             ax1.set_xlabel('Time (s)')
-#             ax1.set_ylabel('Molecules: Concentration (mol L-1)')
-#             ax1.set_ylim([0, 0.015])
-#             if not bSideLabel:
-#                 ax1.legend(loc='upper left')
-#             if Perturbation:
-#                 ax2.set_ylabel('Event: Concentration (mol L-1)')
-#                 ax2.set_ylim([0, 3e-7])
-#                 if not bSideLabel:
-#                     ax2.legend(loc='upper right')
-#
-#             # ax1.grid()
-#
-#         plt.show()
+
+class FPlotter:
+    def __init__(self):
+        self.Filter_Inclusion = None
+        self.Filter_Exclusion = None
+
+    def ResetFilters(self):
+        self.Filter_Inclusion = None
+        self.Filter_Exclusion = None
+
+    def SetFilters(self, InclusionList, ExclusionList):
+        self.ResetFilters()
+        self.SetFilter_Inclusion(InclusionList)
+        self.SetFilter_Exclusion(ExclusionList)
+
+    def SetFilter_Inclusion(self, List):
+        self.Filter_Inclusion = List
+
+    def SetFilter_Exclusion(self, List):
+        self.Filter_Exclusion = List
+
+    def CheckToIncludeOrExclude(self, Key_Data):
+        if self.Filter_Inclusion or self.Filter_Exclusion:
+            if self.Filter_Inclusion:
+                if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
+                    return True
+                else:
+                    return False
+            else:
+                if (Key_Data in self.Filter_Exclusion) or (Key_Data[1:] in self.Filter_Exclusion):
+                    return False
+                else:
+                    return True
+        else:
+            return True
+
+    def FilterDatasets(self, Datasets):
+        Datasets_Filtered = dict()
+        for Key_Dataset, Dataset in Datasets.items():
+            Dataset_Filtered = dict()
+            for Key_Data, Data in Dataset.items():
+                if self.CheckToIncludeOrExclude(Key_Data):
+                    Dataset_Filtered[Key_Data] = Data
+                    Datasets_Filtered[Key_Dataset] = Dataset_Filtered
+
+        return Datasets_Filtered
+
+    def PlotDatasets(self, Datasets, SimulationTimeUnit, bSideLabel=True, SuperTitle=""):
+
+        # Filter Datasets
+        if self.Filter_Inclusion or self.Filter_Exclusion:
+            Datasets = self.FilterDatasets(Datasets)
+
+        fig = plt.figure()
+        fig.subplots_adjust(wspace=0.5, hspace=0.5)
+        if SuperTitle:
+            fig.suptitle(SuperTitle, fontsize=14)
+
+        Time = None   # Universal X axis (time)
+        Perturbation = 0
+        PerturbationPlotColor = list()
+        for Dataset in Datasets.values():
+            for Data in Dataset.values():
+                Time = [i * SimulationTimeUnit for i in range(len(Data))]
+                break
+            for Key in Dataset.keys():
+                if Key[0] == PerturbationTag:
+                    PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)))
+                    Perturbation += 1
+
+        # Plot data
+        NPlotsInRows = len(Datasets)   # Default
+        MaxNPlotsInRows = 3
+        if len(Datasets) > 1:
+            for Remainder in range(MaxNPlotsInRows):
+                if len(Datasets) % (Remainder + 1) == 0:
+                    NPlotsInRows = Remainder + 1
+
+        for n, (Process, Dataset) in enumerate(Datasets.items()):
+            ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
+            ax2 = None
+            if Perturbation:
+                ax2 = ax1.twinx()
+
+            # Y axis (molecular concentrations)
+            PerturbationIndex = 0
+            for MolName, Conc in Dataset.items():
+                if MolName[0] != PerturbationTag:
+                    line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
+                    if bSideLabel:
+                        SelectedTimeFrameFromLeft = 0.1
+                        ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
+                        # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
+                        # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
+
+                else:
+                    line, = ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
+                    if bSideLabel:
+                        SelectedTimeFrameFromLeft = 0.8
+                        ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
+                    # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
+                    # print(PerturbationIndex)
+                    PerturbationIndex += 1
+
+            ax1.set_title(Process)
+            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('Molecules: Concentration (mol L-1)')
+            ax1.set_ylim([0, 0.015])
+            if not bSideLabel:
+                ax1.legend(loc='upper left')
+            if Perturbation:
+                ax2.set_ylabel('Event: Concentration (mol L-1)')
+                ax2.set_ylim([0, 3e-7])
+                if not bSideLabel:
+                    ax2.legend(loc='upper right')
+
+            # ax1.grid()
+
+        plt.show()
 
 
 def main():
@@ -1264,7 +1262,7 @@ def main():
     # Models = [3]    # Chemotaxis unit test with Burst G6PSink
     # Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
     # Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
-    # Models = [21]   # Pyruvate Oxidation unit test
+    Models = [21]   # Pyruvate Oxidation unit test
     # Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
     # Models = [32]   # TCACycle Cycle unit test with fixed acetyl-CoA
     # Models = [41]   # Oxidative Phosphorylation unit test
@@ -1272,7 +1270,7 @@ def main():
     # Models = [102]  # Chemotaxis + Glycolysis (end product: acetyl-CoA)
     # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
     # Models = [104]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle
-    Models = [105]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation
+    # Models = [105]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation
     # Models = [1, 2, 3, 11, 12, 21, 22, 31, 41]
     # Models = [101, 102, 103, 104, 105]
     ModelRunner.RunModel(Models)
