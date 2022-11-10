@@ -33,7 +33,9 @@ class FDiffusion():
         self.TimeResolution = TimeResolution
 
     def PrintSimulationParameters(self):
+        print("\n-------------------- Simulation Parameters --------------------")
         print("Total Simulation Time :", self.TotalSimulationTime, "s", " | Time Resolution :", self.TimeResolution, "s")
+        print("\n-------------------- Run Simulation --------------------")
 
     def PrintSimulationSubject(self):
         print("\n\nSimulating " + self.Title + "...")
@@ -81,15 +83,19 @@ class FDiffusion():
         b = self.TotalQuantity / self.TotalDistance * (1 - 0.5 * CompletionFactor)
         return (m, b)
 
-    def GetFunctionParameters(self, Time, DiffusionRate=2, ClosedSystem=True):
+    def GetFunctionParameters(self, Time, DiffusionRate=2, ClosedSystem=True, Debug=False):
         m = - self.TotalQuantity
         # CompletionFactor = Time / self.TotalSimulationTime # 0.1
         # FinalIntercept = self.TotalQuantity / self.TotalDistance
         if ClosedSystem:
             m += DiffusionRate * Time * 20
-            print(m, - m * 2 * self.TotalQuantity)
+
+            if Debug:
+                print(m, - m * 2 * self.TotalQuantity)
+
             if m >= 0:
-                print("reverted slope")
+                if Debug:
+                    print("reverted slope")
                 return (0, self.TotalQuantity / self.TotalDistance)
             b = math.sqrt(- m * 2 * self.TotalQuantity)
 
@@ -98,15 +104,22 @@ class FDiffusion():
                 Data = self.Simulation_LinearFunction(m, b)
                 Integral = IntegralApproximation(Data, 0, self.TotalDistance)
                 Integrity = Integral / self.TotalQuantity
-                print("Integrity: ", Integrity)
+
+                if Debug:
+                    print("Integrity: ", Integrity)
+
                 if Integrity < 0.999:
                     b += b * 0.01
                     TestIntegral(m, b)
                 return b
 
             b = TestIntegral(m, b)
-            print("Final b: ", b)
+            print("Time: ", Time, " s\tm: ", m, "\tb: ", b)
             return (m, b)
+
+        else:
+            print("Open system is not supported")
+            sys.exit(1)
 
     def GetDistanceRange(self):
         return np.arange(0, self.TotalDistance, self.DistanceResolution)
@@ -141,7 +154,6 @@ class FDiffusion():
             # Generate Data
             Data = None
             if self.Type == 'Linear':
-                print("self.m and self.b: ", self.m, self.b)
                 Data = self.Simulation_LinearFunction(self.m, self.b)
             else:
                 print("no type was specified")
@@ -153,7 +165,6 @@ class FDiffusion():
 
             self.SimStep += 1
 
-
     def IntegralCheck(self, message=False):
 
         for Title, Data in self.Dataset.items():
@@ -164,19 +175,17 @@ class FDiffusion():
             self.PrintIntegralDataset()
 
     def PrintIntegralDataset(self):
-        print("Integral Validation")
+        print("\n-------------------- Integral Validation --------------------")
         for Title, Data in self.IntegralDataset.items():
-            print(Title, Data)
-
+            print(Title, "Integral:", Data)
 
     def GetDataset(self):
         return self.Dataset.copy()
 
-
 def IntegralApproximation(Data, Start, End):
     return (End - Start) * np.mean(Data)
 
-
+# Modified from plot2.py
 random.seed(1)
 SaveFilename = None
 NA = 6.0221409e+23
@@ -228,61 +237,12 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, XRange, bSideLabel=True, SuperTitle=""):
+    def PlotDatasets(self, Datasets, XRange, SuperTitle=""):
+        print("\n-------------------- Plotting... --------------------")
+
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
-
-        def ExtractTime(Dataset, SimulationTimeUnit):
-            Time = None
-            if 'Time' in Dataset:
-                Time = Dataset['Time']
-                del Dataset['Time']
-            else:
-                for Data in Dataset.values():
-                    Time = [i * SimulationTimeUnit for i in range(len(Data))]
-                    break
-            return Time, Dataset
-
-        def GetPerturbation(Dataset):
-            Perturbation = 0
-            PerturbationPlotColor = list()
-            for Key in Dataset.keys():
-                if Key[0] == PerturbationTag:
-                    PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)))
-                    Perturbation += 1
-            return Perturbation, PerturbationPlotColor
-
-        def ApplyUnit(Dataset):
-            Unit = 'a.u.'
-            array_unit = {
-                'nM': 1e-9,
-                'uM': 1e-6,
-                'mM': 1e-3
-            }
-
-            DatasetArray = np.empty([0, 0])
-            DatasetKeyIndex = dict()
-            for i, (Key, Data) in enumerate(Dataset.items()):
-                if DatasetArray.shape[0] == 0:
-                    DatasetArray = np.array(Data, ndmin=2)
-                    continue
-                DatasetKeyIndex[Key] = i
-                DatasetArray = np.vstack([DatasetArray, np.array(Data, ndmin=2)])
-
-            for UnitText, UnitValue in array_unit.items():
-                if np.any(DatasetArray > UnitValue):
-                    # print('Unit has been set to', UnitText)
-                    Unit = UnitText
-
-            # Convert data to appropriate unit
-            if Unit in array_unit:
-                DatasetArray = DatasetArray / array_unit[Unit]
-                # print('Final unit:', Unit)
-                for Key, i in DatasetKeyIndex.items():
-                    Dataset[Key] = DatasetArray[i].tolist()
-
-            return Unit, Dataset
 
         def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3):
             NPlotsInRows = len(Datasets)  # Default
@@ -300,53 +260,24 @@ class FPlotter:
 
         # Plot data
         for n, (Process, Dataset) in enumerate(Datasets.items()):
-            # Time, Dataset = ExtractTime(Dataset, SimulationTimeUnit)
-            # Perturbation, PerturbationPlotColor = GetPerturbation(Dataset)
-            # UnitTxt, Dataset = ApplyUnit(Dataset)
             ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
-            ax2 = None
-            # if Perturbation:
-            #     ax2 = ax1.twinx()
 
-            # Y axis (molecular concentrations)
-            PerturbationIndex = 0
             for TimeStamp, Conc in Dataset.items():
-
                 # Debug
                 # print(Process, "\t", MolName)
 
                 line, = ax1.plot(XRange, Conc, label="[" + TimeStamp + "]")
                 Integral = IntegralApproximation(Conc, 0, XRange[-1])
-                if bSideLabel:
-                    SelectedTimeFrameFromLeft = 0.01
-                    # if Perturbation == 0:
-                    #     SelectedTimeFrameFromLeft = 0.9
-                    Label = TimeStamp + ", Integral: " + str(Integral)
-                    ax1.text(XRange[-1] * SelectedTimeFrameFromLeft, Conc[int(len(XRange) * SelectedTimeFrameFromLeft)] * 1.02, Label, ha="left", va="bottom", color=line.get_color())
-                    # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
-                    # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
-
-                # else:
-                #     line, = ax2.plot(XRange, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
-                #     if bSideLabel:
-                #         SelectedTimeFrameFromLeft = 0.8
-                #         ax2.text(XRange[-1] * SelectedTimeFrameFromLeft, Conc[int(len(XRange) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
-                #     # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
-                #     # print(PerturbationIndex)
-                #     PerturbationIndex += 1
+                SelectedTimeFrameFromLeft = 0.01
+                Label = TimeStamp + ", Integral: " + str(Integral)
+                ax1.text(XRange[-1] * SelectedTimeFrameFromLeft, Conc[int(len(XRange) * SelectedTimeFrameFromLeft)] * 1.02, Label, ha="left", va="bottom", color=line.get_color())
 
             ax1.set_title(Process)
             ax1.set_xlabel('Distance (a.u.)')
             # ax1.set_ylim([0, 0.015])
-            if not bSideLabel:
-                ax1.set_ylabel('Concentration (a.u.)')
-                ax1.legend(loc='upper left')
-            # if Perturbation:
-            #     # ax2.set_ylim([0, 3e-7])
-            #     if not bSideLabel:
-            #         ax2.legend(loc='upper right')
-
-            # ax1.grid()
+            ax1.set_ylabel('Concentration (a.u.)')
+            # ax1.legend(loc='upper left')
+            ax1.grid()
 
         if SaveFilename:
             plt.savefig(SaveFilename)
@@ -367,7 +298,7 @@ def main():
     TotalDistance = 10
     DistanceResolution = 0.0001
     TotalQuantity = 100
-    DiffusionRate = 0.5
+    DiffusionRate = 0.2
     Diffusion.SetDiffusionParameters(TotalDistance, DistanceResolution, TotalQuantity, DiffusionRate)
     Diffusion.SetTitleAndType(Type, Type)
 
