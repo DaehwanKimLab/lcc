@@ -1,32 +1,39 @@
 import random
 import sys
 import math
+import scipy.integrate as integrate
+import matplotlib.pyplot as plt
+import numpy as np
 
-from src.lcc.plot2 import FPlotter
+# from src.lcc.plot2 import FPlotter
 
 class FDiffusion():
     def __init__(self):
         # Simulation Parameters
         self.SimStep = 0
         self.TotalSimulationTime = 0
-        self.N_TimeInterpolation = 0
-        self.N_DistanceInterpolation = 0
+        self.TimeResolution = 0
+        self.DistanceResolution = 0
 
         # Model Parameters
         self.Title = ""
         self.Type = ""
         self.m = 0   # slope
         self.b = 0   # y-intercept
-        self.max_dist = 0
-        self.max_b = 0
+        self.TotalDistance = 0
+        self.TotalQuantity = 0
+        self.DiffusionRate = 0
 
-    def SetSimulationParameters(self, TotalSimulationTime, N_TimeInterpolation, N_DistanceInterpolation):
+        # Data
+        self.Dataset = dict()
+        self.IntegralDataset = dict()
+
+    def SetSimulationParameters(self, TotalSimulationTime, TimeResolution):
         self.TotalSimulationTime = TotalSimulationTime
-        self.N_TimeInterpolation = N_TimeInterpolation
-        self.N_DistanceInterpolation = N_DistanceInterpolation
+        self.TimeResolution = TimeResolution
 
     def PrintSimulationParameters(self):
-        print("Total Simulation Time :", self.TotalSimulationTime, "s", " | N_TimeInterpolation :", self.N_TimeInterpolation, "s", end="")
+        print("Total Simulation Time :", self.TotalSimulationTime, "s", " | Time Resolution :", self.TimeResolution, "s")
 
     def PrintSimulationSubject(self):
         print("\n\nSimulating " + self.Title + "...")
@@ -39,76 +46,136 @@ class FDiffusion():
         self.Type = ""
         self.m = 0
         self.b = 0
-        self.max_dist = 0
-        self.max_b = 0
+        self.TotalDistance = 0
+        self.DistanceResolution = 0
+        self.TotalQuantity = 0
+        self.DiffusionRate = 0
 
-    def PrintDataset(self, Dataset):
-        print(Dataset)
+    def PrintDataset(self):
+        print(self.Dataset)
 
     def PrintSimTime(self):
-        print("\n", self.SimStep, "\t| ", "{:.2f}".format(self.SimStep * int(self.TotalSimulationTime / self.N_TimeInterpolation)), end=" s | ")
+        print("\n", self.SimStep, "\t| ", "{:.2f}".format(self.SimStep * self.TimeResolution), end=" s | ")
 
-    def PrintSimTimeAndDataset(self, Dataset):
+    def PrintSimTimeAndDataset(self):
         self.PrintSimTime()
-        self.PrintDataset(Dataset)
+        self.PrintDataset()
 
     def SetTitleAndType(self, Title, Type):
         self.Title = Title
         self.Type = Type
 
-    def SetMaxParameters(self, max_dist, max_b):
-        self.max_dist = max_dist
-        self.max_b = max_b
+    def SetDiffusionParameters(self, TotalDistance, DistanceResolution, TotalQuantity, DiffusionRate):
+        self.TotalDistance = TotalDistance
+        self.DistanceResolution = DistanceResolution
+        self.TotalQuantity = TotalQuantity
+        self.DiffusionRate = DiffusionRate
 
     def SetFunctionParameters(self, m, b):
         self.m = m
         self.b = b
 
-    def Sim(self):
-        self.PrintSimulationSubject()
-        self.Initialize()
-        self.Run()
-        return self.Dataset.copy()
-
-    def GetFunctionParameters(self, Time):
+    def GetFunctionParameters_Old(self, Time):
         CompletionFactor = Time / self.TotalSimulationTime
         m = (CompletionFactor / 2) - 0.5
-        b = self.max_b * (1 - 0.5 * CompletionFactor)
+        b = self.TotalQuantity / self.TotalDistance * (1 - 0.5 * CompletionFactor)
         return (m, b)
 
-    def LinearFunction(self, x):
-        return self.m * x + self.b
+    def GetFunctionParameters(self, Time, DiffusionRate=2, ClosedSystem=True):
+        m = - self.TotalQuantity
+        # CompletionFactor = Time / self.TotalSimulationTime # 0.1
+        # FinalIntercept = self.TotalQuantity / self.TotalDistance
+        if ClosedSystem:
+            m += DiffusionRate * Time * 20
+            print(m, - m * 2 * self.TotalQuantity)
+            if m >= 0:
+                print("reverted slope")
+                return (0, self.TotalQuantity / self.TotalDistance)
+            b = math.sqrt(- m * 2 * self.TotalQuantity)
 
-    def Simulation_LinearFunction(self):
-        Data = list()
-        for dist in range(self.max_dist):
-            Data.append(self.LinearFunction(dist))
-        return Data
+            def TestIntegral(m, b):
+                # Integral Test and correction
+                Data = self.Simulation_LinearFunction(m, b)
+                Integral = IntegralApproximation(Data, 0, self.TotalDistance)
+                Integrity = Integral / self.TotalQuantity
+                print("Integrity: ", Integrity)
+                if Integrity < 0.999:
+                    b += b * 0.01
+                    TestIntegral(m, b)
+                return b
+
+            b = TestIntegral(m, b)
+            print("Final b: ", b)
+            return (m, b)
+
+    def GetDistanceRange(self):
+        return np.arange(0, self.TotalDistance, self.DistanceResolution)
+
+    def Simulation_LinearFunction(self, m, b):
+
+        def LinearFunction(x, m, b):
+            return m * x + b
+
+        DistanceRange = self.GetDistanceRange()
+        Data = np.zeros(DistanceRange.shape[0])
+        for i in range(DistanceRange.shape[0]):
+            Output = LinearFunction(DistanceRange[i], m, b)
+            if Output < 0:
+                break
+            else:
+                Data[i] = Output
+
+        return Data.tolist()
 
     def Initialize(self):
         self.InitializeModelParameters()
         self.InitializeSimStep()
 
-    def Run(self):
-        Dataset = dict()
-        while self.SimStep * self.TotalSimulationTime // self.N_TimeInterpolation <= self.TotalSimulationTime:
-            Time = self.SimStep * self.TotalSimulationTime // self.N_TimeInterpolation
-            Slope, Intercept = self.GetFunctionParameters(Time)
+    def Run(self, message=False):
+        self.PrintSimulationParameters()
+        while self.SimStep * self.TimeResolution <= self.TotalSimulationTime:
+            Time = self.SimStep * self.TimeResolution
+            Slope, Intercept = self.GetFunctionParameters(Time, self.DiffusionRate)
             self.SetFunctionParameters(Slope, Intercept)
-            # Debugging
+
+            # Generate Data
+            Data = None
             if self.Type == 'Linear':
-                Data = self.Simulation_LinearFunction()
-            Dataset[str(Time) + 's'] = Data
-            self.PrintSimTimeAndDataset(Dataset)
+                print("self.m and self.b: ", self.m, self.b)
+                Data = self.Simulation_LinearFunction(self.m, self.b)
+            else:
+                print("no type was specified")
+            self.Dataset[str(Time) + 's'] = Data
+
+            # Debugging
+            if message:
+                self.PrintSimTimeAndDataset()
+
             self.SimStep += 1
-        return Dataset
-import os, sys
-from argparse import ArgumentParser
-import csv
-import matplotlib.pyplot as plt
-import math
-import numpy as np
-import random
+
+
+    def IntegralCheck(self, message=False):
+
+        for Title, Data in self.Dataset.items():
+            Integral = IntegralApproximation(Data, 0, self.TotalDistance)
+            self.IntegralDataset[Title] = Integral
+
+        if message:
+            self.PrintIntegralDataset()
+
+    def PrintIntegralDataset(self):
+        print("Integral Validation")
+        for Title, Data in self.IntegralDataset.items():
+            print(Title, Data)
+
+
+    def GetDataset(self):
+        return self.Dataset.copy()
+
+
+def IntegralApproximation(Data, Start, End):
+    return (End - Start) * np.mean(Data)
+
 
 random.seed(1)
 SaveFilename = None
@@ -161,8 +228,7 @@ class FPlotter:
 
         return Datasets_Filtered
 
-
-    def PlotDatasets(self, Datasets, SimulationTimeUnit=1, bSideLabel=True, SuperTitle=""):
+    def PlotDatasets(self, Datasets, XRange, bSideLabel=True, SuperTitle=""):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
@@ -234,39 +300,40 @@ class FPlotter:
 
         # Plot data
         for n, (Process, Dataset) in enumerate(Datasets.items()):
-            Time, Dataset = ExtractTime(Dataset, SimulationTimeUnit)
-            Perturbation, PerturbationPlotColor = GetPerturbation(Dataset)
+            # Time, Dataset = ExtractTime(Dataset, SimulationTimeUnit)
+            # Perturbation, PerturbationPlotColor = GetPerturbation(Dataset)
             # UnitTxt, Dataset = ApplyUnit(Dataset)
             ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
             ax2 = None
-            if Perturbation:
-                ax2 = ax1.twinx()
+            # if Perturbation:
+            #     ax2 = ax1.twinx()
 
             # Y axis (molecular concentrations)
             PerturbationIndex = 0
-            for MolName, Conc in Dataset.items():
-                if MolName[0] != PerturbationTag:
+            for TimeStamp, Conc in Dataset.items():
 
-                    # Debug
-                    # print(Process, "\t", MolName)
+                # Debug
+                # print(Process, "\t", MolName)
 
-                    line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
-                    if bSideLabel:
-                        SelectedTimeFrameFromLeft = 0.1
-                        if Perturbation == 0:
-                            SelectedTimeFrameFromLeft = 0.9
-                        ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
-                        # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
-                        # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
+                line, = ax1.plot(XRange, Conc, label="[" + TimeStamp + "]")
+                Integral = IntegralApproximation(Conc, 0, XRange[-1])
+                if bSideLabel:
+                    SelectedTimeFrameFromLeft = 0.01
+                    # if Perturbation == 0:
+                    #     SelectedTimeFrameFromLeft = 0.9
+                    Label = TimeStamp + ", Integral: " + str(Integral)
+                    ax1.text(XRange[-1] * SelectedTimeFrameFromLeft, Conc[int(len(XRange) * SelectedTimeFrameFromLeft)] * 1.02, Label, ha="left", va="bottom", color=line.get_color())
+                    # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
+                    # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
 
-                else:
-                    line, = ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
-                    if bSideLabel:
-                        SelectedTimeFrameFromLeft = 0.8
-                        ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
-                    # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
-                    # print(PerturbationIndex)
-                    PerturbationIndex += 1
+                # else:
+                #     line, = ax2.plot(XRange, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
+                #     if bSideLabel:
+                #         SelectedTimeFrameFromLeft = 0.8
+                #         ax2.text(XRange[-1] * SelectedTimeFrameFromLeft, Conc[int(len(XRange) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
+                #     # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
+                #     # print(PerturbationIndex)
+                #     PerturbationIndex += 1
 
             ax1.set_title(Process)
             ax1.set_xlabel('Distance (a.u.)')
@@ -274,10 +341,10 @@ class FPlotter:
             if not bSideLabel:
                 ax1.set_ylabel('Concentration (a.u.)')
                 ax1.legend(loc='upper left')
-            if Perturbation:
-                # ax2.set_ylim([0, 3e-7])
-                if not bSideLabel:
-                    ax2.legend(loc='upper right')
+            # if Perturbation:
+            #     # ax2.set_ylim([0, 3e-7])
+            #     if not bSideLabel:
+            #         ax2.legend(loc='upper right')
 
             # ax1.grid()
 
@@ -286,29 +353,35 @@ class FPlotter:
         else:
             plt.show()
 
-
 def main():
     Diffusion = FDiffusion()
     Plot = FPlotter()
 
     # Setting Simulation Parameters
-    TotalSimulationTime = 20   # s
-    N_TimeInterpolation = 4
-    N_DistanceInterpolation = 10
-    Diffusion.SetSimulationParameters(TotalSimulationTime, N_TimeInterpolation, N_DistanceInterpolation)
-    Diffusion.PrintSimulationParameters()
+    TotalSimulationTime = 30   # s
+    TimeResolution = 0.5
+    Diffusion.SetSimulationParameters(TotalSimulationTime, TimeResolution)
 
     # Model Parameters
-    MaxDistance = 20
-    MaxConcentration = 10
     Type = 'Linear'
-    Diffusion.SetMaxParameters(MaxDistance, MaxConcentration)
+    TotalDistance = 10
+    DistanceResolution = 0.0001
+    TotalQuantity = 100
+    DiffusionRate = 0.5
+    Diffusion.SetDiffusionParameters(TotalDistance, DistanceResolution, TotalQuantity, DiffusionRate)
     Diffusion.SetTitleAndType(Type, Type)
 
     # Run model
+    Diffusion.Run(message=False)
+
+    # Integral check
+    Diffusion.IntegralCheck(message=True)
+
+    # Plot datasets
     Datasets = dict()
-    Datasets[Type] = Diffusion.Run()
-    Plot.PlotDatasets(Datasets)
+    Datasets[Type] = Diffusion.GetDataset()
+    DistanceRange = Diffusion.GetDistanceRange()
+    Plot.PlotDatasets(Datasets, DistanceRange)
 
 if __name__ == '__main__':
     main()
