@@ -26,12 +26,6 @@ ATP = 9.6e-3 M;
 // {
 //     float co = 0.1uM;
 //     ATP'  = (ADP / ATP) * co;
-//     ADP'  = - ATP';
-//     NADH' = FADH2' = ATP' / 4;
-//     NAD+' = - NADH';
-//     FAD' = - FADH2';
-//     acetyl-CoA' = - ATP';
-//     CoA-SH' = - acetyl-CoA'
 // }
 // {
 

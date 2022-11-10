@@ -21,7 +21,6 @@ ADP = 5.6e-4 M;
 // {
 //     float cgt = 0.5uM;
 //     G6P' = glucose/G6P * cgt;
-//     glucose' = - G6P';
 // }
 // {
 

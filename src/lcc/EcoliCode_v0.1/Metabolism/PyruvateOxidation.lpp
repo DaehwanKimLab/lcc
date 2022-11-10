@@ -24,7 +24,6 @@ NADH = 8.3e-3 M;
 // {
 //     float cp = 1 uM;
 //     pyruvate' = CoA-SH' = NAD+' = - (pyruvate / acetyl-CoA) * cp;
-//     acetyl-CoA' = NADH' = - pyruvate'
 // }
 // {
 // 

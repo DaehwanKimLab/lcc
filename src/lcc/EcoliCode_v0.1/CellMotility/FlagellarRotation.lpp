@@ -5,7 +5,7 @@ import BacterialChemotaxis;
 Am = BacterialChemotaxis.Am;
 
 pathway FlagellarRotation(membrane, bRun) // bRun is a boolean parameter
-mathfunc
+func
 {
     Ang = membrane.angle;
     Pos = membrane.position;
