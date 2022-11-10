@@ -9,6 +9,7 @@ mathfunc
     glucose' = 0 - G6P';
 };
 
+
 reaction Glycolysis(G6P + ADP + ADP + NAD + NAD --> pyruvate + pyruvate + NADH + NADH + ATP + ATP, k=1)
 mathfunc
 {
@@ -21,20 +22,22 @@ mathfunc
     pyruvate' = G6P' * 2;
 };
 
-protein PyruvateDehydrogenase(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1e9);
+reaction PyruvateDehydrogenase(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1e9);
 
-PyruvateDehydrogenase = 1e-6 M;
+//PyruvateDehydrogenase = 1e-6 M;
 
-// reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
-// mathfunc
-// {
-//     float cp = 1 M;
-//     pyruvate' = 0 - (pyruvate / acetyl_CoA) * cp;
-//     CoA_SH' = pyruvate';
-//     NAD' = pyruvate';
-//     acetyl_CoA' = 0 - pyruvate';
-//     NADH' = 0 - pyruvate';
-// };
+/*
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
+mathfunc
+{
+    float cp = 1 M;
+    pyruvate' = 0 - (pyruvate / acetyl_CoA) * cp;
+    CoA_SH' = pyruvate';
+    NAD' = pyruvate';
+    acetyl_CoA' = 0 - pyruvate';
+    NADH' = 0 - pyruvate';
+};
+*/
 
 reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP, k=1)
 mathfunc
