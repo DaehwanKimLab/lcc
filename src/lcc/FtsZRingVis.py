@@ -261,8 +261,9 @@ def main():
     Membrane = FCompartment()
     FtsZ = FObject('FtsZ', type='mass', quantity=1000)
     Dict_FtsA = dict()
-    for i in range(8):
-        Angle = np.deg2rad(45*i)
+    N_FtsA = 20
+    for i in range(N_FtsA):
+        Angle = np.deg2rad(360 / N_FtsA * i)
         X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), Angle, Membrane.Radius)
         Dict_FtsA['FtsA' + str(i)] = FObject('FtsA', type='individual', id=i, x=X, y=Y, angle=Angle)
         # print(Angle, Dict_FtsA['FtsA' + str(i)].ID)
@@ -297,7 +298,7 @@ def main():
             Control.Time += 1
 
         # Children control
-        KineticConstant = 0.05
+        KineticConstant = 0.001 * N_FtsA
 
         # Add Children
         if Switch_Polymerization:
@@ -319,7 +320,7 @@ def main():
         if Switch_Depolymerization:
             Raffle = np.random.uniform(0, 1, len(Dict_FtsA))
             for i, FtsA in enumerate(Dict_FtsA.values()):
-                if Raffle[i] < KineticConstant * 0.4 * (FtsZ.TotalQuantity / FtsZ.CytosolicQuantity):
+                if Raffle[i] < KineticConstant * 0.2 * (FtsZ.TotalQuantity / FtsZ.CytosolicQuantity):
                     if FtsA.N_Children >= 1:
                         FtsA.N_Children -= 1
                         if True:
