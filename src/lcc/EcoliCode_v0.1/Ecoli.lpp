@@ -1,10 +1,29 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // E. coli Code v0.1
 
+import CellDivision.BinaryFission as BinaryFission;
+import CellMotility.BacterialChemotaxis as BacterialChemotaxis;
+import CellMotility.FlagellarRotation as FlagellarRotation;
+import GeneticInfoProcessing.Degradation.ProteinDegradation as ProteinDegradation;
+import GeneticInfoProcessing.Degradation.RNADegradation as RNADegradation;
+import GeneticInfoProcessing.Transcription.Transcription as Transcription;
+import GeneticInfoProcessing.Translation.Translation as Translation;
+import Metabolism.GlucoseMetabolism as GlucoseMetabolism;
+
 organism Ecoli
 {
+    CellDivision = BinaryFission;
+    Chemotaxis = BacterialChemotaxis;
+    CellMovement = FlagellarRotation;
+    ProteinDegradation = ProteinDegradation;
+    RNADegradation = RNADegradation;
+    Transcription = Transcription;
+    Translation = Translation;
+    GlucoseMetabolism = GlucoseMetabolism;
+
     membrane CellMembrane
     {
+
         cytosol Cytosol
         {
 
