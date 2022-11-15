@@ -41,6 +41,22 @@ def GetColorGradient(Fade, baseColor=None):
 def SciFloat(Float, InPrecision=4, InExp_digits=2):
     return np.format_float_scientific(Float, precision=InPrecision, unique=False, exp_digits=InExp_digits)
 
+def DisplayString(String, X, Y, position='center', rotate=0, color=BLACK, Type='mass'):
+    Text=''
+    if Type == 'mass':
+        Text = Font_MassObject.render(String, True, color)
+    elif Type == 'individual':
+        Text = Font_IndividualObject.render(String, True, color)
+    Text = pygame.transform.rotate(Text, rotate)
+    Text_Rect = Text.get_rect()
+    if position == 'center':
+        Text_Rect.center = (X, Y)
+    if position == 'midleft':
+        Text_Rect.midleft = (X, Y)
+    elif position == 'midright':
+        Text_Rect.midright = (X, Y)
+    Screen.blit(Text, Text_Rect)
+
 # pygame
 pygame.init()
 
@@ -116,7 +132,6 @@ class FObject:
         self.Group_Children = list()
         self.Angle_Children = list()
 
-
         # Draw
         self.Radius = radius
         self.Width = width
@@ -124,22 +139,26 @@ class FObject:
         self.Thickness = thickness
         self.Color = color
 
-    def Draw(self):
+    def Draw(self, membradius=0):
         if self.Type == 'individual':
             pygame.draw.circle(surface=Screen, color=GREEN, center=(self.X, self.Y), radius=self.Radius)
             Label = self.Name + "#"+ str(self.ID) + "~FtsZ_{" + str(self.N_Children) + "}"
-            self.DisplayString(Label, self.X+self.Radius*2.5*np.cos(self.Angle), self.Y+self.Radius*2.5*np.sin(self.Angle), color=BLACK)
+            DisplayString(Label, self.X+self.Radius*2.5*np.cos(self.Angle), self.Y+self.Radius*2.5*np.sin(self.Angle), color=BLACK, Type=self.Type)
 
             for i in range(len(self.X_Children)):
                 pygame.draw.circle(surface=Screen, color=RED, center=(self.X_Children[i], self.Y_Children[i]), radius=self.Radius*0.5)
-                # self.DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
+                # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
 
         elif self.Type == 'mass':
             Text = "Cytosolic " + self.Name + ": " + str(self.CytosolicQuantity)
-            self.DisplayString(Text, W_S/2, H_S/2, color=BLACK)
+            if membradius > 200:
+                DisplayString(Text, W_S/2, H_S/2, color=BLACK, Type=self.Type)
+            else:
+                DisplayString(Text, W_S / 2, H_S / 2 + 30 - 330, color=BLACK)
+
 
         else:
-            self.DisplayString("DRAW ERROR", W_S/2, H_S/4, color=BLACK)
+            DisplayString("DRAW ERROR", W_S/2, H_S/4, color=BLACK)
 
 
     # def DrawLegend(self, Color, X, Y):
@@ -157,29 +176,13 @@ class FObject:
     # def DisplayRingCompletionRate(self, X, Y, Rate):
     #     if Y >= 30 and Y < H_S:
     #         Value_Str = self.FormatValueToStr(Rate * 100) + '%'
-    #         self.DisplayString(Value_Str, X, Y - 20)
+    #         DisplayString(Value_Str, X, Y - 20)
 
     def FormatValueToStr(self, Value):
         if Value < 0.01:
             return SciFloat(Value, InPrecision=2, InExp_digits=2)
         else:
             return '{:.3f}'.format(Value)
-
-    def DisplayString(self, String, X, Y, position='center', rotate=0, color=BLACK):
-        Text=''
-        if self.Type == 'mass':
-            Text = Font_MassObject.render(String, True, color)
-        elif self.Type == 'individual':
-            Text = Font_IndividualObject.render(String, True, color)
-        Text = pygame.transform.rotate(Text, rotate)
-        Text_Rect = Text.get_rect()
-        if position == 'center':
-            Text_Rect.center = (X, Y)
-        if position == 'midleft':
-            Text_Rect.midleft = (X, Y)
-        elif position == 'midright':
-            Text_Rect.midright = (X, Y)
-        Screen.blit(Text, Text_Rect)
 
 class FControl:
     def __init__(self):
@@ -245,6 +248,12 @@ class FControl:
         Text_Rect.center = self.Pos_Welcome
         Screen.blit(Text, Text_Rect)
 
+    def DisplayTreadmilling(self, Treadmilling, Radius):
+        Text = 'FtsZ engaged in treadmilling: ' + str(Treadmilling)
+        if Radius > 200:
+            DisplayString(Text, W_S / 2, H_S / 2 + 30, color=BLACK)
+        else:
+            DisplayString(Text, W_S / 2, H_S / 2 + 30 - 300, color=BLACK)
 
 def main():
     print('\n%%%%%% Start FtsZ ring mock-visualization. %%%%%%')
@@ -261,16 +270,19 @@ def main():
     EcoliBody = FCompartment(linecolor=GRAY2, bodycolor=GRAY2)
     Membrane = FCompartment()
     FtsZ = FObject('FtsZ', type='mass', quantity=1000)
-    Dict_FtsA = dict()
+    List_FtsA = list()
     N_FtsA = 20
     for i in range(N_FtsA):
         Angle = np.deg2rad(360 / N_FtsA * i)
         X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), Angle, Membrane.Radius)
-        Dict_FtsA['FtsA' + str(i)] = FObject('FtsA', type='individual', id=i, x=X, y=Y, angle=Angle)
-        # print(Angle, Dict_FtsA['FtsA' + str(i)].ID)
+        List_FtsA.append(FObject('FtsA', type='individual', id=i, x=X, y=Y, angle=Angle))
+        # print(Angle, List_FtsA['FtsA' + str(i)].ID)
+    Treadmilling = 0
 
     ElapsedTime = 0
     PrevTime = datetime.now()
+
+    Debug = False
 
     SimState = True
     while SimState:
@@ -303,8 +315,8 @@ def main():
 
         # Add Children
         if Switch_Polymerization:
-            Raffle = np.random.uniform(0, 1, len(Dict_FtsA))
-            for i, FtsA in enumerate(Dict_FtsA.values()):
+            Raffle = np.random.uniform(0, 1, len(List_FtsA))
+            for i, FtsA in enumerate(List_FtsA):
                 if FtsZ.CytosolicQuantity == 0:
                     break
                 if Raffle[i] < KineticConstant * (FtsZ.CytosolicQuantity / FtsZ.TotalQuantity):
@@ -325,8 +337,8 @@ def main():
 
         # Remove Children
         if Switch_Depolymerization:
-            Raffle = np.random.uniform(0, 1, len(Dict_FtsA))
-            for i, FtsA in enumerate(Dict_FtsA.values()):
+            Raffle = np.random.uniform(0, 1, len(List_FtsA))
+            for i, FtsA in enumerate(List_FtsA):
                 if Raffle[i] < KineticConstant * 0.2 * (FtsZ.TotalQuantity / FtsZ.CytosolicQuantity):
                     if FtsA.N_Children >= 1:
                         FtsA.N_Children -= 1
@@ -337,31 +349,41 @@ def main():
                             FtsA.Angle_Children.pop()
                         FtsZ.CytosolicQuantity += 1
 
+
         # FtsZ Constriction
         if Switch_Constriction:
-            # TreadmillingArray_Prev = np.empty(0)
-            # N_GlobalTreadmilling = 0
-            # N_LocalTreadmilling = 0
-            # for i, FtsA in enumerate(Dict_FtsA.values()):
-            #     TreadmillingArray = np.rad2deg(FtsA.Angle_Children)
-            #     if TreadmillingArray_Prev.shape[0] > 0:
-            #         Min_Now = np.min(TreadmillingArray)
-            #         Max_Prev =
-            #         N_LocalTreadmilling = np.count_nonzero(TreadmillingArray < np.min(TreadmillingArray_Prev))
-            #         N_GlobalTreadmilling += N_LocalTreadmilling
-            #     print("Prev:", TreadmillingArray_Prev, "\nNow:", TreadmillingArray, "\nLocalTreadmilling:", N_LocalTreadmilling)
-            #     TreadmillingArray_Prev = TreadmillingArray
-            #
-            # if N_GlobalTreadmilling > 0:
-            #     print("\nGlocalTreadmilling:",N_GlobalTreadmilling)
+            N_GlobalTreadmilling = 0
+            N_LocalTreadmilling = 0
+            for i, FtsA in enumerate(List_FtsA):
+                TreadmillingArray_Prev = np.rad2deg(List_FtsA[i - 1].Angle_Children)
+                TreadmillingArray = np.rad2deg(FtsA.Angle_Children)
+                if TreadmillingArray_Prev.shape[0] > 0 and TreadmillingArray.shape[0] > 0:
+                    Max_Now = np.max(TreadmillingArray)
+                    Min_Prev = np.min(TreadmillingArray_Prev)
+                    if np.all(Max_Now < Min_Prev):
+                        if Debug:
+                            print("** CORRECTION ** FtsA #:", FtsA.ID, "-------\nPrev:", TreadmillingArray_Prev, "\nNow:", TreadmillingArray)
+                        TreadmillingArray_Prev -= 360
+                    Max_Prev = np.max(TreadmillingArray_Prev)
+                    N_LocalTreadmilling = np.count_nonzero(TreadmillingArray < Max_Prev)
+                    N_GlobalTreadmilling += N_LocalTreadmilling
 
-            ConstrictionRate = 0.9999 - 0.0001 * (FtsZ.CytosolicQuantity / FtsZ.TotalQuantity)
-            if FtsZ.TotalQuantity - FtsZ.CytosolicQuantity > 200:
+                if Debug:
+                    print("------- FtsA #:", FtsA.ID, "-------\nPrev:", TreadmillingArray_Prev, "\nNow:", TreadmillingArray, "\nLocalTreadmilling:", N_LocalTreadmilling)
+                TreadmillingArray_Prev = TreadmillingArray
+
+
+            if Debug:
+                print("================ GlobalTreadmilling:", N_GlobalTreadmilling, " ================")
+            Treadmilling = N_GlobalTreadmilling
+
+            ConstrictionRate = 0.000001 * N_GlobalTreadmilling
+            if ConstrictionRate > 0:
                 # Membrane
-                Membrane.Radius *= ConstrictionRate
+                Membrane.Radius *= (1 - ConstrictionRate)
 
 
-                for i, FtsA in enumerate(Dict_FtsA.values()):
+                for i, FtsA in enumerate(List_FtsA):
                     # FtsA
                     X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsA.Angle, Membrane.Radius)
                     FtsA.X = X
@@ -378,9 +400,10 @@ def main():
 
         EcoliBody.Draw()
         Membrane.Draw()
-        for FtsA in Dict_FtsA.values():
+        for FtsA in List_FtsA:
             FtsA.Draw()
-        FtsZ.Draw()
+        FtsZ.Draw(Membrane.Radius)
+        Control.DisplayTreadmilling(Treadmilling, Membrane.Radius)
 
         if Control.InstructionSwitch:
             Control.DisplayInstructions()
