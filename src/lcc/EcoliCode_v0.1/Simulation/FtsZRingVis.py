@@ -3,10 +3,6 @@ import pygame
 import random
 from datetime import datetime
 import numpy as np
-import SimModule
-import SimState as SimS
-import SimData as SimD
-import SimFunctions as SimF
 
 random.seed(1)
 np.random.seed(1)
@@ -41,6 +37,9 @@ def GetColorGradient(Fade, baseColor=None):
         return (Fade, Fade, 255)
     else:  # Assumes White
         return (Fade, Fade, Fade)
+
+def SciFloat(Float, InPrecision=4, InExp_digits=2):
+    return np.format_float_scientific(Float, precision=InPrecision, unique=False, exp_digits=InExp_digits)
 
 # pygame
 pygame.init()
@@ -114,7 +113,9 @@ class FObject:
         self.N_Children = 0
         self.X_Children = list()
         self.Y_Children = list()
+        self.Group_Children = list()
         self.Angle_Children = list()
+
 
         # Draw
         self.Radius = radius
@@ -160,7 +161,7 @@ class FObject:
 
     def FormatValueToStr(self, Value):
         if Value < 0.01:
-            return SimF.SciFloat(Value, InPrecision=2, InExp_digits=2)
+            return SciFloat(Value, InPrecision=2, InExp_digits=2)
         else:
             return '{:.3f}'.format(Value)
 
@@ -309,11 +310,17 @@ def main():
                 if Raffle[i] < KineticConstant * (FtsZ.CytosolicQuantity / FtsZ.TotalQuantity):
                     FtsA.N_Children += 1
                     if True:
-                        FtsZAngle = FtsA.Angle + (-1) ** (len(FtsA.X_Children)) * np.deg2rad(0.7 * len(FtsA.X_Children))
-                        X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsZAngle, Membrane.Radius, RatioFactor=0.97)
+                        FtsZGroup = (-1) ** (len(FtsA.X_Children))
+                        FtsZAngle = FtsA.Angle + FtsZGroup * np.deg2rad(0.75 * len(FtsA.X_Children))
+                        # if FtsZAngle < 0:
+                        #     FtsZAngle += np.deg2rad(360)
+                        FtsZRatioFactor = 0.95 + 0.012 * FtsZGroup
+                        X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsZAngle, Membrane.Radius, RatioFactor=FtsZRatioFactor)
                         FtsA.X_Children.append(X)
                         FtsA.Y_Children.append(Y)
+                        FtsA.Group_Children.append(FtsZGroup)
                         FtsA.Angle_Children.append(FtsZAngle)
+
                     FtsZ.CytosolicQuantity -= 1
 
         # Remove Children
@@ -326,21 +333,42 @@ def main():
                         if True:
                             FtsA.X_Children.pop()
                             FtsA.Y_Children.pop()
+                            FtsA.Group_Children.pop()
                             FtsA.Angle_Children.pop()
                         FtsZ.CytosolicQuantity += 1
 
         # FtsZ Constriction
         if Switch_Constriction:
+            # TreadmillingArray_Prev = np.empty(0)
+            # N_GlobalTreadmilling = 0
+            # N_LocalTreadmilling = 0
+            # for i, FtsA in enumerate(Dict_FtsA.values()):
+            #     TreadmillingArray = np.rad2deg(FtsA.Angle_Children)
+            #     if TreadmillingArray_Prev.shape[0] > 0:
+            #         Min_Now = np.min(TreadmillingArray)
+            #         Max_Prev =
+            #         N_LocalTreadmilling = np.count_nonzero(TreadmillingArray < np.min(TreadmillingArray_Prev))
+            #         N_GlobalTreadmilling += N_LocalTreadmilling
+            #     print("Prev:", TreadmillingArray_Prev, "\nNow:", TreadmillingArray, "\nLocalTreadmilling:", N_LocalTreadmilling)
+            #     TreadmillingArray_Prev = TreadmillingArray
+            #
+            # if N_GlobalTreadmilling > 0:
+            #     print("\nGlocalTreadmilling:",N_GlobalTreadmilling)
+
             ConstrictionRate = 0.9999 - 0.0001 * (FtsZ.CytosolicQuantity / FtsZ.TotalQuantity)
             if FtsZ.TotalQuantity - FtsZ.CytosolicQuantity > 200:
                 # Membrane
                 Membrane.Radius *= ConstrictionRate
+
+
                 for i, FtsA in enumerate(Dict_FtsA.values()):
+                    # FtsA
                     X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsA.Angle, Membrane.Radius)
                     FtsA.X = X
                     FtsA.Y = Y
-                    # Children
-                    X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsA.Angle_Children, Membrane.Radius, RatioFactor=0.97)
+                    # FtsA Children
+                    FtsZRatioFactor = 0.95 + 0.012 * np.array(FtsA.Group_Children)
+                    X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), np.array(FtsA.Angle_Children), Membrane.Radius, RatioFactor=FtsZRatioFactor)
                     FtsA.X_Children = X.tolist()
                     FtsA.Y_Children = Y.tolist()
 
