@@ -1,10 +1,8 @@
 import sys
 import pygame
-import random
 from datetime import datetime
 import numpy as np
 
-random.seed(1)
 np.random.seed(1)
 
 # Colors
