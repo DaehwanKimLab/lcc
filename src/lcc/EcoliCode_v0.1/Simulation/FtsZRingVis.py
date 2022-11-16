@@ -60,7 +60,7 @@ def DisplayString(String, X, Y, position='center', rotate=0, color=BLACK, Type='
 # pygame
 pygame.init()
 
-Screen_Size = W_S, H_S = 1700, 600
+Screen_Size = W_S, H_S = 1700, 800
 Screen = pygame.display.set_mode(Screen_Size)
 
 LEFT = 0
@@ -115,7 +115,7 @@ class FCompartment:
         self.Y_DivPlane = Y + Offset_DivPlane_Y
         self.X_DivAxis = X + Offset_DivAxis_X
         self.Y_DivAxis = Y + Offset_DivAxis_Y
-        self.W_DivAxis = Radius * 4
+        self.W_DivAxis = Radius * 3
         self.H_DivAxis = Radius * 2
 
         self.Label = Label
@@ -142,22 +142,33 @@ class FMembrane(FCompartment):
         pygame.draw.circle(Screen, self.BodyColor, (self.X_DivPlane, self.Y_DivPlane), self.Radius)
         pygame.draw.circle(Screen, self.LineColor, (self.X_DivPlane, self.Y_DivPlane), self.Radius, self.Thickness)
 
-        # Division Axis
+        # Division Axis: Cell Shape
         pygame.draw.rect(Screen, self.BodyColor, (self.X_DivAxis - self.W_DivAxis / 2, self.Y_DivAxis - self.H_DivAxis / 2, self.W_DivAxis, self.H_DivAxis))
-        pygame.draw.rect(Screen, self.LineColor, (self.X_DivAxis - self.W_DivAxis / 2, self.Y_DivAxis - self.H_DivAxis / 2, self.W_DivAxis, self.H_DivAxis), self.Thickness)
+        pygame.draw.rect(Screen, self.LineColor, (self.X_DivAxis - self.W_DivAxis / 2, self.Y_DivAxis - self.H_DivAxis / 2, self.W_DivAxis, self.H_DivAxis), self.Thickness + 1)
+
+        # Division Axis: Septum
+        EdgeHandling = 1
+        pygame.draw.line(Screen, self.LineColor, (self.X_DivAxis, self.Y_DivAxis - self.H_DivAxis / 2 + EdgeHandling), (self.X_DivAxis, self.Y_DivAxis + self.H_DivAxis / 2 - EdgeHandling), self.Thickness * 2)
+        pygame.draw.line(Screen, self.BodyColor, (self.X_DivAxis, self.Y_DivAxis - self.H_DivAxis / 2), (self.X_DivAxis, self.Y_DivAxis + self.H_DivAxis / 2), 1)
+        pygame.draw.line(Screen, self.BodyColor, (self.X_DivAxis, self.Y_DivAxis - self.Radius + self.Thickness + EdgeHandling), (self.X_DivAxis, self.Y_DivAxis + self.Radius - self.Thickness - EdgeHandling), self.Thickness * 2)
+
+        self.DisplayPercentCompletionOfDivision()
+
+    def DisplayPercentCompletionOfDivision(self):
+        PercentCompletion = (1 - self.Radius * 2 / self.H_DivAxis)  * 100
+        Text = "% Completion: " + "{:.1f}".format(PercentCompletion)
+        DisplayString(Text, self.X_DivAxis, self.Y_DivAxis, color=BLACK, Type='mass')
 
 class FObject:
     def __init__(self, Name, id=0, X=MID_X, Y=MID_Y):
         self.Name = Name
         self.ID = id
-        self.X = X
-        self.Y = Y
         self.X_DivPlane = X + Offset_DivPlane_X
         self.Y_DivPlane = Y + Offset_DivPlane_Y
         self.X_DivAxis = X + Offset_DivAxis_X
         self.Y_DivAxis = Y + Offset_DivAxis_Y
 
-    def Draw(self, membradius=0):
+    def Draw(self):
         pass
 
 class FMassObject(FObject):
@@ -203,16 +214,32 @@ class FIndividualObject(FObject):
         self.Thickness = thickness
         self.Color = color
 
-    def Draw(self, membradius=0):
-        # Children
+    def Draw(self):
+        # Division Plane
+        pygame.draw.circle(surface=Screen, color=GREEN, center=(self.X_DivPlane, self.Y_DivPlane), radius=self.Radius)
+        Label = self.Name + "#" + str(self.ID) + "~FtsZ_{" + str(self.N_Children) + "}"
+        DisplayString(Label, self.X_DivPlane+self.Radius*2.5*np.cos(self.Angle), self.Y_DivPlane+self.Radius*2.5*np.sin(self.Angle), color=BLACK, Type='individual')
+
+        # Division Axis
+        Angle = np.rad2deg(self.Angle)
+        if Angle == 90 or Angle == 270:
+            pygame.draw.circle(surface=Screen, color=GREEN, center=(self.X_DivAxis - 5 * np.cos(self.Angle), self.Y_DivAxis - 5 * np.sin(self.Angle)), radius=self.Radius)
+
+    def DrawChildren(self):
+        # Division Plane
         for i in range(len(self.X_Children_DivPlane)):
-            pygame.draw.circle(surface=Screen, color=RED, center=(self.X_Children_DivPlane[i], self.Y_Children_DivPlane[i]), radius=self.Radius*0.5)
+            pygame.draw.circle(surface=Screen, color=RED, center=(self.X_Children_DivPlane[i] - 5 * np.cos(self.Angle), self.Y_Children_DivPlane[i] - 5 * np.sin(self.Angle)), radius=self.Radius*0.5, width=1)
             # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
 
-        # Parent
-        pygame.draw.circle(surface=Screen, color=GREEN, center=(self.X, self.Y), radius=self.Radius)
-        Label = self.Name + "#" + str(self.ID) + "~FtsZ_{" + str(self.N_Children) + "}"
-        DisplayString(Label, self.X+self.Radius*2.5*np.cos(self.Angle), self.Y+self.Radius*2.5*np.sin(self.Angle), color=BLACK, Type='individual')
+        # Division Axis
+        Angle = np.rad2deg(self.Angle)
+        if Angle == 90 or Angle == 270:
+            for i in range(len(self.X_Children_DivPlane)):
+                pygame.draw.circle(surface=Screen, color=RED, center=(self.X_Children_DivAxis[i], self.Y_Children_DivAxis[i] - 5 * np.sin(self.Angle)), radius=self.Radius*0.5, width=1)
+                if i > 4:
+                    break
+        else:
+            pass
 
 class FControl:
     def __init__(self):
@@ -272,7 +299,7 @@ def main():
     N_FtsA = 20
     for i in range(N_FtsA):
         Angle = np.deg2rad(360 / N_FtsA * i)
-        X, Y = GetXYFromCenter((Membrane.X_DivPlane, Membrane.Y_DivPlane), Angle, Membrane.Radius)
+        X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), Angle, Membrane.Radius)
         List_FtsA.append(FIndividualObject('FtsA', id=i, X=X, Y=Y, angle=Angle))
         # print(Angle, List_FtsA['FtsA' + str(i)].ID)
     Treadmilling = 0
@@ -319,13 +346,14 @@ def main():
                         FtsZAngle = FtsA.Angle + FtsZGroup * np.deg2rad(0.75 * len(FtsA.X_Children_DivPlane))
                         # if FtsZAngle < 0:
                         #     FtsZAngle += np.deg2rad(360)
-                        FtsZRatioFactor = 0.95 + 0.012 * FtsZGroup
-                        X, Y = GetXYFromCenter((Membrane.X_DivPlane, Membrane.Y_DivPlane), FtsZAngle, Membrane.Radius, RatioFactor=FtsZRatioFactor)
-                        FtsA.X_Children_DivPlane.append(X)
-                        FtsA.Y_Children_DivPlane.append(Y)
+                        FtsZRatioFactor = 0.92 + 0.02 * FtsZGroup
+                        X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsZAngle, Membrane.Radius, RatioFactor=FtsZRatioFactor)
+                        FtsA.X_Children_DivPlane.append(X + Offset_DivPlane_X)
+                        FtsA.Y_Children_DivPlane.append(Y + Offset_DivPlane_Y)
+                        FtsA.X_Children_DivAxis.append(X + Offset_DivAxis_X)
+                        FtsA.Y_Children_DivAxis.append(Y + Offset_DivAxis_Y)
                         FtsA.Group_Children.append(FtsZGroup)
                         FtsA.Angle_Children.append(FtsZAngle)
-
                     FtsZ.CytosolicQuantity -= 1
 
         # Remove Children
@@ -338,6 +366,8 @@ def main():
                         if True:
                             FtsA.X_Children_DivPlane.pop()
                             FtsA.Y_Children_DivPlane.pop()
+                            FtsA.X_Children_DivAxis.pop()
+                            FtsA.Y_Children_DivAxis.pop()
                             FtsA.Group_Children.pop()
                             FtsA.Angle_Children.pop()
                         FtsZ.CytosolicQuantity += 1
@@ -376,14 +406,19 @@ def main():
                 Membrane.Radius *= (1 - ConstrictionRate)
                 for i, FtsA in enumerate(List_FtsA):
                     # FtsA
-                    X, Y = GetXYFromCenter((Membrane.X_DivPlane, Membrane.Y_DivPlane), FtsA.Angle, Membrane.Radius)
-                    FtsA.X = X
-                    FtsA.Y = Y
+                    X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsA.Angle, Membrane.Radius)
+                    FtsA.X_DivPlane = X + Offset_DivPlane_X
+                    FtsA.Y_DivPlane = Y + Offset_DivPlane_Y
+                    FtsA.X_DivAxis = X + Offset_DivAxis_X
+                    FtsA.Y_DivAxis = Y + Offset_DivAxis_Y
+
                     # FtsA Children
-                    FtsZRatioFactor = 0.95 + 0.012 * np.array(FtsA.Group_Children)
-                    X, Y = GetXYFromCenter((Membrane.X_DivPlane, Membrane.Y_DivPlane), np.array(FtsA.Angle_Children), Membrane.Radius, RatioFactor=FtsZRatioFactor)
-                    FtsA.X_Children_DivPlane = X.tolist()
-                    FtsA.Y_Children_DivPlane = Y.tolist()
+                    FtsZRatioFactor = 0.92 + 0.02 * np.array(FtsA.Group_Children)
+                    X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), np.array(FtsA.Angle_Children), Membrane.Radius, RatioFactor=FtsZRatioFactor)
+                    FtsA.X_Children_DivPlane = (X + Offset_DivPlane_X).tolist()
+                    FtsA.Y_Children_DivPlane = (Y + Offset_DivPlane_Y).tolist()
+                    FtsA.X_Children_DivAxis = (X + Offset_DivAxis_X).tolist()
+                    FtsA.Y_Children_DivAxis = (Y + Offset_DivAxis_Y).tolist()
 
 
         # All the Drawings
@@ -393,6 +428,7 @@ def main():
         Membrane.Draw()
         for FtsA in List_FtsA:
             FtsA.Draw()
+            FtsA.DrawChildren()
         FtsZ.Draw(Membrane.Radius)
 
         Control.DisplayTime()
