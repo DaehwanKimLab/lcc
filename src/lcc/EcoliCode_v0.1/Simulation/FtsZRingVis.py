@@ -222,7 +222,8 @@ class FIndividualObject(FObject):
 
         # Division Axis
         Angle = np.rad2deg(self.Angle)
-        if Angle == 90 or Angle == 270:
+        Buffer = 5
+        if (Angle < 90 + Buffer and Angle > 90 - Buffer) or (Angle < 270 + Buffer and Angle > 270 - Buffer):
             pygame.draw.circle(surface=Screen, color=GREEN, center=(self.X_DivAxis - 5 * np.cos(self.Angle), self.Y_DivAxis - 5 * np.sin(self.Angle)), radius=self.Radius)
 
     def DrawChildren(self):
@@ -233,7 +234,8 @@ class FIndividualObject(FObject):
 
         # Division Axis
         Angle = np.rad2deg(self.Angle)
-        if Angle == 90 or Angle == 270:
+        Buffer = 5
+        if (Angle < 90 + Buffer and Angle > 90 - Buffer) or (Angle < 270 + Buffer and Angle > 270 - Buffer):
             for i in range(len(self.X_Children_DivPlane)):
                 pygame.draw.circle(surface=Screen, color=RED, center=(self.X_Children_DivAxis[i], self.Y_Children_DivAxis[i] - 5 * np.sin(self.Angle)), radius=self.Radius*0.5, width=1)
                 if i > 4:
@@ -296,7 +298,7 @@ def main():
     Membrane = FMembrane(X=MID_X, Y=MID_Y)
     FtsZ = FMassObject('FtsZ', quantity=1000)
     List_FtsA = list()
-    N_FtsA = 20
+    N_FtsA = 40
     for i in range(N_FtsA):
         Angle = np.deg2rad(360 / N_FtsA * i)
         X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), Angle, Membrane.Radius)
