@@ -2,14 +2,13 @@ import random
 import sys
 import math
 import matplotlib.pyplot as plt
-
 from src.lcc.plot2 import FPlotter
 
 random.seed(1)
 
 PerturbationTag = "#"
-G6P_Constant = 8.8e-3
 
+# Key names for simulation parameters
 Key_GlucoseTransport = "GlucoseTransport"
 Key_GlucoseAvailability = "GlucoseAvailability"
 Key_G6PSink = "G6P_Sink"
@@ -21,6 +20,38 @@ Key_OxidativePhosphorylationATP = "OxidativePhosphorylationATP"
 Key_ATPSink = "ATP_Sink"
 Key_GlycolysisEndProduct = "GlycolysisEndProduct"
 
+# Physiological molecular concentrations
+MolConc = dict()
+MolConc["G6P"] = 8.8e-3  # all Hexose-P combined
+MolConc["ATP"] = 9.6e-3
+MolConc["ADP"] = 5.6e-4
+MolConc["NAD"] = 2.6e-3
+# MolConc["Pi"]       = 6e-3   # undocumented
+MolConc["NADH"] = 8.3e-3
+MolConc["pyruvate"] = 3.9e-4
+MolConc["acetyl-CoA"] = 6.1e-4
+MolConc["FAD"] = 1.7e-4
+MolConc["FADH2"] = 5e-4  # undocumented
+MolConc["CoA"] = 1.4e-3
+
+# Perturbation initialization
+Perturbation = dict()
+Perturbation["ATP_Sink"] = 0
+Perturbation["glucose{out}"] = 0
+Perturbation["glucose_Influx"] = 0
+Perturbation["G6P_Sink"] = 0
+
+# Constant Setup
+c_CellDivision = 1e-4
+cg_CellDivision = c_CellDivision * 100
+cp_CellDivision = c_CellDivision
+ct_CellDivision = c_CellDivision * 2
+co_CellDivision = ct_CellDivision * 1
+
+# Debugging Switch
+DebugZero = True
+DebugZero = False
+
 class FSimulation():
     def __init__(self):
         # Molecule Concentration
@@ -28,6 +59,7 @@ class FSimulation():
         self.DeltaMolConc = dict()
         self.Dataset = dict()   # storing concentration
         self.Perturbation = dict()
+        self.Conjugation = dict()
 
         # Constants
         self.Constants = dict()
@@ -45,6 +77,9 @@ class FSimulation():
         self.ModelType = dict()
         self.SupportedModelTypes2Int = dict()
         self.InitializeSupportedModelTypes()
+        self.InitializeSelectiveMolecules = list()
+        self.InitializePerturbations = list()
+        self.RestoreSelectiveMolecules = list()
 
     def SetSimulationParameters(self, TotalSimulationTime, SimulationTimeUnit, SteadyStateBrake=False, SteadyStateCheckMolecule=None, SteadyStateThresholdFactor=None):
         self.TotalSimulationTime = TotalSimulationTime
@@ -68,6 +103,14 @@ class FSimulation():
             self.Dataset[MolName] = [Conc]
         for PerturbationName, Conc in self.Perturbation.items():
             self.Dataset[PerturbationName] = [Conc]
+
+    def InitializeConjugation(self):
+        if 'ATP' in self.MolConc:
+            self.Conjugation['ATP'] = ('ADP', self.MolConc['ATP'] + self.MolConc['ADP'])
+        if 'NADH' in self.MolConc:
+            self.Conjugation['NADH'] = ('NAD', self.MolConc['NADH'] + self.MolConc['NAD'])
+        if 'FADH2' in self.MolConc:
+            self.Conjugation['FADH2'] = ('FAD', self.MolConc['FADH2'] + self.MolConc['FAD'])
 
     def InitializeSimStep(self):
         self.SimStep = 0
@@ -100,7 +143,7 @@ class FSimulation():
         # Glycolysis - ATP Production
         self.SupportedModelTypes2Int["ATP'=0"] = 0
         self.SupportedModelTypes2Int["ATP'=cg"] = 1
-        self.SupportedModelTypes2Int["ATP'=ADP/ATP*cg"] = 2
+        self.SupportedModelTypes2Int["ATP'=(ADP/ATP)*cg"] = 2
         self.SupportedModelTypes2Int["ATP=G6P*cg"] = 3
 
         # Glycolysis: End product
@@ -110,46 +153,61 @@ class FSimulation():
         # Pyruvate Oxidation - ATP Production
         self.SupportedModelTypes2Int["pyruvate'=0"] = 0
         self.SupportedModelTypes2Int["pyruvate'=cp"] = 1
-        self.SupportedModelTypes2Int["pyruvate'=ADP/ATP*cp"] = 2   # Not testable without ATP and ADP
-        self.SupportedModelTypes2Int["pyruvate'=pyruvate/acetyl-CoA*cp"] = 3
+        self.SupportedModelTypes2Int["pyruvate'=(ADP/ATP)*cp"] = 2   # Not testable without ATP and ADP
+        self.SupportedModelTypes2Int["pyruvate'=(pyruvate/acetyl-CoA)*cp"] = 3
 
         # TCA Cycle: ATP Production
         # self.SupportedModelTypes2Int["ATP'=0"] = 0   # same as in Glycolysis ATP production
         self.SupportedModelTypes2Int["ATP'=ct"] = 1
-        self.SupportedModelTypes2Int["ATP'=ADP/ATP*ct"] = 2
-        # self.SupportedModelTypes2Int["ATP=G6P*cg"] = 3
+        self.SupportedModelTypes2Int["ATP'=(ADP/ATP)*ct"] = 2
+        self.SupportedModelTypes2Int["ATP'=(acetyl-CoA/CoA)*ct"] = 3
 
-        # TCA Cycle: ATP Production
+        # TCA Cycle: acetyl-CoA level control
         self.SupportedModelTypes2Int["Unfixed"] = 0
         self.SupportedModelTypes2Int["Fixed"] = 1
 
         # Oxidative Phosphorylation: ATP Production
         # self.SupportedModelTypes2Int["ATP'=0"] = 0   # same as in Glycolysis ATP production
         self.SupportedModelTypes2Int["ATP'=co"] = 1
-        self.SupportedModelTypes2Int["ATP'=ADP/ATP*co"] = 2
+        self.SupportedModelTypes2Int["ATP'=(ADP/ATP)*co"] = 2
+        self.SupportedModelTypes2Int["ATP'=(1/ATP)*co"] = 3
+        self.SupportedModelTypes2Int["ATP'=(FADH2/FAD)*co"] = 4
 
         # Arbitrary ATP Sink
         self.SupportedModelTypes2Int["No_ATPSink"] = 0
         self.SupportedModelTypes2Int["Constant_ATPSink"] = 1
         self.SupportedModelTypes2Int["Burst_ATPSink"] = 2
+        self.SupportedModelTypes2Int["CellDivision_ATPSink"] = 3
 
     def GetModelType(self, Type):
         if Type in self.ModelType.keys():
             return self.ModelType[Type]
         else:
-            print("[ERROR] Unrecognized Model: %s" % Type)
+            print("\n[Error] Unrecognized Model: %s" % Type)
             sys.exit(1)
 
     def GetSupportedModelType2Int(self, Type):
         if Type in self.SupportedModelTypes2Int.keys():
             return self.SupportedModelTypes2Int[Type]
         else:
-            print("[ERROR] Unsupported Model Type: %s" % Type)
+            print("\n[Error] Unsupported Model Type: %s" % Type)
             sys.exit(1)
 
     def SetConstants(self, List_ConstantNames, List_ConstantValues):
         for ConstantName, ConstantValue in zip(List_ConstantNames, List_ConstantValues):
             self.Constants[ConstantName] = ConstantValue
+
+    def SetInitializeSelectiveMolecules(self, Molecules):
+        for Molecule in Molecules:
+            self.InitializeSelectiveMolecules.append(Molecule)
+
+    def SetInitializePerturbations(self, Perturbations):
+        for Perturbation in Perturbations:
+            self.InitializePerturbations.append(Perturbation)
+
+    def SetRestoreSelectiveMolecules(self, Molecules):
+        for Molecule in Molecules:
+            self.RestoreSelectiveMolecules.append(Molecule)
 
     def AppendData(self):
         for MolName, Conc in self.MolConc.items():
@@ -160,13 +218,14 @@ class FSimulation():
     def UpdateMolConc(self):
         # If concentrations getting below zero
         if self.CheckBelowZero(self.DeltaMolConc):
-            pass
+            return True   # For KFinder
 
         # If concentrations all above zero
         else:
             for MolName, Conc in self.DeltaMolConc.items():
                 self.MolConc[MolName] += self.DeltaMolConc[MolName]
                 self.DeltaMolConc[MolName] = 0
+            return False   # For KFinder
 
     def AddToDeltaMolConc(self, NewMolConcentrations):
         for MolName, Conc in NewMolConcentrations.items():
@@ -180,16 +239,26 @@ class FSimulation():
                 # print("Below zero: %s %s\t" % (MolName, str(Test)), end= " |\t")
                 # self.PrintSimTimeAndMolConc()
                 bBelowZero = True
-                break
+
+                if DebugZero:
+                    print("\nBelow Zero: ", MolName, "\tConcentration: ", self.MolConc[MolName], "\tdelta: ", NewMolConcentrations[MolName], end= "")
         return bBelowZero
+
+    def CheckZeroSumConjugation(self):
+        for Molecule, (Molecule_Conjugate, Conc_InitialSum) in self.Conjugation.items():
+            Conc_Sum = self.MolConc[Molecule] + self.MolConc[Molecule_Conjugate]
+            Ratio = abs(Conc_Sum / Conc_InitialSum)
+            UpperBoundCheck = Ratio < 1 + 1e-6
+            LowerBoundCheck = Ratio > 1 - 1e-6
+            assert UpperBoundCheck and LowerBoundCheck , "Conjugation Pair: %s - %s" % (Molecule, Molecule_Conjugate) + " |\tInitial Sum: %s vs. \tCurrent Sum: %s" % (Conc_InitialSum, Conc_Sum)
 
     def PrintMolConc(self):
         for MolName, Conc in self.MolConc.items():
-            print("[" + MolName + "] " + "{:.5f}".format(Conc), end=", \t")
+            print("[" + MolName + "] " + "{:.6f}".format(Conc), end=", \t")
 
     def PrintDeltaMolConc(self):
         for MolName, Conc in self.DeltaMolConc.items():
-            print("[" + MolName + "] " + "{:.5f}".format(Conc), end=", \t")
+            print("d[" + MolName + "] " + "{:.6f}".format(Conc), end=", \t")
 
     def PrintSimTime(self):
         print("\n", self.SimStep, "\t| ", "{:.2f}".format(self.SimStep * self.SimulationTimeUnit), end=" s | ")
@@ -246,6 +315,18 @@ class FSimulation():
         self.CorrectAndTagPerturbationLabel()
         return self.Dataset.copy()
 
+    def Initialize_SelectiveMolecules(self):
+        for Molecule in self.InitializeSelectiveMolecules:
+            self.MolConc[Molecule] = MolConc[Molecule]
+
+    def Initialize_Perturbations(self):
+        for Molecule in self.InitializePerturbations:
+            self.Perturbation[Molecule] = Perturbation[Molecule]
+
+    def Restore_SelectiveMolecules(self):
+        for Molecule in self.RestoreSelectiveMolecules:
+            self.MolConc[Molecule] = MolConc[Molecule]
+
     def Initialize_Chemotaxis(self):
         # Initial Molecule Concentrations
         self.MolConc["G6P"] = 8.8e-3   # all Hexose-P combined
@@ -255,7 +336,8 @@ class FSimulation():
         # Perturbations
         self.Perturbation["glucose{out}"] = 0
         self.Perturbation["glucose_Influx"] = 0
-        self.Perturbation["G6P_Sink"] = 0
+        if Key_G6PSink in self.ModelType:
+            self.Perturbation["G6P_Sink"] = 0
 
         # Constants
         self.Constants["cc"] = 0.01
@@ -268,9 +350,10 @@ class FSimulation():
         elif Model == 1:
             return 0.15
         elif Model == 2:
-            return 0.000003 * self.SimStep
+            # return 0.000003 * self.SimStep # Previous value
+            return 0.000006 * self.SimStep
         elif Model == 3:
-            return 0.1 * math.sin(self.SimStep/4000) + 1e-7 / self.SimulationTimeUnit
+            return abs(0.15 * math.sin(self.SimStep/self.TotalSimulationTime))
         else:
             sys.exit(1)
 
@@ -304,9 +387,9 @@ class FSimulation():
 
     def Initialize_Glycolysis(self):
         # Without pyruvate oxidation
-        # G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2
+        # G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP
         # With pyruvate oxidation
-        # G6P + 2 ADP + 4 NAD+ + 2 Pi --> 2 acetyl-CoA + 4 NADH + 2 ATP
+        # G6P + 2 ADP + 4 NAD --> 2 acetyl-CoA + 4 NADH + 2 ATP
 
         # Initial Molecule Concentrations
         self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
@@ -339,12 +422,18 @@ class FSimulation():
         else:
             sys.exit(1)
 
-    def Simulation_Glycolysis(self):
+    def Simulation_Glycolysis(self, KFinderFactor=1):
+        # G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP
+        # G6P + 2 ADP + 4 NAD --> 2 acetyl-CoA + 4 NADH + 2 ATP
+
         d = dict()
 
         # Production Rate Type
         InputFactor = self.GetInputFactor_Glycolysis()
         dATP = (InputFactor * self.Constants["cg"]) * self.SimulationTimeUnit
+
+        if self.GetModelType(Key_ATPSink) == 3:
+            dATP *= (0.1 * cg_CellDivision) * KFinderFactor
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
@@ -394,6 +483,8 @@ class FSimulation():
         elif Model == 2:   # non-linear
             # self.Perturbation[PerturbationName] = (self.TotalSimulationTime * 0.1) * self.SimulationTimeUnit * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
             return (self.TotalSimulationTime * 0.1) * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
+        elif Model == 3:   # cell division
+            return 4.35E-03
         else:
             sys.exit(1)
 
@@ -468,12 +559,15 @@ class FSimulation():
         else:
             sys.exit(1)
 
-    def Simulation_PyruvateOxidation(self):
+    def Simulation_PyruvateOxidation(self, KFinderFactor=1):
         d = dict()
 
         # Production Rate Type
         InputFactor = self.GetInputFactor_PyruvateOxidation()
         dpyruvate = (InputFactor * self.Constants["cp"]) * self.SimulationTimeUnit
+
+        if self.GetModelType(Key_ATPSink) == 3:
+            dpyruvate *= cp_CellDivision * KFinderFactor
 
         d["pyruvate"] = - dpyruvate
         d["acetyl-CoA"] = dpyruvate
@@ -512,17 +606,21 @@ class FSimulation():
         elif Model == 2:
             return self.Dataset["ADP"][-1] / self.Dataset["ATP"][-1]
         elif Model == 3:
-            return self.Dataset["G6P"][-1] * 2
+            return self.Dataset["acetyl-CoA"][-1] / self.Dataset["CoA"][-1]
+
         else:
             sys.exit(1)
 
-    def Simulation_TCACycle(self):
+    def Simulation_TCACycle(self, KFinderFactor=1):
         # acetyl-CoA + 3 NAD + FAD + ADP + Pi + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA
         d = dict()
 
         # Production Rate Type
         InputFactor = self.GetInputFactor_TCACycle()
         dATP = (InputFactor * self.Constants["ct"]) * self.SimulationTimeUnit
+
+        if self.GetModelType(Key_ATPSink) == 3:
+            dATP *= (10 / 3 * ct_CellDivision) * KFinderFactor
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
@@ -565,16 +663,23 @@ class FSimulation():
             return 0.01
         elif Model == 2:
             return self.Dataset["ADP"][-1] / self.Dataset["ATP"][-1]
+        elif Model == 3:
+            return 1 / self.Dataset["ATP"][-1]
+        elif Model == 4:
+            return self.Dataset["FADH2"][-1] / self.Dataset["FAD"][-1]
         else:
             sys.exit(1)
 
-    def Simulation_OxidativePhosphorylation(self):
+    def Simulation_OxidativePhosphorylation(self, KFinderFactor=1):
         # NADH + FADH2 + 4 ADP + Pi --> NAD + FAD + 4 ATP
         d = dict()
 
         # Production Rate Type
         InputFactor = self.GetInputFactor_OxidativePhosphorylation()
         dATP = (InputFactor * self.Constants["co"]) * self.SimulationTimeUnit
+
+        if self.GetModelType(Key_ATPSink) == 3:
+            dATP *= co_CellDivision * KFinderFactor
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
@@ -588,6 +693,10 @@ class FSimulation():
 
 
     def Initialize(self, Chemotaxis=0, Glycolysis=0, PyruvateOxidation=0, TCACycle=0, OxidativePhosphorylation=0):
+        if self.InitializeSelectiveMolecules:
+            self.Initialize_SelectiveMolecules()
+        if self.InitializePerturbations:
+            self.Initialize_Perturbations()
         if Chemotaxis:
             self.Initialize_Chemotaxis()
         if Glycolysis:
@@ -600,6 +709,7 @@ class FSimulation():
             self.Initialize_OxidativePhosphorylation()
         self.InitializeDeltaMolConc()
         self.InitializeDataset()
+        self.InitializeConjugation()
         self.InitializeSimStep()
 
 
@@ -608,7 +718,8 @@ class FSimulation():
 
         while self.SimStep * self.SimulationTimeUnit < self.TotalSimulationTime:
             # Debugging
-            # self.PrintSimTimeAndMolConc()
+            # if self.SimStep < 10:
+            #     self.PrintSimTimeAndMolConc()
 
             if Chemotaxis:
                 self.Simulation_Chemotaxis()
@@ -625,7 +736,17 @@ class FSimulation():
             if ATPSink:
                 self.Simulation_ATPSink(Chemotaxis, Glycolysis, PyruvateOxidation, TCACycle, OxidativePhosphorylation)
 
+            # Debugging
+            if self.SimStep < 100:
+                self.PrintSimTimeAndMolConc()
+
             self.UpdateMolConc()
+
+            if self.RestoreSelectiveMolecules:
+                self.Restore_SelectiveMolecules()
+
+            self.CheckZeroSumConjugation()
+
             self.AppendData()
             if self.SteadyStateBrake:
                 if (abs(self.Dataset[self.SteadyStateCheckMolecule][-1] - self.Dataset[self.SteadyStateCheckMolecule][-2]) / self.Dataset[self.SteadyStateCheckMolecule][-1] < self.SteadyStateThresholdFactor):
@@ -673,8 +794,20 @@ class FModelRunner():
                 self.Model_Chemotaxis_Glycolysis_PyruvateOxidation_TCACycle()
             elif Model == 105:
                 self.Model_Chemotaxis_Glycolysis_PyruvateOxidation_TCACycle_OxidativePhosphorylation()
+            elif Model == 201:
+                self.Model_GlucoseMetabolism_CellDivision(ConstantByproducts=True)
+            elif Model == 202:
+                self.Model_GlucoseMetabolism_CellDivision(ConstantByproducts=False)
+            elif Model == 203:
+                self.Model_GlucoseMetabolism_CellDivision(ConstantByproducts=False, ConstantG6P=False)
+            elif Model == 211:
+                self.Model_GlucoseMetabolism_CellDivision_KFinder()
+            elif Model == 221:
+                self.Model_GlucoseMetabolism_CellDivision_VaryingPathwayControl(ConstantByproducts=False)
+
+
             else:
-                print("[ERROR] Unsupported Model: %s" % Model)
+                print("\n[Error] Unsupported Model: %s" % Model)
                 sys.exit(1)
 
 
@@ -721,11 +854,11 @@ class FModelRunner():
         elif EndProduct =="acetyl-CoA":
             ModelName = "[Glycolysis] G6P + 2 ADP + 3 NAD+ + 2 Pi --> 2 acetyl-CoA + 4 NADH + 2 ATP"
         else:
-            print("[ERROR] Unsupported End Product: %s" % EndProduct)
+            print("\n[Error] Unsupported End Product: %s" % EndProduct)
             sys.exit(1)
 
-        # GlycolysisATPTypes = ["ATP'=0", "ATP'=cg", "ATP'=ADP/ATP*cg"]
-        GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
+        # GlycolysisATPTypes = ["ATP'=0", "ATP'=cg", "ATP'=(ADP/ATP)*cg"]
+        GlycolysisATPTypes = ["ATP'=cg", "ATP'=(ADP/ATP)*cg"]
         # GlycolysisATPTypes = ["ATP=G6P*cg", "ATP=G6P/[ATP]*cg"]
 
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
@@ -762,8 +895,8 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = "[PyruvateOxidation] pyruvate + CoA-SH --> acetyl-CoA + NADH"
 
-        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=ADP/ATP*cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
-        PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
+        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=(ADP/ATP)*cp", "pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=(pyruvate/acetyl-CoA)*cp"]
         for PyruvateOxidationATPType in PyruvateOxidationATPTypes:
             Subtitle = PyruvateOxidationATPType
             self.Simulation.SetTitle(ModelName + "\n" + Subtitle)
@@ -786,8 +919,8 @@ class FModelRunner():
         ModelName = "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP + Pi --> 3 NADH + FADH2 + ATP + CoA"   # Removed H2O and CO2 and H
         # "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP + Pi + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA"
 
-        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=ADP/ATP*ct"]
-        TCACycleATPTypes = ["ATP'=ct", "ATP'=ADP/ATP*ct"]
+        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=(ADP/ATP)*ct"]
+        TCACycleATPTypes = ["ATP'=ct", "ATP'=(ADP/ATP)*ct"]
 
         # ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
@@ -821,8 +954,8 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = "[OxidativePhosphorylation] NADH + FADH2 + ADP + Pi --> NAD + FAD + 4 ATP"   # Not including H other biproducts
 
-        # TCACycleATPTypes = ["ATP'=0", "ATP'=co", "ATP'=ADP/ATP*co"]
-        OxidativePhosphorylationATPTypes = ["ATP'=co", "ATP'=ADP/ATP*co"]
+        # TCACycleATPTypes = ["ATP'=0", "ATP'=co", "ATP'=(ADP/ATP)*co"]
+        OxidativePhosphorylationATPTypes = ["ATP'=co", "ATP'=(ADP/ATP)*co", "ATP'=(FADH2/FAD)*co"]
 
         # ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
@@ -851,13 +984,13 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis"
 
-        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
 
         GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
 
-        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
-        GlycolysisATPTypes = ["ATP'=ADP/ATP*cg"]
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=(ADP/ATP)*cg"]
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
 
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
 
@@ -904,16 +1037,16 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis + Pyruvate Oxidation"
 
-        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
 
         GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
 
-        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
-        GlycolysisATPTypes = ["ATP'=ADP/ATP*cg"]
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=(ADP/ATP)*cg"]
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
 
-        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
-        PyruvateOxidationATPTypes = ["pyruvate'=pyruvate/acetyl-CoA*cp"]
+        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        PyruvateOxidationATPTypes = ["pyruvate'=(pyruvate/acetyl-CoA)*cp"]
 
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
         # ATPSinkTypes = ["No_ATPSink"]
@@ -965,19 +1098,19 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle"
 
-        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Increasing_GlucoseAvailability"]
 
         GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
 
-        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
-        GlycolysisATPTypes = ["ATP'=ADP/ATP*cg"]
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=(ADP/ATP)*cg"]
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
 
-        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
-        PyruvateOxidationATPTypes = ["pyruvate'=pyruvate/acetyl-CoA*cp"]
+        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        PyruvateOxidationATPTypes = ["pyruvate'=(pyruvate/acetyl-CoA)*cp"]
 
-        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=ADP/ATP*ct"]
-        TCACycleATPTypes = ["ATP'=ct", "ATP'=ADP/ATP*ct"]
+        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=(ADP/ATP)*ct"]
+        TCACycleATPTypes = ["ATP'=ct", "ATP'=(ADP/ATP)*ct"]
 
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
         # ATPSinkTypes = ["No_ATPSink"]
@@ -1042,21 +1175,21 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = "Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation"
 
-        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Burst_GlucoseAvailability"]
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Increasing_GlucoseAvailability"]
 
         GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
 
-        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=ADP/ATP*cg"]
-        GlycolysisATPTypes = ["ATP'=ADP/ATP*cg"]
+        # GlycolysisATPTypes = ["ATP'=cg", "ATP'=(ADP/ATP)*cg"]
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
 
-        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=pyruvate/acetyl-CoA*cp"]
-        PyruvateOxidationATPTypes = ["pyruvate'=pyruvate/acetyl-CoA*cp"]
+        # PyruvateOxidationATPTypes = ["pyruvate'=0", "pyruvate'=cp", "pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        PyruvateOxidationATPTypes = ["pyruvate'=(pyruvate/acetyl-CoA)*cp"]
 
-        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=ADP/ATP*ct"]
-        TCACycleATPTypes = ["ATP'=ADP/ATP*ct"]
+        # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=(ADP/ATP)*ct"]
+        TCACycleATPTypes = ["ATP'=(ADP/ATP)*ct"]
 
-        OxidativePhosphorylationATPTypes = ["ATP'=co", "ATP'=ADP/ATP*co"]
+        OxidativePhosphorylationATPTypes = ["ATP'=(ADP/ATP)*co"]
 
         ATPSinkTypes = ["No_ATPSink", "Constant_ATPSink", "Burst_ATPSink"]
         # ATPSinkTypes = ["No_ATPSink"]
@@ -1117,126 +1250,212 @@ class FModelRunner():
         self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
                            SuperTitle=(ModelName + spacing + PlottingPathway))
 
+    def Model_GlucoseMetabolism_CellDivision(self, ConstantByproducts=True, ConstantG6P=True):
+        self.InitializeDatasets()
+        ModelName = "Glucose Metabolism + CellDivision"
 
-class FPlotter:
-    def __init__(self):
-        self.Filter_Inclusion = None
-        self.Filter_Exclusion = None
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Increasing_GlucoseAvailability"]
+        GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
 
-    def ResetFilters(self):
-        self.Filter_Inclusion = None
-        self.Filter_Exclusion = None
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
+        PyruvateOxidationATPTypes = ["pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        TCACycleATPTypes = ["ATP'=(ADP/ATP)*ct", "ATP'=(acetyl-CoA/CoA)*ct"]
+        OxidativePhosphorylationATPTypes = ["ATP'=(ADP/ATP)*co", "ATP'=(FADH2/FAD)*co"]
+        ATPSinkTypes = ["CellDivision_ATPSink"]
 
-    def SetFilters(self, InclusionList, ExclusionList):
-        self.ResetFilters()
-        self.SetFilter_Inclusion(InclusionList)
-        self.SetFilter_Exclusion(ExclusionList)
+        for GlucoseAvailabilityType in GlucoseAvailabilityTypes:
+            for GlucoseTransportType in GlucoseTransportTypes:
+                for GlycolysisATPType in GlycolysisATPTypes:
+                    for PyruvateOxidationATPType in PyruvateOxidationATPTypes:
+                        for TCACycleATPType in TCACycleATPTypes:
+                            for OxidativePhosphorylationATPType in OxidativePhosphorylationATPTypes:
+                                for ATPSinkType in ATPSinkTypes:
+                                    # Subtitle = GlucoseAvailabilityType + ", " + GlucoseTransportType + "\n" + GlycolysisATPType + ", " + PyruvateOxidationATPType + "\nTCA_ " + TCACycleATPType + ", " + ATPSinkType + ", " + OxidativePhosphorylationATPType
+                                    Subtitle = GlucoseAvailabilityType + "\n[Glyc]" + GlycolysisATPType + ", [PO]" + PyruvateOxidationATPType + "\n[TCA]" + TCACycleATPType + ", [OP]" + OxidativePhosphorylationATPType + "\n" + ATPSinkType
 
-    def SetFilter_Inclusion(self, List):
-        self.Filter_Inclusion = List
+                                    self.Simulation.SetATPSinkType(ATPSinkType)
+                                    self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
+                                    self.Simulation.SetPyruvateOxidationATPType(PyruvateOxidationATPType)
+                                    self.Simulation.SetTCACycleATPType(TCACycleATPType)
+                                    self.Simulation.SetATPSinkType(ATPSinkType)
+                                    self.Simulation.SetGlycolysisEndProduct("pyruvate")
+                                    self.Simulation.SetAcetylCoALevel("Unfixed")
+                                    self.Simulation.SetOxidativePhosphorylationATPType(OxidativePhosphorylationATPType)
 
-    def SetFilter_Exclusion(self, List):
-        self.Filter_Exclusion = List
+                                    self.Simulation.SetInitializeSelectiveMolecules(["acetyl-CoA", "pyruvate","NAD", "NADH", "FAD", "FADH2", "G6P", "CoA"])
+                                    if ConstantByproducts:
+                                        self.Simulation.SetRestoreSelectiveMolecules(["acetyl-CoA", "pyruvate","NAD", "NADH", "FAD", "FADH2", "G6P", "CoA"])
+                                        self.Datasets[Subtitle] = self.Simulation.Sim(Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1, ATPSink=1)
+                                    else:
+                                        if ConstantG6P:
+                                            self.Simulation.SetRestoreSelectiveMolecules(["G6P"])
+                                            self.Datasets[Subtitle] = self.Simulation.Sim(Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1, ATPSink=1)
+                                        else:
+                                            self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
+                                            self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
+                                            self.Datasets[Subtitle] = self.Simulation.Sim(Chemotaxis=1, Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1, ATPSink=1)
 
-    def CheckToIncludeOrExclude(self, Key_Data):
-        if self.Filter_Inclusion or self.Filter_Exclusion:
-            if self.Filter_Inclusion:
-                if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
-                    return True
-                else:
-                    return False
-            else:
-                if (Key_Data in self.Filter_Exclusion) or (Key_Data[1:] in self.Filter_Exclusion):
-                    return False
-                else:
-                    return True
-        else:
-            return True
+        # spacing = "\n"
+        spacing = ", "
 
-    def FilterDatasets(self, Datasets):
-        Datasets_Filtered = dict()
-        for Key_Dataset, Dataset in Datasets.items():
-            Dataset_Filtered = dict()
-            for Key_Data, Data in Dataset.items():
-                if self.CheckToIncludeOrExclude(Key_Data):
-                    Dataset_Filtered[Key_Data] = Data
-                    Datasets_Filtered[Key_Dataset] = Dataset_Filtered
+        PlottingPathway = "(Show all pathways)"
+        InclusionList = ["ATP", "ATP_Sink", "ADP"]
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
 
-        return Datasets_Filtered
+        # Debugging
+        PlottingPathway = "(Show all molecules)"
+        InclusionList = []
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
 
-    def PlotDatasets(self, Datasets, SimulationTimeUnit, bSideLabel=True, SuperTitle=""):
+    def Model_GlucoseMetabolism_CellDivision_KFinder(self):
+        self.InitializeDatasets()
+        ModelName = "Glucose Metabolism + CellDivision"
 
-        # Filter Datasets
-        if self.Filter_Inclusion or self.Filter_Exclusion:
-            Datasets = self.FilterDatasets(Datasets)
+        # GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
+        GlucoseAvailabilityTypes = ["Increasing_GlucoseAvailability"]
+        GlucoseTransportTypes = ["G6P'=0.0001/(G6P*cgt)^2"]
 
-        fig = plt.figure()
-        fig.subplots_adjust(wspace=0.5, hspace=0.5)
-        if SuperTitle:
-            fig.suptitle(SuperTitle, fontsize=14)
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
+        PyruvateOxidationATPTypes = ["pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        TCACycleATPTypes = ["ATP'=(acetyl-CoA/CoA)*ct"]
+        OxidativePhosphorylationATPTypes = ["ATP'=(FADH2/FAD)*co"]
+        ATPSinkTypes = ["CellDivision_ATPSink"]
 
-        Time = None   # Universal X axis (time)
-        Perturbation = 0
-        PerturbationPlotColor = list()
-        for Dataset in Datasets.values():
-            for Data in Dataset.values():
-                Time = [i * SimulationTimeUnit for i in range(len(Data))]
+        Subtitle = GlucoseAvailabilityTypes[0] + "\n[Glyc]" + GlycolysisATPTypes[0] + ", [PO]" + PyruvateOxidationATPTypes[0] + "\n[TCA]" + TCACycleATPTypes[0] + ", [OP]" + OxidativePhosphorylationATPTypes[0] + "\n" + ATPSinkTypes[0]
+
+        self.Simulation.SetATPSinkType(ATPSinkTypes[0])
+        self.Simulation.SetGlycolysisATPType(GlycolysisATPTypes[0])
+        self.Simulation.SetPyruvateOxidationATPType(PyruvateOxidationATPTypes[0])
+        self.Simulation.SetTCACycleATPType(TCACycleATPTypes[0])
+        self.Simulation.SetATPSinkType(ATPSinkTypes[0])
+        self.Simulation.SetGlycolysisEndProduct("pyruvate")
+        self.Simulation.SetAcetylCoALevel("Unfixed")
+        self.Simulation.SetOxidativePhosphorylationATPType(OxidativePhosphorylationATPTypes[0])
+
+        self.Simulation.SetInitializeSelectiveMolecules(
+            ["acetyl-CoA", "pyruvate", "NAD", "NADH", "FAD", "FADH2", "G6P", "CoA"])
+        self.Simulation.SetRestoreSelectiveMolecules(["G6P"])
+
+        KFinderFactors = [1 / (2 ** x) for x in range(10)]
+        for KFinderFactor in KFinderFactors:
+            self.Datasets[Subtitle + str(KFinderFactor)] = self.KFinder(KFinderFactor, Glycolysis=0, PyruvateOxidation=0, TCACycle=0, OxidativePhosphorylation=1)
+
+        # spacing = "\n"
+        spacing = ", "
+
+        PlottingPathway = "(Show all pathways)"
+        InclusionList = ["ATP", "ATP_Sink", "ADP"]
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        # Debugging
+        PlottingPathway = "(Show all molecules)"
+        InclusionList = []
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+
+    def KFinder(self, KFinderFactor, Glycolysis=0, PyruvateOxidation=0, TCACycle=0, OxidativePhosphorylation=0):
+        self.Simulation.PrintSimulationSubject()
+        self.Simulation.Initialize(Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1)
+
+        # Run expanded
+        self.Simulation.PrintSimTimeAndMolConc()
+        while self.Simulation.SimStep * self.Simulation.SimulationTimeUnit < self.Simulation.TotalSimulationTime:
+            self.Simulation.Simulation_Glycolysis(KFinderFactor=KFinderFactor * Glycolysis)
+            self.Simulation.Simulation_PyruvateOxidation(KFinderFactor=KFinderFactor * PyruvateOxidation)
+            self.Simulation.Simulation_TCACycle(KFinderFactor=KFinderFactor * TCACycle)
+            self.Simulation.Simulation_OxidativePhosphorylation(KFinderFactor=KFinderFactor * OxidativePhosphorylation)
+            self.Simulation.Simulation_ATPSink(Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1)
+
+            # Debugging
+            if self.Simulation.SimStep < 20:
+                self.Simulation.PrintSimTimeAndMolConc()
+
+            bBelowZero = self.Simulation.UpdateMolConc()
+            if bBelowZero:
+                print("***** Simulation no longer crashes with KFinderFactor: ", KFinderFactor)
                 break
-            for Key in Dataset.keys():
-                if Key[0] == PerturbationTag:
-                    PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)))
-                    Perturbation += 1
 
-        # Plot data
-        NPlotsInRows = len(Datasets)   # Default
-        MaxNPlotsInRows = 3
-        if len(Datasets) > 1:
-            for Remainder in range(MaxNPlotsInRows):
-                if len(Datasets) % (Remainder + 1) == 0:
-                    NPlotsInRows = Remainder + 1
+            if self.Simulation.RestoreSelectiveMolecules:
+                self.Simulation.Restore_SelectiveMolecules()
 
-        for n, (Process, Dataset) in enumerate(Datasets.items()):
-            ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
-            ax2 = None
-            if Perturbation:
-                ax2 = ax1.twinx()
+            self.Simulation.CheckZeroSumConjugation()
+            self.Simulation.AppendData()
+            self.Simulation.SimStep += 1
 
-            # Y axis (molecular concentrations)
-            PerturbationIndex = 0
-            for MolName, Conc in Dataset.items():
-                if MolName[0] != PerturbationTag:
-                    line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
-                    if bSideLabel:
-                        SelectedTimeFrameFromLeft = 0.1
-                        ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
-                        # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
-                        # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
+        self.Simulation.PrintSimTimeAndMolConc()
+        # Run ends
 
-                else:
-                    line, = ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
-                    if bSideLabel:
-                        SelectedTimeFrameFromLeft = 0.8
-                        ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
-                    # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
-                    # print(PerturbationIndex)
-                    PerturbationIndex += 1
+        self.Simulation.CorrectAndTagPerturbationLabel()
+        return self.Simulation.Dataset.copy()
 
-            ax1.set_title(Process)
-            ax1.set_xlabel('Time (s)')
-            ax1.set_ylabel('Molecules: Concentration (mol L-1)')
-            ax1.set_ylim([0, 0.015])
-            if not bSideLabel:
-                ax1.legend(loc='upper left')
-            if Perturbation:
-                ax2.set_ylabel('Event: Concentration (mol L-1)')
-                ax2.set_ylim([0, 3e-7])
-                if not bSideLabel:
-                    ax2.legend(loc='upper right')
+    def Model_GlucoseMetabolism_CellDivision_VaryingPathwayControl(self, ConstantByproducts=False, ConstantG6P=True):
+        self.InitializeDatasets()
+        ModelName = "Glucose Metabolism + CellDivision"
+        GlycolysisATPTypes = ["ATP'=(ADP/ATP)*cg"]
+        PyruvateOxidationATPTypes = ["pyruvate'=(pyruvate/acetyl-CoA)*cp"]
+        TCACycleATPTypes = ["ATP'=(acetyl-CoA/CoA)*ct"]
+        OxidativePhosphorylationATPTypes = ["ATP'=(ADP/ATP)*co"]
+        ATPSinkTypes = ["CellDivision_ATPSink"]
 
-            # ax1.grid()
+        for GlycolysisATPType in GlycolysisATPTypes:
+            for PyruvateOxidationATPType in PyruvateOxidationATPTypes:
+                for TCACycleATPType in TCACycleATPTypes:
+                    for OxidativePhosphorylationATPType in OxidativePhosphorylationATPTypes:
+                        for ATPSinkType in ATPSinkTypes:
+                            # Subtitle = GlucoseAvailabilityType + ", " + GlucoseTransportType + "\n" + GlycolysisATPType + ", " + PyruvateOxidationATPType + "\nTCA_ " + TCACycleATPType + ", " + ATPSinkType + ", " + OxidativePhosphorylationATPType
+                            Subtitle = "[Glyc_" + GlycolysisATPType + "], [PO_" + PyruvateOxidationATPType + "]\n[TCA_ " + TCACycleATPType + "], [OP_" + OxidativePhosphorylationATPType + "]"
+                            self.Simulation.SetInitializeSelectiveMolecules(["acetyl-CoA", "pyruvate","NAD", "NADH", "FAD", "FADH2", "G6P", "CoA"])
+                            if ConstantByproducts:
+                                self.Simulation.SetRestoreSelectiveMolecules(["acetyl-CoA", "pyruvate","NAD", "NADH", "FAD", "FADH2", "G6P", "CoA"])
+                            else:
+                                if ConstantG6P:
+                                    self.Simulation.SetRestoreSelectiveMolecules(["G6P"])
+                                else:
+                                    pass
+                            # self.Simulation.SetInitializePerturbations(["ATP_Sink"])
+                            self.Simulation.SetATPSinkType(ATPSinkType)
+                            # self.Simulation.SetGlucoseAvailabilityType(GlucoseAvailabilityType)
+                            # self.Simulation.SetGlucoseTransportType(GlucoseTransportType)
+                            self.Simulation.SetGlycolysisATPType(GlycolysisATPType)
+                            self.Simulation.SetPyruvateOxidationATPType(PyruvateOxidationATPType)
+                            self.Simulation.SetTCACycleATPType(TCACycleATPType)
+                            self.Simulation.SetATPSinkType(ATPSinkType)
+                            self.Simulation.SetGlycolysisEndProduct("pyruvate")
+                            self.Simulation.SetAcetylCoALevel("Unfixed")
+                            self.Simulation.SetOxidativePhosphorylationATPType(OxidativePhosphorylationATPType)
 
-        plt.show()
+                            self.Datasets[Subtitle] = self.Simulation.Sim(Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1, ATPSink=1)
 
+        # spacing = "\n"
+        spacing = ", "
+
+        PlottingPathway = "(Show all pathways)"
+        InclusionList = ["ATP", "ATP_Sink", "ADP"]
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
+
+        # Debugging
+        PlottingPathway = "(Show all molecules)"
+        InclusionList = []
+        ExclusionList = []
+        self.Plot.SetFilters(InclusionList, ExclusionList)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit,
+                           SuperTitle=(ModelName + spacing + PlottingPathway))
 
 def main():
     # Initialization
@@ -1246,6 +1465,11 @@ def main():
     # Setting Simulation Parameters
     TotalSimulationTime = 1e-1   # s
     SimulationTimeUnit = 1e-6   # s
+
+    CellDivision = True
+    if CellDivision:
+        TotalSimulationTime = 60 * 40   # s
+        SimulationTimeUnit = 0.01   # s
     # SteadyStateBrake = False
     # SteadyStateCheckMolecule = "ATP"
     # SteadyStateThresholdFactor = 0.0000001  # Steady state threshold
@@ -1262,7 +1486,7 @@ def main():
     # Models = [3]    # Chemotaxis unit test with Burst G6PSink
     # Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
     # Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
-    Models = [21]   # Pyruvate Oxidation unit test
+    # Models = [21]   # Pyruvate Oxidation unit test
     # Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
     # Models = [32]   # TCACycle Cycle unit test with fixed acetyl-CoA
     # Models = [41]   # Oxidative Phosphorylation unit test
@@ -1271,8 +1495,14 @@ def main():
     # Models = [103]  # Chemotaxis + Glycolysis + Pyruvate Oxidation
     # Models = [104]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle
     # Models = [105]  # Chemotaxis + Glycolysis + Pyruvate Oxidation + TCA Cycle + Oxidative Phosphorylation
-    # Models = [1, 2, 3, 11, 12, 21, 22, 31, 41]
+    # Models = [1, 2, 3, 11, 12, 21]
+    # Models = [31, 32, 41]
     # Models = [101, 102, 103, 104, 105]
+    # Models = [201]  # Glucose Metabolism + Cell Division (With Constant Byproducts)
+    # Models = [202]  # Glucose Metabolism + Cell Division (With Constant G6P)
+    # Models = [203]  # Glucose Metabolism + Cell Division (With Chemotaxis)
+    Models = [211]  # Glucose Metabolism + Cell Division (With KFinder)
+    # Models = [221]  # Glucose Metabolism + Cell Division (With varying contribution of each metabolic pathway)
     ModelRunner.RunModel(Models)
 
 if __name__ == '__main__':
