@@ -79,7 +79,7 @@ Offset_DivPlane_X = W_S * 2 / 7
 Offset_DivPlane_Y = 0
 
 # X-section along the axis of division of E coli
-Offset_DivAxis_X = - W_S * 1 / 5
+Offset_DivAxis_X = - W_S * 9 / 40
 Offset_DivAxis_Y = 0
 
 def AddPos(A, B):
@@ -149,7 +149,7 @@ class FMembrane(FCompartment):
         # Division Axis: Septum
         EdgeHandling = 1
         pygame.draw.line(Screen, self.LineColor, (self.X_DivAxis, self.Y_DivAxis - self.H_DivAxis / 2 + EdgeHandling), (self.X_DivAxis, self.Y_DivAxis + self.H_DivAxis / 2 - EdgeHandling), self.Thickness * 2)
-        pygame.draw.line(Screen, self.BodyColor, (self.X_DivAxis, self.Y_DivAxis - self.H_DivAxis / 2), (self.X_DivAxis, self.Y_DivAxis + self.H_DivAxis / 2), 1)
+        pygame.draw.line(Screen, WHITE, (self.X_DivAxis, self.Y_DivAxis - self.H_DivAxis / 2), (self.X_DivAxis, self.Y_DivAxis + self.H_DivAxis / 2), 1)
         pygame.draw.line(Screen, self.BodyColor, (self.X_DivAxis, self.Y_DivAxis - self.Radius + self.Thickness + EdgeHandling), (self.X_DivAxis, self.Y_DivAxis + self.Radius - self.Thickness - EdgeHandling), self.Thickness * 2)
 
         self.DisplayPercentCompletionOfDivision()
@@ -423,6 +423,7 @@ def main():
 
         # All the Drawings
         Screen.fill(WHITE)
+        pygame.draw.line(Screen, BLACK, (W_S * 22 / 40, H_S * 1 / 8), (W_S * 22 / 40, H_S * 7 / 8), width=1)
 
         EcoliBody.Draw()
         Membrane.Draw()
