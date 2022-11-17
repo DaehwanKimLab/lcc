@@ -58,7 +58,7 @@ class FPlotter:
         return Datasets_Filtered
 
 
-    def PlotDatasets(self, Datasets, SimulationTimeUnit=1, bSideLabel=True, SuperTitle=""):
+    def PlotDatasets(self, Datasets, SimulationTimeUnit=1, YMin=0, YMax=0, bSideLabel=True, SuperTitle=""):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
@@ -94,10 +94,11 @@ class FPlotter:
             DatasetArray = np.empty([0, 0])
             DatasetKeyIndex = dict()
             for i, (Key, Data) in enumerate(Dataset.items()):
+                DatasetKeyIndex[Key] = i
                 if DatasetArray.shape[0] == 0:
                     DatasetArray = np.array(Data, ndmin=2)
-                DatasetKeyIndex[Key] = i
-                DatasetArray = np.vstack([DatasetArray, np.array(Data, ndmin=2)])
+                else:
+                    DatasetArray = np.vstack([DatasetArray, np.array(Data, ndmin=2)])
 
             for UnitText, UnitValue in array_unit.items():
                 if np.any(DatasetArray > UnitValue):
@@ -166,12 +167,24 @@ class FPlotter:
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
             ax1.set_ylabel('Molecules: Concentration (' + UnitTxt + ')')
-            # ax1.set_ylim([0, 0.015])
+            if YMin:
+                ax1.set_ylim(ymin=YMin)
+            else:
+                ax1.set_ylim(ymin=0)
+            if YMax:
+                ax1.set_ylim(ymax=YMax)
+
             if not bSideLabel:
                 ax1.legend(loc='upper left')
             if Perturbation:
                 ax2.set_ylabel('Events: Concentration (' + UnitTxt + ')')
                 # ax2.set_ylim([0, 3e-7])
+                if YMin:
+                    ax2.set_ylim(ymin=YMin)
+                else:
+                    ax2.set_ylim(ymin=0)
+                if YMax:
+                    ax2.set_ylim(ymax=YMax)
                 if not bSideLabel:
                     ax2.legend(loc='upper right')
 
