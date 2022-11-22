@@ -47,10 +47,10 @@ TargetK = "cg"
 Base = 2 # 2 is default
 c_CellDivision = 1e-3
 Capacity = dict()
-Capacity["cg"] = c_CellDivision * 19 #75
-Capacity["cp"] = c_CellDivision * 3  #0.205
-Capacity["ct"] = c_CellDivision * 385  #12.5
-Capacity["co"] = c_CellDivision * 5000 #5
+Capacity["cg"] = c_CellDivision * 19
+Capacity["cp"] = c_CellDivision * 3
+Capacity["ct"] = c_CellDivision * 385
+Capacity["co"] = c_CellDivision * 5000
 
 # Debugging Switch
 # DebugZero = True
