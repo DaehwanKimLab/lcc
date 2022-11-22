@@ -35,9 +35,9 @@ protein MinE; // Binds to MinD and stimulates ATPase activity of MinD, leading t
 
 protein SlmA; // Effector of nucleoid occlusion
 
-MinD = 10nM;
-MinC = 10nM;
-MinE = 5nM;
+MinD = 4928; // # of proteins, Ramm_2019 Table 1
+MinC = 163; // # of proteins, Ramm_2019 Table 1
+MinE = 4004; // # of proteins, Ramm_2019 Table 1
 
 reference Ramm_2019
 {
