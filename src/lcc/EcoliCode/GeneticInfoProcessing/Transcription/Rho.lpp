@@ -1,4 +1,7 @@
-// Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
 // Rho-dependent transcription termination
 
 RNA rut(NNNNNNNNNN NNNC); // Rho utilization site, unstructured and ribosome-free C-rich and G-poor nascent RNA, of at least 70–80 nt, with regularly spaced cytosines
