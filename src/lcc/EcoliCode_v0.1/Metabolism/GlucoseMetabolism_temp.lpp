@@ -1,11 +1,11 @@
 // Donghoon M. Lee, Austin Marckx, and Daehwan Kim
 // Glucose Metabolism (temporary without importing)
 
-// reaction GlucoseTransporter(glucose --> G6P, k=1)
+// reaction GlucoseTransporter(glucose_out --> G6P, k=1)
 // mathfunc
 // {
 //     float cgt = 0.5 M;
-//     G6P' = glucose/G6P * cgt;
+//     G6P' = glucose_out/G6P * cgt;
 //     glucose' = 0 - G6P';
 // };
 
@@ -52,6 +52,7 @@ mathfunc
     FAD' = 0 - FADH2';
     acetyl_CoA' = 0 - ATP';
     CoA_SH' = 0 - acetyl_CoA';
+    Malate' = 0;
 };
 
 reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
@@ -74,6 +75,7 @@ mathfunc
     float cd = 4.35e-3 M;
     float c_tuneNAD = 0.7725;
     ATP' = 0 - cd;
+    ADP' = 0 - ATP';
     NAD' = (0 - ATP') * c_tuneNAD;
     NADH' = 0 - NAD';
 };
@@ -86,7 +88,7 @@ G6P[:] = 8.8e-3 M;   // assume glucose rich environment.
 ATP = 9.6e-3 M;
 ADP = 5.6e-4 M;
 NAD = 2.6e-3 M;
-NADH= 8.3e-3 M;
+NADH = 8.3e-3 M;
 pyruvate = 3.9e-4 M; 
 CoA_SH[:] = 1.4e-3 M;
 acetyl_CoA = 6.1e-4 M;
