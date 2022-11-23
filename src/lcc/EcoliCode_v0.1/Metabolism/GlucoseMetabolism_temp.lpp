@@ -47,7 +47,7 @@ mathfunc
 {
     float c_cc = 0.385 M;
     float cc = Malate * c_cc;
-    ATP'  = (ADP / ATP) * cc;
+    ATP'  = cc;
     ADP'  = 0 - ATP';
     NADH' = 3 * ATP';
     NAD' = 0 - NADH';
