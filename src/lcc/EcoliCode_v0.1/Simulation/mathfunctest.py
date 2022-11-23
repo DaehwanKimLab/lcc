@@ -20,6 +20,7 @@ Key_OxidativePhosphorylationATP = "OxidativePhosphorylationATP"
 Key_ATPSink = "ATP_Sink"
 Key_GlycolysisEndProduct = "GlycolysisEndProduct"
 Key_OxidativePhosphorylationCapacity = "OxidativePhosphorylationCapacity"
+
 # Physiological molecular concentrations
 MolConc = dict()
 MolConc["G6P"] = 8.8e-3  # all Hexose-P combined
@@ -254,7 +255,7 @@ class FSimulation():
         if Key_OxidativePhosphorylationATP in self.ModelType:
             self.Capacity["co"] = min(self.MolConc["NADH"], self.MolConc["FADH2"]) * Capacity["co"]
         if Key_TCACycleATP in self.ModelType:
-            self.Capacity["ct"] = MolConc["Malate"] * Capacity["ct"]
+            self.Capacity["ct"] = self.MolConc["Malate"] * Capacity["ct"]
 
     def UpdateCapacityWithKFinderFactor(self, KeyFinderFactor):
         if KeyFinderFactor[0] == "co" or KeyFinderFactor[0] == "ct":
@@ -284,9 +285,14 @@ class FSimulation():
             LowerBoundCheck = Ratio > 1 - 1e-6
             assert UpperBoundCheck and LowerBoundCheck , "Conjugation Pair: %s - %s" % (Molecule, Molecule_Conjugate) + " |\tInitial Sum: %s vs. \tCurrent Sum: %s" % (Conc_InitialSum, Conc_Sum)
 
-    def PrintMolConc(self):
-        for MolName, Conc in self.MolConc.items():
-            print("[" + MolName + "] " + "{:.6f}".format(Conc), end=", \t")
+    def PrintMolConc(self, Order=False):
+        if Order:
+            MolList = ["G6P", "ADP", "NAD", "pyruvate", "NADH", "ATP", "CoA", "acetyl-CoA", "FAD", "Malate", "FADH2"]   # matches lcc
+            for MolName in MolList:
+                print("[" + MolName + "] " + "{:.6f}".format(self.MolConc[MolName]), end=", \t")
+        else:
+            for MolName, Conc in self.MolConc.items():
+                print("[" + MolName + "] " + "{:.6f}".format(Conc), end=", \t")
 
     def PrintDeltaMolConc(self):
         for MolName, Conc in self.DeltaMolConc.items():
@@ -532,6 +538,7 @@ class FSimulation():
         # Combinatorial case
         if Key_ATPSink in self.ModelType and self.ModelType[Key_ATPSink] == 3:   # Cell Division
             d["NAD"] = dATP * 0.7725
+            # d["NAD"] = dATP
             d["NADH"] = - d["NAD"]
             pass
         elif Chemotaxis and Glycolysis and PyruvateOxidation and TCACycle:
@@ -634,6 +641,7 @@ class FSimulation():
         self.MolConc["FADH2"]   = 5e-4   # undocumented
         self.MolConc["ATP"]     = 9.6e-3
         self.MolConc["CoA"]     = 1.4e-3
+        self.MolConc["Malate"]  = MolConc["Malate"]
 
         # Perturbations
         if Key_ATPSink in self.ModelType:
@@ -1433,7 +1441,7 @@ class FModelRunner():
         # Key Settings here
         # self.Simulation.SetRestoreSelectiveMolecules(["G6P", "CoA", "pyruvate"])
         self.Simulation.SetRestoreSelectiveMolecules(["G6P", "CoA"])
-        KFinderFactors = [1 / (Base ** x) for x in range(3)]
+        KFinderFactors = [1 / (Base ** x) for x in range(1)]
         for KFinderFactor in KFinderFactors:
             self.Datasets[Subtitle + ", KFactor=" + str(KFinderFactor)] = self.Simulation.Sim(KFinderFactor=(TargetK, KFinderFactor), Glycolysis=1, PyruvateOxidation=1, TCACycle=1, OxidativePhosphorylation=1, ATPSink=1)
 
