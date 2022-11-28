@@ -110,10 +110,10 @@ def GetRandomXYWithinEllipse(Center, Width, Height):
     Center_X, Center_Y = Center
     X = np.random.uniform(Center_X - Width / 2, Center_X + Width / 2)
     Y = np.random.uniform(Center_Y - Height / 2, Center_Y + Height / 2)
-    # if CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
-    #     return X, Y
-    # else:
-    #     GetRandomXYWithinEllipse(Center, Width, Height)
+    if not CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
+        pass
+    else:
+        X, Y = GetRandomXYWithinEllipse(Center, Width, Height)
     return X, Y
 
 
