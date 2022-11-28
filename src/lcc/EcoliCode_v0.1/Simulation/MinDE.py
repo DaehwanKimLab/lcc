@@ -106,6 +106,23 @@ def GetXYFromEllipse(Center, Angle, Width, Height, RatioFactor=1.0):
     Center_X, Center_Y = Center
     return Center_X + Width / 2 * RatioFactor * np.cos(Angle), Center_Y + Height / 2 * RatioFactor * np.sin(Angle)
 
+def GetRandomXYWithinEllipse(Center, Width, Height):
+    Center_X, Center_Y = Center
+    X = np.random.uniform(Center_X - Width / 2, Center_X + Width / 2)
+    Y = np.random.uniform(Center_Y - Height / 2, Center_Y + Height / 2)
+    # if CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
+    #     return X, Y
+    # else:
+    #     GetRandomXYWithinEllipse(Center, Width, Height)
+    return X, Y
+
+
+def CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
+    if (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2 < 1:
+        return True
+    else:
+        return False
+
 Title = 'FtsZ Ring Visualization'
 pygame.display.set_caption(Title)
 
@@ -264,6 +281,7 @@ def main():
 
     Control = FControl()
     SimUnitTime = 0.2
+    Debug = True
 
     # Switches
     Switch_MinD_Recruitment = True
@@ -289,24 +307,29 @@ def main():
     Membrane = FMembrane(X=MID_X, Y=MID_Y, width=W_Ecoli, height=H_Ecoli, Label=True)
     print('Ecoli Size :\t', W_Ecoli, '\tby\t', H_Ecoli)
 
+    # Phospholipids
+    N_MembraneSites = 100
+    Phospholipids = np.zeros([N_MembraneSites, 2])
+    for i in range(Phospholipids.shape[0]):
+        Angle = np.deg2rad(360 / N_MembraneSites * i)
+        Phospholipids[i][0], Phospholipids[i][1] = GetXYFromEllipse((Membrane.X, Membrane.Y), Angle, Membrane.W, Membrane.H)
+        if Debug:
+            print('Phopholipid #', i, '\tX:', Phospholipids[i][0], '\tY:', Phospholipids[i][1])
+
     # Molecules
     ScaleFactor_Quantity = 50
     Quantity_MinD = int(5000 / ScaleFactor_Quantity)
     Quantity_MinE = int(4000 / ScaleFactor_Quantity)
 
-    MinD = FMassObject('MinD_MO', id=0, quantity=Quantity_MinD)
-    MinE = FMassObject('MinE_MO', id=1, quantity=Quantity_MinE)
-    print('MinD Quantity: ', MinD.InitialQuantity)
-    print('MinE Quantity: ', MinE.InitialQuantity)
+    MinDs = np.zeros([Quantity_MinD, 2])
+    for i in range(MinDs.shape[0]):
+        MinDs[i][0], MinDs[i][1] = GetRandomXYWithinEllipse((Membrane.X, Membrane.Y), Membrane.W, Membrane.H)
+        print('MinD #', i, '\tX:', MinDs[i][0], '\tY:', MinDs[i][1])
 
-    List_MembSite = list()
-    N_MembraneSites = 100
-    for i in range(N_MembraneSites):
-        Angle = np.deg2rad(360 / N_MembraneSites * i)
-        X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), Angle, Membrane.W, Membrane.H)
-        DistanceFromCenter = GetDistanceBTWTwoPoints((Membrane.X, Membrane.Y), (X, Y))
-        List_MembSite.append(FIndividualObject('Phospholipid', id=i, X=X, Y=Y, angle=Angle, distance=DistanceFromCenter))
-        print('Phopholipid #', List_MembSite[i].ID, '\tX:', List_MembSite[i].X, '\tY:', List_MembSite[i].Y, '\tAngle:', List_MembSite[i].Angle, '\tDistance:', List_MembSite[i].DistanceFromCenter)
+    MinEs = np.zeros([Quantity_MinE, 2])
+    for i in range(MinEs.shape[0]):
+        MinEs[i][0], MinEs[i][1] = GetRandomXYWithinEllipse((Membrane.X, Membrane.Y), Membrane.W, Membrane.H)
+        print('MinE #', i, '\tX:', MinEs[i][0], '\tY:', MinEs[i][1])
 
     ElapsedTime = 0
     PrevTime = datetime.now()
@@ -335,128 +358,133 @@ def main():
             ElapsedTime -= SimUnitTime
             Control.Time += 1
 
-
-        # Children control
-        Factor_Global = 0.1
-        Kon_MinD = 0.001 * Factor_Global
-        Koff_MinD = 0.2 * Factor_Global
-        Kon_MinE = 0.001 * Factor_Global
-        Koff_MinE = 0.01 * Factor_Global
-        Kdiff_MinD = 0.1 * Factor_Global
-        Kdiff_MinE = 0.7 * Factor_Global
-
-        Raffle_MinD_Recruitment = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinE_Recruitment = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinD_Removal = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinE_Removal = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinD_Spread = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinE_Spread = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinD_SpreadDirection = np.random.uniform(0, 1, len(List_MembSite))
-        Raffle_MinE_SpreadDirection = np.random.uniform(0, 1, len(List_MembSite))
-        for i, Memb in enumerate(List_MembSite):
-            # Add MinD
-            if Switch_MinD_Recruitment:
-                if MinD.CurrentQuantity > 0:
-                # Consider cytoplasmic MinD, local MinD, Distance from the center
-                    if Raffle_MinD_Recruitment[i] < Kon_MinD * (MinD.CurrentQuantity / MinD.InitialQuantity) * (len(Memb.X_MinD) + 1) ** 2 * Memb.DistanceFromCenter ** 0.6:
-                        MinDGroup = (-1) ** (len(Memb.X_MinD))
-                        MinDAngle = Memb.Angle + MinDGroup * np.deg2rad(Memb.Spacing * len(Memb.X_MinD))
-                        X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinDAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinD)
-                        Memb.X_MinD.append(X)
-                        Memb.Y_MinD.append(Y)
-                        Memb.Group_MinD.append(MinDGroup)
-                        Memb.Angle_MinD.append(MinDAngle)
-                        MinD.CurrentQuantity -= 1
-
-            # Add MinE
-            if Switch_MinE_Recruitment:
-                if MinE.CurrentQuantity > 0 and len(Memb.X_MinD) > len(Memb.X_MinE):
-                    # Consider cytoplasmic MinE, local MinD, Distance from the center
-                    if Raffle_MinE_Recruitment[i] < Kon_MinE * (MinE.CurrentQuantity / MinE.InitialQuantity) * len(Memb.X_MinD) * Memb.DistanceFromCenter ** 0.2:
-                        MinEGroup = (-1) ** (len(Memb.X_MinE))
-                        MinEAngle = Memb.Angle + MinEGroup * np.deg2rad(Memb.Spacing * len(Memb.X_MinE))
-                        X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinEAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinE)
-                        Memb.X_MinE.append(X)
-                        Memb.Y_MinE.append(Y)
-                        Memb.Group_MinE.append(MinEGroup)
-                        Memb.Angle_MinE.append(MinEAngle)
-                        MinE.CurrentQuantity -= 1
-
-            # Remove MinD
-            if Switch_MinD_Removal:
-                if len(Memb.X_MinD) > 0:
-                    if Raffle_MinD_Removal[i] < Koff_MinD * len(Memb.X_MinE) ** 4:
-                        Memb.X_MinD.pop()
-                        Memb.Y_MinD.pop()
-                        Memb.Group_MinD.pop()
-                        Memb.Angle_MinD.pop()
-                        MinD.CurrentQuantity += 1
-
-            # Remove MinE
-            if Switch_MinE_Removal:
-                if len(Memb.X_MinE) > 0:
-                    if Raffle_MinE_Removal[i] < Koff_MinE:
-                        Memb.X_MinE.pop()
-                        Memb.Y_MinE.pop()
-                        Memb.Group_MinE.pop()
-                        Memb.Angle_MinE.pop()
-                        MinE.CurrentQuantity += 1
-
-            # Spread MinD
-            if Switch_MinD_Spread:
-                if len(Memb.X_MinD) > 0:
-                    if Raffle_MinD_Spread[i] < Kdiff_MinD * len(Memb.X_MinD) ** 2:
-                        # Current Location
-                        Memb.X_MinD.pop()
-                        Memb.Y_MinD.pop()
-                        Memb.Group_MinD.pop()
-                        Memb.Angle_MinD.pop()
-
-                        # New Location
-                        Direction = 1 if Raffle_MinD_SpreadDirection[i] < 0.5 else -1
-                        MembToMove = List_MembSite[i + Direction] if i + Direction < len(List_MembSite) else List_MembSite[0]
-                        MinDGroup = (-1) ** (len(MembToMove.X_MinD))
-                        MinDAngle = MembToMove.Angle + MinDGroup * np.deg2rad(Memb.Spacing * len(MembToMove.X_MinD))
-                        X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinDAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinD)
-                        MembToMove.X_MinD.append(X)
-                        MembToMove.Y_MinD.append(Y)
-                        MembToMove.Group_MinD.append(MinDGroup)
-                        MembToMove.Angle_MinD.append(MinDAngle)
-
-            # Spread MinE
-            if Switch_MinE_Spread:
-                if len(Memb.X_MinE) > 0:
-                    if Raffle_MinE_Spread[i] < Kdiff_MinE * len(Memb.X_MinE) ** 2:
-                        # Current Location
-                        Memb.X_MinE.pop()
-                        Memb.Y_MinE.pop()
-                        Memb.Group_MinE.pop()
-                        Memb.Angle_MinE.pop()
-
-                        # New Location
-                        Direction = 1 if Raffle_MinE_SpreadDirection[i] < 0.5 else -1
-                        NewPosition = i + Direction if i + Direction < len(List_MembSite) else 0
-                        NewPosition = i - Direction if len(List_MembSite[NewPosition].X_MinD) == 0 else i + Direction
-                        NewPosition = NewPosition if NewPosition < len(List_MembSite) else 0
-                        MembToMove = List_MembSite[NewPosition]
-                        MinEGroup = (-1) ** (len(MembToMove.X_MinE))
-                        MinEAngle = MembToMove.Angle + MinEGroup * np.deg2rad(Memb.Spacing * len(MembToMove.X_MinE))
-                        X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinEAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinE)
-                        MembToMove.X_MinE.append(X)
-                        MembToMove.Y_MinE.append(Y)
-                        MembToMove.Group_MinE.append(MinEGroup)
-                        MembToMove.Angle_MinE.append(MinEAngle)
+        #
+        # # Children control
+        # Factor_Global = 0.1
+        # Kon_MinD = 0.001 * Factor_Global
+        # Koff_MinD = 0.2 * Factor_Global
+        # Kon_MinE = 0.001 * Factor_Global
+        # Koff_MinE = 0.01 * Factor_Global
+        # Kdiff_MinD = 0.1 * Factor_Global
+        # Kdiff_MinE = 0.7 * Factor_Global
+        #
+        # Raffle_MinD_Recruitment = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinE_Recruitment = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinD_Removal = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinE_Removal = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinD_Spread = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinE_Spread = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinD_SpreadDirection = np.random.uniform(0, 1, len(List_MembSite))
+        # Raffle_MinE_SpreadDirection = np.random.uniform(0, 1, len(List_MembSite))
+        #
+        # for i, Memb in enumerate(List_MembSite):
+        #     # Add MinD
+        #     if Switch_MinD_Recruitment:
+        #         if MinD.CurrentQuantity > 0:
+        #         # Consider cytoplasmic MinD, local MinD, Distance from the center
+        #             if Raffle_MinD_Recruitment[i] < Kon_MinD * (MinD.CurrentQuantity / MinD.InitialQuantity) * (len(Memb.X_MinD) + 1) ** 2 * Memb.DistanceFromCenter ** 0.6:
+        #                 MinDGroup = (-1) ** (len(Memb.X_MinD))
+        #                 MinDAngle = Memb.Angle + MinDGroup * np.deg2rad(Memb.Spacing * len(Memb.X_MinD))
+        #                 X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinDAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinD)
+        #                 Memb.X_MinD.append(X)
+        #                 Memb.Y_MinD.append(Y)
+        #                 Memb.Group_MinD.append(MinDGroup)
+        #                 Memb.Angle_MinD.append(MinDAngle)
+        #                 MinD.CurrentQuantity -= 1
+        #
+        #     # Add MinE
+        #     if Switch_MinE_Recruitment:
+        #         if MinE.CurrentQuantity > 0 and len(Memb.X_MinD) > len(Memb.X_MinE):
+        #             # Consider cytoplasmic MinE, local MinD, Distance from the center
+        #             if Raffle_MinE_Recruitment[i] < Kon_MinE * (MinE.CurrentQuantity / MinE.InitialQuantity) * len(Memb.X_MinD) * Memb.DistanceFromCenter ** 0.2:
+        #                 MinEGroup = (-1) ** (len(Memb.X_MinE))
+        #                 MinEAngle = Memb.Angle + MinEGroup * np.deg2rad(Memb.Spacing * len(Memb.X_MinE))
+        #                 X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinEAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinE)
+        #                 Memb.X_MinE.append(X)
+        #                 Memb.Y_MinE.append(Y)
+        #                 Memb.Group_MinE.append(MinEGroup)
+        #                 Memb.Angle_MinE.append(MinEAngle)
+        #                 MinE.CurrentQuantity -= 1
+        #
+        #     # Remove MinD
+        #     if Switch_MinD_Removal:
+        #         if len(Memb.X_MinD) > 0:
+        #             if Raffle_MinD_Removal[i] < Koff_MinD * len(Memb.X_MinE) ** 4:
+        #                 Memb.X_MinD.pop()
+        #                 Memb.Y_MinD.pop()
+        #                 Memb.Group_MinD.pop()
+        #                 Memb.Angle_MinD.pop()
+        #                 MinD.CurrentQuantity += 1
+        #
+        #     # Remove MinE
+        #     if Switch_MinE_Removal:
+        #         if len(Memb.X_MinE) > 0:
+        #             if Raffle_MinE_Removal[i] < Koff_MinE:
+        #                 Memb.X_MinE.pop()
+        #                 Memb.Y_MinE.pop()
+        #                 Memb.Group_MinE.pop()
+        #                 Memb.Angle_MinE.pop()
+        #                 MinE.CurrentQuantity += 1
+        #
+        #     # Spread MinD
+        #     if Switch_MinD_Spread:
+        #         if len(Memb.X_MinD) > 0:
+        #             if Raffle_MinD_Spread[i] < Kdiff_MinD * len(Memb.X_MinD) ** 2:
+        #                 # Current Location
+        #                 Memb.X_MinD.pop()
+        #                 Memb.Y_MinD.pop()
+        #                 Memb.Group_MinD.pop()
+        #                 Memb.Angle_MinD.pop()
+        #
+        #                 # New Location
+        #                 Direction = 1 if Raffle_MinD_SpreadDirection[i] < 0.5 else -1
+        #                 MembToMove = List_MembSite[i + Direction] if i + Direction < len(List_MembSite) else List_MembSite[0]
+        #                 MinDGroup = (-1) ** (len(MembToMove.X_MinD))
+        #                 MinDAngle = MembToMove.Angle + MinDGroup * np.deg2rad(Memb.Spacing * len(MembToMove.X_MinD))
+        #                 X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinDAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinD)
+        #                 MembToMove.X_MinD.append(X)
+        #                 MembToMove.Y_MinD.append(Y)
+        #                 MembToMove.Group_MinD.append(MinDGroup)
+        #                 MembToMove.Angle_MinD.append(MinDAngle)
+        #
+        #     # Spread MinE
+        #     if Switch_MinE_Spread:
+        #         if len(Memb.X_MinE) > 0:
+        #             if Raffle_MinE_Spread[i] < Kdiff_MinE * len(Memb.X_MinE) ** 2:
+        #                 # Current Location
+        #                 Memb.X_MinE.pop()
+        #                 Memb.Y_MinE.pop()
+        #                 Memb.Group_MinE.pop()
+        #                 Memb.Angle_MinE.pop()
+        #
+        #                 # New Location
+        #                 Direction = 1 if Raffle_MinE_SpreadDirection[i] < 0.5 else -1
+        #                 NewPosition = i + Direction if i + Direction < len(List_MembSite) else 0
+        #                 NewPosition = i - Direction if len(List_MembSite[NewPosition].X_MinD) == 0 else i + Direction
+        #                 NewPosition = NewPosition if NewPosition < len(List_MembSite) else 0
+        #                 MembToMove = List_MembSite[NewPosition]
+        #                 MinEGroup = (-1) ** (len(MembToMove.X_MinE))
+        #                 MinEAngle = MembToMove.Angle + MinEGroup * np.deg2rad(Memb.Spacing * len(MembToMove.X_MinE))
+        #                 X, Y = GetXYFromEllipse((Membrane.X, Membrane.Y), MinEAngle, Membrane.W, Membrane.H, RatioFactor=Memb.RatioFactor_MinE)
+        #                 MembToMove.X_MinE.append(X)
+        #                 MembToMove.Y_MinE.append(Y)
+        #                 MembToMove.Group_MinE.append(MinEGroup)
+        #                 MembToMove.Angle_MinE.append(MinEAngle)
 
         # All the Drawings
         Screen.fill(WHITE)
 
         # EcoliBody.Draw()
         Membrane.Draw()
-        for Memb in List_MembSite:
-            Memb.Draw()
-            Memb.DrawChildren()
-        MinD.Draw()
-        MinE.Draw()
+        for i in range(Phospholipids.shape[0]):
+            pygame.draw.circle(surface=Screen, color=GREEN, center=(Phospholipids[i][0], Phospholipids[i][1]), radius=10)
+        for i in range(MinDs.shape[0]):
+            pygame.draw.circle(surface=Screen, color=BLUE, center=(MinDs[i][0], MinDs[i][1]), radius=10)
+        for i in range(MinEs.shape[0]):
+            pygame.draw.circle(surface=Screen, color=RED, center=(MinEs[i][0], MinEs[i][1]), radius=10)
+
+        # MinD.Draw()
+        # MinE.Draw()
 
         Control.DisplayTime()
 
