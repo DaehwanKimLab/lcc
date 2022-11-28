@@ -343,19 +343,18 @@ def main():
                     break
                 if Raffle[i] < KineticConstant * (FtsZ.CytosolicQuantity / FtsZ.TotalQuantity):
                     FtsA.N_Children += 1
-                    if True:
-                        FtsZGroup = (-1) ** (len(FtsA.X_Children_DivPlane))
-                        FtsZAngle = FtsA.Angle + FtsZGroup * np.deg2rad(0.75 * len(FtsA.X_Children_DivPlane))
-                        # if FtsZAngle < 0:
-                        #     FtsZAngle += np.deg2rad(360)
-                        FtsZRatioFactor = 0.92 + 0.02 * FtsZGroup
-                        X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsZAngle, Membrane.Radius, RatioFactor=FtsZRatioFactor)
-                        FtsA.X_Children_DivPlane.append(X + Offset_DivPlane_X)
-                        FtsA.Y_Children_DivPlane.append(Y + Offset_DivPlane_Y)
-                        FtsA.X_Children_DivAxis.append(X + Offset_DivAxis_X)
-                        FtsA.Y_Children_DivAxis.append(Y + Offset_DivAxis_Y)
-                        FtsA.Group_Children.append(FtsZGroup)
-                        FtsA.Angle_Children.append(FtsZAngle)
+                    FtsZGroup = (-1) ** (len(FtsA.X_Children_DivPlane))
+                    FtsZAngle = FtsA.Angle + FtsZGroup * np.deg2rad(0.75 * len(FtsA.X_Children_DivPlane))
+                    # if FtsZAngle < 0:
+                    #     FtsZAngle += np.deg2rad(360)
+                    FtsZRatioFactor = 0.92 + 0.02 * FtsZGroup
+                    X, Y = GetXYFromCenter((Membrane.X, Membrane.Y), FtsZAngle, Membrane.Radius, RatioFactor=FtsZRatioFactor)
+                    FtsA.X_Children_DivPlane.append(X + Offset_DivPlane_X)
+                    FtsA.Y_Children_DivPlane.append(Y + Offset_DivPlane_Y)
+                    FtsA.X_Children_DivAxis.append(X + Offset_DivAxis_X)
+                    FtsA.Y_Children_DivAxis.append(Y + Offset_DivAxis_Y)
+                    FtsA.Group_Children.append(FtsZGroup)
+                    FtsA.Angle_Children.append(FtsZAngle)
                     FtsZ.CytosolicQuantity -= 1
 
         # Remove Children
@@ -365,13 +364,12 @@ def main():
                 if Raffle[i] < KineticConstant * 0.2 * (FtsZ.TotalQuantity / FtsZ.CytosolicQuantity):
                     if FtsA.N_Children >= 1:
                         FtsA.N_Children -= 1
-                        if True:
-                            FtsA.X_Children_DivPlane.pop()
-                            FtsA.Y_Children_DivPlane.pop()
-                            FtsA.X_Children_DivAxis.pop()
-                            FtsA.Y_Children_DivAxis.pop()
-                            FtsA.Group_Children.pop()
-                            FtsA.Angle_Children.pop()
+                        FtsA.X_Children_DivPlane.pop()
+                        FtsA.Y_Children_DivPlane.pop()
+                        FtsA.X_Children_DivAxis.pop()
+                        FtsA.Y_Children_DivAxis.pop()
+                        FtsA.Group_Children.pop()
+                        FtsA.Angle_Children.pop()
                         FtsZ.CytosolicQuantity += 1
 
 
