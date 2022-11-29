@@ -75,14 +75,7 @@ BOTTOM = H_S
 CenterTop = (MID_X, TOP)
 Center = (MID_X, MID_Y)
 
-# X-section along the plane of division
-Offset_X = W_S * 2 / 7
-Offset_Y = 0
-
-# X-section along the axis of division of E coli
-Offset_X = - W_S * 9 / 40
-Offset_Y = 0
-
+# Utilities
 def AddPos(A, B):
     X_A, Y_A = A
     X_B, Y_B = B
@@ -127,15 +120,6 @@ def CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
     else:
         return False
 
-def OutOfBoundaryAdjustment(X, Y, Center_X, Center_Y, Width, Height, adjustmentfactor=5):
-    OutOfBoundaryCheck = (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2
-    bOutOfBoundaryCheck = OutOfBoundaryCheck > 1
-    Idx_OutOfBoundary = np.where(bOutOfBoundaryCheck)
-    if bOutOfBoundaryCheck:
-        X[0, Idx_OutOfBoundary] = np.where(X[0, Idx_OutOfBoundary] < Center_X, X[0, Idx_OutOfBoundary] + adjustmentfactor, X[0, Idx_OutOfBoundary] - adjustmentfactor)
-        Y[0, Idx_OutOfBoundary] = np.where(Y[0, Idx_OutOfBoundary] < Center_Y, Y[0, Idx_OutOfBoundary] + adjustmentfactor, Y[0, Idx_OutOfBoundary] - adjustmentfactor)
-    return X, Y
-
 Title = 'MinDE Visualization'
 pygame.display.set_caption(Title)
 
@@ -165,6 +149,7 @@ class FCompartment:
 class FMembrane(FCompartment):
     def __init__(self, X=MID_X, Y=MID_Y, thickness=5, linecolor=GRAY4, bodycolor=YELLOW_FAINT, Label=False, width=0, height=0):
         FCompartment.__init__(self, X=X, Y=Y, thickness=thickness, linecolor=linecolor, bodycolor=bodycolor, Label=Label, width=width, height=height)
+        self.Boundary = X, Y, width, height
 
     def Draw(self):
         pygame.draw.ellipse(Screen, self.BodyColor, (self.X - self.W / 2, self.Y - self.H / 2, self.W, self.H))
@@ -265,6 +250,7 @@ class FControl:
         self.InitText = ''
 
         self.Time = 0
+        self.Step = 0
 
         # Pause
         self.MessagePause = 'PAUSE'
@@ -282,7 +268,11 @@ class FControl:
         Text_Rect.midtop = Screen.get_rect().midtop
         Screen.blit(Text, Text_Rect)
 
-    def DisplayTime_Log(self):
+    def PrintStep(self):
+        Text = 'Simulation Step: ' + str(round(self.Step))
+        print(Text)
+
+    def PrintTime(self):
         Text = 'Simulation Time: ' + str(round(self.Time))
         print(Text)
 
@@ -315,6 +305,16 @@ def main():
     # Switch_MinD_Spread = False
     # Switch_MinE_Spread = False
 
+    # Diffusion Parameters
+    Distance_Interaction = 10
+    Distance_Diffusion = 5
+
+    # Dissociation Parameters
+    KD_MinD_Phospholipid            = 0.001
+    KD_MinD_Phospholipid_And_MinD   = 0.00001
+    KD_MinD_Phospholipid_And_MinE   = 0.9
+    KD_MinE_Phospholipid_And_MinD   = 0.0001
+
     ScaleFactor_Dimension = 1.5
     W_Ecoli = int(2000 / ScaleFactor_Dimension)
     H_Ecoli = int(1000 / ScaleFactor_Dimension)
@@ -325,7 +325,7 @@ def main():
     print('Ecoli Size :\t', W_Ecoli, '\tby\t', H_Ecoli)
 
     # Phospholipids
-    N_MembraneSites = 100
+    N_MembraneSites = 200
     Phospholipid_X = np.zeros([1, N_MembraneSites])
     Phospholipid_Y = np.zeros([1, N_MembraneSites])
     for i in range(Phospholipid_X.shape[1]):
@@ -333,9 +333,10 @@ def main():
         Phospholipid_X[0, i], Phospholipid_Y[0, i] = GetXYFromEllipse((Membrane.X, Membrane.Y), Angle, Membrane.W, Membrane.H)
         if Debug:
             print('Phopholipid #', i, '\tX:', Phospholipid_X[0, i], '\tY:', Phospholipid_Y[0, i])
+    Phospholipid = (Phospholipid_X, Phospholipid_Y)
 
     # Molecules
-    ScaleFactor_Quantity = 50
+    ScaleFactor_Quantity = 10
     Quantity_MinD = int(5000 / ScaleFactor_Quantity)
     Quantity_MinE = int(4000 / ScaleFactor_Quantity)
 
@@ -345,6 +346,7 @@ def main():
         MinD_X[0, i], MinD_Y[0, i] = GetRandomXYWithinEllipse((Membrane.X, Membrane.Y), Membrane.W, Membrane.H)
         if Debug:
             print('MinD #', i, '\tX:', MinD_X[0, i], '\tY:', MinD_Y[0, i])
+    MinD = (MinD_X, MinD_Y)
 
     MinE_X = np.zeros([1, Quantity_MinE])
     MinE_Y = np.zeros([1, Quantity_MinE])
@@ -352,6 +354,7 @@ def main():
         MinE_X[0, i], MinE_Y[0, i] = GetRandomXYWithinEllipse((Membrane.X, Membrane.Y), Membrane.W, Membrane.H)
         if Debug:
             print('MinE #', i, '\tX:', MinE_X[0, i], '\tY:', MinE_Y[0, i])
+    MinE = (MinE_X, MinE_Y)
 
     ElapsedTime = 0
     PrevTime = datetime.now()
@@ -378,45 +381,112 @@ def main():
             ElapsedTime -= SimUnitTime
             Control.Time += 1
 
-            Control.DisplayTime_Log()
+        if Debug:
+            Control.PrintStep()
 
-        # Phospholipid-MinD interaction
-        Distance_Phospholipid_MinD = GetDistanceBTWTwoPoints_2D((Phospholipid_X, Phospholipid_Y), (MinD_X, MinD_Y))
-        Idx_Not_Approximity_Phospholipid_MinD = np.where(np.all(Distance_Phospholipid_MinD > 20, axis=1))[0]
-        MinD_X[0, Idx_Not_Approximity_Phospholipid_MinD] += np.random.uniform(-1, 1, Idx_Not_Approximity_Phospholipid_MinD.shape[0]) * 5
-        MinD_Y[0, Idx_Not_Approximity_Phospholipid_MinD] += np.random.uniform(-1, 1, Idx_Not_Approximity_Phospholipid_MinD.shape[0]) * 5
+        # KD_MinD_Phospholipid = 0.001
+        # KD_MinD_Phospholipid_And_MinD = 0.00001
+        # KD_MinD_Phospholipid_And_MinE = 0.9
+        # KD_MinE_Phospholipid_And_MinD = 0.0001
+
+        def OutOfBoundaryAdjustment(X, Y, Center_X, Center_Y, Width, Height, adjustmentfactor=5):
+            OutOfBoundaryCheck = (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2
+            bOutOfBoundaryCheck = OutOfBoundaryCheck > 1
+            Idx_OutOfBoundary = np.where(bOutOfBoundaryCheck)
+            if np.any(bOutOfBoundaryCheck):
+                X[Idx_OutOfBoundary] = np.where(X[Idx_OutOfBoundary] < Center_X,
+                                                X[Idx_OutOfBoundary] + adjustmentfactor,
+                                                X[Idx_OutOfBoundary] - adjustmentfactor)
+                Y[Idx_OutOfBoundary] = np.where(Y[Idx_OutOfBoundary] < Center_Y,
+                                                Y[Idx_OutOfBoundary] + adjustmentfactor,
+                                                Y[Idx_OutOfBoundary] - adjustmentfactor)
+            return X, Y
+
+        def RandomMovement(X, movementfactor=5):
+            X += np.random.uniform(-1, 1, X.shape[0]) * movementfactor
+            return X
+
+        def Diffusion(XY, Idx, movementfactor, Boundary):
+            X, Y = XY
+            Center_X, Center_Y, Width, Height = Boundary
+            X[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * movementfactor
+            Y[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * movementfactor
+            X[:, Idx], Y[:, Idx] = OutOfBoundaryAdjustment(X[:, Idx], Y[:, Idx], Center_X, Center_Y, Width, Height)
+            return (X, Y)
+
+        def GetDistance(xy_mol1, xy_mol2):
+            return GetDistanceBTWTwoPoints_2D(xy_mol1, xy_mol2)
+
+        def GetInteractionMap(xy_mol1=None, xy_mol2=None, distance=None, interaction_distance=0, select_mol=0):
+            '''
+            Possible set of inputs:
+                - xy_mol1, xy_mol2, interaction_distance, select_mol
+                - distance, interaction_distance, select_mol
+            '''
+            if np.any(xy_mol1) and np.any(xy_mol2) and interaction_distance:
+                distance = GetDistance(xy_mol1, xy_mol2)
+            elif np.any(distance) and interaction_distance:
+                pass
+            else:
+                print('[ERROR] GetInteractionMap: insufficient inputs')
+                sys.exit(1)
+            return np.any(distance < interaction_distance, axis=select_mol)
+
+        def GetInteractionIdx(xy_mol1=None, xy_mol2=None, distance=None, interaction_distance=0, interaction_map=None, select_mol=0):
+            '''
+            Possible set of inputs:
+                - xy_mol1, xy_mol2, interaction_distance, select_mol=0
+                - distance, interaction_distance, select_mol=0
+                - interaction_map, select_mol=0
+            select_mol: 0 for mol1, 1 for mol2
+            '''
+            if np.any(xy_mol1) and np.any(xy_mol2) and interaction_distance:
+                interaction_map = GetInteractionMap(xy_mol1=xy_mol1, xy_mol2=xy_mol2, interaction_distance=interaction_distance)
+            elif np.any(distance) and interaction_distance:
+                interaction_map = GetInteractionMap(distance=distance, interaction_distance=interaction_distance)
+            elif interaction_map.size:
+                pass
+            else:
+                print('[ERROR] GetInteractionIdx: insufficient inputs')
+                sys.exit(1)
+            return np.where(interaction_map)[select_mol]
+
+        # MinD-Phospholipid interaction
+        Distance_MinD_To_Phospholipid = GetDistance(MinD, Phospholipid)
+        InteractionMap_MinD_With_Phospholipid = GetInteractionMap(distance=Distance_MinD_To_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
+        InteractionMap_MinD_Not_With_Phospholipid = np.invert(InteractionMap_MinD_With_Phospholipid)
+        Idx_MinD_Not_With_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_Not_With_Phospholipid, select_mol=0)
+
+        MinD = Diffusion(MinD, Idx_MinD_Not_With_Phospholipid, Distance_Diffusion, Membrane.Boundary)
+
+        # MinE-MinD-Phospholipid interaction
+        Idx_MinD_With_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_With_Phospholipid, select_mol=0)
+        MinD_With_Phospholipid = MinD[0][:, Idx_MinD_With_Phospholipid], MinD[1][:, Idx_MinD_With_Phospholipid]
+        InteractionMap_MinE_With_MinDWithPhospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=MinD_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
+        InteractionMap_MinE_With_Phospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
+        InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid = np.logical_and(InteractionMap_MinE_With_MinDWithPhospholipid, InteractionMap_MinE_With_Phospholipid)
+        InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid = np.invert(InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid, InteractionMap_MinE_With_Phospholipid)
+        Idx_MinE_With_MinDWithPhospholipid_And_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid, select_mol=0)
+
+        MinE = Diffusion(MinE, Idx_MinE_With_MinDWithPhospholipid_And_Phospholipid, Distance_Diffusion, Membrane.Boundary)
 
         # Phospholipid-MinD dissociation
-        Idx_Approximity_Phospholipid_MinD = np.where(np.any(Distance_Phospholipid_MinD <= 20, axis=1))[0]
-        # Get and apply probability of dissociation
-        MinD_X[0, Idx_Not_Approximity_Phospholipid_MinD] += np.random.uniform(-1, 1, Idx_Not_Approximity_Phospholipid_MinD.shape[0]) * 5
-        MinD_Y[0, Idx_Not_Approximity_Phospholipid_MinD] += np.random.uniform(-1, 1, Idx_Not_Approximity_Phospholipid_MinD.shape[0]) * 5
-
-        # Phospholipid-MinD-MinE interaction
-        Distance_Phospholipid_MinD_MinE = GetDistanceBTWTwoPoints_2D((MinD_X[0, Idx_Approximity_Phospholipid_MinD], MinD_Y[0, Idx_Approximity_Phospholipid_MinD]), (MinE_X, MinE_Y))
-        Idx_Not_Approximity_Phospholipid_MinD_MinE = np.where(np.all(Distance_Phospholipid_MinD_MinE > 20, axis=1))[0]
-        MinE_X[0, Idx_Not_Approximity_Phospholipid_MinD_MinE] += np.random.uniform(-1, 1, Idx_Not_Approximity_Phospholipid_MinD_MinE.shape[0]) * 5
-        MinE_Y[0, Idx_Not_Approximity_Phospholipid_MinD_MinE] += np.random.uniform(-1, 1, Idx_Not_Approximity_Phospholipid_MinD_MinE.shape[0]) * 5
-
-
-
-        # # Out-of-boundary Adjustment
-        # MinD_X, MinD_Y = OutOfBoundaryAdjustment(MinD_X, MinD_Y, Membrane.X, Membrane.Y, Membrane.W, Membrane.H)
-        # MinE_X, MinE_Y = OutOfBoundaryAdjustment(MinE_X, MinE_Y, Membrane.X, Membrane.Y, Membrane.W, Membrane.H)
 
 
         # All the Drawings
         Screen.fill(WHITE)
         Membrane.Draw()
         for i in range(Phospholipid_X.shape[1]):
-            pygame.draw.circle(surface=Screen, color=GREEN, center=(Phospholipid_X[0, i], Phospholipid_Y[0, i]), radius=10)
+            pygame.draw.circle(surface=Screen, color=GREEN, center=(Phospholipid_X[0, i], Phospholipid_Y[0, i]), radius=5)
         for i in range(MinD_X.shape[1]):
-            pygame.draw.circle(surface=Screen, color=BLUE, center=(MinD_X[0, i], MinD_Y[0, i]), radius=10)
+            pygame.draw.circle(surface=Screen, color=BLUE, center=(MinD_X[0, i], MinD_Y[0, i]), radius=5)
         for i in range(MinE_X.shape[1]):
-            pygame.draw.circle(surface=Screen, color=RED, center=(MinE_X[0, i], MinE_Y[0, i]), radius=10)
+            pygame.draw.circle(surface=Screen, color=RED, center=(MinE_X[0, i], MinE_Y[0, i]), radius=5)
 
         Control.DisplayTime()
         pygame.display.update()
+
+        Control.Step += 1
 
     pygame.quit()
     print('\n%%%%%% End MinDE mock-visualization. %%%%%%')
