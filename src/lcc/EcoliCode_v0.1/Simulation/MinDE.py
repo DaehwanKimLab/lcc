@@ -406,11 +406,11 @@ def main():
             X += np.random.uniform(-1, 1, X.shape[0]) * movementfactor
             return X
 
-        def Diffusion(XY, Idx, movementfactor, Boundary):
+        def Diffusion(XY, Idx, diffusionfactor, Boundary):
             X, Y = XY
             Center_X, Center_Y, Width, Height = Boundary
-            X[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * movementfactor
-            Y[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * movementfactor
+            X[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * diffusionfactor
+            Y[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * diffusionfactor
             X[:, Idx], Y[:, Idx] = OutOfBoundaryAdjustment(X[:, Idx], Y[:, Idx], Center_X, Center_Y, Width, Height)
             return (X, Y)
 
@@ -465,12 +465,18 @@ def main():
         InteractionMap_MinE_With_MinDWithPhospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=MinD_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
         InteractionMap_MinE_With_Phospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
         InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid = np.logical_and(InteractionMap_MinE_With_MinDWithPhospholipid, InteractionMap_MinE_With_Phospholipid)
-        InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid = np.invert(InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid, InteractionMap_MinE_With_Phospholipid)
-        Idx_MinE_With_MinDWithPhospholipid_And_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid, select_mol=0)
+        InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid = np.invert(InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid)
+        Idx_MinE_Not_With_MinDWithPhospholipid_And_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid, select_mol=0)
 
-        MinE = Diffusion(MinE, Idx_MinE_With_MinDWithPhospholipid_And_Phospholipid, Distance_Diffusion, Membrane.Boundary)
+        MinE = Diffusion(MinE, Idx_MinE_Not_With_MinDWithPhospholipid_And_Phospholipid, Distance_Diffusion, Membrane.Boundary)
 
         # Phospholipid-MinD dissociation
+        # MinE_With_Phospholipid = MinE[0][:, InteractionMap_MinE_With_Phospholipid], MinE[1][:, InteractionMap_MinE_With_Phospholipid]
+        # InteractionMap_MinD_With_MinEWithPhospholipid_And_Phospholipid = GetInteractionMap(xy_mol1=MinD_With_Phospholipid, xy_mol2=MinE_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
+        # Idx_MinD_With_MinEWithMinDWithPhospholipid_And_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_With_MinEWithPhospholipid_And_Phospholipid, select_mol=0)
+        #
+        # print(Idx_MinD_With_MinEWithMinDWithPhospholipid_And_Phospholipid)
+        # MinD = Diffusion(MinD, Idx_MinD_With_MinEWithMinDWithPhospholipid_And_Phospholipid, Distance_Diffusion, Membrane.Boundary)
 
 
         # All the Drawings
