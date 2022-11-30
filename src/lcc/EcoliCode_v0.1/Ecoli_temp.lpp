@@ -1,0 +1,156 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glucose Metabolism
+reaction Glycolysis(G6P + ADP + ADP + NAD + NAD --> pyruvate + pyruvate + NADH + NADH + ATP + ATP, k=1)
+mathfunc
+{
+    float cg = 0.019 M;
+    ATP'  = (ADP / ATP) * cg;
+    ADP'  = 0 - ATP';
+    NADH' = ATP';
+    NAD' = 0 - NADH';
+    G6P'  = ATP' / 2;
+    pyruvate' = G6P' * 2;
+};
+
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
+mathfunc
+{
+    float cp = 0.003 M;
+    pyruvate' = 0 - (pyruvate / acetyl_CoA) * cp;
+    CoA_SH' = pyruvate';
+    NAD' = pyruvate';
+    acetyl_CoA' = 0 - pyruvate';
+    NADH' = 0 - pyruvate';
+};
+
+reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP + Malate --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP + Malate, k=1)
+mathfunc
+{
+    float c_cc = 0.385 M;
+    float cc = Malate * c_cc;
+    ATP'  = cc;
+    ADP'  = 0 - ATP';
+    NADH' = 3 * ATP';
+    NAD' = 0 - NADH';
+    FADH2' = ATP';
+    FAD' = 0 - FADH2';
+    acetyl_CoA' = 0 - ATP';
+    CoA_SH' = 0 - acetyl_CoA';
+    Malate' = 0;
+};
+
+reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
+mathfunc
+{
+    float c_co = 5 M;
+    float co = FADH2 * c_co;
+    ATP'  = co;
+    ADP'  = 0 - ATP';
+    NADH' = 0 - ATP' / 4;
+    FADH2' = 0 - ATP' / 4;
+    NAD' = 0 - NADH';
+    FAD' = 0 - FADH2';
+};
+
+reaction ATPConsumptionByCellDivision(ADP + NADH --> ATP + NAD, k=1)
+mathfunc
+{
+    float cd = 4.35e-3 M;
+    float c_tuneNAD = 0.7725;
+    ATP' = 0 - cd;
+    ADP' = 0 - ATP';
+    NAD' = (0 - ATP') * c_tuneNAD;
+    NADH' = 0 - NAD';
+};
+
+G6P[:] = 8.8e-3 M;   // assume glucose rich environment.
+ATP = 9.6e-3 M;
+ADP = 5.6e-4 M;
+NAD = 2.6e-3 M;
+NADH = 8.3e-3 M;
+pyruvate = 3.9e-4 M; 
+CoA_SH[:] = 1.4e-3 M;
+acetyl_CoA = 6.1e-4 M;
+FAD = 1.7e-4 M;
+FADH2 = 5e-4 M;
+Malate[:] = 1.7e-3 M;   // for TCA cycle capacity
+
+// run for 20 ~ 40 min
+// simulation time unit = 0.01 s
+
+// Cell Division Code
+// Z-Ring Formation
+reaction FtsZRecruitment(FtsA + FtsZ --> FtsA_FtsZ, k=1e6);
+reaction FtsZPolymerization(FtsA_FtsZ + FtsZ --> FtsA_FtsZ_FtsZ, k=200);
+
+FtsA = 200; // Primary membrane tether of FtsZ; recruitment of other division proteins
+FtsZ = 100000; // Tubulin-like principal regulator of septal PG synthesis
+
+// reference CorbinErickson_2020
+// {
+//     title = "A Unified Model for Treadmilling and Nucleation of Single-Stranded FtsZ Protofilaments";
+//     doi = "https://doi.org/10.1016/j.bpj.2020.05.041";
+// }
+
+// reference LevinJanakiraman_2021
+// {
+//     title = "Localization, Assembly, and Activation of the Escherichia coli Cell Division Machinery";
+//     doi = "https://doi.org/10.1128/ecosalplus.ESP-0022-2021";
+// }
+
+// reference Nguyen_2021
+// {
+//     title = "Simulations of Proposed Mechanisms of FtsZ-Driven Cell Constriction";
+//     doi = "https://doi.org/10.1128/JB.00576-20";
+// }
+
+// // references for FtsZ quantity
+// reference Kumar_2017
+// {
+//     title = "Z-ring Structure and Constriction Dynamics in E. coli";
+//     doi = "https://doi.org/10.3389/fmicb.2017.01670";
+//     // there are ~300 FtsZ proteins in low growth rate E. coli cells (generation time > 100 min) (Link et al., 1997) and 
+//     // 3,000–15,000 in high growth rate E. coli (generation time ≃ 20 min) (Lu et al., 1998; Rueda et al., 2003). 
+// }
+
+// reference Link_1997
+// {
+//     title = "Comparing the predicted and observed properties of proteins encoded in the genome of Escherichia coli K-12";
+//     doi = "https://doi.org/10.1002/elps.1150180807";
+// }
+
+// reference Lu_1998
+// {
+//     title = "FtsZ from Escherichia coli, Azotobacter vinelandii, and Thermotoga maritima–quantitation, GTP hydrolysis, and assembly.";
+//     doi = "https://doi.org/10.1002/(SICI)1097-0169(1998)40:1<71::AID-CM7>3.0.CO;2-I";
+// }
+
+// reference Rueda_2003
+// {
+//     title = "Concentration and assembly of the division ring proteins FtsZ, FtsA, and ZipA during the Escherichia coli cell cycle";
+//     doi = "https://doi.org/10.1128/JB.185.11.3344-3351.2003";
+// }
+
+// MinDE system
+// MinC and MinD are combined into MinD in the below reduced model
+reaction MinDRecruitment(MinD + Membrane --> MinD_Membrane, k = 1e9, krev = 1e5);
+reaction MinDRecruitment2(MinD_Membrane + MinD + Membrane --> MinD_Membrane + MinD + Membrane, k = 1e12);
+
+reaction MinERecruitment(MinE + Membrane --> MinE_Membrane, k = 1e9, krev = 1e5);
+reaction MinEInhibitionOnMinD(MinE_Membrane + MinD_Membrane --> MinE_Membrane + MinD + Membrane, k = 1e9);
+
+reaction FtsAFtsZInhibition(MinD_Membrane + FtsA_FtsZ --> MinD_Membrane + FtsA + FtsZ, k = 1e9);
+reaction FtsZSequestration(MinD + FtsZ --> MinD_FtsZ, k = 1e9, krev = 1e5);
+
+// MinC = 163; // Binds to the core region of FtsZ to inhibit FtsZ Polymerization
+MinD = 4928; // Walker-type ATPase, tethers MinC to membrane via MinE
+MinE = 4004; // Binds to MinD and stimulates ATPase activity of MinD, leading to the release of MinD from the membrane
+
+// reference Ramm_2019
+// {
+//     title = "The E. coli MinCDE system in the regulation of protein patterns and gradients";
+//     doi = "https://doi.org/10.1007/s00018-019-03218-x";
+// }
