@@ -58,24 +58,7 @@ def DisplayString(String, X, Y, position='center', rotate=0, color=BLACK, Type='
         Text_Rect.midright = (X, Y)
     Screen.blit(Text, Text_Rect)
 
-# pygame
-pygame.init()
-
-Screen_Size = W_S, H_S = 1500, 800
-Screen = pygame.display.set_mode(Screen_Size)
-
-LEFT = 0
-MID_X = W_S / 2
-RIGHT = W_S
-
-TOP = 0
-MID_Y = H_S / 2
-BOTTOM = H_S
-
-CenterTop = (MID_X, TOP)
-Center = (MID_X, MID_Y)
-
-# Utilities
+# Geometry-related tools
 def AddPos(A, B):
     X_A, Y_A = A
     X_B, Y_B = B
@@ -104,21 +87,50 @@ def GetXYFromEllipse(Center, Angle, Width, Height, RatioFactor=1.0):
     Center_X, Center_Y = Center
     return Center_X + Width / 2 * RatioFactor * np.cos(Angle), Center_Y + Height / 2 * RatioFactor * np.sin(Angle)
 
-def GetRandomXYWithinEllipse(Center, Width, Height):
+def GetRandomXYWithinEllipse(Center, Width, Height, membranebias=0.0):
     Center_X, Center_Y = Center
     X = np.random.uniform(Center_X - Width / 2, Center_X + Width / 2)
     Y = np.random.uniform(Center_Y - Height / 2, Center_Y + Height / 2)
-    if CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
+    if CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height, membranebias):
         pass
     else:
-        X, Y = GetRandomXYWithinEllipse(Center, Width, Height)
+        X, Y = GetRandomXYWithinEllipse(Center, Width, Height, membranebias)
     return X, Y
 
-def CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height):
-    if (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2 < 1:
-        return True
+def CheckIfWithinEllipse(X, Y, Center_X, Center_Y, Width, Height, membranebias=0.0):
+    Evaluate = (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2
+    if Evaluate < 1:
+        if membranebias:
+            if Evaluate > membranebias:
+                return True
+            else:
+                return False
+        else:
+            return True
     else:
         return False
+
+def GetAngle(XY, Center_XY):
+    X, Y = XY
+    Center_X, Center_Y = Center_XY
+    return np.arctan((X - Center_X) / (Y - Center_Y))
+
+# pygame
+pygame.init()
+
+Screen_Size = W_S, H_S = 1500, 800
+Screen = pygame.display.set_mode(Screen_Size)
+
+LEFT = 0
+MID_X = W_S / 2
+RIGHT = W_S
+
+TOP = 0
+MID_Y = H_S / 2
+BOTTOM = H_S
+
+CenterTop = (MID_X, TOP)
+Center = (MID_X, MID_Y)
 
 Title = 'MinDE Visualization'
 pygame.display.set_caption(Title)
@@ -149,7 +161,8 @@ class FCompartment:
 class FMembrane(FCompartment):
     def __init__(self, X=MID_X, Y=MID_Y, thickness=5, linecolor=GRAY4, bodycolor=YELLOW_FAINT, Label=False, width=0, height=0):
         FCompartment.__init__(self, X=X, Y=Y, thickness=thickness, linecolor=linecolor, bodycolor=bodycolor, Label=Label, width=width, height=height)
-        self.Boundary = X, Y, width, height
+        self.XY = X, Y
+        self.XYWH = X, Y, width, height
 
     def Draw(self):
         pygame.draw.ellipse(Screen, self.BodyColor, (self.X - self.W / 2, self.Y - self.H / 2, self.W, self.H))
@@ -160,79 +173,6 @@ class FMembrane(FCompartment):
     #     PercentCompletion = (1 - self.Radius * 2 / self.H)  * 100
     #     Text = "% Completion: " + "{:.1f}".format(PercentCompletion)
     #     DisplayString(Text, self.X, self.Y, color=BLACK, Type='mass')
-
-class FObject:
-    def __init__(self, Name, id=0, X=MID_X, Y=MID_Y):
-        self.Name = Name
-        self.ID = id
-        self.X = X
-        self.Y = Y
-
-    def Draw(self):
-        pass
-
-class FMassObject(FObject):
-    def __init__(self, Name, id=0, X=MID_X, Y=MID_Y, quantity=100):
-        FObject.__init__(self, Name, id=id, X=X, Y=Y)
-        self.InitialQuantity = quantity
-        self.CurrentQuantity = quantity
-        self.EngagedActivity = ""
-        self.Engaged = 0
-
-    def SetEngaged(self, EngagedActivity, Engaged):
-        self.EngagedActivity = EngagedActivity
-        self.Engaged = Engaged
-
-    def Draw(self, membradius=0):
-        Text = "Cytosolic " + self.Name[:-3] + ": " + str(self.CurrentQuantity)
-        DisplayString(Text, self.X, self.Y + 30 * self.ID, color=BLACK, Type='mass')
-    #     self.DisplayEngagedActivity()
-    #
-    # def DisplayEngagedActivity(self):
-    #     Text = '%s engaged in %s: ' % (self.Name, self.EngagedActivity) + str(self.Engaged)
-    #     DisplayString(Text, self.X, H_S * 12 / 13, color=BLACK)
-
-class FIndividualObject(FObject):
-    def __init__(self, Name, id=0, X=0, Y=0, angle=0, distance=0, color=GREEN, radius=10, thickness=2):
-        FObject.__init__(self, Name, id=id, X=X, Y=Y)
-
-        self.Angle = angle
-        self.DistanceFromCenter = distance
-        self.Spacing = 0.5
-
-        # ChildrenObject
-        self.X_MinD = list()
-        self.Y_MinD = list()
-        self.Group_MinD = list()
-        self.Angle_MinD = list()
-        self.Color_MinD = BLUE
-        self.RatioFactor_MinD = 0.97
-
-        self.X_MinE = list()
-        self.Y_MinE = list()
-        self.Angle_MinE = list()
-        self.Group_MinE = list()
-        self.Color_MinE = RED
-        self.RatioFactor_MinE = 0.94
-
-        # Draw
-        self.Radius = radius
-        self.Thickness = thickness
-        self.Color = color
-
-    def Draw(self):
-        # Division Plane
-        pygame.draw.circle(surface=Screen, color=self.Color, center=(self.X, self.Y), radius=self.Radius)
-        Label = self.Name + "#" + str(self.ID) + "~MinD_{" + str(len(self.X_MinD)) + "}" + "~MinE_{" + str(len(self.X_MinE)) + "}"
-        # DisplayString(Label, self.X+self.Radius*2.5*np.cos(self.Angle), self.Y+self.Radius*2.5*np.sin(self.Angle), color=BLACK, Type='individual')
-
-    def DrawChildren(self):
-        for i in range(len(self.X_MinD)):
-            pygame.draw.circle(surface=Screen, color=self.Color_MinD, center=(self.X_MinD[i] - 5 * np.cos(self.Angle), self.Y_MinD[i] - 5 * np.sin(self.Angle)), radius=self.Radius*0.5)
-            # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
-        for i in range(len(self.X_MinE)):
-            pygame.draw.circle(surface=Screen, color=self.Color_MinE, center=(self.X_MinE[i] - 5 * np.cos(self.Angle), self.Y_MinE[i] - 5 * np.sin(self.Angle)), radius=self.Radius*0.5)
-            # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
 
 class FControl:
     def __init__(self):
@@ -288,7 +228,7 @@ def main():
 
     Control = FControl()
     SimUnitTime = 0.1
-    Debug = True
+    Debug = False
 
     # Switches
     Switch_MinD_Recruitment = True
@@ -306,14 +246,12 @@ def main():
     # Switch_MinE_Spread = False
 
     # Diffusion Parameters
-    Distance_Interaction = 10
-    Distance_Diffusion = 5
+    Distance_Interaction = 12
+    Distance_Diffusion = 12
 
     # Dissociation Parameters
-    KD_MinD_Phospholipid            = 0.001
-    KD_MinD_Phospholipid_And_MinD   = 0.00001
-    KD_MinD_Phospholipid_And_MinE   = 0.9
-    KD_MinE_Phospholipid_And_MinD   = 0.0001
+    KD_MinD_Phospholipid = 6e-1
+    KD_MinE_Phospholipid = 7e-1
 
     ScaleFactor_Dimension = 1.5
     W_Ecoli = int(2000 / ScaleFactor_Dimension)
@@ -328,22 +266,26 @@ def main():
     N_MembraneSites = 200
     Phospholipid_X = np.zeros([1, N_MembraneSites])
     Phospholipid_Y = np.zeros([1, N_MembraneSites])
+    Phospholipid_Angle = np.zeros([1, N_MembraneSites])
+
     for i in range(Phospholipid_X.shape[1]):
-        Angle = np.deg2rad(360 / N_MembraneSites * i)
-        Phospholipid_X[0, i], Phospholipid_Y[0, i] = GetXYFromEllipse((Membrane.X, Membrane.Y), Angle, Membrane.W, Membrane.H)
+        Phospholipid_Angle[0, i] = 2 * np.pi / N_MembraneSites * i   # Not used for now
+        Phospholipid_X[0, i], Phospholipid_Y[0, i] = GetXYFromEllipse((Membrane.X, Membrane.Y), Phospholipid_Angle[0, i], Membrane.W, Membrane.H)
         if Debug:
             print('Phopholipid #', i, '\tX:', Phospholipid_X[0, i], '\tY:', Phospholipid_Y[0, i])
     Phospholipid = (Phospholipid_X, Phospholipid_Y)
 
     # Molecules
-    ScaleFactor_Quantity = 10
+    ScaleFactor_Quantity = 3
     Quantity_MinD = int(5000 / ScaleFactor_Quantity)
     Quantity_MinE = int(4000 / ScaleFactor_Quantity)
+    MembraneBias_MinD = 0.9   # 0 for uniform distribution, 1 for circumference
+    MembraneBias_MinE = 0   # 0 for uniform distribution, 1 for circumference
 
     MinD_X = np.zeros([1, Quantity_MinD])
     MinD_Y = np.zeros([1, Quantity_MinD])
     for i in range(MinD_X.shape[1]):
-        MinD_X[0, i], MinD_Y[0, i] = GetRandomXYWithinEllipse((Membrane.X, Membrane.Y), Membrane.W, Membrane.H)
+        MinD_X[0, i], MinD_Y[0, i] = GetRandomXYWithinEllipse(Membrane.XY, Membrane.W, Membrane.H, membranebias=MembraneBias_MinD)
         if Debug:
             print('MinD #', i, '\tX:', MinD_X[0, i], '\tY:', MinD_Y[0, i])
     MinD = (MinD_X, MinD_Y)
@@ -351,13 +293,88 @@ def main():
     MinE_X = np.zeros([1, Quantity_MinE])
     MinE_Y = np.zeros([1, Quantity_MinE])
     for i in range(MinE_X.shape[1]):
-        MinE_X[0, i], MinE_Y[0, i] = GetRandomXYWithinEllipse((Membrane.X, Membrane.Y), Membrane.W, Membrane.H)
+        MinE_X[0, i], MinE_Y[0, i] = GetRandomXYWithinEllipse(Membrane.XY, Membrane.W, Membrane.H, membranebias=MembraneBias_MinE)
         if Debug:
             print('MinE #', i, '\tX:', MinE_X[0, i], '\tY:', MinE_Y[0, i])
     MinE = (MinE_X, MinE_Y)
 
     ElapsedTime = 0
     PrevTime = datetime.now()
+
+    def OutOfBoundaryAdjustment(XY, Boundary, adjustmentfactor=5):
+        X, Y = XY
+        Center_X, Center_Y, Width, Height = Boundary
+
+        OutOfBoundaryCheck = (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2
+        bOutOfBoundaryCheck = OutOfBoundaryCheck > 1
+        Idx_OutOfBoundary = np.where(bOutOfBoundaryCheck)
+        if np.any(bOutOfBoundaryCheck):
+            X[Idx_OutOfBoundary] = np.where(X[Idx_OutOfBoundary] < Center_X,
+                                            X[Idx_OutOfBoundary] + adjustmentfactor,
+                                            X[Idx_OutOfBoundary] - adjustmentfactor)
+            Y[Idx_OutOfBoundary] = np.where(Y[Idx_OutOfBoundary] < Center_Y,
+                                            Y[Idx_OutOfBoundary] + adjustmentfactor,
+                                            Y[Idx_OutOfBoundary] - adjustmentfactor)
+        return X, Y
+
+    def Diffusion(XY, Idx, diffusionfactor, Boundary):
+        X, Y = XY
+        Center_X, Center_Y, Width, Height = Boundary
+        X[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * diffusionfactor
+        Y[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * diffusionfactor
+        X[:, Idx], Y[:, Idx] = OutOfBoundaryAdjustment((X[:, Idx], Y[:, Idx]), Boundary, adjustmentfactor=Distance_Diffusion)
+        return (X, Y)
+
+    def GetDistance(xy_mol1, xy_mol2):
+        return GetDistanceBTWTwoPoints_2D(xy_mol1, xy_mol2)
+
+    def GetInteractionMap(xy_mol1=None, xy_mol2=None, distance=None, interaction_distance=0, select_mol=0, count=False):
+        '''
+        Possible set of inputs:
+            - xy_mol1, xy_mol2, interaction_distance, select_mol
+            - distance, interaction_distance, select_mol
+        '''
+        if np.any(xy_mol1) and np.any(xy_mol2) and interaction_distance:
+            distance = GetDistance(xy_mol1, xy_mol2)
+        elif np.any(distance) and interaction_distance:
+            pass
+        else:
+            print('[ERROR] GetInteractionMap: insufficient inputs')
+            sys.exit(1)
+
+        if count:
+            return np.sum(distance < interaction_distance, axis=select_mol)
+        else:
+            return np.any(distance < interaction_distance, axis=select_mol)
+
+    def GetInteractionIdx(xy_mol1=None, xy_mol2=None, distance=None, interaction_distance=0, interaction_map=None,
+                          select_mol=0):
+        '''
+        Possible set of inputs:
+            - xy_mol1, xy_mol2, interaction_distance, select_mol=0
+            - distance, interaction_distance, select_mol=0
+            - interaction_map, select_mol=0
+        select_mol: 0 for mol1, 1 for mol2
+        '''
+        if np.any(xy_mol1) and np.any(xy_mol2) and interaction_distance:
+            interaction_map = GetInteractionMap(xy_mol1=xy_mol1, xy_mol2=xy_mol2,
+                                                interaction_distance=interaction_distance)
+        elif np.any(distance) and interaction_distance:
+            interaction_map = GetInteractionMap(distance=distance, interaction_distance=interaction_distance)
+        elif interaction_map.size:
+            pass
+        else:
+            print('[ERROR] GetInteractionIdx: insufficient inputs')
+            sys.exit(1)
+        return np.where(interaction_map)[select_mol]
+
+    def GetDissociationProbability_MinD(KineticConstant, InteractionMapWithMinD, InteractionMapWithMinE, Angles):
+        # print(np.max((np.abs(np.sin(Angles))) * ((InteractionMapWithMinD) ** 2) / ((1 + InteractionMapWithMinE) ** 2)))
+        return KineticConstant * (np.abs(np.sin(Angles))) * ((InteractionMapWithMinD) ** 1.5) / ((InteractionMapWithMinE + 1) ** 4)
+
+    def GetDissociationProbability_MinE(KineticConstant, InteractionMapWithMinD, InteractionMapWithMinE, Angles):
+        # print(np.min(KineticConstant / (np.abs(np.sin(Angles)) ** 0.1)), np.max(KineticConstant / (np.abs(np.sin(Angles))) ** 0.1))
+        return KineticConstant / np.abs(np.sin(Angles)) ** 0.1 / ((InteractionMapWithMinD + 1) ** 4)
 
     print('\n%%%%%% Start MinDE mock-visualization. %%%%%%')
     SimState = True
@@ -384,110 +401,57 @@ def main():
         if Debug:
             Control.PrintStep()
 
-        # KD_MinD_Phospholipid = 0.001
-        # KD_MinD_Phospholipid_And_MinD = 0.00001
-        # KD_MinD_Phospholipid_And_MinE = 0.9
-        # KD_MinE_Phospholipid_And_MinD = 0.0001
-
-        def OutOfBoundaryAdjustment(X, Y, Center_X, Center_Y, Width, Height, adjustmentfactor=5):
-            OutOfBoundaryCheck = (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2
-            bOutOfBoundaryCheck = OutOfBoundaryCheck > 1
-            Idx_OutOfBoundary = np.where(bOutOfBoundaryCheck)
-            if np.any(bOutOfBoundaryCheck):
-                X[Idx_OutOfBoundary] = np.where(X[Idx_OutOfBoundary] < Center_X,
-                                                X[Idx_OutOfBoundary] + adjustmentfactor,
-                                                X[Idx_OutOfBoundary] - adjustmentfactor)
-                Y[Idx_OutOfBoundary] = np.where(Y[Idx_OutOfBoundary] < Center_Y,
-                                                Y[Idx_OutOfBoundary] + adjustmentfactor,
-                                                Y[Idx_OutOfBoundary] - adjustmentfactor)
-            return X, Y
-
-        def RandomMovement(X, movementfactor=5):
-            X += np.random.uniform(-1, 1, X.shape[0]) * movementfactor
-            return X
-
-        def Diffusion(XY, Idx, diffusionfactor, Boundary):
-            X, Y = XY
-            Center_X, Center_Y, Width, Height = Boundary
-            X[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * diffusionfactor
-            Y[:, Idx] += np.random.uniform(-1, 1, Idx.shape[0]) * diffusionfactor
-            X[:, Idx], Y[:, Idx] = OutOfBoundaryAdjustment(X[:, Idx], Y[:, Idx], Center_X, Center_Y, Width, Height)
-            return (X, Y)
-
-        def GetDistance(xy_mol1, xy_mol2):
-            return GetDistanceBTWTwoPoints_2D(xy_mol1, xy_mol2)
-
-        def GetInteractionMap(xy_mol1=None, xy_mol2=None, distance=None, interaction_distance=0, select_mol=0):
-            '''
-            Possible set of inputs:
-                - xy_mol1, xy_mol2, interaction_distance, select_mol
-                - distance, interaction_distance, select_mol
-            '''
-            if np.any(xy_mol1) and np.any(xy_mol2) and interaction_distance:
-                distance = GetDistance(xy_mol1, xy_mol2)
-            elif np.any(distance) and interaction_distance:
-                pass
-            else:
-                print('[ERROR] GetInteractionMap: insufficient inputs')
-                sys.exit(1)
-            return np.any(distance < interaction_distance, axis=select_mol)
-
-        def GetInteractionIdx(xy_mol1=None, xy_mol2=None, distance=None, interaction_distance=0, interaction_map=None, select_mol=0):
-            '''
-            Possible set of inputs:
-                - xy_mol1, xy_mol2, interaction_distance, select_mol=0
-                - distance, interaction_distance, select_mol=0
-                - interaction_map, select_mol=0
-            select_mol: 0 for mol1, 1 for mol2
-            '''
-            if np.any(xy_mol1) and np.any(xy_mol2) and interaction_distance:
-                interaction_map = GetInteractionMap(xy_mol1=xy_mol1, xy_mol2=xy_mol2, interaction_distance=interaction_distance)
-            elif np.any(distance) and interaction_distance:
-                interaction_map = GetInteractionMap(distance=distance, interaction_distance=interaction_distance)
-            elif interaction_map.size:
-                pass
-            else:
-                print('[ERROR] GetInteractionIdx: insufficient inputs')
-                sys.exit(1)
-            return np.where(interaction_map)[select_mol]
-
-        # MinD-Phospholipid interaction
+        # Phospholipid interaction maps: MinD
         Distance_MinD_To_Phospholipid = GetDistance(MinD, Phospholipid)
-        InteractionMap_MinD_With_Phospholipid = GetInteractionMap(distance=Distance_MinD_To_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
-        InteractionMap_MinD_Not_With_Phospholipid = np.invert(InteractionMap_MinD_With_Phospholipid)
-        Idx_MinD_Not_With_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_Not_With_Phospholipid, select_mol=0)
-
-        MinD = Diffusion(MinD, Idx_MinD_Not_With_Phospholipid, Distance_Diffusion, Membrane.Boundary)
-
-        # MinE-MinD-Phospholipid interaction
+        InteractionMap_MinD_With_Phospholipid = GetInteractionMap(distance=Distance_MinD_To_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)   # Take care of it at the end
+        InteractionMap_MinD_NotWith_Phospholipid = np.invert(InteractionMap_MinD_With_Phospholipid)
         Idx_MinD_With_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_With_Phospholipid, select_mol=0)
+        Idx_MinD_NotWith_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_NotWith_Phospholipid, select_mol=0)
+
+        # Phospholipid interaction maps: MinE
+        Distance_MinE_To_Phospholipid = GetDistance(MinE, Phospholipid)
+        InteractionMap_MinE_With_Phospholipid = GetInteractionMap(distance=Distance_MinE_To_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)   # Take care of it at the end
+        InteractionMap_MinE_NotWith_Phospholipid = np.invert(InteractionMap_MinE_With_Phospholipid)
+        Idx_MinE_With_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_With_Phospholipid, select_mol=0)
+        Idx_MinE_NotWith_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_NotWith_Phospholipid, select_mol=0)
+
+        # membrane MinD: influenced by neighboring MinD and MinE
         MinD_With_Phospholipid = MinD[0][:, Idx_MinD_With_Phospholipid], MinD[1][:, Idx_MinD_With_Phospholipid]
-        InteractionMap_MinE_With_MinDWithPhospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=MinD_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
-        InteractionMap_MinE_With_Phospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
-        InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid = np.logical_and(InteractionMap_MinE_With_MinDWithPhospholipid, InteractionMap_MinE_With_Phospholipid)
-        InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid = np.invert(InteractionMap_MinE_With_MinDWithPhospholipid_And_Phospholipid)
-        Idx_MinE_Not_With_MinDWithPhospholipid_And_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_NotWith_MinDWithPhospholipid_And_Phospholipid, select_mol=0)
+        MinE_With_Phospholipid = MinE[0][:, Idx_MinE_With_Phospholipid], MinE[1][:, Idx_MinE_With_Phospholipid]
+        InteractionCountMap_MinD_With_MinDWithPhospholipid = GetInteractionMap(xy_mol1=MinD, xy_mol2=MinD_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0, count=True)
+        InteractionCountMap_MinD_With_MinEWithPhospholipid = GetInteractionMap(xy_mol1=MinD, xy_mol2=MinE_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0, count=True)
 
-        MinE = Diffusion(MinE, Idx_MinE_Not_With_MinDWithPhospholipid_And_Phospholipid, Distance_Diffusion, Membrane.Boundary)
+        # Angles_MinD = np.max(GetInteractionMap(distance=Distance_MinD_To_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0) * Phospholipid_Angle.T, axis=0)
+        Angles_MinD = GetAngle(MinD, Membrane.XY)[0]
+        DissociationProbability_MinD = GetDissociationProbability_MinD(KD_MinD_Phospholipid, InteractionCountMap_MinD_With_MinDWithPhospholipid, InteractionCountMap_MinD_With_MinEWithPhospholipid, Angles_MinD)
+        assert InteractionMap_MinD_With_Phospholipid.shape == DissociationProbability_MinD.shape
+        RandomNumbers = np.random.uniform(0, 1, DissociationProbability_MinD.shape)
+        InteractionMap_MinD_WithMinDWithPhospholipid_And_MinEWithPhospholipid = np.where(RandomNumbers > InteractionMap_MinD_With_Phospholipid * DissociationProbability_MinD, True, False)
+        Idx_MinD_WithMinDWithPhospholipid_And_MinEWithPhospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_WithMinDWithPhospholipid_And_MinEWithPhospholipid, select_mol=0)
+        MinD = Diffusion(MinD, Idx_MinD_WithMinDWithPhospholipid_And_MinEWithPhospholipid, Distance_Diffusion, Membrane.XYWH)
 
-        # Phospholipid-MinD dissociation
-        # MinE_With_Phospholipid = MinE[0][:, InteractionMap_MinE_With_Phospholipid], MinE[1][:, InteractionMap_MinE_With_Phospholipid]
-        # InteractionMap_MinD_With_MinEWithPhospholipid_And_Phospholipid = GetInteractionMap(xy_mol1=MinD_With_Phospholipid, xy_mol2=MinE_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0)
-        # Idx_MinD_With_MinEWithMinDWithPhospholipid_And_Phospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinD_With_MinEWithPhospholipid_And_Phospholipid, select_mol=0)
-        #
-        # print(Idx_MinD_With_MinEWithMinDWithPhospholipid_And_Phospholipid)
-        # MinD = Diffusion(MinD, Idx_MinD_With_MinEWithMinDWithPhospholipid_And_Phospholipid, Distance_Diffusion, Membrane.Boundary)
 
+        # membrane MinE: influenced by neighboring MinE and MinD
+        InteractionCountMap_MinE_With_MinDWithPhospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=MinD_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0, count=True)
+        InteractionCountMap_MinE_With_MinEWithPhospholipid = GetInteractionMap(xy_mol1=MinE, xy_mol2=MinE_With_Phospholipid, interaction_distance=Distance_Interaction, select_mol=0, count=True)
+
+        Angles_MinE = GetAngle(MinE, Membrane.XY)[0]
+        DissociationProbability_MinE = GetDissociationProbability_MinE(KD_MinE_Phospholipid, InteractionCountMap_MinE_With_MinDWithPhospholipid, InteractionCountMap_MinE_With_MinEWithPhospholipid, Angles_MinE)
+        assert InteractionMap_MinE_With_Phospholipid.shape == DissociationProbability_MinE.shape
+        RandomNumbers = np.random.uniform(0, 1, DissociationProbability_MinE.shape)
+        InteractionMap_MinE_WithMinDWithPhospholipid_And_MinEWithPhospholipid = np.where(RandomNumbers > InteractionMap_MinE_With_Phospholipid * DissociationProbability_MinE, True, False)
+        Idx_MinE_WithMinDWithPhospholipid_And_MinEWithPhospholipid = GetInteractionIdx(interaction_map=InteractionMap_MinE_WithMinDWithPhospholipid_And_MinEWithPhospholipid, select_mol=0)
+        MinE = Diffusion(MinE, Idx_MinE_WithMinDWithPhospholipid_And_MinEWithPhospholipid, Distance_Diffusion, Membrane.XYWH)
 
         # All the Drawings
         Screen.fill(WHITE)
         Membrane.Draw()
         for i in range(Phospholipid_X.shape[1]):
-            pygame.draw.circle(surface=Screen, color=GREEN, center=(Phospholipid_X[0, i], Phospholipid_Y[0, i]), radius=5)
+            pygame.draw.circle(surface=Screen, color=GREEN, center=(Phospholipid_X[0, i], Phospholipid_Y[0, i]), radius=6)
         for i in range(MinD_X.shape[1]):
-            pygame.draw.circle(surface=Screen, color=BLUE, center=(MinD_X[0, i], MinD_Y[0, i]), radius=5)
+            pygame.draw.circle(surface=Screen, color=BLUE, center=(MinD_X[0, i], MinD_Y[0, i]), radius=6)
         for i in range(MinE_X.shape[1]):
-            pygame.draw.circle(surface=Screen, color=RED, center=(MinE_X[0, i], MinE_Y[0, i]), radius=5)
+            pygame.draw.circle(surface=Screen, color=RED, center=(MinE_X[0, i], MinE_Y[0, i]), radius=6)
 
         Control.DisplayTime()
         pygame.display.update()
