@@ -33,25 +33,16 @@ class FMinCluster:
         return Num
 
     def KoffD(self):
-        return self.KonE()
+        return self.KonD() * (self.SizeE / max(1, self.SizeD)) * 1.5
 
     def KonE(self):
-        Max = self.CustomFunc(0.5 * pi)
-        if self.Angle < 0.5 * pi:
-            NewAngle = self.Angle
-        elif self.Angle < pi:
-            NewAngle = pi - self.Angle
-        elif self.Angle < 1.5 * pi:
-            NewAngle = self.Angle - pi
-        else:
-            NewAngle = 2 * pi - self.Angle
-
-        Num = self.CustomFunc(NewAngle)
-        Num = Num / Max * 1.6 * math.log(max(1, self.SizeD), 2) * math.log(max(2, self.SizeE), 2)
-        return Num
+        return self.KonD() * 0.2
 
     def KoffE(self):
-        return self.KonE() / 2
+        if self.SizeD > self.SizeE:
+            return 0
+        else:
+            return self.SizeE - self.SizeD
 
     def PrintInfo(self):
         print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.Kon()))
@@ -64,11 +55,30 @@ def SimulateMinCDE():
 
     def AddMinDs():
         global NumCytoMinD
+
+        KonSum = 0
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
                 continue
 
             Kon = MinCluster.KonD()
+            KonSum += Kon
+
+        if KonSum <= NumCytoMinD:
+            ScaleFactor = 1
+        else:
+            ScaleFactor = NumCytoMinD / KonSum
+
+        for MinCluster in MinClusters:
+            if MinCluster.Reference >= 0:
+                continue
+
+            # DK - debugging purposes
+            if MinCluster.SizeD <= MinCluster.SizeE and MinCluster.SizeE > 0 and MinCluster.SizeE < 20:
+                continue
+
+            Kon = MinCluster.KonD()
+            Kon *= ScaleFactor
             ToAdd = min(int(Kon), NumCytoMinD)
             if ToAdd <= 0:
                 continue
@@ -78,6 +88,7 @@ def SimulateMinCDE():
 
     def RemoveMinDs():
         global NumCytoMinD
+        global NumCytoMinE
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
                 continue
@@ -90,13 +101,34 @@ def SimulateMinCDE():
             MinCluster.SizeD -= ToRemove
             NumCytoMinD += ToRemove
 
+            if MinCluster.SizeD <= 0:
+                assert MinCluster.SizeD == 0
+                MinCluster.Reference = -1
+                NumCytoMinE += MinCluster.SizeE
+                MinCluster.SizeE = 0
+
     def AddMinEs():
         global NumCytoMinE
+
+        KonSum = 0
+        for MinCluster in MinClusters:
+            if MinCluster.Reference >= 0:
+                continue
+
+            Kon = MinCluster.KonD()
+            KonSum += Kon
+
+        if KonSum <= NumCytoMinE:
+            ScaleFactor = 1
+        else:
+            ScaleFactor = NumCytoMinE / KonSum
+
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
                 continue
 
             Kon = MinCluster.KonE()
+            Kon *= ScaleFactor
             ToAdd = min(int(Kon), NumCytoMinE)
             if ToAdd <= 0:
                 continue
@@ -195,20 +227,20 @@ def SimulateMinCDE():
 
 
     Iter = 0
-    while Iter < 2000:
+    while Iter < 20000:
         AddMinDs()
 
         MergeMinClusters()        
 
         RemoveMinDs()
 
-        FragmentMinClusters()
+        # FragmentMinClusters()
 
         AddMinEs()
 
-        # RemoveMinEs()
+        RemoveMinEs()
 
-        if Iter % 10 == 0:
+        if Iter % 100 == 0:
             NumMemMinD = 0
             NumMemMinE = 0
             print("Iter {}".format(Iter))
@@ -222,8 +254,10 @@ def SimulateMinCDE():
 
                 if Reference < 0:
                     KonD = MinCluster.KonD()
+                    KoffD = MinCluster.KoffD()
                     KonE = MinCluster.KonE()
-                    print("#{:<5d} rad: {:.2f}, MinD: {:5d}, KonD: {:.2f}, MinE: {:5d}, KonE: {:.2f}".format(i, Angle, SizeD, KonD, SizeE, KonE))
+                    KoffE = MinCluster.KoffE()
+                    print("#{:<5d} rad: {:.2f}, MinD: {:5d}, KonD: {:.2f}, KoffD: {:.2f}, MinE: {:5d}, KonE: {:.2f}, KoffE: {:.2f}".format(i, Angle, SizeD, KonD, KoffD, SizeE, KonE, KoffE))
                     NumMemMinD += SizeD
                     NumMemMinE += SizeE
                 else:
