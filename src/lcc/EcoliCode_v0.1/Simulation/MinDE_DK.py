@@ -161,7 +161,7 @@ class FMinCluster:
         # MinD
         SizeD = int(self.SizeD * ScaleFactor_Quantity * 2)
         X_MinD = np.random.uniform(-1, 1, SizeD) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
-        Y_MinD = np.random.uniform(-1, 1, SizeD) * H_Membrane / 2 + MID_Y
+        Y_MinD = np.random.normal(MID_Y, H_Membrane / 6, SizeD)
         for i in range(SizeD):
             if CheckIfWithinEllipse(X_MinD[i], Y_MinD[i], XYWH, membranebias=0.8):
                 pygame.draw.circle(surface=Screen, color=RED, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
@@ -169,7 +169,7 @@ class FMinCluster:
         # MinE
         SizeE = int(self.SizeE * ScaleFactor_Quantity * 2)
         X_MinE = np.random.uniform(-1, 1, SizeE) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
-        Y_MinE = np.random.uniform(-1, 1, SizeE) * H_Membrane / 2 + MID_Y
+        Y_MinE = np.random.normal(MID_Y, H_Membrane / 6, SizeE)
         for i in range(SizeE):
             if CheckIfWithinEllipse(X_MinE[i], Y_MinE[i], XYWH, membranebias=0.8):
                 pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
