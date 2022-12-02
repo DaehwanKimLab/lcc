@@ -42,6 +42,20 @@ def GetXYFromCenter(Center, Angle, Radius, anisotropy=1.0):
     Center_X, Center_Y = Center
     return Center_X + Radius * anisotropy * np.cos(Angle), Center_Y + Radius * np.sin(Angle)
 
+def CheckIfWithinEllipse(X, Y, XYWH, membranebias=0.8):
+    Center_X, Center_Y, Width, Height = XYWH
+    Evaluate = (X - Center_X) ** 2 / (Width / 2) ** 2 + (Y - Center_Y) ** 2 / (Height / 2) ** 2
+    if Evaluate < 1:
+        if membranebias:
+            if Evaluate > membranebias:
+                return True
+            else:
+                return False
+        else:
+            return True
+    else:
+        return False
+
 
 # pygame
 pygame.init()
@@ -73,8 +87,8 @@ NumMinE = 4000
 NumCytoMinE = NumMinE
 
 # Drawing Molecules
-ScaleFactor_Quantity = 10
-ScaleFactor_Refresh = 20
+ScaleFactor_Quantity = 0.4
+ScaleFactor_Refresh = 30
 Size_Anchor = 5 
 Size_MinD = 5
 Size_MinE = 5
@@ -140,28 +154,25 @@ class FMinCluster:
     def PrintInfo(self):
         print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.Kon()))
 
-    def Draw(self):
+    def Draw(self, XYWH):
+        X_Membrane, Y_Membrane, W_Membrane, H_Membrane = XYWH
         pygame.draw.circle(surface=Screen, color=self.Color, center=(self.X_Lipid, self.Y_Lipid), radius=Size_Anchor)
-        # Label = self.Name + "#" + str(self.ID) + "~MinD_{" + str(len(self.X_MinD)) + "}" + "~MinE_{" + str(len(self.X_MinE)) + "}"
-        # DisplayString(Label, self.X+self.Radius*2.5*np.cos(self.Angle), self.Y+self.Radius*2.5*np.sin(self.Angle), color=BLACK, Type='individual')
 
         # MinD
-        SizeD = int(self.SizeD / ScaleFactor_Quantity)
-        DeviationDistance_MinD = np.random.uniform(-1, 1, SizeD) * 200
-        A_MinD = np.random.uniform(0, 2 * pi, SizeD)
-        X_MinD, Y_MinD = GetXYFromCenter((self.X_Min, self.Y_Min), A_MinD, DeviationDistance_MinD, anisotropy=0.7)
-
+        SizeD = int(self.SizeD * ScaleFactor_Quantity * 2)
+        X_MinD = np.random.uniform(-1, 1, SizeD) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
+        Y_MinD = np.random.uniform(-1, 1, SizeD) * H_Membrane / 2 + MID_Y
         for i in range(SizeD):
-            pygame.draw.circle(surface=Screen, color=RED, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
+            if CheckIfWithinEllipse(X_MinD[i], Y_MinD[i], XYWH, membranebias=0.8):
+                pygame.draw.circle(surface=Screen, color=RED, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
 
         # MinE
-        SizeE = int(self.SizeE / ScaleFactor_Quantity)
-        DeviationDistance_MinE = np.random.uniform(-1, 1, SizeE) * 200
-        A_MinE = np.random.uniform(0, 2 * pi, SizeE)
-        X_MinE, Y_MinE = GetXYFromCenter((self.X_Min, self.Y_Min), A_MinE, DeviationDistance_MinE, anisotropy=0.7)
-
+        SizeE = int(self.SizeE * ScaleFactor_Quantity * 2)
+        X_MinE = np.random.uniform(-1, 1, SizeE) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
+        Y_MinE = np.random.uniform(-1, 1, SizeE) * H_Membrane / 2 + MID_Y
         for i in range(SizeE):
-            pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
+            if CheckIfWithinEllipse(X_MinE[i], Y_MinE[i], XYWH, membranebias=0.8):
+                pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
 
 
 def SimulateMinCDE():
@@ -348,22 +359,22 @@ def SimulateMinCDE():
     def DrawCytoMin():
         global NumCytoMinD
         global NumCytoMinE
-        
+
         # CytoMinD
-        CytoMinD = int(NumCytoMinD / ScaleFactor_Quantity)
-        X_MinD = np.random.uniform(-1, 1, CytoMinD) * 400 + MID_X
-        Y_MinD = np.random.uniform(-1, 1, CytoMinD) * 250 + MID_Y
-
+        CytoMinD = int(NumCytoMinD * ScaleFactor_Quantity * 0.5)
+        X_MinD = np.random.uniform(-1, 1, CytoMinD) * MID_X + MID_X
+        Y_MinD = np.random.uniform(-1, 1, CytoMinD) * MID_Y + MID_Y
         for i in range(CytoMinD):
-            pygame.draw.circle(surface=Screen, color=RED, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
-        
-        # CytoMinE
-        CytoMinE = int(NumCytoMinE / ScaleFactor_Quantity)
-        X_MinE = np.random.uniform(-1, 1, CytoMinE) * 400 + MID_X
-        Y_MinE = np.random.uniform(-1, 1, CytoMinE) * 250 + MID_Y
+            if CheckIfWithinEllipse(X_MinD[i], Y_MinD[i], Membrane.XYWH, membranebias=0):
+                pygame.draw.circle(surface=Screen, color=RED, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
 
+        # CytoMinE
+        CytoMinE = int(NumCytoMinE * ScaleFactor_Quantity * 0.5)
+        X_MinE = np.random.uniform(-1, 1, CytoMinE) * MID_X + MID_X
+        Y_MinE = np.random.uniform(-1, 1, CytoMinE) * MID_Y + MID_Y
         for i in range(CytoMinE):
-            pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
+            if CheckIfWithinEllipse(X_MinE[i], Y_MinE[i], Membrane.XYWH, membranebias=0):
+                pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
 
     Iter = 0
     while Iter < 20000:
@@ -413,7 +424,7 @@ def SimulateMinCDE():
             Screen.fill(WHITE)
             Membrane.Draw()
             for MinCluster in MinClusters:
-                MinCluster.Draw()
+                MinCluster.Draw(Membrane.XYWH)
             DrawCytoMin()
 
             DisplayTime(Iter)
