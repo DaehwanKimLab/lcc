@@ -141,7 +141,10 @@ class FMinCluster:
         return Num
 
     def KoffD(self):
-        return self.KonD() * (self.SizeE / max(1, self.SizeD)) * 1.5
+        MultMean = 1.5
+        MultSD = 0.2
+        Mult = np.random.normal(MultMean, MultSD, 1)[0]
+        return self.KonD() * (self.SizeE / max(1, self.SizeD)) * Mult
 
     def KonE(self):
         return self.KonD() * 0.2
@@ -203,10 +206,6 @@ def SimulateMinCDE():
 
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
-                continue
-
-            # DK - debugging purposes
-            if MinCluster.SizeD <= MinCluster.SizeE and MinCluster.SizeE > 0 and MinCluster.SizeE < 20:
                 continue
 
             Kon = MinCluster.KonD()
