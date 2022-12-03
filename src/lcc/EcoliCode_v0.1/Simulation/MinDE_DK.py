@@ -141,19 +141,13 @@ class FMinCluster:
         return Num
 
     def KoffD(self):
-        MultMean = 1.5
-        MultSD = 0.2
-        Mult = np.random.normal(MultMean, MultSD, 1)[0]
-        return self.KonD() * (self.SizeE / max(1, self.SizeD)) * Mult
+        return self.KonD() * (self.SizeE / max(1, self.SizeD)) * np.random.normal(1.5, 0.2)
 
     def KonE(self):
         return self.KonD() * 0.2
 
     def KoffE(self):
-        if self.SizeD > self.SizeE:
-            return 0
-        else:
-            return self.SizeE - self.SizeD
+        return max(0, self.SizeE - self.SizeD)
 
     def PrintInfo(self):
         print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.Kon()))
