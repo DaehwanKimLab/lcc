@@ -130,7 +130,8 @@ class FMinCluster:
         self.Color = color
 
     def CustomFunc(self, Rad):
-        return math.cosh(Rad) - 0.9
+        # return math.cosh(Rad) - 0.9
+        return Rad * Rad
         
     def KonD(self):
         Max = self.CustomFunc(0.5 * pi)
