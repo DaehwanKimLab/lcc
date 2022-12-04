@@ -129,16 +129,16 @@ class FMinCluster:
         self.X_Min, self.Y_Min = GetXYFromEllipse(memb, Angle, ratio_factor=0.75)
         self.Color = color
 
-    def CustomFunc(self, Rad):
+    def MembraneEffectFunc(self, Rad):
         # return math.cosh(Rad) - 0.9
         return Rad * Rad
         
     def KonD(self):
-        Max = self.CustomFunc(0.5 * pi)
+        MaxMembraneEffect = self.MembraneEffectFunc(0.5 * pi)
         NewAngle = self.Angle if self.Angle < pi else self.Angle - pi
-        Num = self.CustomFunc(NewAngle - 0.5 * pi)
-        Num = Num / Max * 1.1 * math.log(max(2, self.SizeD), 2)
-        return Num
+        MembraneEffect = self.MembraneEffectFunc(NewAngle - 0.5 * pi) / MaxMembraneEffect * 1.1
+        AggregationEffect = math.log(max(2, self.SizeD), 2)
+        return MembraneEffect * AggregationEffect
 
     def KoffD(self):
         return self.KonD() * (self.SizeE / max(1, self.SizeD)) * np.random.normal(1.5, 0.2)
