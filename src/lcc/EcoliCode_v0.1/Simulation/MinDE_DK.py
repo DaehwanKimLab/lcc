@@ -130,13 +130,16 @@ class FMinCluster:
         self.Color = color
 
     def MembraneEffectFunc(self, Rad):
-        # return math.cosh(Rad) - 0.9
         return Rad * Rad
         
     def KonD(self):
         MaxMembraneEffect = self.MembraneEffectFunc(0.5 * pi)
         NewAngle = self.Angle if self.Angle < pi else self.Angle - pi
         MembraneEffect = self.MembraneEffectFunc(NewAngle - 0.5 * pi) / MaxMembraneEffect * 1.1
+
+        # DK - debugging purposes
+        # MembraneEffect *= abs(np.random.normal(2, 0.5))
+
         AggregationEffect = math.log(max(2, self.SizeD), 2)
         return MembraneEffect * AggregationEffect
 
@@ -214,6 +217,7 @@ def SimulateMinCDE():
     def RemoveMinDs():
         global NumCytoMinD
         global NumCytoMinE
+
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
                 continue
@@ -231,6 +235,15 @@ def SimulateMinCDE():
                 MinCluster.Reference = -1
                 NumCytoMinE += MinCluster.SizeE
                 MinCluster.SizeE = 0
+
+        for i, MinCluster in enumerate(MinClusters):
+            Reference = MinCluster.Reference
+            while Reference >= 0:
+                Cluster2 = MinClusters[Reference]
+                assert Reference != Cluster2.Reference
+                Reference = Cluster2.Reference
+                if Reference < 0 and Cluster2.SizeD == 0:
+                    MinCluster.Reference = -1
 
     def AddMinEs():
         global NumCytoMinE
@@ -295,23 +308,25 @@ def SimulateMinCDE():
                 else:
                     break
 
-            if C1.SizeD > 0 and C2.SizeD > 0 and False:
-                print("C1 {}".format(ci))
-                C1.PrintInfo()
-                print("C2 {}".format(ni))
-                C2.PrintInfo()
+            if ci == niw:
+                break
 
             if C1.SizeD >= MinimumSize and C2.SizeD >= MinimumSize:
                 if C1.SizeD > C2.SizeD:
                     C2.Reference = ci
                     C1.SizeD += C2.SizeD
+                    C2.SizeD = 0
                     C1.SizeE += C2.SizeE
+                    C2.SizeE = 0
                     ci = ci
                 else:
                     C1.Reference = niw
                     C2.SizeD += C1.SizeD
+                    C1.SizeD = 0
                     C2.SizeE += C1.SizeE
+                    C1.SizeE = 0
                     ci = niw
+                
             else:
                 ci = niw
 
@@ -327,28 +342,25 @@ def SimulateMinCDE():
                 ci += 1
                 continue
 
-            if C1.SizeD >= MinimumSize * 2 or C1.SizeD <= MinimumSize:
+            if C1.SizeD >= MinimumSize * 1.5 or C1.SizeD <= MinimumSize:
                 ci += 1
                 continue
 
-            ni = ci + 1
+            ni = ci + (1 if np.random.randint(2) == 0 else -1) + len(MinClusters)
             niw = ni % len(MinClusters)
             C2 = MinClusters[niw]
             if C2.Reference < 0:
-                ci = ni
+                ci = ci + 1
                 continue
 
-            C1SizeD = int(C1.SizeD / 2)
-            C1SizeE = int(C1.SizeE / 2)
-
-            C2.SizeD = C1.SizeD - C1SizeD
-            C2.SizeE = C1.SizeE - C1SizeE
-            C1.SizeD = C1SizeD
-            C1.SizeE = C1SizeE
+            C2.SizeD = int(C1.SizeD / 2.5)
+            C2.SizeE = int(C1.SizeE / 2.5)
+            C1.SizeD = C1.SizeD - C2.SizeD
+            C1.SizeE = C1.SizeE - C2.SizeE
 
             C2.Reference = -1
             
-            ci = ni + 1
+            ci = ci + 1
 
     def DrawCytoMin():
         global NumCytoMinD
@@ -371,14 +383,15 @@ def SimulateMinCDE():
                 pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
 
     Iter = 0
-    while Iter < 20000:
+    IterMax = 20000
+    while Iter < IterMax:
         AddMinDs()
 
         MergeMinClusters()        
 
         RemoveMinDs()
 
-        # FragmentMinClusters()
+        FragmentMinClusters()
 
         AddMinEs()
 
