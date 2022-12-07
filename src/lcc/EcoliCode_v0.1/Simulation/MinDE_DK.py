@@ -90,6 +90,8 @@ NumCytoMinE = NumMinE
 # Cytosolic compartment (currently support odd numbers only to have one absolute center compartment)
 CytoCompartment_Rows = 3
 CytoCompartment_Columns = 3
+CytoCompartment_Width = W_Ecoli / CytoCompartment_Rows
+CytoCompartment_Height = H_Ecoli / CytoCompartment_Columns
 
 # Molecules distributed in cytosolic compartments
 NumMinC = 200
@@ -115,8 +117,8 @@ Color_MinE = BLUE
 Color_MinC = YELLOW
 Color_FtsZ = MAGENTA
 
-Compartment_X = np.zeros([CytoCompartment_Rows, CytoCompartment_Columns])
-Compartment_Y = np.zeros([CytoCompartment_Rows, CytoCompartment_Columns])
+CytoCompartment_X = np.zeros([CytoCompartment_Rows, CytoCompartment_Columns])
+CytoCompartment_Y = np.zeros([CytoCompartment_Rows, CytoCompartment_Columns])
 for row in range(CytoCompartment_Rows):
     Center_X = np.round(np.floor(CytoCompartment_Rows / 2))
     Offset_X = W_Ecoli / CytoCompartment_Rows * (row - Center_X)
@@ -124,8 +126,8 @@ for row in range(CytoCompartment_Rows):
         Center_Y = np.round(np.floor(CytoCompartment_Columns / 2))
         Offset_Y = H_Ecoli / CytoCompartment_Columns * (column - Center_Y)
 
-        Compartment_X[row, column] = MID_X + Offset_X
-        Compartment_Y[row, column] = MID_Y + Offset_Y
+        CytoCompartment_X[row, column] = MID_X + Offset_X
+        CytoCompartment_Y[row, column] = MID_Y + Offset_Y
 
 class FMembrane:
     def __init__(self, X=MID_X, Y=MID_Y, thickness=5, linecolor=GRAY4, bodycolor=YELLOW_FAINT, Label=False, width=0, height=0):
@@ -164,11 +166,11 @@ class FMinCluster:
         self.X_Min, self.Y_Min = GetXYFromEllipse(memb, Angle, ratio_factor=0.75)
         self.Color = color
 
-    def GetCytoMinCRef(self):
-        if self.Angle > pi / 2 and self.Angle < pi / 2 * 3:
-            return 0   # left compartment
-        elif self.Angle < pi / 2 and self.Angle > pi / 2 * 3:
-            return 2   # right compartment
+    def GetSpatialIdx(self):
+        Idx_X = np.logical_and(self.X_Min < CytoCompartment_X + CytoCompartment_Width / 2, self.X_Min > CytoCompartment_X - CytoCompartment_Width / 2)
+        Idx_Y = np.logical_and(self.Y_Min < CytoCompartment_Y + CytoCompartment_Height / 2, self.Y_Min > CytoCompartment_Y - CytoCompartment_Height / 2)
+        Idx_XY = np.logical_and(Idx_X, Idx_Y)
+        return np.where(Idx_XY)
 
     def MembraneEffectFunc(self, Rad):
         return Rad * Rad
@@ -187,17 +189,17 @@ class FMinCluster:
     def KoffD(self):
         return self.KonD() * (self.SizeE / max(1, self.SizeD)) * np.random.normal(1.5, 0.2)
 
-    def KonC(self):
-        return self.KonC() * 0.2
-
-    def KoffC(self):
-        return max(0, self.SizeD - self.SizeC)
-
     def KonE(self):
         return self.KonD() * 0.2
 
     def KoffE(self):
         return max(0, self.SizeE - self.SizeD)
+
+    def KonC(self):
+        return self.KonD() * 0.2
+
+    def KoffC(self):
+        return max(0, self.SizeC - self.SizeD)
 
     def PrintInfo(self):
         print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.Kon()))
@@ -212,7 +214,7 @@ class FMinCluster:
         Y_MinD = np.random.normal(MID_Y, H_Membrane / 6, SizeD)
         for i in range(SizeD):
             if CheckIfWithinEllipse(X_MinD[i], Y_MinD[i], XYWH, membranebias=0.8):
-                pygame.draw.circle(surface=Screen, color=RED, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
+                pygame.draw.circle(surface=Screen, color=Color_MinD, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
 
         # MinE
         SizeE = int(self.SizeE * ScaleFactor_Quantity * 2)
@@ -220,15 +222,15 @@ class FMinCluster:
         Y_MinE = np.random.normal(MID_Y, H_Membrane / 6, SizeE)
         for i in range(SizeE):
             if CheckIfWithinEllipse(X_MinE[i], Y_MinE[i], XYWH, membranebias=0.8):
-                pygame.draw.circle(surface=Screen, color=BLUE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
+                pygame.draw.circle(surface=Screen, color=Color_MinE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
 
         # MinC
-        SizeC = int(self.SizeC * ScaleFactor_Quantity * 2)
+        SizeC = int(self.SizeC * ScaleFactor_Quantity * 5)
         X_MinC = np.random.uniform(-1, 1, SizeC) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
         Y_MinC = np.random.normal(MID_Y, H_Membrane / 6, SizeC)
         for i in range(SizeC):
             if CheckIfWithinEllipse(X_MinC[i], Y_MinC[i], XYWH, membranebias=0.8):
-                pygame.draw.circle(surface=Screen, color=GREEN_DARK, center=(X_MinC[i], Y_MinC[i]), radius=Size_MinC)
+                pygame.draw.circle(surface=Screen, color=Color_MinC, center=(X_MinC[i], Y_MinC[i]), radius=Size_MinC)
 
 
 def SimulateMinCDE():
@@ -346,32 +348,32 @@ def SimulateMinCDE():
     def AddMinCs():
         global NumCytoMinC
 
-        KonSum = np.zeros(NumCytoMinC.size)
+        KonSum = 0
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
                 continue
 
-            CytoMinCRef = MinCluster.GetCytoMinCRef()
-
             Kon = MinCluster.KonC()
-            KonSum[CytoMinCRef] += Kon
+            KonSum += Kon
 
-        ScaleFactor = np.where(KonSum <= NumCytoMinC, 1, NumCytoMinC / KonSum)
+        if KonSum <= np.sum(NumCytoMinC):
+            ScaleFactor = 1
+        else:
+            ScaleFactor = np.sum(NumCytoMinC) / KonSum
 
         for MinCluster in MinClusters:
             if MinCluster.Reference >= 0:
                 continue
 
-            CytoMinCRef = MinCluster.GetCytoMinCRef()
-
             Kon = MinCluster.KonC()
-            Kon *= ScaleFactor[CytoMinCRef]
-            ToAdd = min(int(Kon), NumCytoMinC[CytoMinCRef])
+            Kon *= ScaleFactor
+            LocalCytoIdx = MinCluster.GetSpatialIdx()
+            ToAdd = min(int(Kon), int(NumCytoMinC[LocalCytoIdx][0]))
             if ToAdd <= 0:
                 continue
 
             MinCluster.SizeC += ToAdd
-            NumCytoMinC[CytoMinCRef] -= ToAdd
+            NumCytoMinC[LocalCytoIdx] -= ToAdd
 
     def RemoveMinCs():
         global NumCytoMinC
@@ -379,21 +381,20 @@ def SimulateMinCDE():
             if MinCluster.Reference >= 0:
                 continue
 
-            CytoMinCRef = MinCluster.GetCytoMinCRef()
-
             Koff = MinCluster.KoffC()
+            LocalCytoIdx = MinCluster.GetSpatialIdx()
             ToRemove = min(int(Koff), MinCluster.SizeC)
             if ToRemove <= 0:
                 continue
 
             MinCluster.SizeC -= ToRemove
-            NumCytoMinC[CytoMinCRef] += ToRemove
+            NumCytoMinC[LocalCytoIdx] += ToRemove
 
     def DiffuseCytoMolecules():
         global NumCytoMinC
         global NumCytoFtsZ
 
-        def DiffuseDistribution_4Cell(Distribution, D=0.0001, dTime=1):  # D must be less than 1/6
+        def DiffuseDistribution_4Cell(Distribution, D=0.01, dTime=1):  # D must be less than 1/6
             # von Neumann neighborhood
             Diffusion_Quantity = Distribution * D
             Diffusion_Padded = np.pad(Diffusion_Quantity, (1, 1))
@@ -447,6 +448,8 @@ def SimulateMinCDE():
                     C2.SizeD = 0
                     C1.SizeE += C2.SizeE
                     C2.SizeE = 0
+                    C1.SizeC += C2.SizeC
+                    C2.SizeC = 0
                     ci = ci
                 else:
                     C1.Reference = niw
@@ -454,6 +457,8 @@ def SimulateMinCDE():
                     C1.SizeD = 0
                     C2.SizeE += C1.SizeE
                     C1.SizeE = 0
+                    C2.SizeC += C1.SizeC
+                    C1.SizeC = 0
                     ci = niw
                 
             else:
@@ -484,8 +489,10 @@ def SimulateMinCDE():
 
             C2.SizeD = int(C1.SizeD / 2.5)
             C2.SizeE = int(C1.SizeE / 2.5)
+            C2.SizeC = int(C1.SizeC / 2.5)
             C1.SizeD = C1.SizeD - C2.SizeD
             C1.SizeE = C1.SizeE - C2.SizeE
+            C1.SizeC = C1.SizeC - C2.SizeC
 
             C2.Reference = -1
             
@@ -512,8 +519,8 @@ def SimulateMinCDE():
             for row in range(NumCytoMolecule.shape[0]):
                 for column in range(NumCytoMolecule.shape[1]):
                     CytoMolecules = int(NumCytoMolecule[row, column] * ScaleFactor_Quantity * additional_scale_factor)
-                    X = np.random.uniform(-1, 1, CytoMolecules) * W_Ecoli / NumCytoMolecule.shape[0] / 2 + Compartment_X[row, column]
-                    Y = np.random.uniform(-1, 1, CytoMolecules) * H_Ecoli / NumCytoMolecule.shape[1] / 2 + Compartment_Y[row, column]
+                    X = np.random.uniform(-1, 1, CytoMolecules) * W_Ecoli / NumCytoMolecule.shape[0] / 2 + CytoCompartment_X[row, column]
+                    Y = np.random.uniform(-1, 1, CytoMolecules) * H_Ecoli / NumCytoMolecule.shape[1] / 2 + CytoCompartment_Y[row, column]
                     for i in range(CytoMolecules):
                         if CheckIfWithinEllipse(X[i], Y[i], Membrane.XYWH, membranebias=0):
                             pygame.draw.circle(surface=Screen, color=color, center=(X[i], Y[i]), radius=radius)
@@ -523,7 +530,7 @@ def SimulateMinCDE():
         DrawMolecules_SingleCytoCompartment(NumCytoMinE, color=Color_MinE, radius=Size_MinE)
 
         # CytoMinC and CytoFtsZ
-        DrawMolecules_MultiCytoCompartments(NumCytoMinC, color=Color_MinC, radius=Size_MinC)
+        DrawMolecules_MultiCytoCompartments(NumCytoMinC, color=Color_MinC, radius=Size_MinC, additional_scale_factor=5)
         DrawMolecules_MultiCytoCompartments(NumCytoFtsZ, color=Color_FtsZ, radius=Size_FtsZ, additional_scale_factor=0.05)
 
     Iter = 0
@@ -537,17 +544,18 @@ def SimulateMinCDE():
 
         FragmentMinClusters()
 
-        # AddMinCs()
-        #
-        # RemoveMinCs()
-
         AddMinEs()
 
         RemoveMinEs()
 
+        AddMinCs()
+
+        RemoveMinCs()
+
         DiffuseCytoMolecules()
 
         if Iter % 100 == 0:
+        # if Iter > 0:
             NumMemMinD = 0
             NumMemMinE = 0
             NumMemMinC = 0
@@ -567,10 +575,11 @@ def SimulateMinCDE():
                     KoffD = MinCluster.KoffD()
                     KonE = MinCluster.KonE()
                     KoffE = MinCluster.KoffE()
-                    # KonC = MinCluster.KonC()
-                    # KoffC = MinCluster.KoffC()
-                    print("#{:<5d} rad: {:.2f}, MinD: {:5d}, KonD: {:.2f}, KoffD: {:.2f}, MinE: {:5d}, KonE: {:.2f}, KoffE: {:.2f}".format(
-                        i, Angle, SizeD, KonD, KoffD, SizeE, KonE, KoffE))
+                    KonC = MinCluster.KonC()
+                    KoffC = MinCluster.KoffC()
+                    Log = "#{:<5d} rad: {:.2f}, MinD: {:5d}, KonD: {:.2f}, KoffD: {:.2f}, MinE: {:5d}, KonE: {:.2f}, KoffE: {:.2f}, MinC: {:5d}, KonC: {:.2f}, KoffC: {:.2f}".format(
+                            i, Angle, SizeD, KonD, KoffD, SizeE, KonE, KoffE, SizeC, KonC, KoffC, Reference)
+                    print(Log)
                     NumMemMinD += SizeD
                     NumMemMinE += SizeE
                     NumMemMinC += SizeC
@@ -581,12 +590,12 @@ def SimulateMinCDE():
             assert NumCytoMinD + NumMemMinD == NumMinD
             print("cMinE: {:5d}, mMinE: {:5d}".format(NumCytoMinE, NumMemMinE))
             assert NumCytoMinE + NumMemMinE == NumMinE
-            Sum_NumCytoMinC = int(np.sum(NumCytoMinC))
+            Sum_NumCytoMinC = round(np.sum(NumCytoMinC))
             print("cMinC: {:5d}, mMinC: {:5d}".format(Sum_NumCytoMinC, NumMemMinC))
-            assert (Sum_NumCytoMinC + NumMemMinC) / NumMinC > 0.99
-            Sum_NumCytoFtsZ = int(np.sum(NumCytoFtsZ))
+            assert Sum_NumCytoMinC + NumMemMinC == NumMinC
+            Sum_NumCytoFtsZ = round(np.sum(NumCytoFtsZ))
             print("cFtsZ: {:5d}, mFtsZ: {:5d}".format(Sum_NumCytoFtsZ, NumMemFtsZ))
-            assert (Sum_NumCytoFtsZ + NumMemFtsZ) / NumFtsZ > 0.99
+            assert Sum_NumCytoFtsZ + NumMemFtsZ == NumFtsZ
             print("\n")
 
         # Draw
