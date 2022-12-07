@@ -42,7 +42,7 @@ pathway Min // Walker-type ATPase, tethers MinC to membrane via MinE
     reaction MinE_MembraneRecruitment(membrane~MinD_{n}~MinE_{m} + MinE --> membrane~MinD_{n}~MinE_{m+1})
     k_function
     {
-        return MembraneRecruitment_1.k_function() * 0.2;
+        return MinD_MembraneRecruitment.k_function() * 0.2;
     }
     krev_function
     {
@@ -52,7 +52,7 @@ pathway Min // Walker-type ATPase, tethers MinC to membrane via MinE
     reaction MinC_Recruitment(MinD_Dimer + MinC_Dimer{in} --> MinD_Dimer~MinC_Dimer, k = 1e9)
     k_function
     {
-        return MembraneRecruitment_1.k_function() * 0.2;
+        return MinD_MembraneRecruitment.k_function() * 0.2;
     }
     krev_function
     {
