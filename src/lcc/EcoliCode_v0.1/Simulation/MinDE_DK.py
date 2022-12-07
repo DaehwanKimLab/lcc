@@ -25,14 +25,37 @@ BLUE = (0, 0, 255)
 BLUE_DARK = (0, 0, 139)
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
+ORANGE = (252, 102, 0)
 
 pi = np.pi
 
-def DisplayTime(Time):
-    Text = Font_Sans.render('Simulation Time: ' + str(round(Time)), True, BLACK)
+def DisplayText(Text, XY, position='center', rotate=0, color=BLACK, type='mass'):
+    if type == 'mass':
+        Text = Font_MassObject.render(Text, True, color)
+    elif type == 'individual':
+        Text = Font_IndividualObject.render(Text, True, color)
+    elif type == 'bold':
+        Text = Font_Sans.render(Text, True, color)
+    else:
+        print('[ERROR] DisplayTextFunction: unsupported type parameter %s' % type)
+    Text = pygame.transform.rotate(Text, rotate)
     Text_Rect = Text.get_rect()
-    Text_Rect.midtop = Screen.get_rect().midtop
+    X, Y = XY
+    if position == 'center':
+        Text_Rect.center = (X, Y)
+    if position == 'midleft':
+        Text_Rect.midleft = (X, Y)
+    elif position == 'midright':
+        Text_Rect.midright = (X, Y)
+    elif position == 'midtop':
+        Text_Rect.midtop = (X, Y)
+    else:
+        print('[ERROR] DisplayTextFunction: unsupported position parameter %s' % position)
     Screen.blit(Text, Text_Rect)
+
+def DisplayIteration(Iter):
+    Text = 'Simulation Iteration: ' + str(round(Iter))
+    DisplayText(Text, Screen.get_rect().midtop, position='midtop', type='bold')
 
 def GetXYFromEllipse(Shape, Angle, ratio_factor=1.0):
     Center_X, Center_Y, Width, Height = Shape
@@ -104,18 +127,21 @@ NumCytoFtsZ[CytoCompartment_Rows // 2, CytoCompartment_Columns // 2] = NumFtsZ
 
 # Drawing
 ScaleFactor_Quantity = 0.4
-ScaleFactor_Refresh = 30
+ScaleFactor_Refresh = 50
 
 Size_Anchor = 5 
-Size_MinD = 5
-Size_MinE = 5
-Size_MinC = 5
+Radius_MinD = 5
+Radius_MinE = 5
+Radius_MinC = 5
 Size_FtsZ = 5
+Size_FtsA = 5
 
+Color_Anchor = YELLOW
 Color_MinD = RED
 Color_MinE = BLUE
-Color_MinC = YELLOW
+Color_MinC = GREEN
 Color_FtsZ = MAGENTA
+Color_FtsA = ORANGE
 
 CytoCompartment_X = np.zeros([CytoCompartment_Rows, CytoCompartment_Columns])
 CytoCompartment_Y = np.zeros([CytoCompartment_Rows, CytoCompartment_Columns])
@@ -147,9 +173,8 @@ class FMembrane:
         pygame.draw.ellipse(Screen, self.BodyColor, (self.X - self.W / 2, self.Y - self.H / 2, self.W, self.H))
         pygame.draw.ellipse(Screen, self.LineColor, (self.X - self.W / 2, self.Y - self.H / 2, self.W, self.H), self.Thickness)
 
-
-class FMinCluster:
-    def __init__(self, Index, Angle, Reference, SizeD, SizeE, SizeC, memb=None, color=GREEN):
+class FCluster:
+    def __init__(self, Index, Angle, Reference, XYWH_Membrane, color):
         '''
         memb is X, Y, W, H of the membrane
         '''
@@ -157,20 +182,33 @@ class FMinCluster:
         self.Index = Index
         self.Angle = Angle
         self.Reference = Reference
+        self.Membrane = XYWH_Membrane
+
+        # for Drawing
+        self.X_Anchor, self.Y_Anchor = GetXYFromEllipse(XYWH_Membrane, Angle, ratio_factor=1.0)
+        self.X_Cluster, self.Y_Cluster = GetXYFromEllipse(XYWH_Membrane, Angle, ratio_factor=0.75)
+        self.Color_Anchor = color
+
+    def GetSpatialIdx(self):
+        Idx_X = np.logical_and(self.X_Cluster < CytoCompartment_X + CytoCompartment_Width / 2, self.X_Cluster > CytoCompartment_X - CytoCompartment_Width / 2)
+        Idx_Y = np.logical_and(self.Y_Cluster < CytoCompartment_Y + CytoCompartment_Height / 2, self.Y_Cluster > CytoCompartment_Y - CytoCompartment_Height / 2)
+        Idx_XY = np.logical_and(Idx_X, Idx_Y)
+        return np.where(Idx_XY)
+
+    def Draw(self):
+        pass
+
+class FMinCluster(FCluster):
+    def __init__(self, Index, Angle, Reference, SizeD, SizeE, SizeC, XYWH_Membrane, color=GREEN):
+        '''
+        memb is X, Y, W, H of the membrane
+        '''
+
         self.SizeD = SizeD
         self.SizeE = SizeE
         self.SizeC = SizeC
 
-        # for Drawing
-        self.X_Lipid, self.Y_Lipid = GetXYFromEllipse(memb, Angle, ratio_factor=1.0)
-        self.X_Min, self.Y_Min = GetXYFromEllipse(memb, Angle, ratio_factor=0.75)
-        self.Color = color
-
-    def GetSpatialIdx(self):
-        Idx_X = np.logical_and(self.X_Min < CytoCompartment_X + CytoCompartment_Width / 2, self.X_Min > CytoCompartment_X - CytoCompartment_Width / 2)
-        Idx_Y = np.logical_and(self.Y_Min < CytoCompartment_Y + CytoCompartment_Height / 2, self.Y_Min > CytoCompartment_Y - CytoCompartment_Height / 2)
-        Idx_XY = np.logical_and(Idx_X, Idx_Y)
-        return np.where(Idx_XY)
+        FCluster.__init__(self, Index, Angle, Reference, XYWH_Membrane, color)
 
     def MembraneEffectFunc(self, Rad):
         return Rad * Rad
@@ -204,34 +242,42 @@ class FMinCluster:
     def PrintInfo(self):
         print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.Kon()))
 
-    def Draw(self, XYWH):
-        X_Membrane, Y_Membrane, W_Membrane, H_Membrane = XYWH
-        pygame.draw.circle(surface=Screen, color=self.Color, center=(self.X_Lipid, self.Y_Lipid), radius=Size_Anchor)
+    def Draw(self, show_anchor=False):
+        X_Membrane, Y_Membrane, W_Membrane, H_Membrane = self.Membrane
 
-        # MinD
-        SizeD = int(self.SizeD * ScaleFactor_Quantity * 2)
-        X_MinD = np.random.uniform(-1, 1, SizeD) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
-        Y_MinD = np.random.normal(MID_Y, H_Membrane / 6, SizeD)
-        for i in range(SizeD):
-            if CheckIfWithinEllipse(X_MinD[i], Y_MinD[i], XYWH, membranebias=0.8):
-                pygame.draw.circle(surface=Screen, color=Color_MinD, center=(X_MinD[i], Y_MinD[i]), radius=Size_MinD)
+        # Membrane anchor
+        if show_anchor:
+            pygame.draw.circle(surface=Screen, color=self.Color_Anchor, center=(self.X_Anchor, self.Y_Anchor), radius=Size_Anchor)
 
-        # MinE
-        SizeE = int(self.SizeE * ScaleFactor_Quantity * 2)
-        X_MinE = np.random.uniform(-1, 1, SizeE) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
-        Y_MinE = np.random.normal(MID_Y, H_Membrane / 6, SizeE)
-        for i in range(SizeE):
-            if CheckIfWithinEllipse(X_MinE[i], Y_MinE[i], XYWH, membranebias=0.8):
-                pygame.draw.circle(surface=Screen, color=Color_MinE, center=(X_MinE[i], Y_MinE[i]), radius=Size_MinE)
+        def DisplayMins(Size, additional_scale_factor=1.0, color=None, radius=1):
+            Size = int(Size * ScaleFactor_Quantity * additional_scale_factor)
+            X_Min = np.random.uniform(-1, 1, Size) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Anchor < MID_X else 1)
+            Y_Min = np.random.normal(MID_Y, H_Membrane / 6, Size)
+            for i in range(Size):
+                if CheckIfWithinEllipse(X_Min[i], Y_Min[i], self.Membrane, membranebias=0.8):
+                    pygame.draw.circle(surface=Screen, color=color, center=(X_Min[i], Y_Min[i]), radius=radius)
 
-        # MinC
-        SizeC = int(self.SizeC * ScaleFactor_Quantity * 5)
-        X_MinC = np.random.uniform(-1, 1, SizeC) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Lipid < MID_X else 1)
-        Y_MinC = np.random.normal(MID_Y, H_Membrane / 6, SizeC)
-        for i in range(SizeC):
-            if CheckIfWithinEllipse(X_MinC[i], Y_MinC[i], XYWH, membranebias=0.8):
-                pygame.draw.circle(surface=Screen, color=Color_MinC, center=(X_MinC[i], Y_MinC[i]), radius=Size_MinC)
+        DisplayMins(self.SizeD, additional_scale_factor=2, color=Color_MinD, radius=Radius_MinD)
+        DisplayMins(self.SizeE, additional_scale_factor=2, color=Color_MinE, radius=Radius_MinE)
+        DisplayMins(self.SizeC, additional_scale_factor=5, color=Color_MinC, radius=Radius_MinC)
 
+class FLegends():
+    def __init__(self):
+        self.Names = ['MinClusterPivot', 'MinD', 'MinE', 'MinC', 'FtsZ', 'FtsA']
+        self.Sizes = [Size_Anchor, Radius_MinD, Radius_MinE, Radius_MinC, Size_FtsZ, Size_FtsA]
+        self.Colors = [Color_Anchor, Color_MinD, Color_MinE, Color_MinC, Color_FtsZ, Color_FtsA]
+
+    def Draw(self, show_anchor=False):
+        AlignmentForText = 30
+        LineSpacing = 25
+
+        X, Y = int(W_S * 0.88), int(H_S * 0.8)
+        for i in range(len(self.Names)):
+            if not show_anchor and i == 0:
+                continue
+            pygame.draw.circle(Screen, self.Colors[i], (X, Y), self.Sizes[i])
+            DisplayText(self.Names[i], (X + AlignmentForText, Y), position='midleft', color=self.Colors[i], type='mass')
+            Y += LineSpacing
 
 def SimulateMinCDE():
     # Initialize Membrane
@@ -240,7 +286,10 @@ def SimulateMinCDE():
     # Initialize Molecules
     NumAngles = 100
     DeltaAngle = 2 * pi / NumAngles
-    MinClusters = [FMinCluster(i, DeltaAngle * i, -1, 0, 0, 0, memb=Membrane.XYWH) for i in range(NumAngles)]
+    MinClusters = [FMinCluster(i, DeltaAngle * i, -1, 0, 0, 0, Membrane.XYWH, color=Color_Anchor) for i in range(NumAngles)]
+
+    # Legends
+    Legends = FLegends()
 
     def AddMinDs():
         global NumCytoMinD
@@ -526,32 +575,31 @@ def SimulateMinCDE():
                             pygame.draw.circle(surface=Screen, color=color, center=(X[i], Y[i]), radius=radius)
 
         # CytoMinD and CytoMinE
-        DrawMolecules_SingleCytoCompartment(NumCytoMinD, color=Color_MinD, radius=Size_MinD)
-        DrawMolecules_SingleCytoCompartment(NumCytoMinE, color=Color_MinE, radius=Size_MinE)
+        DrawMolecules_SingleCytoCompartment(NumCytoMinD, color=Color_MinD, radius=Radius_MinD)
+        DrawMolecules_SingleCytoCompartment(NumCytoMinE, color=Color_MinE, radius=Radius_MinE)
 
         # CytoMinC and CytoFtsZ
-        DrawMolecules_MultiCytoCompartments(NumCytoMinC, color=Color_MinC, radius=Size_MinC, additional_scale_factor=5)
+        DrawMolecules_MultiCytoCompartments(NumCytoMinC, color=Color_MinC, radius=Radius_MinC, additional_scale_factor=5)
         DrawMolecules_MultiCytoCompartments(NumCytoFtsZ, color=Color_FtsZ, radius=Size_FtsZ, additional_scale_factor=0.05)
 
     Iter = 0
     IterMax = 20000
     while Iter < IterMax:
+        # MinD
         AddMinDs()
-
-        MergeMinClusters()        
-
+        MergeMinClusters()
         RemoveMinDs()
-
         FragmentMinClusters()
 
+        # MinE
         AddMinEs()
-
         RemoveMinEs()
 
+        # MinC
         AddMinCs()
-
         RemoveMinCs()
 
+        # Diffusion: MinC, FtsZ
         DiffuseCytoMolecules()
 
         if Iter % 100 == 0:
@@ -603,10 +651,13 @@ def SimulateMinCDE():
             Screen.fill(WHITE)
             Membrane.Draw()
             for MinCluster in MinClusters:
-                MinCluster.Draw(Membrane.XYWH)
+                MinCluster.Draw()
+                # MinCluster.Draw(show_anchor=True)
             DrawCytoMolecules()
 
-            DisplayTime(Iter)
+            DisplayIteration(Iter)
+            Legends.Draw()
+            # Legends.Draw(show_anchor=True)
             pygame.display.update()
 
         Iter += 1
