@@ -6,9 +6,6 @@
 
 import Divisome;
 
-FtsZ = Divisome.FtsZ;
-FtsA = Divisome.FtsA;
-
 pathway MinCDE
 {
     protein MinD, MinE, MinC;
@@ -23,7 +20,7 @@ pathway MinCDE
             NewAngle = NewAngle - pi;
         }
         MembraneEffect = (NewAngle - 0.5 * pi) ** 2 / MaxMembraneEffect * 1.1
-        AggregationEffect = log(max(2, membrane~MinD_{m}), 2)
+        AggregationEffect = log(max(2, membrane~MinD_{n}), 2)
         return MembraneEffect * AggregationEffect;
     }
     krev_function
