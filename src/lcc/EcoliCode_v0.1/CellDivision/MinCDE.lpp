@@ -9,15 +9,7 @@ import Divisome;
 FtsZ = Divisome.FtsZ;
 FtsA = Divisome.FtsA;
 
-// all cytosolic proteins
-protein MinC // Binds to the core region of FtsZ to inhibit FtsZ Polymerization
-{
-    reaction Dimerization(2 self --> self~self, Kd = 1e9);
-    reaction FtsZSequestration(self~self + FtsZ~GDP --> self~self~FtsZ~GDP, k = 1e9);
-}
-MinC_Dimer = MinC~MinC;
-
-pathway Min // Walker-type ATPase, tethers MinC to membrane via MinE
+pathway MinCDE
 {
     protein MinD, MinE, MinC;
     reaction MinD_MembraneRecruitment(membrane~MinD_{n} + MinD --> membrane~MinD_{n+1})
@@ -31,7 +23,7 @@ pathway Min // Walker-type ATPase, tethers MinC to membrane via MinE
             NewAngle = NewAngle - pi;
         }
         MembraneEffect = (NewAngle - 0.5 * pi) ** 2 / MaxMembraneEffect * 1.1
-        AggregationEffect = log(max(2, self.SizeD), 2)
+        AggregationEffect = log(max(2, membrane~MinD_{m}), 2)
         return MembraneEffect * AggregationEffect;
     }
     krev_function
@@ -58,8 +50,6 @@ pathway Min // Walker-type ATPase, tethers MinC to membrane via MinE
     {
         return max(0, membrane~MinC_{n} - membrane~MinD_{m});
     }
-
-    FtsZInhibition(MinD_Dimer~MinC_Dimer + FtsA~((FtsZ~GTP)_{10}) --> MinD_Dimer~MinC_Dimer + FtsA{in} + 10 FtsZ~GTP{in}, k = 1e9); // hypothetical model for simplicity
 }
 
 protein SlmA; // Effector of nucleoid occlusion
