@@ -3,12 +3,9 @@
 // Donghoon M. Lee and Daehwan Kim
 
 // MinCDE system - positioning the FtsZ ring precisely at the midcell
-
-import Divisome;
-
 pathway MinCDE
 {
-    protein MinD, MinE, MinC;
+    // protein MinD, MinE, MinC;
     reaction MinD_MembraneRecruitment(membrane~MinD_{n} + MinD --> membrane~MinD_{n+1})
     k_function
     {
@@ -48,8 +45,6 @@ pathway MinCDE
         return max(0, membrane~MinC_{n} - membrane~MinD_{m});
     }
 }
-
-protein SlmA; // Effector of nucleoid occlusion
 
 MinD = 4928; // # of proteins, Ramm_2019 Table 1
 MinC = 163; // # of proteins, Ramm_2019 Table 1

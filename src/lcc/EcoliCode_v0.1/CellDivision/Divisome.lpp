@@ -4,47 +4,41 @@
 
 // Divisome proteins
 
-// cytosolic proteins
-protein FtsZ // Tubulin-like principal regulator of septal PG synthesis
-{
-    domain GB; // Guanine nucleotide binding
-    reaction GDPBinding(self.GB + GDP --> self.GB~GDP, Kd=1e-10);
-    reaction NucExchange(self.GB~GDP + GTP --> self.GB~GTP + GDP, Kd=1e-10);
-    
-    reaction Nucleation(2 self.GB~GTP --> (self.GB~GTP)_{2}, Kd=1e-3);
-    reaction Polymerization((self.GB~GTP)_{n} + (self.GB~GTP)_{m} --> (self.GB~GTP)_{n+m}, Kd=1e-6); // two different molecules
+// protein FtsZ; // Tubulin-like protein
+// {
+//     // Option 1. No domain declaration. Note: Linear polymerization and interaction domain info are indistinguishable from aggregation
+//     reaction Polymerization(self_{n} + self_{m} --> self_{n+m}, Kd=1e-2); // Nucleation and polymerization
+//     // reaction InterPolymerBinding(self_{n}{n} + self_{m}{1} --> self_{n}{n}~self_{m}{1}, Kd=1e-1);
+//     // reaction Treadmilling(self_{n}{n}~self_{m}{1} --> self_{n}{n-1}~self_{m}{2}, r=1);
+//     // Alternatives: 
+//     // reaction InterPolymerBinding(self_{n} + self_{m} --> self_{n}.self{n}~self_{m}.self{1}, Kd=1e-1);
+//     // reaction Treadmilling(self_{n}.self{n}~self_{m}.self{1} --> self_{n}.self{n-1}~self_{m}.self{2}, r=1);
 
-    // reaction Hydrolysis(self.GB~GTP_{n} + n H2O --> self.GB~GTP_{n-1} + 1 GDP + Pi, Kd=1e-4); // reduced model for bending and removal
-    // reaction Dissociation(self.GB~GTP_{n} --> n self.GB~GTP, Kd=1e-7);
-}
+//     // Option 2. three domains declaration
+//     // domain P1, P2; // Polymerization domains (cis interaction for polymerization)
+//     // domain TD; // Treadmilling domain (trans polymer interaction for treadmilling), avoiding T to distinguish from Threonine access
+//     reaction Polymerization(self_{n} + self_{m} --> self_{n}{n}.P1~self_{m}{1}.P2); // Nucleation and polymerization
+//     // reaction InterPolymerBinding(self_{n}{n}.TD + self_{m}{1}.TD --> self_{n}{n}.TD~self_{m}{1}.TD, Kd=1e-1);
+//     // reaction Treadmilling(self_{n}{n}.TD~self_{m}{1}.TD --> self_{n}{n-1}.TD~self_{m}{2}.TD, r=1);
+// }
 
-// membrane proteins
-protein FtsA // Primary membrane tether of FtsZ; recruitment of other division proteins
-// & ZipA for FtsZ membrane recruitment
-{
-    reaction FtsZMembraneRecruitment(self + (FtsZ~GTP)_{10}{in} --> self~((FtsZ~GTP)_{10}), Kd=1e-6); // for simplicity and due to limited syntax
-}
-
-protein ZipA; // Alternate membrane tether of FtsZ; enhances recruitment of other division proteins; preseptal PG synthesis
-// & ZipC, ZipD for Z ring assembly
-
-complex ZRing
-{
-    reaction Assembly(FtsA~((FtsZ~GTP)_{10}) + ZipA, Kd=1e-6); 
-}
-
-protein FtsK; // Recruitment of other division proteins; chromosome segregation; PG synthesis
-// & FtsE/X, FtsQ/L/B, FtsW/I, PBP1b, FtsN for divisome formation and activation
-// protein AmiB, AmiC, NlpD, Tol-Pal for divisome action to separate daughter cells
-
+// protein FtsA; // Primary membrane tether of FtsZ;
 complex Divisome
 {
-    reaction Complexation(ZRing + FtsK, Kd=1e-6);
-    reaction Oligomerization(self_{n} + self --> self_{n+1}, Kd=1e-6);
-    reaction Splitting(self_{n+m} --> self_{n} + self_{m}, Kd=1e-2);
-    reaction Constriction(self_{n} + 10 H2O --> self_{n-1} + self.GB~GDP + 10 Pi{in}, Kd=1e-6); // reduced model for bending and removal. Consider treadmilling mechanism in the updates.
-    reaction Dissociation(self.GB~GDP --> (FtsZ~GDP)_{10}{in} + FtsA + ZipA + FtsK, Kd=1e-2);
-}    
+    protein FtsZ, FtsA; // FtsZ is a cytosolic protein, whereas FtsA is an integral membrane protein
+    reaction DivisomeFormation(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})); // FtsZ monomer recruitment and polymerization (n can be 0, as well)
+    Divisome = FtsA~(FtsZ_{n});
+    k_function
+    {
+
+    }
+    krev_function
+    {
+
+    }
+    reaction InterFtsZPolymerBinding(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} --> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
+    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}) --> (FtsA~(FtsZ_{n}){n-1})~(FtsA~(FtsZ_{m}){2}), r=1);
+}
 
 reference LevinJanakiraman_2021
 {
