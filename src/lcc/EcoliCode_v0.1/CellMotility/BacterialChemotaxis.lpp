@@ -27,20 +27,20 @@ protein CheB
 }
 
 pathway BacterialChemotaxis(Am{in} + L)
-mathfunc
+specification
 {
     float ssAm = 0.983; // use a steady state function like steadystate(Am)?
     float cDrop = 100; // constant for dropping signal
     float cRecov = 2; // constant for recovering signal. Note: exponent
 
-    if (dL/dt / L > 0.1)
+    if (L' / L > 0.1)
     {
-        dAm/dt = - (dL/dt / L) / cDrop;
+        Am' = - (L' / L) / cDrop;
     }
     else 
     {
         dist_ssAm = (ssAm - Am);
-        dAm/dt = (dist_ssAm ** cRecov) / dist_ssAm;
+        Am' = (dist_ssAm ** cRecov) / dist_ssAm;
     }
 }
 {

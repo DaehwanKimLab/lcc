@@ -37,7 +37,7 @@ complex Divisome
         return MinC;
     }
     reaction InterFtsZPolymerBinding(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} --> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
-    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}) --> (FtsA~(FtsZ_{n}){n-1})~(FtsA~(FtsZ_{m}){2}), r=1);
+    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){i})~(FtsA~(FtsZ_{m}){j}) --> (FtsA~(FtsZ_{n}){i-1})~(FtsA~(FtsZ_{m}){j+1}), r=1);
 }
 
 reference LevinJanakiraman_2021
