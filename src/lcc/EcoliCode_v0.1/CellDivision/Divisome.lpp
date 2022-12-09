@@ -30,11 +30,11 @@ complex Divisome
     reaction DivisomeFormation(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})); // FtsZ monomer recruitment and polymerization (n can be 0, as well)
     k_function
     {
-        return FtsA / max(1, MinC{in})
+        return FtsA / max(1, MinC{in});
     }
     krev_function
     {
-        return MinC
+        return MinC;
     }
     reaction InterFtsZPolymerBinding(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} --> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
     reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}) --> (FtsA~(FtsZ_{n}){n-1})~(FtsA~(FtsZ_{m}){2}), r=1);
