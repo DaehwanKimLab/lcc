@@ -5,17 +5,18 @@
 // ATPSynthase
 
 // temporary code with limited parsing
-reaction OxidativePhosphorylation(NADH + FADH2 + ADP + ADP + ADP + ADP --> NAD + FAD + ATP + ATP + ATP + ATP, k=1)
-mathfunc
+reaction OxidativePhosphorylation(NADH + FADH2 + 4 ADP --> NAD + FAD + 4 ATP)
+specification
 {
-    float co = 1 M;
-    ATP'  = (ADP / ATP) * co;
-    ADP'  = 0 - ATP';
-    NADH' = ATP' / 4;
-    FADH2' = ATP' / 4;
-    NAD' = 0 - NADH';
-    FAD' = 0 - FADH2';
-};
+    float c_co = 5 M;
+    float co = FADH2 * c_co;
+    ATP'  = co;
+    ADP'  = - ATP';
+    NADH' = - ATP' / 4;
+    FADH2' = - ATP' / 4;
+    NAD' = - NADH';
+    FAD' = - FADH2';
+}
 
 FAD = 1.7e-4 M;
 NAD = 2.6e-3 M;
@@ -23,13 +24,3 @@ ADP = 5.6e-4 M;
 NADH = 8.3e-3 M;
 FADH2 = 5e-4 M;
 ATP = 9.6e-3 M;
-
-// pathway OxidativePhosphorylation(NADH + FADH2 + 4 ADP --> NAD+ + FAD + 4 ATP)
-// func
-// {
-//     float co = 0.1uM;
-//     ATP'  = (ADP / ATP) * co;
-// }
-// {
-
-// }

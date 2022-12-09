@@ -4,26 +4,25 @@
 
 // Flagellar Rotation
 
-import BacterialChemotaxis;
-Am = BacterialChemotaxis.Am;
+membrane Membrane;
 
-pathway FlagellarRotation(membrane, bRun) // bRun is a boolean parameter
-func
+pathway FlagellarRotation(Membrane, bRun) // bRun is a boolean parameter
+specification
 {
-    Ang = membrane.angle;
-    Pos = membrane.position;
+    Ang = Membrane.phi;
+    Pos = Membrane.position;
 
     cdist = 10nm/s; // constant for displacement
-    crot = rand(0, 360)°; // constant for rotation
+    crot = rand(0, 2 * pi); // constant for rotation
 
     if (bRun)
     {
-        dPos/dt = cdist;
-        dAng/dt = 0;
+        Pos' = cdist;
+        Ang' = 0;
     }
     else 
     {
-        dPos/dt = cdist / 3;
-        dAng/dt = crot;
+        Pos' = cdist / 3;
+        Ang' = crot;
     }
 }

@@ -2,31 +2,14 @@
 // © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
+import MinCDE;
+
+MinC = MinCDE.MinC;
+
 // Divisome proteins
-
-// protein FtsZ; // Tubulin-like protein
-// {
-//     // Option 1. No domain declaration. Note: Linear polymerization and interaction domain info are indistinguishable from aggregation
-//     reaction Polymerization(self_{n} + self_{m} --> self_{n+m}, Kd=1e-2); // Nucleation and polymerization
-//     // reaction InterPolymerBinding(self_{n}{n} + self_{m}{1} --> self_{n}{n}~self_{m}{1}, Kd=1e-1);
-//     // reaction Treadmilling(self_{n}{n}~self_{m}{1} --> self_{n}{n-1}~self_{m}{2}, r=1);
-//     // Alternatives: 
-//     // reaction InterPolymerBinding(self_{n} + self_{m} --> self_{n}.self{n}~self_{m}.self{1}, Kd=1e-1);
-//     // reaction Treadmilling(self_{n}.self{n}~self_{m}.self{1} --> self_{n}.self{n-1}~self_{m}.self{2}, r=1);
-
-//     // Option 2. three domains declaration
-//     // domain P1, P2; // Polymerization domains (cis interaction for polymerization)
-//     // domain TD; // Treadmilling domain (trans polymer interaction for treadmilling), avoiding T to distinguish from Threonine access
-//     reaction Polymerization(self_{n} + self_{m} --> self_{n}{n}.P1~self_{m}{1}.P2); // Nucleation and polymerization
-//     // reaction InterPolymerBinding(self_{n}{n}.TD + self_{m}{1}.TD --> self_{n}{n}.TD~self_{m}{1}.TD, Kd=1e-1);
-//     // reaction Treadmilling(self_{n}{n}.TD~self_{m}{1}.TD --> self_{n}{n-1}.TD~self_{m}{2}.TD, r=1);
-// }
-
-// protein FtsA; // Primary membrane tether of FtsZ;
 complex Divisome
 {
-    protein FtsZ, FtsA; // FtsZ is a cytosolic protein, whereas FtsA is an integral membrane protein
-    Divisome = FtsA~(FtsZ_{n});
+    Divisome = FtsA~(FtsZ_{n});   // FtsZ is a cytosolic protein, whereas FtsA is an integral membrane protein
     reaction DivisomeFormation(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})); // FtsZ monomer recruitment and polymerization (n can be 0, as well)
     k_function
     {
@@ -37,7 +20,7 @@ complex Divisome
         return MinC;
     }
     reaction InterFtsZPolymerBinding(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} --> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
-    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}) --> (FtsA~(FtsZ_{n}){n-1})~(FtsA~(FtsZ_{m}){2}), r=1);
+    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){i})~(FtsA~(FtsZ_{m}){j}) --> (FtsA~(FtsZ_{n}){i-1})~(FtsA~(FtsZ_{m}){j+1}), r=1);
 }
 
 reference LevinJanakiraman_2021

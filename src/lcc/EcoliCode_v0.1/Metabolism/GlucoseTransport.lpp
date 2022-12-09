@@ -5,26 +5,14 @@
 // Glucose Transport
 
 // temporary code with limited parsing
-reaction GlucoseTransporter(glucose --> G6P, k=1)
-mathfunc
+reaction GlucoseTransport(glucose{out} --> G6P{in})
+specification
 {
     float cgt = 0.5 M;
     G6P' = glucose/G6P * cgt;
-    glucose' = 0 - G6P';
-};
+    glucose' = - G6P';
+}
 
-glucose[:] = 0.15e-6 M;
 G6P = 8.8e-3 M;
 ATP = 9.6e-3 M;
 ADP = 5.6e-4 M;
-
-
-// pathway GlucoseTransporter(glucose --> G6P)
-// func
-// {
-//     float cgt = 0.5uM;
-//     G6P' = glucose/G6P * cgt;
-// }
-// {
-
-// }

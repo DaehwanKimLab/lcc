@@ -4,35 +4,35 @@
 
 // E. coli Code v0.1
 
-import CellDivision.BinaryFission as BinaryFission;
-import CellMotility.BacterialChemotaxis as BacterialChemotaxis;
-import CellMotility.FlagellarRotation as FlagellarRotation;
-import GeneticInfoProcessing.Degradation.ProteinDegradation as ProteinDegradation;
-import GeneticInfoProcessing.Degradation.RNADegradation as RNADegradation;
-import GeneticInfoProcessing.Transcription.Transcription as Transcription;
-import GeneticInfoProcessing.Translation.Translation as Translation;
-import Metabolism.GlucoseMetabolism as GlucoseMetabolism;
+import CellDivision.BinaryFission;
+import CellMotility.CellMotility;
+import GeneticInfoProcessing.Degradation.ProteinDegradation;
+import GeneticInfoProcessing.Degradation.RNADegradation;
+import GeneticInfoProcessing.Transcription.Transcription;
+import GeneticInfoProcessing.Translation.Translation;
+import Metabolism.GlucoseMetabolism;
 
 organism Ecoli
 {
-    CellDivision = BinaryFission;
-    Chemotaxis = BacterialChemotaxis;
-    CellMovement = FlagellarRotation;
-    ProteinDegradation = ProteinDegradation;
-    RNADegradation = RNADegradation;
-    Transcription = Transcription;
-    Translation = Translation;
-    GlucoseMetabolism = GlucoseMetabolism;
+    CellDivision = CellDivision.BinaryFission.BinaryFission;
+    BacterialChemotaxis = CellMotility.CellMotility.CellMotility;
+    ProteinDegradation = GeneticInfoProcessing.Degradation.ProteinDegradation.ProteinDegradation;
+    RNADegradation = GeneticInfoProcessing.Degradation.RNADegradation.RNADegradation;
+    Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+    Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+    GlucoseMetabolism = Metabolism.GlucoseMetabolism.GlucoseMetabolism;
 
     membrane CellMembrane
     {
-
         cytosol Cytosol
         {
 
         }
     }
 }
+
+glucose L(800, 500, 0) = 100nmol;
+Ecoli(500, 600, 0) = 1;
 
 reference RaetzDowhan_1990
 {
@@ -45,33 +45,4 @@ reference Valgepea_2013
     title = "Escherichia coli achieves faster growth by increasing catalytic and translation rates of proteins";
     doi = "DOI	https://doi.org/10.1039/C3MB70119K";
     table = "S1";
-}
-
-// Table S1. Various experimental results used in calculations determined in A-stat experiments with Escherichia coliK-12 MG1655 at different μ.
-// Parameter	            Unit	    μ=0.11 h-1	    μ=0.21 h-1	    μ=0.31 h-1	    μ=0.40 h-1	    μ=0.49 h-1
-// RNA % in DCW	            %	        6.7	            8.1	            9.4	            10.8	        11.9
-// Protein % in DCW         %	        61.0	        58.2	        55.4	        52.9	        50.4
-// Biomass concentration	gDCW L-1	1.87 ± 0.09	    1.83 ± 0.03	    1.83 ± 0.04	    1.88 ± 0.01	    1.81 ± 0.02
-// Cell counts	            CFU ml-1	(8.6±0.4)×109	(6.7±0.1)×109	(5.0±0.1)×109	(4.3±0.0)×109	(3.6±0.0)×109
-// Cell volume	            fL	        0.73	        0.91	        1.22	        1.46	        1.69
-// iBAQ % from Lowry	    %	        92	            85	            89	            88	            94
-
-// independent simulation
-if (__name__ == "__main__") // python style
-{
-
-    import Medium.CommonMedium;
-    LB = Medium.CommonMedium.LysogenyBroth;
-    
-    lab L // default dimension (i.e. 1000 by 1000 by 0)
-    {
-        petridish P // specification P_S(shape = round, radius = 150mm);
-        {
-            LB = 10mL; // In this liquid media, E coli would grow radially with some random movement.
-            Ecoli(500, 600, 0) = 1;
-        }
-        P(200, 400, 0) = 1;
-    }
-    L = 1;
-
 }

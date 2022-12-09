@@ -5,29 +5,19 @@
 // Pyruvate Oxidation
 
 // temporary code with limited parsing
-reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH, k=1)
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
 mathfunc
 {
-    float cp = 1 M;
-    pyruvate' = 0 - (pyruvate / acetyl_CoA) * cp;
-    CoA_SH' = pyruvate';
-    NAD' = pyruvate';
-    acetyl_CoA' = 0 - pyruvate';
-    NADH' = 0 - pyruvate';
-};
+    float cp = 0.003 M;
+    acetyl_CoA' = (pyruvate / acetyl_CoA) * cp;
+    CoA_SH' = - acetyl_CoA';
+    NAD' = - acetyl_CoA';
+    acetyl_CoA' = acetyl_CoA';
+    NADH' = acetyl_CoA';
+}
 
 pyruvate = 3.9e-4 M;
 CoA_SH = 1.4e-3 M;
 acetyl_CoA = 6.1e-4 M;
 NAD = 2.6e-3 M;
 NADH = 8.3e-3 M;
-
-// pathway PyruvateOxidation(pyruvate + NAD+ + CoA-SH --> acetyl-CoA + NADH)
-// func
-// {
-//     float cp = 1 uM;
-//     pyruvate' = CoA-SH' = NAD+' = - (pyruvate / acetyl-CoA) * cp;
-// }
-// {
-// 
-// }

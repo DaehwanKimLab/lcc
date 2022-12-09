@@ -10,9 +10,9 @@ import SeptumFormation;
 
 pathway BinaryFission
 {
-    pathway DNAReplication = Replication.Replication;
-    pathway DNASegregation = DNASegregation;
-    pathway SeptumFormation = SeptumFormation;
+    DNAReplication = GeneticInfoProcessing.Replication.Replication.Replication;
+    DNASegregation = DNASegregation.DNASegregation;
+    SeptumFormation = SeptumFormation.SeptumFormation;
 }
 
 reference LevinJanakiraman_2021

@@ -7,42 +7,25 @@
 import Divisome;
 import MinCDE;
 
-FtsZ = Divisome.FtsZ;
-FtsA = FtsDivisome.FtsA;
-ZapA = Divisome.ZapA;
-FtsK = Divisome.FtsK;
-MinC = MinCDE.MinC;
-MinD = MinCDE.MinD;
-MinE = MinCDE.MinE;
-
 pathway SeptumFormation
 {
     membrane CellMembrane
     {
-        pathway MembranePolarization // check membrane reactions only
+        pathway MidlineDetermination
         {
-            reaction MinDRecruitment = MinD.MembraneRecruitment_1;
-            reaction MinDRecruitment_PositiveFeedback = MinD.MembraneRecruitment_2;
-            reaction MinCRecruitment = MinD.MinCRecruitment;
-            reaction MinCToMinEReplacement = MinE.MembraneRecruitment;
-            reaction MinDInactivation = MinE.ATPaseActivity;
-            reaction MembraneDetatchment = MinE.MembraneDetatchment;
+            MinD_MembraneRecruitment = MinCDE.MinCDE.MinD_MembraneRecruitment;
+            MinE_MembraneRecruitment = MinCDE.MinCDE.MinE_MembraneRecruitment;
+            MinC_MembraneRecruitment = MinCDE.MinCDE.MinC_MembraneRecruitment;
         }
 
         pathway Cytokinesis
         {
-            reaction FtsZMembraneRecruitment = FtsA.FtsZMembraneRecruitment;
-            reaction ZRingAssembly = ZRing.Assembly;
-            reaction DivisomeAssembly = Divisome.Complexation;
-            reaction DivisomeOligomerization = Divisome.Oligomerization;
-            reaction DivisomeSplitting = Divisome.Splitting;
-            reaction Constriction = Divisome.Constriction;
-            reaction Dissociation = Divisome.Dissociation;
+            DivisomeFormation = Divisome.Divisome.DivisomeFormation;
+            InterFtsZPolymerBinding = Divisome.Divisome.InterFtsZPolymerBinding;
+            FtsZ_Treadmilling = Divisome.Divisome.FtsZ_Treadmilling;
         }
 
         FtsA(rand(-0.1, 0.1) um, rand(-0.5, 0.5) um, rand(-0.5, 0.5) um) = 1nM;
-        ZipA = 1nM;
-        FtsK = 1nM;
 
         // special lipid at the midline
 
@@ -50,14 +33,14 @@ pathway SeptumFormation
         {
             reaction FtsPolymerization
             {
-                reaction GDPBinding = FtsZ.GDPBinding;
-                reaction NucExchange = FtsZ.NucExchange;
-                reaction Nucleation = FtsZ.Nucleation;
-                reaction Polymerization = FtsZ.Polymerization;
-                reaction FtsZInhibition
+                GDPBinding = FtsZ.GDPBinding;
+                NucExchange = FtsZ.NucExchange;
+                Nucleation = FtsZ.Nucleation;
+                Polymerization = FtsZ.Polymerization;
+                FtsZInhibition
                 {
-                    reaction MonomerSequestration = MinC.FtsZSequestration;
-                    reaction PolymerInhibition = MinD.FtsZInhibition;
+                    MonomerSequestration = MinC.FtsZSequestration;
+                    PolymerInhibition = MinD.FtsZInhibition;
                 }
             }
             

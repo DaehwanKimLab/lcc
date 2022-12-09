@@ -4,36 +4,28 @@
 
 // Citrate Cycle
 
-// temporary code with limited parsing
-reaction CitrateCycle(acetyl_CoA + NAD + NAD + NAD + FAD + ADP --> CoA_SH + NADH + NADH + NADH + FADH2 + ATP, k=1)
-mathfunc
+reaction CitrateCycle(acetyl_CoA + 3 NAD + FAD + ADP + Malate --> CoA_SH + 3 NADH + FADH2 + ATP + Malate)
+specification
 {
-    float cc = 0.3 M;
-    ATP'  = (ADP / ATP) * cc;
-    ADP'  = 0 - ATP';
-    NADH' = 3 ATP';
-    NAD' = 0 - NADH';
+    float c_cc = 0.385 M;
+    float cc = Malate * c_cc;
+    ATP'  = cc;
+    ADP'  = - ATP';
+    NADH' = 3 * ATP';
+    NAD' = - NADH';
     FADH2' = ATP';
-    FAD' = 0 - FADH2';
-    acetyl_CoA' = 0 - ATP';
-    CoA_SH' = 0 - acetyl_CoA';
-};
+    FAD' = - FADH2';
+    acetyl_CoA' = - ATP';
+    CoA_SH' = - acetyl_CoA';
+    Malate' = 0;
+}
 
-acetyl-CoA = 6.1e-4 M;
-CoA_SH = 1.4e-3 M;
-FAD = 1.7e-4 M;
-NAD = 2.6e-3 M;
-ADP = 5.6e-4 M;
-NADH = 8.3e-3 M;
-FADH2 = 5e-4 M;
 ATP = 9.6e-3 M;
-
-// pathway CitrateCycle(acetyl-CoA + 3 NAD+ + FAD + ADP --> CoA-SH + 3 NADH + FADH2 + ATP)
-// func
-// {
-//     float cc = 1uM;
-//     ATP'  = (ADP / ATP) * cc;
-// }
-// {
-
-// }
+ADP = 5.6e-4 M;
+NAD = 2.6e-3 M;
+NADH = 8.3e-3 M;
+CoA_SH[:] = 1.4e-3 M;
+acetyl_CoA = 6.1e-4 M;
+FAD = 1.7e-4 M;
+FADH2 = 5e-4 M;
+Malate = 1.7e-3 M;   // for TCA cycle capacity

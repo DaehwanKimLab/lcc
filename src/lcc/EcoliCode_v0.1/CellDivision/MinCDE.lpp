@@ -6,43 +6,45 @@
 pathway MinCDE
 {
     // protein MinD, MinE, MinC;
-    reaction MinD_MembraneRecruitment(membrane~MinD_{n} + MinD --> membrane~MinD_{n+1})
+    Membrane Membrane;
+
+    reaction MinD_MembraneRecruitment(Membrane~MinD_{n} + MinD {in} --> Membrane~MinD_{n+1}) // n may be 0
     k_function
     {
         // Spherical coordinate system - https://en.wikipedia.org/wiki/Spherical_coordinate_system
         MaxMembraneEffect = (0.5 * pi) ** 2;
-        NewAngle = membrane.phi;
+        NewAngle = Membrane.phi;
         if (NewAngle >= pi)
         {
             NewAngle = NewAngle - pi;
         }
         MembraneEffect = (NewAngle - 0.5 * pi) ** 2 / MaxMembraneEffect * 1.1
-        AggregationEffect = log(max(2, membrane~MinD_{n}), 2)
+        AggregationEffect = log(max(2, Membrane~MinD_{n}), 2)
         return MembraneEffect * AggregationEffect;
     }
     krev_function
     {
-        return k_function() * (membrane~MinE_{n} / max(1, membrane~MinD_{m})) * normal(1.5, 0.2);
+        return k_function() * (Membrane~MinE_{n} / max(1, Membrane~MinD_{m})) * normal(1.5, 0.2);
     }
 
-    reaction MinE_MembraneRecruitment(membrane~MinD_{n}~MinE_{m} + MinE --> membrane~MinD_{n}~MinE_{m+1})
+    reaction MinE_MembraneRecruitment(Membrane~MinD_{n}~MinE_{m} + MinE{in} --> Membrane~MinD_{n}~MinE_{m+1})
     k_function
     {
         return MinD_MembraneRecruitment.k_function() * 0.2;
     }
     krev_function
     {
-        return max(0, membrane~MinE_{n} - membrane~MinD_{m});
+        return max(0, Membrane~MinE_{n} - Membrane~MinD_{m});
     }
 
-    reaction MinC_Recruitment(MinD_Dimer + MinC_Dimer{in} --> MinD_Dimer~MinC_Dimer, k = 1e9)
+    reaction MinC_MembraneRecruitment(MinD_Dimer + MinC_Dimer{in} --> MinD_Dimer~MinC_Dimer, k = 1e9)
     k_function
     {
         return MinD_MembraneRecruitment.k_function() * 0.2;
     }
     krev_function
     {
-        return max(0, membrane~MinC_{n} - membrane~MinD_{m});
+        return max(0, Membrane~MinC_{n} - Membrane~MinD_{m});
     }
 }
 

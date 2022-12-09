@@ -1,0 +1,39 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Bacterial Chemotaxis
+
+import BacterialChemotaxis;
+import FlagellarRotation;
+
+CheA = BacterialChemotaxis.CheA;
+CheR = BacterialChemotaxis.CheR;
+CheB = BacterialChemotaxis.CheB; // not explicit
+CheBP = BacterialChemotaxis.CheBP;
+
+pathway CellMotility
+{
+    pathway BacterialChemotaxis
+    {
+        membrane CellMembrane
+        {
+            CheA_Methylation = CheR.CheA_Methylation;
+            CheAL_Methylation = CheR.CheAL_Methylation;
+            CheAm_Demethylation = CheBP.CheAm_Demethylation;
+            CheAmL_Demethylation = CheBP.CheAmL_Demethylation;
+            CheB_Phosphorylation = CheAm.CheB_Phosphorylation;
+            CheAm_LigandBinding = BacterialChemotaxis.CheAm_LigandBinding;
+            CheA_LigandBinding = BacterialChemotaxis.CheA_LigandBinding;
+
+            CheA = 500nM;
+            CheR = 5nM
+            CheB = 0.1nM;
+        }
+
+        float thAm = 0.982; // threshold set by the user. a fraction of the steadystate function may be another option
+        bool bRun(Am < thAm);
+
+        Motility = FlagellarRotation.FlagellarRotation(CellMembrane, bRun);
+    }
+}
