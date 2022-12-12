@@ -17,7 +17,7 @@ reference Ingalls_2013
 reaction R1(In --> S1, k=8);
 reaction R2(S1 --> S2, k=1);
 reaction R3(S2 --> Out, k=5);
-reaction R4(S2 --> R2, Ka=1, n=2.5);
+reaction R4(S2 --> R2, Ka=1, nH=2.5);
 
 // initial quantity
 In[:]=1, Out[:]=0;
