@@ -84,7 +84,7 @@ def CheckIfWithinEllipse(X, Y, XYWH, membranebias_lower=1.0, membranebias_upper=
 # pygame
 pygame.init()
 
-Title = 'MinDE Visualization'
+Title = 'MinCDE and FtsZ Ring'
 pygame.display.set_caption(Title)
 
 # Fonts
@@ -100,10 +100,18 @@ MID_X = W_S / 2
 MID_Y = H_S / 2
 
 # E coli Membrane
-ScaleFactor_Dimension = 1.5
+ScaleFactor_Dimension = 2.2
 W_Ecoli = int(2000 / ScaleFactor_Dimension)
 H_Ecoli = int(1000 / ScaleFactor_Dimension)
 NumAngles = 100
+
+# X-section along the axis of division of E coli
+Offset_DivAxis_X = - W_S * 7 / 40
+Offset_DivAxis_Y = 0
+
+# X-section along the plane of division
+Offset_DivPlane_X = W_S * 13 / 40
+Offset_DivPlane_Y = 0
 
 # Molecules
 NumMinD = 5000
@@ -133,12 +141,12 @@ NumCytoFtsZ[CytoCompartment_Rows // 2, CytoCompartment_Columns // 2] = NumFtsZ
 ScaleFactor_Quantity = 0.4
 ScaleFactor_Refresh = 50
 
-Radius_Anchor = 5 
-Radius_MinD = 5
-Radius_MinE = 5
-Radius_MinC = 5
-Radius_FtsZ = 5
-Radius_FtsA = 5
+Radius_Anchor = 4
+Radius_MinD = 4
+Radius_MinE = 4
+Radius_MinC = 4
+Radius_FtsZ = 4
+Radius_FtsA = 4
 
 Color_Anchor = YELLOW
 Color_MinD = RED
@@ -157,8 +165,8 @@ for row in range(CytoCompartment_Rows):
         Center_Y = np.round(np.floor(CytoCompartment_Columns / 2))
         Offset_Y = H_Ecoli / CytoCompartment_Columns * (column - Center_Y)
 
-        CytoCompartment_X[row, column] = MID_X + Offset_X
-        CytoCompartment_Y[row, column] = MID_Y + Offset_Y
+        CytoCompartment_X[row, column] = MID_X + Offset_DivAxis_X + Offset_X
+        CytoCompartment_Y[row, column] = MID_Y + Offset_DivAxis_Y + Offset_Y
 
 class FMembrane:
     def __init__(self, X=MID_X, Y=MID_Y, thickness=5, linecolor=GRAY4, bodycolor=YELLOW_FAINT, Label=False, width=0, height=0):
@@ -166,17 +174,32 @@ class FMembrane:
         self.Y = Y
         self.W = width
         self.H = height
-        self.XY = X, Y
-        self.XYWH = X, Y, width, height
+
+        self.X_DivPlane = X + Offset_DivPlane_X
+        self.Y_DivPlane = Y + Offset_DivPlane_Y
+        self.XY_DivPlane = self.X_DivPlane, self.Y_DivPlane
+        self.XYR_DivPlane = self.X_DivPlane, self.Y_DivPlane, height / 2
+
+        self.X_DivAxis = X + Offset_DivAxis_X
+        self.Y_DivAxis = Y + Offset_DivAxis_Y
+        self.XY_DivAxis = self.X_DivAxis, self.Y_DivAxis
+        self.XYWH_DivAxis = self.X_DivAxis, self.Y_DivAxis, width, height
+
 
         self.Label = Label
         self.Thickness = thickness
         self.LineColor = linecolor
         self.BodyColor = bodycolor
 
-    def Draw(self):
-        pygame.draw.ellipse(Screen, self.BodyColor, (self.X - self.W / 2, self.Y - self.H / 2, self.W, self.H))
-        pygame.draw.ellipse(Screen, self.LineColor, (self.X - self.W / 2, self.Y - self.H / 2, self.W, self.H), self.Thickness)
+    def Draw(self, axis=True, plane=True):
+        if axis:
+            pygame.draw.ellipse(Screen, self.BodyColor, (self.X_DivAxis - self.W / 2, self.Y_DivAxis - self.H / 2, self.W, self.H))
+            pygame.draw.ellipse(Screen, self.LineColor, (self.X_DivAxis - self.W / 2, self.Y_DivAxis - self.H / 2, self.W, self.H), self.Thickness)
+
+        if plane:
+            pygame.draw.circle(Screen, self.BodyColor, (self.X_DivPlane, self.Y_DivPlane), self.H / 2)
+            pygame.draw.circle(Screen, self.LineColor, (self.X_DivPlane, self.Y_DivPlane), self.H / 2, self.Thickness)
+
 
 class FCluster:
     def __init__(self, Index, Angle, Reference, XYWH_Membrane, color):
@@ -258,8 +281,8 @@ class FMinCluster(FCluster):
 
         def DisplayMins(Size, additional_scale_factor=1.0, color=None, radius=1):
             Size = int(Size * ScaleFactor_Quantity * additional_scale_factor)
-            X_Min = np.random.uniform(-1, 1, Size) * W_Membrane / 4 + MID_X + W_Membrane / 4 * (-1 if self.X_Anchor < MID_X else 1)
-            Y_Min = np.random.normal(MID_Y, H_Membrane / 6, Size)
+            X_Min = np.random.uniform(-1, 1, Size) * W_Membrane / 4 + X_Membrane + W_Membrane / 4 * (-1 if self.X_Anchor < X_Membrane else 1)
+            Y_Min = np.random.normal(Y_Membrane, H_Membrane / 6, Size)
             for i in range(Size):
                 if CheckIfWithinEllipse(X_Min[i], Y_Min[i], self.Membrane, membranebias_lower=0.8):
                     pygame.draw.circle(surface=Screen, color=color, center=(X_Min[i], Y_Min[i]), radius=radius)
@@ -280,7 +303,16 @@ class FFtsCluster(FCluster):
         self.SizeA = SizeA
         self.SizeZ = SizeZ
 
-        self.MinClusterReference = -1
+        # DivPlane-related
+        # self.Angle_A = angle
+        self.N_Children = 0
+        self.X_Children_DivPlane = list()
+        self.Y_Children_DivPlane = list()
+        self.X_Children_DivAxis = list()
+        self.Y_Children_DivAxis = list()
+        self.Group_Children = list()
+        self.Angle_Children = list()
+
 
         FCluster.__init__(self, Index, Angle, Reference, XYWH_Membrane, color)
 
@@ -319,11 +351,40 @@ class FFtsCluster(FCluster):
             for i in range(Size):
                 if CheckIfWithinEllipse(X_Fts[i], Y_Fts[i], self.Membrane, membranebias_lower=membranebias_lower, membranebias_upper=membranebias_upper):
                     pygame.draw.circle(surface=Screen, color=color, center=(X_Fts[i], Y_Fts[i]), radius=radius)
+
+        def DisplayFtsZ(Size, additional_scale_factor=1.0, color=None, radius=1, membranebias_lower=0.0, membranebias_upper=1.0):
+            Size = int(Size * ScaleFactor_Quantity * additional_scale_factor)
+            X_Fts = np.random.uniform(-1, 1, Size) * W_Membrane / (NumAngles / 2) + self.X_Anchor
+            Y_Fts = np.random.uniform(-1, 1, Size) * H_Membrane / 2 + Y_Membrane
+            for i in range(Size):
+                if CheckIfWithinEllipse(X_Fts[i], Y_Fts[i], self.Membrane, membranebias_lower=0, membranebias_upper=membranebias_upper):
+                    pygame.draw.circle(surface=Screen, color=color, center=(X_Fts[i], Y_Fts[i]), radius=radius)
+
+        # def DisplayFtsA_DivPlane():
+        #     pygame.draw.circle(surface=Screen, color=GREEN, center=(self.Membrane X_DivPlane, self.Y_DivPlane),
+        #                        radius=self.Radius)
+        #     Label = "FtsA" + "#" + str(self.Index) + "~FtsZ_{" + str(self.N_Children) + "}"
+        #     DisplayString(Label, self.X_DivPlane + self.Radius * 2.5 * np.cos(self.Angle),
+        #                   self.Y_DivPlane + self.Radius * 2.5 * np.sin(self.Angle), color=BLACK, Type='individual')
+        #
+        # def DisplayFtsZ_DivPlane():
+        #     for i in range(len(self.X_Children_DivPlane)):
+        #         pygame.draw.circle(surface=Screen, color=RED, center=(
+        #         self.X_Children_DivPlane[i] - 5 * np.cos(self.Angle),
+        #         self.Y_Children_DivPlane[i] - 5 * np.sin(self.Angle)), radius=self.Radius * 0.5, width=1)
+                # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
+
         if self.SizeA > 0:
+            # DivAxis
             DisplayFtss(self.SizeA, additional_scale_factor=2, color=Color_FtsA, radius=Radius_FtsA, membranebias_lower=0.95)
+            # DivPlane
+
 
         if self.SizeZ > 0:
-            DisplayFtss(self.SizeZ, additional_scale_factor=1, color=Color_FtsZ, radius=Radius_FtsZ, membranebias_lower=0.9, membranebias_upper=0.95)
+            # DivAxis
+            DisplayFtsZ(self.SizeZ, additional_scale_factor=0.5, color=Color_FtsZ, radius=Radius_FtsZ, membranebias_lower=0.9, membranebias_upper=0.95)
+            # DivPlane
+
 
 class FLegends():
     def __init__(self):
@@ -349,8 +410,8 @@ def Simulate():
 
     # Initialize Molecules
     DeltaAngle = 2 * pi / NumAngles
-    MinClusters = [FMinCluster(i, DeltaAngle * i, -1, 0, 0, 0, Membrane.XYWH, color=Color_Anchor) for i in range(NumAngles)]
-    FtsClusters = [FFtsCluster(i, DeltaAngle * i, -1, int(NumFtsA / NumAngles), 0, Membrane.XYWH, color=Color_FtsA) for i in range(NumAngles)]
+    MinClusters = [FMinCluster(i, DeltaAngle * i, -1, 0, 0, 0, Membrane.XYWH_DivAxis, color=Color_Anchor) for i in range(NumAngles)]
+    FtsClusters = [FFtsCluster(i, DeltaAngle * i, -1, int(NumFtsA / NumAngles), 0, Membrane.XYWH_DivAxis, color=Color_FtsA) for i in range(NumAngles)]
     
     # Legends
     Legends = FLegends()
@@ -671,7 +732,7 @@ def Simulate():
             X = np.random.uniform(-1, 1, CytoMolecules) * MID_X + MID_X
             Y = np.random.uniform(-1, 1, CytoMolecules) * MID_Y + MID_Y
             for i in range(CytoMolecules):
-                if CheckIfWithinEllipse(X[i], Y[i], Membrane.XYWH):
+                if CheckIfWithinEllipse(X[i], Y[i], Membrane.XYWH_DivAxis):
                     pygame.draw.circle(surface=Screen, color=color, center=(X[i], Y[i]), radius=radius)
 
         def DrawMolecules_MultiCytoCompartments(NumCytoMolecule, color=BLACK, radius=5, additional_scale_factor=0.5):
@@ -684,7 +745,7 @@ def Simulate():
                     X = np.random.uniform(-1, 1, CytoMolecules) * W_Ecoli / NumCytoMolecule.shape[0] / 2 + CytoCompartment_X[row, column]
                     Y = np.random.uniform(-1, 1, CytoMolecules) * H_Ecoli / NumCytoMolecule.shape[1] / 2 + CytoCompartment_Y[row, column]
                     for i in range(CytoMolecules):
-                        if CheckIfWithinEllipse(X[i], Y[i], Membrane.XYWH):
+                        if CheckIfWithinEllipse(X[i], Y[i], Membrane.XYWH_DivAxis):
                             pygame.draw.circle(surface=Screen, color=color, center=(X[i], Y[i]), radius=radius)
 
         # CytoMinD and CytoMinE
