@@ -80,6 +80,13 @@ def CheckIfWithinEllipse(X, Y, XYWH, membranebias_lower=1.0, membranebias_upper=
     else:
         return False
 
+def GetRectFromCircle(XY, Radius, scale_factor=1.0):
+    X, Y = XY
+    ScaledRadius = Radius * scale_factor
+    return X - ScaledRadius, Y - ScaledRadius, ScaledRadius * 2, ScaledRadius * 2
+
+def GetAngleForArcDistance(Radius, ArcDistance):
+    return 2 * np.arcsin(ArcDistance / (2 * Radius))
 
 # pygame
 pygame.init()
@@ -177,14 +184,14 @@ class FMembrane:
 
         self.X_DivPlane = X + Offset_DivPlane_X
         self.Y_DivPlane = Y + Offset_DivPlane_Y
+        self.Radius = height / 2
         self.XY_DivPlane = self.X_DivPlane, self.Y_DivPlane
-        self.XYR_DivPlane = self.X_DivPlane, self.Y_DivPlane, height / 2
+        self.XYR_DivPlane = self.X_DivPlane, self.Y_DivPlane, self.Radius
 
         self.X_DivAxis = X + Offset_DivAxis_X
         self.Y_DivAxis = Y + Offset_DivAxis_Y
         self.XY_DivAxis = self.X_DivAxis, self.Y_DivAxis
         self.XYWH_DivAxis = self.X_DivAxis, self.Y_DivAxis, width, height
-
 
         self.Label = Label
         self.Thickness = thickness
@@ -197,8 +204,8 @@ class FMembrane:
             pygame.draw.ellipse(Screen, self.LineColor, (self.X_DivAxis - self.W / 2, self.Y_DivAxis - self.H / 2, self.W, self.H), self.Thickness)
 
         if plane:
-            pygame.draw.circle(Screen, self.BodyColor, (self.X_DivPlane, self.Y_DivPlane), self.H / 2)
-            pygame.draw.circle(Screen, self.LineColor, (self.X_DivPlane, self.Y_DivPlane), self.H / 2, self.Thickness)
+            pygame.draw.circle(Screen, self.BodyColor, (self.X_DivPlane, self.Y_DivPlane), self.Radius)
+            pygame.draw.circle(Screen, self.LineColor, (self.X_DivPlane, self.Y_DivPlane), self.Radius, self.Thickness)
 
 
 class FCluster:
@@ -306,7 +313,7 @@ class FFtsCluster(FCluster):
 
         # DivPlane-related
         self.Color_FtsZ_DivPlane = np.random.randint(0, 255, 3)
-        self.XYR_Membrane_DivPlane = self.X_DivPlane_Center, self.Y_DivPlane_Center, self.Radius = XYR_DivPlane_Membrane
+        self.X_DivPlane_Center, self.Y_DivPlane_Center, self.Radius = XYR_DivPlane_Membrane
         self.X_Anchor_DivPlane, self.Y_Anchor_DivPlane = GetXYFromCenter(
             (self.X_DivPlane_Center, self.Y_DivPlane_Center),
             self.Angle, self.Radius * 0.98)
@@ -315,13 +322,14 @@ class FFtsCluster(FCluster):
             self.ArcMode = True
             self.Angle_Stop = self.Angle
 
+            self.SizeZ_DivPlane = 0
+
+        # Archive object mode
         else:
             self.ArcMode = False
             self.Angle_FtsZs_DivPlane = list()
             self.X_FtsZs_DivPlane = list()
             self.Y_FtsZs_DivPlane = list()
-
-
 
     def KonA(self):
         return 0
@@ -345,7 +353,7 @@ class FFtsCluster(FCluster):
                 MinRef = int(NumAngles / 2)
             return MinClusters[MinRef].SizeC * DistanceFactorVsPole
 
-    def Draw(self, show_anchor=False):
+    def Draw(self, show_anchor=False, show_band=True):
         X_Membrane, Y_Membrane, W_Membrane, H_Membrane = self.Membrane
 
         if show_anchor:
@@ -363,15 +371,19 @@ class FFtsCluster(FCluster):
             Size = int(Size * ScaleFactor_Quantity * additional_scale_factor)
             X_Fts = np.random.uniform(-1, 1, Size) * W_Membrane / (NumAngles / 2) + self.X_Anchor
             Y_Fts = np.random.uniform(-1, 1, Size) * H_Membrane / 2 + Y_Membrane
+
             for i in range(Size):
-                if CheckIfWithinEllipse(X_Fts[i], Y_Fts[i], self.Membrane, membranebias_lower=0, membranebias_upper=membranebias_upper):
+                if CheckIfWithinEllipse(X_Fts[i], Y_Fts[i], self.Membrane, membranebias_lower=membranebias_lower, membranebias_upper=membranebias_upper):
                     pygame.draw.circle(surface=Screen, color=color, center=(X_Fts[i], Y_Fts[i]), radius=radius)
 
         if self.SizeA > 0:
             DisplayFtss(self.SizeA, additional_scale_factor=2, color=Color_FtsA, radius=Radius_FtsA, membranebias_lower=0.95)
 
         if self.SizeZ > 0:
-            DisplayFtsZ(self.SizeZ, additional_scale_factor=0.5, color=Color_FtsZ, radius=Radius_FtsZ, membranebias_lower=0.9, membranebias_upper=0.95)
+            membranebiase_lower = 0.9
+            if show_band:
+                membranebiase_lower = 0.0
+            DisplayFtsZ(self.SizeZ, additional_scale_factor=0.5, color=Color_FtsZ, radius=Radius_FtsZ, membranebias_lower=membranebiase_lower, membranebias_upper=0.95)
 
     def Draw_DivPlane(self, show_anchor=False):
         def DisplayFtsA_DivPlane():
@@ -388,15 +400,11 @@ class FFtsCluster(FCluster):
             # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
 
         def DisplayFtsZ_DivPlane_Arc():
-            def GetRectFromCircle(XY, Radius, scale_factor=1.0):
-                X, Y = XY
-                ScaledRadius = Radius * scale_factor
-                return X - ScaledRadius, Y - ScaledRadius, ScaledRadius * 2, ScaledRadius * 2
-
             Rect = GetRectFromCircle((self.X_DivPlane_Center, self.Y_DivPlane_Center), self.Radius, scale_factor=0.95)
+            UnitAngle = GetAngleForArcDistance(self.Radius, Radius_FtsZ / 5)
+            StopAngle = self.Angle + UnitAngle * self.SizeZ_DivPlane
             pygame.draw.arc(surface=Screen, color=self.Color_FtsZ_DivPlane, rect=Rect, start_angle=self.Angle,
-                            stop_angle=self.Angle_Stop, width=Radius_FtsZ * 2)
-
+                            stop_angle=StopAngle, width=Radius_FtsZ * 2)
 
         if show_anchor:
             DisplayFtsA_DivPlane()
@@ -440,7 +448,7 @@ def Simulate():
     DeltaAngle = 2 * pi / NumAngles
     MinClusters = [FMinCluster(i, DeltaAngle * i, -1, 0, 0, 0, Membrane.XYWH_DivAxis, color=Color_Anchor) for i in range(NumAngles)]
     FtsClusters = [FFtsCluster(i, DeltaAngle * i, -1, int(NumFtsA / NumAngles), 0, Membrane.XYWH_DivAxis, Membrane.XYR_DivPlane, color=Color_FtsA, treadmilling=True) for i in range(NumAngles)]
-    
+
     # Legends
     Legends = FLegends()
 
@@ -485,7 +493,7 @@ def Simulate():
             ToRemove = min(int(Koff), MinCluster.SizeD)
             if ToRemove <= 0:
                 continue
-            
+
             MinCluster.SizeD -= ToRemove
             NumCytoMinD += ToRemove
 
@@ -612,7 +620,7 @@ def Simulate():
             KonArray *= (np.sum(NumCytoFtsZ) / KonSum)
 
         # Add
-        TotalAdd = 0
+        TotalAddToDivPlane = 0
         for i, FtsCluster in enumerate(FtsClusters):
             if FtsCluster.Reference >= 0:
                 continue
@@ -622,18 +630,26 @@ def Simulate():
                 continue
 
             FtsCluster.SizeZ += ToAdd
-            TotalAdd += ToAdd
             NumCytoFtsZ[FtsCluster.SpatialIndex] -= ToAdd
 
+            if abs(np.sin(FtsCluster.Angle)) > 0.5:
+                TotalAddToDivPlane += ToAdd
+
         # For DivPlane
-        Random = np.random.randint(0, NumAngles, TotalAdd)
+        def AddToDivPlane_Arc(TotalAdd):
+            AddToAll = TotalAdd // NumAngles
+            Random = np.random.randint(0, NumAngles, TotalAdd % NumAngles)
+            for j in range(len(FtsClusters)):
+                FtsClusters[j].SizeZ_DivPlane += AddToAll
+                RandomAdditions = np.count_nonzero(Random == j)
+                if RandomAdditions > 0:
+                    FtsClusters[j].SizeZ_DivPlane += RandomAdditions
+                    TotalAdd -= RandomAdditions
+            TotalAdd -= AddToAll * len(FtsClusters)
+            assert TotalAdd == 0
 
-        if FtsClusters[0].ArcMode:
-            for j in range(TotalAdd):
-                Idx = Random[j]
-                FtsClusters[Idx].Angle_Stop += pi / 10 / FtsClusters[Idx].Radius
-
-        else:
+        def AddToDivPlane(TotalAdd):
+            Random = np.random.randint(0, NumAngles, TotalAdd)
             for j in range(TotalAdd):
                 Idx = Random[j]
                 Angle = FtsClusters[Idx].Angle + len(FtsClusters[Idx].Angle_FtsZs_DivPlane) * pi / 180
@@ -642,16 +658,16 @@ def Simulate():
                 FtsClusters[Idx].X_FtsZs_DivPlane.append(X)
                 FtsClusters[Idx].Y_FtsZs_DivPlane.append(Y)
 
-            # DL: Debugging
-            # if TotalAdd > 0:
-            #     for FtsCluster in FtsClusters:
-            #         if len(FtsCluster.X_FtsZs_DivPlane):
-            #             print(FtsCluster.Index, len(FtsCluster.Angle_FtsZs_DivPlane), FtsCluster.Angle_FtsZs_DivPlane)
+        if FtsClusters[0].ArcMode:
+            AddToDivPlane_Arc(TotalAddToDivPlane)
+
+        else:
+            AddToDivPlane(TotalAddToDivPlane)
 
     def RemoveFtsZs():
         global NumCytoFtsZ
 
-        TotalRemove = 0
+        TotalRemoveFromDivPlane = 0
         for i, FtsCluster in enumerate(FtsClusters):
             if FtsCluster.Reference >= 0:
                 continue
@@ -663,17 +679,37 @@ def Simulate():
                 continue
 
             FtsCluster.SizeZ -= ToRemove
-            TotalRemove += ToRemove
             NumCytoFtsZ[FtsCluster.SpatialIndex] += ToRemove
+
+            if abs(np.sin(FtsCluster.Angle)) > 0.5:
+                TotalRemoveFromDivPlane += ToRemove
 
         # For DivPlane
         def RemoveFromDivPlane_Arc(RemainingRemove):
-            Random = np.random.randint(0, NumAngles, RemainingRemove)
-            for j in range(RemainingRemove):
-                Idx = Random[j]
-                if FtsClusters[Idx].Angle_Stop > FtsClusters[Idx].Angle:
-                    FtsClusters[Idx].Angle_Stop -= pi / 10 / FtsClusters[Idx].Radius
-                    RemainingRemove -= 1
+
+            def GetIdxWithFtsZ():
+                IdxWithFtsZ = list()
+                for FtsCluster in FtsClusters:
+                    if FtsCluster.SizeZ_DivPlane > 0:
+                        IdxWithFtsZ.append(FtsCluster.Index)
+                return IdxWithFtsZ
+
+            RemoveFromAll = RemainingRemove // NumAngles
+            if RemoveFromAll > 0:
+                for j in range(len(FtsClusters)):
+                    FtsClusters[j].SizeZ_DivPlane -= RemoveFromAll
+                RemainingRemove -= RemoveFromAll * len(FtsClusters)
+
+            if RemainingRemove > 0:
+                IdxWithFtsZ = GetIdxWithFtsZ()
+                Random = np.random.randint(0, len(IdxWithFtsZ), RemainingRemove)
+                RandomIdxWithFtsZ = [IdxWithFtsZ[RandomNumber] for RandomNumber in Random]
+
+                for RandomIdx in RandomIdxWithFtsZ:
+                    if FtsClusters[RandomIdx].SizeZ_DivPlane > 0:
+                        FtsClusters[RandomIdx].SizeZ_DivPlane -= 1
+                        RemainingRemove -= 1
+
             if RemainingRemove > 0:
                 RemoveFromDivPlane_Arc(RemainingRemove)
 
@@ -690,10 +726,10 @@ def Simulate():
                 RemoveFromDivPlane(RemainingRemove)
 
         if FtsClusters[0].ArcMode:
-            RemoveFromDivPlane_Arc(TotalRemove)
+            RemoveFromDivPlane_Arc(TotalRemoveFromDivPlane)
 
         else:
-            RemoveFromDivPlane(TotalRemove)
+            RemoveFromDivPlane(TotalRemoveFromDivPlane)
 
         # DL: Debugging
         # if TotalRemove > 0:
@@ -701,24 +737,42 @@ def Simulate():
         #         if len(FtsCluster.X_FtsZs_DivPlane):
         #             print(FtsCluster.Index, len(FtsCluster.Angle_FtsZs_DivPlane), FtsCluster.Angle_FtsZs_DivPlane)
 
-    def TreadmillFtsZs():
+    def TreadmillFtsZs(neighbors=False):
 
-        def Constriction(Idx, scale_factor=0.9999):
+        def Constriction(Idx, scale_factor=0.999):
             FtsClusters[Idx].Radius *= scale_factor
 
         for i in range(len(FtsClusters)):
-            PrevAngle = FtsClusters[i - 1].Angle_Stop
+            PrevIdx = i - 1
+
+            PrevRadius = FtsClusters[PrevIdx].Radius
+            PrevAngle = FtsClusters[PrevIdx].Angle
+            PrevUnitAngle = GetAngleForArcDistance(PrevRadius, Radius_FtsZ / 5)
+            PrevStopAngle = PrevAngle + PrevUnitAngle * FtsClusters[PrevIdx].SizeZ_DivPlane
+
             if i == 0:
-                PrevAngle -= 2 * pi
+                PrevStopAngle -= 2 * pi
 
-            if PrevAngle > FtsClusters[i].Angle:
+            if FtsClusters[i].Angle < PrevStopAngle:
                 Constriction(i, scale_factor=0.9999)
+                Constriction(PrevIdx, scale_factor=0.9999)
 
-                # Neighbor
-                PrevIdx = i - 1
-                NextIdx = i + 1 if i + 1 < len(FtsClusters) else 0
-                Constriction(PrevIdx, scale_factor=0.99995)
-                Constriction(NextIdx, scale_factor=0.99995)
+                if neighbors:
+                    NeighborIdx1 = i - 2
+                    NeighborIdx2 = i + 1 if i + 1 < len(FtsClusters) else i - NumAngles + 2
+                    Constriction(NeighborIdx1, scale_factor=0.99995)
+                    Constriction(NeighborIdx2, scale_factor=0.99995)
+
+    def AdjustMembrane():
+        # Fts Cluster
+        MaxRadius = 0
+        for i in range(len(FtsClusters)):
+            MaxRadius = FtsClusters[i].Radius if FtsClusters[i].Radius > MaxRadius else MaxRadius
+        # for i in range(len(FtsClusters)):
+        #     FtsClusters[i].Radius = FtsClusters[i].Radius if FtsClusters[i].Radius < MaxRadius * 0.9 else MaxRadius
+
+        # Membrane
+        Membrane.Radius = MaxRadius
 
     def DiffuseFtsAs():
         pass
@@ -886,7 +940,8 @@ def Simulate():
         # FtsZ
         AddFtsZs()
         RemoveFtsZs()
-        TreadmillFtsZs()
+        TreadmillFtsZs(neighbors=True)
+        AdjustMembrane()
 
         # FtsA
         DiffuseFtsAs()
@@ -901,6 +956,8 @@ def Simulate():
             NumMemMinC = 0
             NumMemFtsA = 0
             NumMemFtsZ = 0
+            NumMemFtsZ_DivPlaneSubset = 0
+            NumDivPlaneFtsZ = 0
             print("Iter {}".format(Iter))
             for i, MinCluster in enumerate(MinClusters):
                 Angle = MinCluster.Angle
@@ -931,22 +988,19 @@ def Simulate():
                 Angle = FtsCluster.Angle
                 SizeA = FtsCluster.SizeA
                 SizeZ = FtsCluster.SizeZ
+                SizeZ_DivPlane = FtsCluster.SizeZ_DivPlane
                 Reference = FtsCluster.Reference
-                if SizeZ <= 0 and SizeA <= 0:
-                    continue
 
-                if Reference < 0:
-                    KonA = FtsCluster.KonA()
-                    KoffA = FtsCluster.KoffA()
-                    KonZ = FtsCluster.KonZ(NumCytoMinC[FtsCluster.SpatialIndex][0])
-                    KoffZ = FtsCluster.KoffZ(FtsCluster.GetLocalMembMinC(MinClusters))
-                    Log = "FtsCluster #{:<5d} rad: {:.2f}, FtsA: {:5d}, KonA: {:.2f}, KoffA: {:.2f}, FtsZ: {:5d}, KonZ: {:.2f}, KoffZ: {:.2f}".format(
-                            i, Angle, SizeA, KonA, KoffA, SizeZ, KonZ, KoffZ)
-                    print(Log + "\t| Min Ref: #{:<5d}, Fts Ref: #{:<5d}".format(MinClusters[FtsCluster.Index].Reference, Reference))
-                    NumMemFtsZ += SizeZ
-                    NumMemFtsA += SizeA
-                else:
-                    print("FtsCluster #{:<5d} Reference: #{:<5d}".format(i, Reference))
+                KonA = FtsCluster.KonA()
+                KoffA = FtsCluster.KoffA()
+                KonZ = FtsCluster.KonZ(NumCytoMinC[FtsCluster.SpatialIndex][0])
+                KoffZ = FtsCluster.KoffZ(FtsCluster.GetLocalMembMinC(MinClusters))
+                Log = "FtsCluster #{:<5d} rad: {:.2f}, FtsA: {:5d}, KonA: {:.2f}, KoffA: {:.2f}, FtsZ: {:5d}, KonZ: {:.2f}, KoffZ: {:.2f}".format(
+                        i, Angle, SizeA, KonA, KoffA, SizeZ, KonZ, KoffZ)
+                print(Log + "\t| Min Ref: #{:<5d}, Fts Ref: #{:<5d}".format(MinClusters[FtsCluster.Index].Reference, Reference))
+                NumMemFtsZ += SizeZ
+                NumMemFtsA += SizeA
+                NumDivPlaneFtsZ += SizeZ_DivPlane
 
             print("cMinD: {:5d}, mMinD: {:5d}".format(NumCytoMinD, NumMemMinD))
             assert NumCytoMinD + NumMemMinD == NumMinD
@@ -956,8 +1010,9 @@ def Simulate():
             print("cMinC: {:5d}, mMinC: {:5d}".format(Sum_NumCytoMinC, NumMemMinC))
             assert Sum_NumCytoMinC + NumMemMinC == NumMinC
             Sum_NumCytoFtsZ = round(np.sum(NumCytoFtsZ))
-            print("cFtsZ: {:5d}, mFtsZ: {:5d}, mFtsZ/FtsZ: {:2f}".format(Sum_NumCytoFtsZ, NumMemFtsZ, NumMemFtsZ/NumFtsZ))
+            print("cFtsZ: {:5d}, mFtsZ: {:5d}, mFtsZ/FtsZ: {:2f}, mFtsZ_DivPlane: {:5d}, DivPlaneFtsZ: {:5d},".format(Sum_NumCytoFtsZ, NumMemFtsZ, NumMemFtsZ/NumFtsZ, NumMemFtsZ_DivPlaneSubset, NumDivPlaneFtsZ))
             assert Sum_NumCytoFtsZ + NumMemFtsZ == NumFtsZ
+            assert NumMemFtsZ_DivPlaneSubset <= NumMemFtsZ
             print("mFtsA: {:5d}".format(NumMemFtsA))
             assert NumMemFtsA == NumFtsA - (NumFtsA % NumAngles)
             print("\n")
@@ -974,7 +1029,8 @@ def Simulate():
                 if FtsCluster.SizeA > 0 or FtsCluster.SizeZ > 0:
                     # FtsCluster.Draw()
                     FtsCluster.Draw(show_anchor=True)
-                    FtsCluster.Draw_DivPlane(show_anchor=True)
+                    FtsCluster.Draw_DivPlane(show_anchor=False)
+                    # FtsCluster.Draw_DivPlane(show_anchor=True)
 
             DrawCytoMolecules()
 
