@@ -61,9 +61,9 @@ def GetXYFromEllipse(Shape, Angle, ratio_factor=1.0):
     Center_X, Center_Y, Width, Height = Shape
     return Center_X + Width / 2 * ratio_factor * np.cos(Angle), Center_Y + Height / 2 * ratio_factor * np.sin(Angle)
 
-def GetXYFromCenter(Center, Angle, Radius, anisotropy=1.0):
+def GetXYFromCenter(Center, Angle, Radius, ratio_factor=1.0):
     Center_X, Center_Y = Center
-    return Center_X + Radius * anisotropy * np.cos(Angle), Center_Y + Radius * np.sin(Angle)
+    return Center_X + Radius * ratio_factor * np.cos(Angle), Center_Y + Radius * ratio_factor * np.sin(Angle)
 
 def CheckIfWithinEllipse(X, Y, XYWH, membranebias_lower=1.0, membranebias_upper=1.0):
     assert membranebias_lower <= membranebias_upper
@@ -638,7 +638,7 @@ def Simulate():
                 Idx = Random[j]
                 Angle = FtsClusters[Idx].Angle + len(FtsClusters[Idx].Angle_FtsZs_DivPlane) * pi / 180
                 FtsClusters[Idx].Angle_FtsZs_DivPlane.append(Angle)
-                X, Y = GetXYFromCenter(Membrane.XY_DivPlane, Angle, FtsClusters[Idx].Radius, RatioFactor=0.9)
+                X, Y = GetXYFromCenter(Membrane.XY_DivPlane, Angle, FtsClusters[Idx].Radius, ratio_factor=0.9)
                 FtsClusters[Idx].X_FtsZs_DivPlane.append(X)
                 FtsClusters[Idx].Y_FtsZs_DivPlane.append(Y)
 
