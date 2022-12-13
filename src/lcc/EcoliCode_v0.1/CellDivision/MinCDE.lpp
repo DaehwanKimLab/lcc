@@ -18,8 +18,8 @@ pathway MinCDE
         {
             NewAngle = NewAngle - pi;
         }
-        MembraneEffect = (NewAngle - 0.5 * pi) ** 2 / MaxMembraneEffect * 1.1
-        AggregationEffect = log(max(2, Membrane~MinD_{n}), 2)
+        MembraneEffect = (NewAngle - 0.5 * pi) ** 2 / MaxMembraneEffect * 1.1;
+        AggregationEffect = log(max(2, Membrane~MinD_{n}), 2);
         return MembraneEffect * AggregationEffect;
     }
     krev_function
