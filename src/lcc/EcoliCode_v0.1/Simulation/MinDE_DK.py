@@ -395,7 +395,7 @@ class FFtsCluster(FCluster):
 
             Rect = GetRectFromCircle((self.X_DivPlane_Center, self.Y_DivPlane_Center), self.Radius, scale_factor=0.95)
             pygame.draw.arc(surface=Screen, color=self.Color_FtsZ_DivPlane, rect=Rect, start_angle=self.Angle,
-                            stop_angle=self.Angle_Stop, width=20)
+                            stop_angle=self.Angle_Stop, width=Radius_FtsZ * 2)
 
 
         if show_anchor:
@@ -702,7 +702,23 @@ def Simulate():
         #             print(FtsCluster.Index, len(FtsCluster.Angle_FtsZs_DivPlane), FtsCluster.Angle_FtsZs_DivPlane)
 
     def TreadmillFtsZs():
-        pass
+
+        def Constriction(Idx, scale_factor=0.9999):
+            FtsClusters[Idx].Radius *= scale_factor
+
+        for i in range(len(FtsClusters)):
+            PrevAngle = FtsClusters[i - 1].Angle_Stop
+            if i == 0:
+                PrevAngle -= 2 * pi
+
+            if PrevAngle > FtsClusters[i].Angle:
+                Constriction(i, scale_factor=0.9999)
+
+                # Neighbor
+                PrevIdx = i - 1
+                NextIdx = i + 1 if i + 1 < len(FtsClusters) else 0
+                Constriction(PrevIdx, scale_factor=0.99995)
+                Constriction(NextIdx, scale_factor=0.99995)
 
     def DiffuseFtsAs():
         pass
