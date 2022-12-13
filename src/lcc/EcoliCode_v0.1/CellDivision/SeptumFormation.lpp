@@ -25,7 +25,9 @@ pathway SeptumFormation
             FtsZ_Treadmilling = Divisome.Divisome.FtsZ_Treadmilling;
         }
 
-        FtsA(rand(-0.1, 0.1) um, rand(-0.5, 0.5) um, rand(-0.5, 0.5) um) = 1nM;
+
+        // CP: removed units after function call
+        FtsA(rand(-0.1, 0.1), rand(-0.5, 0.5), rand(-0.5, 0.5)) = 1nM;
 
         // special lipid at the midline
 
@@ -37,7 +39,8 @@ pathway SeptumFormation
                 NucExchange = FtsZ.NucExchange;
                 Nucleation = FtsZ.Nucleation;
                 Polymerization = FtsZ.Polymerization;
-                FtsZInhibition
+                // CP: Added reaction keyword
+                reaction FtsZInhibition
                 {
                     MonomerSequestration = MinC.FtsZSequestration;
                     PolymerInhibition = MinD.FtsZInhibition;

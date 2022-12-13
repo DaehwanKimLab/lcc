@@ -21,7 +21,8 @@ protein ParA // similar to MinD
     reaction ParBSRecruitment(ParA_Dimer + ParBS{in} --> ParA_Dimer~ParBS, k = 1e9);
 }
 
-virtual protein ParX // imaginery protein to build an artificial chromosome segregation system, which act like MinE in MinCDE system.
+// CP: removed 'virtual' keyword
+protein ParX // imaginery protein to build an artificial chromosome segregation system, which act like MinE in MinCDE system.
 {
     reaction Dimerization(2 self --> self~self, Kd = 1e-9);
     ParX_Dimer = self~self;
@@ -30,7 +31,8 @@ virtual protein ParX // imaginery protein to build an artificial chromosome segr
     reaction MembraneDetatchment(ParX_Dimer~(ParA~GDP)~(ParA~GDP) --> ParX_Dimer{in} + (ParA~GDP)~(ParA~GDP){in}, k=1e9);
 }
 
-reference Merino-Salomon_2021
+// CP: changed - to _
+reference Merino_Salomon_2021
 {
     title = "Self-organized protein patterns: The MinCDE and ParABS systems";
     doi = "https://doi.org/10.1016/j.ceb.2021.07.001";
