@@ -6,7 +6,8 @@
 
 membrane Membrane;
 
-pathway FlagellarRotation(Membrane, bRun) // bRun is a boolean parameter
+// CP
+reaction FlagellarRotation(Membrane, bRun) // bRun is a boolean parameter
 specification
 {
     Ang = Membrane.phi;

@@ -10,7 +10,7 @@ MinC = MinCDE.MinC;
 complex Divisome
 {
     Divisome = FtsA~(FtsZ_{n});   // FtsZ is a cytosolic protein, whereas FtsA is an integral membrane protein
-    reaction DivisomeFormation(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})); // FtsZ monomer recruitment and polymerization (n can be 0, as well)
+    reaction DivisomeFormation(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})) // FtsZ monomer recruitment and polymerization (n can be 0, as well)
     k_function
     {
         return FtsA / max(1, MinC{in});
