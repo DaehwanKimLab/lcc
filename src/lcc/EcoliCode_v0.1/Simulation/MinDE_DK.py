@@ -90,6 +90,7 @@ def GetAngleForArcDistance(Radius, ArcDistance):
 
 # pygame
 pygame.init()
+Report = False # For debugging report
 
 Title = 'MinCDE and FtsZ Ring'
 pygame.display.set_caption(Title)
@@ -110,7 +111,7 @@ MID_Y = H_S / 2
 ScaleFactor_Dimension = 2.2
 W_Ecoli = int(2000 / ScaleFactor_Dimension)
 H_Ecoli = int(1000 / ScaleFactor_Dimension)
-NumAngles = 100
+NumAngles = 150
 
 # X-section along the axis of division of E coli
 Offset_DivAxis_X = - W_S * 7 / 40
@@ -147,6 +148,7 @@ NumCytoFtsZ[CytoCompartment_Rows // 2, CytoCompartment_Columns // 2] = NumFtsZ
 # Drawing
 ScaleFactor_Quantity = 0.4
 ScaleFactor_Refresh = 50
+ScaleFactor_PhysicalDistance = NumAngles / 40
 
 Radius_Anchor = 4
 Radius_MinD = 4
@@ -341,7 +343,7 @@ class FFtsCluster(FCluster):
         return self.SizeA / max(1, LocalCytoMinC)
 
     def KoffZ(self, LocalMembMinC):
-        return LocalMembMinC
+        return 0.5 + LocalMembMinC
 
     def GetLocalMembMinC(self, MinClusters):
         if MinClusters[self.Index].SizeD > 0:
@@ -401,7 +403,7 @@ class FFtsCluster(FCluster):
 
         def DisplayFtsZ_DivPlane_Arc():
             Rect = GetRectFromCircle((self.X_DivPlane_Center, self.Y_DivPlane_Center), self.Radius, scale_factor=0.95)
-            UnitAngle = GetAngleForArcDistance(self.Radius, Radius_FtsZ / 5)
+            UnitAngle = GetAngleForArcDistance(self.Radius, Radius_FtsZ / ScaleFactor_PhysicalDistance)
             StopAngle = self.Angle + UnitAngle * self.SizeZ_DivPlane
             pygame.draw.arc(surface=Screen, color=self.Color_FtsZ_DivPlane, rect=Rect, start_angle=self.Angle,
                             stop_angle=StopAngle, width=Radius_FtsZ * 2)
@@ -739,29 +741,36 @@ def Simulate():
 
     def TreadmillFtsZs(neighbors=False):
 
-        def Constriction(Idx, scale_factor=0.999):
-            FtsClusters[Idx].Radius *= scale_factor
+        def Constriction(Idx):
+            FtsClusters[Idx].Radius -= 0.01
 
-        for i in range(len(FtsClusters)):
-            PrevIdx = i - 1
+        for Idx in range(len(FtsClusters)):
+            UnitAngle = GetAngleForArcDistance(FtsClusters[Idx].Radius, Radius_FtsZ / ScaleFactor_PhysicalDistance)
+            StopAngle = FtsClusters[Idx].Angle + UnitAngle * FtsClusters[Idx].SizeZ_DivPlane
 
-            PrevRadius = FtsClusters[PrevIdx].Radius
-            PrevAngle = FtsClusters[PrevIdx].Angle
-            PrevUnitAngle = GetAngleForArcDistance(PrevRadius, Radius_FtsZ / 5)
-            PrevStopAngle = PrevAngle + PrevUnitAngle * FtsClusters[PrevIdx].SizeZ_DivPlane
+            i = 1
+            while i > 0:
+                IdxToCompare = Idx + i
 
-            if i == 0:
-                PrevStopAngle -= 2 * pi
+                if Idx + i >= len(FtsClusters):
+                    IdxToCompare -= len(FtsClusters)
 
-            if FtsClusters[i].Angle < PrevStopAngle:
-                Constriction(i, scale_factor=0.9999)
-                Constriction(PrevIdx, scale_factor=0.9999)
+                AngleToCompare = FtsClusters[IdxToCompare].Angle
 
-                if neighbors:
-                    NeighborIdx1 = i - 2
-                    NeighborIdx2 = i + 1 if i + 1 < len(FtsClusters) else i - NumAngles + 2
-                    Constriction(NeighborIdx1, scale_factor=0.99995)
-                    Constriction(NeighborIdx2, scale_factor=0.99995)
+                if FtsClusters[Idx].Angle > AngleToCompare:
+                    AngleToCompare += 2 * pi
+
+                if AngleToCompare < StopAngle:
+                    if i == 1:
+                        Constriction(Idx)
+                    Constriction(IdxToCompare)
+                    i += 1
+
+                    # Limit how many neighbors to check
+                    if i > 5:
+                        i = 0
+                else:
+                    i = 0
 
     def AdjustMembrane():
         # Fts Cluster
@@ -949,7 +958,7 @@ def Simulate():
         # Diffusion: MinC, FtsZ
         DiffuseCytoMolecules()
 
-        if Iter % 100 == 0:
+        if Report and Iter % 100 == 0:
         # if True:
             NumMemMinD = 0
             NumMemMinE = 0
