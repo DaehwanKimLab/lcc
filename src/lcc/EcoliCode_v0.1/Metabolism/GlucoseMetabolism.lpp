@@ -3,20 +3,38 @@
 // Donghoon M. Lee and Daehwan Kim
 // Glucose Metabolism
 
+import GlucoseTransport;
 import Glycolysis;
 import PyruvateOxidation;
 import CitrateCycle;
 import OxidativePhosphorylation;
-import GlucoseTransport;
 
 pathway GlucoseMetabolism
 {
-    GlucoseTransporter = GlucoseTransport.GlucoseTransport;
+    membrane CellMembrane
+    {
+        GlucoseTransporter = GlucoseTransport.GlucoseTransport;
 
-    Glycolysis = Glycolysis.Glycolysis;
-    PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
-    CitrateCycle = CitrateCycle.CitrateCycle;
-    OxidativePhosphorylation = OxidativePhosphorylation.OxidativePhosphorylation;
+        cytosol Cytosol
+        {
+            Glycolysis = Glycolysis.Glycolysis;
+            PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
+            CitrateCycle = CitrateCycle.CitrateCycle;
+            OxidativePhosphorylation = OxidativePhosphorylation.OxidativePhosphorylation;
+
+        G6P = 8.8 mM;
+        ATP = 9.6 mM;
+        ADP = 0.56 mM;
+        NADH = 8.3 mM;
+        NAD = 2.6 mM;
+        pyruvate = 0.39 mM; 
+        CoA_SH[:] = 1.4 mM;
+        acetyl_CoA = 0.61 mM;
+        FADH2 = 0.5 mM;
+        FAD = 0.17 mM;
+        Malate = 1.7 mM;
+        }
+    }
 }
 
 reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.

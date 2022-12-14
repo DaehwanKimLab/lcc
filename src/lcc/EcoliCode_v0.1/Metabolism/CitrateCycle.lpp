@@ -19,13 +19,3 @@ specification
     CoA_SH' = - acetyl_CoA';
     Malate' = 0;
 }
-
-ATP = 9.6e-3 M;
-ADP = 5.6e-4 M;
-NAD = 2.6e-3 M;
-NADH = 8.3e-3 M;
-CoA_SH[:] = 1.4e-3 M;
-acetyl_CoA = 6.1e-4 M;
-FAD = 1.7e-4 M;
-FADH2 = 5e-4 M;
-Malate = 1.7e-3 M;   // for TCA cycle capacity

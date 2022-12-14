@@ -3,7 +3,6 @@
 // Donghoon M. Lee and Daehwan Kim
 
 // Bacterial Chemotaxis
-
 import BacterialChemotaxis;
 import FlagellarRotation;
 

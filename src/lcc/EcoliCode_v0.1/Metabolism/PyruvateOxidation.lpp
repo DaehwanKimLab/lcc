@@ -15,9 +15,3 @@ specification
     acetyl_CoA' = acetyl_CoA';
     NADH' = acetyl_CoA';
 }
-
-pyruvate = 3.9e-4 M;
-CoA_SH = 1.4e-3 M;
-acetyl_CoA = 6.1e-4 M;
-NAD = 2.6e-3 M;
-NADH = 8.3e-3 M;

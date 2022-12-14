@@ -10,17 +10,15 @@
 // []: absolute time
 // {}: positional reference (subject to reivision)
 
-import SigmaFactor;
-
+protein SigmaFactor;
 protein RpoB, RpoC, RpoA, RpoZ;
-// CP: Added Sigmafactor
-sigmafactor Sigmafactor;
+
 complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
 complex RNAPHolo
 {
     // CP: changed to Sigmafactor
     reaction SigmaFactorBinding(RNAPCore + Sigmafactor, Kd=1e-7);
-    reaction PromotorBinding(self + promoter --> self~promoter);
+    reaction PromotorBinding(self + promoter --> self~promoter, Kd=1e-7);
 }
 
 polymerase RNAP

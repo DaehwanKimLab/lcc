@@ -16,10 +16,3 @@ specification
     G6P'  = ATP' / 2;
     pyruvate' = G6P' * 2;
 }
-
-G6P = 8.8e-3 M;
-ADP = 5.6e-4 M;
-NAD = 2.6e-3 M;
-NADH = 8.3e-3 M;
-ATP = 9.6e-3 M;
-pyruvate = 3.9e-4 M; 

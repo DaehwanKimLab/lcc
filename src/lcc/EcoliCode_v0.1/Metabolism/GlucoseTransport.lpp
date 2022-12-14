@@ -13,7 +13,3 @@ specification
     G6P' = Glucose/G6P * cgt;
     Glucose' = - G6P';
 }
-
-G6P = 8.8e-3 M;
-ATP = 9.6e-3 M;
-ADP = 5.6e-4 M;

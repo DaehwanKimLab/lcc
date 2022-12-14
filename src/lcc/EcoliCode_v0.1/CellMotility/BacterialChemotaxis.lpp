@@ -24,7 +24,6 @@ protein CheAm
 reaction CheAm_LigandBinding(CheAm + L{out} --> CheAmL, k=1e9, krev=1);
 reaction CheA_LigandBinding(CheA + L{out} --> CheAL, k=1e9, krev=1);
 
-// more complete model found below
 reference BitbolWingreen_2015
 {
     title = "Fundamental Constraints on the Abundances of Chemotaxis Proteins.";

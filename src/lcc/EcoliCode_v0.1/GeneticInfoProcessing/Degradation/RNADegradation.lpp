@@ -6,5 +6,5 @@
 
 pathway RNADegradation
 {
-    protein Ribonuclease(rna_{n} --> n * NTP, KM=1e6);
+    protein Ribonuclease(Rna_{n} --> n * NTP, KM=1e-6);
 }

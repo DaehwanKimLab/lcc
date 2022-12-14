@@ -3,7 +3,6 @@
 // Donghoon M. Lee and Daehwan Kim
 
 // Flagellar Rotation
-
 membrane Membrane;
 
 // CP
@@ -13,7 +12,7 @@ specification
     Ang = Membrane.phi;
     Pos = Membrane.position;
 
-    cdist = 10nm/s; // constant for displacement
+    cdist = 2.5e-5; // 25 micrometer/second velocity from BergBrown_1972
     crot = rand(0, 2 * pi); // constant for rotation
 
     if (bRun)
@@ -26,4 +25,10 @@ specification
         Pos' = cdist / 3;
         Ang' = crot;
     }
+}
+
+reference BergBrown_1972
+{
+    title = "Chemotaxis in Escherichia coli analysed by three-dimensional tracking";
+    doi = "https://doi.org/10.1038/239500a0";
 }
