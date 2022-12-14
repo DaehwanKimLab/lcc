@@ -37,7 +37,7 @@ pathway MinCDE
         return max(0, Membrane~MinE_{n} - Membrane~MinD_{m});
     }
 
-    reaction MinC_MembraneRecruitment(MinD_Dimer + MinC_Dimer{in} --> MinD_Dimer~MinC_Dimer, k = 1e9)
+    reaction MinC_MembraneRecruitment(Membrane~MinD_{n} + MinC{in} --> Membrane~MinD_{n}~MinC)
     k_function
     {
         return MinD_MembraneRecruitment.k_function() * 0.2;
@@ -47,10 +47,6 @@ pathway MinCDE
         return max(0, Membrane~MinC_{n} - Membrane~MinD_{m});
     }
 }
-
-MinD = 4928; // # of proteins, Ramm_2019 Table 1
-MinC = 163; // # of proteins, Ramm_2019 Table 1
-MinE = 4004; // # of proteins, Ramm_2019 Table 1
 
 reference Ramm_2019
 {

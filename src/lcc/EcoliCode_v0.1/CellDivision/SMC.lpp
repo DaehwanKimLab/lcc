@@ -4,38 +4,30 @@
 
 // SMC (Structural Maintenance of the Chromosome)
 
+import MinCDE;
+
 // tripartite MukBEF complex for E coli
 protein MukB, MukE, MukF;
 
 complex MukBEF // condenses chromosomes with long-ranged (scales > 280 kb) intra-chromosomal contacts
 {
-    MukBEF_Dimer = self~self;
-    reaction Complexation(2 MukB + 2 MukE + MukF + ssDNA, Kd = 1e-9);
-    reaction Dimerization(2 self + ssDNA--> MukBEF_Dimer~ssDNA, Kd = 1e-9);
-    reaction Condensation(2 MukBEF_Dimer~ssDNA --> (MukBEF_Dimer~ssDNA)~(MukBEF_Dimer~ssDNA), Kd = 1e-9);
-    // MukBEF_DimerOfDimer = (MukBEF_Dimer~ssDNA)~(MukBEF_Dimer~ssDNA);
-}
-
-// CP: removed #if ~ #endif
-/*
-// DK
-#if 0
-complex MukBEF // condenses chromosomes with long-ranged (scales > 280 kb) intra-chromosomal contacts
-{
     reaction Complexation(2 MukB + 2 MukE + MukF, Kd = 1e-9);
-    reaction Dimerization(MukBEF + MukBEF --> MukBEF_Dimer, Kd = 1e-9);
-    reaction Condensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80, n+120} --> (MukBEF~dsDNA{n})~(MukBEF~dsDNA{n+80, n+120}), Kd = 1e-9);
+    reaction Dimerization(2 self --> MukBEF_Dimer, Kd = 1e-9);
+    reaction DNACondensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80, n+120} --> (MukBEF~dsDNA{n})~(MukBEF~dsDNA{n+80, n+120}), Kd = 1e-9);
 }
-#endif
-*/
 
-// antagonist system to MukBEF to prevent chromosome rotation during the division
-// DNA matS;
-// protein MatP; // binds matS sites to prevent MukBEF-induced long-range contacts in the ter macrodomain.
+// novel adaptor reaction for MukBEF
+MinD = MinCDE.MinD;
 
-// XerCD/dif system
-// DNA dif;
-// protein XerC, XerD; // bind at the dif site in the terminus domain and catalyze the resolution of chromosome dimers that arise as a result of replication
+reaction MukBEF_MembraneRecruitment(Membrane~MinD_{n} + MukBEF{in} --> Membrane~MinD_{n}~MukBEF)
+k_function
+{
+    return MinCDE.MinD_MembraneRecruitment.k_function() * 0.2;
+}
+krev_function
+{
+    return max(0, Membrane~MukBEF_{n} - Membrane~MinD_{m});
+}
 
 reference Gogou_2021
 {

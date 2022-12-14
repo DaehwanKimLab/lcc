@@ -7,6 +7,8 @@
 import Divisome;
 import MinCDE;
 
+ZRing = Divisome.ZRing;
+
 pathway SeptumFormation
 {
     membrane CellMembrane
@@ -20,34 +22,22 @@ pathway SeptumFormation
 
         pathway Cytokinesis
         {
-            DivisomeFormation = Divisome.Divisome.DivisomeFormation;
-            InterFtsZPolymerBinding = Divisome.Divisome.InterFtsZPolymerBinding;
-            FtsZ_Treadmilling = Divisome.Divisome.FtsZ_Treadmilling;
+            FtsZ_MembraneRecruitment = ZRing.FtsZ_MembraneRecruitment;
+            FtsZ_Crosslinking = ZRing.FtsZ_Crosslinking;
+            FtsZ_Treadmilling = ZRing.FtsZ_Treadmilling;
         }
 
-
         // CP: removed units after function call
-        FtsA(rand(-0.1, 0.1), rand(-0.5, 0.5), rand(-0.5, 0.5)) = 1nM;
-
-        // special lipid at the midline
+        // DL: removed spatial coordinates and assume uniform distribution
+        FtsA = 792; // Schmidt_2016 from LB dataset
 
         cytosol Cytosol
         {
-            reaction FtsPolymerization
-            {
-                GDPBinding = FtsZ.GDPBinding;
-                NucExchange = FtsZ.NucExchange;
-                Nucleation = FtsZ.Nucleation;
-                Polymerization = FtsZ.Polymerization;
-                // CP: Added reaction keyword
-                reaction FtsZInhibition
-                {
-                    MonomerSequestration = MinC.FtsZSequestration;
-                    PolymerInhibition = MinD.FtsZInhibition;
-                }
-            }
-            
-            FtsZ = 10nM;
+            MinC = 163;
+            MinD = 4928;
+            MinE = 4004;
+
+            FtsZ = 7898; // Schmidt_2016 from LB dataset
         }
     }
 }
@@ -58,3 +48,14 @@ reference CorbinErickson_2020
     doi = "https://doi.org/10.1016/j.bpj.2020.05.041";
 }
 
+reference Ramm_2019
+{
+    title = "The E. coli MinCDE system in the regulation of protein patterns and gradients";
+    doi = "https://doi.org/10.1007/s00018-019-03218-x";
+}
+
+reference Schmidt_2016
+{
+    title = "The quantitative and condition-dependent Escherichia coli proteome";
+    doi = "https://doi.org/10.1038/nbt.3418";
+}

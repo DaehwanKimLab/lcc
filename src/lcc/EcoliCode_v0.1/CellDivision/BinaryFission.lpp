@@ -4,13 +4,13 @@
 
 // Binary Fission
 
-import GeneticInfoProcessing.Replication.Replication;
+import DNAReplication.DNAReplication;
 import DNASegregation;
 import SeptumFormation;
 
 pathway BinaryFission
 {
-    DNAReplication = GeneticInfoProcessing.Replication.Replication.Replication;
+    DNAReplication = DNAReplication.DNAReplication.DNAReplication;
     DNASegregation = DNASegregation.DNASegregation;
     SeptumFormation = SeptumFormation.SeptumFormation;
 }

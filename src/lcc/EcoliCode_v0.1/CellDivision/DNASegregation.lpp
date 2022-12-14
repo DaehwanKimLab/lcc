@@ -4,11 +4,7 @@
 
 // DNA Segregation
 
-import ParABS; // temporary system, not native to E coli.
 import SMC;
-
-ParA = ParABS.ParA;
-ParB = ParABS.ParB;
 
 MukBEF = SMC.MukBEF;
 
@@ -16,24 +12,17 @@ pathway DNASegregation
 {
     membrane CellMembrane
     {
-        reaction ParARecruitment = ParA.MembraneRecruitment;
-        reaction ParBSRecruitment = ParA.ParBSRecruitment;
-        reaction ParBSRelease = ParX.MembraneRecruitment;
-        reaction ParAInactivation = ParX.ATPaseActivity;
-        reaction MembraneDetatchment = ParX.MembraneDetatchment;
+        MukBEF_MembraneRecruitment = MukBEF_MembraneRecruitment;
 
         cytosol Cytosol
         {
-            reaction ParBDimerization = ParB.Dimerization;
-            reaction ChromosomeBinding = ParB.DNABinding;
-            reaction ParXDimerization = ParX.Dimerization;
-
-            pathway ChromosomeCondensation
-            {
-                reaction MukBEFAssembly = MukBEF.Complexation;
-                reaction MukBEFDimerization = MukBEF.Dimerization;
-                reaction Condensation = MukBEF.Condensation;
-            }
+            MukBEF_Complexation = MukBEF.Complexation;
+            MukBEF_Dimerization = MukBEF.Dimerization;
+            DNACondensation = MukBEF.DNACondensation;
+            
+            MukB = 463;
+            MukE = 683;
+            MukF = 122;
         }
     }
 }

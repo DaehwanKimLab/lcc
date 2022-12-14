@@ -8,7 +8,7 @@ import ReplicationOrigin;
 import ReplicationTerminus;
 import DNAPolymerase;
 
-pathway Replication 
+pathway DNAReplication 
 {
     protein DnaA = ReplicationOrigin.DnaA;
     protein Tus = ReplicationTerminus.Tus;
