@@ -6,5 +6,8 @@
 
 pathway ProteinDegradation
 {
-    protein Protease(protein_{n} --> n AA, k=1e3);
+    // CP
+    // changed 'protein' to 'Protein', and k to KM
+    // coefficient with variable(not constant)
+    protein Protease(Protein_{n} --> n * AA, KM=1e3);
 }

@@ -5,12 +5,13 @@
 // Glucose Transport
 
 // temporary code with limited parsing
-reaction GlucoseTransport(glucose{out} --> G6P{in})
+// CP: glucose -> Glucose
+reaction GlucoseTransport(Glucose{out} --> G6P{in})
 specification
 {
     float cgt = 0.5 M;
-    G6P' = glucose/G6P * cgt;
-    glucose' = - G6P';
+    G6P' = Glucose/G6P * cgt;
+    Glucose' = - G6P';
 }
 
 G6P = 8.8e-3 M;

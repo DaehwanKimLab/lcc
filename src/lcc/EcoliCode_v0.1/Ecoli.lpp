@@ -9,7 +9,8 @@ import CellMotility.CellMotility;
 import GeneticInfoProcessing.Degradation.ProteinDegradation;
 import GeneticInfoProcessing.Degradation.RNADegradation;
 import GeneticInfoProcessing.Transcription.Transcription;
-import GeneticInfoProcessing.Translation.Translation;
+// CP
+//import GeneticInfoProcessing.Translation.Translation;
 import Metabolism.GlucoseMetabolism;
 
 organism Ecoli
@@ -31,7 +32,8 @@ organism Ecoli
     }
 }
 
-glucose L(800, 500, 0) = 100nmol;
+glucose L;
+L(800, 500, 0) = 100nmol;
 Ecoli(500, 600, 0) = 1;
 
 reference RaetzDowhan_1990

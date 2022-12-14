@@ -16,6 +16,8 @@ complex MukBEF // condenses chromosomes with long-ranged (scales > 280 kb) intra
     // MukBEF_DimerOfDimer = (MukBEF_Dimer~ssDNA)~(MukBEF_Dimer~ssDNA);
 }
 
+// CP: removed #if ~ #endif
+/*
 // DK
 #if 0
 complex MukBEF // condenses chromosomes with long-ranged (scales > 280 kb) intra-chromosomal contacts
@@ -25,6 +27,7 @@ complex MukBEF // condenses chromosomes with long-ranged (scales > 280 kb) intra
     reaction Condensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80, n+120} --> (MukBEF~dsDNA{n})~(MukBEF~dsDNA{n+80, n+120}), Kd = 1e-9);
 }
 #endif
+*/
 
 // antagonist system to MukBEF to prevent chromosome rotation during the division
 // DNA matS;

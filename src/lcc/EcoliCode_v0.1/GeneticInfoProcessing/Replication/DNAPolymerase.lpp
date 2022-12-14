@@ -29,7 +29,8 @@ complex Replisome
         float R = 1000.0;
         reaction dsDNAUnwinding(self~dsDNA --> self~ssDNA + ssDNA, r=R); // rate of initiation?
         reaction DNATranslocation(self~dsDNA{n} --> self~dsDNA{n+1}, r=R);
-        reaction Elongation(DNA_{n} + dNTP + 3 ATP --> DNA_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+        // CP: changed DNA to Dna
+        reaction Elongation(Dna_{n} + dNTP + 3 ATP --> Dna_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
     }
     reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) --> self~dsDNA, r=1);
     
@@ -37,7 +38,8 @@ complex Replisome
     reaction Termination(self~dsDNA + Tus~Ter.ter --> self + dsDNA + Tus~Ter.ter, Kd=1e-10);
 }
 
-DnaB, DnaC, DnaG, DnaE, DnaQ, GyrAB = 5nM;
+// CP
+DnaB = DnaC = DnaG = DnaE = DnaQ = GyrAB = 5nM;
 
 reference Xu_Dixon_2018
 {

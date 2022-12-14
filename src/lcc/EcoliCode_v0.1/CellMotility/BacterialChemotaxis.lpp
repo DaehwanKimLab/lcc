@@ -6,7 +6,8 @@
 protein CheR
 {
     reaction CheA_Methylation(CheA --> CheAm, kcat=1, KM=1e-10nM);
-    reaction CheAL_Methylation(CheAL --> CheAmL, kcat=1, kM=1e-10nM);
+    // CP: changed from kM to KM
+    reaction CheAL_Methylation(CheAL --> CheAmL, kcat=1, KM=1e-10nM);
 }
 
 protein CheBP

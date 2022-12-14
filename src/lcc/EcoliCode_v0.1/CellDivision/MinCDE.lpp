@@ -6,7 +6,7 @@
 pathway MinCDE
 {
     // protein MinD, MinE, MinC;
-    Membrane Membrane;
+    membrane Membrane;
 
     reaction MinD_MembraneRecruitment(Membrane~MinD_{n} + MinD {in} --> Membrane~MinD_{n+1}) // n may be 0
     k_function
