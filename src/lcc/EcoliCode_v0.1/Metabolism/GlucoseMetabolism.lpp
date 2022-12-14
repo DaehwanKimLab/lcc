@@ -24,6 +24,7 @@ reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.
     title = "Bacterial Physiology and Metabolism.";
     page = "191";
     table = "6.10";
-    page += "192";
-    table += "6.11";
+    // CP: += -> =
+    page = "192";
+    table = "6.11";
 } 

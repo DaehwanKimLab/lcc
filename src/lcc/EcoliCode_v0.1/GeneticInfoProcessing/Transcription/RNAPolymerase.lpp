@@ -13,17 +13,20 @@
 import SigmaFactor;
 
 protein RpoB, RpoC, RpoA, RpoZ;
+// CP: Added Sigmafactor
+sigmafactor Sigmafactor;
 complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
 complex RNAPHolo
 {
-    reaction SigmaFactorBinding(RNAPCore + sigmafactor, Kd=1e-7);
+    // CP: changed to Sigmafactor
+    reaction SigmaFactorBinding(RNAPCore + Sigmafactor, Kd=1e-7);
     reaction PromotorBinding(self + promoter --> self~promoter);
 }
 
 polymerase RNAP
 {
     // transcription initiation
-    reaction SigmaFactorRelease(RNAPHolo~promoter --> self~dsDNA + sigmafactor + promoter, Kd=1e-7);
+    reaction SigmaFactorRelease(RNAPHolo~promoter --> self~dsDNA + Sigmafactor + promoter, Kd=1e-7);
     
     // transcription elongation
     reaction Elongation
@@ -31,9 +34,11 @@ polymerase RNAP
         float R = 60.0;
         reaction dsDNAUnwinding(self~dsDNA{n-10:n+10} --> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, r=R);
         reaction DNATranslocation(self.ssDNA{n} --> self.ssDNA{n+1}, r=R);
-        reaction RNAElongation(self~RNA_{n} + c(NTP) + self.ssDNA.N{n} + 3 ATP --> self~RNA_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+        // CP: RNA to Rna
+        reaction RNAElongation(self~Rna_{n} + c(NTP) + self.ssDNA.N{n} + 3 ATP --> self~Rna_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
     }
     
     // transcription termination
-    reaction IntrinsicTermination(self~RNA.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + RNA, Kd=1e-7);
+    // CP: RNA to Rna
+    reaction IntrinsicTermination(self~Rna.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + Rna, Kd=1e-7);
 }

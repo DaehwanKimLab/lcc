@@ -6,7 +6,7 @@
 
 // temporary code with limited parsing
 reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
-mathfunc
+specification
 {
     float cp = 0.003 M;
     acetyl_CoA' = (pyruvate / acetyl_CoA) * cp;
