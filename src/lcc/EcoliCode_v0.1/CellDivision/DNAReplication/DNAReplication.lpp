@@ -2,38 +2,45 @@
 // © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
-// Replication
+// DNA Replication
 
-import ReplicationOrigin;
-import ReplicationTerminus;
 import DNAPolymerase;
+
+DnaA = DNAPolymerase.DnaA;
+Tus = DNAPolymerase.Tus;
+DNAP = DNAPolymerase.DNAP;
 
 pathway DNAReplication 
 {
-    protein DnaA = ReplicationOrigin.DnaA;
-    protein Tus = ReplicationTerminus.Tus;
-    complex DNAP = DNAPolymerase.Replisome;
-
     reaction Initiation
     {
-        reaction DnaAPhosphorylation = DnaA.ATPBinding;
-        reaction DnaABoxBinding = DnaA.DnaABoxBinding;
-        reaction DNAPIIIAssembly = DNAPolymerase.DNAPIII.DNAPIII;
-        reaction DNAPAssembly = DNAP.Complexation;
-        reaction DNABinding = DNAP.DNABinding;
+        DnaA_OriBinding = DnaA.OriBinding;
+        DNAP_Complexation = DNAP.Complexation;
+        DNAP_DNABinding = DNAP.DNABinding;
     }
 
     reaction Elongation
     {
-        reaction dsDNAUnwinding = DNAP.Polymerization.dsDNAUnwinding;
-        reaction DNATranslocation = DNAP.Polymerization.DNATranslocation;
-        reaction Elongation = DNAP.Polymerization.Elongation;
-        reaction OligoSynthesis = DNAP.OligoSynthesis;
+        dsDNAUnwinding = DNAP.Elongation.dsDNAUnwinding;
+        DNATranslocation = DNAP.Elongation.DNATranslocation;
+        DNAElongation = DNAP.Elongation.DNAElongation;
+        OligoSynthesis = DNAP.OligoSynthesis;
     }
     
     reaction Termination
     {
-        reaction TusTerBinding = Tus.TerBinding;
-        reaction Termination = DNAP.Termination;
+        Tus_TerBinding = Tus.TerBinding;
+        DNAP_Termination = DNAP.Termination;
     }
+
+    DNAP = 40;
+    DnaA = 134;
+    Tus = 32;
+    dNTP[:] = 0.1mM;
+}
+
+reference MakiKornberg_1985
+{
+    title = "The polymerase subunit of DNA polymerase III of Escherichia coli. II. Purification of the alpha subunit, devoid of nuclease activities.";
+    doi = "https://doi.org/10.1016/S0021-9258(17)38825-7";
 }
