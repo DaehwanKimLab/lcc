@@ -30,8 +30,7 @@ complex DNAP // Replisome
         float R = 1000.0;
         reaction dsDNAUnwinding(self~dsDNA --> self~ssDNA + ssDNA, r=R);
         reaction DNATranslocation(self~dsDNA{n} --> self~dsDNA{n+1}, r=R);
-        // CP: changed DNA to Dna
-        reaction DNAElongation(Dna_{n} + dNTP + 3 ATP --> Dna_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+        reaction DNAElongation(Dna_{n} + dNTP + 3 ATP --> Dna_{n+1} + 3 ADP, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
     }
     reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) --> self~dsDNA, r=100.0);
     
