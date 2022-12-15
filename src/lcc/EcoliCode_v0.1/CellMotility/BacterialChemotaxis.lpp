@@ -11,13 +11,13 @@ protein CheR
 }
 
 protein CheB;
-
 protein CheBP
 {
     reaction CheAm_Demethylation(CheAm --> CheA, kcat=200, KM=1nM);
     reaction CheAmL_Demethylation(CheAmL --> CheAL, kcat=1, KM=1nM);
 }
 
+protein CheA;
 protein CheAm
 {
     reaction CheB_Phosphorylation(CheB --> CheBP, k=0.05e9, krev=0.005);
