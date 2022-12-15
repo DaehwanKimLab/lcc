@@ -1,3 +1,7 @@
+# BSD 3-Clause License
+# © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+# Donghoon M. Lee and Daehwan Kim
+
 import random
 import sys
 import math
@@ -27,7 +31,6 @@ MolConc["G6P"] = 8.8e-3  # all Hexose-P combined
 MolConc["ATP"] = 9.6e-3
 MolConc["ADP"] = 5.6e-4
 MolConc["NAD"] = 2.6e-3
-# MolConc["Pi"]       = 6e-3   # undocumented
 MolConc["NADH"] = 8.3e-3
 MolConc["pyruvate"] = 3.9e-4
 MolConc["acetyl-CoA"] = 6.1e-4
@@ -436,7 +439,6 @@ class FSimulation():
         self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
         self.MolConc["ADP"]      = 5.6e-4
         self.MolConc["NAD"]      = 2.6e-3
-        # self.MolConc["Pi"]       = 6e-3   # undocumented
         self.MolConc["NADH"]     = 8.3e-3
         self.MolConc["ATP"]      = 9.6e-3
         if self.ModelType[Key_GlycolysisEndProduct] == 0:
@@ -477,16 +479,14 @@ class FSimulation():
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
-        # d["Pi"] = - d["ATP"]
         d["G6P"] = - d["ATP"] / 2
-        # d["pyruvate"] = - d["G6P"] * 2
         if self.ModelType[Key_GlycolysisEndProduct] == 0:
-            d["pyruvate"] = d["ATP"]   # use when G6P is constant
+            d["pyruvate"] = d["ATP"]
             d["NADH"] = d["ATP"]
             d["NAD"] = - d["ATP"]
 
         elif self.ModelType[Key_GlycolysisEndProduct] == 1:
-            d["acetyl-CoA"] = d["ATP"]   # use when G6P is constant
+            d["acetyl-CoA"] = d["ATP"]
             d["NADH"] = d["ATP"] * 2
             d["NAD"] = - d["ATP"] * 2
 
@@ -501,7 +501,6 @@ class FSimulation():
         elif Model == 1:   # linear
             return (self.TotalSimulationTime * 1.4)
         elif Model == 2:   # non-linear
-            # self.Perturbation[PerturbationName] = (self.TotalSimulationTime * 0.1) * self.SimulationTimeUnit * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
             return (self.TotalSimulationTime * 0.1) * (self.TotalSimulationTime / 40 - (self.TotalSimulationTime / 2 - self.SimulationTimeUnit * self.SimStep) ** 2) * 1e4
         else:
             sys.exit(1)
@@ -577,7 +576,6 @@ class FSimulation():
         self.Perturbation["ATP_Sink"] = dATP
         d["ATP"] = - dATP
         d["ADP"] = dATP
-        # d["Pi"] = dATP
 
         self.AddToDeltaMolConc(d)
 
@@ -636,7 +634,6 @@ class FSimulation():
         self.MolConc["FAD"]     = 1.7e-4
         self.MolConc["NAD"]     = 2.6e-3
         self.MolConc["ADP"]     = 5.6e-4
-        # self.MolConc["Pi"]      = 6e-3   # undocumented
         self.MolConc["NADH"]    = 8.3e-3
         self.MolConc["FADH2"]   = 5e-4   # undocumented
         self.MolConc["ATP"]     = 9.6e-3
@@ -678,7 +675,6 @@ class FSimulation():
 
         d["ATP"] = dATP
         d["ADP"] = - d["ATP"]
-        # d["Pi"] = -d["ATP"]
 
         d["NADH"] = d["ATP"] * 3
         d["NAD"] = - d["NADH"]
@@ -700,7 +696,6 @@ class FSimulation():
         self.MolConc["FAD"]     = 1.7e-4
         self.MolConc["NAD"]     = 2.6e-3
         self.MolConc["ADP"]     = 5.6e-4
-        # self.MolConc["Pi"]      = 6e-3   # undocumented
         self.MolConc["NADH"]    = 8.3e-3
         self.MolConc["FADH2"]   = 5e-4   # undocumented
         self.MolConc["ATP"]     = 9.6e-3
@@ -996,8 +991,7 @@ class FModelRunner():
 
     def Model_TCACycle(self, AcetylCoALevel="Unfixed"):
         self.InitializeDatasets()
-        ModelName = "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP --> 3 NADH + FADH2 + ATP + CoA"   # Removed H2O and CO2 and H
-        # "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP + Pi + 2 H2O --> 2 CO2 + 3 NADH + FADH2 + ATP + 2 H + CoA"
+        ModelName = "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP --> 3 NADH + FADH2 + ATP + CoA"
 
         # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=(ADP/ATP)*ct"]
         TCACycleATPTypes = ["ATP'=ct", "ATP'=(ADP/ATP)*ct"]
@@ -1510,6 +1504,7 @@ def main():
     if CellDivision:
         TotalSimulationTime = 60 * 40   # s
         SimulationTimeUnit = 0.01   # s
+
     # SteadyStateBrake = False
     # SteadyStateCheckMolecule = "ATP"
     # SteadyStateThresholdFactor = 0.0000001  # Steady state threshold

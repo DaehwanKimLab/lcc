@@ -1,3 +1,7 @@
+# BSD 3-Clause License
+# © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+# Donghoon M. Lee and Daehwan Kim
+
 #!/usr/bin/env python3
 import sys
 from datetime import datetime
