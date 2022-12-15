@@ -8,6 +8,7 @@ import BacterialChemotaxis;
 import FlagellarRotation;
 
 CheA = BacterialChemotaxis.CheA;
+CheAm = BacterialChemotaxis.CheAm;
 CheR = BacterialChemotaxis.CheR;
 CheB = BacterialChemotaxis.CheB;
 CheBP = BacterialChemotaxis.CheBP;

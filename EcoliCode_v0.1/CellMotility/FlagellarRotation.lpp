@@ -12,8 +12,8 @@ specification
     Ang = Membrane.phi;
     Pos = Membrane.position;
 
-    cdist = 2.5e-5; // velocity from BergBrown_1972
-    crot = rand(0, 2 * pi); // constant for rotation
+    float cdist = 2.5e-5; // velocity from BergBrown_1972
+    float crot = rand(0, 2 * pi); // constant for rotation
 
     if (bRun)
     {
