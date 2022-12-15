@@ -4,24 +4,19 @@
 
 // E. coli Code v0.1
 
+import Metabolism.GlucoseMetabolism;
 import CellDivision.BinaryFission;
 import CellMotility.CellMotility;
-import GeneticInfoProcessing.Degradation.ProteinDegradation;
-import GeneticInfoProcessing.Degradation.RNADegradation;
 import GeneticInfoProcessing.Transcription.Transcription;
-// CP
-//import GeneticInfoProcessing.Translation.Translation;
-import Metabolism.GlucoseMetabolism;
+import GeneticInfoProcessing.Translation.Translation;
 
 organism Ecoli
 {
+    Metabolism = Metabolism.GlucoseMetabolism.GlucoseMetabolism;
     CellDivision = CellDivision.BinaryFission.BinaryFission;
-    BacterialChemotaxis = CellMotility.CellMotility.CellMotility;
-    ProteinDegradation = GeneticInfoProcessing.Degradation.ProteinDegradation.ProteinDegradation;
-    RNADegradation = GeneticInfoProcessing.Degradation.RNADegradation.RNADegradation;
+    CellMotility = CellMotility.CellMotility.CellMotility;
     Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
     Translation = GeneticInfoProcessing.Translation.Translation.Translation;
-    GlucoseMetabolism = Metabolism.GlucoseMetabolism.GlucoseMetabolism;
 
     membrane CellMembrane
     {
@@ -32,8 +27,7 @@ organism Ecoli
     }
 }
 
-glucose L;
-L(800, 500, 0) = 100nmol;
+glucose L(800, 500, 0) = 100nmol;
 Ecoli(500, 600, 0) = 1;
 
 reference RaetzDowhan_1990
@@ -48,3 +42,18 @@ reference Valgepea_2013
     doi = "DOI	https://doi.org/10.1039/C3MB70119K";
     table = "S1";
 }
+
+// for protein counts from LB dataset
+reference Schmidt_2016
+{
+    title = "The quantitative and condition-dependent Escherichia coli proteome";
+    doi = "https://doi.org/10.1038/nbt.3418";
+}
+
+reference KimGadd_2008   // To calculate ATP requirements for polymer synthesis in E coli.
+{
+    title = "Bacterial Physiology and Metabolism.";
+    doi = "https://doi.org/10.1017/CBO9780511790461";
+    page = "192";
+    table = "6.11";
+} 

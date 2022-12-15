@@ -2,14 +2,18 @@
 // © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
+// Divisome
+
 import MinCDE;
 
 MinC = MinCDE.MinC;
 
+protein FtsA, FtsZ;
+
 complex ZRing
 {
-    ZRing = FtsA~(FtsZ_{n});   // FtsZ is a cytosolic protein, whereas FtsA is an integral membrane protein
-    reaction FtsZ_MembraneRecruitment(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})) // FtsZ monomer recruitment and polymerization (n can be 0, as well)
+    ZRing = FtsA~(FtsZ_{n});
+    reaction FtsZ_MembraneRecruitment(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})) // (n can be 0, as well)
     k_function
     {
         return FtsA / max(1, MinC{in});
@@ -34,13 +38,10 @@ reference Nguyen_2021
     doi = "https://doi.org/10.1128/JB.00576-20";
 }
 
-// references for FtsZ quantity
 reference Kumar_2017
 {
     title = "Z-ring Structure and Constriction Dynamics in E. coli";
     doi = "https://doi.org/10.3389/fmicb.2017.01670";
-    // there are ~300 FtsZ proteins in low growth rate E. coli cells (generation time > 100 min) (Link et al., 1997) and 
-    // 3,000–15,000 in high growth rate E. coli (generation time ≃ 20 min) (Lu et al., 1998; Rueda et al., 2003). 
 }
 
 reference Link_1997
@@ -59,4 +60,10 @@ reference Rueda_2003
 {
     title = "Concentration and assembly of the division ring proteins FtsZ, FtsA, and ZipA during the Escherichia coli cell cycle";
     doi = "https://doi.org/10.1128/JB.185.11.3344-3351.2003";
+}
+
+reference CorbinErickson_2020
+{
+    title = "A Unified Model for Treadmilling and Nucleation of Single-Stranded FtsZ Protofilaments";
+    doi = "https://doi.org/10.1016/j.bpj.2020.05.041";
 }

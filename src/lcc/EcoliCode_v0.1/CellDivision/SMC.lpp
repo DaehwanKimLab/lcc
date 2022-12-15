@@ -6,17 +6,16 @@
 
 import MinCDE;
 
-// tripartite MukBEF complex for E coli
 protein MukB, MukE, MukF;
 
-complex MukBEF // condenses chromosomes with long-ranged (scales > 280 kb) intra-chromosomal contacts
+complex MukBEF
 {
     reaction Complexation(2 MukB + 2 MukE + MukF, Kd = 1e-9);
     reaction Dimerization(2 self --> MukBEF_Dimer, Kd = 1e-9);
-    reaction DNACondensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80, n+120} --> (MukBEF~dsDNA{n})~(MukBEF~dsDNA{n+80, n+120}), Kd = 1e-9);
+    reaction DNACondensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80} + dsDNA{n+120} --> MukBEF~dsDNA{n}~dsDNA{n+80}~dsDNA{n+120}, Kd = 1e-9);
 }
 
-// novel adaptor reaction for MukBEF
+// MinD adaptor reaction for MukBEF
 MinD = MinCDE.MinD;
 
 reaction MukBEF_MembraneRecruitment(Membrane~MinD_{n} + MukBEF{in} --> Membrane~MinD_{n}~MukBEF)

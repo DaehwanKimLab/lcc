@@ -3,12 +3,13 @@
 // Donghoon M. Lee and Daehwan Kim
 
 // Bacterial Chemotaxis
+
 import BacterialChemotaxis;
 import FlagellarRotation;
 
 CheA = BacterialChemotaxis.CheA;
 CheR = BacterialChemotaxis.CheR;
-CheB = BacterialChemotaxis.CheB; // not explicit
+CheB = BacterialChemotaxis.CheB;
 CheBP = BacterialChemotaxis.CheBP;
 
 pathway CellMotility
@@ -30,10 +31,15 @@ pathway CellMotility
             CheB = 0.1nM;
         }
 
-        float thAm = 0.982; // threshold set by the user. a fraction of the steadystate function may be another option
-        // CP: variable initialization
+        float thAm = 0.982;
         bool bRun = Am < thAm;
 
         Motility = FlagellarRotation.FlagellarRotation(CellMembrane, bRun);
     }
+}
+
+reference Porter_2011
+{
+    title = "Signal processing in complex chemotaxis pathways";
+    doi = "https://doi.org/10.1038/nrmicro2505";
 }

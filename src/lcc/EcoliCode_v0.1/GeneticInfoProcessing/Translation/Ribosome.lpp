@@ -15,12 +15,12 @@ protein RF, RRF; // Termination (release) Factors
 protein Ribo_30S
 {
     // translation initiation:
-    reaction InitialtRNAloading(self + IF + tRNA + mRNA.startcodon --> self~mRNA.startcodon~tRNA~IF, Kd=1e-9); // 30S Preinitiation Complex
+    reaction InitialtRNAloading(self + IF + tRNA + mRNA.startcodon --> self~mRNA.startcodon~tRNA~IF, Kd=1e-9);
 }
 
 protein Ribo_50S;
 
-complex Ribo_70S // 70S Initiation Complex
+complex Ribo_70S
 {
     reaction Complexation(Ribo_30S~mRNA.startcodon~tRNA~IF + Ribo_50S --> self~tRNA + IF, Kd=1e-9); // self = Ribo_30S~Ribo_50S~mRNA
 

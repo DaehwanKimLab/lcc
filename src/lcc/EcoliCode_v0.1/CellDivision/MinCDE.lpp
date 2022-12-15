@@ -2,11 +2,12 @@
 // © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
-// MinCDE system - positioning the FtsZ ring precisely at the midcell
+// MinCDE system
+
 pathway MinCDE
 {
-    // protein MinD, MinE, MinC;
     membrane Membrane;
+    protein MinD, MinE, MinC;
 
     reaction MinD_MembraneRecruitment(Membrane~MinD_{n} + MinD {in} --> Membrane~MinD_{n+1}) // n may be 0
     k_function

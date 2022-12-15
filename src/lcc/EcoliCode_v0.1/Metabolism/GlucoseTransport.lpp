@@ -4,8 +4,6 @@
 
 // Glucose Transport
 
-// temporary code with limited parsing
-// CP: glucose -> Glucose
 reaction GlucoseTransport(Glucose{out} --> G6P{in})
 specification
 {

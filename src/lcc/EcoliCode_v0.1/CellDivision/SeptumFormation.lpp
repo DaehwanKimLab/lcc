@@ -27,35 +27,14 @@ pathway SeptumFormation
             FtsZ_Treadmilling = ZRing.FtsZ_Treadmilling;
         }
 
-        // CP: removed units after function call
-        // DL: removed spatial coordinates and assume uniform distribution
-        FtsA = 792; // Schmidt_2016 from LB dataset
+        FtsA = 792;
 
         cytosol Cytosol
         {
             MinC = 163;
             MinD = 4928;
             MinE = 4004;
-
-            FtsZ = 7898; // Schmidt_2016 from LB dataset
+            FtsZ = 7898;
         }
     }
-}
-
-reference CorbinErickson_2020
-{
-    title = "A Unified Model for Treadmilling and Nucleation of Single-Stranded FtsZ Protofilaments";
-    doi = "https://doi.org/10.1016/j.bpj.2020.05.041";
-}
-
-reference Ramm_2019
-{
-    title = "The E. coli MinCDE system in the regulation of protein patterns and gradients";
-    doi = "https://doi.org/10.1007/s00018-019-03218-x";
-}
-
-reference Schmidt_2016
-{
-    title = "The quantitative and condition-dependent Escherichia coli proteome";
-    doi = "https://doi.org/10.1038/nbt.3418";
 }

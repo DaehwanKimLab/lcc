@@ -3,16 +3,16 @@
 // Donghoon M. Lee and Daehwan Kim
 
 // Flagellar Rotation
+
 membrane Membrane;
 
-// CP
 reaction FlagellarRotation(Membrane, bRun) // bRun is a boolean parameter
 specification
 {
     Ang = Membrane.phi;
     Pos = Membrane.position;
 
-    cdist = 2.5e-5; // 25 micrometer/second velocity from BergBrown_1972
+    cdist = 2.5e-5; // velocity from BergBrown_1972
     crot = rand(0, 2 * pi); // constant for rotation
 
     if (bRun)

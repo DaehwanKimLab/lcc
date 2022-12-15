@@ -3,12 +3,14 @@
 // Donghoon M. Lee and Daehwan Kim
 
 // Bacterial Chemotaxis
+
 protein CheR
 {
     reaction CheA_Methylation(CheA --> CheAm, kcat=1, KM=1e-10nM);
-    // CP: changed from kM to KM
     reaction CheAL_Methylation(CheAL --> CheAmL, kcat=1, KM=1e-10nM);
 }
+
+protein CheB;
 
 protein CheBP
 {
@@ -26,6 +28,18 @@ reaction CheA_LigandBinding(CheA + L{out} --> CheAL, k=1e9, krev=1);
 
 reference BitbolWingreen_2015
 {
-    title = "Fundamental Constraints on the Abundances of Chemotaxis Proteins.";
+    title = "Fundamental Constraints on the Abundances of Chemotaxis Proteins";
     doi = "https://doi.org/10.1016/j.bpj.2015.01.024";
+}
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology: An Introduction";
+    doi = "https://www.math.uwaterloo.ca/~bingalls/MMSB/MMSB_w_solutions.pdf";
+}
+
+reference Alon_1999
+{
+    title = "Robustness in bacterial chemotaxis";
+    doi = "https://doi.org/10.1038/16483";
 }

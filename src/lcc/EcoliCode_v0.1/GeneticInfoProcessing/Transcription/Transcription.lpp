@@ -34,4 +34,5 @@ pathway Transcription
 
     SigmaFactor = 1500;
     RNAPCore = 3000;
+    NTP[:] = 9mM;
 }

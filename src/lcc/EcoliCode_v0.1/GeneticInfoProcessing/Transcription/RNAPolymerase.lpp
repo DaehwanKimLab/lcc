@@ -4,19 +4,10 @@
 
 // RNA polymerase
 
-// _ : length
-// . : location
-// ~ : binding
-// []: absolute time
-// {}: positional reference (subject to reivision)
+protein SigmaFactor, RNAPCore;
 
-protein SigmaFactor;
-protein RpoB, RpoC, RpoA, RpoZ;
-
-complex RNAPCore(RpoB + RpoC + RpoA + RpoZ, Kd=1e-10);
 complex RNAPHolo
 {
-    // CP: changed to Sigmafactor
     reaction SigmaFactorBinding(RNAPCore + Sigmafactor, Kd=1e-7);
     reaction PromotorBinding(self + promoter --> self~promoter, Kd=1e-7);
 }
@@ -32,11 +23,9 @@ polymerase RNAP
         float R = 60.0;
         reaction dsDNAUnwinding(self~dsDNA{n-10:n+10} --> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, r=R);
         reaction DNATranslocation(self.ssDNA{n} --> self.ssDNA{n+1}, r=R);
-        // CP: RNA to Rna
-        reaction RNAElongation(self~Rna_{n} + c(NTP) + self.ssDNA.N{n} + 3 ATP --> self~Rna_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+        reaction RNAElongation(self~Rna_{n} + c(NTP) + self.ssDNA.N{n} + 3 ATP --> self~Rna_{n+1} + 3 ADP, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
     }
     
     // transcription termination
-    // CP: RNA to Rna
     reaction IntrinsicTermination(self~Rna.terminatorhairpin + ssDNA --> RNAPCore + dsDNA + Rna, Kd=1e-7);
 }

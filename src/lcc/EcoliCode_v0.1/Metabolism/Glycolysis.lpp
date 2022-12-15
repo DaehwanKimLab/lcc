@@ -4,7 +4,6 @@
 
 // Glycolysis
 
-// temporary code with limited parsing
 reaction Glycolysis(G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP)
 specification
 {

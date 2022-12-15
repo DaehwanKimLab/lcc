@@ -4,7 +4,6 @@
 
 // Pyruvate Oxidation
 
-// temporary code with limited parsing
 reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
 specification
 {
