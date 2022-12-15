@@ -10,53 +10,53 @@
 // https://cshperspectives.cshlp.org/content/10/9/a032664.long
 
 import Ribosome;
-import tRNACharging;
+
+Ribo_30S = Ribosome.Ribo_30S;
+Ribo_50S = Ribosome.Ribo_50S;
+Ribo_70S = Ribosome.Ribo_70S;
+AA_tRNASynthetase = Ribosome.AA_tRNASynthetase;
 
 pathway Translation
 {
-    complex 70S = Ribosome.70S;
-    
-    Ribosome.30S = 10nM;
-    Ribosome.50S = 10nM;
-
-    // Step 1. Initiation: see Ribosome
     reaction Initiation
     {
-        reaction 30S_PICAssembly = Ribosome.30S_PIC.PICAssembly;
-        reaction InitiatortRNAloading = Ribosome.30S_PIC.InitiatortRNAloading;
-        reaction 30S_ICAssembly = Ribosome.30S_IC.30S_ICAssembly;
-        reaction 70S_PICAssembly = Ribosome.70S_PIC.70S_PIC;
-        reaction 70S_ICAssembly = 70S.70S_ICAssembly;
+        InitialtRNAloading = Ribo_30S.InitialtRNAloading;
+        Complexation = Ribo_70S.Complexation;
     }
     
-    // Step 2. Elongation: see Ribosome
     reaction Elongation
     {
-        pathway tRNACharging = tRNACharging.tRNACharging;
-        reaction CodonRecognition = 70S.CodonRecognition;
-        reaction GTPHydrolysis = 70S.GTPHydrolysis;
-        reaction PeptidylTransfer = 70S.PeptidylTransfer;
-        reaction EF-G_Binding = 70S.EF-G_Binding;
-        reaction RNATranslocation = 70S.RNATranslocation;
+        CodonRecognition = Ribo_70S.CodonRecognition;
+        PeptidylTransfer = Ribo_70S.Elongation.PeptidylTransfer;
+        RNATranslocation = Ribo_70S.Elongation.RNATranslocation;
     }
 
     // Step 3. Termination: see Ribosome
     reaction Termination 
     {
-        reaction StopCodonRecognition = 70S.StopCodonRecognition;
-        reaction PeptideRelease = 70S.PeptideRelease;
-        reaction RF12Release = 70S.RF12Release;
-        reaction RF3Release = 70S.RF3Release;
-        reaction RRFEF-GBinding = 70S.RRF_EF-G_Binding;
-        reaction 70SDissociation = 70S.70SDissociation;
+        StopCodonRecognition = Ribo_70S.StopCodonRecognition;
+        PeptideRelease = Ribo_70S.PeptideRelease;
+        Dissociation = Ribo_70S.Dissociation;
     }
+
+    tRNACharging = AA_tRNASynthetase.tRNACharging;
+
+    Ribo_30S = 50000;
+    Ribo_50S = 50000;
+
+    IF = 10000;
+    EF_Tu = 443852; // tufA
+    EF_G = 86623; // fusA
+    RF = 2000; 
+    RRF = 8329; // frr
+
+    tRNA = 375000;
+    AA = 90mM;
+    AA_tRNASynthetase = 87102;
 }
 
 reference ThomasSteitz_2008
 {
     title = "A structural understanding of the dynamic ribosome machine";
     doi = "https://doi.org/10.1038/nrm2352";
-    // journal = "Nat Rev Mol Cell Biol";
-    // vol = "9, 242–253";
-    // date = "March, 2008";
 }
