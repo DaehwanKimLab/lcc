@@ -24,12 +24,11 @@ reaction R1(E + S --> ES, k=30M, krev=1M);
 reaction R2(ES --> E + P, k=10M);
 
 // initial quantity
-E=1M, S=5M;
+E = 1M, S = 5M;
 
 // enzymatic reaction
 protein e(s --> p, kcat=10, KM=0.3666667M);
 
 // initial quantity
-e=1M, s=5M;
+e = 1M, s = 5M;
 
-SimSteps = 500, SimRes = 500;

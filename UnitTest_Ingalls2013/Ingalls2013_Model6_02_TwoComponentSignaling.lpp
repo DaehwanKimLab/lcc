@@ -15,12 +15,12 @@ reference Ingalls_2013
     equation += 6.0;  // Equation (6.0 for unannotated equation in chapter 6)
 }
 
-reaction R1(R + Ligand --> R_Ligand, k=5, krev=1);
-reaction R2(P + R_Ligand --> pP + R_Ligand, k=6);
+reaction R1(R + L --> RL, k=5, krev=1);
+reaction R2(P + RL --> pP + RL, k=6);
 reaction R3(pP --> P, k=3);
 
 // initial quantity
-R[0]=2;
-Ligand[:]=0;
-Ligand[1:3]=3;
-P[0]=8;
+R = 2;
+L[:] = 0;
+L[1:3] = 3;
+P = 8;

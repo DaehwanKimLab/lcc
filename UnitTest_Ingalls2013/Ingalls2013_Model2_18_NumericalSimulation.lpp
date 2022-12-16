@@ -16,5 +16,5 @@ reference Ingalls_2013
 reaction R1(A --> B, k=9, krev=12);
 reaction R2(B --> C, k=2);
 
-A=0;
-B=10;
+A = 0;
+B = 10;

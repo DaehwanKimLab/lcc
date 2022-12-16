@@ -21,8 +21,8 @@ reaction R3(S1 --> Out, k=5);
 reaction R4(S2 --> Out, k=5);
 
 // regulatory reactions
-reaction R5(S2 --| R1, Ki=1, nH=4);
-reaction R6(S1 --| R2, Ki=1, nH=1);
+reaction R5(S2 --> R1, Ki=1, nH=4);
+reaction R6(S1 --> R2, Ki=1, nH=1);
 
 // initial quantity
 S1 = 1, S2 = 3;

@@ -20,7 +20,6 @@ reference Ingalls_2013
 }
 
 // N_SimSteps = 100000, SimStepTimeResolution = 100
-// Note: ligand induction time interval change similar to the python model
 
 protein R
 {
@@ -39,10 +38,8 @@ protein Am
   reaction R(B --> BP, k=0.05e9, krev=0.005);
 }
 
-reaction R1(Am + Ligand --> AmL, k=1e9, krev=1);
-reaction R2(A + Ligand --> AL, k=1e9, krev=1);
+reaction R1(Am + L --> AmL, k=1e9, krev=1);
+reaction R2(A + L --> AL, k=1e9, krev=1);
 
 R = 5nM, B = 0.1nM, A = 500nM;
-Ligand[0:100] = 20nM, Ligand[100:200] = 40nM, Ligand[200:300] = 80nM;
-
-SimSteps = 30000, SimRes = 100;
+L[0:100] = 20nM, L[100:200] = 40nM, L[200:300] = 80nM;

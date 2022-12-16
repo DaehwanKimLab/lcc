@@ -20,8 +20,8 @@ reaction R3(S2 --> Out, k=5);
 reaction R4(S2 --> R2, Ka=1, nH=2);
 
 // initial quantity
-In[:]=1, Out[:]=0;
-S1[0]=1.5, S2[0]=1;
+In[:] = 1, Out[:] = 0;
+S1 = 1.5, S2 = 1;
 
 
 
