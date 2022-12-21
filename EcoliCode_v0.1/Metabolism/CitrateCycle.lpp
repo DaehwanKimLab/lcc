@@ -7,7 +7,7 @@
 reaction CitrateCycle(acetyl_CoA + 3 NAD + FAD + ADP + Malate --> CoA_SH + 3 NADH + FADH2 + ATP + Malate)
 specification
 {
-    float c_cc = 0.385 M;
+    float c_cc = 0.385M;
     float cc = Malate * c_cc;
     ATP'  = cc;
     ADP'  = - ATP';

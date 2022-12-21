@@ -7,7 +7,7 @@
 reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
 specification
 {
-    float cp = 0.003 M;
+    float cp = 0.003M;
     acetyl_CoA' = (pyruvate / acetyl_CoA) * cp;
     CoA_SH' = - acetyl_CoA';
     NAD' = - acetyl_CoA';

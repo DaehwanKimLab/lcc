@@ -7,7 +7,7 @@
 reaction GlucoseTransport(Glucose{out} --> G6P{in})
 specification
 {
-    float cgt = 0.5 M;
+    float cgt = 0.5M;
     G6P' = Glucose/G6P * cgt;
     Glucose' = - G6P';
 }

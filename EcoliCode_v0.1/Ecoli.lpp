@@ -44,8 +44,7 @@ reference Valgepea_2013
     table = "S1";
 }
 
-// for protein counts from LB dataset
-reference Schmidt_2016
+reference Schmidt_2016   // for protein counts from LB dataset
 {
     title = "The quantitative and condition-dependent Escherichia coli proteome";
     doi = "https://doi.org/10.1038/nbt.3418";
