@@ -9,6 +9,7 @@ import Glycolysis;
 import PyruvateOxidation;
 import CitrateCycle;
 import OxidativePhosphorylation;
+import EnergyConsumption;
 
 pathway GlucoseMetabolism
 {
@@ -22,18 +23,19 @@ pathway GlucoseMetabolism
             PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
             CitrateCycle = CitrateCycle.CitrateCycle;
             OxidativePhosphorylation = OxidativePhosphorylation.OxidativePhosphorylation;
+            EnergyConsumption = EnergyConsumption.EnergyConsumption;
 
-        G6P = 8.8 mM;
-        ATP = 9.6 mM;
-        ADP = 0.56 mM;
-        NADH = 8.3 mM;
-        NAD = 2.6 mM;
-        pyruvate = 0.39 mM; 
-        CoA_SH[:] = 1.4 mM;
-        acetyl_CoA = 0.61 mM;
-        FADH2 = 0.5 mM;
-        FAD = 0.17 mM;
-        Malate = 1.7 mM;
+            G6P = 8.8mM;
+            ATP = 9.6mM;
+            ADP = 0.56mM;
+            NADH = 8.3mM;
+            NAD = 2.6mM;
+            pyruvate = 0.39mM;
+            CoA_SH[:] = 1.4mM;
+            acetyl_CoA = 0.61mM;
+            FADH2 = 0.5mM;
+            FAD = 0.17mM;
+            Malate = 1.7mM;
         }
     }
 }
