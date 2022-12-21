@@ -283,7 +283,7 @@ class FMinCluster(FCluster):
         return max(0, self.SizeC - self.SizeD)
 
     def PrintInfo(self):
-        print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.Kon()))
+        print("rad: {:.2f}, MinD: {:5d}, Kon: {:.2f}".format(self.Angle, self.SizeD, self.KonD()))
 
     def Draw(self, show_anchor=False):
         X_Membrane, Y_Membrane, W_Membrane, H_Membrane = self.Membrane
@@ -308,7 +308,7 @@ class FMinCluster(FCluster):
             DisplayMins(self.SizeC, additional_scale_factor=5, color=Color_MinC, radius=Radius_MinC)
 
 class FFtsCluster(FCluster):
-    def __init__(self, Index, Angle, Reference, SizeA, SizeZ, XYWH_DivAxis_Membrane, XYR_DivPlane_Membrane, color=GREEN, treadmilling=False):
+    def __init__(self, Index, Angle, Reference, SizeA, SizeZ, XYWH_DivAxis_Membrane, XYR_DivPlane_Membrane, color=GREEN):
         '''
         memb is X, Y, W, H of the membrane
         '''
@@ -324,18 +324,8 @@ class FFtsCluster(FCluster):
             (self.X_DivPlane_Center, self.Y_DivPlane_Center),
             self.Angle, self.Radius * 0.98)
 
-        if treadmilling:
-            self.ArcMode = True
-            self.Angle_Stop = self.Angle
-
-            self.SizeZ_DivPlane = 0
-
-        # Archive object mode
-        else:
-            self.ArcMode = False
-            self.Angle_FtsZs_DivPlane = list()
-            self.X_FtsZs_DivPlane = list()
-            self.Y_FtsZs_DivPlane = list()
+        self.Angle_Stop = self.Angle
+        self.SizeZ_DivPlane = 0
 
     def KonA(self):
         return 0
@@ -395,15 +385,6 @@ class FFtsCluster(FCluster):
         def DisplayFtsA_DivPlane():
             pygame.draw.circle(surface=Screen, color=Color_FtsA, center=(self.X_Anchor_DivPlane, self.Y_Anchor_DivPlane),
                                radius=Radius_Anchor)
-            # Label = "FtsA" + "#" + str(self.Index) + "~FtsZ_{" + str(self.N_Children) + "}"
-            # DisplayString(Label, self.X_DivPlane + self.Radius * 2.5 * np.cos(self.Angle),
-            #               self.Y_DivPlane + self.Radius * 2.5 * np.sin(self.Angle), color=BLACK, Type='individual')
-
-        def DisplayFtsZ_DivPlane():
-            for i in range(len(self.Angle_FtsZs_DivPlane)):
-                pygame.draw.circle(surface=Screen, color=Color_FtsZ, center=(
-                self.X_FtsZs_DivPlane[i], self.Y_FtsZs_DivPlane[i]), radius=Radius_FtsZ, width=1)
-            # DisplayString(self.Name + str(i), self.X_Children[i], self.Y_Children[i], color=BLACK)
 
         def DisplayFtsZ_DivPlane_Arc():
             Rect = GetRectFromCircle((self.X_DivPlane_Center, self.Y_DivPlane_Center), self.Radius, scale_factor=0.95)
@@ -415,11 +396,7 @@ class FFtsCluster(FCluster):
         if show_anchor:
             DisplayFtsA_DivPlane()
 
-        if self.ArcMode:
-            DisplayFtsZ_DivPlane_Arc()
-        else:
-            if len(self.Angle_FtsZs_DivPlane) > 0:
-                DisplayFtsZ_DivPlane()
+        DisplayFtsZ_DivPlane_Arc()
 
 
 class FLegends():
@@ -453,7 +430,7 @@ def Simulate():
     # Initialize Molecules
     DeltaAngle = 2 * pi / NumAngles
     MinClusters = [FMinCluster(i, DeltaAngle * i, -1, 0, 0, 0, Membrane.XYWH_DivAxis, color=Color_Anchor) for i in range(NumAngles)]
-    FtsClusters = [FFtsCluster(i, DeltaAngle * i, -1, int(NumFtsA / NumAngles), 0, Membrane.XYWH_DivAxis, Membrane.XYR_DivPlane, color=Color_FtsA, treadmilling=True) for i in range(NumAngles)]
+    FtsClusters = [FFtsCluster(i, DeltaAngle * i, -1, int(NumFtsA / NumAngles), 0, Membrane.XYWH_DivAxis, Membrane.XYR_DivPlane, color=Color_FtsA) for i in range(NumAngles)]
 
     # Legends
     Legends = FLegends()
@@ -526,7 +503,7 @@ def Simulate():
             if MinCluster.Reference >= 0:
                 continue
 
-            Kon = MinCluster.KonD()
+            Kon = MinCluster.KonE()
             KonSum += Kon
 
         if KonSum <= NumCytoMinE:
@@ -654,21 +631,7 @@ def Simulate():
             TotalAdd -= AddToAll * len(FtsClusters)
             assert TotalAdd == 0
 
-        def AddToDivPlane(TotalAdd):
-            Random = np.random.randint(0, NumAngles, TotalAdd)
-            for j in range(TotalAdd):
-                Idx = Random[j]
-                Angle = FtsClusters[Idx].Angle + len(FtsClusters[Idx].Angle_FtsZs_DivPlane) * pi / 180
-                FtsClusters[Idx].Angle_FtsZs_DivPlane.append(Angle)
-                X, Y = GetXYFromCenter(Membrane.XY_DivPlane, Angle, FtsClusters[Idx].Radius, ratio_factor=0.9)
-                FtsClusters[Idx].X_FtsZs_DivPlane.append(X)
-                FtsClusters[Idx].Y_FtsZs_DivPlane.append(Y)
-
-        if FtsClusters[0].ArcMode:
-            AddToDivPlane_Arc(TotalAddToDivPlane)
-
-        else:
-            AddToDivPlane(TotalAddToDivPlane)
+        AddToDivPlane_Arc(TotalAddToDivPlane)
 
     def RemoveFtsZs():
         global NumCytoFtsZ
@@ -719,29 +682,7 @@ def Simulate():
             if RemainingRemove > 0:
                 RemoveFromDivPlane_Arc(RemainingRemove)
 
-        def RemoveFromDivPlane(RemainingRemove):
-            Random = np.random.randint(0, NumAngles, RemainingRemove)
-            for j in range(RemainingRemove):
-                Idx = Random[j]
-                if len(FtsClusters[Idx].Angle_FtsZs_DivPlane):
-                    FtsClusters[Idx].Angle_FtsZs_DivPlane.pop()
-                    FtsClusters[Idx].X_FtsZs_DivPlane.pop()
-                    FtsClusters[Idx].Y_FtsZs_DivPlane.pop()
-                    RemainingRemove -= 1
-            if RemainingRemove > 0:
-                RemoveFromDivPlane(RemainingRemove)
-
-        if FtsClusters[0].ArcMode:
-            RemoveFromDivPlane_Arc(TotalRemoveFromDivPlane)
-
-        else:
-            RemoveFromDivPlane(TotalRemoveFromDivPlane)
-
-        # DL: Debugging
-        # if TotalRemove > 0:
-        #     for FtsCluster in FtsClusters:
-        #         if len(FtsCluster.X_FtsZs_DivPlane):
-        #             print(FtsCluster.Index, len(FtsCluster.Angle_FtsZs_DivPlane), FtsCluster.Angle_FtsZs_DivPlane)
+        RemoveFromDivPlane_Arc(TotalRemoveFromDivPlane)
 
     def TreadmillFtsZs(neighbors=False):
 
