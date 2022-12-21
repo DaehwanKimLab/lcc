@@ -23,7 +23,7 @@ complex RNAP
         float R = 60.0;
         reaction dsDNAUnwinding(RNAPCore~dsDNA{n-10:n+10} --> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, r=R);
         reaction DNATranslocation(self.ssDNA{n} --> self.ssDNA{n+1}, r=R);
-        reaction RNAElongation(self~Rna_{n} + c(NTP) + self.ssDNA.N{n} + 3 ATP --> self~Rna_{n+1} + 3 ADP, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+        reaction RNAElongation(self~Rna_{n} + c(NTP) + self.ssDNA.N{n} --> self~Rna_{n+1}, r=R); // Assume 3 ATP used for the whole process: 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media.
     }
     
     // transcription termination

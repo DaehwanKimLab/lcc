@@ -6,38 +6,38 @@
 
 import Ribosome;
 
-Ribo_30S = Ribosome.Ribo_30S;
-Ribo_50S = Ribosome.Ribo_50S;
-Ribo_70S = Ribosome.Ribo_70S;
+R30S = Ribosome.R30S;
+R50S = Ribosome.R50S;
+R70S = Ribosome.R70S;
 AA_tRNASynthetase = Ribosome.AA_tRNASynthetase;
 
 pathway Translation
 {
     reaction Initiation
     {
-        InitialtRNAloading = Ribo_30S.InitialtRNAloading;
-        Complexation = Ribo_70S.Complexation;
+        InitialtRNAloading = R30S.InitialtRNAloading;
+        Complexation = R70S.Complexation;
     }
     
     reaction Elongation
     {
-        CodonRecognition = Ribo_70S.CodonRecognition;
-        PeptidylTransfer = Ribo_70S.Elongation.PeptidylTransfer;
-        RNATranslocation = Ribo_70S.Elongation.RNATranslocation;
+        CodonRecognition = R70S.CodonRecognition;
+        PeptidylTransfer = R70S.Elongation.PeptidylTransfer;
+        RNATranslocation = R70S.Elongation.RNATranslocation;
     }
 
     // Step 3. Termination: see Ribosome
     reaction Termination 
     {
-        StopCodonRecognition = Ribo_70S.StopCodonRecognition;
-        PeptideRelease = Ribo_70S.PeptideRelease;
-        Dissociation = Ribo_70S.Dissociation;
+        StopCodonRecognition = R70S.StopCodonRecognition;
+        PeptideRelease = R70S.PeptideRelease;
+        Dissociation = R70S.Dissociation;
     }
 
     tRNACharging = AA_tRNASynthetase.tRNACharging;
 
-    Ribo_30S = 50000;
-    Ribo_50S = 50000;
+    R30S = 50000;
+    R50S = 50000;
 
     IF = 10000;
     EF_Tu = 443852; // tufA
