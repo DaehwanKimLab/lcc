@@ -12,17 +12,17 @@ protein EF_Tu, EF_G; // Elongation Factors
 protein RF, RRF; // Termination (release) Factors
 
 // initiation
-protein 30_S
+protein R30S
 {
     // translation initiation:
     reaction InitialtRNAloading(self + IF + tRNA + mRNA.startcodon --> self~mRNA.startcodon~tRNA~IF, Kd=1e-9);
 }
 
-protein 50_S;
+protein R50S;
 
-complex 70_S
+complex R70S
 {
-    reaction Complexation(30_S~mRNA.startcodon~tRNA~IF + 50_S --> self~tRNA + IF, Kd=1e-9); // self = 30_S~50_S~mRNA
+    reaction Complexation(R30S~mRNA.startcodon~tRNA~IF + R50S --> self~tRNA + IF, Kd=1e-9); // self = R30S~R50S~mRNA
 
     // translation elongation:
     reaction CodonRecognition(self~tRNA + EF_Tu~AA_tRNA --> self~AA_tRNA + EF_Tu + tRNA, Kd=1e-9); // AA_tRNA Loading and tRNA Release
@@ -36,7 +36,7 @@ complex 70_S
     // translation termination:
     reaction StopCodonRecognition(self.mRNA.stopcodon~tRNA~tRNA~peptide + RF --> self~tRNA~peptide~RF + tRNA, Kd=1e-9);
     reaction PeptideRelease(self~tRNA~peptide~RF + RRF --> self~tRNA~RRF + RF + peptide, Kd=1e-9);
-    reaction Dissociation(self~tRNA~RRF --> 30_S + 50_S + mRNA + tRNA + RRF, Kd=1e-9);
+    reaction Dissociation(self~tRNA~RRF --> R30S + R50S + mRNA + tRNA + RRF, Kd=1e-9);
 }
 
 protein AA_tRNASynthetase
