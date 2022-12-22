@@ -27,4 +27,5 @@ L[:] = 0;
 L[100:700] = 1e-9;
 G = 1.6605390285703877e-20;
 
-
+// temporary simulation parameters
+SimSteps = 10000, SimRes = 10;

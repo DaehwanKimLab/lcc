@@ -32,3 +32,5 @@ protein e(s --> p, kcat=10, KM=0.3666667M);
 // initial quantity
 e = 1M, s = 5M;
 
+// temporary simulation parameters
+SimSteps = 500, SimRes = 500;
