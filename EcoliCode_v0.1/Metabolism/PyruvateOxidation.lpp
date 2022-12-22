@@ -11,6 +11,6 @@ specification
     acetyl_CoA' = (pyruvate / acetyl_CoA) * cp;
     CoA_SH' = - acetyl_CoA';
     NAD' = - acetyl_CoA';
-    acetyl_CoA' = acetyl_CoA';
+    pyruvate' = - acetyl_CoA';
     NADH' = acetyl_CoA';
 }

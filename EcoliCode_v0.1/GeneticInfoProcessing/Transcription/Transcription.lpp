@@ -22,7 +22,7 @@ pathway Transcription
 
     pathway Elongation
     {
-        dsDNAUnwinding = RNAP.dsDNAUnwinding;
+        dsDNAUnwinding = RNAP.Elongation.dsDNAUnwinding;
         DNATranslocation = RNAP.Elongation.DNATranslocation;
         RNAElongation = RNAP.Elongation.RNAElongation;
     }

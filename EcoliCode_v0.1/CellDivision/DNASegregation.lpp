@@ -12,7 +12,7 @@ pathway DNASegregation
 {
     membrane CellMembrane
     {
-        MukBEF_MembraneRecruitment = MukBEF_MembraneRecruitment;
+        MukBEF_MembraneRecruitment = SMC.MukBEF_MembraneRecruitment;
 
         cytosol Cytosol
         {
