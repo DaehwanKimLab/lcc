@@ -11,3 +11,6 @@ specification
     G6P' = Glucose/G6P * cgt;
     Glucose' = - G6P';
 }
+
+Glucose{out} = 9.2M;
+G6P = 8.8mM;

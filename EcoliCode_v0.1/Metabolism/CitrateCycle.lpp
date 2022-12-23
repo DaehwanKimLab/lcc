@@ -19,3 +19,13 @@ specification
     CoA_SH' = - acetyl_CoA';
     Malate' = 0;
 }
+
+ATP = 9.6mM;
+ADP = 0.56mM;
+NADH = 8.3mM;
+NAD = 2.6mM;
+CoA_SH = 1.4mM;
+acetyl_CoA = 0.61mM;
+FADH2 = 0.5mM;
+FAD = 0.17mM;
+Malate = 1.7mM;

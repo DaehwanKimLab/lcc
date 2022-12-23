@@ -16,3 +16,10 @@ specification
     NAD' = - NADH';
     FAD' = - FADH2';
 }
+
+ATP = 9.6mM;
+ADP = 0.56mM;
+NADH = 8.3mM;
+NAD = 2.6mM;
+FADH2 = 0.5mM;
+FAD = 0.17mM;

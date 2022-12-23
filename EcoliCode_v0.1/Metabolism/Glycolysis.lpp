@@ -12,6 +12,13 @@ specification
     ADP'  = - ATP';
     NADH' = ATP';
     NAD' = - NADH';
-    G6P'  = ATP' / 2;
+    G6P'  = - ATP' / 2;
     pyruvate' = G6P' * 2;
 }
+
+G6P[:] = 8.8mM;
+ATP = 9.6mM;
+ADP = 0.56mM;
+NADH = 8.3mM;
+NAD = 2.6mM;
+pyruvate = 0.39mM;

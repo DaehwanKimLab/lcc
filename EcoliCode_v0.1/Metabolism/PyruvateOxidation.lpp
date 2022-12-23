@@ -14,3 +14,9 @@ specification
     pyruvate' = - acetyl_CoA';
     NADH' = acetyl_CoA';
 }
+
+NADH = 8.3mM;
+NAD = 2.6mM;
+pyruvate = 0.39mM;
+CoA_SH = 1.4mM;
+acetyl_CoA = 0.61mM;

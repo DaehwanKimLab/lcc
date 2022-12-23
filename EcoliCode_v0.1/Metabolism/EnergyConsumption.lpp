@@ -7,7 +7,7 @@
 reaction EnergyConsumption(ATP + NAD --> ADP + NADH) // for cell division
 specification
 {
-    float ce = 4.35E-03M;
+    float ce = 4.35E-3M;
     ADP' = ce;
     ATP' = - ADP';
     float cb = 0.7725; // NAD rebalancing factor

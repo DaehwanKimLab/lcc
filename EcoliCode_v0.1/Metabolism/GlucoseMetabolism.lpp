@@ -25,7 +25,7 @@ pathway GlucoseMetabolism
             OxidativePhosphorylation = OxidativePhosphorylation.OxidativePhosphorylation;
             EnergyConsumption = EnergyConsumption.EnergyConsumption;
 
-            G6P = 8.8mM;
+            G6P[:] = 8.8mM;
             ATP = 9.6mM;
             ADP = 0.56mM;
             NADH = 8.3mM;
