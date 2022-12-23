@@ -7,10 +7,10 @@
 reference Ingalls_2013
 {
     title = "Mathematical Modelling in Systems Biology";
-    page = 35;
-    figure = 2.11;      // Plot
-    equation = 2.18;    // Network
-    equation += 2.19;   // Equation
+    page = "35";
+    figure = "2.11";      // Plot
+    equation = "2.18";    // Network
+    equation += "2.19";   // Equation
 }
 
 reaction R1(A --> B, k=9, krev=12);

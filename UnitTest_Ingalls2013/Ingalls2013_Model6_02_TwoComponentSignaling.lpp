@@ -7,12 +7,12 @@
 reference Ingalls_2013
 {
     title = "Mathematical Modelling in Systems Biology";
-    page = 151;
-    figure = 6.2;       // Diagram
-    equation = 6.0;   // Network (6.0 for unannotated equation in chapter 6)
-    page += 152;
-    figure += 6.3.A;    // Plot
-    equation += 6.0;  // Equation (6.0 for unannotated equation in chapter 6)
+    page = "151";
+    figure = "6.2";       // Diagram
+    equation = "6.0";   // Network (6.0 for unannotated equation in chapter 6)
+    page += "152";
+    figure += "6.3.A";    // Plot
+    equation += "6.0";  // Equation (6.0 for unannotated equation in chapter 6)
 }
 
 reaction R1(R + L --> RL, k=5, krev=1);

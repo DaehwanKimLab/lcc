@@ -7,11 +7,11 @@
 reference Ingalls_2013
 {
     title = "Mathematical Modelling in Systems Biology";
-    page = 82;
-    figure = 4.6;   // Network
-    equation = 4.2; // Equation
-    page += 83;
-    figure += 4.7.A;  // Plot
+    page = "82";
+    figure = "4.6";   // Network
+    equation = "4.2"; // Equation
+    page += "83";
+    figure += "4.7.A";  // Plot
 }
 
 // standard reactions

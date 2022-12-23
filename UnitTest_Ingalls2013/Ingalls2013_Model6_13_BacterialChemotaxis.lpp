@@ -7,16 +7,16 @@
 reference Ingalls_2013
 {
     title = "Mathematical Modelling in Systems Biology";
-    page = 161;
-    figure = 6.10;  // Diagram
-    page += 162;
-    figure += 6.11; // Diagram
-    equation = 6.0; // Network (6.0 for unannotated equation in chapter 6)
-    page += 163;
-    figure += 6.12; // Network
-    figure += 6.13; // Network
-    page += 164;
-    figure += 6.14; // Plot
+    page = "161";
+    figure = "6.10";  // Diagram
+    page += "162";
+    figure += "6.11"; // Diagram
+    equation = "6.0"; // Network (6.0 for unannotated equation in chapter 6)
+    page += "163";
+    figure += "6.12"; // Network
+    figure += "6.13"; // Network
+    page += "164";
+    figure += "6.14"; // Plot
 }
 
 // N_SimSteps = 100000, SimStepTimeResolution = 100

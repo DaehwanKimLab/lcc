@@ -7,11 +7,11 @@
 reference Ingalls_2013
 {
     title = "Mathematical Modelling in Systems Biology";
-    page = 153;
-    figure = 6.4;       // Diagram
-    page += 154;
-    figure += 6.5.A;    // Plot
-    equation = 6.0;     // Network (6.0 for unannotated equation in chapter 6)
+    page = "153";
+    figure = "6.4";       // Diagram
+    page += "154";
+    figure += "6.5.A";    // Plot
+    equation = "6.0";     // Network (6.0 for unannotated equation in chapter 6)
     // Equation is no available from the text
 }
 

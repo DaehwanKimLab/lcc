@@ -7,11 +7,11 @@
 reference Ingalls_2013
 {
     title = "Mathematical Modelling in Systems Biology";
-    page = 93;
-    figure = 4.14;      // Network
-    equation = 4.10;    // Equation
-    page += 95;
-    figure += 4.16.A;   // Plot
+    page = "93";
+    figure = "4.14";      // Network
+    equation = "4.10";    // Equation
+    page += "95";
+    figure += "4.16.A";   // Plot
 }
 
 reaction R1(In --> S1, k=8);
