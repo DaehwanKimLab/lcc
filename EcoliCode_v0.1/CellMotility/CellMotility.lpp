@@ -27,8 +27,8 @@ pathway CellMotility
             CheAm_LigandBinding = BacterialChemotaxis.CheAm_LigandBinding;
             CheA_LigandBinding = BacterialChemotaxis.CheA_LigandBinding;
 
-            float thAm = 0.982;
-            bool bRun = Am < thAm;
+            float threshold_CheAm = 0.982;
+            bool bRun = CheAm < threshold_CheAm;
 
             Motility = FlagellarRotation.FlagellarRotation(CellMembrane, bRun);
 
