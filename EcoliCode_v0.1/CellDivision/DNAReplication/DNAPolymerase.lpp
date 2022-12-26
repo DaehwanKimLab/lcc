@@ -1,0 +1,45 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// DNA Polymerase
+
+DNA Ori, Ter;
+
+protein DnaA
+{
+    reaction OriBinding(self + Ori --> self~Ori, Kd=1e-9);
+}
+
+protein Tus
+{
+    reaction TerBinding(self + Ter --> self~Ter, Kd=1e-9);
+}
+
+protein DnaB, DnaC, DnaG, GyrAB, DNAPIII;
+
+complex DNAP // Replisome
+{
+    // initiation
+    reaction Complexation(DnaB + DnaC + DnaG + GyrAB + 2 DNAPIII, Kd=1e-9);
+    reaction DNABinding(self + DnaA~Ori --> self~Ori + DnaA, Kd=1e-9);
+    
+    // elongation
+    reaction Elongation
+    {
+        float R = 1000.0;
+        reaction dsDNAUnwinding(self~dsDNA --> self~ssDNA + ssDNA, r=R);
+        reaction DNATranslocation(self~dsDNA{n} --> self~dsDNA{n+1}, r=R);
+        reaction DNAElongation(Dna_{n} + dNTP --> Dna_{n+1}, r=R); // Assume 3 ATP used for the whole process: 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+    }
+    reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) --> self~dsDNA, r=1000.0);
+    
+    // termination
+    reaction Termination(self~dsDNA + Tus~Ter --> self + dsDNA + Tus~Ter, Kd=1e-9);
+}
+
+reference Xu_Dixon_2018
+{
+    title = "Bacterial replisomes";
+    doi = "https://doi.org/10.1016/j.sbi.2018.09.006";
+}
