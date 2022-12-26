@@ -1,0 +1,20 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Numerical Simulation
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = "35";
+    figure = "2.11";      // Plot
+    equation = "2.18";    // Network
+    equation += "2.19";   // Equation
+}
+
+reaction R1(A --> B, k=9, krev=12);
+reaction R2(B --> C, k=2);
+
+A = 0;
+B = 10;

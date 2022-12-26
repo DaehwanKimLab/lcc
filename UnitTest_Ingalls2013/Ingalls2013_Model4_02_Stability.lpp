@@ -1,0 +1,29 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Stability
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = "82";
+    figure = "4.6";   // Network
+    equation = "4.2"; // Equation
+    page += "83";
+    figure += "4.7.A";  // Plot
+}
+
+// standard reactions
+reaction R1(In --> S1, k=20);
+reaction R2(In --> S2, k=20);
+reaction R3(S1 --> Out, k=5);
+reaction R4(S2 --> Out, k=5);
+
+// regulatory reactions
+reaction R5(S2 --> R1, Ki=1, nH=4);
+reaction R6(S1 --> R2, Ki=1, nH=1);
+
+// initial quantity
+S1 = 1, S2 = 3;
+In[:] = 1, Out[:] = 0;
