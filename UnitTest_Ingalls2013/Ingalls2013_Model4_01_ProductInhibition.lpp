@@ -25,4 +25,3 @@ reaction R5(S1 --> S2, k=2);
 reaction R6(S2 --> R1, Ki=0.5, nH=4);
 
 In[:] = 1, Out[:] = 0;
-
