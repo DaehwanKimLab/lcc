@@ -41,4 +41,4 @@ C = 0;      // cI
 G = 0;      // GFP
 RT = 0.5;   // active LuxR-AHL complexes
 
-// TotalSimulationTime = 50, SimulationTimeUnit = 1e-1;
+// TotalSimulationTime = 50, SimulationTimeUnit = 1e-2;
