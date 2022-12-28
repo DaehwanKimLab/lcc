@@ -1,0 +1,44 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Pulse Generation
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = "224";
+    equation = "7.25";
+    page += "225";
+    figure += "7.27"; // Network
+    figure += "7.28"; // Plot
+}
+
+reaction PulseGeneration(A + R + C + G + RT --> A + R + C + G + RT)
+specification
+{
+    // k1 = 0.5, k2 = 0.02 , RT = 0.5, aC = 0.5, KR = 0.02, bC = 0.3, aG = 80, KC = 0.008, bG = 0.07
+
+    float k1 = 0.5;
+    float k2 = 0.02;
+    float aC = 0.5;
+    float bC = 0.3;
+    float aG = 80;
+    float bG = 0.07;
+    float KR = 0.02;
+    float KC = 0.008;
+
+    R' = k1 * A ** 2 * (RT - 2 * R) ** 2 - k2 * R;
+    C' = aC * (R / KR) / (1 + (R / KR)) - bC * C;
+    G' = aG * (R / KR) / (1 + (R / KR) + (C / KC) ** 2 + (R / KR) * (C / KC) ** 2) - bG * G;
+    A' = 0;
+    RT' = 0;
+}
+
+A = 10;     // AHL
+R = 0;      // AHL-LuxR complex
+C = 0;      // cI
+G = 0;      // GFP
+RT = 0.5;   // active LuxR-AHL complexes
+
+// TotalSimulationTime = 50, SimulationTimeUnit = 1e-1;

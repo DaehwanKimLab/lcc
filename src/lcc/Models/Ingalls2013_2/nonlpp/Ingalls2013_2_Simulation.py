@@ -2,9 +2,7 @@
 Ingalls 2013 Mathematical Modelling in Systems Biology
 
 Goodwin Oscillator
-Network  7.16,   p.213
-Model   7.22,    p.212
-Figure  7.17,    p.214
+Pulse Generator
 
 '''
 
@@ -179,12 +177,14 @@ class FSimulation():
         self.InitializeConjugation()
         self.InitializeSimStep()
 
-    def Run(self, GoodwinOscillator=0):
+    def Run(self, GoodwinOscillator=0, PulseGeneration=0):
 
         while self.SimStep * self.SimulationTimeUnit < self.TotalSimulationTime:
 
             if GoodwinOscillator:
                 self.Sim_GoodwinOscillator()
+            if PulseGeneration:
+                self.Sim_PulseGeneration()
 
             # Debugging
             if DebugPrint:
@@ -241,6 +241,39 @@ class FSimulation():
 
         self.AddToDeltaMolConc(d)
 
+    def Sim_PulseGeneration(self):
+        d = dict()
+
+        A = self.MolConc["A"]
+        R = self.MolConc["R"]
+        C = self.MolConc["C"]
+        G = self.MolConc["G"]
+        RT = self.MolConc["RT"]
+
+        k1 = self.Const["k1"]
+        k2 = self.Const["k2"]
+        aC = self.Const["aC"]
+        bC = self.Const["bC"]
+        aG = self.Const["aG"]
+        bG = self.Const["bG"]
+        KR = self.Const["KR"]
+        KC = self.Const["KC"]
+
+        def Get_dR(k1, A, RT, R, k2):
+            return k1 * A ** 2 * (RT - 2 * R) ** 2 - k2 * R
+
+        def Get_dC(aC, R, KR, bC, C):
+            return aC * (R / KR) / (1 + (R / KR)) - bC * C
+
+        def Get_dG(aG, R, KR, C, KC):
+            return aG * (R / KR) / (1 + (R / KR) + (C / KC) ** 2 + (R / KR) * (C / KC) ** 2) - bG * G
+
+        d["R"] = Get_dR(k1, A, RT, R, k2) * self.SimulationTimeUnit
+        d["C"] = Get_dC(aC, R, KR, bC, C) * self.SimulationTimeUnit
+        d["G"] = Get_dG(aG, R, KR, C, KC) * self.SimulationTimeUnit
+
+        self.AddToDeltaMolConc(d)
+
 
 class FModelRunner():
     def __init__(self, Simulation, Plotter):
@@ -255,6 +288,8 @@ class FModelRunner():
         for Model in ListOfModels:
             if Model == 1:
                 self.Model_GoodwinOscillator()
+            elif Model == 2:
+                self.Model_PulseGeneration()
             else:
                 print("\n[Error] Unsupported Model: %s" % Model)
                 sys.exit(1)
@@ -269,6 +304,8 @@ class FModelRunner():
         self.Datasets = NewDatasets
 
     def Initialize_GoodwinOscillator(self):
+        # a=360, b=1, k=1.368, n=12, alpha=1, beta=0.6, gamma=1, delta=0.8, X=0, Y=0, Z=0
+
         MolConc = dict()
         MolConc["X"] = 0
         MolConc["Y"] = 0
@@ -293,13 +330,56 @@ class FModelRunner():
 
         self.InitializeDatasets()
         
-        ModelName = "GoodwinOscillator"
+        ModelName = "Goodwin Oscillator"
         self.Simulation.SetTitle(ModelName)
 
         InitData = self.Initialize_GoodwinOscillator()
         self.Simulation.Initialize(InitData)
         
         self.Datasets[ModelName] = self.Simulation.Run(GoodwinOscillator=1)
+        self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=ModelName)
+
+    def Initialize_PulseGeneration(self):
+        # From the text:
+        # k1 = 0.5 (min−1 · concentration−3), k2 = 0.02 (min−1 ·concentration−3), RT = 0.5 (concentration), aC = 0.5
+        # (concentration ·min−1) KR = 0.02 (concentration), bC = 0.07 (min−1), aG = 80 (concentration ·min−1),
+        # KC = 0.008 (concentration), bG = 0.07 (min−1). Concentration units are arbitrary.
+        # page 269, caption of Figure 7.28, value of b_C should be 0.3 (not 0.07 as printed)
+
+        MolConc = dict()
+
+        MolConc["A"] = 10    # AHL
+        MolConc["R"] = 0  # AHL-LuxR complex
+        MolConc["C"] = 0    # cI
+        MolConc["G"] = 0 # GFP
+        MolConc["RT"] = 0.5 # active LuxR-AHL complexes
+
+        Const = dict()
+        Const["k1"] = 0.5
+        Const["k2"] = 0.02
+        Const["aC"] = 0.5
+        Const["bC"] = 0.3
+        Const["aG"] = 80
+        Const["bG"] = 0.07
+        Const["KR"] = 0.02
+        Const["KC"] = 0.008
+
+        return MolConc, Const
+
+    def Model_PulseGeneration(self):
+        TotalSimulationTime = 50  # s
+        SimulationTimeUnit = 1e-2  # s
+        self.Simulation.SetSimulationParameters(TotalSimulationTime, SimulationTimeUnit)
+
+        self.InitializeDatasets()
+
+        ModelName = "Pulse Generation"
+        self.Simulation.SetTitle(ModelName)
+
+        InitData = self.Initialize_PulseGeneration()
+        self.Simulation.Initialize(InitData)
+
+        self.Datasets[ModelName] = self.Simulation.Run(PulseGeneration=1)
         self.Plot.PlotDatasets(self.Datasets, self.Simulation.SimulationTimeUnit, SuperTitle=ModelName)
 
 def main():
@@ -309,7 +389,9 @@ def main():
     ModelRunner = FModelRunner(Simulation, Plot)
 
     # Unit test Models
-    Models = [1]    # Chemotaxis unit test without G6PSink
+    # Models = [1]    # Goodwin Oscillator
+    Models = [2]    # Pulse Generation
+
     ModelRunner.RunModel(Models)
 
 if __name__ == '__main__':
