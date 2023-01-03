@@ -8,12 +8,12 @@ DNA Ori, Ter;
 
 protein DnaA
 {
-    reaction OriBinding(self + Ori --> self~Ori, Kd=1e-9);
+    reaction OriBinding(self + Ori -> self~Ori, Kd=1e-9);
 }
 
 protein Tus
 {
-    reaction TerBinding(self + Ter --> self~Ter, Kd=1e-9);
+    reaction TerBinding(self + Ter -> self~Ter, Kd=1e-9);
 }
 
 protein DnaB, DnaC, DnaG, GyrAB, DNAPIII;
@@ -22,20 +22,20 @@ complex DNAP // Replisome
 {
     // initiation
     reaction Complexation(DnaB + DnaC + DnaG + GyrAB + 2 DNAPIII, Kd=1e-9);
-    reaction DNABinding(self + DnaA~Ori --> self~Ori + DnaA, Kd=1e-9);
+    reaction DNABinding(self + DnaA~Ori -> self~Ori + DnaA, Kd=1e-9);
     
     // elongation
     reaction Elongation
     {
         float R = 1000.0;
-        reaction dsDNAUnwinding(self~dsDNA --> self~ssDNA + ssDNA, r=R);
-        reaction DNATranslocation(self~dsDNA{n} --> self~dsDNA{n+1}, r=R);
-        reaction DNAElongation(Dna_{n} + dNTP --> Dna_{n+1}, r=R); // Assume 3 ATP used for the whole process: 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+        reaction dsDNAUnwinding(self~dsDNA -> self~ssDNA + ssDNA, r=R);
+        reaction DNATranslocation(self~dsDNA{n} -> self~dsDNA{n+1}, r=R);
+        reaction DNAElongation(Dna_{n} + dNTP -> Dna_{n+1}, r=R); // Assume 3 ATP used for the whole process: 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
     }
-    reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) --> self~dsDNA, r=1000.0);
+    reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) -> self~dsDNA, r=1000.0);
     
     // termination
-    reaction Termination(self~dsDNA + Tus~Ter --> self + dsDNA + Tus~Ter, Kd=1e-9);
+    reaction Termination(self~dsDNA + Tus~Ter -> self + dsDNA + Tus~Ter, Kd=1e-9);
 }
 
 reference Xu_Dixon_2018

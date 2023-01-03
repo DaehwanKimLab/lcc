@@ -13,7 +13,7 @@ protein FtsA, FtsZ;
 complex ZRing
 {
     ZRing = FtsA~(FtsZ_{n});
-    reaction FtsZ_MembraneRecruitment(FtsA~(FtsZ_{n}) + FtsZ{in} --> FtsA~(FtsZ_{n+1})) // (n can be 0, as well)
+    reaction FtsZ_MembraneRecruitment(FtsA~(FtsZ_{n}) + FtsZ{in} -> FtsA~(FtsZ_{n+1})) // (n can be 0, as well)
     k_function
     {
         return FtsA / max(1, MinC{in});
@@ -22,8 +22,8 @@ complex ZRing
     {
         return 0.5 + MinC;
     }
-    reaction FtsZ_Crosslinking(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} --> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
-    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){i})~(FtsA~(FtsZ_{m}){j}) --> (FtsA~(FtsZ_{n}){i-1})~(FtsA~(FtsZ_{m}){j+1}), r=1);
+    reaction FtsZ_Crosslinking(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} -> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
+    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){i})~(FtsA~(FtsZ_{m}){j}) -> (FtsA~(FtsZ_{n}){i-1})~(FtsA~(FtsZ_{m}){j+1}), r=1);
 }
 
 reference LevinJanakiraman_2021

@@ -4,7 +4,7 @@
 
 // Energy Consumption
 
-reaction EnergyConsumption(ATP + NAD --> ADP + NADH) // for cell division
+reaction EnergyConsumption(ATP + NAD -> ADP + NADH) // for cell division
 specification
 {
     float ce = 4.35E-3M;

@@ -9,7 +9,7 @@ pathway MinCDE
     membrane Membrane;
     protein MinD, MinE, MinC;
 
-    reaction MinD_MembraneRecruitment(Membrane~MinD_{n} + MinD {in} --> Membrane~MinD_{n+1}) // n may be 0
+    reaction MinD_MembraneRecruitment(Membrane~MinD_{n} + MinD {in} -> Membrane~MinD_{n+1}) // n may be 0
     k_function
     {
         // Spherical coordinate system - https://en.wikipedia.org/wiki/Spherical_coordinate_system
@@ -28,7 +28,7 @@ pathway MinCDE
         return k_function() * (Membrane~MinE_{n} / max(1, Membrane~MinD_{m})) * normal(1.5, 0.2);
     }
 
-    reaction MinE_MembraneRecruitment(Membrane~MinD_{n}~MinE_{m} + MinE{in} --> Membrane~MinD_{n}~MinE_{m+1})
+    reaction MinE_MembraneRecruitment(Membrane~MinD_{n}~MinE_{m} + MinE{in} -> Membrane~MinD_{n}~MinE_{m+1})
     k_function
     {
         return MinD_MembraneRecruitment.k_function() * 0.2;
@@ -38,7 +38,7 @@ pathway MinCDE
         return max(0, Membrane~MinE_{n} - Membrane~MinD_{m});
     }
 
-    reaction MinC_MembraneRecruitment(Membrane~MinD_{n} + MinC{in} --> Membrane~MinD_{n}~MinC)
+    reaction MinC_MembraneRecruitment(Membrane~MinD_{n} + MinC{in} -> Membrane~MinD_{n}~MinC)
     k_function
     {
         return MinD_MembraneRecruitment.k_function() * 0.2;

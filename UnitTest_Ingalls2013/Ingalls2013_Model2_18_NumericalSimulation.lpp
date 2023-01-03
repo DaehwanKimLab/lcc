@@ -13,8 +13,8 @@ reference Ingalls_2013
     equation += "2.19";   // Equation
 }
 
-reaction R1(A --> B, k=9, krev=12);
-reaction R2(B --> C, k=2);
+reaction R1(A -> B, k=9, krev=12);
+reaction R2(B -> C, k=2);
 
 A = 0;
 B = 10;

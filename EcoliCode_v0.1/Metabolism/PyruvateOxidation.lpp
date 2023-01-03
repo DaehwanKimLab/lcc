@@ -4,7 +4,7 @@
 
 // Pyruvate Oxidation
 
-reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH -> acetyl_CoA + NADH)
 specification
 {
     float cp = 0.003M;

@@ -4,7 +4,7 @@
 
 // Glycolysis
 
-reaction Glycolysis(G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP)
+reaction Glycolysis(G6P + 2 ADP + 2 NAD -> 2 pyruvate + 2 NADH + 2 ATP)
 specification
 {
     float cg = 0.019M;

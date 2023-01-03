@@ -4,7 +4,7 @@
 
 // Oxidative Phosphorylation
 
-reaction OxidativePhosphorylation(NADH + FADH2 + 4 ADP --> NAD + FAD + 4 ATP)
+reaction OxidativePhosphorylation(NADH + FADH2 + 4 ADP -> NAD + FAD + 4 ATP)
 specification
 {
     float c_co = 5M;

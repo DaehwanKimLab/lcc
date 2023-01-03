@@ -15,9 +15,9 @@ reference Ingalls_2013
     equation += "6.0";  // Equation (6.0 for unannotated equation in chapter 6)
 }
 
-reaction R1(R + L --> RL, k=5, krev=1);
-reaction R2(P + RL --> pP + RL, k=6);
-reaction R3(pP --> P, k=3);
+reaction R1(R + L -> RL, k=5, krev=1);
+reaction R2(P + RL -> pP + RL, k=6);
+reaction R3(pP -> P, k=3);
 
 // initial quantity
 R = 2;

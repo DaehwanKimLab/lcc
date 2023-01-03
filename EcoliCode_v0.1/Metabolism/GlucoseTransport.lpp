@@ -4,7 +4,7 @@
 
 // Glucose Transport
 
-reaction GlucoseTransport(Glucose{out} --> G6P{in})
+reaction GlucoseTransport(Glucose{out} -> G6P{in})
 specification
 {
     float cgt = 0.5M;
