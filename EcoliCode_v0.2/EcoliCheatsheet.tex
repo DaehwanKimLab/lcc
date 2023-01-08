@@ -1,0 +1,212 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{collcell,booktabs,siunitx}
+\usepackage{xparse}
+\usepackage{fullpage}
+\usepackage{array, spreadtab, booktabs}
+\usepackage{makecell}
+\usepackage{siunitx}
+\newcounter{rowno}
+
+\title{\textit{E. coli} by numbers}
+\author{}
+% \date{\today}
+
+\begin{document}
+    \maketitle
+
+    \section{General}
+    \begin{itemize}
+        \gdef\NA{6.022e23}
+        \item Avogadro's constant = $\num{6.022e23}$ = $\num{6e23}$
+        \item Total protein density $\approx$ 2 $\sim$ \num{4e6} \space proteins/$\mu$m$^{3}$
+        \item Mean diameter of protein $\approx$ 4 $\sim$ 5 nm
+        \item 1 base pair volume $\approx$ 1 nm$^{3}$
+        \item time scale for transitions between protein states (active/inactive) = 1 $\sim$ 100 $\mu$s
+        \item time scale for transcription factor binding to DNA site $\approx$ 1 s
+        \item mutation rate $\approx$ \num{1e-8} $\sim$ \num{1e-10}/bp/replication
+    \end{itemize}
+
+    \section{\textit{E. coli}}
+        \subsection{Physical Specification}
+        \gdef\Volume{1e-18}
+        \begin{itemize}
+            \item cell volume = 0.3 $\sim$ 3 $\mu$m$^{3}$  
+            \item cell dimension = 2 $\mu$m $\times$ 1 $\mu$m $\times$ 1 $\mu$m (rod shape)
+            \item total weight $\approx$ \num{9.5e-13} g % Neidhardt_1996
+            \item total dry weight $\approx$ \num{2.8e-13} g (30\% of total mass, where 70\% of it being water) % Neidhardt_1996
+        \end{itemize} 
+
+        \subsection{Chemical Composition}
+        \begin{itemize}
+            \item water $\approx$ \num{2e10} $\approx$ 70\% of total weight
+            \item inorganic ion $\approx$ \num{1e8} $\approx$ 4\% of dry weight ($\approx$ 20 species) % Frederick_1996, Guo_2013
+            \item monomeric metabolites $\approx$ 4\% of dry weight ($\approx$ 500 species) % Guo_2013
+            \item polysaccharides $\approx$ 6\% of dry weight ($\approx$ 5 species) % Guo_2013
+            \item lipids $\approx$ \num{5e7} $\approx$ 10\% of dry weight ($\approx$ 20 species) % Frederick_1996, Guo_2013
+            \item DNA / cell $\approx$ \num{4.6e6} bp $\approx$ 3\% of dry weight % Frederick_1996
+            \item RNA / cell $\approx$ \num{2e3} $\approx$ 20\% of dry weight % double check! Frederick_1996
+            \item proteins / cell $\approx$ \num{3e6} $\approx$ 55\% of dry weight % Frederick_1996
+            \item RNA polymerases / cell $\approx$ \num{2e3} % BremerDennis_1996
+            \item ribosomes / cell $\approx$ \num{1e4}
+        \end{itemize} 
+
+        \subsection{Genetic Info}
+        \begin{itemize}
+            \item Genome size $\approx$ 4.6 Mbp
+            \item $\sharp$ of protein coding genes $\approx$ 4300
+            \item Regulator binding site length = 10 $\sim$ 20 bp
+            \item Promoter length $\approx$ 100 bp
+            \item Gene length $\approx$ 1000 bp
+        \end{itemize} 
+
+        \subsection{Dynamics}
+        \begin{itemize}
+            \item Transcription rate $<$ 1 min (80 nts/s)
+            \item Translation rate $<$ 1 min (20 aa/s)
+            \item mRNA life time $\approx$ 3 min
+            \item Protein life time $\approx$ 1 hr
+            \item Minimal doubling time $\approx$ 20 min
+        \end{itemize} 
+
+        \subsection{Molecular Kinetics}
+        \begin{itemize}
+            \item Diffusion time of protein across cell $\approx$ 0.01 s
+            \item Diffusion time of small molecule across cell $\approx$ 0.001 s
+            \item Time scale for equilibrium binding of small molecule to protein = 1 $\sim$ 1000 ms (1$\mu$M $\sim$ 1nM affinity)
+        \end{itemize} 
+
+    \section{\textit{E. coli} Metabolite Concentration}
+
+    % \NewDocumentCommand{\GetCount}{}
+    % {
+    %  \bfseries\fp_eval:n { round ( \NA*\Volume* ) }
+    % }
+    % \ExplSyntaxOff
+        \subsection{Glucose Metabolism}
+            \begin{tabular}{ |l|l|l| } % |l|l|l||l|l|l||} 
+                \hline
+                Metabolite & mol $L^{-1}$ (= M) & $\sharp$ of molecules\textsuperscript{$\dagger$} \\ 
+                \hline
+                % ATP         & \num{9.6e-3}  & \STcopy{v}{b3*\num{\NA}*\num{\Volume}}     \\ 
+                ATP & \num{9.60E-03}  &  \num{5.8E+06}    \\
+                ADP & \num{5.60E-04}  &  \num{3.4E+05}    \\
+                NAD+    & \num{2.60E-03}  &     \num{1.6E+06}   \\
+                NADH    & \num{8.30E-05}  &     \num{5.0E+04}   \\
+                FAD & \num{1.70E-04}  &  \num{1.0E+05}    \\
+                Hexose-P (F6P, G6P, G1P)    & \num{8.80E-03}  &     \num{5.3E+06}   \\
+                Citrate & \num{2.00E-03}  &  \num{1.2E+06}    \\
+                Fumarate    & \num{1.20E-04}  &     \num{7.2E+04}   \\
+                Coenzyme A  & \num{1.40E-03}  &   \num{8.4E+05} \\
+                Acetyl-CoA  & \num{6.10E-04}  &   \num{3.7E+05} \\
+                $\alpha$-Ketoglutarate & \num{4.40E-04}  &  \num{2.6E+05}    \\
+                Succinate   & \num{5.70E-04}  &    \num{3.4E+05}  \\
+                Succinyl-CoA    & \num{2.30E-04}  &     \num{1.4E+05}   \\
+                Malate  & \num{1.70E-03}  &   \num{1.0E+06} \\
+                \hline
+                % check build before adding more
+            \end{tabular}
+            
+            \textsuperscript{$\dagger$} in 1 $\mu$m$^{3}$ volume of \textit{E. coli}
+
+        \subsection{Nucleotides}
+            \begin{tabular}{ |l|l|l| } % |l|l|l||l|l|l||} 
+                \hline
+                Metabolite & mol $L^{-1}$ (= M) & $\sharp$ of molecules\textsuperscript{$\dagger$} \\ 
+                \hline
+                ATP & \num{9.60E-03}  &  \num{5.8E+06}    \\
+                UTP & \num{8.30E-03}  &  \num{5.0E+06}    \\
+                GTP & \num{4.90E-03}  &  \num{3.0E+06}    \\
+                CTP & \num{2.70E-03}  &  \num{1.6E+06}    \\
+                ADP & \num{5.60E-04}  &  \num{3.4E+05}    \\
+                UDP & \num{1.80E-03}  &  \num{1.1E+06}    \\
+                GDP & \num{6.80E-04}  &  \num{4.1E+05}    \\
+                dATP    & \num{1.60E-05}  &     \num{9.6E+03}   \\
+                dTTP    & \num{4.60E-03}  &     \num{2.8E+06}   \\
+                dCTP    & \num{3.50E-05}  &     \num{2.1E+04}   \\
+                dTDP    & \num{3.80E-04}  &     \num{2.3E+05}   \\
+                CMP & \num{3.60E-04}  &  \num{2.2E+05}    \\
+                AMP & \num{2.80E-04}  &  \num{1.7E+05}    \\
+                GMP & \num{2.40E-05}  &  \num{1.4E+04}    \\
+                dAMP    & \num{8.80E-06}  &     \num{5.3E+03}   \\
+                dGMP    & \num{5.10E-05}  &     \num{3.1E+04}   \\
+                Cyclic AMP  & \num{3.50E-05}  &   \num{2.1E+04} \\
+                Guanosine   & \num{1.60E-06}  &    \num{9.6E+02}  \\
+                Adenine & \num{1.50E-06}  &  \num{9.0E+02}    \\
+                Adenosine   & \num{1.30E-07}  &    \num{7.8E+01}  \\
+                Cytosine    & \num{1.40E-05}  &     \num{8.4E+03}   \\
+                Guanine & \num{1.90E-04}  &  \num{1.1E+05}    \\
+                NADP+   & \num{2.10E-06}  &    \num{1.3E+03}  \\
+                NADPH   & \num{1.20E-04}  &    \num{7.2E+04}  \\
+                \hline
+                % check build before adding more
+            \end{tabular}
+
+            \textsuperscript{$\dagger$} in 1 $\mu$m$^{3}$ volume of \textit{E. coli}
+        \subsection{Amino acids}
+            \begin{tabular}{ |l|l|l| } % |l|l|l||l|l|l||} 
+                \hline
+                Metabolite & mol $L^{-1}$ (= M) & $\sharp$ of molecules\textsuperscript{$\dagger$} \\ 
+                \hline
+                Glutamate   & \num{9.60E-02}  &    \num{5.8E+07}  \\
+                Aspartate   & \num{4.20E-03}  &    \num{2.5E+06}  \\
+                Valine  & \num{4.00E-03}  &   \num{2.4E+06} \\
+                Glutamine   & \num{3.80E-03}  &    \num{2.3E+06}  \\
+                Alanine & \num{2.60E-03}  &  \num{1.6E+06}    \\
+                Arginine    & \num{5.70E-04}  &     \num{3.4E+05}   \\
+                Asparagine  & \num{5.10E-04}  &   \num{3.1E+05} \\
+                Lysine  & \num{4.10E-04}  &   \num{2.5E+05} \\
+                Proline & \num{3.90E-04}  &  \num{2.3E+05}    \\
+                Isoleucine + Leucine    & \num{3.00E-04}  &     \num{1.8E+05}   \\
+                Threonine   & \num{1.80E-04}  &    \num{1.1E+05}  \\
+                Methionine  & \num{1.50E-04}  &   \num{9.0E+04} \\
+                Serine  & \num{6.80E-05}  &   \num{4.1E+04} \\
+                Histidine   & \num{6.80E-05}  &    \num{4.1E+04}  \\
+                Tyrosine    & \num{2.90E-05}  &     \num{1.7E+04}   \\
+                Phenylalanine   & \num{1.80E-05}  &    \num{1.1E+04}  \\
+                Tryptophan  & \num{1.20E-05}  &   \num{7.2E+03} \\
+                Cytidine    & \num{2.60E-06}  &     \num{1.6E+03}   \\
+                \hline
+                % check build before adding more
+            \end{tabular}
+
+            \textsuperscript{$\dagger$} in 1 $\mu$m$^{3}$ volume of \textit{E. coli}
+
+            % Table 1 Protein concentrations of MinCDE and FtsZ in vivo
+            % From: The E. coli MinCDE system in the regulation of protein patterns and gradients
+            
+            %      Proteins/cell proteomics	Proteins/cell Western blotting	Concentration [µM] (assuming E. coli volume of 4.3 fl [142])
+            % MinD	4928 [142]	2000–3000 [49, 227]	0.8–1.9
+            % MinE	4004 [142]	1400 [227]	0.5–1.5
+            % MinC	163 [142]	400 [228]	0.06–0.15
+            % FtsZ	7898 [142]	3200 [143], 5000 [144], 15,000 [145]	1.2–5.6
+            
+
+    % \begin{spreadtab}{{tabular}{ @ c c c c}}
+    %     \centering 
+    %     \toprule
+    %     @ \multicolumn{4}{c}{Glucose Metabolism} \\
+    %     \hline
+    %     @ \multicolumn{1}{c}{Metabolite} & @ \multicolumn{1}{c}{mol $L^{-1}$ (= M)} & @ \multicolumn{1}{c}{$\sharp$ of molecules} \\
+    %     \midrule
+    %     % ATP & 18 & \STcopy{v}{(5 * \VA * \Volume)}\\
+    %     % & 5.6e-4 & \\
+    %     % & 34 & \\
+    %     % & 33 & \\
+    %     % & 27 & \\
+    %     % & 33 & \\
+    %     \bottomrule
+    % \end{spreadtab}
+
+
+    \section{Reference}
+    \begin{itemize}
+        \item Milo, R., Phillips, R. (2015). Cell biology by the numbers. CRC Press.
+        \item Bennett, B., Kimball, E., Gao, M. et al. (2009) Absolute metabolite concentrations and implied enzyme active site occupancy in Escherichia coli. Nat Chem Biol 5, 593–599. https://doi.org/10.1038/nchembio.186
+        \item Bremer, H., Dennis, P. P. (1996) Modulation of chemical composition and other parameters of the cell by growth rate. Neidhardt, et al. eds. Escherichia coli and Salmonella typhimurium: Cellular and Molecular Biology, 2nd ed. chapter 97, p.1559, Table 3 and note 'b' beneath table
+        \item Frederick C. Neidhardt AND H. Edwin Umbarger. (1996)  Chemical Composition of Escherichia coli, chapter 3 in Neidhardt F.C. Escherichia coli and Salmonella: Cellular and Molecular Biology. 2nd edition. Vol 1. American Society of Microbiology (ASM) Press. p.2 table 1
+        \item Guo, A. C., et al., (2013) ECMDB: The E. coli Metabolome Database. Nucleic Acids Research, Volume 41, Issue D1, 1 January 2013, Pages D625–D630, https://doi.org/10.1093/nar/gks992
+    \end{itemize} 
+
+\end{document}
+

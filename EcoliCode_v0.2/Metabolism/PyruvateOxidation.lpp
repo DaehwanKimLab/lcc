@@ -1,0 +1,22 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Pyruvate Oxidation
+
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
+specification
+{
+    float cp = 0.003M;
+    acetyl_CoA' = (pyruvate / acetyl_CoA) * cp;
+    CoA_SH' = - acetyl_CoA';
+    NAD' = - acetyl_CoA';
+    pyruvate' = - acetyl_CoA';
+    NADH' = acetyl_CoA';
+}
+
+NADH = 8.3mM;
+NAD = 2.6mM;
+pyruvate = 0.39mM;
+CoA_SH = 1.4mM;
+acetyl_CoA = 0.61mM;
