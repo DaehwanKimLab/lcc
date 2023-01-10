@@ -11,6 +11,8 @@ SaveFilename = None
 NA = 6.0221409e+23
 PerturbationTag = "#"
 
+RandomColors = [(random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)) for i in range(100)]
+
 class FPlotter:
     def __init__(self):
         self.Filter_Inclusion = None
@@ -76,13 +78,12 @@ class FPlotter:
 
         def GetPerturbation(Dataset):
             Perturbation = 0
-            PerturbationPlotColor = list()
             for Key in Dataset.keys():
                 if Key[0] == PerturbationTag:
-                    PerturbationPlotColor.append((random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)))
                     Perturbation += 1
-            return Perturbation, PerturbationPlotColor
+            return Perturbation
 
+        # TODO: update units for molecules vs. perturbation
         def ApplyUnit(Dataset):
             Unit = 'a.u.'
             array_unit = {
@@ -128,10 +129,32 @@ class FPlotter:
             fig.suptitle(SuperTitle, fontsize=14)
         NPlotsInRows = GetSubPlottingInfo(Datasets)
 
+        # global ymax
+        YMaxMol = YMax
+        YMaxPerturbation = 0
+        for Process, Dataset in Datasets.items():
+            Dataset_Copy = Dataset.copy()
+            Time, Dataset_Copy = ExtractTime(Dataset_Copy, SimulationTimeUnit)
+            UnitTxt, Dataset_Copy = ApplyUnit(Dataset_Copy)
+            # Y axis (molecular concentrations)
+            for MolName, Conc in Dataset_Copy.items():
+                YMaxData = max(Conc) * 1.1
+                print('YMax determination', MolName, YMaxData)
+                # Molecules (not perturbations)
+                if MolName[0] != PerturbationTag:
+                    if YMaxData > YMaxMol:
+                        YMaxMol = YMaxData
+                        print(MolName, YMaxMol)
+                # Perturbations
+                else:
+                    if YMaxData > YMaxPerturbation:
+                        YMaxPerturbation = YMaxData
+                        print(MolName, YMaxMol)
+
         # Plot data
         for n, (Process, Dataset) in enumerate(Datasets.items()):
             Time, Dataset = ExtractTime(Dataset, SimulationTimeUnit)
-            Perturbation, PerturbationPlotColor = GetPerturbation(Dataset)
+            Perturbation = GetPerturbation(Dataset)
             UnitTxt, Dataset = ApplyUnit(Dataset)
             ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
             ax2 = None
@@ -141,6 +164,12 @@ class FPlotter:
             # Y axis (molecular concentrations)
             PerturbationIndex = 0
             for MolName, Conc in Dataset.items():
+
+                # YMax Debug
+                YMaxData = max(Conc) * 1.1
+                print('Plot', MolName, YMaxData)
+
+                # Molecules (not perturbations)
                 if MolName[0] != PerturbationTag:
 
                     # Debug
@@ -155,36 +184,36 @@ class FPlotter:
                         # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
                         # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
 
+                # Perturbations
                 else:
-                    line, = ax2.plot(Time, Conc, color=PerturbationPlotColor[PerturbationIndex], label="[" + MolName[1:] + "]")
+                    line, = ax2.plot(Time, Conc, color=RandomColors[PerturbationIndex], label="[" + MolName[1:] + "]")
                     if bSideLabel:
                         SelectedTimeFrameFromLeft = 0.8
                         ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
-                    # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
-                    # print(PerturbationIndex)
+                        # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
+                        # print(PerturbationIndex)
                     PerturbationIndex += 1
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
             ax1.set_ylabel('Molecules: Concentration (' + UnitTxt + ')')
+            ax1.set_ylim(ymax=YMaxMol)
             if YMin:
                 ax1.set_ylim(ymin=YMin)
             else:
                 ax1.set_ylim(ymin=0)
-            if YMax:
-                ax1.set_ylim(ymax=YMax)
 
             if not bSideLabel:
                 ax1.legend(loc='upper left')
             if Perturbation:
                 ax2.set_ylabel('Events: Concentration (' + UnitTxt + ')')
+                ax2.set_ylim(ymax=YMaxPerturbation)
                 # ax2.set_ylim([0, 3e-7])
                 if YMin:
                     ax2.set_ylim(ymin=YMin)
                 else:
                     ax2.set_ylim(ymin=0)
-                if YMax:
-                    ax2.set_ylim(ymax=YMax)
+
                 if not bSideLabel:
                     ax2.legend(loc='upper right')
 

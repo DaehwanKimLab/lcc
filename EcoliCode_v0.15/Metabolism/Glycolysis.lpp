@@ -1,0 +1,28 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glycolysis
+
+pathway Glycolysis
+{
+    reaction Glycolysis_1(G6P + ATP -> 2 G3P + ADP)
+    specification
+    {
+        float cg1 = 0.019M;
+        ATP'  = min(G6P, (ADP / ATP) * cg1);
+    }
+    reaction Glycolysis_2(G3P + NAD + 2 ADP -> pyruvate + NADH + 2 ATP)
+    specification
+    {
+        float cg2 = 0.019M;
+        ATP'  = min(G3P, (ADP / ATP) * cg2);
+    }
+}
+
+G6P[:] = 8.8mM;
+ATP = 9.6mM;
+ADP = 0.56mM;
+NADH = 83.2nM;
+NAD = 2.6mM;
+pyruvate = 0.39mM;

@@ -1,0 +1,29 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Pentose Phosphate Pathway
+
+pathway PentosePhosphatePathway
+{
+    reaction G6PtoRu5P(G6P + 2 NADP ->  Ru5P + 2 NADPH)
+    specification
+    {
+        float cp1 = 0.019M;
+        R5P'  = min(G6P, (1 / R5P) * cp1);
+    }
+    
+    reaction Ru5PtoPRPP(Ru5P + ATP ->  PRPP + AMP)
+    specification
+    {
+        float cp2 = 0.019M;
+        PRPP'  = min(Ru5P, (1 / PRPP) * cp2);
+    }
+}
+
+G6P[:] = 8.8mM;
+ATP = 9.6mM;
+AMP = 0.28mM;
+NADPH = 0.12mM;
+NADP = 2.1nM;
+PRPP = 0.258mM;

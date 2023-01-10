@@ -1,0 +1,29 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Flagellar Rotation
+
+import BacterialChemotaxis;
+Am = BacterialChemotaxis.Am;
+
+pathway FlagellarRotation(membrane, bRun) // bRun is a boolean parameter
+func
+{
+    Ang = membrane.angle;
+    Pos = membrane.position;
+
+    cdist = 10nm/s; // constant for displacement
+    crot = rand(0, 360)°; // constant for rotation
+
+    if (bRun)
+    {
+        dPos/dt = cdist;
+        dAng/dt = 0;
+    }
+    else 
+    {
+        dPos/dt = cdist / 3;
+        dAng/dt = crot;
+    }
+}
