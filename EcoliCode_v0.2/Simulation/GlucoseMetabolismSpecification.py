@@ -1475,7 +1475,7 @@ def main():
     # Models = [1]    # Chemotaxis unit test without G6PSink
     # Models = [2]    # Chemotaxis unit test with Linear G6PSink
     # Models = [3]    # Chemotaxis unit test with Burst G6PSink
-    # Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
+    Models = [11]   # Glycolysis unit test without Pyruvate Oxidation
     # Models = [12]   # Glycolysis unit test with Pyruvate Oxidation
     # Models = [21]   # Pyruvate Oxidation unit test
     # Models = [31]   # TCACycle Cycle unit test without acetyl-CoA
@@ -1497,13 +1497,14 @@ def main():
     # Models = [201]  # Glucose Metabolism + Cell Division (With Constant Byproducts)
     # Models = [202]  # Glucose Metabolism + Cell Division (With Constant G6P)
     # Models = [203]  # Glucose Metabolism + Cell Division (With Chemotaxis)
-    Models = [211]  # Glucose Metabolism + Cell Division (With KFinder)
+    # Models = [211]  # Glucose Metabolism + Cell Division (With KFinder)
 
     # Setting Simulation Parameters
-    CellDivision = True
-    if CellDivision:
-        TotalSimulationTime = 60 * 40   # s
-        SimulationTimeUnit = 0.01   # s
+    for Model in Models:
+        if Model > 200:
+            TotalSimulationTime = 60 * 40  # s
+            SimulationTimeUnit = 0.01  # s
+            break
 
     # SteadyStateBrake = False
     # SteadyStateCheckMolecule = "ATP"

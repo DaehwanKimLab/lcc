@@ -4,21 +4,25 @@
 
 // Glycolysis
 
-reaction Glycolysis(G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP)
-specification
+pathway Glycolysis
 {
-    float cg = 0.019M;
-    ATP'  = (ADP / ATP) * cg;
-    ADP'  = - ATP';
-    NADH' = ATP';
-    NAD' = - NADH';
-    G6P'  = - ATP' / 2;
-    pyruvate' = G6P' * 2;
+    reaction Glycolysis_1(G6P + ATP -> 2 G3P + ADP)
+    specification
+    {
+        float cg1 = 0.019M;
+        ATP'  = min(G6P, (ADP / ATP) * cg1);
+    }
+    reaction Glycolysis_2(G3P + NAD + 2 ADP -> pyruvate + NADH + 2 ATP)
+    specification
+    {
+        float cg2 = 0.019M;
+        ATP'  = min(G3P, (ADP / ATP) * cg2);
+    }
 }
 
 G6P[:] = 8.8mM;
 ATP = 9.6mM;
 ADP = 0.56mM;
-NADH = 8.3mM;
+NADH = 83.2nM;
 NAD = 2.6mM;
 pyruvate = 0.39mM;

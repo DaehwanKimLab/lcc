@@ -4,19 +4,15 @@
 
 // Pyruvate Oxidation
 
-reaction PyruvateOxidation(pyruvate + NAD + CoA_SH --> acetyl_CoA + NADH)
+reaction PyruvateOxidation(pyruvate + NAD + CoA-SH -> acetyl-CoA + NADH)
 specification
 {
     float cp = 0.003M;
-    acetyl_CoA' = (pyruvate / acetyl_CoA) * cp;
-    CoA_SH' = - acetyl_CoA';
-    NAD' = - acetyl_CoA';
-    pyruvate' = - acetyl_CoA';
-    NADH' = acetyl_CoA';
+    acetyl-CoA' = (pyruvate / acetyl-CoA) * cp;
 }
 
-NADH = 8.3mM;
+NADH = 83.2nM;
 NAD = 2.6mM;
 pyruvate = 0.39mM;
-CoA_SH = 1.4mM;
-acetyl_CoA = 0.61mM;
+CoA-SH = 1.4mM;
+acetyl-CoA = 0.61mM;
