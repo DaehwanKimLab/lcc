@@ -1,0 +1,46 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Citrate Cycle
+
+pathway CitrateCycle
+{
+    reaction AlphaKetoGlutarate_Synthesis(acetyl-CoA + oxaloacetate + ADP + NAD -> alpha-ketoglutarate + ATP + NADH)
+    specification
+    {
+        alpha-ketoglutarate' = min(acetyl-CoA, oxaloacetate);
+    }
+
+    reaction SuccinylCoA_Synthesis(alpha-ketoglutarate + NAD -> syccinyl-CoA + NADH)
+    specification
+    {
+        syccinyl-CoA' = alpha-ketoglutarate;
+    }
+
+    reaction Fumarate_Synthesis(syccinyl-CoA + ATP + FAD -> fumarate + ADP + FADH2) // GTP and GDP 
+    specification
+    {
+        fumarate' = syccinyl-CoA;
+    }
+
+    reaction Oxaloacetate_Synthesis(fumarate + NAD -> oxaloacetate + NADH)
+    specification
+    {
+        oxaloacetate' = fumarate;
+    }
+}
+
+ATP = 9.6mM;
+ADP = 0.56mM;
+NADH = 83.2nM;
+NAD = 2.6mM;
+CoA-SH = 1.4mM;
+acetyl-CoA = 0.61mM;
+FADH2 = 0.5mM;
+FAD = 0.17mM;
+
+alpha-ketoglutarate = 0.44mM;
+succinyl-CoA = 0.23mM;
+fumarate = 0.12mM;
+oxaloacetate = 0.17mM; // no reference found along with the other metabolites

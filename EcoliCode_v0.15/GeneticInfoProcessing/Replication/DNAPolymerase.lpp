@@ -1,0 +1,60 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Replisome
+
+import ReplicationOrigin;
+import ReplicationTerminus;
+
+DNA Ori = ReplicationOrigin.OriginOfReplication;
+DNA Ter = ReplicationTerminus.TerminusOfReplication;
+
+protein DnaA = ReplicationOrigin.DnaA;
+protein Tus = ReplicationTerminus.Tus;
+
+// Replisome
+protein DnaB, DnaC, DnaG, DnaE, DnaQ, GyrAB;
+complex DNAPIII(DnaE + DnaQ, Kd=1e-10);
+
+complex Replisome
+{
+    // initiation
+    reaction Complexation(DnaB + DnaC + DnaG + GyrAB + 2 DNAPIII, Kd=1e-10);
+    reaction DNABinding(self + DnaA~ATP~Ori.DnaABox -> self~Ori.DnaABox + DnaA~ATP, Kd=1e-10);
+    
+    // elongation
+    reaction Polymerization
+    {
+        float R = 1000.0;
+        reaction dsDNAUnwinding(self~dsDNA -> self~ssDNA + ssDNA, r=R); // rate of initiation?
+        reaction DNATranslocation(self~dsDNA{n} -> self~dsDNA{n+1}, r=R);
+        reaction Elongation(DNA_{n} + dNTP + 3 ATP -> DNA_{n+1} + PPi + 3 ADP + 3 Pi, r=R); // 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media
+    }
+    reaction OligoSynthesis(self~ssDNA.N{n-10:n} + c(dNTP) -> self~dsDNA, r=1);
+    
+    // termination
+    reaction Termination(self~dsDNA + Tus~Ter.ter -> self + dsDNA + Tus~Ter.ter, Kd=1e-10);
+}
+
+DnaB, DnaC, DnaG, DnaE, DnaQ, GyrAB = 5nM;
+
+reference Xu_Dixon_2018
+{
+    title = "Bacterial replisomes";
+    doi = "https://doi.org/10.1016/j.sbi.2018.09.006";
+}
+
+// reference BrockBiologyOfMicroorganisms_Table4_2
+// {
+//     title = "Brock Biology of Microorganisms";
+//     edition = 15;
+//     publisher = "Pearson";
+//     authors = "Madigan", "Bender", "Buckley", "Sattley", "Stahl";
+
+//     table T4_2
+//     {
+//         title = "Major enzymes that participate in DNA replication in Bacteria";
+//         page = 147;
+//     }
+// }

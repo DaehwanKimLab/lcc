@@ -1,0 +1,39 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Replication
+
+import ReplicationOrigin;
+import ReplicationTerminus;
+import DNAPolymerase;
+
+pathway Replication 
+{
+    protein DnaA = ReplicationOrigin.DnaA;
+    protein Tus = ReplicationTerminus.Tus;
+    complex DNAP = DNAPolymerase.Replisome;
+
+    reaction Initiation
+    {
+        reaction DnaAPhosphorylation = DnaA.ATPBinding;
+        reaction DnaABoxBinding = DnaA.DnaABoxBinding;
+        reaction DNAPIIIAssembly = DNAPolymerase.DNAPIII.DNAPIII;
+        reaction DNAPAssembly = DNAP.Complexation;
+        reaction DNABinding = DNAP.DNABinding;
+    }
+
+    reaction Elongation
+    {
+        reaction dsDNAUnwinding = DNAP.Polymerization.dsDNAUnwinding;
+        reaction DNATranslocation = DNAP.Polymerization.DNATranslocation;
+        reaction Elongation = DNAP.Polymerization.Elongation;
+        reaction OligoSynthesis = DNAP.OligoSynthesis;
+    }
+    
+    reaction Termination
+    {
+        reaction TusTerBinding = Tus.TerBinding;
+        reaction Termination = DNAP.Termination;
+    }
+}
