@@ -16,8 +16,16 @@ class Reaction:
         self.Output = dict()
         self.Stoich = dict()
 
-    def Specification(self, Molecules):
+    def Specification(self, Molecules, InitCond):
         return {}
+
+    # Specification Models
+    def ProductInhibition(self, Product):
+        return 0
+
+    def Homeostasis(self, Proportional, InvProportional, MolsForHomeostasis):
+        return 0
+
 
 # reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
 class NADPlusSynthesis(Reaction):
@@ -26,7 +34,7 @@ class NADPlusSynthesis(Reaction):
         self.Input = {"nicotinamide": 1, "PRPP": 1, "ATP": 2}
         self.Output = {"NAD+": 1}
 
-    def Specification(self, Molecules):
+    def Specification(self, Molecules, InitCond):
         return {}
 
 # reaction NADP+Synthesis(NAD+ + ATP -> NADP+ + ADP)
@@ -36,7 +44,7 @@ class NADPPlusSynthesis(Reaction):
         self.Input = {"NAD+": 1, "ATP": 1}
         self.Output = {"NADP+": 1, "ADP": 1}
 
-    def Specification(self, Molecules):
+    def Specification(self, Molecules, InitCond):
         return {}
 
 # reaction CoASynthesis(pantothenate + cysteine + 3 ATP + CTP + CO2 -> CoA + ADP + CMP + 3 PPi)
@@ -46,29 +54,9 @@ class CoASynthesis(Reaction):
         self.Input = {"pantothenate": 1, "cysteine": 1, "ATP": 3, "CTP": 1, "CO2": 1}
         self.Output = {"CoA": 1, "ADP": 1, "CMP": 1, "PPi": 3}
 
-    def Specification(self, Molecules):
+    def Specification(self, Molecules, InitCond):
         return {}
 
-"""
-reaction Glycolysis(G6P + 2 ADP + 2 NAD+ -> 2 pyruvate + 2 NADH + 2 ATP)
-specification
-{
-    float cg = 0.019M;
-    ATP'  = (ADP / ATP) * cg;
-    ADP'  = - ATP';
-    NADH' = ATP';
-    NAD' = - NADH';
-    G6P'  = - ATP' / 2;
-    pyruvate' = G6P' * 2;
-}
-
-G6P[:] = 8.8mM;
-ATP = 9.6mM;
-ADP = 0.56mM;
-NADH = 83uM;
-NAD = 2.6mM;
-pyruvate = 0.39mM;
-"""
 class Glycolysis(Reaction):
     def __init__(self):
         super().__init__()
@@ -76,15 +64,29 @@ class Glycolysis(Reaction):
         self.Input = {"G6P": 1, "ADP": 2, "NAD+": 2}
         self.Output = {"pyruvate": 1, "NADH": 2, "ATP": 2}
 
-    def Specification(self, Molecules):
+        self.ADP = "ADP"
+        self.ATP = "ATP"
+
+    def Specification(self, Molecules, InitCond):
         c = 0.019
-        ATP = Molecules["ATP"]
-        ADP = Molecules["ADP"]
-        dATP = (ADP / ATP) * c
-        # dATP = (abs(ADP - 0.00056) / ATP) * c   # For homeostasis of ADP level
-        # dATP = (ADP * abs(ATP - 0.0096) / ATP) * c   # For homeostasis of ATP level
-        # dATP = ((ADP / ATP) - (0.00056 / 0.0096)) * ATP * c   # For homeostasis of ADP to ATP ratio
+        # dATP = (Molecules["ADP"] / Molecules["ATP"]) * c
+        # dATP = (abs(Molecules["ADP"] - InitCond["ADP"]) / Molecules["ATP"]) * c   # For homeostasis of ADP level
+        # dATP = (Molecules["ADP"] * abs(Molecules["ATP"] - InitCond["ATP"]) / Molecules["ATP"]) * c   # For homeostasis of ATP level
+        dATP = ((Molecules["ADP"] / Molecules["ATP"]) - (InitCond["ADP"] / InitCond["ATP"])) * Molecules["G6P"] * c
         return "ATP", dATP
+
+class PyruvateOxidation(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'PyruvateOxidation'
+        self.Input = {"pyruvate": 1, "NAD+": 1, "CoA-SH": 1}
+        self.Output = {"acetyl-CoA": 1, "NADH": 1}
+
+    def Specification(self, Molecules, InitCond):
+        c = 0.003
+        # c = 0.3
+        dacetylCoA = ((Molecules["pyruvate"] / Molecules["acetyl-CoA"]) - (InitCond["pyruvate"] / InitCond["acetyl-CoA"])) * Molecules["pyruvate"] * c
+        return "acetyl-CoA", dacetylCoA
 
 class ATPConsumption(Reaction):
     def __init__(self):
@@ -92,10 +94,10 @@ class ATPConsumption(Reaction):
         self.Input = {"ATP": 1}
         self.Output = {"ADP": 1}
 
-    def Specification(self, Molecules):
+    def Specification(self, Molecules, InitCond):
         # Cell Division ATP consumption: 4.35E-03
         c = 4.35E-03
-        # c = 4.35E-05
+        c = 4.35E-04
         dATP = -c
         return "ATP", dATP
 
@@ -106,7 +108,7 @@ class ADPConsumption(Reaction):
         self.Input = {"ADP": 1}
         self.Output = {"ATP": 1}
 
-    def Specification(self, Molecules):
+    def Specification(self, Molecules, InitCond):
         c = 4.35E-03
         dADP = -c
         return "ADP", dADP
@@ -117,9 +119,9 @@ class Simulator():
         self.Reactions = []
         self.Dataset = {}
 
-        self.PermanentMolecules = {
-            "G6P"      : 8.8  * 1e-3,
-            }
+        self.PermanentMolecules = [
+            # "G6P",
+        ]
 
         self.Molecules = dict()
 
@@ -130,12 +132,9 @@ class Simulator():
             "NADH": 83 * 1e-6,
             "NAD+": 2.6 * 1e-3,
             "pyruvate": 0.39 * 1e-3,
+            "acetyl-CoA": 0.61 * 1e-3,
+            "CoA-SH": 1.4 * 1e-3,
         }
-
-        # Metabolite concentrations, fluxes and free energies imply efficient enzyme usage
-        # Junyoung O Park, Sara A Rubin, Yi-Fan Xu, Daniel Amador-Noguez, Jing Fan, Tomer Shlomi & Joshua D Rabinowitz
-        # Nature Chemical Biology volume 12, pages482–489 (2016)
-        # https://www.nature.com/articles/nchembio.2077#Sec21
 
         self.InitialConditions = {}
 
@@ -167,10 +166,13 @@ class Simulator():
         return str(ReactionNames)
 
     def InitializeMolecules(self):
+        AllMolecules = dict()
         for Reaction in self.Reactions:
             for Molecule, Coeff in Reaction.Stoich.items():
-                if Molecule not in self.Molecules:
-                    self.Molecules[Molecule] = self.GetKnownMolConc(Molecule)
+                if Molecule not in AllMolecules:
+                    AllMolecules[Molecule] = self.GetKnownMolConc(Molecule)
+
+        self.Molecules = dict(sorted(AllMolecules.items()))
         self.InitialConditions = self.Molecules.copy()
 
     def AddReaction(self, Reaction):
@@ -181,10 +183,15 @@ class Simulator():
         RefCoeff = Reaction.Stoich[RefMol]
         UnitdConc = RefdConc / RefCoeff
 
-        Out = 0
+        Out = 10   # 1 Molar to begin comparison
         for Mol, Coeff in Reaction.Input.items():
             AdjustedConc = self.Molecules[Mol] / Coeff
-            Out = min(AdjustedConc, UnitdConc)
+
+            Out = min(Out, min(AdjustedConc, UnitdConc))
+
+            # DEBUG
+            # if self.Molecules[Mol] < 1e-8:
+            #     print(Mol, self.Molecules[Mol], AdjustedConc, UnitdConc, Out)
 
         return Out * RefCoeff
 
@@ -193,24 +200,39 @@ class Simulator():
         dConc = dict()
         for Mol, Coeff in Reaction.Stoich.items():
             dConc[Mol] = UnitdConc * Coeff
+
+            # DEBUG
+            # print(Mol, dConc[Mol])
+
         return dConc
 
-    def RunReaction(self, Reaction):
-        RefMol, RefdConc = Reaction.Specification(self.Molecules)
+    def RunReaction(self, Reaction, DeltaTime):
+        RefMol, RefdConc = Reaction.Specification(self.Molecules, self.InitialConditions)
+        RefdConc *= DeltaTime
         RefdConc = self.AdjustRefdCon(Reaction, RefMol, RefdConc)
         return self.DeterminedConc(Reaction, RefMol, RefdConc)
 
-    def UpdateMolecules(self, dMolecules, DeltaTime):
+    def UpdateMolecules(self, dMolecules):
+        # DEBUG
+        # print(self.Molecules, dMolecules)
         for dMolecule, dConc in dMolecules.items():
             assert dMolecule in self.Molecules
-            dConc = dConc * DeltaTime            
+            dConc = dConc
             assert dConc + self.Molecules[dMolecule] >= 0.0, '{} \t| Conc:{}, \t dConc:{}'.format(dMolecule, self.Conc2Str(self.Molecules[dMolecule]), self.Conc2Str(dConc))
             self.Molecules[dMolecule] += dConc
 
-    def Adjust(self):
-        for Molecule, Conc in self.PermanentMolecules.items():
-            assert Molecule in self.Molecules
-            self.Molecules[Molecule] = Conc
+    def RestorePermanentMolecules(self):
+        for Molecule in self.PermanentMolecules:
+            if Molecule in self.Molecules:
+                self.Molecules[Molecule] = self.InitialConditions[Molecule]
+            else:
+                pass
+
+    def CheckZeroConcentrations(self):
+        for Molecule, Conc in self.Molecules.items():
+            if Conc == 0:
+                self.Molecules[Molecule] += 1e-15
+                assert self.Molecules[Molecule] > 0
 
     def InitializeDataset(self):
         for Molecule, Conc in self.Molecules.items():
@@ -249,6 +271,10 @@ class Simulator():
             FinaldConc = self.Conc2Str(dConc)
 
             print("{:16} {:>10} {:>10} {:>10} {}".format(Molecule, InitConc, FinalConc, FinaldConc, "*" if Molecule in self.PermanentMolecules else ""))
+        if self.Plot:
+            print("\nPlot: ON")
+        else:
+            print("\nPlot: OFF")
 
     def Simulate(self, TotalTime = 10, DeltaTime = 0.01,):
         print("-- Initial Conditions --")
@@ -258,23 +284,25 @@ class Simulator():
         while Iter < TotalTime / DeltaTime:
             # # Debug
             # if Iter == 220:
-            #     print("\n")
-            #     print("Debugging:", Iter)
+            #     print("")
 
             for Reaction in self.Reactions:
-                dMolecules = self.RunReaction(Reaction)
-                self.UpdateMolecules(dMolecules, DeltaTime)
+                dMolecules = self.RunReaction(Reaction, DeltaTime)
+                self.UpdateMolecules(dMolecules)
+                self.CheckZeroConcentrations()
 
-            self.Adjust()
+            if len(self.PermanentMolecules):
+                self.RestorePermanentMolecules()
 
             if self.Plot:
                 self.AddToDataset()
 
             Iter += 1
-            print("\n")
-            print("-- Iteration {} --".format(Iter))
 
-            self.Info()
+            if Iter % 10 == 0:
+                print("\n")
+                print("-- Iteration {} --".format(Iter))
+                self.Info()
 
         print("\n")
         print("-- Summary --")
@@ -410,16 +438,10 @@ class FPlotter:
             PerturbationIndex = 0
             for MolName, Conc in Dataset.items():
 
-                # YMax Debug
-                YMaxData = max(Conc) * 1.1
-                print('Plot', MolName, YMaxData)
-
                 line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
                 if bSideLabel:
                     SelectedTimeFrameFromLeft = 0.9
                     ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
-                    # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
-                    # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
@@ -445,12 +467,23 @@ if __name__ == '__main__':
     # Sim.AddReaction(NADPPlusSynthesis())
     # Sim.AddReaction(CoASynthesis())
     Sim.AddReaction(Glycolysis())
-    # Sim.AddReaction(ATPConsumption())
+    Sim.AddReaction(PyruvateOxidation())
+    Sim.AddReaction(ATPConsumption())
     # Sim.AddReaction(ADPConsumption())
 
     Sim.Plot = True
-    TotalTime = 10
+    TotalTime = 30
     DeltaTime = 0.01
 
     Sim.Initialize()
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
+
+
+"""
+Reference
+
+Metabolite concentrations, fluxes and free energies imply efficient enzyme usage
+Junyoung O Park, Sara A Rubin, Yi-Fan Xu, Daniel Amador-Noguez, Jing Fan, Tomer Shlomi & Joshua D Rabinowitz
+Nature Chemical Biology volume 12, pages482–489 (2016)
+https://www.nature.com/articles/nchembio.2077#Sec21
+"""
