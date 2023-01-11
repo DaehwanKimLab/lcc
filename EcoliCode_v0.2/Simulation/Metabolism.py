@@ -6,10 +6,12 @@ import sys
 from datetime import datetime
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 class Reaction:
     def __init__(self):
+        self.ReactionName = ""
         self.Input = dict()
         self.Output = dict()
         self.Stoich = dict()
@@ -70,6 +72,7 @@ pyruvate = 0.39mM;
 class Glycolysis(Reaction):
     def __init__(self):
         super().__init__()
+        self.ReactionName = 'Glycolysis'
         self.Input = {"G6P": 1, "ADP": 2, "NAD+": 2}
         self.Output = {"pyruvate": 1, "NADH": 2, "ATP": 2}
 
@@ -112,18 +115,21 @@ class ADPConsumption(Reaction):
 class Simulator():
     def __init__(self):
         self.Reactions = []
+        self.Dataset = {}
 
         self.PermanentMolecules = {
             "G6P"      : 8.8  * 1e-3,
             }
 
-        self.Molecules = {
-            "G6P"      : 8.8  * 1e-3,
-            "ATP"      : 9.6  * 1e-3,
-            "ADP"      : 0.56 * 1e-3,
-            "NADH"     : 83   * 1e-6,
-            "NAD+"     : 2.6  * 1e-3,
-            "pyruvate" : 0.39 * 1e-3,
+        self.Molecules = dict()
+
+        self.KnownMolConc = {
+            "G6P": 8.8 * 1e-3,
+            "ATP": 9.6 * 1e-3,
+            "ADP": 0.56 * 1e-3,
+            "NADH": 83 * 1e-6,
+            "NAD+": 2.6 * 1e-3,
+            "pyruvate": 0.39 * 1e-3,
         }
 
         # Metabolite concentrations, fluxes and free energies imply efficient enzyme usage
@@ -131,11 +137,15 @@ class Simulator():
         # Nature Chemical Biology volume 12, pages482–489 (2016)
         # https://www.nature.com/articles/nchembio.2077#Sec21
 
-        self.InitialConditions = self.Molecules.copy()
+        self.InitialConditions = {}
+
+        self.Plot = False
 
     def Initialize(self):
         self.InitializeStoich()
         self.InitializeMolecules()
+        if self.Plot:
+            self.InitializeDataset()
 
     def InitializeStoich(self):
         for Reaction in self.Reactions:
@@ -144,15 +154,24 @@ class Simulator():
             for Mol, Coeff in Reaction.Output.items():
                 Reaction.Stoich[Mol] = Coeff
 
-    def InitializeMolecules(self):
-        AdditionalMolecules = set()
-        for Reaction in self.Reactions:
-            for Molecule, Num in Reaction.Stoich.items():
-                AdditionalMolecules.add(Molecule)
+    def GetKnownMolConc(self, Molecule):
+        if Molecule in self.KnownMolConc:
+            return self.KnownMolConc[Molecule]
+        else:
+            return 0.0
 
-        for Molecule in AdditionalMolecules:
-            if Molecule not in self.Molecules:
-                self.Molecules[Molecule] = 0.0
+    def GetReactionNames(self):
+        ReactionNames = []
+        for Reaction in self.Reactions:
+            ReactionNames.append(Reaction.ReactionName)
+        return str(ReactionNames)
+
+    def InitializeMolecules(self):
+        for Reaction in self.Reactions:
+            for Molecule, Coeff in Reaction.Stoich.items():
+                if Molecule not in self.Molecules:
+                    self.Molecules[Molecule] = self.GetKnownMolConc(Molecule)
+        self.InitialConditions = self.Molecules.copy()
 
     def AddReaction(self, Reaction):
         self.Reactions.append(Reaction)
@@ -193,6 +212,14 @@ class Simulator():
             assert Molecule in self.Molecules
             self.Molecules[Molecule] = Conc
 
+    def InitializeDataset(self):
+        for Molecule, Conc in self.Molecules.items():
+            self.Dataset[Molecule] = [Conc]
+
+    def AddToDataset(self):
+        for Molecule, Conc in self.Molecules.items():
+            self.Dataset[Molecule].append(Conc)
+
     def Conc2Str(self, Conc):
         AbsConc = abs(Conc)
         if AbsConc >= 1e-1:
@@ -223,12 +250,12 @@ class Simulator():
 
             print("{:16} {:>10} {:>10} {:>10} {}".format(Molecule, InitConc, FinalConc, FinaldConc, "*" if Molecule in self.PermanentMolecules else ""))
 
-    def Simulate(self, DeltaTime = 0.01, TotalTime = 10):
+    def Simulate(self, TotalTime = 10, DeltaTime = 0.01,):
         print("-- Initial Conditions --")
         self.Info()
 
         Iter = 0
-        while Iter < TotalTime:
+        while Iter < TotalTime / DeltaTime:
             # # Debug
             # if Iter == 220:
             #     print("\n")
@@ -240,6 +267,9 @@ class Simulator():
 
             self.Adjust()
 
+            if self.Plot:
+                self.AddToDataset()
+
             Iter += 1
             print("\n")
             print("-- Iteration {} --".format(Iter))
@@ -250,12 +280,167 @@ class Simulator():
         print("-- Summary --")
         self.Summary()
 
+        if Sim.Plot:
+            Datasets = {self.GetReactionNames(): self.Dataset}
+
+            Plot = FPlotter()
+            Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
+
+class FPlotter:
+    def __init__(self):
+        self.Filter_Inclusion = None
+        self.Filter_Exclusion = None
+
+    def ResetFilters(self):
+        self.Filter_Inclusion = None
+        self.Filter_Exclusion = None
+
+    def SetFilters(self, InclusionList, ExclusionList):
+        self.ResetFilters()
+        self.SetFilter_Inclusion(InclusionList)
+        self.SetFilter_Exclusion(ExclusionList)
+
+    def SetFilter_Inclusion(self, List):
+        self.Filter_Inclusion = List
+
+    def SetFilter_Exclusion(self, List):
+        self.Filter_Exclusion = List
+
+    def CheckToIncludeOrExclude(self, Key_Data):
+        if self.Filter_Inclusion or self.Filter_Exclusion:
+            if self.Filter_Inclusion:
+                if (Key_Data in self.Filter_Inclusion) or (Key_Data[1:] in self.Filter_Inclusion):
+                    return True
+                else:
+                    return False
+            else:
+                if (Key_Data in self.Filter_Exclusion) or (Key_Data[1:] in self.Filter_Exclusion):
+                    return False
+                else:
+                    return True
+        else:
+            return True
+
+    def FilterDatasets(self, Datasets):
+        Datasets_Filtered = dict()
+        for Key_Dataset, Dataset in Datasets.items():
+            Dataset_Filtered = dict()
+            for Key_Data, Data in Dataset.items():
+                if self.CheckToIncludeOrExclude(Key_Data):
+                    Dataset_Filtered[Key_Data] = Data
+                    Datasets_Filtered[Key_Dataset] = Dataset_Filtered
+
+        return Datasets_Filtered
+
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, YMin=0, YMax=0, bSideLabel=True, SuperTitle=""):
+        # Filter Datasets
+        if self.Filter_Inclusion or self.Filter_Exclusion:
+            Datasets = self.FilterDatasets(Datasets)
+
+        def ExtractTime(Dataset, SimulationTimeUnit):
+            Time = None
+            for Data in Dataset.values():
+                Time = [i * SimulationTimeUnit for i in range(len(Data))]
+                break
+            return Time, Dataset
+
+        def ApplyUnit(Dataset):
+            Unit = 'a.u.'
+            array_unit = {
+                'nM': 1e-9,
+                'uM': 1e-6,
+                'mM': 1e-3
+            }
+
+            DatasetArray = np.empty([0, 0])
+            DatasetKeyIndex = dict()
+            for i, (Key, Data) in enumerate(Dataset.items()):
+                DatasetKeyIndex[Key] = i
+                if DatasetArray.shape[0] == 0:
+                    DatasetArray = np.array(Data, ndmin=2)
+                else:
+                    DatasetArray = np.vstack([DatasetArray, np.array(Data, ndmin=2)])
+
+            for UnitText, UnitValue in array_unit.items():
+                if np.any(DatasetArray > UnitValue):
+                    # print('Unit has been set to', UnitText)
+                    Unit = UnitText
+
+            # Convert data to appropriate unit
+            if Unit in array_unit:
+                DatasetArray = DatasetArray / array_unit[Unit]
+                # print('Final unit:', Unit)
+                for Key, i in DatasetKeyIndex.items():
+                    Dataset[Key] = DatasetArray[i].tolist()
+
+            return Unit, Dataset
+
+        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3):
+            NPlotsInRows = len(Datasets)  # Default
+            if len(Datasets) > 1:
+                for Remainder in range(MaxNPlotsInRows):
+                    if len(Datasets) % (Remainder + 1) == 0:
+                        NPlotsInRows = Remainder + 1
+            return NPlotsInRows
+
+        fig = plt.figure()
+        fig.subplots_adjust(wspace=0.5, hspace=0.5)
+        if SuperTitle:
+            fig.suptitle(SuperTitle, fontsize=14)
+        NPlotsInRows = GetSubPlottingInfo(Datasets)
+
+        # global ymax
+        YMax = YMax
+        for Process, Dataset in Datasets.items():
+            Dataset_Copy = Dataset.copy()
+            UnitTxt, Dataset_Copy = ApplyUnit(Dataset_Copy)
+            # Y axis (molecular concentrations)
+            for MolName, Conc in Dataset_Copy.items():
+                YMaxData = max(Conc) * 1.1
+                if YMaxData > YMax:
+                    YMax = YMaxData
+
+        # Plot data
+        for n, (Process, Dataset) in enumerate(Datasets.items()):
+            Time, Dataset = ExtractTime(Dataset, DeltaTime)
+            UnitTxt, Dataset = ApplyUnit(Dataset)
+            ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
+
+            # Y axis (molecular concentrations)
+            PerturbationIndex = 0
+            for MolName, Conc in Dataset.items():
+
+                # YMax Debug
+                YMaxData = max(Conc) * 1.1
+                print('Plot', MolName, YMaxData)
+
+                line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
+                if bSideLabel:
+                    SelectedTimeFrameFromLeft = 0.9
+                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
+                    # ax1.text(Time[-1] * 1.01, Conc[-1], MolName, ha="left", va="bottom", color=line.get_color())
+                    # ax1.text(Time[-1] * 1.1, Conc[-1], MolName + ": {}".format(Conc[-1]), va="center", color=line.get_color())
+
+            ax1.set_title(Process)
+            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('Molecules: Concentration (' + UnitTxt + ')')
+            ax1.set_ylim(ymax=YMax)
+            if YMin:
+                ax1.set_ylim(ymin=YMin)
+            else:
+                ax1.set_ylim(ymin=0)
+
+            if not bSideLabel:
+                ax1.legend(loc='upper left')
+
+            # ax1.grid()
+        plt.show()
+
 
 if __name__ == '__main__':
     Sim = Simulator()
 
     # Add reactions
-
     # Sim.AddReaction(NADPlusSynthesis())
     # Sim.AddReaction(NADPPlusSynthesis())
     # Sim.AddReaction(CoASynthesis())
@@ -263,5 +448,9 @@ if __name__ == '__main__':
     # Sim.AddReaction(ATPConsumption())
     # Sim.AddReaction(ADPConsumption())
 
+    Sim.Plot = True
+    TotalTime = 10
+    DeltaTime = 0.01
+
     Sim.Initialize()
-    Sim.Simulate(TotalTime=1000)
+    Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
