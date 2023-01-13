@@ -10,13 +10,13 @@ pathway Glycolysis
     specification
     {
         float cg1 = 0.019M;
-        ATP'  = min(G6P, (ADP / ATP) * cg1);
+        ATP'  = (ADP / ATP) * cg1;
     }
     reaction Glycolysis_2(G3P + NAD + 2 ADP -> pyruvate + NADH + 2 ATP)
     specification
     {
         float cg2 = 0.019M;
-        ATP'  = min(G3P, (ADP / ATP) * cg2);
+        ATP'  = (ADP / ATP) * cg2;
     }
 }
 

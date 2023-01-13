@@ -96,8 +96,9 @@ class ATPConsumption(Reaction):
 
     def Specification(self, Molecules, InitCond):
         # Cell Division ATP consumption: 4.35E-03
-        c = 4.35E-03
-        c = 4.35E-04
+        # c = 4.35E-03
+        # c = 4.35E-04
+        c = 4.35E-05
         dATP = -c
         return "ATP", dATP
 
@@ -120,7 +121,10 @@ class Simulator():
         self.Dataset = {}
 
         self.PermanentMolecules = [
-            # "G6P",
+            "G6P",
+            "NADH",
+            "NAD+",
+            "CoA-SH",
         ]
 
         self.Molecules = dict()
@@ -308,11 +312,8 @@ class Simulator():
         print("-- Summary --")
         self.Summary()
 
-        if Sim.Plot:
-            Datasets = {self.GetReactionNames(): self.Dataset}
-
-            Plot = FPlotter()
-            Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
+    def GetDataset(self):
+        return {self.GetReactionNames(): self.Dataset}
 
 class FPlotter:
     def __init__(self):
@@ -471,13 +472,21 @@ if __name__ == '__main__':
     Sim.AddReaction(ATPConsumption())
     # Sim.AddReaction(ADPConsumption())
 
+
+    # Plotting options
     Sim.Plot = True
-    TotalTime = 30
+
+    TotalTime = 100
     DeltaTime = 0.01
 
     Sim.Initialize()
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
 
+    # Plot
+    if Sim.Plot:
+        Datasets = Sim.GetDataset()
+        Plot = FPlotter()
+        Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
 
 """
 Reference
