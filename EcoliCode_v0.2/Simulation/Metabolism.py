@@ -7,9 +7,12 @@ from datetime import datetime
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import csv
 
 NA = 6e23
 CytoVol = 1e-15
+
+GlobalKineticScale = 1
 
 class FPlotter:
     def __init__(self):
@@ -165,19 +168,40 @@ class Reaction:
         self.Input = dict()
         self.Output = dict()
         self.Stoich = dict()
+        self.Capacity = 0
 
     def Specification(self, Molecules, InitCond):
         return {}
 
     # Specification Models
-    def ProductInhibition(self, Product):
+    def ProductInhibition(self, Reactant, Product, Molecules, InitCond):
+        return (max(0, InitCond[Product] - Molecules[Product]) / Molecules[Product]) * Molecules[Reactant] * self.Capacity
+
+    def ProductInhibition_VaryingCapacity(self, Product, Molecules, InitCond):
+        return (max(0, InitCond[Product] - Molecules[Product]) / Molecules[Product]) * self.Capacity
+
+    def Homeostasis(self, Product, MolsForHomeostasis):
         return 0
 
-    def Homeostasis(self, Proportional, InvProportional, MolsForHomeostasis):
-        return 0
+    def DisplayChemicalEquation(self):
 
+        def AddMolCoeff(Eq, MolCoeffDict):
+            for n, (mol, coeff) in enumerate(MolCoeffDict.items()):
+                if n != 0:
+                    Eq += " + "
+                if coeff > 1:
+                    Eq += str(coeff) + " "
+                Eq += mol
 
-# reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
+            return Eq
+
+        Eq = ""
+        Eq = AddMolCoeff(Eq, self.Input)
+        Eq += " -> "
+        Eq = AddMolCoeff(Eq, self.Output)
+        return Eq
+
+    # reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
 class NADPlusSynthesis(Reaction):
     def __init__(self):
         super().__init__()
@@ -213,15 +237,14 @@ class Glycolysis(Reaction):
         self.ReactionName = 'Glycolysis'
         self.Input = {"G6P": 1, "ADP": 2, "NAD+": 2}
         self.Output = {"pyruvate": 1, "NADH": 2, "ATP": 2}
+        self.Capacity = 0.5
 
     def Specification(self, Molecules, InitCond):
-        # c = 0.019
-        c = 0.5
         # dATP = (Molecules["ADP"] / Molecules["ATP"]) * c
         # dATP = (abs(Molecules["ADP"] - InitCond["ADP"]) / Molecules["ATP"]) * c   # For homeostasis of ADP level
         # dATP = (Molecules["ADP"] * abs(Molecules["ATP"] - InitCond["ATP"]) / Molecules["ATP"]) * c   # For homeostasis of ATP level
-        dATP = (max(0, InitCond["ATP"] - Molecules["ATP"]) / Molecules["ATP"]) * Molecules["G6P"] * c
-        return "ATP", dATP
+        # dATP = (max(0, InitCond["ATP"] - Molecules["ATP"]) / Molecules["ATP"]) * Molecules["G6P"] * self.Capacity # Product Inhibition
+        return "ATP", self.ProductInhibition("G6P", "ATP", Molecules, InitCond)
 
 class PyruvateOxidation(Reaction):
     def __init__(self):
@@ -229,75 +252,136 @@ class PyruvateOxidation(Reaction):
         self.ReactionName = 'Pyruvate Oxidation'
         self.Input = {"pyruvate": 1, "NAD+": 1, "CoA-SH": 1}
         self.Output = {"acetyl-CoA": 1, "NADH": 1}
+        self.Capacity = 1
 
     def Specification(self, Molecules, InitCond):
-        c = 1
-        dacetylCoA = (max(0, InitCond["acetyl-CoA"] - Molecules["acetyl-CoA"]) / Molecules["acetyl-CoA"]) * Molecules["pyruvate"] * c
-        return "acetyl-CoA", dacetylCoA
+        return "acetyl-CoA", self.ProductInhibition("pyruvate", "acetyl-CoA", Molecules, InitCond)
+
 
 class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
     def __init__(self):
         super().__init__()
-        self.ReactionName = 'Alpha-ketoglutarate Synthesis'
+        self.ReactionName = 'TCA_a-ketoglutarate Synthesis'
         self.Input = {"acetyl-CoA": 1, "oxaloacetate": 1, "CoA-SH": 1, "NAD+": 1}
-        self.Output = {"CoA-SH": 1, "alpha-ketoglutarate": 1, "NADH": 1}
+        self.Output = {"CoA-SH": 1, "a-ketoglutarate": 1, "NADH": 1}
+        self.Capacity = 1e9
 
     def Specification(self, Molecules, InitCond):
-        c = 1e9
-        dalphaKetoGlutarate = (max(0, InitCond["alpha-ketoglutarate"] - Molecules["alpha-ketoglutarate"]) / Molecules["alpha-ketoglutarate"]) * Molecules["acetyl-CoA"] * Molecules["oxaloacetate"] * c
-        return "alpha-ketoglutarate", dalphaKetoGlutarate
+        return "a-ketoglutarate", self.ProductInhibition("acetyl-CoA", "a-ketoglutarate", Molecules, InitCond) * Molecules["oxaloacetate"]
+
+class TCACycle_SuccinylCoASynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'TCA_Succinyl-CoA Synthesis'
+        self.Input = {"a-ketoglutarate": 1, "NAD+": 1, "CoA-SH": 1}
+        self.Output = {"succinyl-CoA": 1, "NADH": 1}
+        self.Capacity = 1e-1
+
+    def Specification(self, Molecules, InitCond):
+        return "succinyl-CoA", self.ProductInhibition("a-ketoglutarate", "succinyl-CoA", Molecules, InitCond)
+
+class TCACycle_FumarateSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'TCA_Fumarate Synthesis'
+        self.Input = {"succinyl-CoA": 1, "ADP": 1, "FAD": 1}
+        self.Output = {"fumarate": 1, "CoA-SH": 1, "ATP": 1, "FADH2": 1} # TODO: Update from ATP to GTP later
+        self.Capacity = 5e-1
+
+    def Specification(self, Molecules, InitCond):
+        return "fumarate", self.ProductInhibition("succinyl-CoA", "fumarate", Molecules, InitCond)
+
+class TCACycle_OxaloacetateSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'TCA_Oxaloacetate Synthesis'
+        self.Input = {"fumarate": 1, "NAD+": 1}
+        self.Output = {"oxaloacetate": 1, "NADH": 1}
+        self.Capacity = 1e-1
+
+    def Specification(self, Molecules, InitCond):
+        return "oxaloacetate", self.ProductInhibition("fumarate", "oxaloacetate", Molecules, InitCond)
+
+class PyruvateCarboxylation(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'PyruvateCarboxylation'
+        self.Input = {"pyruvate": 1, "ATP": 1}
+        self.Output = {"oxaloacetate": 1, "ADP": 1}
+        self.Capacity = 1e-3
+
+    def Specification(self, Molecules, InitCond):
+        return "oxaloacetate", self.ProductInhibition("pyruvate", "oxaloacetate", Molecules, InitCond)
+
+class OxidativePhosphorylation(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'OxidativePhosphorylation'
+        self.Input = {"NADH": 1, "FADH2": 1, "ADP": 4}
+        self.Output = {"NAD+": 1, "FAD": 1, "ATP": 4}
+        self.Capacity = 1e-1
+
+    def Specification(self, Molecules, InitCond):
+        self.Capacity = Molecules["NADH"] * Molecules["FADH2"] * 3e7
+        return "ATP", self.ProductInhibition_VaryingCapacity("ATP", Molecules, InitCond)
 
 class ATPControl(Reaction):
-    def __init__(self, ConsumptionRate=4.35E-03):
+    def __init__(self, ControlRate=-4.35E-03):
         # Cell Division ATP consumption: c = 4.35E-03
 
         super().__init__()
         self.ReactionName = 'ATP Control'
         self.Input = {"ATP": 1}
         self.Output = {"ADP": 1}
-
-        self.ConsumptionRate = ConsumptionRate
+        self.Capacity = ControlRate
 
     def Specification(self, Molecules, InitCond):
-        dATP = -self.ConsumptionRate
-        return "ATP", dATP
+        return "ATP", self.Capacity
 
 class NADHControl(Reaction):
-    def __init__(self, ConsumptionRate=1E-05):
+    def __init__(self, ControlRate=-1E-05):
         super().__init__()
         self.ReactionName = 'NADH Control'
         self.Input = {"NADH": 1}
         self.Output = {"NAD+": 1}
-
-        self.ConsumptionRate = ConsumptionRate
+        self.Capacity = ControlRate
 
     def Specification(self, Molecules, InitCond):
-        dNADH = -self.ConsumptionRate
-        return "NADH", dNADH
+        return "NADH", self.Capacity
+
+class FADH2Control(Reaction):
+    def __init__(self, ControlRate=-1E-05):
+        super().__init__()
+        self.ReactionName = 'FADH2 Control'
+        self.Input = {"FADH2": 1}
+        self.Output = {"FAD": 1}
+        self.Capacity = ControlRate
+
+    def Specification(self, Molecules, InitCond):
+        return "FADH2", self.Capacity
 
 # For Debugging
-class MolConsumption(Reaction):
-    def __init__(self, MolName, ConsumptionRate=1e-5):
+class MolControl(Reaction):
+    def __init__(self, MolName, ControlRate=-1e-5):
         super().__init__()
         self.ReactionName = MolName + ' Consumption'
         self.Input = {MolName: 1}
         # self.Output = {"ATP": 1}
 
         self.ConsumedMol = MolName
-        self.ConsumptionRate = ConsumptionRate
+        self.Capacity = ControlRate
 
     def Specification(self, Molecules, InitCond):
-        dConsumedMol = -self.ConsumptionRate
-        return self.ConsumedMol, dConsumedMol
+        return self.ConsumedMol, self.Capacity
 
 
 class Simulator():
     def __init__(self):
         self.Reactions = []
         self.Dataset = {}
+        self.Iter = 0
 
-        self.KnownMolConc = dict()
-        self.LoadKnownMolConc()
+        self.KnownMolConc = self.OpenKnownMolConc()
 
         self.Molecules = dict()
         self.InitialConditions = dict()
@@ -319,6 +403,7 @@ class Simulator():
         self.InitializeMolecules()
         if self.Plot:
             self.InitializeDataset()
+        self.ApplyGlobalKineticCapacity()
 
     def InitializeStoich(self):
         for Reaction in self.Reactions:
@@ -334,10 +419,13 @@ class Simulator():
             print(Molecule, " is not found in the KnownMolConc database")
             return 0.0
 
-    def GetReactionNames(self):
-        ReactionNames = []
+    def GetReactionNames(self, Eq=False):
+        ReactionNames = ""
         for Reaction in self.Reactions:
-            ReactionNames.append(Reaction.ReactionName)
+            ReactionLabel = "[" + Reaction.ReactionName + "]"
+            if Eq:
+                ReactionLabel += " " + Reaction.DisplayChemicalEquation()
+            ReactionNames += ReactionLabel + "\n"
         return str(ReactionNames)
 
     def InitializeMolecules(self):
@@ -398,8 +486,7 @@ class Simulator():
         # print(self.Molecules, dMolecules)
         for dMolecule, dConc in dMolecules.items():
             assert dMolecule in self.Molecules
-            dConc = dConc
-            assert dConc + self.Molecules[dMolecule] >= 0.0, '{} \t| Conc:{}, \t dConc:{}'.format(dMolecule, self.Conc2Str(self.Molecules[dMolecule]), self.Conc2Str(dConc))
+            assert dConc + self.Molecules[dMolecule] >= 0.0, 'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter, dMolecule, self.Conc2Str(self.Molecules[dMolecule]), self.Conc2Str(dConc))
             self.Molecules[dMolecule] += dConc
 
     def RestorePermanentMolecules(self):
@@ -420,6 +507,10 @@ class Simulator():
     def AddToDataset(self):
         for Molecule, Conc in self.Molecules.items():
             self.Dataset[Molecule].append(Conc)
+
+    def ApplyGlobalKineticCapacity(self):
+        for Reaction in self.Reactions:
+            Reaction.Capacity *= GlobalKineticScale
 
     def Conc2Str(self, Conc):
         AbsConc = abs(Conc)
@@ -466,16 +557,15 @@ class Simulator():
         self.Info()
         print()
 
-        Iter = 0
-        while Iter < TotalTime / DeltaTime:
-            # # Debug
-            # if Iter == 220:
-            #     print("")
+        while self.Iter < TotalTime / DeltaTime:
+            # Debug
+            if self.Iter == 1942:
+                print("")
 
             for Reaction in self.Reactions:
                 dMolecules = self.RunReaction(Reaction, DeltaTime)
                 if self.Debug_Reaction:
-                    print("[%s]" % Reaction.ReactionName)
+                    print("[{}] {}".format(Reaction.ReactionName, Reaction.DisplayChemicalEquation()))
                     self.PrintMolConc(dMolecules, End=', ')
                 self.UpdateMolecules(dMolecules)
                 self.CheckZeroConcentrations()
@@ -486,11 +576,11 @@ class Simulator():
             if self.Plot:
                 self.AddToDataset()
 
-            Iter += 1
+            self.Iter += 1
 
-            if Iter % self.Debug_Info == 0:
+            if self.Iter % self.Debug_Info == 0:
                 print()
-                print("-- Iteration {} --".format(Iter))
+                print("-- Iteration {} --".format(self.Iter))
                 self.Info()
                 print()
 
@@ -499,38 +589,96 @@ class Simulator():
         self.Summary()
 
     def GetDataset(self):
-        return {self.GetReactionNames(): self.Dataset}
+        return {self.GetReactionNames(Eq=True): self.Dataset}
 
-    def LoadKnownMolConc(self):
-        self.KnownMolConc = {
-            "G6P": 8.8 * 1e-3,
-            "ATP": 9.6 * 1e-3,
-            "ADP": 0.56 * 1e-3,
-            "NADH": 83 * 1e-6,
-            "NAD+": 2.6 * 1e-3,
-            "pyruvate": 0.39 * 1e-3,
-            "acetyl-CoA": 0.61 * 1e-3,
-            "CoA-SH": 1.4 * 1e-3,
-            "alpha-ketoglutarate": 0.443 * 1e-3,
-            "oxaloacetate": 0.487 * 1e-6,
-            "succinyl-CoA": 0.233 * 1e-3,
-            "fumarate": 0.288 * 1e-3,
-        }
+    def LoadTSVDatabase(self, db_fname):
+        db = None
+        with open(db_fname) as fp:
+            csv_reader = csv.reader(fp, delimiter='\t')
+            list_of_rows = list(csv_reader)
+            db = list_of_rows[1:]
+        return db
+
+    def OpenKnownMolConc(self):
+
+        def ParseMetaboliteCon(db_KnownMolConc):
+
+            def MetaboliteSynonyms(Name):
+                if Name == "glucose-6-phosphate":
+                    return "G6P"
+                elif Name == "glyceraldehyde-3-phosphate":
+                    return "G3P"
+                elif Name == "coenzyme-A":
+                    return "CoA-SH"
+                # elif " (assumed 1 / 2 ile+leu)" in Name:
+                #     return Name.replace(" (assumed 1 / 2 ile+leu)", "")
+                elif Name == "ribose-5-phosphate":
+                    return "R5P"
+                elif Name == "ribulose-5-phosphate":
+                    return "Ru5P"
+                else:
+                    return Name
+
+            KnownMolConc = dict()
+            for i, Value in enumerate(db_KnownMolConc):
+                Metabolite, ConcInEcoli, LowerBound, UpperBound = Value
+                # data = dict()
+                # data['ConcInEcoli'] = ConcInEcoli
+                # data['LowerBound'] = LowerBound
+                # data['UpperBound'] = UpperBound
+                # KnownMolConc[Metabolite] = data
+                if ConcInEcoli == '-':
+                    continue
+                Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
+                Metabolite = MetaboliteSynonyms(Metabolite)
+                KnownMolConc[Metabolite] = float(ConcInEcoli)
+            return KnownMolConc
+
+        db_KnownMolConc = self.LoadTSVDatabase("MetaboliteConcentrations.tsv")
+        KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
+
+        KnownMolConc["FADH2"] = (KnownMolConc["NADH"] / KnownMolConc["NAD+"]) * KnownMolConc["FAD"]
+
+        return KnownMolConc
 
     def UnitTest(self, ReactionName):
-        # alpha-ketoGlutarate synthesis unit test
+        # a-ketoGlutarate synthesis unit test
         if ReactionName == "Glycolysis":
             Sim.AddReaction(Glycolysis())
-            Sim.AddReaction(ATPControl(1e-5))
+            Sim.AddReaction(ATPControl(-1e-5))
 
         elif ReactionName == "PyruvateOxidation":
             Sim.AddReaction(PyruvateOxidation())
-            Sim.AddReaction(MolConsumption("acetyl-CoA", 5e-6))
+            Sim.AddReaction(MolControl("acetyl-CoA", -3e-6))
 
-        elif ReactionName == "TCACycle_alphaKetoGlutarateSynthesis":
+        elif ReactionName == "TCACycle_a-KetoGlutarateSynthesis":
             Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
-            Sim.AddReaction(MolConsumption("alpha-ketoglutarate", 3e-6))
+            Sim.AddReaction(MolControl("a-ketoglutarate", -3e-6))
             Sim.AddPermanentMolecules(["oxaloacetate"])
+
+        elif ReactionName == "TCACycle_SuccinylCoASynthesis":
+            Sim.AddReaction(TCACycle_SuccinylCoASynthesis())
+            Sim.AddReaction(MolControl("succinyl-CoA", -2e-6))
+
+        elif ReactionName == "TCACycle_FumarateSynthesis":
+            Sim.AddReaction(TCACycle_FumarateSynthesis())
+            Sim.AddReaction(MolControl("fumarate", -1e-5))
+            Sim.AddPermanentMolecules(["succinyl-CoA", "ADP", "ATP", "FAD", "FADH2"])
+
+        elif ReactionName == "TCACycle_OxaloacetateSynthesis":
+            Sim.AddReaction(TCACycle_OxaloacetateSynthesis())
+            Sim.AddReaction(MolControl("oxaloacetate", -5e-7))
+
+        elif ReactionName == "PyruvateCarboxylation":
+            Sim.AddReaction(PyruvateCarboxylation())
+            Sim.AddReaction(MolControl("oxaloacetate", -5e-8))
+            # Sim.AddPermanentMolecules(["succinyl-CoA", "ADP", "ATP", "FAD", "FADH2"])
+
+        elif ReactionName == "OxidativePhosphorylation":
+            Sim.AddReaction(OxidativePhosphorylation())
+            Sim.AddReaction(ATPControl(-1e-6))
+            Sim.AddReaction(NADHControl(2e-7))
+            Sim.AddReaction(FADH2Control(2e-7))
 
         else:
             print("\nNo unit test has been selected\n")
@@ -542,18 +690,22 @@ def GetUnitTestReactions():
     '''
     return ["Glycolysis",
             "PyruvateOxidation",
-            "TCACycle_alphaKetoGlutarateSynthesis",
-
+            "TCACycle_a-KetoGlutarateSynthesis",
+            "TCACycle_SuccinylCoASynthesis",
+            "TCACycle_FumarateSynthesis",
+            "TCACycle_OxaloacetateSynthesis",
+            "PyruvateCarboxylation",
+            "OxidativePhosphorylation",
             ]
 
 if __name__ == '__main__':
     Sim = Simulator()
 
     RunUnitTest = False
-    RunUnitTest = True
-    if RunUnitTest:
+    # RunUnitTest = True
 
-        UnitTestReactions = "TCACycle_alphaKetoGlutarateSynthesis"
+    if RunUnitTest:
+        UnitTestReactions = "OxidativePhosphorylation"
         Sim.UnitTest(UnitTestReactions)
 
     else:
@@ -561,16 +713,21 @@ if __name__ == '__main__':
         # Sim.AddReaction(NADPlusSynthesis())
         # Sim.AddReaction(NADPPlusSynthesis())
         # Sim.AddReaction(CoASynthesis())
-        # Sim.AddReaction(Glycolysis())
-        # Sim.AddReaction(PyruvateOxidation())
-        # Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
-        # Sim.AddReaction(ATPControl())
+        Sim.AddReaction(Glycolysis())
+        Sim.AddReaction(PyruvateOxidation())
+        Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
+        Sim.AddReaction(TCACycle_SuccinylCoASynthesis())
+        Sim.AddReaction(TCACycle_FumarateSynthesis())
+        Sim.AddReaction(TCACycle_OxaloacetateSynthesis())
+        Sim.AddReaction(PyruvateCarboxylation())
+        Sim.AddReaction(OxidativePhosphorylation())
+        Sim.AddReaction(ATPControl())
 
         # Set permanent molecules
         PermanentMolecules = [
-            # "G6P",
-            # "NADH",
-            # "NAD+",
+            "G6P",
+            "NADH",
+            "NAD+",
             # "CoA-SH",
             # "oxaloacetate",
         ]
