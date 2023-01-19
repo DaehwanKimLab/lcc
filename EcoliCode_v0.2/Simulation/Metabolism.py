@@ -103,8 +103,8 @@ class FPlotter:
 
             return Unit, Dataset
 
-        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3):
-            NPlotsInRows = len(Datasets)  # Default
+        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3, ScaleFactor=1):
+            NPlotsInRows = len(Datasets) * ScaleFactor # Default
             if len(Datasets) > 1:
                 for Remainder in range(MaxNPlotsInRows):
                     if len(Datasets) % (Remainder + 1) == 0:
@@ -126,42 +126,93 @@ class FPlotter:
         fig.subplots_adjust(wspace=0.5, hspace=0.5)
         if SuperTitle:
             fig.suptitle(SuperTitle, fontsize=14)
-        NPlotsInRows = GetSubPlottingInfo(Datasets)
 
-        # global ymax
-        if not YMax:
-            YMax = GetYMax(Datasets)
+        ConsistentColorDict = dict()
 
-        # Plot data
-        for n, (Process, Dataset) in enumerate(Datasets.items()):
-            Time, Dataset = ExtractTime(Dataset, DeltaTime)
-            UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
-            ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
+        # # global ymax
+        # if not YMax:
+        #     YMax = GetYMax(Datasets)
 
+        def PlotDataset(Dataset, Process, UnitTxt):
             # Y axis (molecular concentrations)
-            PerturbationIndex = 0
+            YMax = 0
             for MolName, Conc in Dataset.items():
 
                 line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
+
+                # Save assigned color for each molecule
+                if MolName not in ConsistentColorDict:
+                    ConsistentColorDict[MolName] = line.get_color()
+                else:
+                    line._color = ConsistentColorDict[MolName]
+
                 if bSideLabel:
-                    SelectedTimeFrameFromLeft = 0.9
-                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
-                    SelectedTimeFrameFromLeft = -0.01
-                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * 0)], MolName, ha="right", va="center", color=line.get_color())
+                    SelectedTimeFrameFromLeft = 0.99
+                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="right", va="bottom", color=ConsistentColorDict[MolName])
+                    SelectedTimeFrameFromLeft = 0
+                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=ConsistentColorDict[MolName])
+
+                YMaxData = max(Conc) * 1.1
+                if YMaxData > YMax:
+                    YMax = YMaxData
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
             ax1.set_ylabel('Molecules: Concentration (' + UnitTxt + ')')
+            ax1.set_ylim(ymin=0)
             ax1.set_ylim(ymax=YMax)
-            if YMin:
-                ax1.set_ylim(ymin=YMin)
-            else:
-                ax1.set_ylim(ymin=0)
 
             if not bSideLabel:
                 ax1.legend(loc='upper left')
-
             # ax1.grid()
+
+        # Plot data
+        if Multiscale:
+            ScaleFactor = 4
+            NPlotsInRows = GetSubPlottingInfo(Datasets, ScaleFactor=ScaleFactor)
+            NPlotsInColumn = math.ceil(len(Datasets) / NPlotsInRows)
+
+            def SplitScales(Dataset):
+                Dataset_mM = dict()
+                Dataset_uM = dict()
+                Dataset_nM = dict()
+                for mol, conc in Dataset.items():
+                    if conc[0] < 1e-6:
+                        Dataset_nM[mol] = (np.array(conc) / 1e-9).tolist()
+                    elif conc[0] < 1e-3:
+                        Dataset_uM[mol] = (np.array(conc) / 1e-6).tolist()
+                    else:
+                        Dataset_mM[mol] = (np.array(conc) / 1e-3).tolist()
+                return (Dataset_mM, Dataset_uM, Dataset_nM)
+
+            for n, (Process, Dataset) in enumerate(Datasets.items()):
+                Time, Dataset = ExtractTime(Dataset, DeltaTime)
+                Dataset_Unit = SplitScales(Dataset.copy())
+                Units = ['mM', 'uM', 'nM']
+
+                # All Data
+                i = 1
+                UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
+                ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, ScaleFactor * n + i)
+                PlotDataset(Dataset, Process, UnitTxt)
+
+                # Split scale ranges
+                for Unit, dataset in zip(Units, Dataset_Unit):
+                    i += 1
+                    ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, ScaleFactor * n + i)
+                    PlotDataset(dataset, Unit + ' range', Unit)
+
+
+        else:
+            NPlotsInRows = GetSubPlottingInfo(Datasets)
+
+            for n, (Process, Dataset) in enumerate(Datasets.items()):
+                Time, Dataset = ExtractTime(Dataset, DeltaTime)
+                UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
+                ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
+
+                PlotDataset(Dataset, Process, UnitTxt)
+
         plt.show()
 
 class Reaction:
