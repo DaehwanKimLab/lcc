@@ -10,7 +10,7 @@ import math
 import matplotlib.pyplot as plt
 
 
-class Simulator():
+class FSimulator():
     def __init__(self):
         None
 
@@ -24,7 +24,7 @@ class Simulator():
         return None
 
 
-class EcoliSimulator(Simulator):
+class FEcoliSimulator(FSimulator):
     DNAREPLICATIONRATE = 1.0 / (16 * 60)
     PROTEINSYNTHESISRATE = 1.0 / (16 * 60)
     CYTOKINESISRATE = 1.0 / ( 6 * 60)
@@ -68,12 +68,13 @@ class EcoliSimulator(Simulator):
         return self.NumCellDivisions
 
     
-class ColonySimulator(Simulator):
+class FColonySimulator(FSimulator):
     def __init__(self, EcoliSim):
         self.EcoliSims = [[1, EcoliSim]]
         self.DataPoints = []
 
     def SimulateDelta(self, DeltaTime = 1.0):
+        NewEcoliSims = []
         for i, (NumEcoli, Sim) in enumerate(self.EcoliSims):
             Sim.SimulateDelta(DeltaTime)
             NumCellDivisions = Sim.GetNumCellDivisions()
@@ -86,10 +87,10 @@ class ColonySimulator(Simulator):
                     NumEcoli2 = NumEcoli - NumEcoli1
                     self.EcoliSims[i][0] = NumEcoli1
                     Sim2 = copy.deepcopy(Sim)
-                    Sim2.SetProgress(random.uniform(0, 0.5))
-                    self.EcoliSims.append([NumEcoli2, Sim2])
+                    Sim2.SetProgress(random.uniform(-0.3, 0.3))
+                    NewEcoliSims.append([NumEcoli2, Sim2])
+        self.EcoliSims += NewEcoliSims
                     
-
         self.AddToDataset()
 
     def Info(self):
@@ -108,18 +109,32 @@ class ColonySimulator(Simulator):
         return self.DataPoints[-1] if len(self.DataPoints) > 0 else 0
 
 
-class PopulationSimulator(Simulator):
-    def __init__(self):
+class FPopulationSimulator(FSimulator):
+    DEFAULT_COLONY = [
+        FEcoliSimulator.DNAREPLICATIONRATE,
+        FEcoliSimulator.PROTEINSYNTHESISRATE,
+        FEcoliSimulator.CYTOKINESISRATE
+    ]
+
+    DEFAULT_POPULATION = [DEFAULT_COLONY]
+
+    TEST1_POPULATION = [
+        DEFAULT_COLONY,
+        [
+            FEcoliSimulator.DNAREPLICATIONRATE,
+            FEcoliSimulator.PROTEINSYNTHESISRATE * 0.5,
+            FEcoliSimulator.CYTOKINESISRATE
+        ],
+        [
+            FEcoliSimulator.DNAREPLICATIONRATE,
+            FEcoliSimulator.PROTEINSYNTHESISRATE,
+            FEcoliSimulator.CYTOKINESISRATE * 0.5
+        ]
+    ]
+
+    def __init__(self, Population):
         self.Colonies = [
-            ColonySimulator(EcoliSimulator(EcoliSimulator.DNAREPLICATIONRATE,
-                                           EcoliSimulator.PROTEINSYNTHESISRATE,
-                                           EcoliSimulator.CYTOKINESISRATE)),
-            ColonySimulator(EcoliSimulator(EcoliSimulator.DNAREPLICATIONRATE,
-                                           EcoliSimulator.PROTEINSYNTHESISRATE * 0.5,
-                                           EcoliSimulator.CYTOKINESISRATE)),
-            ColonySimulator(EcoliSimulator(EcoliSimulator.DNAREPLICATIONRATE,
-                                           EcoliSimulator.PROTEINSYNTHESISRATE,
-                                           EcoliSimulator.CYTOKINESISRATE * 0.5))
+            FColonySimulator(FEcoliSimulator(Colony[0], Colony[1], Colony[2])) for Colony in Population
         ]
         self.Dataset = {}
 
@@ -162,15 +177,51 @@ class PopulationSimulator(Simulator):
         return {"E. coli Growth": PlotDataset}
 
 
-class PetridishSimulator(Simulator):
-    def __init__(self):
-        self.PopSim = PopulationSimulator()
+class FPetridishSimulator(FSimulator):
+    def __init__(self, Population):
+        self.PopSim = FPopulationSimulator(Population)
 
     def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
         self.PopSim.Simulate(TotalTime, DeltaTime)
 
     def GetDataset(self):
         return self.PopSim.GetDataset()
+
+
+class FExperimentSimulator(FSimulator):
+    def __init__(self):
+        # self.Control = FPetridishSimulator(FPopulationSimulator.DEFAULT_POPULATION)
+        self.Control = FPetridishSimulator(FPopulationSimulator.TEST1_POPULATION)
+        self.NumTest = 30
+        self.Tests = [] 
+        for i in range(self.NumTest):
+            self.Tests.append(FPetridishSimulator([[
+                FEcoliSimulator.DNAREPLICATIONRATE,
+                FEcoliSimulator.PROTEINSYNTHESISRATE * (self.NumTest - max(0, i - self.NumTest / 1.2)) / self.NumTest,
+                FEcoliSimulator.CYTOKINESISRATE
+            ]]))
+
+    def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
+        self.Control.Simulate(TotalTime, DeltaTime)
+        for Test in self.Tests:
+            Test.Simulate(TotalTime, DeltaTime)
+                              
+    def GetDataset(self):
+        return self.Control.GetDataset()
+
+    def GetGrowthDataset(self):
+        XSet, YSet = [], []
+        ControlDataset = list(self.Control.GetDataset().values())[0]
+        ControlDataset = ControlDataset["Population"]
+        MaxGrowth = ControlDataset[-1]
+        for i, Test in enumerate(self.Tests):
+            TestDataset = list(Test.GetDataset().values())[0]
+            TestDataset = TestDataset["Population"]
+            TestGrowth = TestDataset[-1]
+            XSet.append(i / self.NumTest)
+            YSet.append(TestGrowth / MaxGrowth)
+
+        return {"E. coli Growth": [XSet, YSet]}
 
     
 class FPlotter:
@@ -320,8 +371,20 @@ class FPlotter:
         plt.show()
 
 
+class FGrowthPlotter:
+    def PlotDatasets(self, Datasets):
+        for Title, Dataset in Datasets.items():
+            XSet, YSet = Dataset
+            plt.title(Title)
+            plt.ylabel("Relative Growth")
+            plt.xlabel("Repression Efficiency")
+            plt.plot(XSet, YSet, "b")
+            plt.plot(XSet, YSet, "go")
+            plt.show()
+
+
 if __name__ == '__main__':
-    Sim = PetridishSimulator()
+    Sim = FExperimentSimulator()
     Sim.Plot = True
 
     TotalTime = 6 * 60.0 * 60.0
@@ -334,3 +397,10 @@ if __name__ == '__main__':
         Datasets = Sim.GetDataset()
         Plot = FPlotter()
         Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
+
+        GrowthDatasets = Sim.GetGrowthDataset()
+        GrowthPlot = FGrowthPlotter()
+        GrowthPlot.PlotDatasets(GrowthDatasets)
+
+
+
