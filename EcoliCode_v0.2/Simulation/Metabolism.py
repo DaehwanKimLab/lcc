@@ -60,7 +60,7 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, YMin=0, YMax=0, bSideLabel=True, SuperTitle=""):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, YMin=0, YMax=0, bSideLabel=True, SuperTitle="", Multiscale=False):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
@@ -72,7 +72,7 @@ class FPlotter:
                 break
             return Time, Dataset
 
-        def ApplyUnit(Dataset):
+        def ApplyGlobalUnit(Dataset):
             Unit = 'a.u.'
             array_unit = {
                 'nM': 1e-9,
@@ -115,7 +115,7 @@ class FPlotter:
             YMax = 0
             for Process, Dataset in Datasets.items():
                 Dataset_Copy = Dataset.copy()
-                UnitTxt, Dataset_Copy = ApplyUnit(Dataset_Copy)
+                UnitTxt, Dataset_Copy = ApplyGlobalUnit(Dataset_Copy)
                 # Y axis (molecular concentrations)
                 for MolName, Conc in Dataset_Copy.items():
                     YMaxData = max(Conc) * 1.1
@@ -135,7 +135,7 @@ class FPlotter:
         # Plot data
         for n, (Process, Dataset) in enumerate(Datasets.items()):
             Time, Dataset = ExtractTime(Dataset, DeltaTime)
-            UnitTxt, Dataset = ApplyUnit(Dataset)
+            UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
             ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
 
             # Y axis (molecular concentrations)
@@ -146,6 +146,8 @@ class FPlotter:
                 if bSideLabel:
                     SelectedTimeFrameFromLeft = 0.9
                     ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=line.get_color())
+                    SelectedTimeFrameFromLeft = -0.01
+                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * 0)], MolName, ha="right", va="center", color=line.get_color())
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
@@ -319,10 +321,10 @@ class OxidativePhosphorylation(Reaction):
         self.ReactionName = 'OxidativePhosphorylation'
         self.Input = {"NADH": 1, "FADH2": 1, "ADP": 4}
         self.Output = {"NAD+": 1, "FAD": 1, "ATP": 4}
-        self.Capacity = 1e-1
+        self.Capacity = 0
 
     def Specification(self, Molecules, InitCond):
-        self.Capacity = Molecules["NADH"] * Molecules["FADH2"] * 3e7
+        self.Capacity = Molecules["NADH"] * Molecules["FADH2"] * 1e9
         return "ATP", self.ProductInhibition_VaryingCapacity("ATP", Molecules, InitCond)
 
 class ATPControl(Reaction):
@@ -558,9 +560,9 @@ class Simulator():
         print()
 
         while self.Iter < TotalTime / DeltaTime:
-            # Debug
-            if self.Iter == 1942:
-                print("")
+            # # Debug
+            # if self.Iter == 1942:
+            #     print("")
 
             for Reaction in self.Reactions:
                 dMolecules = self.RunReaction(Reaction, DeltaTime)
@@ -676,9 +678,9 @@ class Simulator():
 
         elif ReactionName == "OxidativePhosphorylation":
             Sim.AddReaction(OxidativePhosphorylation())
-            Sim.AddReaction(ATPControl(-1e-6))
-            Sim.AddReaction(NADHControl(2e-7))
-            Sim.AddReaction(FADH2Control(2e-7))
+            Sim.AddReaction(ATPControl(-4.35E-04))
+            Sim.AddReaction(NADHControl(1.0874e-4))
+            Sim.AddReaction(FADH2Control(1.0875e-4))
 
         else:
             print("\nNo unit test has been selected\n")
@@ -702,7 +704,7 @@ if __name__ == '__main__':
     Sim = Simulator()
 
     RunUnitTest = False
-    # RunUnitTest = True
+    RunUnitTest = True
 
     if RunUnitTest:
         UnitTestReactions = "OxidativePhosphorylation"
@@ -722,12 +724,16 @@ if __name__ == '__main__':
         Sim.AddReaction(PyruvateCarboxylation())
         Sim.AddReaction(OxidativePhosphorylation())
         Sim.AddReaction(ATPControl())
+        # Sim.AddReaction(ATPControl())
+        # Sim.AddReaction(ATPControl())
 
         # Set permanent molecules
         PermanentMolecules = [
             "G6P",
             "NADH",
             "NAD+",
+            "FADH2",
+            "FAD",
             # "CoA-SH",
             # "oxaloacetate",
         ]
@@ -750,7 +756,7 @@ if __name__ == '__main__':
     if Sim.Plot:
         Datasets = Sim.GetDataset()
         Plot = FPlotter()
-        Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
+        Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, Multiscale=True)
 
 """
 Reference
