@@ -146,6 +146,7 @@ class FPlotter:
                 else:
                     line._color = ConsistentColorDict[MolName]
 
+                # Mol labeling on the curve
                 if bSideLabel:
                     SelectedTimeFrameFromLeft = 0.99
                     ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="right", va="bottom", color=ConsistentColorDict[MolName])
@@ -154,7 +155,7 @@ class FPlotter:
 
                 YMaxData = max(Conc) * 1.1
                 if YMaxData > YMax:
-                    YMax = YMaxData
+                    YMax = min(1000 * 1.1, YMaxData)
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
@@ -227,14 +228,31 @@ class Reaction:
         return {}
 
     # Specification Models
-    def ProductInhibition(self, Reactant, Product, Molecules, InitCond):
-        return (max(0, InitCond[Product] - Molecules[Product]) / Molecules[Product]) * Molecules[Reactant] * self.Capacity
+    def MassAction_ReactantHomeostasis(self, Reactant, Molecules, InitCond):
+        '''
+        mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
+        '''
+        return max(0, Molecules[Reactant] - InitCond[Reactant]) * Molecules[Reactant] * self.Capacity
 
-    def ProductInhibition_VaryingCapacity(self, Product, Molecules, InitCond):
-        return (max(0, InitCond[Product] - Molecules[Product]) / Molecules[Product]) * self.Capacity
+    def ProductInhibition_ProductHomeostasis(self, Product, Molecules, InitCond):
+        '''
+        product inhibition maintaining the initial condition of the product
+        '''
+        return max(0, InitCond[Product] - Molecules[Product]) / Molecules[Product] * self.Capacity
 
-    def Homeostasis(self, Product, MolsForHomeostasis):
-        return 0
+    def ProductInhibition_ProductHomeostasis_MassAction(self, Reactant, Product, Molecules, InitCond):
+        '''
+        product inhibition, maintaining the initial condition of the product
+        + mass action driven by the rate-limiting reactant
+        '''
+        return max(0, InitCond[Product] - Molecules[Product]) * Molecules[Reactant] / Molecules[Product] * self.Capacity
+
+    def Homeostasis(self, Reactant, Product, Molecules, InitCond):
+        '''
+        product inhibition, maintaining the initial condition of the product
+        + mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
+        '''
+        return (max(0, Molecules[Reactant] - InitCond[Reactant]) + max(0, InitCond[Product] - Molecules[Product])) * Molecules[Reactant] / Molecules[Product] * self.Capacity
 
     def DisplayChemicalEquation(self):
 
@@ -297,7 +315,7 @@ class Glycolysis(Reaction):
         # dATP = (abs(Molecules["ADP"] - InitCond["ADP"]) / Molecules["ATP"]) * c   # For homeostasis of ADP level
         # dATP = (Molecules["ADP"] * abs(Molecules["ATP"] - InitCond["ATP"]) / Molecules["ATP"]) * c   # For homeostasis of ATP level
         # dATP = (max(0, InitCond["ATP"] - Molecules["ATP"]) / Molecules["ATP"]) * Molecules["G6P"] * self.Capacity # Product Inhibition
-        return "ATP", self.ProductInhibition("G6P", "ATP", Molecules, InitCond)
+        return "ATP", self.Homeostasis("G6P", "ATP", Molecules, InitCond)
 
 class PyruvateOxidation(Reaction):
     def __init__(self):
@@ -308,7 +326,7 @@ class PyruvateOxidation(Reaction):
         self.Capacity = 1
 
     def Specification(self, Molecules, InitCond):
-        return "acetyl-CoA", self.ProductInhibition("pyruvate", "acetyl-CoA", Molecules, InitCond)
+        return "acetyl-CoA", self.Homeostasis("pyruvate", "acetyl-CoA", Molecules, InitCond)
 
 
 class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
@@ -317,10 +335,11 @@ class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
         self.ReactionName = 'TCA_a-ketoglutarate Synthesis'
         self.Input = {"acetyl-CoA": 1, "oxaloacetate": 1, "CoA-SH": 1, "NAD+": 1}
         self.Output = {"CoA-SH": 1, "a-ketoglutarate": 1, "NADH": 1}
-        self.Capacity = 1e9
+        self.Capacity = 0
 
     def Specification(self, Molecules, InitCond):
-        return "a-ketoglutarate", self.ProductInhibition("acetyl-CoA", "a-ketoglutarate", Molecules, InitCond) * Molecules["oxaloacetate"]
+        self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
+        return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
 
 class TCACycle_SuccinylCoASynthesis(Reaction):
     def __init__(self):
@@ -328,10 +347,10 @@ class TCACycle_SuccinylCoASynthesis(Reaction):
         self.ReactionName = 'TCA_Succinyl-CoA Synthesis'
         self.Input = {"a-ketoglutarate": 1, "NAD+": 1, "CoA-SH": 1}
         self.Output = {"succinyl-CoA": 1, "NADH": 1}
-        self.Capacity = 1e-1
+        self.Capacity = 1
 
     def Specification(self, Molecules, InitCond):
-        return "succinyl-CoA", self.ProductInhibition("a-ketoglutarate", "succinyl-CoA", Molecules, InitCond)
+        return "succinyl-CoA", self.Homeostasis("a-ketoglutarate", "succinyl-CoA", Molecules, InitCond)
 
 class TCACycle_FumarateSynthesis(Reaction):
     def __init__(self):
@@ -339,10 +358,10 @@ class TCACycle_FumarateSynthesis(Reaction):
         self.ReactionName = 'TCA_Fumarate Synthesis'
         self.Input = {"succinyl-CoA": 1, "ADP": 1, "FAD": 1}
         self.Output = {"fumarate": 1, "CoA-SH": 1, "ATP": 1, "FADH2": 1} # TODO: Update from ATP to GTP later
-        self.Capacity = 5e-1
+        self.Capacity = 1e1
 
     def Specification(self, Molecules, InitCond):
-        return "fumarate", self.ProductInhibition("succinyl-CoA", "fumarate", Molecules, InitCond)
+        return "fumarate", self.Homeostasis("succinyl-CoA", "fumarate", Molecules, InitCond)
 
 class TCACycle_OxaloacetateSynthesis(Reaction):
     def __init__(self):
@@ -353,7 +372,7 @@ class TCACycle_OxaloacetateSynthesis(Reaction):
         self.Capacity = 1e-1
 
     def Specification(self, Molecules, InitCond):
-        return "oxaloacetate", self.ProductInhibition("fumarate", "oxaloacetate", Molecules, InitCond)
+        return "oxaloacetate", self.Homeostasis("fumarate", "oxaloacetate", Molecules, InitCond)
 
 class PyruvateCarboxylation(Reaction):
     def __init__(self):
@@ -364,7 +383,7 @@ class PyruvateCarboxylation(Reaction):
         self.Capacity = 1e-3
 
     def Specification(self, Molecules, InitCond):
-        return "oxaloacetate", self.ProductInhibition("pyruvate", "oxaloacetate", Molecules, InitCond)
+        return "oxaloacetate", self.Homeostasis("pyruvate", "oxaloacetate", Molecules, InitCond)
 
 class OxidativePhosphorylation(Reaction):
     def __init__(self):
@@ -375,8 +394,8 @@ class OxidativePhosphorylation(Reaction):
         self.Capacity = 0
 
     def Specification(self, Molecules, InitCond):
-        self.Capacity = Molecules["NADH"] * Molecules["FADH2"] * 1e9
-        return "ATP", self.ProductInhibition_VaryingCapacity("ATP", Molecules, InitCond)
+        self.Capacity = min(Molecules["NADH"], Molecules["FADH2"]) * 1e3
+        return "ATP", self.ProductInhibition_ProductHomeostasis("ATP", Molecules, InitCond)
 
 class ATPControl(Reaction):
     def __init__(self, ControlRate=-4.35E-03):
@@ -706,7 +725,7 @@ class Simulator():
 
         elif ReactionName == "TCACycle_a-KetoGlutarateSynthesis":
             Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
-            Sim.AddReaction(MolControl("a-ketoglutarate", -3e-6))
+            Sim.AddReaction(MolControl("a-ketoglutarate", -3e-7))
             Sim.AddPermanentMolecules(["oxaloacetate"])
 
         elif ReactionName == "TCACycle_SuccinylCoASynthesis":
@@ -755,7 +774,7 @@ if __name__ == '__main__':
     Sim = Simulator()
 
     RunUnitTest = False
-    RunUnitTest = True
+    # RunUnitTest = True
 
     if RunUnitTest:
         UnitTestReactions = "OxidativePhosphorylation"
@@ -772,7 +791,7 @@ if __name__ == '__main__':
         Sim.AddReaction(TCACycle_SuccinylCoASynthesis())
         Sim.AddReaction(TCACycle_FumarateSynthesis())
         Sim.AddReaction(TCACycle_OxaloacetateSynthesis())
-        Sim.AddReaction(PyruvateCarboxylation())
+        # Sim.AddReaction(PyruvateCarboxylation())
         Sim.AddReaction(OxidativePhosphorylation())
         Sim.AddReaction(ATPControl())
         # Sim.AddReaction(ATPControl())
@@ -781,6 +800,8 @@ if __name__ == '__main__':
         # Set permanent molecules
         PermanentMolecules = [
             "G6P",
+            # "pyruvate",
+            "CoA-SH",
             "NADH",
             "NAD+",
             "FADH2",
