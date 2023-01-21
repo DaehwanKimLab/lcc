@@ -18,6 +18,11 @@ class FPlotter:
     def __init__(self):
         self.Filter_Inclusion = None
         self.Filter_Exclusion = None
+        self.KnownMolConc = dict()
+
+    def SetKnownMolConc(self, KnownMolConc):
+        self.KnownMolConc = KnownMolConc
+        # https://stackoverflow.com/questions/12957582/plot-yerr-xerr-as-shaded-region-rather-than-error-bars
 
     def ResetFilters(self):
         self.Filter_Inclusion = None
@@ -223,6 +228,8 @@ class Reaction:
         self.Output = dict()
         self.Stoich = dict()
         self.Capacity = 0
+        self.CapacityConstant = 0
+        self.Regulators = dict()     # Capacity modulator, enzyme name: critical gene expression threshold for full function
 
     def Specification(self, Molecules, InitCond):
         return {}
@@ -253,6 +260,19 @@ class Reaction:
         + mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
         '''
         return (max(0, Molecules[Reactant] - InitCond[Reactant]) + max(0, InitCond[Product] - Molecules[Product])) * Molecules[Reactant] / Molecules[Product] * self.Capacity
+
+    def GetCurrentCapacity(self, Molecules, RateLimitingCofactors):
+        CapacityFactors = 1
+        for i in range(len(RateLimitingCofactors)):
+             CapacityFactors *= Molecules[RateLimitingCofactors[i]]
+        return CapacityFactors * self.CapacityConstant
+
+    def ApplyRegulation(self, Molecules):
+        RegulatedCapacity = 1
+        for regulator, threshold in self.Regulators.items():
+            if Molecules[regulator] < threshold:
+                self.Capacity *= (Molecules[regulator] / threshold)
+        return RegulatedCapacity * self.Capacity
 
     def DisplayChemicalEquation(self):
 
@@ -335,7 +355,6 @@ class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
         self.ReactionName = 'TCA_a-ketoglutarate Synthesis'
         self.Input = {"acetyl-CoA": 1, "oxaloacetate": 1, "CoA-SH": 1, "NAD+": 1}
         self.Output = {"CoA-SH": 1, "a-ketoglutarate": 1, "NADH": 1}
-        self.Capacity = 0
 
     def Specification(self, Molecules, InitCond):
         self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
@@ -391,7 +410,6 @@ class OxidativePhosphorylation(Reaction):
         self.ReactionName = 'OxidativePhosphorylation'
         self.Input = {"NADH": 1, "FADH2": 1, "ADP": 4}
         self.Output = {"NAD+": 1, "FAD": 1, "ATP": 4}
-        self.Capacity = 0
 
     def Specification(self, Molecules, InitCond):
         self.Capacity = min(Molecules["NADH"], Molecules["FADH2"]) * 1e3
@@ -446,6 +464,27 @@ class MolControl(Reaction):
     def Specification(self, Molecules, InitCond):
         return self.ConsumedMol, self.Capacity
 
+class Process(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.BuildingBlocks = dict() # gets incorporated into input
+        self.EnergyConsumption = dict()   # ATP Consumption, gets incorporated into stoichiometry
+        self.Rate = 0.0
+        self.MaxRate = 0.0
+        self.Progress = 0.0
+        self.MaxProgress = 0.0
+
+class DNAReplication(Process):
+    def __init__(self):
+        super().__init__()
+        self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
+        self.Regulators = {}
+        self.Rate = 0.0
+        self.MaxRate = 2000.0
+        self.Progress = 0.0
+        self.MaxProgress = 4.5e6
+
 
 class Simulator():
     def __init__(self):
@@ -486,7 +525,7 @@ class Simulator():
 
     def GetKnownMolConc(self, Molecule):
         if Molecule in self.KnownMolConc:
-            return self.KnownMolConc[Molecule]
+            return self.KnownMolConc[Molecule][0]
         else:
             print(Molecule, " is not found in the KnownMolConc database")
             return 0.0
@@ -604,15 +643,17 @@ class Simulator():
             print("{:<16}: {:>10}".format(Molecule, ConStr))
 
     def Summary(self):
-        print("{:<16} {:>10} {:>10} {:>10} {:<10}".format("", "Initial", "Final", "dConc", "(Permanent)"))
+        print("{:<16} {:>10} {:>10} {:>10} {:<10} {:<10}".format("", "Initial", "Final", "dConc", "Depleted", "Accumulated"))
         for Molecule, Conc in self.Molecules.items():
             dConc = Conc - self.InitialConditions[Molecule]
 
             InitConc = self.Conc2Str(self.InitialConditions[Molecule])
             FinalConc = self.Conc2Str(Conc)
-            FinaldConc = self.Conc2Str(dConc)
+            FinaldConc = self.Conc2Str(dConc) if Molecule not in self.PermanentMolecules else "-"
+            Depletion = 'DEPLETED' if Conc < self.KnownMolConc[Molecule][1] else ''
+            Accumulation = 'ACCUMULATED' if Conc > self.KnownMolConc[Molecule][2] else ''
 
-            print("{:16} {:>10} {:>10} {:>10} {}".format(Molecule, InitConc, FinalConc, FinaldConc, "*" if Molecule in self.PermanentMolecules else ""))
+            print("{:16} {:>10} {:>10} {:>10} {:<10} {:<10}".format(Molecule, InitConc, FinalConc, FinaldConc, Depletion, Accumulation))
         if self.Plot:
             print("\nPlot: ON")
         else:
@@ -692,6 +733,7 @@ class Simulator():
                     return Name
 
             KnownMolConc = dict()
+
             for i, Value in enumerate(db_KnownMolConc):
                 Metabolite, ConcInEcoli, LowerBound, UpperBound = Value
                 # data = dict()
@@ -703,13 +745,17 @@ class Simulator():
                     continue
                 Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
                 Metabolite = MetaboliteSynonyms(Metabolite)
-                KnownMolConc[Metabolite] = float(ConcInEcoli)
+                KnownMolConc[Metabolite] = (float(ConcInEcoli), float(LowerBound), float(UpperBound))
+
             return KnownMolConc
 
         db_KnownMolConc = self.LoadTSVDatabase("MetaboliteConcentrations.tsv")
         KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
 
-        KnownMolConc["FADH2"] = (KnownMolConc["NADH"] / KnownMolConc["NAD+"]) * KnownMolConc["FAD"]
+        # FADH2 missing data
+        KnownMolConc["FADH2"] = ((KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][0],
+                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][1],
+                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][2])
 
         return KnownMolConc
 
@@ -827,7 +873,9 @@ if __name__ == '__main__':
     # Plot
     if Sim.Plot:
         Datasets = Sim.GetDataset()
+        KnownConcentrations = Sim.GetKnownMolConc()
         Plot = FPlotter()
+        Plot.SetKnownMolConc(Sim.KnownMolConc)
         Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, Multiscale=True)
 
 """
