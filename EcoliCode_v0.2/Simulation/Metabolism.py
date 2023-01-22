@@ -6,8 +6,10 @@ import sys
 from datetime import datetime
 import numpy as np
 import math
+from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 import csv
+import copy
 
 NA = 6e23
 CytoVol = 1e-15
@@ -65,17 +67,16 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, YMin=0, YMax=0, bSideLabel=True, SuperTitle="", Multiscale=False):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, YMin=0, YMax=0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
 
-        def ExtractTime(Dataset, SimulationTimeUnit):
-            Time = None
-            for Data in Dataset.values():
-                Time = [i * SimulationTimeUnit for i in range(len(Data))]
-                break
-            return Time, Dataset
+        def ExtractTime(Datasets, SimulationTimeUnit):
+            for n, (Process, Dataset) in enumerate(Datasets.items()):
+                for Data in Dataset.values():
+                    Time = [i * SimulationTimeUnit for i in range(len(Data))]
+                    return Time
 
         def ApplyGlobalUnit(Dataset):
             Unit = 'a.u.'
@@ -102,19 +103,35 @@ class FPlotter:
             # Convert data to appropriate unit
             if Unit in array_unit:
                 DatasetArray = DatasetArray / array_unit[Unit]
+
                 # print('Final unit:', Unit)
                 for Key, i in DatasetKeyIndex.items():
                     Dataset[Key] = DatasetArray[i].tolist()
+                    AdjustUnitOnKnownConc(Key, array_unit[Unit])
 
             return Unit, Dataset
 
-        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3, ScaleFactor=1):
+        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3):
+            ScaleFactor = 1
+            if Multiscale:
+                ScaleFactor *= 3
+            if Individual:
+                ScaleFactor *= len(Datasets)
+
             NPlotsInRows = len(Datasets) * ScaleFactor # Default
             if len(Datasets) > 1:
                 for Remainder in range(MaxNPlotsInRows):
                     if len(Datasets) % (Remainder + 1) == 0:
                         NPlotsInRows = Remainder + 1
-            return NPlotsInRows
+
+            NPlotsInColumn = math.ceil(len(Datasets) / NPlotsInRows)
+
+            return ScaleFactor, NPlotsInRows, NPlotsInColumn
+
+        def AdjustUnitOnKnownConc(MolName, Factor):
+            self.KnownMolConc[MolName][0] /= Factor
+            self.KnownMolConc[MolName][1] /= Factor
+            self.KnownMolConc[MolName][2] /= Factor
 
         def GetYMax(Datasets):
             YMax = 0
@@ -151,6 +168,10 @@ class FPlotter:
                 else:
                     line._color = ConsistentColorDict[MolName]
 
+                # Display Molecule Range
+                if MolRange:
+                    ax1.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.5, facecolor=ConsistentColorDict[MolName])
+
                 # Mol labeling on the curve
                 if bSideLabel:
                     SelectedTimeFrameFromLeft = 0.99
@@ -172,12 +193,23 @@ class FPlotter:
                 ax1.legend(loc='upper left')
             # ax1.grid()
 
-        # Plot data
-        if Multiscale:
-            ScaleFactor = 4
-            NPlotsInRows = GetSubPlottingInfo(Datasets, ScaleFactor=ScaleFactor)
-            NPlotsInColumn = math.ceil(len(Datasets) / NPlotsInRows)
+        # Extract Global Time from the Dataset
+        Time = ExtractTime(Datasets, DeltaTime)
 
+        # Determine subplotting map
+        ScaleFactor, NPlotsInRows, NPlotsInColumn = GetSubPlottingInfo(Datasets)
+
+        # Plot data
+        SubplotID = 1
+        if All:
+            for n, (Process, Dataset) in enumerate(Datasets.items()):
+                UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
+                ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                PlotDataset(Dataset, Process, UnitTxt)
+                SubplotID += 1
+
+        # Multiscale split datasets
+        if Multiscale:
             def SplitScales(Dataset):
                 Dataset_mM = dict()
                 Dataset_uM = dict()
@@ -185,41 +217,89 @@ class FPlotter:
                 for mol, conc in Dataset.items():
                     if conc[0] < 1e-6:
                         Dataset_nM[mol] = (np.array(conc) / 1e-9).tolist()
+                        AdjustUnitOnKnownConc(mol, 1e-9)
                     elif conc[0] < 1e-3:
                         Dataset_uM[mol] = (np.array(conc) / 1e-6).tolist()
+                        AdjustUnitOnKnownConc(mol, 1e-6)
                     else:
                         Dataset_mM[mol] = (np.array(conc) / 1e-3).tolist()
+                        AdjustUnitOnKnownConc(mol, 1e-3)
                 return (Dataset_mM, Dataset_uM, Dataset_nM)
 
             for n, (Process, Dataset) in enumerate(Datasets.items()):
-                Time, Dataset = ExtractTime(Dataset, DeltaTime)
-                Dataset_Unit = SplitScales(Dataset.copy())
+                Dataset_Unit = SplitScales(Dataset)
                 Units = ['mM', 'uM', 'nM']
 
-                # All Data
-                i = 1
-                UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
-                ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, ScaleFactor * n + i)
-                PlotDataset(Dataset, Process, UnitTxt)
-
-                # Split scale ranges
                 for Unit, dataset in zip(Units, Dataset_Unit):
-                    i += 1
-                    ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, ScaleFactor * n + i)
+                    ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
                     PlotDataset(dataset, Unit + ' range', Unit)
+                    SubplotID += 1
 
-
-        else:
-            NPlotsInRows = GetSubPlottingInfo(Datasets)
+        # Individual Datasets
+        if Individual:
+            def ConvertToIndividualDataset(Dataset):
+                AdjustedDatasets = dict()
+                Units = dict()
+                for mol, conc in Dataset.items():
+                    if conc[0] < 1e-6:
+                        AdjustedDatasets[mol] = {mol: (np.array(conc) / 1e-9).tolist()}
+                        Units[mol] = "nM"
+                        AdjustUnitOnKnownConc(mol, 1e-9)
+                    elif conc[0] < 1e-3:
+                        AdjustedDatasets[mol] = {mol: (np.array(conc) / 1e-6).tolist()}
+                        Units[mol] = "uM"
+                        AdjustUnitOnKnownConc(mol, 1e-6)
+                    else:
+                        AdjustedDatasets[mol] = {mol: (np.array(conc) / 1e-3).tolist()}
+                        Units[mol] = "mM"
+                        AdjustUnitOnKnownConc(mol, 1e-3)
+                return Units, AdjustedDatasets
 
             for n, (Process, Dataset) in enumerate(Datasets.items()):
-                Time, Dataset = ExtractTime(Dataset, DeltaTime)
-                UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
-                ax1 = fig.add_subplot(math.ceil(len(Datasets) / NPlotsInRows), NPlotsInRows, n + 1)
-
-                PlotDataset(Dataset, Process, UnitTxt)
+                Unit, AdjustedDatasets = ConvertToIndividualDataset(Dataset)
+                for MolName, Dataset in AdjustedDatasets.items():
+                    ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                    PlotDataset(Dataset, Process, Unit[MolName])
+                    SubplotID += 1
 
         plt.show()
+
+    # def PrintToPDF(self):
+    #     # Create the PdfPages object to which we will save the pages:
+    #     # The with statement makes sure that the PdfPages object is closed properly at
+    #     # the end of the block, even if an Exception occurs.
+    #     with PdfPages('multipage_pdf.pdf') as pdf:
+    #         plt.figure(figsize=(3, 3))
+    #         plt.plot(range(7), [3, 1, 4, 1, 5, 9, 2], 'r-o')
+    #         plt.title('Page One')
+    #         pdf.savefig()  # saves the current figure into a pdf page
+    #         plt.close()
+    #
+    #         # if LaTeX is not installed or error caught, change to `False`
+    #         plt.rcParams['text.usetex'] = True
+    #         plt.figure(figsize=(8, 6))
+    #         x = np.arange(0, 5, 0.1)
+    #         plt.plot(x, np.sin(x), 'b-')
+    #         plt.title('Page Two')
+    #         pdf.attach_note("plot of sin(x)")  # attach metadata (as pdf note) to page
+    #         pdf.savefig()
+    #         plt.close()
+    #
+    #         plt.rcParams['text.usetex'] = False
+    #         fig = plt.figure(figsize=(4, 5))
+    #         plt.plot(x, x ** 2, 'ko')
+    #         plt.title('Page Three')
+    #         pdf.savefig(fig)  # or you can pass a Figure object to pdf.savefig
+    #         plt.close()
+    #
+    #         # We can also set the file's metadata via the PdfPages object:
+    #         d = pdf.infodict()
+    #         d['Title'] = 'Multipage PDF Example'
+    #         d['Author'] = 'Jouni K. Sepp\xe4nen'
+    #         d['Subject'] = 'How to create a multipage pdf file and set its metadata'
+    #         d['Keywords'] = 'PdfPages multipage keywords author title subject'
+    #         d['CreationDate'] = datetime.datetime(2009, 11, 13)
+    #         d['ModDate'] = datetime.datetime.today()
 
 class Reaction:
     def __init__(self):
@@ -261,17 +341,17 @@ class Reaction:
         '''
         return (max(0, Molecules[Reactant] - InitCond[Reactant]) + max(0, InitCond[Product] - Molecules[Product])) * Molecules[Reactant] / Molecules[Product] * self.Capacity
 
-    def GetCurrentCapacity(self, Molecules, RateLimitingCofactors):
-        CapacityFactors = 1
+    def UpdateCapacity(self, Molecules, RateLimitingCofactors):
+        CapacityFactors = 1 # set to 1M by default
         for i in range(len(RateLimitingCofactors)):
-             CapacityFactors *= Molecules[RateLimitingCofactors[i]]
-        return CapacityFactors * self.CapacityConstant
+             CapacityFactors = min(CapacityFactors, Molecules[RateLimitingCofactors[i]])
+        self.Capacity = CapacityFactors * self.CapacityConstant
 
     def ApplyRegulation(self, Molecules):
         RegulatedCapacity = 1
         for regulator, threshold in self.Regulators.items():
             if Molecules[regulator] < threshold:
-                self.Capacity *= (Molecules[regulator] / threshold)
+                RegulatedCapacity *= (Molecules[regulator] / threshold)
         return RegulatedCapacity * self.Capacity
 
     def DisplayChemicalEquation(self):
@@ -355,9 +435,10 @@ class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
         self.ReactionName = 'TCA_a-ketoglutarate Synthesis'
         self.Input = {"acetyl-CoA": 1, "oxaloacetate": 1, "CoA-SH": 1, "NAD+": 1}
         self.Output = {"CoA-SH": 1, "a-ketoglutarate": 1, "NADH": 1}
+        self.CapacityConstant = 1e2
 
     def Specification(self, Molecules, InitCond):
-        self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
+        self.UpdateCapacity(Molecules, ["oxaloacetate", "acetyl-CoA"])
         return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
 
 class TCACycle_SuccinylCoASynthesis(Reaction):
@@ -410,9 +491,10 @@ class OxidativePhosphorylation(Reaction):
         self.ReactionName = 'OxidativePhosphorylation'
         self.Input = {"NADH": 1, "FADH2": 1, "ADP": 4}
         self.Output = {"NAD+": 1, "FAD": 1, "ATP": 4}
+        self.CapacityConstant = 1e3
 
     def Specification(self, Molecules, InitCond):
-        self.Capacity = min(Molecules["NADH"], Molecules["FADH2"]) * 1e3
+        self.UpdateCapacity(Molecules, ["NADH", "FADH2"])
         return "ATP", self.ProductInhibition_ProductHomeostasis("ATP", Molecules, InitCond)
 
 class ATPControl(Reaction):
@@ -745,7 +827,7 @@ class Simulator():
                     continue
                 Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
                 Metabolite = MetaboliteSynonyms(Metabolite)
-                KnownMolConc[Metabolite] = (float(ConcInEcoli), float(LowerBound), float(UpperBound))
+                KnownMolConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound)]
 
             return KnownMolConc
 
@@ -753,9 +835,9 @@ class Simulator():
         KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
 
         # FADH2 missing data
-        KnownMolConc["FADH2"] = ((KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][0],
+        KnownMolConc["FADH2"] = [(KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][0],
                                  (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][1],
-                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][2])
+                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][2]]
 
         return KnownMolConc
 
@@ -873,10 +955,18 @@ if __name__ == '__main__':
     # Plot
     if Sim.Plot:
         Datasets = Sim.GetDataset()
-        KnownConcentrations = Sim.GetKnownMolConc()
+        KnownConcentrations = Sim.OpenKnownMolConc()
         Plot = FPlotter()
-        Plot.SetKnownMolConc(Sim.KnownMolConc)
-        Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, Multiscale=True)
+        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        # Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, All=True, MolRange=True)
+
+        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
+        # Plot.PlotDatasets(Datasets.copy(), DeltaTime=DeltaTime, Multiscale=True, MolRange=True)
+
+        # Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
 
 """
 Reference
