@@ -28,6 +28,35 @@ def Conc2Str(Conc):
         Str = "{:.3f} pM".format(Conc * 1e12)
     return Str
 
+class EcoliInfo:
+    # EC stands for Energy Consumption in ATP molecules (count)
+    ECC_DNAReplication = 4.5 * 1e6 * 2 # 4.5Mbp genome (double strand)
+    ECC_ProteinSynthesis = 3 * 1e6 * 300 # 3M proteins (each 300aa)
+    ECC_Cytokinesis = 10 * 1e6
+    ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
+
+    # Convert count to M assuming E. coli volume is 1um^3 
+    AvogadroNum = 6.022e23
+    C2M = 1 / AvogadroNum * 1e15
+
+    # ECM stands for Energy Consumption in ATP (M = mol/L)
+    ECM_CellDivision = ECC_CellDivision * C2M
+    ECM_CellDivision_Sec = ECM_CellDivision / (20 * 60) # 20 minutes assumed for one cycle of cell division
+
+    # ECGM stands for Energy Consumption in Glucose (M)
+    ECGM_CellDivision = ECM_CellDivision / 32
+
+    # EGM stands for Energy Generation in ATP (M)
+    EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 10 # Glycolysis is assumed to be fast (10 times faster than necessary for cell division)
+    EGM_TCA_Sec = ECM_CellDivision_Sec * 1.2
+    EGM_OxidativePhosphorylation_Sec = ECM_CellDivision_Sec * 1.2
+
+    def Info():
+        print("Molecule Consumption - Glucose:                                {:>10}".format(Conc2Str(EcoliInfo.ECGM_CellDivision)))
+        print("Energy Consumption   - Cell Division per sec:                  {:>10}".format(Conc2Str(EcoliInfo.ECM_CellDivision_Sec)))
+        print("Energy Generation    - Glycolysis per sec:                     {:>10}".format(Conc2Str(EcoliInfo.EGM_Glycolysis_Sec)))
+        print("Energy Generation    - TCA & Oxidative Phosporylation per sec: {:>10}".format(Conc2Str(EcoliInfo.EGM_TCA_Sec)))
+        print("")
 
 class FPlotter:
     def __init__(self):
@@ -334,7 +363,9 @@ class Glycolysis(Reaction):
         # return "ATP", self.Homeostasis("G6P", "ATP", Molecules, InitCond)
         # return "ATP", (max(0, Molecules["ADP"] - 0.5 * 1e-3) / Molecules["ATP"]) * min(1e-3, Molecules["G6P"]) * self.Capacity
         self.Capacity = 12.7 * 1e-3
-        return "ATP", (max(0, Molecules["ADP"] - 0.5 * 1e-3) / Molecules["ATP"]) * self.Capacity
+        VO = Molecules["ADP"] / Molecules["ATP"] * self.Capacity
+        VMax = max(0, Molecules["ADP"] - InitCond["ADP"])
+        return "ATP", min(VO, VMax)
 
 class PyruvateOxidation(Reaction):
     def __init__(self):
@@ -347,7 +378,9 @@ class PyruvateOxidation(Reaction):
     def Specification(self, Molecules, InitCond):
         # return "acetyl-CoA", self.Homeostasis("pyruvate", "acetyl-CoA", Molecules, InitCond)
         self.Capacity = 0.2 * 1e-3
-        return "acetyl-CoA", Molecules["pyruvate"] / (4 * 1e-3 + Molecules["pyruvate"]) * self.Capacity
+        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.Capacity
+        VMax = max(0, Molecules["pyruvate"] - InitCond["pyruvate"])
+        return "acetyl-CoA", min(VO, VMax)
 
 class TCACycle(Reaction):
     def __init__(self):
@@ -361,7 +394,9 @@ class TCACycle(Reaction):
         # self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
         # return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
         self.Capacity = 0.2 * 1e-3
-        return "ATP", Molecules["acetyl-CoA"] / (0.7 * 1e-3 + Molecules["acetyl-CoA"]) * self.Capacity
+        VO = Molecules["acetyl-CoA"] / (InitCond["acetyl-CoA"] + Molecules["acetyl-CoA"]) * self.Capacity
+        VMax = max(0, Molecules["acetyl-CoA"] - InitCond["acetyl-CoA"])
+        return "ATP", min(VO, VMax)
 
 
 class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
@@ -431,8 +466,8 @@ class NADH_OxidativePhosphorylation(Reaction):
     def Specification(self, Molecules, InitCond):
         self.Capacity = 1.2e-3
         VO = Molecules["NADH"] / (InitCond["NADH"] + Molecules["NADH"]) * self.Capacity
-        VMAX = max(0, Molecules["NADH"] - InitCond["NADH"])
-        return "ATP", min(VO, VMAX)
+        VMax = max(0, Molecules["NADH"] - InitCond["NADH"])
+        return "ATP", min(VO, VMax)
 
 class FADH2_OxidativePhosphorylation(Reaction):
     def __init__(self):
@@ -445,8 +480,8 @@ class FADH2_OxidativePhosphorylation(Reaction):
     def Specification(self, Molecules, InitCond):
         self.Capacity = 0.15e-3
         VO = Molecules["FADH2"] / (InitCond["FADH2"] + Molecules["FADH2"]) * self.Capacity
-        VMAX = max(0, Molecules["FADH2"] - InitCond["FADH2"])
-        return "ATP", min(VO, VMAX)
+        VMax = max(0, Molecules["FADH2"] - InitCond["FADH2"])
+        return "ATP", min(VO, VMax)
 
 class ATPControl(Reaction):
     def __init__(self, ControlRate=-4.35E-03):
@@ -579,11 +614,16 @@ class Simulator():
         RefCoeff = Reaction.Stoich[RefMol]
         UnitdConc = RefdConc / RefCoeff
 
-        Out = 10   # 1 Molar to begin comparison
+        Out = 10   # 10 Molar to begin comparison
         for Mol, Coeff in Reaction.Input.items():
             AdjustedConc = self.Molecules[Mol] / Coeff
 
             Out = min(Out, min(AdjustedConc, UnitdConc))
+            
+            # The following is possible due to multiplication/division in floating numbers
+            if Out * Coeff > self.Molecules[Mol]:
+                Out *= 0.999999
+            assert Out * Coeff <= self.Molecules[Mol]
 
             # DEBUG
             # if self.Molecules[Mol] < 1e-8:
@@ -612,9 +652,8 @@ class Simulator():
         # DEBUG
         # print(self.Molecules, dMolecules)
         for dMolecule, dConc in dMolecules.items():
-            assert dMolecule in self.Molecules
-            # DK - debugging purposes
-            assert dConc + self.Molecules[dMolecule] >= -1e-10, 'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter, dMolecule, Conc2Str(self.Molecules[dMolecule]), Conc2Str(dConc))
+            assert dMolecule in self.Molecules            
+            assert dConc + self.Molecules[dMolecule] >= 0, 'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter, dMolecule, Conc2Str(self.Molecules[dMolecule]), Conc2Str(dConc))
             self.Molecules[dMolecule] += dConc
             self.Molecules[dMolecule] = max(0, self.Molecules[dMolecule])
 
@@ -711,7 +750,7 @@ class Simulator():
 
             # DK - debugging purposes
             # self.Debug_Info = 1
-            # if self.Iter > 50:
+            # if self.Iter > 200:
             #     assert False
 
             if self.Iter % self.Debug_Info == 0:
@@ -839,36 +878,10 @@ if __name__ == '__main__':
 
     RunUnitTest = False
     # RunUnitTest = True
-    
-    # EC stands for Energy Consumption in ATP molecules (count)
-    ECC_DNAReplication = 4.5 * 1e6 * 2 # 4.5Mbp genome (double strand)
-    ECC_ProteinSynthesis = 3 * 1e6 * 300 # 3M proteins (each 300aa)
-    ECC_Cytokinesis = 10 * 1e6
-    ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
 
-    # Convert count to M assuming E. coli volume is 1um^3 
-    AvogadroNum = 6.022e23
-    C2M = 1 / AvogadroNum * 1e15
-
-    # ECM stands for Energy Consumption in ATP (M = mol/L)
-    ECM_CellDivision = ECC_CellDivision * C2M
-    ECM_CellDivision_Sec = ECM_CellDivision / (20 * 60) # 20 minutes assumed for one cycle of cell division
-
-    # ECGM stands for Energy Consumption in Glucose (M)
-    ECGM_CellDivision = ECM_CellDivision / 32
-
-    # EGM stands for Energy Generation in ATP (M)
-    EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 10 # Glycolysis is assumed to be fast (10 times faster than necessary for cell division)
-    EGM_TCA_Sec = ECM_CellDivision_Sec * 1.2
-    EGM_OxidativePhosphorylation_Sec = ECM_CellDivision_Sec * 1.2
-
-    print("Molecule Consumption - Glucose:                                {:>10}".format(Conc2Str(ECGM_CellDivision)))
-    print("Energy Consumption   - Cell Division per sec:                  {:>10}".format(Conc2Str(ECM_CellDivision_Sec)))
-    print("Energy Generation    - Glycolysis per sec:                     {:>10}".format(Conc2Str(EGM_Glycolysis_Sec)))
-    print("Energy Generation    - TCA & Oxidative Phosporylation per sec: {:>10}".format(Conc2Str(EGM_TCA_Sec)))
-    print("")
-
-    Molecules = {}
+    EcoliInfo.Info()
+    ATPConsumption_Sec = EcoliInfo.ECM_CellDivision_Sec
+    # ATPConsumption_Sec = 0
     
     if RunUnitTest:
         # UnitTestReactions = "OxidativePhosphorylation"
@@ -890,7 +903,7 @@ if __name__ == '__main__':
         # Sim.AddReaction(PyruvateCarboxylation())
         Sim.AddReaction(NADH_OxidativePhosphorylation())
         Sim.AddReaction(FADH2_OxidativePhosphorylation())
-        Sim.AddReaction(ATPControl(-ECM_CellDivision_Sec))
+        Sim.AddReaction(ATPControl(-ATPConsumption_Sec))
 
         # Set permanent molecules
         PermanentMolecules = [
@@ -912,14 +925,16 @@ if __name__ == '__main__':
     Sim.Plot = True
 
     # Set initial molecule concentrations
+    Molecules = {}
     # Molecules["ATP"] = 1.0 * 1e-3
     # Molecules["ADP"] = 8.6 * 1e-3
+    # Molecules["G6P"] = 50 * 1e-3
 
     # Execute simulation
     Sim.Initialize(Molecules)
 
     # Simulation parameters
-    TotalTime = Sim.Molecules["G6P"] * 32 / ECM_CellDivision_Sec + 200
+    TotalTime = Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
     DeltaTime = 0.01
 
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
