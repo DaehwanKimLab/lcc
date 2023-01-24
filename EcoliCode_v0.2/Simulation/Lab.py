@@ -9,65 +9,9 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-
-class FSimulator():
-    def __init__(self):
-        None
-
-    def Initialize(self):
-        None
-
-    def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
-        None
-
-    def GetDataset(self):
-        return None
+from Ecoli import FSimulator, FEcoliSimulator
 
 
-class FEcoliSimulator(FSimulator):
-    DNAREPLICATIONRATE = 1.0 / (16 * 60)
-    PROTEINSYNTHESISRATE = 1.0 / (16 * 60)
-    CYTOKINESISRATE = 1.0 / ( 6 * 60)
-
-    def __init__(self, 
-                 DNAReplicationRate = DNAREPLICATIONRATE,
-                 ProteinSynthesisRate = PROTEINSYNTHESISRATE,
-                 CytoKinesisRate = CYTOKINESISRATE):
-        self.DNAReplicationRate = DNAReplicationRate
-        self.DNAReplicationProgress = 0.0
-        self.ProteinSynthesisRate = ProteinSynthesisRate
-        self.ProteinSynthesisProgress = 0.0
-        self.CytoKinesisRate = CytoKinesisRate
-        self.CytoKinesisProgress = 0.0
-
-        self.NumCellDivisions = 0
-
-    def SimulateDelta(self, DeltaTime = 1.0):
-        if self.DNAReplicationProgress >= 1.0 and \
-           self.ProteinSynthesisProgress >= 1.0:
-            self.CytoKinesisProgress += self.CytoKinesisRate * DeltaTime
-        else:
-            if self.DNAReplicationProgress < 1.0:
-                self.DNAReplicationProgress += self.DNAReplicationRate * DeltaTime
-            if self.ProteinSynthesisProgress < 1.0:
-                self.ProteinSynthesisProgress += self.ProteinSynthesisRate * DeltaTime
-
-        self.NumCellDivisions = 0
-        if self.CytoKinesisProgress >= 1.0:
-            self.DNAReplicationProgress = 0.0
-            self.ProteinSynthesisProgress = 0.0
-            self.CytoKinesisProgress = 0.0
-            self.NumCellDivisions = 1 
-
-    def SetProgress(self, Progress):
-        self.DNAReplicationProgress = Progress
-        self.ProteinSynthesisProgress = Progress
-        self.CytoKinesisProgress = 0.0
-
-    def GetNumCellDivisions(self):
-        return self.NumCellDivisions
-
-    
 class FColonySimulator(FSimulator):
     def __init__(self, EcoliSim):
         self.EcoliSims = [[1, EcoliSim]]
