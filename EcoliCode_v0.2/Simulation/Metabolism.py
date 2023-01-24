@@ -118,7 +118,7 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False, Export=''):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
@@ -163,12 +163,14 @@ class FPlotter:
             return Unit, Dataset
 
         def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=4):
-            ScaleFactor = 1
+            ScaleFactor = 0
+            if All:
+                ScaleFactor += 1
             if Multiscale:
-                ScaleFactor *= 3
+                ScaleFactor += 3
             if Individual:
                 for Dataset in Datasets.values():
-                    ScaleFactor *= len(Dataset)
+                    ScaleFactor += len(Dataset)
 
             NPlotsInRows = ScaleFactor   # Default
             if ScaleFactor > MaxNPlotsInRows * 2:
@@ -238,6 +240,20 @@ class FPlotter:
             if not bSideLabel:
                 ax1.legend(loc='upper left')
             # ax1.grid()
+
+        def PrintToPDF():
+            DateTime = datetime.now().strftime('%Y%m%d-%H%M')
+            PlotType = ''
+            if All:
+                PlotType += '_All'
+            if Multiscale:
+                PlotType += '_Multiscale'
+            if Individual:
+                PlotType += '_Individual'
+            PDFFileName = 'MolConc_' + DateTime + PlotType +'.pdf'
+            pdf = PdfPages(PDFFileName)
+            pdf.savefig()
+            pdf.close()
 
         fig = plt.figure()
         fig.subplots_adjust(wspace=0.5, hspace=0.5)
@@ -316,6 +332,9 @@ class FPlotter:
                     ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
                     PlotDataset(Dataset, MolName, Unit[MolName])
                     SubplotID += 1
+
+        if Export == 'pdf':
+            PrintToPDF()
 
         plt.show()
 
@@ -669,7 +688,21 @@ class Process(Reaction):
 class DNAReplication(Process):
     def __init__(self):
         super().__init__()
-        self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        self.BuildingBlocks = {"dATP": 1}
+        self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
+        self.Regulators = {}
+        self.Rate = 0.0
+        self.MaxRate = 4000.0   # total of 4000 bp synthesis during the exponential phase
+        self.Progress = 0.0
+        self.MaxProgress = 4.5e6
+
+
+class ProteinSynthesis(Process):
+    def __init__(self):
+        super().__init__()
+        # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        self.BuildingBlocks = {"Glutamate": 1}
         self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
         self.Regulators = {}
         self.Rate = 0.0
@@ -1107,13 +1140,16 @@ if __name__ == '__main__':
         Plot = FPlotter()
 
         Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
+        #
+        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
 
         Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
-
-        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
 
 """
 Reference
