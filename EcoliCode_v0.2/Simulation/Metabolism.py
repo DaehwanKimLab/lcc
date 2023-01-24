@@ -16,6 +16,57 @@ CytoVol = 1e-15
 
 GlobalKineticScale = 1
 
+
+def Conc2Str(Conc):
+    AbsConc = abs(Conc)
+    if AbsConc >= 1e-1:
+        Str = "{:.3f}  M".format(Conc)
+    elif AbsConc >= 1e-4:
+        Str = "{:.3f} mM".format(Conc * 1e3)
+    elif AbsConc >= 1e-7:
+        Str = "{:.3f} uM".format(Conc * 1e6)
+    elif AbsConc >= 1e-10:
+        Str = "{:.3f} nM".format(Conc * 1e9)
+    else:
+        Str = "{:.3f} pM".format(Conc * 1e12)
+    return Str
+
+
+class EcoliInfo:
+    # EC stands for Energy Consumption in ATP molecules (count)
+    ECC_DNAReplication = 4.5 * 1e6 * 2  # 4.5Mbp genome (double strand)
+    ECC_ProteinSynthesis = 3 * 1e6 * 300  # 3M proteins (each 300aa)
+    ECC_Cytokinesis = 10 * 1e6
+    ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
+
+    # Convert count to M assuming E. coli volume is 1um^3
+    AvogadroNum = 6.022e23
+    C2M = 1 / AvogadroNum * 1e15
+
+    # ECM stands for Energy Consumption in ATP (M = mol/L)
+    ECM_CellDivision = ECC_CellDivision * C2M
+    ECM_CellDivision_Sec = ECM_CellDivision / (20 * 60)  # 20 minutes assumed for one cycle of cell division
+
+    # ECGM stands for Energy Consumption in Glucose (M)
+    ECGM_CellDivision = ECM_CellDivision / 32
+
+    # EGM stands for Energy Generation in ATP (M)
+    EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 10  # Glycolysis is assumed to be fast (10 times faster than necessary for cell division)
+    EGM_TCA_Sec = ECM_CellDivision_Sec * 1.2
+    EGM_OxidativePhosphorylation_Sec = ECM_CellDivision_Sec * 1.2
+
+    def Info():
+        print("Molecule Consumption - Glucose:                                {:>10}".format(
+            Conc2Str(EcoliInfo.ECGM_CellDivision)))
+        print("Energy Consumption   - Cell Division per sec:                  {:>10}".format(
+            Conc2Str(EcoliInfo.ECM_CellDivision_Sec)))
+        print("Energy Generation    - Glycolysis per sec:                     {:>10}".format(
+            Conc2Str(EcoliInfo.EGM_Glycolysis_Sec)))
+        print("Energy Generation    - TCA & Oxidative Phosporylation per sec: {:>10}".format(
+            Conc2Str(EcoliInfo.EGM_TCA_Sec)))
+        print("")
+
+
 class FPlotter:
     def __init__(self):
         self.Filter_Inclusion = None
@@ -339,7 +390,8 @@ class Reaction:
         product inhibition, maintaining the initial condition of the product
         + mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
         '''
-        return (max(0, Molecules[Reactant] - InitCond[Reactant]) + max(0, InitCond[Product] - Molecules[Product])) * Molecules[Reactant] / Molecules[Product] * self.Capacity
+        return Molecules[Reactant] / Molecules[Product] * self.Capacity
+        # return (max(0, Molecules[Reactant] - InitCond[Reactant]) + max(0, InitCond[Product] - Molecules[Product])) * Molecules[Reactant] / Molecules[Product] * self.Capacity
 
     def UpdateCapacity(self, Molecules, RateLimitingCofactors):
         CapacityFactors = 1 # set to 1M by default
@@ -372,7 +424,7 @@ class Reaction:
         Eq = AddMolCoeff(Eq, self.Output)
         return Eq
 
-    # reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
+# reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
 class NADPlusSynthesis(Reaction):
     def __init__(self):
         super().__init__()
@@ -407,15 +459,20 @@ class Glycolysis(Reaction):
         super().__init__()
         self.ReactionName = 'Glycolysis'
         self.Input = {"G6P": 1, "ADP": 2, "NAD+": 2}
-        self.Output = {"pyruvate": 1, "NADH": 2, "ATP": 2}
-        self.Capacity = 0.5
+        self.Output = {"pyruvate": 2, "NADH": 2, "ATP": 2}
+        self.CapacityConstant = 12.7 * 1e-3
 
     def Specification(self, Molecules, InitCond):
         # dATP = (Molecules["ADP"] / Molecules["ATP"]) * c
         # dATP = (abs(Molecules["ADP"] - InitCond["ADP"]) / Molecules["ATP"]) * c   # For homeostasis of ADP level
         # dATP = (Molecules["ADP"] * abs(Molecules["ATP"] - InitCond["ATP"]) / Molecules["ATP"]) * c   # For homeostasis of ATP level
         # dATP = (max(0, InitCond["ATP"] - Molecules["ATP"]) / Molecules["ATP"]) * Molecules["G6P"] * self.Capacity # Product Inhibition
-        return "ATP", self.Homeostasis("G6P", "ATP", Molecules, InitCond)
+        # return "ATP", self.Homeostasis("G6P", "ATP", Molecules, InitCond)
+        # return "ATP", (max(0, Molecules["ADP"] - 0.5 * 1e-3) / Molecules["ATP"]) * min(1e-3, Molecules["G6P"]) * self.Capacity
+        VO = Molecules["ADP"] / Molecules["ATP"] * self.CapacityConstant
+        VMax = max(0, Molecules["ADP"] - InitCond["ADP"])
+        self.Capacity = min(VO, VMax)
+        return "ATP", self.Capacity
 
 class PyruvateOxidation(Reaction):
     def __init__(self):
@@ -423,10 +480,31 @@ class PyruvateOxidation(Reaction):
         self.ReactionName = 'Pyruvate Oxidation'
         self.Input = {"pyruvate": 1, "NAD+": 1, "CoA-SH": 1}
         self.Output = {"acetyl-CoA": 1, "NADH": 1}
-        self.Capacity = 1
+        self.CapacityConstant = 0.2 * 1e-3
 
     def Specification(self, Molecules, InitCond):
-        return "acetyl-CoA", self.Homeostasis("pyruvate", "acetyl-CoA", Molecules, InitCond)
+        # return "acetyl-CoA", self.Homeostasis("pyruvate", "acetyl-CoA", Molecules, InitCond)
+        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
+        VMax = max(0, Molecules["pyruvate"] - InitCond["pyruvate"])
+        self.Capacity = min(VO, VMax)
+        return "acetyl-CoA", self.Capacity
+
+
+class TCACycle(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'TCA cycle'
+        self.Input = {"acetyl-CoA": 1, "NAD+": 3, "FAD": 1, "ADP": 1}
+        self.Output = {"NADH": 3, "FADH2": 1, "ATP": 1, "CoA-SH": 1}
+        self.CapacityConstant = 0.2 * 1e-3
+
+    def Specification(self, Molecules, InitCond):
+        # self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
+        # return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
+        VO = Molecules["acetyl-CoA"] / (InitCond["acetyl-CoA"] + Molecules["acetyl-CoA"]) * self.CapacityConstant
+        VMax = max(0, Molecules["acetyl-CoA"] - InitCond["acetyl-CoA"])
+        self.Capacity = min(VO, VMax)
+        return "ATP", self.Capacity
 
 
 class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
@@ -441,6 +519,7 @@ class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
         self.UpdateCapacity(Molecules, ["oxaloacetate", "acetyl-CoA"])
         return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
 
+
 class TCACycle_SuccinylCoASynthesis(Reaction):
     def __init__(self):
         super().__init__()
@@ -452,16 +531,18 @@ class TCACycle_SuccinylCoASynthesis(Reaction):
     def Specification(self, Molecules, InitCond):
         return "succinyl-CoA", self.Homeostasis("a-ketoglutarate", "succinyl-CoA", Molecules, InitCond)
 
+
 class TCACycle_FumarateSynthesis(Reaction):
     def __init__(self):
         super().__init__()
         self.ReactionName = 'TCA_Fumarate Synthesis'
         self.Input = {"succinyl-CoA": 1, "ADP": 1, "FAD": 1}
-        self.Output = {"fumarate": 1, "CoA-SH": 1, "ATP": 1, "FADH2": 1} # TODO: Update from ATP to GTP later
+        self.Output = {"fumarate": 1, "CoA-SH": 1, "ATP": 1, "FADH2": 1}  # TODO: Update from ATP to GTP later
         self.Capacity = 1e1
 
     def Specification(self, Molecules, InitCond):
         return "fumarate", self.Homeostasis("succinyl-CoA", "fumarate", Molecules, InitCond)
+
 
 class TCACycle_OxaloacetateSynthesis(Reaction):
     def __init__(self):
@@ -474,6 +555,7 @@ class TCACycle_OxaloacetateSynthesis(Reaction):
     def Specification(self, Molecules, InitCond):
         return "oxaloacetate", self.Homeostasis("fumarate", "oxaloacetate", Molecules, InitCond)
 
+
 class PyruvateCarboxylation(Reaction):
     def __init__(self):
         super().__init__()
@@ -485,17 +567,36 @@ class PyruvateCarboxylation(Reaction):
     def Specification(self, Molecules, InitCond):
         return "oxaloacetate", self.Homeostasis("pyruvate", "oxaloacetate", Molecules, InitCond)
 
-class OxidativePhosphorylation(Reaction):
+
+class NADH_OxidativePhosphorylation(Reaction):
     def __init__(self):
         super().__init__()
-        self.ReactionName = 'OxidativePhosphorylation'
-        self.Input = {"NADH": 1, "FADH2": 1, "ADP": 4}
-        self.Output = {"NAD+": 1, "FAD": 1, "ATP": 4}
-        self.CapacityConstant = 1e3
+        self.ReactionName = 'NADH OxidativePhosphorylation'
+        self.Input = {"NADH": 1, "ADP": 2.5}
+        self.Output = {"NAD+": 1, "ATP": 2.5}
+        self.CapacityConstant = 1.2e-3
 
     def Specification(self, Molecules, InitCond):
-        self.UpdateCapacity(Molecules, ["NADH", "FADH2"])
-        return "ATP", self.ProductInhibition_ProductHomeostasis("ATP", Molecules, InitCond)
+        VO = Molecules["NADH"] / (InitCond["NADH"] + Molecules["NADH"]) * self.CapacityConstant
+        VMax = max(0, Molecules["NADH"] - InitCond["NADH"])
+        self.Capacity = min(VO, VMax)
+        return "ATP", self.Capacity
+
+
+class FADH2_OxidativePhosphorylation(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'FADH2 OxidativePhosphorylation'
+        self.Input = {"FADH2": 1, "ADP": 1.5}
+        self.Output = {"FAD": 1, "ATP": 1.5}
+        self.Capacity = 0.15e-3
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["FADH2"] / (InitCond["FADH2"] + Molecules["FADH2"]) * self.CapacityConstant
+        VMax = max(0, Molecules["FADH2"] - InitCond["FADH2"])
+        self.Capacity = min(VO, VMax)
+        return "ATP", self.Capacity
+
 
 class ATPControl(Reaction):
     def __init__(self, ControlRate=-4.35E-03):
@@ -510,6 +611,7 @@ class ATPControl(Reaction):
     def Specification(self, Molecules, InitCond):
         return "ATP", self.Capacity
 
+
 class NADHControl(Reaction):
     def __init__(self, ControlRate=-1E-05):
         super().__init__()
@@ -521,6 +623,7 @@ class NADHControl(Reaction):
     def Specification(self, Molecules, InitCond):
         return "NADH", self.Capacity
 
+
 class FADH2Control(Reaction):
     def __init__(self, ControlRate=-1E-05):
         super().__init__()
@@ -531,6 +634,7 @@ class FADH2Control(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return "FADH2", self.Capacity
+
 
 # For Debugging
 class MolControl(Reaction):
@@ -546,6 +650,7 @@ class MolControl(Reaction):
     def Specification(self, Molecules, InitCond):
         return self.ConsumedMol, self.Capacity
 
+
 class Process(Reaction):
     def __init__(self):
         super().__init__()
@@ -555,6 +660,7 @@ class Process(Reaction):
         self.MaxRate = 0.0
         self.Progress = 0.0
         self.MaxProgress = 0.0
+
 
 class DNAReplication(Process):
     def __init__(self):
@@ -580,6 +686,8 @@ class Simulator():
         self.InitialConditions = dict()
         self.PermanentMolecules = list()
 
+        self.dMolecules = dict()
+
         self.Plot = False
         self.Debug_Info = 1
         self.Debug_Reaction = False
@@ -591,9 +699,9 @@ class Simulator():
     def SetPermanentMolecules(self, PermanentMolecules):
         self.PermanentMolecules = PermanentMolecules
 
-    def Initialize(self):
+    def Initialize(self, Molecules={}):
         self.InitializeStoich()
-        self.InitializeMolecules()
+        self.InitializeMolecules(Molecules)
         if self.Plot:
             self.InitializeDataset()
         self.ApplyGlobalKineticCapacity()
@@ -621,15 +729,17 @@ class Simulator():
             ReactionNames += ReactionLabel + "\n"
         return str(ReactionNames)
 
-    def InitializeMolecules(self):
+    def InitializeMolecules(self, Molecules={}):
         AllMolecules = dict()
         for Reaction in self.Reactions:
             for Molecule, Coeff in Reaction.Stoich.items():
                 if Molecule not in AllMolecules:
                     AllMolecules[Molecule] = self.GetKnownMolConc(Molecule)
 
-        self.Molecules = dict(sorted(AllMolecules.items()))
-        self.InitialConditions = self.Molecules.copy()
+        self.InitialConditions = dict(sorted(AllMolecules.items()))
+        self.Molecules = self.InitialConditions.copy()
+        for Molecule, Conc in Molecules.items():
+            self.Molecules[Molecule] = Conc
 
     def AddReaction(self, Reaction):
         self.Reactions.append(Reaction)
@@ -645,11 +755,16 @@ class Simulator():
         RefCoeff = Reaction.Stoich[RefMol]
         UnitdConc = RefdConc / RefCoeff
 
-        Out = 10   # 1 Molar to begin comparison
+        Out = 10  # 10 Molar to begin comparison
         for Mol, Coeff in Reaction.Input.items():
             AdjustedConc = self.Molecules[Mol] / Coeff
 
             Out = min(Out, min(AdjustedConc, UnitdConc))
+
+            # The following is possible due to multiplication/division in floating numbers
+            if Out * Coeff > self.Molecules[Mol]:
+                Out *= 0.999999
+            assert Out * Coeff <= self.Molecules[Mol]
 
             # DEBUG
             # if self.Molecules[Mol] < 1e-8:
@@ -679,8 +794,15 @@ class Simulator():
         # print(self.Molecules, dMolecules)
         for dMolecule, dConc in dMolecules.items():
             assert dMolecule in self.Molecules
-            assert dConc + self.Molecules[dMolecule] >= 0.0, 'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter, dMolecule, self.Conc2Str(self.Molecules[dMolecule]), self.Conc2Str(dConc))
+            assert dConc + self.Molecules[dMolecule] >= 0, 'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter,
+                                                                                                            dMolecule,
+                                                                                                            Conc2Str(
+                                                                                                                self.Molecules[
+                                                                                                                    dMolecule]),
+                                                                                                            Conc2Str(
+                                                                                                                dConc))
             self.Molecules[dMolecule] += dConc
+            self.Molecules[dMolecule] = max(0, self.Molecules[dMolecule])
 
     def RestorePermanentMolecules(self):
         for Molecule in self.PermanentMolecules:
@@ -689,7 +811,7 @@ class Simulator():
 
     def CheckZeroConcentrations(self):
         for Molecule, Conc in self.Molecules.items():
-            if Conc < self.GetConc(1): # if
+            if Conc < self.GetConc(1):  # if
                 self.Molecules[Molecule] = self.GetConc(0.1)
                 assert self.Molecules[Molecule] > 0
 
@@ -705,37 +827,38 @@ class Simulator():
         for Reaction in self.Reactions:
             Reaction.Capacity *= GlobalKineticScale
 
-    def Conc2Str(self, Conc):
-        AbsConc = abs(Conc)
-        if AbsConc >= 1e-1:
-            Str = "{:.3f}  M".format(Conc)
-        elif AbsConc >= 1e-4:
-            Str = "{:.3f} mM".format(Conc * 1e3)
-        elif AbsConc >= 1e-7:
-            Str = "{:.3f} uM".format(Conc * 1e6)
-        elif AbsConc >= 1e-10:
-            Str = "{:.3f} nM".format(Conc * 1e9)
-        else:
-            Str = "{:.3f} pM".format(Conc * 1e12)
-        return Str
-
     def Info(self):
+        HeadStr = "{:<16}: {:>10} {:>10}  ".format("", "Initial", "Current")
+        for ReactionName, dMolecules in self.dMolecules.items():
+            HeadStr += " {:<10.10}".format(ReactionName)
+        print(HeadStr)
         for Molecule, Conc in self.Molecules.items():
-            ConStr = self.Conc2Str(Conc)
-            print("{:<16}: {:>10}".format(Molecule, ConStr))
+            InitConc = self.InitialConditions[Molecule]
+            InitConcStr = Conc2Str(InitConc)
+            ConcStr = Conc2Str(Conc)
+            LineStr = "{:<16}: {:>10} {:>10}  ".format(Molecule, InitConcStr, ConcStr)
+            for ReactionName, dMolecules in self.dMolecules.items():
+                if Molecule in dMolecules:
+                    Conc2 = dMolecules[Molecule]
+                    ConcStr2 = Conc2Str(Conc2)
+                else:
+                    ConcStr2 = ""
+                LineStr += " {:>10}".format(ConcStr2)
+            print(LineStr)
 
     def Summary(self):
         print("{:<16} {:>10} {:>10} {:>10} {:<10} {:<10}".format("", "Initial", "Final", "dConc", "Depleted", "Accumulated"))
         for Molecule, Conc in self.Molecules.items():
             dConc = Conc - self.InitialConditions[Molecule]
 
-            InitConc = self.Conc2Str(self.InitialConditions[Molecule])
-            FinalConc = self.Conc2Str(Conc)
-            FinaldConc = self.Conc2Str(dConc) if Molecule not in self.PermanentMolecules else "-"
+            InitConc = Conc2Str(self.InitialConditions[Molecule])
+            FinalConc = Conc2Str(Conc)
+            FinaldConc = Conc2Str(dConc) if Molecule not in self.PermanentMolecules else "-"
             Depletion = 'DEPLETED' if Conc < self.KnownMolConc[Molecule][1] else ''
             Accumulation = 'ACCUMULATED' if Conc > self.KnownMolConc[Molecule][2] else ''
 
             print("{:16} {:>10} {:>10} {:>10} {:<10} {:<10}".format(Molecule, InitConc, FinalConc, FinaldConc, Depletion, Accumulation))
+
         if self.Plot:
             print("\nPlot: ON")
         else:
@@ -743,11 +866,11 @@ class Simulator():
 
     def PrintMolConc(self, MolConcDict, End='\t'):
         for Molecule, Conc in MolConcDict.items():
-            ConStr = self.Conc2Str(Conc)
+            ConStr = Conc2Str(Conc)
             print("\t{}: {}".format(Molecule, ConStr), end=End)
         print()
 
-    def Simulate(self, TotalTime = 10, DeltaTime = 0.01,):
+    def Simulate(self, TotalTime=10, DeltaTime=0.01, ):
         print("-- Initial Conditions --")
         self.Info()
         print()
@@ -757,6 +880,7 @@ class Simulator():
             # if self.Iter == 1942:
             #     print("")
 
+            self.dMolecules = dict()
             for Reaction in self.Reactions:
                 dMolecules = self.RunReaction(Reaction, DeltaTime)
                 if self.Debug_Reaction:
@@ -764,6 +888,7 @@ class Simulator():
                     self.PrintMolConc(dMolecules, End=', ')
                 self.UpdateMolecules(dMolecules)
                 self.CheckZeroConcentrations()
+                self.dMolecules[Reaction.ReactionName] = dMolecules
 
             if len(self.PermanentMolecules):
                 self.RestorePermanentMolecules()
@@ -772,6 +897,11 @@ class Simulator():
                 self.AddToDataset()
 
             self.Iter += 1
+
+            # DK - debugging purposes
+            # self.Debug_Info = 1
+            # if self.Iter > 200:
+            #     assert False
 
             if self.Iter % self.Debug_Info == 0:
                 print()
@@ -874,15 +1004,16 @@ class Simulator():
             Sim.AddReaction(MolControl("oxaloacetate", -5e-8))
             # Sim.AddPermanentMolecules(["succinyl-CoA", "ADP", "ATP", "FAD", "FADH2"])
 
-        elif ReactionName == "OxidativePhosphorylation":
-            Sim.AddReaction(OxidativePhosphorylation())
-            Sim.AddReaction(ATPControl(-4.35E-04))
-            Sim.AddReaction(NADHControl(1.0874e-4))
-            Sim.AddReaction(FADH2Control(1.0875e-4))
+        # elif ReactionName == "OxidativePhosphorylation":
+        #     Sim.AddReaction(OxidativePhosphorylation())
+        #     Sim.AddReaction(ATPControl(-4.35E-04))
+        #     Sim.AddReaction(NADHControl(1.0874e-4))
+        #     Sim.AddReaction(FADH2Control(1.0875e-4))
 
         else:
             print("\nNo unit test has been selected\n")
             sys.exit(1)
+
 
 def GetUnitTestReactions():
     '''
@@ -898,14 +1029,20 @@ def GetUnitTestReactions():
             "OxidativePhosphorylation",
             ]
 
+
 if __name__ == '__main__':
     Sim = Simulator()
 
     RunUnitTest = False
     # RunUnitTest = True
 
+    EcoliInfo.Info()
+    ATPConsumption_Sec = EcoliInfo.ECM_CellDivision_Sec
+    # ATPConsumption_Sec = 0
+
     if RunUnitTest:
-        UnitTestReactions = "OxidativePhosphorylation"
+        # UnitTestReactions = "OxidativePhosphorylation"
+        UnitTestReactions = "Glycolysis"
         Sim.UnitTest(UnitTestReactions)
 
     else:
@@ -915,25 +1052,25 @@ if __name__ == '__main__':
         # Sim.AddReaction(CoASynthesis())
         Sim.AddReaction(Glycolysis())
         Sim.AddReaction(PyruvateOxidation())
-        Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
-        Sim.AddReaction(TCACycle_SuccinylCoASynthesis())
-        Sim.AddReaction(TCACycle_FumarateSynthesis())
-        Sim.AddReaction(TCACycle_OxaloacetateSynthesis())
+        Sim.AddReaction(TCACycle())
+        # Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
+        # Sim.AddReaction(TCACycle_SuccinylCoASynthesis())
+        # Sim.AddReaction(TCACycle_FumarateSynthesis())
+        # Sim.AddReaction(TCACycle_OxaloacetateSynthesis())
         # Sim.AddReaction(PyruvateCarboxylation())
-        Sim.AddReaction(OxidativePhosphorylation())
-        Sim.AddReaction(ATPControl())
-        # Sim.AddReaction(ATPControl())
-        # Sim.AddReaction(ATPControl())
+        Sim.AddReaction(NADH_OxidativePhosphorylation())
+        Sim.AddReaction(FADH2_OxidativePhosphorylation())
+        Sim.AddReaction(ATPControl(-ATPConsumption_Sec))
 
         # Set permanent molecules
         PermanentMolecules = [
-            "G6P",
+            # "G6P",
             # "pyruvate",
-            "CoA-SH",
-            "NADH",
-            "NAD+",
-            "FADH2",
-            "FAD",
+            # "CoA-SH",
+            # "NADH",
+            # "NAD+",
+            # "FADH2",
+            # "FAD",
             # "CoA-SH",
             # "oxaloacetate",
         ]
@@ -944,12 +1081,19 @@ if __name__ == '__main__':
     Sim.Debug_Info = 100
     Sim.Plot = True
 
-    # Simulation parameters
-    TotalTime = 100
-    DeltaTime = 0.01
+    # Set initial molecule concentrations
+    Molecules = {}
+    # Molecules["ATP"] = 1.0 * 1e-3
+    # Molecules["ADP"] = 8.6 * 1e-3
+    # Molecules["G6P"] = 50 * 1e-3
 
     # Execute simulation
-    Sim.Initialize()
+    Sim.Initialize(Molecules)
+
+    # Simulation parameters
+    TotalTime = Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
+    DeltaTime = 0.01
+
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
 
     # Plot
