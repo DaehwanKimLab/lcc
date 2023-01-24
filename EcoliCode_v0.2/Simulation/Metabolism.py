@@ -589,7 +589,7 @@ class FADH2_OxidativePhosphorylation(Reaction):
         self.ReactionName = 'FADH2 OxidativePhosphorylation'
         self.Input = {"FADH2": 1, "ADP": 1.5}
         self.Output = {"FAD": 1, "ATP": 1.5}
-        self.Capacity = 0.15e-3
+        self.CapacityConstant = 0.15e-3
 
     def Specification(self, Molecules, InitCond):
         VO = Molecules["FADH2"] / (InitCond["FADH2"] + Molecules["FADH2"]) * self.CapacityConstant
