@@ -21,6 +21,8 @@ class FEcoliSimulator(FSimulator):
                  DNAReplicationRate = DNAREPLICATIONRATE,
                  ProteinSynthesisRate = PROTEINSYNTHESISRATE,
                  CytoKinesisRate = CYTOKINESISRATE):
+        super().__init__()
+
         self.DNAReplicationRate = DNAReplicationRate
         self.DNAReplicationProgress = 0.0
         self.ProteinSynthesisRate = ProteinSynthesisRate

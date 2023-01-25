@@ -169,7 +169,7 @@ class FExperimentSimulator(FSimulator):
         return {"E. coli Growth": [XSet, YSet]}
 
     
-class FPlotter:
+class FGrowthPlotter:
     def __init__(self):
         self.Filter_Inclusion = None
         self.Filter_Exclusion = None
@@ -316,7 +316,7 @@ class FPlotter:
         plt.show()
 
 
-class FGrowthPlotter:
+class FGeneRepressionPlotter:
     def PlotDatasets(self, Datasets):
         for Title, Dataset in Datasets.items():
             XSet, YSet = Dataset
@@ -340,11 +340,11 @@ if __name__ == '__main__':
 
     if Sim.Plot:
         Datasets = Sim.GetDataset()
-        Plot = FPlotter()
+        Plot = FGrowthPlotter()
         Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
 
         GrowthDatasets = Sim.GetGrowthDataset()
-        GrowthPlot = FGrowthPlotter()
+        GrowthPlot = FGeneRepressionPlotter()
         GrowthPlot.PlotDatasets(GrowthDatasets)
 
 
