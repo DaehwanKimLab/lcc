@@ -42,7 +42,7 @@ def Conc2Str(Conc):
     return Str
 
 
-class EcoliInfo():
+class EcoliInfo:
     # EC stands for Energy Consumption in ATP molecules (count)
     ECC_DNAReplication = 4.5 * 1e6 * 2  # 4.5Mbp genome (double strand)
     ECC_ProteinSynthesis = 3 * 1e6 * 300  # 3M proteins (each 300aa)
