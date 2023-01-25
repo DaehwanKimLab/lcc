@@ -841,14 +841,14 @@ if __name__ == '__main__':
 
     if Sim.Plot:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Multiscale=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Multiscale=True)
         # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Multiscale=True, Include_nM=True)
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='right', All=False, Individual=True, MolRange=True)
 
     if Sim.ExportToPDF:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Export='pdf')
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='right', All=False, Individual=True, MolRange=True, Export='pdf')
 
