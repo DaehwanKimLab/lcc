@@ -21,8 +21,6 @@ import copy
 from Simulator import FSimulator
 from Plotter import FPlotter
 
-NA = 6e23
-CytoVol = 1e-15
 AvogadroNum = 6.022e23
 
 GlobalKineticScale = 1
@@ -843,17 +841,14 @@ if __name__ == '__main__':
 
     if Sim.Plot:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
-        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Multiscale=True)
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Multiscale=True, Include_nM=True)
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
 
     if Sim.ExportToPDF:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
-        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
 

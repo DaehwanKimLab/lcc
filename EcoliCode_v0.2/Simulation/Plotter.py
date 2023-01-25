@@ -61,13 +61,13 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False, Export=''):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Include_nM=False, Individual=False, MolRange=False, Export='', MaxNPlotsInRows=3):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
 
         def ExtractTime(Datasets, SimulationTimeUnit):
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
+            for Process, Dataset in Datasets.items():
                 for Data in Dataset.values():
                     Time = [i * SimulationTimeUnit for i in range(len(Data))]
                     return Time
@@ -105,12 +105,12 @@ class FPlotter:
 
             return Unit, Dataset
 
-        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=4):
+        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows):
             ScaleFactor = 0
             if All:
                 ScaleFactor += 1
             if Multiscale:
-                ScaleFactor += 3
+                ScaleFactor += 3 if Include_nM else 2
             if Individual:
                 for Dataset in Datasets.values():
                     ScaleFactor += len(Dataset)
@@ -211,12 +211,12 @@ class FPlotter:
         Time = ExtractTime(Datasets, DeltaTime)
 
         # Determine subplotting map
-        ScaleFactor, NPlotsInRows, NPlotsInColumn = GetSubPlottingInfo(Datasets)
+        ScaleFactor, NPlotsInRows, NPlotsInColumn = GetSubPlottingInfo(Datasets, MaxNPlotsInRows)
 
         # Plot data
         SubplotID = 1
         if All:
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
+            for Process, Dataset in copy.deepcopy(Datasets).items():
                 UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
                 ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
                 PlotDataset(Dataset, Process, UnitTxt)
@@ -230,8 +230,9 @@ class FPlotter:
                 Dataset_nM = dict()
                 for mol, conc in Dataset.items():
                     if conc[0] < 1e-6:
-                        Dataset_nM[mol] = (np.array(conc) / 1e-9).tolist()
-                        AdjustUnitOnKnownConc(mol, 1e-9)
+                        if Include_nM:
+                            Dataset_nM[mol] = (np.array(conc) / 1e-9).tolist()
+                            AdjustUnitOnKnownConc(mol, 1e-9)
                     elif conc[0] < 1e-3:
                         Dataset_uM[mol] = (np.array(conc) / 1e-6).tolist()
                         AdjustUnitOnKnownConc(mol, 1e-6)
@@ -240,11 +241,13 @@ class FPlotter:
                         AdjustUnitOnKnownConc(mol, 1e-3)
                 return (Dataset_mM, Dataset_uM, Dataset_nM)
 
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
+            for Process, Dataset in copy.deepcopy(Datasets).items():
                 Dataset_Unit = SplitScales(Dataset)
                 Units = ['mM', 'uM', 'nM']
 
                 for Unit, dataset in zip(Units, Dataset_Unit):
+                    if not Include_nM and Unit == 'nM':
+                        continue
                     ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
                     PlotDataset(dataset, Unit + ' range', Unit)
                     SubplotID += 1
@@ -269,7 +272,7 @@ class FPlotter:
                         AdjustUnitOnKnownConc(mol, 1e-3)
                 return Units, AdjustedDatasets
 
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
+            for Process, Dataset in copy.deepcopy(Datasets).items():
                 Unit, AdjustedDatasets = ConvertToIndividualDataset(Dataset)
                 for MolName, Dataset in AdjustedDatasets.items():
                     ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
@@ -280,41 +283,3 @@ class FPlotter:
             PrintToPDF()
 
         plt.show()
-
-    # def PrintToPDF(self):
-    #     # Create the PdfPages object to which we will save the pages:
-    #     # The with statement makes sure that the PdfPages object is closed properly at
-    #     # the end of the block, even if an Exception occurs.
-    #     with PdfPages('multipage_pdf.pdf') as pdf:
-    #         plt.figure(figsize=(3, 3))
-    #         plt.plot(range(7), [3, 1, 4, 1, 5, 9, 2], 'r-o')
-    #         plt.title('Page One')
-    #         pdf.savefig()  # saves the current figure into a pdf page
-    #         plt.close()
-    #
-    #         # if LaTeX is not installed or error caught, change to `False`
-    #         plt.rcParams['text.usetex'] = True
-    #         plt.figure(figsize=(8, 6))
-    #         x = np.arange(0, 5, 0.1)
-    #         plt.plot(x, np.sin(x), 'b-')
-    #         plt.title('Page Two')
-    #         pdf.attach_note("plot of sin(x)")  # attach metadata (as pdf note) to page
-    #         pdf.savefig()
-    #         plt.close()
-    #
-    #         plt.rcParams['text.usetex'] = False
-    #         fig = plt.figure(figsize=(4, 5))
-    #         plt.plot(x, x ** 2, 'ko')
-    #         plt.title('Page Three')
-    #         pdf.savefig(fig)  # or you can pass a Figure object to pdf.savefig
-    #         plt.close()
-    #
-    #         # We can also set the file's metadata via the PdfPages object:
-    #         d = pdf.infodict()
-    #         d['Title'] = 'Multipage PDF Example'
-    #         d['Author'] = 'Jouni K. Sepp\xe4nen'
-    #         d['Subject'] = 'How to create a multipage pdf file and set its metadata'
-    #         d['Keywords'] = 'PdfPages multipage keywords author title subject'
-    #         d['CreationDate'] = datetime.datetime(2009, 11, 13)
-    #         d['ModDate'] = datetime.datetime.today()
-
