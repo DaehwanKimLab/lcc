@@ -185,7 +185,7 @@ class FPlotter:
                 Plt.set_ylabel('Conc (' + UnitTxt + ')')
             Plt.set_ylim(ymin=0)
             Plt.set_ylim(ymax=YMax)
-            # ax1.grid()
+            # Plt.grid()
 
         def PrintToPDF():
             DateTime = datetime.now().strftime('%Y%m%d-%H%M')

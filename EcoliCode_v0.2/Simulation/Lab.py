@@ -178,7 +178,7 @@ if __name__ == '__main__':
     # # Gene Repression vs. Final Growth
     # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest=30)
 
-    # Show both 'growth curve with three populations' and '['Gene Repression vs. Final Growth'
+    # Show both 'growth curve with three populations' and 'Gene Repression vs. Final Growth'
     Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest=30)
 
     Sim.Plot = True
