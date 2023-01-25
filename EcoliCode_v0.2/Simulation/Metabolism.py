@@ -2,6 +2,15 @@
 # © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 # Donghoon M. Lee and Daehwan Kim
 
+"""
+Reference
+
+Metabolite concentrations, fluxes and free energies imply efficient enzyme usage
+Junyoung O Park, Sara A Rubin, Yi-Fan Xu, Daniel Amador-Noguez, Jing Fan, Tomer Shlomi & Joshua D Rabinowitz
+Nature Chemical Biology volume 12, pages482–489 (2016)
+https://www.nature.com/articles/nchembio.2077#Sec21
+"""
+
 import sys
 from datetime import datetime
 import numpy as np
@@ -43,6 +52,7 @@ class EcoliInfo():
     # Convert count to M assuming E. coli volume is 1um^3
     Volume = 1e-15
     C2M = 1 / AvogadroNum / Volume
+    M2C = 1 / C2M
 
     # ECM stands for Energy Consumption in ATP (M = mol/L)
     ECM_CellDivision = ECC_CellDivision * C2M
@@ -80,6 +90,13 @@ class Reaction:
 
     def Specification(self, Molecules, InitCond):
         return {}
+
+    def Callback(self, dMolecules):
+        None
+
+    # Progress is between 0.0 and 1.0
+    def GetProgress(self):
+        return 0.0
 
     # Specification Models
     def MassAction_ReactantHomeostasis(self, Reactant, Molecules, InitCond):
@@ -381,14 +398,29 @@ class Process(Reaction):
 class DNAReplication(Process):
     def __init__(self):
         super().__init__()
+        self.ReactionName = "DNA Replication"
         # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
         self.BuildingBlocks = {"dATP": 1}
         self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
         self.Regulators = {}
-        self.Rate = 0.0
-        self.MaxRate = 4000.0   # total of 4000 bp synthesis during the exponential phase
+        self.Rate = 1500
+        self.MaxRate = 4000   # total of 4000 bp synthesis during the exponential phase
         self.Progress = 0.0
         self.MaxProgress = 4.5e6
+
+        self.Input = {"ATP": 3, "dATP": 1}
+
+    def Specification(self, Molecules, InitCond):
+        return "dATP", -self.Rate * EcoliInfo.C2M
+
+    def Callback(self, dMolecules):
+        assert "dATP" in dMolecules
+        dElongation = -dMolecules["dATP"] * EcoliInfo.M2C
+        assert dElongation >= 0
+        self.Progress += dElongation
+
+    def GetProgress(self):
+        return min(1.0, self.Progress / self.MaxProgress)
 
 
 class ProteinSynthesis(Process):
@@ -406,6 +438,7 @@ class ProteinSynthesis(Process):
 
 class ReactionSimulator(FSimulator):
     def __init__(self):
+        super().__init__()
         self.Reactions = []
         self.Dataset = {}
         self.Iter = 0
@@ -432,8 +465,7 @@ class ReactionSimulator(FSimulator):
     def Initialize(self, Molecules={}):
         self.InitializeStoich()
         self.InitializeMolecules(Molecules)
-        if self.Plot:
-            self.InitializeDataset()
+        self.InitializeDataset()
         self.ApplyGlobalKineticCapacity()
 
     def InitializeStoich(self):
@@ -603,13 +635,13 @@ class ReactionSimulator(FSimulator):
                 self.PrintMolConc(dMolecules, End=', ')
             self.UpdateMolecules(dMolecules)
             self.CheckZeroConcentrations()
+            Reaction.Callback(dMolecules)
             self.dMolecules[Reaction.ReactionName] = dMolecules
 
         if len(self.PermanentMolecules):
             self.RestorePermanentMolecules()
 
-        if self.Plot:
-            self.AddToDataset()        
+        self.AddToDataset()        
 
     def GetDataset(self):
         return {self.GetReactionNames(Eq=True): self.Dataset}
@@ -811,11 +843,3 @@ if __name__ == '__main__':
         # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
 
-"""
-Reference
-
-Metabolite concentrations, fluxes and free energies imply efficient enzyme usage
-Junyoung O Park, Sara A Rubin, Yi-Fan Xu, Daniel Amador-Noguez, Jing Fan, Tomer Shlomi & Joshua D Rabinowitz
-Nature Chemical Biology volume 12, pages482–489 (2016)
-https://www.nature.com/articles/nchembio.2077#Sec21
-"""

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from Simulator import FSimulator
 import Metabolism
+from Plotter import FPlotter
 
 class FEcoliSimulator(FSimulator):
     DNAREPLICATIONRATE = 1.0 / (16 * 60)
@@ -46,6 +47,8 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
         self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
+        self.Sim.AddReaction(Metabolism.DNAReplication())
+
         # Set permanent molecules
         PermanentMolecules = [
             # "G6P",
@@ -60,18 +63,12 @@ class FEcoliSimulator(FSimulator):
         ]
         self.Sim.SetPermanentMolecules(PermanentMolecules)
 
-        # Debugging options
-        # Sim.Debug_Reaction = True
-        self.Sim.Debug_Info = 100
-        self.Sim.Plot = True
-        
         # Set initial molecule concentrations
-        Molecules = {}
-        # Molecules["ATP"] = 1.0 * 1e-3
-        # Molecules["ADP"] = 8.6 * 1e-3
-        # Molecules["G6P"] = 50 * 1e-3
-        
-        # Execute simulation
+        Molecules = {
+            # "ATP": 1.0 * 1e-3,
+            # "ADP": 8.6 * 1e-3,
+            # "G6P": 50  * 1e-3,
+        }
         self.Sim.Initialize(Molecules)
 
         # Simulation parameters
@@ -95,7 +92,13 @@ class FEcoliSimulator(FSimulator):
             self.CytoKinesisProgress = 0.0
             self.NumCellDivisions = 1 
 
-        # self.Sim.SimulateDelta(DeltaTime)
+        # DK - temporary workaround
+        if DeltaTime <= 0.02:
+            self.SimulateDelta_Detail(DeltaTime)
+
+
+    def SimulateDelta_Detail(self, DeltaTime):
+        self.Sim.SimulateDelta(DeltaTime)
 
     def SetProgress(self, Progress):
         self.DNAReplicationProgress = Progress
@@ -105,32 +108,45 @@ class FEcoliSimulator(FSimulator):
     def GetNumCellDivisions(self):
         return self.NumCellDivisions
 
+    def GetDataset(self):
+        return self.Sim.GetDataset()
+
+    def KnownMolConc(self):
+        return self.Sim.KnownMolConc
+
     def Info(self):
         print("DNA Replication Progress:   {:<.3f}".format(self.DNAReplicationProgress))
         print("Protien Synthesis Progress: {:<.3f}".format(self.ProteinSynthesisProgress))
         print("CytoKinesis Progress:       {:<.3f}".format(self.CytoKinesisProgress))
 
+        self.Sim.Info()
+
+        for Reaction in self.Sim.Reactions:
+            Progress = Reaction.GetProgress()
+            if Progress > 0.0:
+                print("{}: {:<.3f}".format(Reaction.ReactionName, Progress))
+
     
 if __name__ == '__main__':
     Sim = FEcoliSimulator()
     
-    TotalTime = 22 * 60.0
-    DeltaTime = 0.01
+    TotalTime = Sim.TotalTime
+    DeltaTime = Sim.DeltaTime
 
     Sim.Initialize()
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
 
-    """
     Sim.Plot = True
     if Sim.Plot:
         Datasets = Sim.GetDataset()
+        KnownMolConc = Sim.KnownMolConc()
         Plot = FPlotter()
-        Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime)
 
-        GrowthDatasets = Sim.GetGrowthDataset()
-        GrowthPlot = FGrowthPlotter()
-        GrowthPlot.PlotDatasets(GrowthDatasets)
-    """
+        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
 
+        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
 
-
+        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
