@@ -15,9 +15,9 @@ from Simulator import FSimulator
 
 NA = 6e23
 CytoVol = 1e-15
+AvogadroNum = 6.022e23
 
 GlobalKineticScale = 1
-
 
 def Conc2Str(Conc):
     AbsConc = abs(Conc)
@@ -34,38 +34,39 @@ def Conc2Str(Conc):
     return Str
 
 
-class EcoliInfo:
-    # EC stands for Energy Consumption in ATP molecules (count)
-    ECC_DNAReplication = 4.5 * 1e6 * 2  # 4.5Mbp genome (double strand)
-    ECC_ProteinSynthesis = 3 * 1e6 * 300  # 3M proteins (each 300aa)
-    ECC_Cytokinesis = 10 * 1e6
-    ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
+class FEcoliInfo():
+    def __init__(self):
+        # EC stands for Energy Consumption in ATP molecules (count)
+        self.ECC_DNAReplication = 4.5 * 1e6 * 2  # 4.5Mbp genome (double strand)
+        self.ECC_ProteinSynthesis = 3 * 1e6 * 300  # 3M proteins (each 300aa)
+        self.ECC_Cytokinesis = 10 * 1e6
+        self.ECC_CellDivision = self.ECC_DNAReplication + self.ECC_ProteinSynthesis + self.ECC_Cytokinesis
 
-    # Convert count to M assuming E. coli volume is 1um^3
-    AvogadroNum = 6.022e23
-    C2M = 1 / AvogadroNum * 1e15
+        # Convert count to M assuming E. coli volume is 1um^3
+        self.Volume = 1e-15
+        self.C2M = 1 / AvogadroNum / self.Volume
 
-    # ECM stands for Energy Consumption in ATP (M = mol/L)
-    ECM_CellDivision = ECC_CellDivision * C2M
-    ECM_CellDivision_Sec = ECM_CellDivision / (20 * 60)  # 20 minutes assumed for one cycle of cell division
+        # ECM stands for Energy Consumption in ATP (M = mol/L)
+        self.ECM_CellDivision = self.ECC_CellDivision * self.C2M
+        self.ECM_CellDivision_Sec = self.ECM_CellDivision / (20 * 60)  # 20 minutes assumed for one cycle of cell division
 
-    # ECGM stands for Energy Consumption in Glucose (M)
-    ECGM_CellDivision = ECM_CellDivision / 32
+        # ECGM stands for Energy Consumption in Glucose (M)
+        self.ECGM_CellDivision = self.ECM_CellDivision / 32
 
-    # EGM stands for Energy Generation in ATP (M)
-    EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 10  # Glycolysis is assumed to be fast (10 times faster than necessary for cell division)
-    EGM_TCA_Sec = ECM_CellDivision_Sec * 1.2
-    EGM_OxidativePhosphorylation_Sec = ECM_CellDivision_Sec * 1.2
+        # EGM stands for Energy Generation in ATP (M)
+        self.EGM_Glycolysis_Sec = self.ECM_CellDivision_Sec * 10  # Glycolysis is assumed to be fast (10 times faster than necessary for cell division)
+        self.EGM_TCA_Sec = self.ECM_CellDivision_Sec * 1.2
+        self.EGM_OxidativePhosphorylation_Sec = self.ECM_CellDivision_Sec * 1.2
 
-    def Info():
+    def Info(self):
         print("Molecule Consumption - Glucose:                                {:>10}".format(
-            Conc2Str(EcoliInfo.ECGM_CellDivision)))
+            Conc2Str(self.ECGM_CellDivision)))
         print("Energy Consumption   - Cell Division per sec:                  {:>10}".format(
-            Conc2Str(EcoliInfo.ECM_CellDivision_Sec)))
+            Conc2Str(self.ECM_CellDivision_Sec)))
         print("Energy Generation    - Glycolysis per sec:                     {:>10}".format(
-            Conc2Str(EcoliInfo.EGM_Glycolysis_Sec)))
+            Conc2Str(self.EGM_Glycolysis_Sec)))
         print("Energy Generation    - TCA & Oxidative Phosporylation per sec: {:>10}".format(
-            Conc2Str(EcoliInfo.EGM_TCA_Sec)))
+            Conc2Str(self.EGM_TCA_Sec)))
         print("")
 
 
@@ -74,6 +75,7 @@ class FPlotter:
         self.Filter_Inclusion = None
         self.Filter_Exclusion = None
         self.KnownMolConc = dict()
+        self.ConsistentColorDict = dict()
 
     def SetKnownMolConc(self, KnownMolConc):
         self.KnownMolConc = KnownMolConc
@@ -120,7 +122,7 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, YMin=0, YMax=0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False, Export=''):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
@@ -164,20 +166,25 @@ class FPlotter:
 
             return Unit, Dataset
 
-        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=3):
-            ScaleFactor = 1
+        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=4):
+            ScaleFactor = 0
+            if All:
+                ScaleFactor += 1
             if Multiscale:
-                ScaleFactor *= 3
+                ScaleFactor += 3
             if Individual:
-                ScaleFactor *= len(Datasets)
+                for Dataset in Datasets.values():
+                    ScaleFactor += len(Dataset)
 
-            NPlotsInRows = len(Datasets) * ScaleFactor # Default
-            if len(Datasets) > 1:
+            NPlotsInRows = ScaleFactor   # Default
+            if ScaleFactor > MaxNPlotsInRows * 2:
+                NPlotsInRows = MaxNPlotsInRows
+            else:
                 for Remainder in range(MaxNPlotsInRows):
-                    if len(Datasets) % (Remainder + 1) == 0:
+                    if ScaleFactor % (Remainder + 1) == 0:
                         NPlotsInRows = Remainder + 1
 
-            NPlotsInColumn = math.ceil(len(Datasets) / NPlotsInRows)
+            NPlotsInColumn = math.ceil(ScaleFactor / NPlotsInRows)
 
             return ScaleFactor, NPlotsInRows, NPlotsInColumn
 
@@ -197,17 +204,6 @@ class FPlotter:
                     if YMaxData > YMax:
                         YMax = YMaxData
 
-        fig = plt.figure()
-        fig.subplots_adjust(wspace=0.5, hspace=0.5)
-        if SuperTitle:
-            fig.suptitle(SuperTitle, fontsize=14)
-
-        ConsistentColorDict = dict()
-
-        # # global ymax
-        # if not YMax:
-        #     YMax = GetYMax(Datasets)
-
         def PlotDataset(Dataset, Process, UnitTxt):
             # Y axis (molecular concentrations)
             YMax = 0
@@ -216,35 +212,61 @@ class FPlotter:
                 line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
 
                 # Save assigned color for each molecule
-                if MolName not in ConsistentColorDict:
-                    ConsistentColorDict[MolName] = line.get_color()
+                if MolName not in self.ConsistentColorDict:
+                    self.ConsistentColorDict[MolName] = line.get_color()
                 else:
-                    line._color = ConsistentColorDict[MolName]
+                    line._color = self.ConsistentColorDict[MolName]
 
                 # Display Molecule Range
                 if MolRange:
-                    ax1.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.5, facecolor=ConsistentColorDict[MolName])
+                    ax1.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.2, facecolor=self.ConsistentColorDict[MolName])
 
                 # Mol labeling on the curve
                 if bSideLabel:
                     SelectedTimeFrameFromLeft = 0.99
-                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="right", va="bottom", color=ConsistentColorDict[MolName])
+                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="right", va="bottom", color=self.ConsistentColorDict[MolName])
                     SelectedTimeFrameFromLeft = 0
-                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=ConsistentColorDict[MolName])
+                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=self.ConsistentColorDict[MolName])
 
                 YMaxData = max(Conc) * 1.1
                 if YMaxData > YMax:
-                    YMax = min(1000 * 1.1, YMaxData)
+                    if Individual:
+                        YMax = YMaxData
+                    else:
+                        YMax = min(1000 * 1.1, YMaxData)
 
             ax1.set_title(Process)
             ax1.set_xlabel('Time (s)')
-            ax1.set_ylabel('Molecules: Concentration (' + UnitTxt + ')')
+            ax1.set_ylabel('Conc (' + UnitTxt + ')')
             ax1.set_ylim(ymin=0)
             ax1.set_ylim(ymax=YMax)
 
             if not bSideLabel:
                 ax1.legend(loc='upper left')
             # ax1.grid()
+
+        def PrintToPDF():
+            DateTime = datetime.now().strftime('%Y%m%d-%H%M')
+            PlotType = ''
+            if All:
+                PlotType += '_All'
+            if Multiscale:
+                PlotType += '_Multiscale'
+            if Individual:
+                PlotType += '_Individual'
+            PDFFileName = 'MolConc_' + DateTime + PlotType +'.pdf'
+            pdf = PdfPages(PDFFileName)
+            pdf.savefig()
+            pdf.close()
+
+        fig = plt.figure()
+        fig.subplots_adjust(wspace=0.5, hspace=0.5)
+        if SuperTitle:
+            fig.suptitle(SuperTitle, fontsize=14)
+
+        # # global ymax
+        # if not YMax:
+        #     YMax = GetYMax(Datasets)
 
         # Extract Global Time from the Dataset
         Time = ExtractTime(Datasets, DeltaTime)
@@ -312,8 +334,11 @@ class FPlotter:
                 Unit, AdjustedDatasets = ConvertToIndividualDataset(Dataset)
                 for MolName, Dataset in AdjustedDatasets.items():
                     ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
-                    PlotDataset(Dataset, Process, Unit[MolName])
+                    PlotDataset(Dataset, MolName, Unit[MolName])
                     SubplotID += 1
+
+        if Export == 'pdf':
+            PrintToPDF()
 
         plt.show()
 
@@ -667,7 +692,21 @@ class Process(Reaction):
 class DNAReplication(Process):
     def __init__(self):
         super().__init__()
-        self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        self.BuildingBlocks = {"dATP": 1}
+        self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
+        self.Regulators = {}
+        self.Rate = 0.0
+        self.MaxRate = 4000.0   # total of 4000 bp synthesis during the exponential phase
+        self.Progress = 0.0
+        self.MaxProgress = 4.5e6
+
+
+class ProteinSynthesis(Process):
+    def __init__(self):
+        super().__init__()
+        # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
+        self.BuildingBlocks = {"Glutamate": 1}
         self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
         self.Regulators = {}
         self.Rate = 0.0
@@ -747,10 +786,10 @@ class ReactionSimulator(FSimulator):
         self.Reactions.append(Reaction)
 
     def GetMolCount(self, Conc):
-        return Conc * CytoVol * NA
+        return Conc * EcoliInfo.Volume * AvogadroNum
 
     def GetConc(self, Count):
-        return Count / CytoVol / NA
+        return Count / EcoliInfo.Volume / AvogadroNum
 
     def AdjustRefdCon(self, Reaction, RefMol, RefdConc):
         ''' Compare dConc of reference molecule to input concentrations and adjust reference dConc '''
@@ -1006,6 +1045,7 @@ if __name__ == '__main__':
     RunUnitTest = False
     # RunUnitTest = True
 
+    EcoliInfo = FEcoliInfo()
     EcoliInfo.Info()
     ATPConsumption_Sec = EcoliInfo.ECM_CellDivision_Sec
     # ATPConsumption_Sec = 0
@@ -1069,18 +1109,19 @@ if __name__ == '__main__':
     # Plot
     if Sim.Plot:
         Datasets = Sim.GetDataset()
-        KnownConcentrations = Sim.OpenKnownMolConc()
         Plot = FPlotter()
-        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
-        # Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, All=True, MolRange=True)
 
         Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
-        # Plot.PlotDatasets(Datasets.copy(), DeltaTime=DeltaTime, Multiscale=True, MolRange=True)
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
+        #
+        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
 
-        # Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
+        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
         # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
 
 """
 Reference
