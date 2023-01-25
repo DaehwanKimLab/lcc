@@ -1,5 +1,5 @@
 # BSD 3-Clause License
-# © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+# © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 # Donghoon M. Lee and Daehwan Kim
 
 import sys
@@ -9,20 +9,8 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-
-class FSimulator():
-    def __init__(self):
-        None
-
-    def Initialize(self):
-        None
-
-    def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
-        None
-
-    def GetDataset(self):
-        return None
-
+from Simulator import FSimulator
+import Metabolism
 
 class FEcoliSimulator(FSimulator):
     DNAREPLICATIONRATE = 1.0 / (16 * 60)
@@ -42,6 +30,52 @@ class FEcoliSimulator(FSimulator):
 
         self.NumCellDivisions = 0
 
+        self.Sim = Metabolism.ReactionSimulator()
+        Metabolism.EcoliInfo.Info()
+        ATPConsumption_Sec = Metabolism.EcoliInfo.ECM_CellDivision_Sec
+
+        # self.Sim.AddReaction(Metabolism.NADPlusSynthesis())
+        # self.Sim.AddReaction(Metabolism.NADPPlusSynthesis())
+        # self.Sim.AddReaction(Metabolism.CoASynthesis())
+        self.Sim.AddReaction(Metabolism.Glycolysis())
+        self.Sim.AddReaction(Metabolism.PyruvateOxidation())
+        self.Sim.AddReaction(Metabolism.TCACycle())
+        self.Sim.AddReaction(Metabolism.NADH_OxidativePhosphorylation())
+        self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
+        self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
+
+        # Set permanent molecules
+        PermanentMolecules = [
+            # "G6P",
+            # "pyruvate",
+            # "CoA-SH",
+            # "NADH",
+            # "NAD+",
+            # "FADH2",
+            # "FAD",
+            # "CoA-SH",
+            # "oxaloacetate",
+        ]
+        self.Sim.SetPermanentMolecules(PermanentMolecules)
+
+        # Debugging options
+        # Sim.Debug_Reaction = True
+        self.Sim.Debug_Info = 100
+        self.Sim.Plot = True
+        
+        # Set initial molecule concentrations
+        Molecules = {}
+        # Molecules["ATP"] = 1.0 * 1e-3
+        # Molecules["ADP"] = 8.6 * 1e-3
+        # Molecules["G6P"] = 50 * 1e-3
+        
+        # Execute simulation
+        self.Sim.Initialize(Molecules)
+
+        # Simulation parameters
+        self.TotalTime = self.Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
+        self.DeltaTime = 0.01
+
     def SimulateDelta(self, DeltaTime = 1.0):
         if self.DNAReplicationProgress >= 1.0 and \
            self.ProteinSynthesisProgress >= 1.0:
@@ -59,6 +93,8 @@ class FEcoliSimulator(FSimulator):
             self.CytoKinesisProgress = 0.0
             self.NumCellDivisions = 1 
 
+        # self.Sim.SimulateDelta(DeltaTime)
+
     def SetProgress(self, Progress):
         self.DNAReplicationProgress = Progress
         self.ProteinSynthesisProgress = Progress
@@ -67,11 +103,17 @@ class FEcoliSimulator(FSimulator):
     def GetNumCellDivisions(self):
         return self.NumCellDivisions
 
+    def Info(self):
+        print("DNA Replication Progress:   {:<.3f}".format(self.DNAReplicationProgress))
+        print("Protien Synthesis Progress: {:<.3f}".format(self.ProteinSynthesisProgress))
+        print("CytoKinesis Progress:       {:<.3f}".format(self.CytoKinesisProgress))
+
     
 if __name__ == '__main__':
     Sim = FEcoliSimulator()
-    TotalTime = 6 * 60.0 * 60.0
-    DeltaTime = 1.0
+    
+    TotalTime = 22 * 60.0
+    DeltaTime = 0.01
 
     Sim.Initialize()
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)

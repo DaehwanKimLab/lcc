@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import csv
 import copy
 
+from Simulator import FSimulator
+
 NA = 6e23
 CytoVol = 1e-15
 
@@ -674,7 +676,7 @@ class DNAReplication(Process):
         self.MaxProgress = 4.5e6
 
 
-class Simulator():
+class ReactionSimulator(FSimulator):
     def __init__(self):
         self.Reactions = []
         self.Dataset = {}
@@ -766,10 +768,6 @@ class Simulator():
                 Out *= 0.999999
             assert Out * Coeff <= self.Molecules[Mol]
 
-            # DEBUG
-            # if self.Molecules[Mol] < 1e-8:
-            #     print(Mol, self.Molecules[Mol], AdjustedConc, UnitdConc, Out)
-
         return Out * RefCoeff
 
     def DeterminedConc(self, Reaction, RefMol, RefdConc):
@@ -777,9 +775,6 @@ class Simulator():
         dConc = dict()
         for Mol, Coeff in Reaction.Stoich.items():
             dConc[Mol] = UnitdConc * Coeff
-
-            # DEBUG
-            # print(Mol, dConc[Mol])
 
         return dConc
 
@@ -794,13 +789,14 @@ class Simulator():
         # print(self.Molecules, dMolecules)
         for dMolecule, dConc in dMolecules.items():
             assert dMolecule in self.Molecules
-            assert dConc + self.Molecules[dMolecule] >= 0, 'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter,
-                                                                                                            dMolecule,
-                                                                                                            Conc2Str(
-                                                                                                                self.Molecules[
-                                                                                                                    dMolecule]),
-                                                                                                            Conc2Str(
-                                                                                                                dConc))
+            assert dConc + self.Molecules[dMolecule] >= 0, \
+                'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter,
+                                                                 dMolecule,
+                                                                 Conc2Str(
+                                                                     self.Molecules[
+                                                                         dMolecule]),
+                                                                 Conc2Str(
+                                                                     dConc))
             self.Molecules[dMolecule] += dConc
             self.Molecules[dMolecule] = max(0, self.Molecules[dMolecule])
 
@@ -870,48 +866,22 @@ class Simulator():
             print("\t{}: {}".format(Molecule, ConStr), end=End)
         print()
 
-    def Simulate(self, TotalTime=10, DeltaTime=0.01, ):
-        print("-- Initial Conditions --")
-        self.Info()
-        print()
+    def SimulateDelta(self, DeltaTime):
+        self.dMolecules = dict()
+        for Reaction in self.Reactions:
+            dMolecules = self.RunReaction(Reaction, DeltaTime)
+            if self.Debug_Reaction:
+                print("[{}] {}".format(Reaction.ReactionName, Reaction.DisplayChemicalEquation()))
+                self.PrintMolConc(dMolecules, End=', ')
+            self.UpdateMolecules(dMolecules)
+            self.CheckZeroConcentrations()
+            self.dMolecules[Reaction.ReactionName] = dMolecules
 
-        while self.Iter < TotalTime / DeltaTime:
-            # # Debug
-            # if self.Iter == 1942:
-            #     print("")
+        if len(self.PermanentMolecules):
+            self.RestorePermanentMolecules()
 
-            self.dMolecules = dict()
-            for Reaction in self.Reactions:
-                dMolecules = self.RunReaction(Reaction, DeltaTime)
-                if self.Debug_Reaction:
-                    print("[{}] {}".format(Reaction.ReactionName, Reaction.DisplayChemicalEquation()))
-                    self.PrintMolConc(dMolecules, End=', ')
-                self.UpdateMolecules(dMolecules)
-                self.CheckZeroConcentrations()
-                self.dMolecules[Reaction.ReactionName] = dMolecules
-
-            if len(self.PermanentMolecules):
-                self.RestorePermanentMolecules()
-
-            if self.Plot:
-                self.AddToDataset()
-
-            self.Iter += 1
-
-            # DK - debugging purposes
-            # self.Debug_Info = 1
-            # if self.Iter > 200:
-            #     assert False
-
-            if self.Iter % self.Debug_Info == 0:
-                print()
-                print("-- Iteration {} --".format(self.Iter))
-                self.Info()
-                print()
-
-        print("\n")
-        print("-- Summary --")
-        self.Summary()
+        if self.Plot:
+            self.AddToDataset()        
 
     def GetDataset(self):
         return {self.GetReactionNames(Eq=True): self.Dataset}
@@ -1031,7 +1001,7 @@ def GetUnitTestReactions():
 
 
 if __name__ == '__main__':
-    Sim = Simulator()
+    Sim = ReactionSimulator()
 
     RunUnitTest = False
     # RunUnitTest = True

@@ -9,7 +9,8 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-from Ecoli import FSimulator, FEcoliSimulator
+from Simulator import FSimulator
+from Ecoli import FEcoliSimulator
 
 
 class FColonySimulator(FSimulator):
