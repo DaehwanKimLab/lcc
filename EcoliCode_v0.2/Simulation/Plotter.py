@@ -16,6 +16,9 @@ class FPlotter:
         self.KnownMolConc = dict()
         self.ConsistentColorDict = dict()
 
+        self.XLabel = None
+        self.YLabel = None
+
     def SetKnownMolConc(self, KnownMolConc):
         self.KnownMolConc = KnownMolConc
         # https://stackoverflow.com/questions/12957582/plot-yerr-xerr-as-shaded-region-rather-than-error-bars
@@ -61,13 +64,13 @@ class FPlotter:
 
         return Datasets_Filtered
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel=True, SuperTitle="", All=False, Multiscale=False, Individual=False, MolRange=False, Export=''):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel='right', SuperTitle="", MaxNPlotsInRows=3, Unitless=True, All=True, Multiscale=False, Include_nM=False, Individual=False, MolRange=False, Export=''):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
 
         def ExtractTime(Datasets, SimulationTimeUnit):
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
+            for Process, Dataset in Datasets.items():
                 for Data in Dataset.values():
                     Time = [i * SimulationTimeUnit for i in range(len(Data))]
                     return Time
@@ -105,12 +108,12 @@ class FPlotter:
 
             return Unit, Dataset
 
-        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows=4):
+        def GetSubPlottingInfo(Datasets, MaxNPlotsInRows):
             ScaleFactor = 0
             if All:
                 ScaleFactor += 1
             if Multiscale:
-                ScaleFactor += 3
+                ScaleFactor += 3 if Include_nM else 2
             if Individual:
                 for Dataset in Datasets.values():
                     ScaleFactor += len(Dataset)
@@ -143,12 +146,12 @@ class FPlotter:
                     if YMaxData > YMax:
                         YMax = YMaxData
 
-        def PlotDataset(Dataset, Process, UnitTxt):
+        def PlotDataset(Dataset, Process, UnitTxt, Plt):
             # Y axis (molecular concentrations)
             YMax = 0
             for MolName, Conc in Dataset.items():
 
-                line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
+                line, = Plt.plot(Time, Conc, label="[" + MolName + "]")
 
                 # Save assigned color for each molecule
                 if MolName not in self.ConsistentColorDict:
@@ -158,31 +161,31 @@ class FPlotter:
 
                 # Display Molecule Range
                 if MolRange:
-                    ax1.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.2, facecolor=self.ConsistentColorDict[MolName])
+                    Plt.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.2, facecolor=self.ConsistentColorDict[MolName])
 
                 # Mol labeling on the curve
-                if bSideLabel:
+                if bSideLabel == 'right' or bSideLabel == 'both':
                     SelectedTimeFrameFromLeft = 0.99
-                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="right", va="bottom", color=self.ConsistentColorDict[MolName])
+                    Plt.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="right", va="bottom", color=self.ConsistentColorDict[MolName])
+                if bSideLabel == 'left' or bSideLabel == 'both':
                     SelectedTimeFrameFromLeft = 0
-                    ax1.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=self.ConsistentColorDict[MolName])
+                    Plt.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName, ha="left", va="bottom", color=self.ConsistentColorDict[MolName])
 
                 YMaxData = max(Conc) * 1.1
                 if YMaxData > YMax:
-                    if Individual:
-                        YMax = YMaxData
-                    else:
+                    if Multiscale:
                         YMax = min(1000 * 1.1, YMaxData)
+                    else:
+                        YMax = YMaxData
 
-            ax1.set_title(Process)
-            ax1.set_xlabel('Time (s)')
-            ax1.set_ylabel('Conc (' + UnitTxt + ')')
-            ax1.set_ylim(ymin=0)
-            ax1.set_ylim(ymax=YMax)
-
-            if not bSideLabel:
-                ax1.legend(loc='upper left')
-            # ax1.grid()
+            Plt.set_title(Process)
+            if self.XLabel:
+                Plt.set_xlabel('Time (s)')
+            if self.YLabel:
+                Plt.set_ylabel('Conc (' + UnitTxt + ')')
+            Plt.set_ylim(ymin=0)
+            Plt.set_ylim(ymax=YMax)
+            # Plt.grid()
 
         def PrintToPDF():
             DateTime = datetime.now().strftime('%Y%m%d-%H%M')
@@ -211,27 +214,32 @@ class FPlotter:
         Time = ExtractTime(Datasets, DeltaTime)
 
         # Determine subplotting map
-        ScaleFactor, NPlotsInRows, NPlotsInColumn = GetSubPlottingInfo(Datasets)
+        ScaleFactor, NPlotsInRows, NPlotsInColumn = GetSubPlottingInfo(Datasets, MaxNPlotsInRows)
 
         # Plot data
         SubplotID = 1
-        if All:
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
-                UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
-                ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
-                PlotDataset(Dataset, Process, UnitTxt)
+
+        def PlotAll(SubplotID):
+            for Process, Dataset in copy.deepcopy(Datasets).items():
+                UnitTxt = ''
+                if not Unitless:
+                    UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
+                Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                PlotDataset(Dataset, Process, UnitTxt, Plt)
                 SubplotID += 1
 
-        # Multiscale split datasets
-        if Multiscale:
+        def PlotMultiscale(SubplotID):
+            assert not Unitless, "To plot multiscale, set unitless option False"
+
             def SplitScales(Dataset):
                 Dataset_mM = dict()
                 Dataset_uM = dict()
                 Dataset_nM = dict()
                 for mol, conc in Dataset.items():
                     if conc[0] < 1e-6:
-                        Dataset_nM[mol] = (np.array(conc) / 1e-9).tolist()
-                        AdjustUnitOnKnownConc(mol, 1e-9)
+                        if Include_nM:
+                            Dataset_nM[mol] = (np.array(conc) / 1e-9).tolist()
+                            AdjustUnitOnKnownConc(mol, 1e-9)
                     elif conc[0] < 1e-3:
                         Dataset_uM[mol] = (np.array(conc) / 1e-6).tolist()
                         AdjustUnitOnKnownConc(mol, 1e-6)
@@ -240,22 +248,27 @@ class FPlotter:
                         AdjustUnitOnKnownConc(mol, 1e-3)
                 return (Dataset_mM, Dataset_uM, Dataset_nM)
 
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
+            for Process, Dataset in copy.deepcopy(Datasets).items():
                 Dataset_Unit = SplitScales(Dataset)
                 Units = ['mM', 'uM', 'nM']
 
                 for Unit, dataset in zip(Units, Dataset_Unit):
-                    ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
-                    PlotDataset(dataset, Unit + ' range', Unit)
+                    if not Include_nM and Unit == 'nM':
+                        continue
+                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                    PlotDataset(dataset, Unit + ' range', Unit, Plt)
                     SubplotID += 1
 
-        # Individual Datasets
-        if Individual:
-            def ConvertToIndividualDataset(Dataset):
+        def PlotIndividual(SubplotID):
+
+            def ConvertDatasetToIndividualDatasets(Dataset):
                 AdjustedDatasets = dict()
                 Units = dict()
                 for mol, conc in Dataset.items():
-                    if conc[0] < 1e-6:
+                    if Unitless:
+                        AdjustedDatasets[mol] = {mol: conc}
+                        Units[mol] = ''
+                    elif conc[0] < 1e-6:
                         AdjustedDatasets[mol] = {mol: (np.array(conc) / 1e-9).tolist()}
                         Units[mol] = "nM"
                         AdjustUnitOnKnownConc(mol, 1e-9)
@@ -269,52 +282,43 @@ class FPlotter:
                         AdjustUnitOnKnownConc(mol, 1e-3)
                 return Units, AdjustedDatasets
 
-            for n, (Process, Dataset) in enumerate(Datasets.items()):
-                Unit, AdjustedDatasets = ConvertToIndividualDataset(Dataset)
+            for Process, Dataset in copy.deepcopy(Datasets).items():
+                Unit, AdjustedDatasets = ConvertDatasetToIndividualDatasets(Dataset)
                 for MolName, Dataset in AdjustedDatasets.items():
-                    ax1 = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
-                    PlotDataset(Dataset, MolName, Unit[MolName])
+                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                    PlotDataset(Dataset, MolName, Unit[MolName], Plt)
                     SubplotID += 1
+
+        if All:
+            PlotAll(SubplotID)
+
+        if Multiscale:
+            PlotMultiscale(SubplotID)
+
+        if Individual:
+            PlotIndividual(SubplotID)
 
         if Export == 'pdf':
             PrintToPDF()
 
         plt.show()
 
-    # def PrintToPDF(self):
-    #     # Create the PdfPages object to which we will save the pages:
-    #     # The with statement makes sure that the PdfPages object is closed properly at
-    #     # the end of the block, even if an Exception occurs.
-    #     with PdfPages('multipage_pdf.pdf') as pdf:
-    #         plt.figure(figsize=(3, 3))
-    #         plt.plot(range(7), [3, 1, 4, 1, 5, 9, 2], 'r-o')
-    #         plt.title('Page One')
-    #         pdf.savefig()  # saves the current figure into a pdf page
-    #         plt.close()
-    #
-    #         # if LaTeX is not installed or error caught, change to `False`
-    #         plt.rcParams['text.usetex'] = True
-    #         plt.figure(figsize=(8, 6))
-    #         x = np.arange(0, 5, 0.1)
-    #         plt.plot(x, np.sin(x), 'b-')
-    #         plt.title('Page Two')
-    #         pdf.attach_note("plot of sin(x)")  # attach metadata (as pdf note) to page
-    #         pdf.savefig()
-    #         plt.close()
-    #
-    #         plt.rcParams['text.usetex'] = False
-    #         fig = plt.figure(figsize=(4, 5))
-    #         plt.plot(x, x ** 2, 'ko')
-    #         plt.title('Page Three')
-    #         pdf.savefig(fig)  # or you can pass a Figure object to pdf.savefig
-    #         plt.close()
-    #
-    #         # We can also set the file's metadata via the PdfPages object:
-    #         d = pdf.infodict()
-    #         d['Title'] = 'Multipage PDF Example'
-    #         d['Author'] = 'Jouni K. Sepp\xe4nen'
-    #         d['Subject'] = 'How to create a multipage pdf file and set its metadata'
-    #         d['Keywords'] = 'PdfPages multipage keywords author title subject'
-    #         d['CreationDate'] = datetime.datetime(2009, 11, 13)
-    #         d['ModDate'] = datetime.datetime.today()
+
+class FGrowthPlotter(FPlotter):
+    def __init__(self):
+        super().__init__()
+        self.XLabel = 'Time (s)'
+        self.YLabel = 'Number of E. coli'
+
+
+class FGeneRepressionPlotter():
+    def PlotDatasets(self, Datasets):
+        for Title, Dataset in Datasets.items():
+            XSet, YSet = Dataset
+            plt.title(Title)
+            plt.ylabel("Relative Growth")
+            plt.xlabel("Repression Efficiency")
+            plt.plot(XSet, YSet, "b")
+            plt.plot(XSet, YSet, "go")
+            plt.show()
 
