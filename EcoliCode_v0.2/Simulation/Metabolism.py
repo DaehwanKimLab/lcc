@@ -78,6 +78,61 @@ class EcoliInfo():
         print("")
 
 
+    def OpenKnownMolConc():
+        def LoadTSVDatabase(db_fname):
+            db = None
+            with open(db_fname) as fp:
+                csv_reader = csv.reader(fp, delimiter='\t')
+                list_of_rows = list(csv_reader)
+                db = list_of_rows[1:]
+            return db
+
+        def ParseMetaboliteCon(db_KnownMolConc):
+
+            def MetaboliteSynonyms(Name):
+                if Name == "glucose-6-phosphate":
+                    return "G6P"
+                elif Name == "glyceraldehyde-3-phosphate":
+                    return "G3P"
+                elif Name == "coenzyme-A":
+                    return "CoA-SH"
+                # elif " (assumed 1 / 2 ile+leu)" in Name:
+                #     return Name.replace(" (assumed 1 / 2 ile+leu)", "")
+                elif Name == "ribose-5-phosphate":
+                    return "R5P"
+                elif Name == "ribulose-5-phosphate":
+                    return "Ru5P"
+                else:
+                    return Name
+
+            KnownMolConc = dict()
+
+            for i, Value in enumerate(db_KnownMolConc):
+                Metabolite, ConcInEcoli, LowerBound, UpperBound = Value
+                # data = dict()
+                # data['ConcInEcoli'] = ConcInEcoli
+                # data['LowerBound'] = LowerBound
+                # data['UpperBound'] = UpperBound
+                # KnownMolConc[Metabolite] = data
+                if ConcInEcoli == '-':
+                    continue
+                Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
+                Metabolite = MetaboliteSynonyms(Metabolite)
+                KnownMolConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound)]
+
+            return KnownMolConc
+
+        db_KnownMolConc = LoadTSVDatabase("MetaboliteConcentrations.tsv")
+        KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
+
+        # FADH2 missing data
+        KnownMolConc["FADH2"] = [(KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][0],
+                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][1],
+                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][2]]
+
+        return KnownMolConc
+
+
 class Reaction:
     def __init__(self):
         self.ReactionName = ""
@@ -443,7 +498,7 @@ class ReactionSimulator(FSimulator):
         self.Dataset = {}
         self.Iter = 0
 
-        self.KnownMolConc = self.OpenKnownMolConc()
+        self.KnownMolConc = EcoliInfo.OpenKnownMolConc()
 
         self.Molecules = dict()
         self.InitialConditions = dict()
@@ -452,6 +507,7 @@ class ReactionSimulator(FSimulator):
         self.dMolecules = dict()
 
         self.Plot = False
+        self.ExportToPDF = False
         self.Debug_Info = 1
         self.Debug_Reaction = False
 
@@ -603,17 +659,25 @@ class ReactionSimulator(FSimulator):
             print(LineStr)
 
     def Summary(self):
-        print("{:<16} {:>10} {:>10} {:>10} {:<10} {:<10}".format("", "Initial", "Final", "dConc", "Depleted", "Accumulated"))
+        print("{:<16} {:>12} {:>12} {:>13}  {:<12}".format("", "Initial", "Final", "dConc", "OutOfRange"))
         for Molecule, Conc in self.Molecules.items():
             dConc = Conc - self.InitialConditions[Molecule]
 
             InitConc = Conc2Str(self.InitialConditions[Molecule])
             FinalConc = Conc2Str(Conc)
             FinaldConc = Conc2Str(dConc) if Molecule not in self.PermanentMolecules else "-"
-            Depletion = 'DEPLETED' if Conc < self.KnownMolConc[Molecule][1] else ''
-            Accumulation = 'ACCUMULATED' if Conc > self.KnownMolConc[Molecule][2] else ''
+            if dConc < 0:
+                FinaldConc = "\033[91m {:>12}\033[00m".format(FinaldConc)
+            elif dConc > 0:
+                FinaldConc = "\033[92m {:>12}\033[00m".format(FinaldConc)
 
-            print("{:16} {:>10} {:>10} {:>10} {:<10} {:<10}".format(Molecule, InitConc, FinalConc, FinaldConc, Depletion, Accumulation))
+            OutOfRange = ''
+            if Conc < self.KnownMolConc[Molecule][1]:
+                OutOfRange = "\033[91m {:<12}\033[00m".format('DEPLETED')
+            elif Conc > self.KnownMolConc[Molecule][2]:
+                OutOfRange = "\033[92m {:<12}\033[00m".format('ACCUMULATED')
+
+            print("{:16} {:>12} {:>12} {:>12} {:<12}".format(Molecule, InitConc, FinalConc, FinaldConc, OutOfRange))
 
         if self.Plot:
             print("\nPlot: ON")
@@ -646,60 +710,6 @@ class ReactionSimulator(FSimulator):
     def GetDataset(self):
         return {self.GetReactionNames(Eq=True): self.Dataset}
 
-    def LoadTSVDatabase(self, db_fname):
-        db = None
-        with open(db_fname) as fp:
-            csv_reader = csv.reader(fp, delimiter='\t')
-            list_of_rows = list(csv_reader)
-            db = list_of_rows[1:]
-        return db
-
-    def OpenKnownMolConc(self):
-
-        def ParseMetaboliteCon(db_KnownMolConc):
-
-            def MetaboliteSynonyms(Name):
-                if Name == "glucose-6-phosphate":
-                    return "G6P"
-                elif Name == "glyceraldehyde-3-phosphate":
-                    return "G3P"
-                elif Name == "coenzyme-A":
-                    return "CoA-SH"
-                # elif " (assumed 1 / 2 ile+leu)" in Name:
-                #     return Name.replace(" (assumed 1 / 2 ile+leu)", "")
-                elif Name == "ribose-5-phosphate":
-                    return "R5P"
-                elif Name == "ribulose-5-phosphate":
-                    return "Ru5P"
-                else:
-                    return Name
-
-            KnownMolConc = dict()
-
-            for i, Value in enumerate(db_KnownMolConc):
-                Metabolite, ConcInEcoli, LowerBound, UpperBound = Value
-                # data = dict()
-                # data['ConcInEcoli'] = ConcInEcoli
-                # data['LowerBound'] = LowerBound
-                # data['UpperBound'] = UpperBound
-                # KnownMolConc[Metabolite] = data
-                if ConcInEcoli == '-':
-                    continue
-                Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
-                Metabolite = MetaboliteSynonyms(Metabolite)
-                KnownMolConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound)]
-
-            return KnownMolConc
-
-        db_KnownMolConc = self.LoadTSVDatabase("MetaboliteConcentrations.tsv")
-        KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
-
-        # FADH2 missing data
-        KnownMolConc["FADH2"] = [(KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][0],
-                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][1],
-                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][2]]
-
-        return KnownMolConc
 
     def UnitTest(self, ReactionName):
         # a-ketoGlutarate synthesis unit test
@@ -810,6 +820,7 @@ if __name__ == '__main__':
     # Sim.Debug_Reaction = True
     Sim.Debug_Info = 100
     Sim.Plot = True
+    # Sim.ExportToPDF = True
 
     # Set initial molecule concentrations
     Molecules = {}
@@ -827,19 +838,22 @@ if __name__ == '__main__':
     Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
 
     # Plot
+    Datasets = Sim.GetDataset()
+    Plot = FPlotter()
+
     if Sim.Plot:
-        Datasets = Sim.GetDataset()
-        Plot = FPlotter()
+        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
+        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
 
-        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+    if Sim.ExportToPDF:
+        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
-        #
-        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True)
+        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
-
-        Plot.SetKnownMolConc(copy.deepcopy(Sim.KnownMolConc))
-        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True)
+        Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
 
