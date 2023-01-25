@@ -134,10 +134,9 @@ class FPetridishSimulator(FSimulator):
 
 
 class FExperimentSimulator(FSimulator):
-    def __init__(self):
-        # self.Control = FPetridishSimulator(FPopulationSimulator.DEFAULT_POPULATION)
-        self.Control = FPetridishSimulator(FPopulationSimulator.TEST1_POPULATION)
-        self.NumTest = 30
+    def __init__(self, Population, NumTest=0):
+        self.Control = FPetridishSimulator(Population)
+        self.NumTest = NumTest
         self.Tests = [] 
         for i in range(self.NumTest):
             self.Tests.append(FPetridishSimulator([[
@@ -170,7 +169,18 @@ class FExperimentSimulator(FSimulator):
 
 
 if __name__ == '__main__':
-    Sim = FExperimentSimulator()
+    # # Growth curve (control only):
+    # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
+    #
+    # # Growth curve with three populations (control, half protein synthesis rate, half cytokinesis rate):
+    # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
+    #
+    # # Gene Repression vs. Final Growth
+    # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest=30)
+
+    # Show both 'growth curve with three populations' and '['Gene Repression vs. Final Growth'
+    Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest=30)
+
     Sim.Plot = True
 
     TotalTime = 6 * 60.0 * 60.0
@@ -184,9 +194,7 @@ if __name__ == '__main__':
         Plot = Plotter.FGrowthPlotter()
         Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, Unitless=True)
 
-        GrowthDatasets = Sim.GetGrowthDataset()
-        GrowthPlot = Plotter.FGeneRepressionPlotter()
-        GrowthPlot.PlotDatasets(GrowthDatasets)
-
-
-
+        if Sim.NumTest > 0:
+            GrowthDatasets = Sim.GetGrowthDataset()
+            GrowthPlot = Plotter.FGeneRepressionPlotter()
+            GrowthPlot.PlotDatasets(GrowthDatasets)
