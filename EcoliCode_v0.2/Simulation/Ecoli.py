@@ -14,9 +14,10 @@ import Metabolism
 from Plotter import FPlotter
 
 class FEcoliSimulator(FSimulator):
-    DNAREPLICATIONRATE = 1.0 / (16 * 60)
+    # DNAREPLICATIONRATE = 1.0 / (16 * 60)
+    DNAREPLICATIONRATE = 1.0 / (22 * 60)
     PROTEINSYNTHESISRATE = 1.0 / (16 * 60)
-    CYTOKINESISRATE = 1.0 / ( 6 * 60)
+    CYTOKINESISRATE = 1.0 / (6 * 60)
 
     def __init__(self, 
                  DNAReplicationRate = DNAREPLICATIONRATE,
@@ -24,12 +25,13 @@ class FEcoliSimulator(FSimulator):
                  CytoKinesisRate = CYTOKINESISRATE):
         super().__init__()
 
+        # DK - debugging purposes
+        self.Debug_Info = 1
+
         self.DNAReplicationRate = DNAReplicationRate
         self.DNAReplicationProgress = 0.0
         self.ProteinSynthesisRate = ProteinSynthesisRate
-        self.ProteinSynthesisProgress = 0.0
         self.CytoKinesisRate = CytoKinesisRate
-        self.CytoKinesisProgress = 0.0
 
         self.NumCellDivisions = 0
 
@@ -47,7 +49,9 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
         self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
-        self.Sim.AddReaction(Metabolism.DNAReplication())
+        self.Sim.AddReaction(Metabolism.dNTPSynthesis())
+        self.DNAReplication = Metabolism.DNAReplication()
+        self.Sim.AddReaction(self.DNAReplication)
 
         # Set permanent molecules
         PermanentMolecules = [
@@ -76,20 +80,10 @@ class FEcoliSimulator(FSimulator):
         self.DeltaTime = 0.01
 
     def SimulateDelta(self, DeltaTime = 1.0):
-        if self.DNAReplicationProgress >= 1.0 and \
-           self.ProteinSynthesisProgress >= 1.0:
-            self.CytoKinesisProgress += self.CytoKinesisRate * DeltaTime
-        else:
-            if self.DNAReplicationProgress < 1.0:
-                self.DNAReplicationProgress += self.DNAReplicationRate * DeltaTime
-            if self.ProteinSynthesisProgress < 1.0:
-                self.ProteinSynthesisProgress += self.ProteinSynthesisRate * DeltaTime
-
+        self.DNAReplicationProgress += self.DNAReplicationRate * DeltaTime
         self.NumCellDivisions = 0
-        if self.CytoKinesisProgress >= 1.0:
+        if self.DNAReplicationProgress >= 1.0:
             self.DNAReplicationProgress = 0.0
-            self.ProteinSynthesisProgress = 0.0
-            self.CytoKinesisProgress = 0.0
             self.NumCellDivisions = 1 
 
         # DK - temporary workaround
@@ -102,8 +96,6 @@ class FEcoliSimulator(FSimulator):
 
     def SetProgress(self, Progress):
         self.DNAReplicationProgress = Progress
-        self.ProteinSynthesisProgress = Progress
-        self.CytoKinesisProgress = 0.0
 
     def GetNumCellDivisions(self):
         return self.NumCellDivisions
@@ -115,16 +107,10 @@ class FEcoliSimulator(FSimulator):
         return self.Sim.KnownMolConc
 
     def Info(self):
-        print("DNA Replication Progress:   {:<.3f}".format(self.DNAReplicationProgress))
-        print("Protien Synthesis Progress: {:<.3f}".format(self.ProteinSynthesisProgress))
-        print("CytoKinesis Progress:       {:<.3f}".format(self.CytoKinesisProgress))
+        print("DNA Replication Progress:   {:<.3f}".format(self.DNAReplication.GetProgress()))
+        print()
 
         self.Sim.Info()
-
-        for Reaction in self.Sim.Reactions:
-            Progress = Reaction.GetProgress()
-            if Progress > 0.0:
-                print("{}: {:<.3f}".format(Reaction.ReactionName, Progress))
 
     
 if __name__ == '__main__':
@@ -143,10 +129,8 @@ if __name__ == '__main__':
         Plot = FPlotter()
 
         Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
 
-        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
-
-        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Individual=True, MolRange=True, Export='pdf')
+        # Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')

@@ -32,7 +32,7 @@ class FColonySimulator(FSimulator):
                     NumEcoli2 = NumEcoli - NumEcoli1
                     self.EcoliSims[i][0] = NumEcoli1
                     Sim2 = copy.deepcopy(Sim)
-                    Sim2.SetProgress(random.uniform(-0.3, 0.3))
+                    Sim2.SetProgress(random.uniform(-0.2, 0.2))
                     NewEcoliSims.append([NumEcoli2, Sim2])
         self.EcoliSims += NewEcoliSims
                     
@@ -66,14 +66,14 @@ class FPopulationSimulator(FSimulator):
     TEST1_POPULATION = [
         DEFAULT_COLONY,
         [
-            FEcoliSimulator.DNAREPLICATIONRATE,
-            FEcoliSimulator.PROTEINSYNTHESISRATE * 0.5,
+            FEcoliSimulator.DNAREPLICATIONRATE * 0.9,
+            FEcoliSimulator.PROTEINSYNTHESISRATE,
             FEcoliSimulator.CYTOKINESISRATE
         ],
         [
-            FEcoliSimulator.DNAREPLICATIONRATE,
+            FEcoliSimulator.DNAREPLICATIONRATE * 0.8,
             FEcoliSimulator.PROTEINSYNTHESISRATE,
-            FEcoliSimulator.CYTOKINESISRATE * 0.5
+            FEcoliSimulator.CYTOKINESISRATE
         ]
     ]
 
@@ -135,24 +135,25 @@ class FPetridishSimulator(FSimulator):
 
 class FExperimentSimulator(FSimulator):
     def __init__(self):
-        # self.Control = FPetridishSimulator(FPopulationSimulator.DEFAULT_POPULATION)
-        self.Control = FPetridishSimulator(FPopulationSimulator.TEST1_POPULATION)
+        self.Colonies = FPetridishSimulator(FPopulationSimulator.TEST1_POPULATION)
+        self.Control = FPetridishSimulator(FPopulationSimulator.DEFAULT_POPULATION)
         self.NumTest = 30
         self.Tests = [] 
         for i in range(self.NumTest):
             self.Tests.append(FPetridishSimulator([[
-                FEcoliSimulator.DNAREPLICATIONRATE,
-                FEcoliSimulator.PROTEINSYNTHESISRATE * (self.NumTest - max(0, i - self.NumTest / 1.2)) / self.NumTest,
+                FEcoliSimulator.DNAREPLICATIONRATE * (self.NumTest - max(0, i - self.NumTest / 1.2)) / self.NumTest,
+                FEcoliSimulator.PROTEINSYNTHESISRATE,
                 FEcoliSimulator.CYTOKINESISRATE
             ]]))
 
     def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
+        self.Colonies.Simulate(TotalTime, DeltaTime)
         self.Control.Simulate(TotalTime, DeltaTime)
         for Test in self.Tests:
             Test.Simulate(TotalTime, DeltaTime)
                               
     def GetDataset(self):
-        return self.Control.GetDataset()
+        return self.Colonies.GetDataset()
 
     def GetGrowthDataset(self):
         XSet, YSet = [], []

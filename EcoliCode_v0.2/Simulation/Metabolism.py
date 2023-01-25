@@ -212,6 +212,7 @@ class Reaction:
         Eq = AddMolCoeff(Eq, self.Output)
         return Eq
 
+
 # reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
 class NADPlusSynthesis(Reaction):
     def __init__(self):
@@ -221,6 +222,7 @@ class NADPlusSynthesis(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return {}
+
 
 # reaction NADP+Synthesis(NAD+ + ATP -> NADP+ + ADP)
 class NADPPlusSynthesis(Reaction):
@@ -232,6 +234,7 @@ class NADPPlusSynthesis(Reaction):
     def Specification(self, Molecules, InitCond):
         return {}
 
+
 # reaction CoASynthesis(pantothenate + cysteine + 3 ATP + CTP + CO2 -> CoA + ADP + CMP + 3 PPi)
 class CoASynthesis(Reaction):
     def __init__(self):
@@ -241,6 +244,7 @@ class CoASynthesis(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return {}
+
 
 class Glycolysis(Reaction):
     def __init__(self):
@@ -261,6 +265,7 @@ class Glycolysis(Reaction):
         VMax = max(0, Molecules["ADP"] - InitCond["ADP"])
         self.Capacity = min(VO, VMax)
         return "ATP", self.Capacity
+
 
 class PyruvateOxidation(Reaction):
     def __init__(self):
@@ -386,6 +391,18 @@ class FADH2_OxidativePhosphorylation(Reaction):
         return "ATP", self.Capacity
 
 
+class dNTPSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'dNTP Synthesis'
+        self.Input = {}
+        self.Output = {"dATP": 1}
+
+    def Specification(self, Molecules, InitCond):
+        Rate = 1500
+        return "dATP", Rate * EcoliInfo.C2M
+
+
 class ATPControl(Reaction):
     def __init__(self, ControlRate=-4.35E-03):
         # Cell Division ATP consumption: c = 4.35E-03
@@ -464,6 +481,7 @@ class DNAReplication(Process):
         self.MaxProgress = 4.5e6
 
         self.Input = {"ATP": 3, "dATP": 1}
+        self.Output = {"ADP": 3}
 
     def Specification(self, Molecules, InitCond):
         return "dATP", -self.Rate * EcoliInfo.C2M
@@ -569,7 +587,10 @@ class ReactionSimulator(FSimulator):
         return Count / EcoliInfo.Volume / AvogadroNum
 
     def AdjustRefdCon(self, Reaction, RefMol, RefdConc):
-        ''' Compare dConc of reference molecule to input concentrations and adjust reference dConc '''
+        # Compare dConc of reference molecule to input concentrations and adjust reference dConc
+        if len(Reaction.Input) == 0:
+            return RefdConc        
+
         RefCoeff = Reaction.Stoich[RefMol]
         UnitdConc = RefdConc / RefCoeff
 
@@ -601,18 +622,9 @@ class ReactionSimulator(FSimulator):
         return self.DeterminedConc(Reaction, RefMol, RefdConc)
 
     def UpdateMolecules(self, dMolecules):
-        # DEBUG
-        # print(self.Molecules, dMolecules)
         for dMolecule, dConc in dMolecules.items():
             assert dMolecule in self.Molecules
-            assert dConc + self.Molecules[dMolecule] >= 0, \
-                'Iter {}\t | {} \t| Conc:{}, \t dConc:{}'.format(self.Iter,
-                                                                 dMolecule,
-                                                                 Conc2Str(
-                                                                     self.Molecules[
-                                                                         dMolecule]),
-                                                                 Conc2Str(
-                                                                     dConc))
+            assert dConc + self.Molecules[dMolecule] >= 0
             self.Molecules[dMolecule] += dConc
             self.Molecules[dMolecule] = max(0, self.Molecules[dMolecule])
 
