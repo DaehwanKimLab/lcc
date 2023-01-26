@@ -95,7 +95,7 @@ class FEcoliSimulator(FSimulator):
     
 if __name__ == '__main__':
     PermanentMolecules = [
-        # "G6P",
+        "G6P",
         # "pyruvate",
         # "CoA-SH",
         # "NADH",
