@@ -284,8 +284,8 @@ class Glycolysis(Reaction):
         # dATP = (max(0, InitCond["ATP"] - Molecules["ATP"]) / Molecules["ATP"]) * Molecules["G6P"] * self.Capacity # Product Inhibition
         # return "ATP", self.Homeostasis("G6P", "ATP", Molecules, InitCond)
         # return "ATP", (max(0, Molecules["ADP"] - 0.5 * 1e-3) / Molecules["ATP"]) * min(1e-3, Molecules["G6P"]) * self.Capacity
-        VO = Molecules["ADP"] / Molecules["ATP"] * self.CapacityConstant
         VMax = max(0, Molecules["ADP"] - InitCond["ADP"])
+        VO = (Molecules["ADP"] / Molecules["ATP"] * self.CapacityConstant) if Molecules["ATP"] is not 0 else VMax
         self.Capacity = min(VO, VMax)
         return "ATP", self.Capacity
 
@@ -694,9 +694,10 @@ class ReactionSimulator(FSimulator):
 
     def CheckZeroConcentrations(self):
         for Molecule, Conc in self.Molecules.items():
-            if Conc < self.GetConc(1):  # if
-                self.Molecules[Molecule] = self.GetConc(0.1)
-                assert self.Molecules[Molecule] > 0
+            if Conc < self.GetConc(1):
+                self.Molecules[Molecule] = 0   # Make sure that division by zero would not happen in reaction specifications
+                # self.Molecules[Molecule] = self.GetConc(0.1)
+                # assert self.Molecules[Molecule] > 0
 
     def InitializeDataset(self):
         for Molecule, Conc in self.Molecules.items():
