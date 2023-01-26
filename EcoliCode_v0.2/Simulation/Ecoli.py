@@ -26,8 +26,6 @@ class FEcoliSimulator(FSimulator):
                  InitialMolecules = {}):
         super().__init__()
 
-        self.NumCellDivisions = 0
-
         self.Sim = Metabolism.ReactionSimulator()
         Metabolism.EcoliInfo.Info()
         ATPConsumption_Sec = Metabolism.EcoliInfo.ECM_CellDivision_Sec
@@ -61,24 +59,12 @@ class FEcoliSimulator(FSimulator):
     def SimulateDelta(self, DeltaTime = 0.01):
         self.Sim.SimulateDelta(DeltaTime)
 
-        DNAReplicationProgress = self.DNAReplication.GetProgress()
-        ProteinSynthesisProgress = self.ProteinSynthesis.GetProgress()
-
-        # DK - debugging purposes
-        ProteinSynthesisProgress = 1.0
-
-        self.NumCellDivisions = 0
-        if DNAReplicationProgress >= 1.0 and ProteinSynthesisProgress >= 1.0:
-            self.DNAReplication.SetProgress(DNAReplicationProgress - 1.0)
-            self.ProteinSynthesis.SetProgress(ProteinSynthesisProgress - 1.0)
-            self.NumCellDivisions = 1
+    def GetProgress(self):
+        return self.DNAReplication.GetProgress()
 
     def SetProgress(self, Progress):
         self.DNAReplication.SetProgress(Progress)
         self.ProteinSynthesis.SetProgress(Progress)
-
-    def GetNumCellDivisions(self):
-        return self.NumCellDivisions
 
     def GetDataset(self):
         return self.Sim.GetDataset()

@@ -16,27 +16,34 @@ import Plotter
 
 class FColonySimulator(FSimulator):
     def __init__(self, EcoliSim):
-        self.EcoliSims = [[1, EcoliSim]]
+        self.EcoliSim = EcoliSim
+        self.EcoliSims = [[1, 0.0]] # [Number of Ecolis and ProgressDiff]
         self.DataPoints = []
 
     def SimulateDelta(self, DeltaTime = 1.0):
+        PrevProgress = self.EcoliSim.GetProgress()
+        self.EcoliSim.SimulateDelta(DeltaTime)
+        dProgress = self.EcoliSim.GetProgress() - PrevProgress
+        assert dProgress >= 0.0
+
         NewEcoliSims = []
-        for i, (NumEcoli, Sim) in enumerate(self.EcoliSims):
-            Sim.SimulateDelta(DeltaTime)
-            NumCellDivisions = Sim.GetNumCellDivisions()
-            if NumCellDivisions > 0:
-                NumEcoli *= math.pow(2, NumCellDivisions)
-            self.EcoliSims[i][0] = NumEcoli
-            if len(self.EcoliSims) < 20:
-                if NumEcoli > 1:
-                    NumEcoli1 = int(NumEcoli / 2)
-                    NumEcoli2 = NumEcoli - NumEcoli1
-                    self.EcoliSims[i][0] = NumEcoli1
-                    Sim2 = copy.deepcopy(Sim)
-                    Sim2.SetProgress(random.uniform(-0.2, 0.2))
-                    NewEcoliSims.append([NumEcoli2, Sim2])
-        self.EcoliSims += NewEcoliSims
-                    
+        for i, (NumEcoli, Progress) in enumerate(self.EcoliSims):
+            Progress = Progress + dProgress
+            if Progress >= 1.0:
+                NumEcoli *= 2
+                Progress -= 1
+                if i == 0:
+                    self.EcoliSim.SetProgress(Progress)
+                
+            self.EcoliSims[i] = [NumEcoli, Progress]            
+            if len(self.EcoliSims) < 20 and NumEcoli > 1:
+                NumEcoli1 = int(NumEcoli / 2)
+                NumEcoli2 = NumEcoli - NumEcoli1
+                self.EcoliSims[i][0] = NumEcoli1
+                ProgressAdd = random.uniform(0.1, 0.3)
+                NewEcoliSims.append([NumEcoli2, Progress + ProgressAdd])
+
+        self.EcoliSims += NewEcoliSims            
         self.AddToDataset()
 
     def Info(self):
@@ -181,10 +188,10 @@ if __name__ == '__main__':
     # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
     #
     # Growth curve with three populations (control, half protein synthesis rate, half cytokinesis rate):
-    Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
+    # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
     #
     # Gene Repression vs. Final Growth
-    # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest = 30)
+    Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest = 30)
     # 
     # Show both 'growth curve with three populations' and 'Gene Repression vs. Final Growth'
     # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest = 30)
