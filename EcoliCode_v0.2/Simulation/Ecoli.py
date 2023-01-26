@@ -40,15 +40,16 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.TCACycle())
         self.Sim.AddReaction(Metabolism.NADH_OxidativePhosphorylation())
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
-        # self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
+        self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
         self.Sim.AddReaction(Metabolism.dNTPSynthesis(DNAReplicationRate))
         self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate)
         self.Sim.AddReaction(self.DNAReplication)
 
-        self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
+        # self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
+        # DK - debugging purposes
         self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate)
-        self.Sim.AddReaction(self.ProteinSynthesis)
+        # self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
         self.Sim.Initialize(InitialMolecules)
@@ -62,6 +63,9 @@ class FEcoliSimulator(FSimulator):
 
         DNAReplicationProgress = self.DNAReplication.GetProgress()
         ProteinSynthesisProgress = self.ProteinSynthesis.GetProgress()
+
+        # DK - debugging purposes
+        ProteinSynthesisProgress = 1.0
 
         self.NumCellDivisions = 0
         if DNAReplicationProgress >= 1.0 and ProteinSynthesisProgress >= 1.0:
@@ -95,21 +99,11 @@ class FEcoliSimulator(FSimulator):
     
 if __name__ == '__main__':
     PermanentMolecules = [
-        "G6P",
-        # "pyruvate",
-        # "CoA-SH",
-        # "NADH",
-        # "NAD+",
-        # "FADH2",
-        # "FAD",
-        # "CoA-SH",
-        # "oxaloacetate",
+        # "G6P",
     ]
 
     InitialMolecules = {
         # "ATP": 1.0 * 1e-3,
-        # "ADP": 8.6 * 1e-3,
-        # "G6P": 50  * 1e-3,
     }
 
     Sim = FEcoliSimulator(PermanentMolecules = PermanentMolecules,

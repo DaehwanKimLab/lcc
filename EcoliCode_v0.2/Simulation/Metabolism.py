@@ -41,27 +41,32 @@ def Conc2Str(Conc):
 
 
 class EcoliInfo:
-    # KEY PARAMETERS #
-    MiniEcoli = True
-
-    DuplicationTime_LogPhase = 20
+    DuplicationTime_LogPhase = 20 * 60
 
     GenomeSize = 4.5e6
-    DNAReplicationRate = GenomeSize / (DuplicationTime_LogPhase * 60)
+    ProteomeSize = 3e6 * 300
+
+    # KEY PARAMETERS #
+    MiniEcoli = True
+    if MiniEcoli:
+        New_DuplicationTime_LogPhase = 10
+        ScaleFactor = New_DuplicationTime_LogPhase / DuplicationTime_LogPhase
+        GenomeSize *= ScaleFactor
+        ProteomeSize *= ScaleFactor
+        DuplicationTime_LogPhase = New_DuplicationTime_LogPhase
+
+    DNAReplicationRate = GenomeSize / DuplicationTime_LogPhase
     ATPConsumptionPerdNTPExtension = 3
 
-    ProteomeSize = 3e6 * 300
-    ProteinSynthesisRate = ProteomeSize / (DuplicationTime_LogPhase * 60)
+    ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase
     ATPConsumptionPerAAExtension = 10
-
-    if MiniEcoli:
-        GenomeSize = DNAReplicationRate * 10
-        ProteomeSize = ProteinSynthesisRate * 10
 
     # EC stands for Energy Consumption in ATP molecules (count)
     ECC_DNAReplication = GenomeSize * 2 * 3   # 4.5Mbp genome (double strand), 3 ATPs per 1 nucleotide extension
-    ECC_ProteinSynthesis = ProteomeSize * 10   # 3M proteins (each 300aa), 10 ATPs per 1 amino acid extension
-    ECC_Cytokinesis = 10 * 1e6
+    # DK - debugging purposes
+    ECC_ProteinSynthesis = ProteomeSize * 1
+    # ECC_ProteinSynthesis = ProteomeSize * 10  # 3M proteins (each 300aa), 10 ATPs per 1 amino acid extension
+    ECC_Cytokinesis = 0
     ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
 
     # Convert count to M assuming E. coli volume is 1um^3
@@ -71,8 +76,8 @@ class EcoliInfo:
 
     # ECM stands for Energy Consumption in ATP (M = mol/L)
     ECM_CellDivision = ECC_CellDivision * C2M
-    ECM_CellDivision_Sec = ECM_CellDivision / (DuplicationTime_LogPhase * 60)
-    
+    ECM_CellDivision_Sec = ECM_CellDivision / DuplicationTime_LogPhase
+
     # ECGM stands for Energy Consumption in Glucose (M)
     ECGM_CellDivision = ECM_CellDivision / 32
     
@@ -202,7 +207,6 @@ class Reaction:
         + mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
         '''
         return Molecules[Reactant] / Molecules[Product] * self.Capacity
-        # return (max(0, Molecules[Reactant] - InitCond[Reactant]) + max(0, InitCond[Product] - Molecules[Product])) * Molecules[Reactant] / Molecules[Product] * self.Capacity
 
     def UpdateCapacity(self, Molecules, RateLimitingCofactors):
         CapacityFactors = 1 # set to 1M by default
@@ -236,7 +240,6 @@ class Reaction:
         return Eq
 
 
-# reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
 class NADPlusSynthesis(Reaction):
     def __init__(self):
         super().__init__()
@@ -247,7 +250,6 @@ class NADPlusSynthesis(Reaction):
         return {}
 
 
-# reaction NADP+Synthesis(NAD+ + ATP -> NADP+ + ADP)
 class NADPPlusSynthesis(Reaction):
     def __init__(self):
         super().__init__()
@@ -258,7 +260,6 @@ class NADPPlusSynthesis(Reaction):
         return {}
 
 
-# reaction CoASynthesis(pantothenate + cysteine + 3 ATP + CTP + CO2 -> CoA + ADP + CMP + 3 PPi)
 class CoASynthesis(Reaction):
     def __init__(self):
         super().__init__()
@@ -279,12 +280,6 @@ class Glycolysis(Reaction):
         # self.CapacityConstant = 12.7 * 1e-1
 
     def Specification(self, Molecules, InitCond):
-        # dATP = (Molecules["ADP"] / Molecules["ATP"]) * c
-        # dATP = (abs(Molecules["ADP"] - InitCond["ADP"]) / Molecules["ATP"]) * c   # For homeostasis of ADP level
-        # dATP = (Molecules["ADP"] * abs(Molecules["ATP"] - InitCond["ATP"]) / Molecules["ATP"]) * c   # For homeostasis of ATP level
-        # dATP = (max(0, InitCond["ATP"] - Molecules["ATP"]) / Molecules["ATP"]) * Molecules["G6P"] * self.Capacity # Product Inhibition
-        # return "ATP", self.Homeostasis("G6P", "ATP", Molecules, InitCond)
-        # return "ATP", (max(0, Molecules["ADP"] - 0.5 * 1e-3) / Molecules["ATP"]) * min(1e-3, Molecules["G6P"]) * self.Capacity
         VMax = max(0, Molecules["ADP"] - InitCond["ADP"])
         VO = (Molecules["ADP"] / Molecules["ATP"] * self.CapacityConstant) if Molecules["ATP"] is not 0 else VMax
         self.Capacity = min(VO, VMax)
