@@ -184,17 +184,20 @@ class FExperimentSimulator(FSimulator):
 
 
 if __name__ == '__main__':
-    # Growth curve (control only):
-    # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
-    #
-    # Growth curve with three populations (control, half protein synthesis rate, half cytokinesis rate):
-    # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
-    #
-    # Gene Repression vs. Final Growth
-    Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest = 30)
-    # 
-    # Show both 'growth curve with three populations' and 'Gene Repression vs. Final Growth'
-    # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest = 30)
+    Sim = None
+
+    # Select Experiment
+    SelectExp = 1
+    
+    if SelectExp == 0:     # Growth curve (control only)
+        Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
+    elif SelectExp == 1:   # Growth curve with three populations (control, half protein synthesis rate, half cytokinesis rate)
+        Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
+    elif SelectExp == 2:   # Gene Repression vs. Final Growth
+        Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest = 30)
+    elif SelectExp == 3:   # Show both 'growth curve with three populations' and 'Gene Repression vs. Final Growth'
+        Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest = 30)
+
 
     DNAReplicationTime = EcoliInfo.GetDNAReplicationTime()
     TotalTime = DNAReplicationTime * 18 # 18 generations
