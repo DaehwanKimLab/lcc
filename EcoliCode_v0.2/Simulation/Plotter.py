@@ -16,6 +16,7 @@ class FPlotter:
         self.KnownMolConc = dict()
         self.ConsistentColorDict = dict()
 
+        self.SubplotID = 1
         self.XLabel = None
         self.YLabel = None
 
@@ -217,18 +218,16 @@ class FPlotter:
         ScaleFactor, NPlotsInRows, NPlotsInColumn = GetSubPlottingInfo(Datasets, MaxNPlotsInRows)
 
         # Plot data
-        SubplotID = 1
-
-        def PlotAll(SubplotID):
+        def PlotAll():
             for Process, Dataset in copy.deepcopy(Datasets).items():
                 UnitTxt = ''
                 if not Unitless:
                     UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
-                Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID)
                 PlotDataset(Dataset, Process, UnitTxt, Plt)
-                SubplotID += 1
+                self.SubplotID += 1
 
-        def PlotMultiscale(SubplotID):
+        def PlotMultiscale():
             assert not Unitless, "To plot multiscale, set unitless option False"
 
             def SplitScales(Dataset):
@@ -255,11 +254,11 @@ class FPlotter:
                 for Unit, dataset in zip(Units, Dataset_Unit):
                     if not Include_nM and Unit == 'nM':
                         continue
-                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID)
                     PlotDataset(dataset, Unit + ' range', Unit, Plt)
-                    SubplotID += 1
+                    self.SubplotID += 1
 
-        def PlotIndividual(SubplotID):
+        def PlotIndividual():
 
             def ConvertDatasetToIndividualDatasets(Dataset):
                 AdjustedDatasets = dict()
@@ -285,18 +284,18 @@ class FPlotter:
             for Process, Dataset in copy.deepcopy(Datasets).items():
                 Unit, AdjustedDatasets = ConvertDatasetToIndividualDatasets(Dataset)
                 for MolName, Dataset in AdjustedDatasets.items():
-                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, SubplotID)
+                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID)
                     PlotDataset(Dataset, MolName, Unit[MolName], Plt)
-                    SubplotID += 1
+                    self.SubplotID += 1
 
         if All:
-            PlotAll(SubplotID)
+            PlotAll()
 
         if Multiscale:
-            PlotMultiscale(SubplotID)
+            PlotMultiscale()
 
         if Individual:
-            PlotIndividual(SubplotID)
+            PlotIndividual()
 
         if Export == 'pdf':
             PrintToPDF()
