@@ -47,11 +47,11 @@ class EcoliInfo:
     DuplicationTime_LogPhase = 20
 
     GenomeSize = 4.5e6
-    DNAReplicationRate = GenomeSize / DuplicationTime_LogPhase / 60
+    DNAReplicationRate = GenomeSize / (DuplicationTime_LogPhase * 60)
     ATPConsumptionPerdNTPExtension = 3
 
     ProteomeSize = 3e6 * 300
-    ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase / 60
+    ProteinSynthesisRate = ProteomeSize / (DuplicationTime_LogPhase * 60)
     ATPConsumptionPerAAExtension = 10
 
     if MiniEcoli:
@@ -276,6 +276,7 @@ class Glycolysis(Reaction):
         self.Input = {"G6P": 1, "ADP": 2, "NAD+": 2}
         self.Output = {"pyruvate": 2, "NADH": 2, "ATP": 2}
         self.CapacityConstant = 12.7 * 1e-3
+        # self.CapacityConstant = 12.7 * 1e-1
 
     def Specification(self, Molecules, InitCond):
         # dATP = (Molecules["ADP"] / Molecules["ATP"]) * c
@@ -313,6 +314,7 @@ class TCACycle(Reaction):
         self.Input = {"acetyl-CoA": 1, "NAD+": 3, "FAD": 1, "ADP": 1}
         self.Output = {"NADH": 3, "FADH2": 1, "ATP": 1, "CoA-SH": 1}
         self.CapacityConstant = 0.2 * 1e-3
+        # self.CapacityConstant = 0.2 * 1e-1
 
     def Specification(self, Molecules, InitCond):
         # self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
@@ -710,6 +712,7 @@ class ReactionSimulator(FSimulator):
     def ApplyGlobalKineticCapacity(self):
         for Reaction in self.Reactions:
             Reaction.Capacity *= GlobalKineticScale
+            Reaction.CapacityConstant *= GlobalKineticScale
 
     def Info(self):
         HeadStr = "{:<16}: {:>10} {:>10}  ".format("", "Initial", "Current")
