@@ -142,7 +142,7 @@ class EcoliInfo:
 
             return KnownMolConc
 
-        db_KnownMolConc = LoadTSVDatabase(os.path.dirname(__file__) + "\MetaboliteConcentrations.tsv")
+        db_KnownMolConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "MetaboliteConcentrations.tsv"))
         KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
 
         # FADH2 missing data
