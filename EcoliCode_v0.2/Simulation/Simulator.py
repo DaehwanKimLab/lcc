@@ -20,7 +20,7 @@ class FSimulator():
             self.Iter += 1
             if self.Iter % self.Debug_Info == 0:
                 print()
-                print("-- Iteration {} ({:.3}s) --".format(self.Iter, self.Iter * DeltaTime))
+                print("-- Iteration {} ({:.3f}s) --".format(self.Iter, self.Iter * DeltaTime))
                 self.Info()
                 print()
 

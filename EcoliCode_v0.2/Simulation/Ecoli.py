@@ -14,24 +14,17 @@ import Metabolism
 from Plotter import FPlotter
 
 class FEcoliSimulator(FSimulator):
-    # DNAREPLICATIONRATE = 1.0 / (16 * 60)
-    DNAREPLICATIONRATE = 1.0 / (22 * 60)
+    DNAREPLICATIONRATE = Metabolism.EcoliInfo.DNAReplicationRate
     PROTEINSYNTHESISRATE = 1.0 / (16 * 60)
     CYTOKINESISRATE = 1.0 / (6 * 60)
 
     def __init__(self, 
                  DNAReplicationRate = DNAREPLICATIONRATE,
                  ProteinSynthesisRate = PROTEINSYNTHESISRATE,
-                 CytoKinesisRate = CYTOKINESISRATE):
+                 CytoKinesisRate = CYTOKINESISRATE,
+                 PermanentMolecules = [],
+                 InitialMolecules = {}):
         super().__init__()
-
-        # DK - debugging purposes
-        self.Debug_Info = 1
-
-        self.DNAReplicationRate = DNAReplicationRate
-        self.DNAReplicationProgress = 0.0
-        self.ProteinSynthesisRate = ProteinSynthesisRate
-        self.CytoKinesisRate = CytoKinesisRate
 
         self.NumCellDivisions = 0
 
@@ -49,53 +42,29 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
         self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
-        self.Sim.AddReaction(Metabolism.dNTPSynthesis())
-        self.DNAReplication = Metabolism.DNAReplication()
+        self.Sim.AddReaction(Metabolism.dNTPSynthesis(DNAReplicationRate))
+        self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate)
         self.Sim.AddReaction(self.DNAReplication)
 
-        # Set permanent molecules
-        PermanentMolecules = [
-            # "G6P",
-            # "pyruvate",
-            # "CoA-SH",
-            # "NADH",
-            # "NAD+",
-            # "FADH2",
-            # "FAD",
-            # "CoA-SH",
-            # "oxaloacetate",
-        ]
         self.Sim.SetPermanentMolecules(PermanentMolecules)
-
-        # Set initial molecule concentrations
-        Molecules = {
-            # "ATP": 1.0 * 1e-3,
-            # "ADP": 8.6 * 1e-3,
-            # "G6P": 50  * 1e-3,
-        }
-        self.Sim.Initialize(Molecules)
+        self.Sim.Initialize(InitialMolecules)
 
         # Simulation parameters
         self.TotalTime = self.Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
         self.DeltaTime = 0.01
 
-    def SimulateDelta(self, DeltaTime = 1.0):
-        self.DNAReplicationProgress += self.DNAReplicationRate * DeltaTime
-        self.NumCellDivisions = 0
-        if self.DNAReplicationProgress >= 1.0:
-            self.DNAReplicationProgress = 0.0
-            self.NumCellDivisions = 1 
-
-        # DK - temporary workaround
-        if DeltaTime <= 0.02:
-            self.SimulateDelta_Detail(DeltaTime)
-
-
-    def SimulateDelta_Detail(self, DeltaTime):
+    def SimulateDelta(self, DeltaTime = 0.01):
         self.Sim.SimulateDelta(DeltaTime)
 
+        DNAReplicationProgress = self.DNAReplication.GetProgress()
+
+        self.NumCellDivisions = 0
+        if DNAReplicationProgress >= 1.0:
+            self.DNAReplication.SetProgress(DNAReplicationProgress - 1.0)
+            self.NumCellDivisions = 1 
+
     def SetProgress(self, Progress):
-        self.DNAReplicationProgress = Progress
+        self.DNAReplication.SetProgress(Progress)
 
     def GetNumCellDivisions(self):
         return self.NumCellDivisions
@@ -114,13 +83,31 @@ class FEcoliSimulator(FSimulator):
 
     
 if __name__ == '__main__':
-    Sim = FEcoliSimulator()
+    PermanentMolecules = [
+        # "G6P",
+        # "pyruvate",
+        # "CoA-SH",
+        # "NADH",
+        # "NAD+",
+        # "FADH2",
+        # "FAD",
+        # "CoA-SH",
+        # "oxaloacetate",
+    ]
+
+    InitialMolecules = {
+        # "ATP": 1.0 * 1e-3,
+        # "ADP": 8.6 * 1e-3,
+        # "G6P": 50  * 1e-3,
+    }
+
+    Sim = FEcoliSimulator(PermanentMolecules = PermanentMolecules,
+                          InitialMolecules = InitialMolecules)
     
     TotalTime = Sim.TotalTime
     DeltaTime = Sim.DeltaTime
-
-    Sim.Initialize()
-    Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
+    Sim.Simulate(TotalTime = TotalTime,
+                 DeltaTime = DeltaTime)
 
     Sim.Plot = True
     if Sim.Plot:

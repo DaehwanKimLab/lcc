@@ -10,6 +10,7 @@ import math
 import matplotlib.pyplot as plt
 
 from Simulator import FSimulator
+from Metabolism import EcoliInfo
 from Ecoli import FEcoliSimulator
 import Plotter
 
@@ -39,7 +40,8 @@ class FColonySimulator(FSimulator):
         self.AddToDataset()
 
     def Info(self):
-        None
+        for i, (NumEcoli, Sim) in enumerate(self.EcoliSims):
+            print("   Sub {:>2}: {:>12}".format(i, int(NumEcoli))) 
 
     def AddToDataset(self):
         TotalNumEcoli = 0
@@ -78,12 +80,16 @@ class FPopulationSimulator(FSimulator):
     ]
 
     def __init__(self, Population):
+        PermanentMolecules = [
+            "G6P",
+        ]
+
         self.Colonies = [
-            FColonySimulator(FEcoliSimulator(Colony[0], Colony[1], Colony[2])) for Colony in Population
+            FColonySimulator(FEcoliSimulator(Colony[0], Colony[1], Colony[2], PermanentMolecules = PermanentMolecules)) for Colony in Population
         ]
         self.Dataset = {}
 
-    def Simulate(self, TotalTime = 24 * 60.0 * 60.0, DeltaTime = 1.0):
+    def Simulate(self, TotalTime = 24 * 60.0 * 60.0, DeltaTime = 0.01):
         Iter = 0
         while Iter < TotalTime / DeltaTime:
             for ColonySim in self.Colonies:
@@ -94,12 +100,13 @@ class FPopulationSimulator(FSimulator):
             Iter += 1
             if Iter % 100 == 0:
                 print("\n")
-                print("-- Iteration {} --".format(Iter))
+                print("-- Iteration {} ({:.3f}s) --".format(Iter, Iter * DeltaTime))
                 self.Info()
 
     def Info(self):
         for i, Colony in enumerate(self.Colonies):
-            print("Colony {:>2}: {:>10}".format(i, Colony.GetNumEcoli()))
+            print("Colony {:>2}: {:>12}".format(i, int(Colony.GetNumEcoli())))
+            Colony.Info()
 
     def AddToDataset(self):
         for i, Colony in enumerate(self.Colonies):
@@ -134,9 +141,8 @@ class FPetridishSimulator(FSimulator):
 
 
 class FExperimentSimulator(FSimulator):
-    def __init__(self, Population, NumTest = 30):
-        self.Colonies = FPetridishSimulator(FPopulationSimulator.TEST1_POPULATION)
-        self.Control = FPetridishSimulator(FPopulationSimulator.DEFAULT_POPULATION)
+    def __init__(self, Population, NumTest = 0):
+        self.Control = FPetridishSimulator(Population)
         self.NumTest = NumTest
 
         self.Tests = [] 
@@ -148,13 +154,12 @@ class FExperimentSimulator(FSimulator):
             ]]))
 
     def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
-        self.Colonies.Simulate(TotalTime, DeltaTime)
         self.Control.Simulate(TotalTime, DeltaTime)
         for Test in self.Tests:
             Test.Simulate(TotalTime, DeltaTime)
                               
     def GetDataset(self):
-        return self.Colonies.GetDataset()
+        return self.Control.GetDataset()
 
     def GetGrowthDataset(self):
         XSet, YSet = [], []
@@ -172,30 +177,33 @@ class FExperimentSimulator(FSimulator):
 
 
 if __name__ == '__main__':
-    # # Growth curve (control only):
+    # Growth curve (control only):
     # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
     #
-    # # Growth curve with three populations (control, half protein synthesis rate, half cytokinesis rate):
-    # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
+    # Growth curve with three populations (control, half protein synthesis rate, half cytokinesis rate):
+    Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION)
     #
-    # # Gene Repression vs. Final Growth
-    # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest=30)
-
+    # Gene Repression vs. Final Growth
+    # Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION, NumTest = 30)
+    # 
     # Show both 'growth curve with three populations' and 'Gene Repression vs. Final Growth'
-    Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest=30)
+    # Sim = FExperimentSimulator(FPopulationSimulator.TEST1_POPULATION, NumTest = 30)
 
-    Sim.Plot = True
-
-    TotalTime = 6 * 60.0 * 60.0
-    DeltaTime = 1.0
+    DNAReplicationTime = EcoliInfo.GetDNAReplicationTime()
+    TotalTime = DNAReplicationTime * 18 # 18 generations
+    DeltaTime = 0.01
 
     Sim.Initialize()
-    Sim.Simulate(TotalTime=TotalTime, DeltaTime=DeltaTime)
+    Sim.Simulate(TotalTime = TotalTime,
+                 DeltaTime = DeltaTime)
 
+    Sim.Plot = True
     if Sim.Plot:
         Datasets = Sim.GetDataset()
         Plot = Plotter.FGrowthPlotter()
-        Plot.PlotDatasets(Datasets, DeltaTime=DeltaTime, Unitless=True)
+        Plot.PlotDatasets(Datasets,
+                          DeltaTime = DeltaTime,
+                          Unitless = True)
 
         if Sim.NumTest > 0:
             GrowthDatasets = Sim.GetGrowthDataset()

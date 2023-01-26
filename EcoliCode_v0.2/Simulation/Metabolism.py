@@ -22,7 +22,6 @@ from Simulator import FSimulator
 from Plotter import FPlotter
 
 AvogadroNum = 6.022e23
-
 GlobalKineticScale = 1
 
 def Conc2Str(Conc):
@@ -41,8 +40,18 @@ def Conc2Str(Conc):
 
 
 class EcoliInfo:
+    # KEY PARAMETERS #
+    MiniEcoli = True
+    
+
+    GenomeSize = 4.5e6
+    DNAReplicationRate = 4000
+
+    if MiniEcoli:
+        GenomeSize = DNAReplicationRate * 10
+
     # EC stands for Energy Consumption in ATP molecules (count)
-    ECC_DNAReplication = 4.5 * 1e6 * 2  # 4.5Mbp genome (double strand)
+    ECC_DNAReplication = GenomeSize * 2  # 4.5Mbp genome (double strand)
     ECC_ProteinSynthesis = 3 * 1e6 * 300  # 3M proteins (each 300aa)
     ECC_Cytokinesis = 10 * 1e6
     ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
@@ -75,6 +84,8 @@ class EcoliInfo:
             Conc2Str(EcoliInfo.EGM_TCA_Sec)))
         print("")
 
+    def GetDNAReplicationTime():
+        return EcoliInfo.GenomeSize / float(EcoliInfo.DNAReplicationRate)
 
     def OpenKnownMolConc():
         def LoadTSVDatabase(db_fname):
@@ -150,6 +161,9 @@ class Reaction:
     # Progress is between 0.0 and 1.0
     def GetProgress(self):
         return 0.0
+
+    def SetProgress(self, Progress):
+        None
 
     # Specification Models
     def MassAction_ReactantHomeostasis(self, Reactant, Molecules, InitCond):
@@ -390,15 +404,15 @@ class FADH2_OxidativePhosphorylation(Reaction):
 
 
 class dNTPSynthesis(Reaction):
-    def __init__(self):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
         super().__init__()
         self.ReactionName = 'dNTP Synthesis'
         self.Input = {}
         self.Output = {"dATP": 1}
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        Rate = 1500
-        return "dATP", Rate * EcoliInfo.C2M
+        return "dATP", self.Rate * EcoliInfo.C2M
 
 
 class ATPControl(Reaction):
@@ -466,17 +480,16 @@ class Process(Reaction):
 
 
 class DNAReplication(Process):
-    def __init__(self):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
         super().__init__()
         self.ReactionName = "DNA Replication"
         # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
         self.BuildingBlocks = {"dATP": 1}
         self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
         self.Regulators = {}
-        self.Rate = 1500
-        self.MaxRate = 4000   # total of 4000 bp synthesis during the exponential phase
+        self.Rate = Rate
         self.Progress = 0.0
-        self.MaxProgress = 4.5e6
+        self.MaxProgress = EcoliInfo.GenomeSize
 
         self.Input = {"ATP": 3, "dATP": 1}
         self.Output = {"ADP": 3}
@@ -491,7 +504,10 @@ class DNAReplication(Process):
         self.Progress += dElongation
 
     def GetProgress(self):
-        return min(1.0, self.Progress / self.MaxProgress)
+        return self.Progress / self.MaxProgress
+
+    def SetProgress(self, Progress):
+        self.Progress = self.MaxProgress * Progress
 
 
 class ProteinSynthesis(Process):
