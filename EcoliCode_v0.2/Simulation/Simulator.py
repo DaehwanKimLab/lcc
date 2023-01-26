@@ -16,6 +16,10 @@ class FSimulator():
         print()
 
         while self.Iter < TotalTime / DeltaTime:
+
+            # if self.Iter == 105:
+            #     print("Debugging: Iter", self.Iter)
+
             self.SimulateDelta(DeltaTime)
             self.Iter += 1
             if self.Iter % self.Debug_Info == 0:

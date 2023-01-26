@@ -15,7 +15,7 @@ from Plotter import FPlotter
 
 class FEcoliSimulator(FSimulator):
     DNAREPLICATIONRATE = Metabolism.EcoliInfo.DNAReplicationRate
-    PROTEINSYNTHESISRATE = 1.0 / (16 * 60)
+    PROTEINSYNTHESISRATE = Metabolism.EcoliInfo.ProteinSynthesisRate
     CYTOKINESISRATE = 1.0 / (6 * 60)
 
     def __init__(self, 
@@ -40,11 +40,15 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.TCACycle())
         self.Sim.AddReaction(Metabolism.NADH_OxidativePhosphorylation())
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
-        self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
+        # self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
         self.Sim.AddReaction(Metabolism.dNTPSynthesis(DNAReplicationRate))
         self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate)
         self.Sim.AddReaction(self.DNAReplication)
+
+        self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
+        self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate)
+        self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
         self.Sim.Initialize(InitialMolecules)
@@ -57,14 +61,17 @@ class FEcoliSimulator(FSimulator):
         self.Sim.SimulateDelta(DeltaTime)
 
         DNAReplicationProgress = self.DNAReplication.GetProgress()
+        ProteinSynthesisProgress = self.ProteinSynthesis.GetProgress()
 
         self.NumCellDivisions = 0
-        if DNAReplicationProgress >= 1.0:
+        if DNAReplicationProgress >= 1.0 and ProteinSynthesisProgress >= 1.0:
             self.DNAReplication.SetProgress(DNAReplicationProgress - 1.0)
-            self.NumCellDivisions = 1 
+            self.ProteinSynthesis.SetProgress(ProteinSynthesisProgress - 1.0)
+            self.NumCellDivisions = 1
 
     def SetProgress(self, Progress):
         self.DNAReplication.SetProgress(Progress)
+        self.ProteinSynthesis.SetProgress(Progress)
 
     def GetNumCellDivisions(self):
         return self.NumCellDivisions
@@ -75,8 +82,12 @@ class FEcoliSimulator(FSimulator):
     def KnownMolConc(self):
         return self.Sim.KnownMolConc
 
+    def PrintReactions(self):
+        self.Sim.PrintReactions()
+
     def Info(self):
         print("DNA Replication Progress:   {:<.3f}".format(self.DNAReplication.GetProgress()))
+        print("Protein Synthesis Progress:   {:<.3f}".format(self.ProteinSynthesis.GetProgress()))
         print()
 
         self.Sim.Info()
@@ -103,7 +114,9 @@ if __name__ == '__main__':
 
     Sim = FEcoliSimulator(PermanentMolecules = PermanentMolecules,
                           InitialMolecules = InitialMolecules)
-    
+
+    Sim.PrintReactions()
+
     TotalTime = Sim.TotalTime
     DeltaTime = Sim.DeltaTime
     Sim.Simulate(TotalTime = TotalTime,
@@ -116,7 +129,7 @@ if __name__ == '__main__':
         Plot = FPlotter()
 
         Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True)
         # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
 
         # Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))

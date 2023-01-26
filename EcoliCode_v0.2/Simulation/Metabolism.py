@@ -17,6 +17,7 @@ import numpy as np
 import math
 import csv
 import copy
+import os
 
 from Simulator import FSimulator
 from Plotter import FPlotter
@@ -42,17 +43,24 @@ def Conc2Str(Conc):
 class EcoliInfo:
     # KEY PARAMETERS #
     MiniEcoli = True
-    
+
+    DuplicationTime_LogPhase = 20
 
     GenomeSize = 4.5e6
-    DNAReplicationRate = 4000
+    DNAReplicationRate = GenomeSize / DuplicationTime_LogPhase / 60
+    ATPConsumptionPerdNTPExtension = 3
+
+    ProteomeSize = 3e6 * 300
+    ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase / 60
+    ATPConsumptionPerAAExtension = 10
 
     if MiniEcoli:
         GenomeSize = DNAReplicationRate * 10
+        ProteomeSize = ProteinSynthesisRate * 10
 
     # EC stands for Energy Consumption in ATP molecules (count)
-    ECC_DNAReplication = GenomeSize * 2  # 4.5Mbp genome (double strand)
-    ECC_ProteinSynthesis = 3 * 1e6 * 300  # 3M proteins (each 300aa)
+    ECC_DNAReplication = GenomeSize * 2 * 3   # 4.5Mbp genome (double strand), 3 ATPs per 1 nucleotide extension
+    ECC_ProteinSynthesis = ProteomeSize * 10   # 3M proteins (each 300aa), 10 ATPs per 1 amino acid extension
     ECC_Cytokinesis = 10 * 1e6
     ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
 
@@ -63,7 +71,7 @@ class EcoliInfo:
 
     # ECM stands for Energy Consumption in ATP (M = mol/L)
     ECM_CellDivision = ECC_CellDivision * C2M
-    ECM_CellDivision_Sec = ECM_CellDivision / (20 * 60)  # 20 minutes assumed for one cycle of cell division
+    ECM_CellDivision_Sec = ECM_CellDivision / (DuplicationTime_LogPhase * 60)
     
     # ECGM stands for Energy Consumption in Glucose (M)
     ECGM_CellDivision = ECM_CellDivision / 32
@@ -81,11 +89,14 @@ class EcoliInfo:
         print("Energy Generation    - Glycolysis per sec:                     {:>10}".format(
             Conc2Str(EcoliInfo.EGM_Glycolysis_Sec)))
         print("Energy Generation    - TCA & Oxidative Phosporylation per sec: {:>10}".format(
-            Conc2Str(EcoliInfo.EGM_TCA_Sec)))
+            Conc2Str(EcoliInfo.EGM_TCA_Sec + EcoliInfo.EGM_OxidativePhosphorylation_Sec)))
         print("")
 
     def GetDNAReplicationTime():
         return EcoliInfo.GenomeSize / float(EcoliInfo.DNAReplicationRate)
+
+    def GetProteinSynthesisTime():
+        return EcoliInfo.ProteomeSize / float(EcoliInfo.ProteinSynthesisRate)
 
     def OpenKnownMolConc():
         def LoadTSVDatabase(db_fname):
@@ -131,7 +142,7 @@ class EcoliInfo:
 
             return KnownMolConc
 
-        db_KnownMolConc = LoadTSVDatabase("MetaboliteConcentrations.tsv")
+        db_KnownMolConc = LoadTSVDatabase(os.path.dirname(__file__) + "\MetaboliteConcentrations.tsv")
         KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
 
         # FADH2 missing data
@@ -206,7 +217,7 @@ class Reaction:
                 RegulatedCapacity *= (Molecules[regulator] / threshold)
         return RegulatedCapacity * self.Capacity
 
-    def DisplayChemicalEquation(self):
+    def GetChemicalEquationStr(self):
 
         def AddMolCoeff(Eq, MolCoeffDict):
             for n, (mol, coeff) in enumerate(MolCoeffDict.items()):
@@ -380,6 +391,7 @@ class NADH_OxidativePhosphorylation(Reaction):
         self.Input = {"NADH": 1, "ADP": 2.5}
         self.Output = {"NAD+": 1, "ATP": 2.5}
         self.CapacityConstant = 1.2e-3
+        # self.CapacityConstant = 1.2e-1
 
     def Specification(self, Molecules, InitCond):
         VO = Molecules["NADH"] / (InitCond["NADH"] + Molecules["NADH"]) * self.CapacityConstant
@@ -395,6 +407,7 @@ class FADH2_OxidativePhosphorylation(Reaction):
         self.Input = {"FADH2": 1, "ADP": 1.5}
         self.Output = {"FAD": 1, "ATP": 1.5}
         self.CapacityConstant = 0.15e-3
+        # self.CapacityConstant = 0.15e-1
 
     def Specification(self, Molecules, InitCond):
         VO = Molecules["FADH2"] / (InitCond["FADH2"] + Molecules["FADH2"]) * self.CapacityConstant
@@ -413,6 +426,18 @@ class dNTPSynthesis(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return "dATP", self.Rate * EcoliInfo.C2M
+
+
+class AASynthesis(Reaction):
+    def __init__(self, Rate = EcoliInfo.ProteinSynthesisRate):
+        super().__init__()
+        self.ReactionName = 'AA Synthesis'
+        self.Input = {}
+        self.Output = {"glutamate": 1}
+        self.Rate = Rate
+
+    def Specification(self, Molecules, InitCond):
+        return "glutamate", self.Rate * EcoliInfo.C2M
 
 
 class ATPControl(Reaction):
@@ -474,9 +499,14 @@ class Process(Reaction):
         self.BuildingBlocks = dict() # gets incorporated into input
         self.EnergyConsumption = dict()   # ATP Consumption, gets incorporated into stoichiometry
         self.Rate = 0.0
-        self.MaxRate = 0.0
         self.Progress = 0.0
         self.MaxProgress = 0.0
+
+    def GetProgress(self):
+        return self.Progress / self.MaxProgress
+
+    def SetProgress(self, Progress):
+        self.Progress = self.MaxProgress * Progress
 
 
 class DNAReplication(Process):
@@ -485,14 +515,14 @@ class DNAReplication(Process):
         self.ReactionName = "DNA Replication"
         # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
         self.BuildingBlocks = {"dATP": 1}
-        self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
+        self.EnergyConsumption = EcoliInfo.ATPConsumptionPerdNTPExtension
         self.Regulators = {}
         self.Rate = Rate
         self.Progress = 0.0
         self.MaxProgress = EcoliInfo.GenomeSize
 
-        self.Input = {"ATP": 3, "dATP": 1}
-        self.Output = {"ADP": 3}
+        self.Input = {"ATP": self.EnergyConsumption, "dATP": 1}
+        self.Output = {"ADP": self.EnergyConsumption}
 
     def Specification(self, Molecules, InitCond):
         return "dATP", -self.Rate * EcoliInfo.C2M
@@ -503,24 +533,29 @@ class DNAReplication(Process):
         assert dElongation >= 0
         self.Progress += dElongation
 
-    def GetProgress(self):
-        return self.Progress / self.MaxProgress
-
-    def SetProgress(self, Progress):
-        self.Progress = self.MaxProgress * Progress
-
 
 class ProteinSynthesis(Process):
-    def __init__(self):
+    def __init__(self, Rate = EcoliInfo.ProteinSynthesisRate):
         super().__init__()
-        # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
-        self.BuildingBlocks = {"Glutamate": 1}
-        self.EnergyConsumption = 3 # 3 ATPs per 1 nucleotide extension
+        self.ReactionName = "Protein Synthesis"
+        self.BuildingBlocks = {"glutamate": 1}
+        self.EnergyConsumption = EcoliInfo.ATPConsumptionPerAAExtension
         self.Regulators = {}
-        self.Rate = 0.0
-        self.MaxRate = 2000.0
+        self.Rate = Rate
         self.Progress = 0.0
-        self.MaxProgress = 4.5e6
+        self.MaxProgress = EcoliInfo.ProteomeSize
+
+        self.Input = {"ATP": self.EnergyConsumption, "glutamate": 1}
+        self.Output = {"ADP": self.EnergyConsumption}
+
+    def Specification(self, Molecules, InitCond):
+        return "glutamate", -self.Rate * EcoliInfo.C2M
+
+    def Callback(self, dMolecules):
+        assert "glutamate" in dMolecules
+        dElongation = -dMolecules["glutamate"] * EcoliInfo.M2C
+        assert dElongation >= 0
+        self.Progress += dElongation
 
 
 class ReactionSimulator(FSimulator):
@@ -528,7 +563,6 @@ class ReactionSimulator(FSimulator):
         super().__init__()
         self.Reactions = []
         self.Dataset = {}
-        self.Iter = 0
 
         self.KnownMolConc = EcoliInfo.OpenKnownMolConc()
 
@@ -570,14 +604,25 @@ class ReactionSimulator(FSimulator):
             print(Molecule, " is not found in the KnownMolConc database")
             return 0.0
 
-    def GetReactionNames(self, Eq=False):
+    def GetReactionNames(self, Eq=False, Alignment=False):
         ReactionNames = ""
         for Reaction in self.Reactions:
-            ReactionLabel = "[" + Reaction.ReactionName + "]"
+            ReactionLabel = ""
+            ReactionName = "[" + Reaction.ReactionName + "]"
             if Eq:
-                ReactionLabel += " " + Reaction.DisplayChemicalEquation()
+                ReactionEq = Reaction.GetChemicalEquationStr()
+                if Alignment:
+                    ReactionLabel += "{:<35} {}".format(ReactionName, ReactionEq)
+                else:
+                    ReactionLabel += ReactionName + ReactionEq
+            else:
+                ReactionLabel += ReactionName
             ReactionNames += ReactionLabel + "\n"
         return str(ReactionNames)
+
+    def PrintReactions(self):
+        print('-- Reactions --')
+        print(self.GetReactionNames(Eq=True, Alignment=True))
 
     def InitializeMolecules(self, Molecules={}):
         AllMolecules = dict()
@@ -721,7 +766,7 @@ class ReactionSimulator(FSimulator):
         for Reaction in self.Reactions:
             dMolecules = self.RunReaction(Reaction, DeltaTime)
             if self.Debug_Reaction:
-                print("[{}] {}".format(Reaction.ReactionName, Reaction.DisplayChemicalEquation()))
+                print("[{}] {}".format(Reaction.ReactionName, Reaction.GetChemicalEquationStr()))
                 self.PrintMolConc(dMolecules, End=', ')
             self.UpdateMolecules(dMolecules)
             self.CheckZeroConcentrations()
@@ -734,7 +779,7 @@ class ReactionSimulator(FSimulator):
         self.AddToDataset()        
 
     def GetDataset(self):
-        return {self.GetReactionNames(Eq=True): self.Dataset}
+        return {self.GetReactionNames(Eq=False): self.Dataset}
 
 
     def UnitTest(self, ReactionName):
@@ -869,10 +914,10 @@ if __name__ == '__main__':
 
     if Sim.Plot:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Multiscale=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True)
         # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Multiscale=True, Include_nM=True)
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='right', All=False, Individual=True, MolRange=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='right', Unitless=False, All=False, Individual=True, MolRange=True)
 
     if Sim.ExportToPDF:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
