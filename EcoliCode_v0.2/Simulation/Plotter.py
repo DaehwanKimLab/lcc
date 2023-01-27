@@ -65,6 +65,9 @@ class FPlotter:
 
         return Datasets_Filtered
 
+    def ResetSubplotID(self):
+        self.SubplotID = 1
+
     def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel='right', SuperTitle="", MaxNPlotsInRows=3, Unitless=True, All=True, Multiscale=False, Include_nM=False, Individual=False, MolRange=False, Export=''):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
@@ -120,7 +123,7 @@ class FPlotter:
                     ScaleFactor += len(Dataset)
 
             NPlotsInRows = ScaleFactor   # Default
-            if ScaleFactor > MaxNPlotsInRows * 2:
+            if ScaleFactor > MaxNPlotsInRows:
                 NPlotsInRows = MaxNPlotsInRows
             else:
                 for Remainder in range(MaxNPlotsInRows):
@@ -181,8 +184,12 @@ class FPlotter:
 
             Plt.set_title(Process)
             if self.XLabel:
+                Plt.set_xlabel(self.XLabel)
+            else:
                 Plt.set_xlabel('Time (s)')
             if self.YLabel:
+                Plt.set_ylabel(self.YLabel)
+            else:
                 Plt.set_ylabel('Conc (' + UnitTxt + ')')
             Plt.set_ylim(ymin=0)
             Plt.set_ylim(ymax=YMax)
@@ -287,6 +294,8 @@ class FPlotter:
                     Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID)
                     PlotDataset(Dataset, MolName, Unit[MolName], Plt)
                     self.SubplotID += 1
+
+        self.ResetSubplotID()
 
         if All:
             PlotAll()
