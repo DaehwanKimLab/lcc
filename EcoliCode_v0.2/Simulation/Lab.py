@@ -5,8 +5,9 @@
 import sys
 from datetime import datetime
 import random, copy
-import numpy as np
 import math
+import numpy as np
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 
 from Simulator import FSimulator
@@ -14,47 +15,64 @@ from Metabolism import EcoliInfo
 from Ecoli import FEcoliSimulator
 import Plotter
 
+class FNormal:
+    Max = 4.0
+    Interval = 0.01
+    Table = []
+
+    def Init():
+        FNormal.Table = [norm.cdf(i * FNormal.Interval - FNormal.Max) for i in range(math.ceil(FNormal.Max * 2 / FNormal.Interval))]
+
+    def CDF(Value):
+        if Value <= -FNormal.Max:
+            return 0
+        if Value >= FNormal.Max:
+            return FNormal.Table[-1]
+        Index = math.floor((Value + FNormal.Max) / FNormal.Interval)
+        return FNormal.Table[Index]
+
+FNormal.Init()        
+
 class FColonySimulator(FSimulator):
     def __init__(self, EcoliSim):
         self.EcoliSim = EcoliSim
-        self.EcoliSims = [[1, 0.0]] # [Number of Ecolis and ProgressDiff]
+
+        self.Progress = 0.0
+        self.NumEcoli = 0
+
         self.DataPoints = []
 
-    def SimulateDelta(self, DeltaTime = 1.0):
+    def SimulateDelta(self, DeltaTime):
+        def GetPopulationCount(Progress, SD):
+            PopCount = 0
+            MinGen = max(1, math.floor(Progress - 4 * SD))
+            MaxGen = math.ceil(Progress + 4 * SD)
+            PrevCDF = -1
+            for NumGen in range(MinGen, MaxGen + 1):
+                if PrevCDF < 0:
+                    PrevCDF = FNormal.CDF(((NumGen - Progress) / SD))
+                CDF = FNormal.CDF(((NumGen + 1 - Progress) / SD))
+                CurrPopCount = (CDF - PrevCDF) * (2 << NumGen) 
+                PopCount += CurrPopCount
+                PrevCDF = CDF
+
+            return int(PopCount)
+
+
         PrevProgress = self.EcoliSim.GetProgress()
         self.EcoliSim.SimulateDelta(DeltaTime)
         dProgress = self.EcoliSim.GetProgress() - PrevProgress
         assert dProgress >= 0.0
-
-        NewEcoliSims = []
-        for i, (NumEcoli, Progress) in enumerate(self.EcoliSims):
-            Progress = Progress + dProgress
-            if Progress >= 1.0:
-                NumEcoli *= 2
-                Progress -= 1
-                if i == 0:
-                    self.EcoliSim.SetProgress(Progress)
-                
-            self.EcoliSims[i] = [NumEcoli, Progress]            
-            if len(self.EcoliSims) < 20 and NumEcoli > 1:
-                NumEcoli1 = int(NumEcoli / 2)
-                NumEcoli2 = NumEcoli - NumEcoli1
-                self.EcoliSims[i][0] = NumEcoli1
-                ProgressAdd = random.uniform(0.1, 0.3)
-                NewEcoliSims.append([NumEcoli2, Progress + ProgressAdd])
-
-        self.EcoliSims += NewEcoliSims            
+        self.Progress += dProgress
+        self.Progress += random.uniform(-dProgress, +dProgress) / 10
+        self.NumEcoli = GetPopulationCount(self.Progress, self.Progress / 10)
         self.AddToDataset()
 
     def Info(self):
-        for i, (NumEcoli, Sim) in enumerate(self.EcoliSims):
-            print("   Sub {:>2}: {:>12}".format(i, int(NumEcoli))) 
+        None
 
     def AddToDataset(self):
-        TotalNumEcoli = 0
-        for NumEcoli, _ in self.EcoliSims:
-            TotalNumEcoli += NumEcoli
-        self.DataPoints.append(TotalNumEcoli)
+        self.DataPoints.append(self.NumEcoli)
         
     def GetDataset(self):
         return self.DataPoints
@@ -187,7 +205,7 @@ if __name__ == '__main__':
     Sim = None
 
     # Select Experiment
-    SelectExp = 1
+    SelectExp = 2
     
     if SelectExp == 0:     # Growth curve (control only)
         Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
