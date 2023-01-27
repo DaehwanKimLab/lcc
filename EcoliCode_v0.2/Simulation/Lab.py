@@ -52,11 +52,11 @@ class FColonySimulator(FSimulator):
                 if PrevCDF < 0:
                     PrevCDF = FNormal.CDF(((NumGen - Progress) / SD))
                 CDF = FNormal.CDF(((NumGen + 1 - Progress) / SD))
-                CurrPopCount = (CDF - PrevCDF) * (2 << NumGen) 
+                CurrPopCount = (CDF - PrevCDF) * (1 << NumGen) 
                 PopCount += CurrPopCount
                 PrevCDF = CDF
 
-            return int(PopCount)
+            return int(PopCount) + 1
 
 
         PrevProgress = self.EcoliSim.GetProgress()
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     Sim = None
 
     # Select Experiment
-    SelectExp = 2
+    SelectExp = 1
     
     if SelectExp == 0:     # Growth curve (control only)
         Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
