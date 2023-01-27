@@ -65,11 +65,9 @@ class FColonySimulator(FSimulator):
         assert dProgress >= 0.0
         self.Progress += dProgress
         self.Progress += random.uniform(-dProgress, +dProgress) / 10
-        self.NumEcoli = GetPopulationCount(self.Progress, self.Progress / 10)
+        SD = min(1, self.Progress / 10)
+        self.NumEcoli = GetPopulationCount(self.Progress, SD)
         self.AddToDataset()
-
-    def Info(self):
-        None
 
     def AddToDataset(self):
         self.DataPoints.append(self.NumEcoli)
@@ -205,7 +203,7 @@ if __name__ == '__main__':
     Sim = None
 
     # Select Experiment
-    SelectExp = 1
+    SelectExp = 2
     
     if SelectExp == 0:     # Growth curve (control only)
         Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
