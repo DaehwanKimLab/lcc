@@ -40,7 +40,7 @@ def Conc2Str(Conc):
     return Str
 
 
-class EcoliInfo:
+class EcoliInfo():
     DuplicationTime_LogPhase = 20 * 60
 
     GenomeSize = 4.5e6
@@ -134,11 +134,6 @@ class EcoliInfo:
 
             for i, Value in enumerate(db_KnownMolConc):
                 Metabolite, ConcInEcoli, LowerBound, UpperBound = Value
-                # data = dict()
-                # data['ConcInEcoli'] = ConcInEcoli
-                # data['LowerBound'] = LowerBound
-                # data['UpperBound'] = UpperBound
-                # KnownMolConc[Metabolite] = data
                 if ConcInEcoli == '-':
                     continue
                 Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
@@ -277,12 +272,12 @@ class Glycolysis(Reaction):
         self.Input = {"G6P": 1, "ADP": 2, "NAD+": 2}
         self.Output = {"pyruvate": 2, "NADH": 2, "ATP": 2}
         self.CapacityConstant = 12.7 * 1e-3
-        # self.CapacityConstant = 12.7 * 1e-1
+        self.CapacityConstant = 12.7 * 1e-1
 
     def Specification(self, Molecules, InitCond):
         VMax = max(0, Molecules["ADP"] - InitCond["ADP"])
-        VO = (Molecules["ADP"] / Molecules["ATP"] * self.CapacityConstant) if Molecules["ATP"] is not 0 else VMax
-        self.Capacity = min(VO, VMax)
+        V0 = (Molecules["ADP"] / Molecules["ATP"] * self.CapacityConstant) if Molecules["ATP"] is not 0 else VMax
+        self.Capacity = min(V0, VMax)
         return "ATP", self.Capacity
 
 
@@ -293,12 +288,12 @@ class PyruvateOxidation(Reaction):
         self.Input = {"pyruvate": 1, "NAD+": 1, "CoA-SH": 1}
         self.Output = {"acetyl-CoA": 1, "NADH": 1}
         self.CapacityConstant = 0.2 * 1e-3
+        self.CapacityConstant = 0.2 * 1e-1
 
     def Specification(self, Molecules, InitCond):
-        # return "acetyl-CoA", self.Homeostasis("pyruvate", "acetyl-CoA", Molecules, InitCond)
-        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
+        V0 = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
         VMax = max(0, Molecules["pyruvate"] - InitCond["pyruvate"])
-        self.Capacity = min(VO, VMax)
+        self.Capacity = min(V0, VMax)
         return "acetyl-CoA", self.Capacity
 
 
@@ -309,14 +304,12 @@ class TCACycle(Reaction):
         self.Input = {"acetyl-CoA": 1, "NAD+": 3, "FAD": 1, "ADP": 1}
         self.Output = {"NADH": 3, "FADH2": 1, "ATP": 1, "CoA-SH": 1}
         self.CapacityConstant = 0.2 * 1e-3
-        # self.CapacityConstant = 0.2 * 1e-1
+        self.CapacityConstant = 0.2 * 1e-1
 
     def Specification(self, Molecules, InitCond):
-        # self.Capacity = min(Molecules["oxaloacetate"], Molecules["acetyl-CoA"]) * 1e2
-        # return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
-        VO = Molecules["acetyl-CoA"] / (InitCond["acetyl-CoA"] + Molecules["acetyl-CoA"]) * self.CapacityConstant
+        V0 = Molecules["acetyl-CoA"] / (InitCond["acetyl-CoA"] + Molecules["acetyl-CoA"]) * self.CapacityConstant
         VMax = max(0, Molecules["acetyl-CoA"] - InitCond["acetyl-CoA"])
-        self.Capacity = min(VO, VMax)
+        self.Capacity = min(V0, VMax)
         return "ATP", self.Capacity
 
 
@@ -388,12 +381,12 @@ class NADH_OxidativePhosphorylation(Reaction):
         self.Input = {"NADH": 1, "ADP": 2.5}
         self.Output = {"NAD+": 1, "ATP": 2.5}
         self.CapacityConstant = 1.2e-3
-        # self.CapacityConstant = 1.2e-1
+        self.CapacityConstant = 1.2e-1
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["NADH"] / (InitCond["NADH"] + Molecules["NADH"]) * self.CapacityConstant
+        V0 = Molecules["NADH"] / (InitCond["NADH"] + Molecules["NADH"]) * self.CapacityConstant
         VMax = max(0, Molecules["NADH"] - InitCond["NADH"])
-        self.Capacity = min(VO, VMax)
+        self.Capacity = min(V0, VMax)
         return "ATP", self.Capacity
 
 
@@ -404,12 +397,12 @@ class FADH2_OxidativePhosphorylation(Reaction):
         self.Input = {"FADH2": 1, "ADP": 1.5}
         self.Output = {"FAD": 1, "ATP": 1.5}
         self.CapacityConstant = 0.15e-3
-        # self.CapacityConstant = 0.15e-1
+        self.CapacityConstant = 0.15e-1
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["FADH2"] / (InitCond["FADH2"] + Molecules["FADH2"]) * self.CapacityConstant
+        V0 = Molecules["FADH2"] / (InitCond["FADH2"] + Molecules["FADH2"]) * self.CapacityConstant
         VMax = max(0, Molecules["FADH2"] - InitCond["FADH2"])
-        self.Capacity = min(VO, VMax)
+        self.Capacity = min(V0, VMax)
         return "ATP", self.Capacity
 
 
@@ -438,9 +431,7 @@ class AASynthesis(Reaction):
 
 
 class ATPControl(Reaction):
-    def __init__(self, ControlRate=-4.35E-03):
-        # Cell Division ATP consumption: c = 4.35E-03
-
+    def __init__(self, ControlRate=-4.35E-03):   # Cell Division ATP consumption: c = 4.35E-03
         super().__init__()
         self.ReactionName = 'ATP Control'
         self.Input = {"ATP": 1}
@@ -493,7 +484,7 @@ class MolControl(Reaction):
 class Process(Reaction):
     def __init__(self):
         super().__init__()
-        self.BuildingBlocks = dict() # gets incorporated into input
+        self.BuildingBlocks = dict()      # gets incorporated into input
         self.EnergyConsumption = dict()   # ATP Consumption, gets incorporated into stoichiometry
         self.Rate = 0.0
         self.Progress = 0.0
@@ -643,7 +634,9 @@ class ReactionSimulator(FSimulator):
         return Count / EcoliInfo.Volume / AvogadroNum
 
     def AdjustRefdCon(self, Reaction, RefMol, RefdConc):
-        # Compare dConc of reference molecule to input concentrations and adjust reference dConc
+        '''
+        Compare dConc of reference molecule to input concentrations and adjust reference dConc
+        '''
         if len(Reaction.Input) == 0:
             return RefdConc        
 
@@ -693,8 +686,6 @@ class ReactionSimulator(FSimulator):
         for Molecule, Conc in self.Molecules.items():
             if Conc < self.GetConc(1):
                 self.Molecules[Molecule] = 0   # Make sure that division by zero would not happen in reaction specifications
-                # self.Molecules[Molecule] = self.GetConc(0.1)
-                # assert self.Molecules[Molecule] > 0
 
     def InitializeDataset(self):
         for Molecule, Conc in self.Molecules.items():
@@ -843,15 +834,12 @@ def GetUnitTestReactions():
 if __name__ == '__main__':
     Sim = ReactionSimulator()
 
-    RunUnitTest = False
-    # RunUnitTest = True
-
     EcoliInfo.Info()
     ATPConsumption_Sec = EcoliInfo.ECM_CellDivision_Sec
-    # ATPConsumption_Sec = 0
+
+    RunUnitTest = 0
 
     if RunUnitTest:
-        # UnitTestReactions = "OxidativePhosphorylation"
         UnitTestReactions = "Glycolysis"
         Sim.UnitTest(UnitTestReactions)
 

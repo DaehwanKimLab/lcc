@@ -38,16 +38,16 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.TCACycle())
         self.Sim.AddReaction(Metabolism.NADH_OxidativePhosphorylation())
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
-        self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
+        # self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
         self.Sim.AddReaction(Metabolism.dNTPSynthesis(DNAReplicationRate))
         self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate)
         self.Sim.AddReaction(self.DNAReplication)
 
-        # self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
+        self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
         # DK - debugging purposes
         self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate)
-        # self.Sim.AddReaction(self.ProteinSynthesis)
+        self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
         self.Sim.Initialize(InitialMolecules)
@@ -109,8 +109,6 @@ if __name__ == '__main__':
         Plot = FPlotter()
 
         Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True)
-        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Export='pdf')
-
-        # Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, Multiscale=True, Export='pdf')
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='')
+        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
