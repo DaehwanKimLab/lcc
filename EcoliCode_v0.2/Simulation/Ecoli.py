@@ -30,6 +30,8 @@ class FEcoliSimulator(FSimulator):
         Metabolism.EcoliInfo.Info()
         ATPConsumption_Sec = Metabolism.EcoliInfo.ECM_CellDivision_Sec
 
+        # self.Debug_Info = 1
+
         # self.Sim.AddReaction(Metabolism.NADPlusSynthesis())
         # self.Sim.AddReaction(Metabolism.NADPPlusSynthesis())
         # self.Sim.AddReaction(Metabolism.CoASynthesis())
@@ -45,14 +47,12 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(self.DNAReplication)
 
         self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
-        # DK - debugging purposes
         self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate)
         self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
         self.Sim.Initialize(InitialMolecules)
 
-        # Simulation parameters
         self.TotalTime = self.Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
         self.DeltaTime = 0.01
 
@@ -84,16 +84,11 @@ class FEcoliSimulator(FSimulator):
 
     
 if __name__ == '__main__':
-    PermanentMolecules = [
-        # "G6P",
-    ]
-
-    InitialMolecules = {
-        # "ATP": 1.0 * 1e-3,
-    }
-
-    Sim = FEcoliSimulator(PermanentMolecules = PermanentMolecules,
-                          InitialMolecules = InitialMolecules)
+    Sim = FEcoliSimulator(
+        PermanentMolecules = [
+            "G6P",
+        ]
+    )
 
     Sim.PrintReactions()
 
@@ -110,5 +105,5 @@ if __name__ == '__main__':
 
         Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='')
-        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
+        # Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
