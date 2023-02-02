@@ -80,11 +80,10 @@ class EcoliInfo:
     ECGM_CellDivision = ECM_CellDivision / 32
 
     # EGM stands for Energy Generation in ATP (M)
-    # DK/DL - need to discuss how to tune/optimize the following metabolism parameters
-    EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 2
+    EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 0.9
     EGM_PyruvateOxidation_Sec = EGM_Glycolysis_Sec
-    EGM_TCACycle_Sec = ECM_CellDivision_Sec * 2
-    EGM_OxidativePhosphorylation_NADH_Sec = ECM_CellDivision_Sec * 2
+    EGM_TCACycle_Sec = ECM_CellDivision_Sec * 0.5
+    EGM_OxidativePhosphorylation_NADH_Sec = ECM_CellDivision_Sec * 2.5   # Needs to run fast to maintain NAD+ to support Glycolysis
     EGM_OxidativePhosphorylation_FADH2_Sec = ECM_CellDivision_Sec * 0.5
 
     def Info():
@@ -119,7 +118,7 @@ class EcoliInfo:
                 if Name == "glucose-6-phosphate":
                     return "G6P"
                 elif Name == "glyceraldehyde-3-phosphate":
-                    return "G3P"
+                    return "GAP"
                 elif Name == "coenzyme-A":
                     return "CoA-SH"
                 # elif " (assumed 1 / 2 ile+leu)" in Name:
@@ -128,6 +127,8 @@ class EcoliInfo:
                     return "R5P"
                 elif Name == "ribulose-5-phosphate":
                     return "Ru5P"
+                elif Name == "erythrose-4-phosphate":
+                    return "E4P"
                 else:
                     return Name
 
@@ -177,33 +178,6 @@ class Reaction:
     def SetProgress(self, Progress):
         None
 
-    # Specification Models
-    def MassAction_ReactantHomeostasis(self, Reactant, Molecules, InitCond):
-        '''
-        mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
-        '''
-        return max(0, Molecules[Reactant] - InitCond[Reactant]) * Molecules[Reactant] * self.Capacity
-
-    def ProductInhibition_ProductHomeostasis(self, Product, Molecules, InitCond):
-        '''
-        product inhibition maintaining the initial condition of the product
-        '''
-        return max(0, InitCond[Product] - Molecules[Product]) / Molecules[Product] * self.Capacity
-
-    def ProductInhibition_ProductHomeostasis_MassAction(self, Reactant, Product, Molecules, InitCond):
-        '''
-        product inhibition, maintaining the initial condition of the product
-        + mass action driven by the rate-limiting reactant
-        '''
-        return max(0, InitCond[Product] - Molecules[Product]) * Molecules[Reactant] / Molecules[Product] * self.Capacity
-
-    def Homeostasis(self, Reactant, Product, Molecules, InitCond):
-        '''
-        product inhibition, maintaining the initial condition of the product
-        + mass action driven by the rate-limiting reactant, maintaining the initial condition of the reactant
-        '''
-        return Molecules[Reactant] / Molecules[Product] * self.Capacity
-
     def UpdateCapacity(self, Molecules, RateLimitingCofactors):
         CapacityFactors = 1 # set to 1M by default
         for i in range(len(RateLimitingCofactors)):
@@ -243,7 +217,8 @@ class NADPlusSynthesis(Reaction):
         self.Output = {"NAD+": 1}
 
     def Specification(self, Molecules, InitCond):
-        return {}
+        VO = Molecules["NAD+"] / (InitCond["NAD+"] + Molecules["NAD+"]) * self.CapacityConstant
+        return "NAD+", VO
 
 
 class NADPPlusSynthesis(Reaction):
@@ -253,19 +228,128 @@ class NADPPlusSynthesis(Reaction):
         self.Output = {"NADP+": 1, "ADP": 1}
 
     def Specification(self, Molecules, InitCond):
-        return {}
+        VO = Molecules["NADP+"] / (InitCond["NADP+"] + Molecules["NADP+"]) * self.CapacityConstant
+        return "NADP+", VO
 
 
 class CoASynthesis(Reaction):
     def __init__(self):
         super().__init__()
-        self.Input = {"pantothenate": 1, "cysteine": 1, "ATP": 3, "CTP": 1, "CO2": 1}
-        self.Output = {"CoA": 1, "ADP": 1, "CMP": 1, "PPi": 3}
+        self.Input = {"pantothenate": 1, "cysteine": 1, "ATP": 4}
+        # self.Input = {"pantothenate": 1, "cysteine": 1, "ATP": 3, "CTP": 1, "CO2": 1}
+        self.Output = {"CoA-SH": 1, "ADP": 2, "AMP": 1}
+        # self.Output = {"CoA-SH": 1, "ADP": 2, "CMP": 1}
 
     def Specification(self, Molecules, InitCond):
-        return {}
+        VO = Molecules["CoA-SH"] / (InitCond["CoA-SH"] + Molecules["CoA-SH"]) * self.CapacityConstant
+        return "CoA-SH", VO
 
 
+class ACPSynthesis(Reaction):
+    '''
+    Enzymes     Reactions
+    Acs:        acetate + ATP + CoA = acetyl-CoA + AMP + diphosphate (not the focus in this pathway)
+    AcpS, AcpT: apo-[ACP] + CoA = 3',5'-ADP + holo-[ACP] (the focus in this pathway)
+    AcpH:       H2O + holo-[ACP] = 4'-phosphopantetheine + apo-[ACP] + H+ (not the focus in this pathway)
+    '''
+    def __init__(self):
+        super().__init__()
+        self.Input = {"apo-[ACP]": 1, "CoA-SH": 1}
+        self.Output = {"3',5'-ADP;": 1, "holo-[ACP]": 1}
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["holo-[ACP]"] / (InitCond["holo-[ACP]"] + Molecules["holo-[ACP]"]) * self.CapacityConstant
+        return "holo-[ACP]", VO
+
+
+class IPPSynthesis(Reaction):
+    # reaction IPPsynthesis(pyruvate + GAP + NADPH + CTP + ATP -> IPP + NADP+ + ADP + CMP)
+    def __init__(self):
+        super().__init__()
+        self.Input = {"pyruvate": 1, "GAP": 1, "NADPH": 1, "ATP": 1, "CTP": 1}
+        self.Output = {"IPP": 1, "NADP+": 1, "ADP": 1, "CMP": 1}
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
+        return "IPP", VO
+
+
+class UbiquinoneSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.Input = {"chorismate": 1, "IPP": 8}
+        self.Output = {"UQ": 1}
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["chorismate"] / (InitCond["chorismate"] + Molecules["chorismate"]) * self.CapacityConstant
+        return "UQ", VO
+
+
+# Vitamins
+class ThiamineSynthesis(Reaction):
+    # PRPP + 2 glutamine + glycine + 2 SAM + 5 ATP + tyrosine + cysteine + pyruvate + GAP
+    # -> TDP + AMP + 4 ADP + formate + 4-cresol + 2 methionine + 2 5’-deoxyadenosine + alanine + 2 glutamate
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Thiamine Synthesis'
+        # self.Input = {"PRPP": 1, "SAM": 2, "ATP": 5, "glutamine": 2, "glycine": 1, "tyrosine": 1, "cysteine": 1, "pyruvate": 1, "GAP": 1}
+        # self.Input = {"PRPP": 1, "ATP": 5, "pyruvate": 1, "GAP": 1}
+        self.Input = {"PRPP": 1, "pyruvate": 2}   # 1 NADH and 2 ATP lost by substituting GAP with pyruvate.
+        # self.Output = {"TDP": 1, "AMP": 1, "ADP": 4, "formate": 1, "4-cresol": 1, "methionine": 2, "5’-deoxyadenosine": 2, "alanine": 1, "glutamate": 2}
+        # self.Output = {"TDP": 1, "AMP": 1, "ADP": 4, "formate": 1}
+        self.Output = {"TDP": 1}   # adjusted ADP according to the ATP loss by GAP to pyruvate substitution
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["PRPP"] / (InitCond["PRPP"] + Molecules["PRPP"]) * self.CapacityConstant
+        return "TDP", VO
+
+
+class RiboflavinSynthesis(Reaction):
+    # Ru5P + GTP + NADP+ -> riboflavin + 2 formate + NH3 + NADPH
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Riboflavin Synthesis'
+        self.Input = {"Ru5P": 1, "GTP": 1, "NADP+": 1}
+        # self.Output = {"riboflavin": 1, "formate": 2, "NH3": 1, "NADPH": 1}
+        self.Output = {"riboflavin": 1, "NADPH": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["Ru5P"] / (InitCond["Ru5P"] + Molecules["Ru5P"]) * self.CapacityConstant
+        return "riboflavin", VO
+
+
+class PantotheateSynthesis(Reaction):
+    # Ru5P + GTP + NADP+ -> riboflavin + 2 formate + NH3 + NADPH
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Pantotheate Synthesis'
+        self.Input = {"pyruvate": 2, "NADPH": 2, "aspartate": 1, "ATP": 1}
+        # self.Output = {"riboflavin": 1, "formate": 2, "NH3": 1, "NADPH": 1}
+        self.Output = {"pantotheate": 1, "NADP+": 2, "AMP": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
+        return "pantotheate", VO
+
+
+class PyridoxalPhosphateSynthesis(Reaction):
+    # E4P + 3 NAD+ + glutamate + pyruvate + GAP -> PLP + 3 NADH + 2-oxoglutarate)
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Pyridoxal Phosphate Synthesis'
+        self.Input = {"E4P": 1, "NAD+": 3, "glutamate": 1, "pyruvate": 1, "GAP": 1}
+        self.Output = {"PLP": 1, "NADH": 3, "a-ketoglutarate": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["E4P"] / (InitCond["E4P"] + Molecules["E4P"]) * self.CapacityConstant
+        return "PLP", VO
+
+
+# Central Carbon Metabolism
 class Glycolysis(Reaction):
     def __init__(self):
         super().__init__()
@@ -282,6 +366,19 @@ class Glycolysis(Reaction):
         MinATPConc = 0.1e-3
         VO = Molecules["ADP"] / max(Molecules["ATP"], MinATPConc) * self.CapacityConstant
         return "ATP", VO
+
+
+class OxidativePentosePhosphatePathway(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'OxidativePPP'
+        self.Input = {"G6P": 1, "NADP+": 2}
+        self.Output = {"Ru5P": 1, "NADPH": 2}
+        self.CapacityConstant = EcoliInfo.EGM_PyruvateOxidation_Sec
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
+        return "Ru5P", VO
 
 
 class PyruvateOxidation(Reaction):
@@ -308,67 +405,6 @@ class TCACycle(Reaction):
     def Specification(self, Molecules, InitCond):
         VO = Molecules["acetyl-CoA"] / (InitCond["acetyl-CoA"] + Molecules["acetyl-CoA"]) * self.CapacityConstant
         return "ATP", VO
-
-
-class TCACycle_alphaKetoGlutarateSynthesis(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'TCA_a-ketoglutarate Synthesis'
-        self.Input = {"acetyl-CoA": 1, "oxaloacetate": 1, "CoA-SH": 1, "NAD+": 1}
-        self.Output = {"CoA-SH": 1, "a-ketoglutarate": 1, "NADH": 1}
-        self.CapacityConstant = 1e2
-
-    def Specification(self, Molecules, InitCond):
-        self.UpdateCapacity(Molecules, ["oxaloacetate", "acetyl-CoA"])
-        return "a-ketoglutarate", self.ProductInhibition_ProductHomeostasis("a-ketoglutarate", Molecules, InitCond)
-
-
-class TCACycle_SuccinylCoASynthesis(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'TCA_Succinyl-CoA Synthesis'
-        self.Input = {"a-ketoglutarate": 1, "NAD+": 1, "CoA-SH": 1}
-        self.Output = {"succinyl-CoA": 1, "NADH": 1}
-        self.Capacity = 1
-
-    def Specification(self, Molecules, InitCond):
-        return "succinyl-CoA", self.Homeostasis("a-ketoglutarate", "succinyl-CoA", Molecules, InitCond)
-
-
-class TCACycle_FumarateSynthesis(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'TCA_Fumarate Synthesis'
-        self.Input = {"succinyl-CoA": 1, "ADP": 1, "FAD": 1}
-        self.Output = {"fumarate": 1, "CoA-SH": 1, "ATP": 1, "FADH2": 1}  # TODO: Update from ATP to GTP later
-        self.Capacity = 1e1
-
-    def Specification(self, Molecules, InitCond):
-        return "fumarate", self.Homeostasis("succinyl-CoA", "fumarate", Molecules, InitCond)
-
-
-class TCACycle_OxaloacetateSynthesis(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'TCA_Oxaloacetate Synthesis'
-        self.Input = {"fumarate": 1, "NAD+": 1}
-        self.Output = {"oxaloacetate": 1, "NADH": 1}
-        self.Capacity = 1e-1
-
-    def Specification(self, Molecules, InitCond):
-        return "oxaloacetate", self.Homeostasis("fumarate", "oxaloacetate", Molecules, InitCond)
-
-
-class PyruvateCarboxylation(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'PyruvateCarboxylation'
-        self.Input = {"pyruvate": 1, "ATP": 1}
-        self.Output = {"oxaloacetate": 1, "ADP": 1}
-        self.Capacity = 1e-3
-
-    def Specification(self, Molecules, InitCond):
-        return "oxaloacetate", self.Homeostasis("pyruvate", "oxaloacetate", Molecules, InitCond)
 
 
 class NADH_OxidativePhosphorylation(Reaction):
@@ -762,7 +798,7 @@ class ReactionSimulator(FSimulator):
             for ReactionName, dMolecules in self.dMolecules.items():
                 for Mol, dConc in dMolecules.items():
                     if Mol not in dMolecules_Sum:
-                        dMolecules_Sum[Mol] = [0, 0, []]
+                        dMolecules_Sum[Mol] = [0, 0, []]   # Plus_dConc, Minus_dConc, ReactionNameList
                     if dConc >= 0:
                         dMolecules_Sum[Mol][0] += dConc
                     else:
@@ -802,8 +838,6 @@ class ReactionSimulator(FSimulator):
             if not Updated:
                 break
 
-
-
         Sum_dMolecules = {}
         for Reaction in self.Reactions:
             dMolecules = self.dMolecules[Reaction.ReactionName]
@@ -835,35 +869,6 @@ class ReactionSimulator(FSimulator):
         elif ReactionName == "PyruvateOxidation":
             Sim.AddReaction(PyruvateOxidation())
             Sim.AddReaction(MolControl("acetyl-CoA", -3e-6))
-
-        elif ReactionName == "TCACycle_a-KetoGlutarateSynthesis":
-            Sim.AddReaction(TCACycle_alphaKetoGlutarateSynthesis())
-            Sim.AddReaction(MolControl("a-ketoglutarate", -3e-7))
-            Sim.AddPermanentMolecules(["oxaloacetate"])
-
-        elif ReactionName == "TCACycle_SuccinylCoASynthesis":
-            Sim.AddReaction(TCACycle_SuccinylCoASynthesis())
-            Sim.AddReaction(MolControl("succinyl-CoA", -2e-6))
-
-        elif ReactionName == "TCACycle_FumarateSynthesis":
-            Sim.AddReaction(TCACycle_FumarateSynthesis())
-            Sim.AddReaction(MolControl("fumarate", -1e-5))
-            Sim.AddPermanentMolecules(["succinyl-CoA", "ADP", "ATP", "FAD", "FADH2"])
-
-        elif ReactionName == "TCACycle_OxaloacetateSynthesis":
-            Sim.AddReaction(TCACycle_OxaloacetateSynthesis())
-            Sim.AddReaction(MolControl("oxaloacetate", -5e-7))
-
-        elif ReactionName == "PyruvateCarboxylation":
-            Sim.AddReaction(PyruvateCarboxylation())
-            Sim.AddReaction(MolControl("oxaloacetate", -5e-8))
-            # Sim.AddPermanentMolecules(["succinyl-CoA", "ADP", "ATP", "FAD", "FADH2"])
-
-        # elif ReactionName == "OxidativePhosphorylation":
-        #     Sim.AddReaction(OxidativePhosphorylation())
-        #     Sim.AddReaction(ATPControl(-4.35E-04))
-        #     Sim.AddReaction(NADHControl(1.0874e-4))
-        #     Sim.AddReaction(FADH2Control(1.0875e-4))
 
         else:
             print("\nNo unit test has been selected\n")
