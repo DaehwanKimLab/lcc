@@ -293,11 +293,9 @@ class ThiamineSynthesis(Reaction):
         super().__init__()
         self.ReactionName = 'Thiamine Synthesis'
         # self.Input = {"PRPP": 1, "SAM": 2, "ATP": 5, "glutamine": 2, "glycine": 1, "tyrosine": 1, "cysteine": 1, "pyruvate": 1, "GAP": 1}
-        # self.Input = {"PRPP": 1, "ATP": 5, "pyruvate": 1, "GAP": 1}
-        self.Input = {"PRPP": 1, "pyruvate": 2}   # 1 NADH and 2 ATP lost by substituting GAP with pyruvate.
+        self.Input = {"PRPP": 1, "ATP": 5, "pyruvate": 1, "GAP": 1}
         # self.Output = {"TDP": 1, "AMP": 1, "ADP": 4, "formate": 1, "4-cresol": 1, "methionine": 2, "5’-deoxyadenosine": 2, "alanine": 1, "glutamate": 2}
-        # self.Output = {"TDP": 1, "AMP": 1, "ADP": 4, "formate": 1}
-        self.Output = {"TDP": 1}   # adjusted ADP according to the ATP loss by GAP to pyruvate substitution
+        self.Output = {"TDP": 1, "AMP": 1, "ADP": 4, "formate": 1}
         self.CapacityConstant = 0
 
     def Specification(self, Molecules, InitCond):
