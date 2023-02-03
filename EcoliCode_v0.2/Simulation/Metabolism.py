@@ -349,6 +349,34 @@ class PyridoxalPhosphateSynthesis(Reaction):
         return "PLP", VO
 
 
+class BiotinSynthesis(Reaction):
+    # pimeloyl-[ACP] + alanine + AMTOB + ATP -> biotin + [ACP] + AMP + 5’-deoxyadenosine
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Biotin Synthesis'
+        self.Input = {"pimeloyl-[ACP]": 1, "alanine": 1, "AMTOB": 1, "ATP": 1}
+        self.Output = {"biotin": 1, "apo-[ACP]": 1, "AMP": 1, "5’-deoxyadenosine": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["pimeloyl-[ACP]"] / (InitCond["pimeloyl-[ACP]"] + Molecules["pimeloyl-[ACP]"]) * self.CapacityConstant
+        return "biotin", VO
+
+
+class FolateSynthesis(Reaction):
+    # pABA + GTP + 2 ATP + glutamate + 2 NADPH -> tetrahydrofolate + 2 NADP+ + AMP
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Folate Synthesis'
+        self.Input = {"pABA": 1, "GTP": 1, "ATP": 2, "glutamate": 1, "NADPH": 2}
+        self.Output = {"tetrahydrofolate": 1, "NADP+": 2, "AMP": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["pABA"] / (InitCond["pABA"] + Molecules["pABA"]) * self.CapacityConstant
+        return "tetrahydrofolate", VO
+
+
 # Central Carbon Metabolism
 class Glycolysis(Reaction):
     def __init__(self):
