@@ -41,6 +41,11 @@ def Conc2Str(Conc):
 
 
 class EcoliInfo:
+    # Convert count to M assuming E. coli volume is 1um^3
+    Volume = 1e-15
+    C2M = 1 / AvogadroNum / Volume
+    M2C = 1 / C2M
+
     DuplicationTime_LogPhase = 20 * 60
 
     GenomeSize = 4.5e6
@@ -61,16 +66,11 @@ class EcoliInfo:
     ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase
     ATPConsumptionPerAAExtension = 10
 
-    # EC stands for Energy Consumption in ATP molecules (count)
+    # ECC stands for Energy Consumption in ATP molecules (count)
     ECC_DNAReplication = GenomeSize * 2 * 3   # 4.5Mbp genome (double strand), 3 ATPs per 1 nucleotide extension
     ECC_ProteinSynthesis = ProteomeSize * 10  # 3M proteins (each 300aa), 10 ATPs per 1 amino acid extension
     ECC_Cytokinesis = 0
     ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
-
-    # Convert count to M assuming E. coli volume is 1um^3
-    Volume = 1e-15
-    C2M = 1 / AvogadroNum / Volume
-    M2C = 1 / C2M
 
     # ECM stands for Energy Consumption in ATP (M = mol/L)
     ECM_CellDivision = ECC_CellDivision * C2M
@@ -85,6 +85,20 @@ class EcoliInfo:
     EGM_TCACycle_Sec = ECM_CellDivision_Sec * 0.5
     EGM_OxidativePhosphorylation_NADH_Sec = ECM_CellDivision_Sec * 2.5   # Needs to run fast to maintain NAD+ to support Glycolysis
     EGM_OxidativePhosphorylation_FADH2_Sec = ECM_CellDivision_Sec * 0.5
+
+    # NCC stands for Nucleotide Consumption in molecules (count)
+    NCC_CellDivision = GenomeSize * 2
+
+    # NCM stands for Nucleotide Consumption in concentration (M = mol/L)
+    NCM_CellDivision = NCC_CellDivision * C2M
+    NCM_CellDivision_Sec = NCM_CellDivision / DuplicationTime_LogPhase
+
+    # ACC stands for AA Consumption in molecules (count)
+    ACC_CellDivision = ProteomeSize
+
+    # ACM stands for AA Consumption in concentration (M = mol/L)
+    ACM_CellDivision = ACC_CellDivision * C2M
+    ACM_CellDivision_Sec = ACM_CellDivision / DuplicationTime_LogPhase
 
     def Info():
         print("Molecule Consumption - Glucose:                                {:>10}".format(
@@ -140,17 +154,16 @@ class EcoliInfo:
                     continue
                 Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
                 Metabolite = MetaboliteSynonyms(Metabolite)
-                KnownMolConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound)]
+                KnownMolConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound), "Park et al., (2016) Nat Chem Biol"]
 
             return KnownMolConc
 
         db_KnownMolConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "MetaboliteConcentrations.tsv"))
         KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
 
-        # FADH2 missing data
-        KnownMolConc["FADH2"] = [(KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][0],
-                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][1],
-                                 (KnownMolConc["NADH"][0] / KnownMolConc["NAD+"][0]) * KnownMolConc["FAD"][2]]
+        # Additional Molecules
+        Conc = 28944 * EcoliInfo.C2M
+        KnownMolConc["ACP"] = [Conc, Conc * 0.5, Conc * 1.5, "Schmidt et al., (2016) Nat Biotech; in glucose media"]
 
         return KnownMolConc
 
@@ -213,35 +226,38 @@ class Reaction:
 class NADPlusSynthesis(Reaction):
     def __init__(self):
         super().__init__()
+        self.ReactionName = 'NAD+ Synthesis'
         self.Input = {"nicotinamide": 1, "PRPP": 1, "ATP": 2}
         self.Output = {"NAD+": 1}
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["NAD+"] / (InitCond["NAD+"] + Molecules["NAD+"]) * self.CapacityConstant
+        VO = Molecules["nicotinamide"] / (InitCond["nicotinamide"] + Molecules["nicotinamide"]) * self.CapacityConstant
         return "NAD+", VO
 
 
 class NADPPlusSynthesis(Reaction):
     def __init__(self):
         super().__init__()
+        self.ReactionName = 'NADP+ Synthesis'
         self.Input = {"NAD+": 1, "ATP": 1}
         self.Output = {"NADP+": 1, "ADP": 1}
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["NADP+"] / (InitCond["NADP+"] + Molecules["NADP+"]) * self.CapacityConstant
+        VO = Molecules["NAD+"] / (InitCond["NAD+"] + Molecules["NAD+"]) * self.CapacityConstant
         return "NADP+", VO
 
 
 class CoASynthesis(Reaction):
     def __init__(self):
         super().__init__()
+        self.ReactionName = 'CoA Synthesis'
         self.Input = {"pantothenate": 1, "cysteine": 1, "ATP": 4}
         # self.Input = {"pantothenate": 1, "cysteine": 1, "ATP": 3, "CTP": 1, "CO2": 1}
         self.Output = {"CoA-SH": 1, "ADP": 2, "AMP": 1}
         # self.Output = {"CoA-SH": 1, "ADP": 2, "CMP": 1}
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["CoA-SH"] / (InitCond["CoA-SH"] + Molecules["CoA-SH"]) * self.CapacityConstant
+        VO = Molecules["pantothenate"] / (InitCond["pantothenate"] + Molecules["pantothenate"]) * self.CapacityConstant
         return "CoA-SH", VO
 
 
@@ -254,18 +270,20 @@ class ACPSynthesis(Reaction):
     '''
     def __init__(self):
         super().__init__()
-        self.Input = {"apo-[ACP]": 1, "CoA-SH": 1}
-        self.Output = {"3',5'-ADP;": 1, "holo-[ACP]": 1}
+        self.ReactionName = 'ACP Synthesis'
+        self.Input = {"ACP": 1, "CoA-SH": 1}
+        self.Output = {"3',5'-ADP": 1, "acyl-ACP": 1}
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["holo-[ACP]"] / (InitCond["holo-[ACP]"] + Molecules["holo-[ACP]"]) * self.CapacityConstant
-        return "holo-[ACP]", VO
+        VO = Molecules["ACP"] / (InitCond["ACP"] + Molecules["ACP"]) * self.CapacityConstant
+        return "acyl-ACP", VO
 
 
 class IPPSynthesis(Reaction):
     # reaction IPPsynthesis(pyruvate + GAP + NADPH + CTP + ATP -> IPP + NADP+ + ADP + CMP)
     def __init__(self):
         super().__init__()
+        self.ReactionName = 'IPP Synthesis'
         self.Input = {"pyruvate": 1, "GAP": 1, "NADPH": 1, "ATP": 1, "CTP": 1}
         self.Output = {"IPP": 1, "NADP+": 1, "ADP": 1, "CMP": 1}
 
@@ -277,6 +295,7 @@ class IPPSynthesis(Reaction):
 class UbiquinoneSynthesis(Reaction):
     def __init__(self):
         super().__init__()
+        self.ReactionName = 'Ubiquinone Synthesis'
         self.Input = {"chorismate": 1, "IPP": 8}
         self.Output = {"UQ": 1}
 
@@ -352,12 +371,12 @@ class BiotinSynthesis(Reaction):
     def __init__(self):
         super().__init__()
         self.ReactionName = 'Biotin Synthesis'
-        self.Input = {"pimeloyl-[ACP]": 1, "alanine": 1, "AMTOB": 1, "ATP": 1}
-        self.Output = {"biotin": 1, "apo-[ACP]": 1, "AMP": 1, "5’-deoxyadenosine": 1}
+        self.Input = {"pimeloyl-ACP": 1, "alanine": 1, "AMTOB": 1, "ATP": 1}
+        self.Output = {"biotin": 1, "ACP": 1, "AMP": 1, "5’-deoxyadenosine": 1}
         self.CapacityConstant = 0
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["pimeloyl-[ACP]"] / (InitCond["pimeloyl-[ACP]"] + Molecules["pimeloyl-[ACP]"]) * self.CapacityConstant
+        VO = Molecules["pimeloyl-ACP"] / (InitCond["pimeloyl-ACP"] + Molecules["pimeloyl-ACP"]) * self.CapacityConstant
         return "biotin", VO
 
 
@@ -373,6 +392,33 @@ class FolateSynthesis(Reaction):
     def Specification(self, Molecules, InitCond):
         VO = Molecules["pABA"] / (InitCond["pABA"] + Molecules["pABA"]) * self.CapacityConstant
         return "tetrahydrofolate", VO
+
+
+# Pentose Phosphate Pathway
+class OxidativePPP(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Oxidative PPP'
+        self.Input = {"G6P": 1, "NADP+": 2}
+        self.Output = {"Ru5P": 1, "NADPH": 2}
+        self.CapacityConstant = EcoliInfo.NCM_CellDivision_Sec
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
+        return "Ru5P", VO
+
+
+class PRPPSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'PRPP Synthesis'
+        self.Input = {"Ru5P": 1, "ATP": 1}
+        self.Output = {"PRPP": 1, "AMP": 1}
+        self.CapacityConstant = EcoliInfo.NCM_CellDivision_Sec
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["Ru5P"] / (InitCond["Ru5P"] + Molecules["Ru5P"]) * self.CapacityConstant
+        return "PRPP", VO
 
 
 # Central Carbon Metabolism
@@ -392,19 +438,6 @@ class Glycolysis(Reaction):
         MinATPConc = 0.1e-3
         VO = Molecules["ADP"] / max(Molecules["ATP"], MinATPConc) * self.CapacityConstant
         return "ATP", VO
-
-
-class OxidativePentosePhosphatePathway(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'OxidativePPP'
-        self.Input = {"G6P": 1, "NADP+": 2}
-        self.Output = {"Ru5P": 1, "NADPH": 2}
-        self.CapacityConstant = EcoliInfo.EGM_PyruvateOxidation_Sec
-
-    def Specification(self, Molecules, InitCond):
-        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
-        return "Ru5P", VO
 
 
 class PyruvateOxidation(Reaction):
@@ -618,16 +651,12 @@ class ReactionSimulator(FSimulator):
         self.Debug_Info = 1
         self.Debug_Reaction = False
 
-    def AddPermanentMolecules(self, PermanentMolecules):
-        for Molecule in PermanentMolecules:
-            self.PermanentMolecules.append(Molecule)
-
     def SetPermanentMolecules(self, PermanentMolecules):
         self.PermanentMolecules = PermanentMolecules
 
-    def Initialize(self, Molecules={}):
+    def Initialize(self, UserSetInitialMolecules={}):
         self.InitializeStoich()
-        self.InitializeMolecules(Molecules)
+        self.InitializeMolecules(UserSetInitialMolecules)
         self.InitializeDataset()
         self.ApplyGlobalKineticCapacity()
 
@@ -639,11 +668,29 @@ class ReactionSimulator(FSimulator):
                 Reaction.Stoich[Mol] = Coeff
 
     def GetKnownMolConc(self, Molecule):
+
+        def EstimateMolConc(Molecule):
+            if Molecule == "FADH2":
+                return (self.KnownMolConc["NADH"][0] / self.KnownMolConc["NAD+"][0]) * self.KnownMolConc["FAD"][0]
+            elif Molecule == "MolName":
+                return
+            else:
+                return 0
+
         if Molecule in self.KnownMolConc:
             return self.KnownMolConc[Molecule][0]
         else:
-            print(Molecule, " is not found in the KnownMolConc database")
-            return 0.0
+            EstConc = EstimateMolConc(Molecule)
+            if EstConc > 0:
+                print("[Known Concentration Not Found] {:>20} concentration is set to {} (Estimated)".format(Molecule, Conc2Str(EstConc)))
+                return EstConc
+            else:
+                DefaultConc = 0.00001
+                print("[Known Concentration Not Found] {:>20} concentration is set to {} (Default)".format(Molecule, Conc2Str(DefaultConc)))
+                return DefaultConc   # Default 0.01 mM
+
+    def CheckIfInKnownMolConc(self, Molecule):
+        return True if Molecule in self.KnownMolConc else False
 
     def GetReactionNames(self, Eq=False, Alignment=False):
         ReactionNames = ""
@@ -665,7 +712,7 @@ class ReactionSimulator(FSimulator):
         print('-- Reactions --')
         print(self.GetReactionNames(Eq=True, Alignment=True))
 
-    def InitializeMolecules(self, Molecules={}):
+    def InitializeMolecules(self, UserSetInitialMolecules={}):
         AllMolecules = dict()
         for Reaction in self.Reactions:
             for Molecule, Coeff in Reaction.Stoich.items():
@@ -674,7 +721,7 @@ class ReactionSimulator(FSimulator):
 
         self.InitialConditions = dict(sorted(AllMolecules.items()))
         self.Molecules = self.InitialConditions.copy()
-        for Molecule, Conc in Molecules.items():
+        for Molecule, Conc in UserSetInitialMolecules.items():
             self.Molecules[Molecule] = Conc
 
         self.Molecules_Min = {}
@@ -779,7 +826,7 @@ class ReactionSimulator(FSimulator):
             print(LineStr)
 
     def Summary(self):
-        print("{:<16} {:>12} {:>12} {:>13}  {:<12}".format("", "Initial", "Final", "dConc", "OutOfRange"))
+        print("{:<20} {:>12} {:>12} {:>12}  {:<12}".format("", "Initial", "Final", "dConc", "OutOfRange"))
         for Molecule, Conc in self.Molecules.items():
             dConc = Conc - self.InitialConditions[Molecule]
 
@@ -787,17 +834,20 @@ class ReactionSimulator(FSimulator):
             FinalConc = Conc2Str(Conc)
             FinaldConc = Conc2Str(dConc) if Molecule not in self.PermanentMolecules else "-"
             if dConc < 0:
-                FinaldConc = "\033[91m {:>12}\033[00m".format(FinaldConc)
+                FinaldConc = "\033[91m{:>12}\033[00m".format(FinaldConc)
             elif dConc > 0:
-                FinaldConc = "\033[92m {:>12}\033[00m".format(FinaldConc)
+                FinaldConc = "\033[92m{:>12}\033[00m".format(FinaldConc)
 
             OutOfRange = ''
-            if Conc < self.KnownMolConc[Molecule][1]:
-                OutOfRange = "\033[91m {:<12}\033[00m".format('DEPLETED')
-            elif Conc > self.KnownMolConc[Molecule][2]:
-                OutOfRange = "\033[92m {:<12}\033[00m".format('ACCUMULATED')
+            if self.CheckIfInKnownMolConc(Molecule):
+                if Conc < self.KnownMolConc[Molecule][1]:
+                    OutOfRange = "\033[91m{:<12}\033[00m".format('DEPLETED')
+                elif Conc > self.KnownMolConc[Molecule][2]:
+                    OutOfRange = "\033[92m{:<12}\033[00m".format('ACCUMULATED')
+            else:
+                OutOfRange = "{:<12}".format('-')
 
-            print("{:16} {:>12} {:>12} {:>12} {:<12}".format(Molecule, InitConc, FinalConc, FinaldConc, OutOfRange))
+            print("{:20} {:>12} {:>12} {:>12} {:<12}".format(Molecule, InitConc, FinalConc, FinaldConc, OutOfRange))
 
         if self.Plot:
             print("\nPlot: ON")
@@ -887,14 +937,13 @@ class ReactionSimulator(FSimulator):
 
 
     def UnitTest(self, ReactionName):
-        # a-ketoGlutarate synthesis unit test
         if ReactionName == "Glycolysis":
-            Sim.AddReaction(Glycolysis())
-            Sim.AddReaction(ATPControl(-1e-5))
+            self.AddReaction(Glycolysis())
+            self.AddReaction(ATPControl(-1e-5))
 
         elif ReactionName == "PyruvateOxidation":
-            Sim.AddReaction(PyruvateOxidation())
-            Sim.AddReaction(MolControl("acetyl-CoA", -3e-6))
+            self.AddReaction(PyruvateOxidation())
+            self.AddReaction(MolControl("acetyl-CoA", -3e-6))
 
         else:
             print("\nNo unit test has been selected\n")
@@ -918,11 +967,10 @@ def GetUnitTestReactions():
 
 if __name__ == '__main__':
     Sim = ReactionSimulator()
-
+    
     RunUnitTest = False
     # RunUnitTest = True
 
-    EcoliInfo.Info()
     ATPConsumption_Sec = EcoliInfo.ECM_CellDivision_Sec
     # ATPConsumption_Sec = 0
 
@@ -931,10 +979,10 @@ if __name__ == '__main__':
         Sim.UnitTest(UnitTestReactions)
 
     else:
-        # Add Reactions
-        # Sim.AddReaction(NADPlusSynthesis())
-        # Sim.AddReaction(NADPPlusSynthesis())
-        # Sim.AddReaction(CoASynthesis())
+        # Energy Consumption
+        Sim.AddReaction(ATPControl(-ATPConsumption_Sec))
+
+        # Central Carbon Metabolism
         Sim.AddReaction(Glycolysis())
         Sim.AddReaction(PyruvateOxidation())
         Sim.AddReaction(TCACycle())
@@ -945,36 +993,51 @@ if __name__ == '__main__':
         # Sim.AddReaction(PyruvateCarboxylation())
         Sim.AddReaction(NADH_OxidativePhosphorylation())
         Sim.AddReaction(FADH2_OxidativePhosphorylation())
-        Sim.AddReaction(ATPControl(-ATPConsumption_Sec))
+
+        # Cofactors
+        # Sim.AddReaction(NADPlusSynthesis())
+        # Sim.AddReaction(NADPPlusSynthesis())
+        # Sim.AddReaction(CoASynthesis())
+        # Sim.AddReaction(ACPSynthesis())
+        # Sim.AddReaction(IPPSynthesis())
+        # Sim.AddReaction(UbiquinoneSynthesis())
+        # Sim.AddReaction(ThiamineSynthesis())
+        # Sim.AddReaction(RiboflavinSynthesis())
+        # Sim.AddReaction(PantotheateSynthesis())
+        # Sim.AddReaction(PyridoxalPhosphateSynthesis())
+        # Sim.AddReaction(BiotinSynthesis())
+        # Sim.AddReaction(FolateSynthesis())
+
+        # Nucleotide Synthesis
+        Sim.AddReaction(OxidativePPP())
+        Sim.AddReaction(PRPPSynthesis())   # TODO: Currently NADPH+ gets depleted, and ATP is depleted and AMP accumulates
+
 
         # Set permanent molecules
         PermanentMolecules = [
-            # "G6P",
-            # "pyruvate",
-            # "CoA-SH",
-            # "NADH",
-            # "NAD+",
-            # "FADH2",
-            # "FAD",
-            # "CoA-SH",
-            # "oxaloacetate",
+            "G6P",
+            "NADP+",
+            "NADPH",
+            "AMP",
         ]
         Sim.SetPermanentMolecules(PermanentMolecules)
 
     # Debugging options
     # Sim.Debug_Reaction = True
-    Sim.Debug_Info = 100
+    Sim.Debug_Info = 10000
     Sim.Plot = True
     # Sim.ExportToPDF = True
 
     # Set initial molecule concentrations
-    Molecules = {}
-    # Molecules["ATP"] = 1.0 * 1e-3
-    # Molecules["ADP"] = 8.6 * 1e-3
-    # Molecules["G6P"] = 50 * 1e-3
+    UserSetInitialMolecules = {}
+    # UserSetMolecules["ATP"] = 1.0 * 1e-3
+    # UserSetMolecules["ADP"] = 8.6 * 1e-3
+    # UserSetMolecules["G6P"] = 50 * 1e-3
+
+    Sim.PrintReactions()
 
     # Execute simulation
-    Sim.Initialize(Molecules)
+    Sim.Initialize(UserSetInitialMolecules)
 
     # Simulation parameters
     TotalTime = Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200

@@ -135,9 +135,10 @@ class FPlotter:
             return ScaleFactor, NPlotsInRows, NPlotsInColumn
 
         def AdjustUnitOnKnownConc(MolName, Factor):
-            self.KnownMolConc[MolName][0] /= Factor
-            self.KnownMolConc[MolName][1] /= Factor
-            self.KnownMolConc[MolName][2] /= Factor
+            if MolName in self.KnownMolConc:
+                self.KnownMolConc[MolName][0] /= Factor
+                self.KnownMolConc[MolName][1] /= Factor
+                self.KnownMolConc[MolName][2] /= Factor
 
         def GetYMax(Datasets):
             YMax = 0
@@ -165,7 +166,8 @@ class FPlotter:
 
                 # Display Molecule Range
                 if MolRange:
-                    Plt.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.2, facecolor=self.ConsistentColorDict[MolName])
+                    if MolName in self.KnownMolConc:
+                        Plt.fill_between(Time, self.KnownMolConc[MolName][1], self.KnownMolConc[MolName][2], alpha=0.2, facecolor=self.ConsistentColorDict[MolName])
 
                 # Mol labeling on the curve
                 if bSideLabel == 'right' or bSideLabel == 'both':

@@ -23,7 +23,7 @@ class FEcoliSimulator(FSimulator):
                  ProteinSynthesisRate = PROTEINSYNTHESISRATE,
                  CytoKinesisRate = CYTOKINESISRATE,
                  PermanentMolecules = [],
-                 InitialMolecules = {}):
+                 UserSetInitialMolecules = {}):
         super().__init__()
 
         self.Sim = Metabolism.ReactionSimulator()
@@ -51,7 +51,7 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
-        self.Sim.Initialize(InitialMolecules)
+        self.Sim.Initialize(UserSetInitialMolecules)
 
         self.TotalTime = self.Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
         self.DeltaTime = 0.01
@@ -105,5 +105,5 @@ if __name__ == '__main__':
 
         Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='')
-        # Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
-        # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
+        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)

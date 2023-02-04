@@ -11,6 +11,7 @@ class FSimulator():
         None
 
     def Simulate(self, TotalTime = 24 * 60.0 * 60.0, DeltaTime = 1.0):
+        print()
         print("-- Initial Conditions --")
         self.Info()
         print()
