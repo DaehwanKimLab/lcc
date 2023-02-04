@@ -9,6 +9,42 @@ Metabolite concentrations, fluxes and free energies imply efficient enzyme usage
 Junyoung O Park, Sara A Rubin, Yi-Fan Xu, Daniel Amador-Noguez, Jing Fan, Tomer Shlomi & Joshua D Rabinowitz
 Nature Chemical Biology volume 12, pages482–489 (2016)
 https://www.nature.com/articles/nchembio.2077#Sec21
+
+Measuring and modeling energy and power consumption in living microbial cells with a synthetic ATP reporter
+Yijie Deng, Douglas Raymond Beahm, Steven Ionov & Rahul Sarpeshkar
+BMC Biology volume 19, Article number: 101 (2021)
+https://doi.org/10.1186/s12915-021-01023-2
+->  Bacteria turn over their cellular ATP pool a few times per second during the exponential phase and
+    slow this rate by ~ 2–5-fold in lag and stationary phases.
+
+The rate of turnover of the adenosine triphosphate pool of Escherichia coli growing aerobically in simple defined media
+W. H. Holms, I. D. Hamilton & A. G. Robertson
+Archiv für Mikrobiologie volume 83, pages95–109 (1972)
+https://doi.org/10.1007/BF00425016
+->  During logarithmic growth the rate of turnover of the ATP pool falls within the range 250–450 times min-1.
+
+Fundamental limits on the rate of bacterial growth and their influence on proteomic composition
+Nathan M. Belliveau 1 9, Griffin Chure 2 9 10, Christina L. Hueschen 3, Hernan G. Garcia 4, Jane Kondev 5, Daniel S. Fisher 6, Julie A. Theriot 1, Rob Phillips
+Cell Systems Volume 12, Issue 9, Pages 924-944.e2, (2021)
+https://doi.org/10.1016/j.cels.2021.06.002
+->  In our estimate of ATP production above we found that a cell demands about 5 × 109.
+    ATP per cell cycle or ≈ 1 × 10e6 ATP/s. With a cell volume of roughly 1 fL (BNID: 100004),
+    this corresponds to about 2 × 10e10 ATP per fL of cell volume, in line with previous estimates (Stouthamer, 1973)
+    and within 3–4 fold of more extensive calculations (Feist et al., 2007; Szenk et al., 2017).
+    # DL: 1 × 10e6 ATP/s seems to be a typo. It should be just 1 × 10e6 ATP.
+->  Maximum growth rate is determined by the rate of ribosomal synthesis
+
+A theoretical study on the amount of ATP required for synthesis of microbial cell material
+Antonie Leeuwenhoek, 39 (1973), pp. 545-565, 10.1007/BF02578899
+
+A.M. Feist, C.S. Henry, J.L. Reed, M. Krummenacker, A.R. Joyce, P.D. Karp, L.J. Broadbelt, V. Hatzimanikatis, B.Ø. Palsson
+A genome-scale metabolic reconstruction for Escherichia coli K-12 MG1655 that accounts for 1260 ORFs and thermodynamic information
+Mol. Syst. Biol., 3 (2007), p. 121, 10.1038/msb4100155
+
+M. Szenk, K.A. Dill, A.M.R. de Graff
+Why do fast-growing bacteria enter overflow metabolism? Testing the membrane real estate hypothesis
+Cell Syst., 5 (2017), pp. 95-104, 10.1016/j.cels.2017.06.005
+
 """
 
 import sys
