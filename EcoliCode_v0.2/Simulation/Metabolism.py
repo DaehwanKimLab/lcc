@@ -146,7 +146,7 @@ class EcoliInfo:
                 else:
                     return Name
 
-            KnownMolConc = dict()
+            KnownMetConc = dict()
 
             for i, Value in enumerate(db_KnownMolConc):
                 Metabolite, ConcInEcoli, LowerBound, UpperBound = Value
@@ -154,16 +154,34 @@ class EcoliInfo:
                     continue
                 Metabolite = Metabolite.replace('[c]', '').replace('[m]', '')
                 Metabolite = MetaboliteSynonyms(Metabolite)
-                KnownMolConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound), "Park et al., (2016) Nat Chem Biol"]
+                KnownMetConc[Metabolite] = [float(ConcInEcoli), float(LowerBound), float(UpperBound), "Park et al., (2016) Nat Chem Biol"]
 
-            return KnownMolConc
+            return KnownMetConc
+
+        def ParseProteinCon(db_KnownMolConc):
+
+            KnownProtConc = dict()
+
+            for i, Value in enumerate(db_KnownMolConc):
+                # Value has a list of gene names and molecule counts in different media.
+                GeneName = Value[0]
+                Count = Value[1] # in glucose medium; use [2] for LB medium
+                if Count == 'NA':
+                    continue
+                ProteinName = GeneName[0].upper() + GeneName[1:]
+                Conc = float(Count) * EcoliInfo.C2M
+                KnownProtConc[ProteinName] = [Conc, Conc * 0.5, Conc * 1.5, "Schmidt et al., (2016) Nat Biotech; in glucose media"]
+
+            return KnownProtConc
 
         db_KnownMolConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "MetaboliteConcentrations.tsv"))
-        KnownMolConc = ParseMetaboliteCon(db_KnownMolConc)
+        KnownMetConc = ParseMetaboliteCon(db_KnownMolConc)
 
-        # Additional Molecules
-        Conc = 28944 * EcoliInfo.C2M
-        KnownMolConc["ACP"] = [Conc, Conc * 0.5, Conc * 1.5, "Schmidt et al., (2016) Nat Biotech; in glucose media"]
+        db_KnownProtConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "ProteinConcentrations.tsv"))
+        KnownProtConc = ParseProteinCon(db_KnownProtConc)
+
+        KnownMolConc = {**KnownMetConc, **KnownProtConc}
+        assert len(KnownMolConc) == len(KnownMetConc) + len(KnownProtConc), "Duplicate names exist in 'KnownMetConc' and 'KnownProtConc'"
 
         return KnownMolConc
 
@@ -174,8 +192,8 @@ class Reaction:
         self.Input = dict()
         self.Output = dict()
         self.Stoich = dict()
-        self.Capacity = 0
         self.CapacityConstant = 0
+        self.RegulationFactor = 1
         self.Regulators = dict()     # Capacity modulator, enzyme name: critical gene expression threshold for full function
 
     def Specification(self, Molecules, InitCond):
@@ -191,18 +209,11 @@ class Reaction:
     def SetProgress(self, Progress):
         None
 
-    def UpdateCapacity(self, Molecules, RateLimitingCofactors):
-        CapacityFactors = 1 # set to 1M by default
-        for i in range(len(RateLimitingCofactors)):
-             CapacityFactors = min(CapacityFactors, Molecules[RateLimitingCofactors[i]])
-        self.Capacity = CapacityFactors * self.CapacityConstant
-
-    def ApplyRegulation(self, Molecules):
+    def GetRegulationFactor(self, Molecules):
         RegulatedCapacity = 1
         for regulator, threshold in self.Regulators.items():
-            if Molecules[regulator] < threshold:
-                RegulatedCapacity *= (Molecules[regulator] / threshold)
-        return RegulatedCapacity * self.Capacity
+            RegulatedCapacity *= min(1, Molecules[regulator] / threshold)
+        return RegulatedCapacity
 
     def GetChemicalEquationStr(self):
 
@@ -271,12 +282,12 @@ class ACPSynthesis(Reaction):
     def __init__(self):
         super().__init__()
         self.ReactionName = 'ACP Synthesis'
-        self.Input = {"ACP": 1, "CoA-SH": 1}
+        self.Input = {"AcpP": 1, "CoA-SH": 1}
         self.Output = {"3',5'-ADP": 1, "acyl-ACP": 1}
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["ACP"] / (InitCond["ACP"] + Molecules["ACP"]) * self.CapacityConstant
-        return "acyl-ACP", VO
+        VO = Molecules["AcpP"] / (InitCond["AcpP"] + Molecules["AcpP"]) * self.CapacityConstant
+        return "acyl-AcpP", VO
 
 
 class IPPSynthesis(Reaction):
@@ -371,12 +382,12 @@ class BiotinSynthesis(Reaction):
     def __init__(self):
         super().__init__()
         self.ReactionName = 'Biotin Synthesis'
-        self.Input = {"pimeloyl-ACP": 1, "alanine": 1, "AMTOB": 1, "ATP": 1}
-        self.Output = {"biotin": 1, "ACP": 1, "AMP": 1, "5’-deoxyadenosine": 1}
+        self.Input = {"pimeloyl-AcpP": 1, "alanine": 1, "AMTOB": 1, "ATP": 1}
+        self.Output = {"biotin": 1, "AcpP": 1, "AMP": 1, "5’-deoxyadenosine": 1}
         self.CapacityConstant = 0
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["pimeloyl-ACP"] / (InitCond["pimeloyl-ACP"] + Molecules["pimeloyl-ACP"]) * self.CapacityConstant
+        VO = Molecules["pimeloyl-AcpP"] / (InitCond["pimeloyl-AcpP"] + Molecules["pimeloyl-AcpP"]) * self.CapacityConstant
         return "biotin", VO
 
 
@@ -658,7 +669,7 @@ class ReactionSimulator(FSimulator):
         self.InitializeStoich()
         self.InitializeMolecules(UserSetInitialMolecules)
         self.InitializeDataset()
-        self.ApplyGlobalKineticCapacity()
+        self.ApplyGlobalKineticCapacityScale()
 
     def InitializeStoich(self):
         for Reaction in self.Reactions:
@@ -801,9 +812,8 @@ class ReactionSimulator(FSimulator):
         for Molecule, Conc in self.Molecules.items():
             self.Dataset[Molecule].append(Conc)
 
-    def ApplyGlobalKineticCapacity(self):
+    def ApplyGlobalKineticCapacityScale(self):
         for Reaction in self.Reactions:
-            Reaction.Capacity *= GlobalKineticScale
             Reaction.CapacityConstant *= GlobalKineticScale
 
     def Info(self):
