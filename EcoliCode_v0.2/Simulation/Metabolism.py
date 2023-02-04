@@ -209,10 +209,10 @@ class Reaction:
     def SetProgress(self, Progress):
         None
 
-    def GetRegulationFactor(self, Molecules):
+    def GetRegulationFactor(self, Molecules, InitCond):
         RegulatedCapacity = 1
         for regulator, threshold in self.Regulators.items():
-            RegulatedCapacity *= min(1, Molecules[regulator] / threshold)
+            RegulatedCapacity *= min(1, (Molecules[regulator]/InitCond[regulator]) / threshold)
         return RegulatedCapacity
 
     def GetChemicalEquationStr(self):
@@ -441,13 +441,15 @@ class Glycolysis(Reaction):
         self.Output = {"pyruvate": 2, "NADH": 2, "ATP": 2}
         self.CapacityConstant = EcoliInfo.EGM_Glycolysis_Sec
 
+        self.Regulators = {"PfkA": 0.2}   # name and threshold
+
     def Specification(self, Molecules, InitCond):
         MinNADPlusConc = InitCond["NAD+"] / 10.0
         if Molecules["NAD+"] <= MinNADPlusConc:
             return "ATP", 0.0
-
         MinATPConc = 0.1e-3
-        VO = Molecules["ADP"] / max(Molecules["ATP"], MinATPConc) * self.CapacityConstant
+        RegulationFactor = self.GetRegulationFactor(Molecules, InitCond)
+        VO = Molecules["ADP"] / max(Molecules["ATP"], MinATPConc) * self.CapacityConstant * RegulationFactor
         return "ATP", VO
 
 
@@ -459,8 +461,11 @@ class PyruvateOxidation(Reaction):
         self.Output = {"acetyl-CoA": 1, "NADH": 1}
         self.CapacityConstant = EcoliInfo.EGM_PyruvateOxidation_Sec
 
+        self.Regulators = {"AceE": 0.3}   # name and threshold
+
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
+        RegulationFactor = self.GetRegulationFactor(Molecules, InitCond)
+        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant * RegulationFactor
         return "acetyl-CoA", VO
 
 
@@ -652,8 +657,9 @@ class ReactionSimulator(FSimulator):
         self.KnownMolConc = EcoliInfo.OpenKnownMolConc()
 
         self.Molecules = dict()
-        self.InitialConditions = dict()
+        self.InitialConditions = dict()   # Subset of self.KnownMolConc
         self.PermanentMolecules = list()
+        self.Perturbation = dict()
 
         self.dMolecules = dict()
 
@@ -664,6 +670,9 @@ class ReactionSimulator(FSimulator):
 
     def SetPermanentMolecules(self, PermanentMolecules):
         self.PermanentMolecules = PermanentMolecules
+
+    def SetPerturbation(self, Perturbation):
+        self.Perturbation = Perturbation
 
     def Initialize(self, UserSetInitialMolecules={}):
         self.InitializeStoich()
@@ -727,6 +736,9 @@ class ReactionSimulator(FSimulator):
         AllMolecules = dict()
         for Reaction in self.Reactions:
             for Molecule, Coeff in Reaction.Stoich.items():
+                if Molecule not in AllMolecules:
+                    AllMolecules[Molecule] = self.GetKnownMolConc(Molecule)
+            for Molecule, Threshold in Reaction.Regulators.items():
                 if Molecule not in AllMolecules:
                     AllMolecules[Molecule] = self.GetKnownMolConc(Molecule)
 
@@ -796,6 +808,16 @@ class ReactionSimulator(FSimulator):
         for Molecule in self.PermanentMolecules:
             if Molecule in self.Molecules:
                 self.Molecules[Molecule] = self.InitialConditions[Molecule]
+
+    def ApplyPerturbation(self, DeltaTime):
+        for Time, Perturbation in self.Perturbation.items():
+            print(self.Iter, DeltaTime, self.Iter * DeltaTime, Time)
+            if self.Iter * DeltaTime == Time:
+                for Molecule, Conc in Perturbation.items():
+                    if Molecule in self.Molecules:
+                        self.Molecules[Molecule] = Conc
+            else:
+                pass
 
     def CheckZeroConcentrations(self):
         for Molecule, Conc in self.Molecules.items():
@@ -940,6 +962,9 @@ class ReactionSimulator(FSimulator):
         if len(self.PermanentMolecules):
             self.RestorePermanentMolecules()
 
+        if len(self.Perturbation):
+            self.ApplyPerturbation(DeltaTime)
+
         self.AddToDataset()        
 
     def GetDataset(self):
@@ -976,6 +1001,7 @@ def GetUnitTestReactions():
 
 
 if __name__ == '__main__':
+    KnownMolConc = EcoliInfo.OpenKnownMolConc()
     Sim = ReactionSimulator()
     
     RunUnitTest = False
@@ -1019,8 +1045,8 @@ if __name__ == '__main__':
         # Sim.AddReaction(FolateSynthesis())
 
         # Nucleotide Synthesis
-        Sim.AddReaction(OxidativePPP())
-        Sim.AddReaction(PRPPSynthesis())   # TODO: Currently NADPH+ gets depleted, and ATP is depleted and AMP accumulates
+        # Sim.AddReaction(OxidativePPP())
+        # Sim.AddReaction(PRPPSynthesis())   # TODO: Currently NADPH+ gets depleted, and ATP is depleted and AMP accumulates
 
 
         # Set permanent molecules
@@ -1031,6 +1057,19 @@ if __name__ == '__main__':
             "AMP",
         ]
         Sim.SetPermanentMolecules(PermanentMolecules)
+
+        # Set Perturbation (time: {mol, conc})
+        Perturbation = {   # Set Perturbation (time: {mol, conc})
+            50  : {
+                "PfkA": KnownMolConc["PfkA"][0] * 0.02,
+                "AceE": KnownMolConc["AceE"][0] * 0.02,
+            },
+            150 : {
+                "PfkA": KnownMolConc["PfkA"][0] * 1,
+                "AceE": KnownMolConc["AceE"][0] * 0.2,
+            },
+        }
+        Sim.SetPerturbation(Perturbation)
 
     # Debugging options
     # Sim.Debug_Reaction = True

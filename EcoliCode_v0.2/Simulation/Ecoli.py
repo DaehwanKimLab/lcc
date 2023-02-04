@@ -23,6 +23,7 @@ class FEcoliSimulator(FSimulator):
                  ProteinSynthesisRate = PROTEINSYNTHESISRATE,
                  CytoKinesisRate = CYTOKINESISRATE,
                  PermanentMolecules = [],
+                 Perturbation = {},
                  UserSetInitialMolecules = {}):
         super().__init__()
 
@@ -51,12 +52,14 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
+        self.Sim.SetPerturbation(Perturbation)
         self.Sim.Initialize(UserSetInitialMolecules)
 
         self.TotalTime = self.Sim.Molecules["G6P"] * 32 / max(1e-3, ATPConsumption_Sec) + 200
         self.DeltaTime = 0.01
 
     def SimulateDelta(self, DeltaTime = 0.01):
+        self.Sim.Iter = self.Iter
         self.Sim.SimulateDelta(DeltaTime)
 
     def GetProgress(self):
@@ -84,10 +87,22 @@ class FEcoliSimulator(FSimulator):
 
     
 if __name__ == '__main__':
+    KnownMolConc = Metabolism.EcoliInfo.OpenKnownMolConc()
+
     Sim = FEcoliSimulator(
         PermanentMolecules = [
             "G6P",
-        ]
+        ],
+        Perturbation = {   # Set Perturbation (time: {mol, conc})
+            # 50  : {
+            #     "PfkA": KnownMolConc["PfkA"][0] * 0.02,
+            #     "AceE": KnownMolConc["AceE"][0] * 0.02,
+            # },
+            # 150 : {
+            #     "PfkA": KnownMolConc["PfkA"][0] * 1,
+            #     "AceE": KnownMolConc["AceE"][0] * 0.2,
+            # },
+        }
     )
 
     Sim.PrintReactions()
@@ -100,10 +115,10 @@ if __name__ == '__main__':
     Sim.Plot = True
     if Sim.Plot:
         Datasets = Sim.GetDataset()
-        KnownMolConc = Sim.KnownMolConc()
         Plot = FPlotter()
 
-        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+        Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='')
-        Plot.SetKnownMolConc(copy.deepcopy(KnownMolConc))
+
+        Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
