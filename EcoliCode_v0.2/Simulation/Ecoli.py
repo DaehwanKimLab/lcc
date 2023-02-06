@@ -62,6 +62,7 @@ class FEcoliSimulator(FSimulator):
                 "5-methyl-THF",
             }
             folA_ExpressionFactor = 0.0
+            UserSetInitialMolecules["dTTP"] = 0.01e-3
 
         self.VolumeExpansion = Metabolism.VolumeExpansion(
             ExcludedMolecules = ExcludedMolecules,
@@ -85,6 +86,9 @@ class FEcoliSimulator(FSimulator):
     def SimulateDelta(self, DeltaTime = 0.01):
         self.Sim.Iter = self.Iter
         self.Sim.SimulateDelta(DeltaTime)
+
+        # temporary code - let's sync DNA replication and Volume expansion
+        self.VolumeExpansion.SetProgress(self.DNAReplication.GetProgress())
 
     def GetProgress(self):
         return min(self.DNAReplication.GetProgress(),
@@ -122,7 +126,6 @@ if __name__ == '__main__':
             "G6P",
         ],
         UserSetInitialMolecules = {
-            # "dTTP": 0.1e-3,
         },
         Perturbation = {   # Set Perturbation (time: {mol, conc})
             # 50  : {
