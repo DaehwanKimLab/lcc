@@ -45,11 +45,11 @@ class FEcoliSimulator(FSimulator):
 
         self.Sim.AddReaction(Metabolism.dATPSynthesis(DNAReplicationRate))
         self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate))
-        self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate)
+        self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dATP", "dTTP"])
         self.Sim.AddReaction(self.DNAReplication)
 
         self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
-        self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate)
+        self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate, BuildingBlocks=["glutamine"])
         self.Sim.AddReaction(self.ProteinSynthesis)
 
         # DK - repression of folA
@@ -113,6 +113,8 @@ class FEcoliSimulator(FSimulator):
 
         self.Sim.Info()
 
+    def Summary(self):
+        self.Sim.Summary()
     
 if __name__ == '__main__':
     KnownMolConc = Metabolism.EcoliInfo.OpenKnownMolConc()
@@ -149,7 +151,7 @@ if __name__ == '__main__':
         Plot = FPlotter()
 
         Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='')
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='', Log=True)
 
         """
         Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())

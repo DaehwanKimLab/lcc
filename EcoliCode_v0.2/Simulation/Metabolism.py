@@ -222,7 +222,7 @@ class EcoliInfo:
         KnownProtConc = ParseProteinCon(db_KnownProtConc)
 
         KnownMolConc = {**KnownMetConc, **KnownProtConc}
-        assert len(KnownMolConc) == len(KnownMetConc) + len(KnownProtConc), "Duplicate names exist in 'KnownMetConc' and 'KnownProtConc'"
+        assert len(KnownMolConc) == len(KnownMetConc) + len(KnownProtConc), "Duplicate molecules exist in 'KnownMetConc' and 'KnownProtConc'"
 
         return KnownMolConc
 
@@ -558,6 +558,19 @@ class FADH2_OxidativePhosphorylation(Reaction):
         return "ATP", VO
 
 
+# Nucleotide Synthesis
+class dNTPSynthesis(Reaction):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+        super().__init__()
+        self.ReactionName = 'dNTP Synthesis'
+        self.Input = {}
+        self.Output = {"dATP": 1}
+        self.Rate = Rate
+
+    def Specification(self, Molecules, InitCond):
+        return "dATP", self.Rate * EcoliInfo.C2M
+
+
 class dATPSynthesis(Reaction):
     def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
         super().__init__()
@@ -587,6 +600,7 @@ class dUTPSynthesis(Reaction):
         return Reaction.MaxConc
 
 
+# AA Synthesis
 class AASynthesis(Reaction):
     def __init__(self, Rate = EcoliInfo.ProteinSynthesisRate):
         super().__init__()
@@ -597,6 +611,84 @@ class AASynthesis(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return "glutamine", self.Rate * EcoliInfo.C2M
+
+
+class AASynthesis_Glu(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Glu Synthesis'
+        self.Input = {"G6P": 1}
+        self.Output = {"glutamate": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
+        return "glutamate", VO
+
+
+class AASynthesis_GluDerivatives(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Gln, Pro, Arg Synthesis'
+        self.Input = {"glutamate": 3}
+        self.Output = {"glutamine": 1, "proline": 1, "arginine": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["glutamate"] / (InitCond["glutamate"] + Molecules["glutamate"]) * self.CapacityConstant
+        return "glutamine", VO
+
+
+class AASynthesis_Asp(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Asp Synthesis'
+        self.Input = {"G6P": 1}
+        self.Output = {"aspartate": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
+        return "aspartate", VO
+
+
+class AASynthesis_AspDerivatives(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Asn, Met, Thr, Lys Synthesis'
+        self.Input = {"aspartate": 4}
+        self.Output = {"asparagine": 1, "methionine": 1, "threonine": 1, "lysine": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["aspartate"] / (InitCond["aspartate"] + Molecules["aspartate"]) * self.CapacityConstant
+        return "asparagine", VO
+
+
+class AASynthesis_Aromatic(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Phe, Tyr, Trp Synthesis'
+        self.Input = {"G6P": 3}
+        self.Output = {"phenylalanine": 1, "tyrosine": 1, "tryptophan": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
+        return "phenylalanine", VO
+
+
+class AASynthesis_GluDerivatives(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = 'Gln, Pro, Arg Synthesis'
+        self.Input = {"glutamate": 3}
+        self.Output = {"glutamine": 1, "proline": 1, "arginine": 1}
+        self.CapacityConstant = 0
+
+    def Specification(self, Molecules, InitCond):
+        VO = Molecules["glutamate"] / (InitCond["glutamate"] + Molecules["glutamate"]) * self.CapacityConstant
+        return "glutamine", VO
 
 
 # DHF: Dihydrofolate
@@ -735,50 +827,58 @@ class Process(Reaction):
 
 
 class DNAReplication(Process):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate, BuildingBlocks = []):
         super().__init__()
         self.ReactionName = "DNA Replication"
         # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
-        self.BuildingBlocks = {"dATP": 1}
         self.EnergyConsumption = EcoliInfo.ATPConsumptionPerdNTPExtension
         self.Regulators = {}
         self.Rate = Rate
         self.Progress = 0.0
         self.MaxProgress = EcoliInfo.GenomeSize
 
-        self.Input = {"ATP": self.EnergyConsumption * 2, "dATP": 1, "dTTP": 1}
-        self.Output = {"ADP": self.EnergyConsumption * 2}
+        self.BuildingBlocks = BuildingBlocks
+        assert len(self.BuildingBlocks) > 0, 'No dNTP consumed in DNA replication'
+        for buildingblock in self.BuildingBlocks:
+            self.Input[buildingblock] = 1
+
+        self.Input["ATP"] = self.EnergyConsumption * len(self.BuildingBlocks)
+        self.Output["ADP"] = self.EnergyConsumption * len(self.BuildingBlocks)
 
     def Specification(self, Molecules, InitCond):
-        return "dATP", -self.Rate * EcoliInfo.C2M * 0.5
+        return "dATP", -self.Rate * EcoliInfo.C2M / len(self.BuildingBlocks)
 
     def Callback(self, dMolecules):
         assert "dATP" in dMolecules
-        dElongation = -dMolecules["dATP"] * EcoliInfo.M2C * 2.0
+        dElongation = -dMolecules["dATP"] * EcoliInfo.M2C * len(self.BuildingBlocks)
         assert dElongation >= 0
         self.Progress += dElongation
 
 
 class ProteinSynthesis(Process):
-    def __init__(self, Rate = EcoliInfo.ProteinSynthesisRate):
+    def __init__(self, Rate = EcoliInfo.ProteinSynthesisRate, BuildingBlocks = []):
         super().__init__()
         self.ReactionName = "Protein Synthesis"
-        self.BuildingBlocks = {"glutamine": 1}
         self.EnergyConsumption = EcoliInfo.ATPConsumptionPerAAExtension
         self.Regulators = {}
         self.Rate = Rate
         self.Progress = 0.0
         self.MaxProgress = EcoliInfo.ProteomeSize
 
-        self.Input = {"ATP": self.EnergyConsumption, "glutamine": 1}
-        self.Output = {"ADP": self.EnergyConsumption}
+        self.BuildingBlocks = BuildingBlocks
+        assert len(BuildingBlocks) > 0, 'No AA consumed in DNA replication'
+        for buildingblock in BuildingBlocks:
+            self.Input[buildingblock] = 1
+
+        self.Input["ATP"] = self.EnergyConsumption * len(self.BuildingBlocks)
+        self.Output["ADP"] = self.EnergyConsumption * len(self.BuildingBlocks)
 
     def Specification(self, Molecules, InitCond):
-        return "glutamine", -self.Rate * EcoliInfo.C2M
+        return "glutamine", -self.Rate * EcoliInfo.C2M / len(self.BuildingBlocks)
 
     def Callback(self, dMolecules):
         assert "glutamine" in dMolecules
-        dElongation = -dMolecules["glutamine"] * EcoliInfo.M2C
+        dElongation = -dMolecules["glutamine"] * EcoliInfo.M2C * len(self.BuildingBlocks)
         assert dElongation >= 0
         self.Progress += dElongation
 
@@ -993,7 +1093,6 @@ class ReactionSimulator(FSimulator):
 
     def ApplyPerturbation(self, DeltaTime):
         for Time, Perturbation in self.Perturbation.items():
-            print(self.Iter, DeltaTime, self.Iter * DeltaTime, Time)
             if self.Iter * DeltaTime == Time:
                 for Molecule, Conc in Perturbation.items():
                     if Molecule in self.Molecules:
@@ -1188,7 +1287,7 @@ if __name__ == '__main__':
 
     else:
         # Energy Consumption
-        Sim.AddReaction(ATPControl(-ATPConsumption_Sec))
+        # Sim.AddReaction(ATPControl(-ATPConsumption_Sec))
 
         # Central Carbon Metabolism
         Sim.AddReaction(Glycolysis())
@@ -1219,27 +1318,33 @@ if __name__ == '__main__':
         # Nucleotide Synthesis
         # Sim.AddReaction(OxidativePPP())
         # Sim.AddReaction(PRPPSynthesis())   # TODO: Currently NADPH+ gets depleted, and ATP is depleted and AMP accumulates
+        Sim.AddReaction(dNTPSynthesis())
+        Sim.AddReaction(DNAReplication(BuildingBlocks=["dATP"]))
 
+        Sim.AddReaction(AASynthesis())
+        Sim.AddReaction(ProteinSynthesis(BuildingBlocks=["glutamine"]))
+
+        # Amino
 
         # Set permanent molecules
         PermanentMolecules = [
             "G6P",
-            "NADP+",
-            "NADPH",
-            "AMP",
+            # "NADP+",
+            # "NADPH",
+            # "AMP",
         ]
         Sim.SetPermanentMolecules(PermanentMolecules)
 
         # Set Perturbation (time: {mol, conc})
-        Perturbation = {   # Set Perturbation (time: {mol, conc})
-            50  : {
-                "PfkA": KnownMolConc["PfkA"][0] * 0.02,
-                "AceE": KnownMolConc["AceE"][0] * 0.02,
-            },
-            150 : {
-                "PfkA": KnownMolConc["PfkA"][0] * 1,
-                "AceE": KnownMolConc["AceE"][0] * 0.2,
-            },
+        Perturbation = {
+            # 50  : {
+            #     "PfkA": KnownMolConc["PfkA"][0] * 0.02,
+            #     "AceE": KnownMolConc["AceE"][0] * 0.02,
+            # },
+            # 150 : {
+            #     "PfkA": KnownMolConc["PfkA"][0] * 1,
+            #     "AceE": KnownMolConc["AceE"][0] * 0.2,
+            # },
         }
         Sim.SetPerturbation(Perturbation)
 
@@ -1272,7 +1377,7 @@ if __name__ == '__main__':
 
     if Sim.Plot:
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
-        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True)
+        Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Log='e')
         # Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, All=True, Multiscale=True, Include_nM=True)
         Plot.SetKnownMolConc(EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='right', Unitless=False, All=False, Individual=True, MolRange=True)
