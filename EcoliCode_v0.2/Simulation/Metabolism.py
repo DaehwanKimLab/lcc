@@ -893,8 +893,8 @@ class VolumeExpansion(Process):
         self.Rate = Rate
         self.Progress = 0.0
         self.MaxProgress = MaxProgress
-        self.ln2 = math.log(2, math.e)
-
+        self.T = self.MaxProgress / self.Rate
+        self.ln2_over_T = math.log(2, math.e) / self.T
         self.ExcludedMolecules = ExcludedMolecules
 
         self.Input = {"ATP": 1}
@@ -906,23 +906,11 @@ class VolumeExpansion(Process):
         dATPConc = -self.Rate * EcoliInfo.C2M
         for Mol in self.ExcludedMolecules:
             InitConc = InitCond[Mol]
-            t = self.Progress / self.MaxProgress
-            dMolConc = -InitConc * self.ln2 * math.pow(math.e, -self.ln2 * t)
-
-            # DK - debugging purposes
-            dMolConc = dMolConc / 10.0
-
+            t = self.Progress / self.MaxProgress * self.T
+            dMolConc = -InitConc * self.ln2_over_T * math.pow(math.e, -self.ln2_over_T * t)
             self.Stoich[Mol] = -dMolConc / dATPConc
 
-            # print("Progress:", t, Mol, "dMol:", dMolConc, "dATP", dATPConc, "dMol/dATP", self.Stoich[Mol])
-
         return "ATP", dATPConc
-
-    def Callback(self, dMolecules):
-        assert "ATP" in dMolecules
-        dExpansion = -dMolecules["ATP"] * EcoliInfo.M2C
-        assert dExpansion >= 0
-        self.Progress += dExpansion
 
 
 class ReactionSimulator(FSimulator):
