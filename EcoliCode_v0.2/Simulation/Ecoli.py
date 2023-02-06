@@ -23,8 +23,8 @@ class FEcoliSimulator(FSimulator):
                  ProteinSynthesisRate = PROTEINSYNTHESISRATE,
                  CytoKinesisRate = CYTOKINESISRATE,
                  PermanentMolecules = [],
-                 Perturbation = {},
-                 UserSetInitialMolecules = {}):
+                 UserSetInitialMolecules = {},
+                 Perturbation = {}):
         super().__init__()
 
         self.Sim = Metabolism.ReactionSimulator()
@@ -43,13 +43,37 @@ class FEcoliSimulator(FSimulator):
         self.Sim.AddReaction(Metabolism.FADH2_OxidativePhosphorylation())
         # self.Sim.AddReaction(Metabolism.ATPControl(-ATPConsumption_Sec))
 
-        self.Sim.AddReaction(Metabolism.dNTPSynthesis(DNAReplicationRate))
+        self.Sim.AddReaction(Metabolism.dATPSynthesis(DNAReplicationRate))
+        self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate))
         self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate)
         self.Sim.AddReaction(self.DNAReplication)
 
         self.Sim.AddReaction(Metabolism.AASynthesis(ProteinSynthesisRate))
         self.ProteinSynthesis = Metabolism.ProteinSynthesis(ProteinSynthesisRate)
         self.Sim.AddReaction(self.ProteinSynthesis)
+
+        # DK - repression of folA
+        Debug_folA = False
+        ExcludedMolecules = {}
+        folA_ExpressionFactor = 1.0
+        if Debug_folA:
+            ExcludedMolecules = {
+                "THF",
+                "5-methyl-THF",
+            }
+            folA_ExpressionFactor = 0.0
+
+        self.VolumeExpansion = Metabolism.VolumeExpansion(
+            ExcludedMolecules = ExcludedMolecules,
+            Rate = Metabolism.EcoliInfo.VolumeExpansionRate
+        )
+        self.Sim.AddReaction(self.VolumeExpansion)
+
+        # Ryan Otto - repression of folA
+        self.Sim.AddReaction(Metabolism.DHFSynthesis())
+        self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(ExpressionFactor = folA_ExpressionFactor))
+        self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesis())
+        self.Sim.AddReaction(Metabolism.dTTPSynthesis())
 
         self.Sim.SetPermanentMolecules(PermanentMolecules)
         self.Sim.SetPerturbation(Perturbation)
@@ -63,11 +87,14 @@ class FEcoliSimulator(FSimulator):
         self.Sim.SimulateDelta(DeltaTime)
 
     def GetProgress(self):
-        return self.DNAReplication.GetProgress()
+        return min(self.DNAReplication.GetProgress(),
+                   self.ProteinSynthesis.GetProgress(),
+                   self.VolumeExpansion.GetProgress())
 
     def SetProgress(self, Progress):
         self.DNAReplication.SetProgress(Progress)
         self.ProteinSynthesis.SetProgress(Progress)
+        self.VolmeExpansion.SetProgress(Progress)
 
     def GetDataset(self):
         return self.Sim.GetDataset()
@@ -80,7 +107,8 @@ class FEcoliSimulator(FSimulator):
 
     def Info(self):
         print("DNA Replication Progress:   {:<.3f}".format(self.DNAReplication.GetProgress()))
-        print("Protein Synthesis Progress:   {:<.3f}".format(self.ProteinSynthesis.GetProgress()))
+        print("Protein Synthesis Progress: {:<.3f}".format(self.ProteinSynthesis.GetProgress()))
+        print("Volume Expansion Progress:  {:<.3f}".format(self.VolumeExpansion.GetProgress()))
         print()
 
         self.Sim.Info()
@@ -93,6 +121,9 @@ if __name__ == '__main__':
         PermanentMolecules = [
             "G6P",
         ],
+        UserSetInitialMolecules = {
+            # "dTTP": 0.1e-3,
+        },
         Perturbation = {   # Set Perturbation (time: {mol, conc})
             # 50  : {
             #     "PfkA": KnownMolConc["PfkA"][0] * 0.02,
@@ -120,5 +151,7 @@ if __name__ == '__main__':
         Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='')
 
+        """
         Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
+        """

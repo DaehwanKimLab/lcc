@@ -102,11 +102,15 @@ class EcoliInfo:
     ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase
     ATPConsumptionPerAAExtension = 10
 
+    VolumeExpansionRate = DNAReplicationRate
+    VolumeExpansionSize = GenomeSize
+
     # ECC stands for Energy Consumption in ATP molecules (count)
     ECC_DNAReplication = GenomeSize * 2 * 3   # 4.5Mbp genome (double strand), 3 ATPs per 1 nucleotide extension
     ECC_ProteinSynthesis = ProteomeSize * 10  # 3M proteins (each 300aa), 10 ATPs per 1 amino acid extension
     ECC_Cytokinesis = 0
-    ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis
+    ECC_VolumeExpansion = GenomeSize
+    ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis + ECC_VolumeExpansion
 
     # ECM stands for Energy Consumption in ATP (M = mol/L)
     ECM_CellDivision = ECC_CellDivision * C2M
@@ -211,8 +215,9 @@ class EcoliInfo:
             return KnownProtConc
 
         db_KnownMolConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "MetaboliteConcentrations.tsv"))
+        db_AdditionalKnownMolConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "AdditionalMetaboliteConcentrations.tsv"))
+        db_KnownMolConc += db_AdditionalKnownMolConc
         KnownMetConc = ParseMetaboliteCon(db_KnownMolConc)
-
         db_KnownProtConc = LoadTSVDatabase(os.path.join(os.path.dirname(__file__), "ProteinConcentrations.tsv"))
         KnownProtConc = ParseProteinCon(db_KnownProtConc)
 
@@ -223,6 +228,9 @@ class EcoliInfo:
 
 
 class Reaction:
+    MaxConc = 10
+    MinConc = 0
+
     def __init__(self):
         self.ReactionName = ""
         self.Input = dict()
@@ -237,6 +245,12 @@ class Reaction:
 
     def Callback(self, dMolecules):
         None
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        return Reaction.MaxConc
+
+    def GetMinConc(self, MolName, Molecules, InitCond):
+        return Reaction.MinConc
 
     # Progress is between 0.0 and 1.0
     def GetProgress(self):
@@ -544,16 +558,33 @@ class FADH2_OxidativePhosphorylation(Reaction):
         return "ATP", VO
 
 
-class dNTPSynthesis(Reaction):
+class dATPSynthesis(Reaction):
     def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
         super().__init__()
-        self.ReactionName = 'dNTP Synthesis'
+        self.ReactionName = 'dATP Synthesis'
         self.Input = {}
         self.Output = {"dATP": 1}
-        self.Rate = Rate
+        self.Rate = Rate * 0.5
 
     def Specification(self, Molecules, InitCond):
         return "dATP", self.Rate * EcoliInfo.C2M
+
+    
+class dUTPSynthesis(Reaction):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+        super().__init__()
+        self.ReactionName = 'dUTP Synthesis'
+        self.Input = {}
+        self.Output = {"dUTP": 1}
+        self.Rate = Rate * 0.5
+
+    def Specification(self, Molecules, InitCond):
+        return "dUTP", self.Rate * EcoliInfo.C2M
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "dUTP":
+            return InitCond[MolName]
+        return Reaction.MaxConc
 
 
 class AASynthesis(Reaction):
@@ -566,6 +597,74 @@ class AASynthesis(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return "glutamine", self.Rate * EcoliInfo.C2M
+
+
+# DHF: Dihydrofolate
+class DHFSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = "DHF Synthesis"
+        self.Input = {}
+        self.Output = {"DHF": 1}
+        self.Rate = 1e-6
+
+    def Specification(self, Molecules, InitCond):
+        return "DHF", self.Rate
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "DHF":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+# THF: Tetrahydrofolate
+class THFSynthesisByFolA(Reaction):
+    def __init__(self, ExpressionFactor = 1.0):
+        super().__init__()
+        self.ReactionName = "THF Synthesis"
+        self.Input = {"DHF": 1}
+        self.Output = {"THF": 1}
+        self.Rate = 1e-6 * ExpressionFactor
+
+    def Specification(self, Molecules, InitCond):
+        return "THF", 0
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "THF":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+# 5-methyl-THF
+class FiveMethylTHFSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = "5-methyl-THF Synthesis"
+        self.Input = {"THF": 1}
+        self.Output = {"5-methyl-THF": 1}
+        self.Rate = EcoliInfo.DNAReplicationRate * 2.0
+
+    def Specification(self, Molecules, InitCond):
+        return "5-methyl-THF", min(self.Rate, Molecules["THF"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "5-methyl-THF":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+class dTTPSynthesis(Reaction):
+    def __init__(self):
+        super().__init__()
+        self.ReactionName = "dTTP Synthesis"
+        # DK - self.Input = {"dUMP": 1, "5-methyl-THF": 1}
+        # DK - self.Output = {"dTMP": 1}
+        self.Input = {"dUTP": 1, "5-methyl-THF": 1}
+        self.Output = {"dTTP": 1, "THF": 1}
+        self.Rate = EcoliInfo.DNAReplicationRate * 0.5
+
+    def Specification(self, Molecules, InitCond):
+        return "dTTP", self.Rate * EcoliInfo.C2M
 
 
 class ATPControl(Reaction):
@@ -647,15 +746,15 @@ class DNAReplication(Process):
         self.Progress = 0.0
         self.MaxProgress = EcoliInfo.GenomeSize
 
-        self.Input = {"ATP": self.EnergyConsumption, "dATP": 1}
-        self.Output = {"ADP": self.EnergyConsumption}
+        self.Input = {"ATP": self.EnergyConsumption * 2, "dATP": 1, "dTTP": 1}
+        self.Output = {"ADP": self.EnergyConsumption * 2}
 
     def Specification(self, Molecules, InitCond):
-        return "dATP", -self.Rate * EcoliInfo.C2M
+        return "dATP", -self.Rate * EcoliInfo.C2M * 0.5
 
     def Callback(self, dMolecules):
         assert "dATP" in dMolecules
-        dElongation = -dMolecules["dATP"] * EcoliInfo.M2C
+        dElongation = -dMolecules["dATP"] * EcoliInfo.M2C * 2.0
         assert dElongation >= 0
         self.Progress += dElongation
 
@@ -682,6 +781,48 @@ class ProteinSynthesis(Process):
         dElongation = -dMolecules["glutamine"] * EcoliInfo.M2C
         assert dElongation >= 0
         self.Progress += dElongation
+
+
+class VolumeExpansion(Process):
+    def __init__(self,
+                 ExcludedMolecules = {},
+                 Rate = EcoliInfo.VolumeExpansionRate,
+                 MaxProgress = EcoliInfo.VolumeExpansionSize):
+        super().__init__()
+        self.ReactionName = "Cell Volume Expansion"
+        self.Rate = Rate
+        self.Progress = 0.0
+        self.MaxProgress = MaxProgress
+        self.ln2 = math.log(2, math.e)
+
+        self.ExcludedMolecules = ExcludedMolecules
+
+        self.Input = {"ATP": 1}
+        self.Output = {"ADP": 1}
+        for Mol in ExcludedMolecules:
+            self.Input[Mol] = 1
+
+    def Specification(self, Molecules, InitCond):
+        dATPConc = -self.Rate * EcoliInfo.C2M
+        for Mol in self.ExcludedMolecules:
+            InitConc = InitCond[Mol]
+            t = self.Progress / self.MaxProgress
+            dMolConc = -InitConc * self.ln2 * math.pow(math.e, -self.ln2 * t)
+
+            # DK - debugging purposes
+            dMolConc = dMolConc / 10.0
+
+            self.Stoich[Mol] = -dMolConc / dATPConc
+
+            # print("Progress:", t, Mol, "dMol:", dMolConc, "dATP", dATPConc, "dMol/dATP", self.Stoich[Mol])
+
+        return "ATP", dATPConc
+
+    def Callback(self, dMolecules):
+        assert "ATP" in dMolecules
+        dExpansion = -dMolecules["ATP"] * EcoliInfo.M2C
+        assert dExpansion >= 0
+        self.Progress += dExpansion
 
 
 class ReactionSimulator(FSimulator):
@@ -798,6 +939,11 @@ class ReactionSimulator(FSimulator):
         return Count / EcoliInfo.Volume / AvogadroNum
 
     def AdjustRefdCon(self, Reaction, RefMol, RefdConc):
+        RefConc = self.Molecules[RefMol]
+        MaxRefConc = Reaction.GetMaxConc(RefMol, self.Molecules, self.InitialConditions)
+        if RefdConc > 0 and RefConc + RefdConc > MaxRefConc:
+            RefdConc = max(0, MaxRefConc - RefConc)
+
         # Compare dConc of reference molecule to input concentrations and adjust reference dConc
         if len(Reaction.Input) == 0:
             return RefdConc        
@@ -963,16 +1109,6 @@ class ReactionSimulator(FSimulator):
                 Updated = True
                 UpdateFactor = (Minus_dConc + (MinConc - Conc - dConc)) / Minus_dConc * 0.999999
                 assert UpdateFactor < 1.0
-
-                """
-                print(Mol)
-                print("Conc:", Conc2Str(Conc))
-                print("MinConc:", Conc2Str(MinConc))
-                print("dConc:", Conc2Str(dConc))
-                print("Plus_dConc:", Conc2Str(Plus_dConc))
-                print("Minus_dConc:", Conc2Str(Minus_dConc))
-                print("UpdateFactor:", UpdateFactor)
-                """
 
                 for ReactionName in ReactionNameList:
                     dMolecules = self.dMolecules[ReactionName]

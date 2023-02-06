@@ -1,0 +1,4 @@
+Metabolite	ConcInEcoli	LowerBound	UpperBound
+DHF	0.00001	0.00001	0.00001
+THF	0.00001	0.00001	0.00001
+5-methyl-THF	0.00001	0.00001	0.00001

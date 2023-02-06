@@ -103,13 +103,21 @@ class FPopulationSimulator(FSimulator):
     ]
 
     def __init__(self, Population):
-        PermanentMolecules = [
-            "G6P",
-        ]
+        self.Colonies = []
+        for Colony in Population:
+            EcoliSim = FEcoliSimulator(
+                Colony[0],
+                Colony[1],
+                Colony[2],
+                PermanentMolecules = [
+                    "G6P",
+                ],
+                UserSetInitialMolecules = {
+                    # "dTTP": 0.1e-3,
+                },
+            )
+            self.Colonies.append(FColonySimulator(EcoliSim))
 
-        self.Colonies = [
-            FColonySimulator(FEcoliSimulator(Colony[0], Colony[1], Colony[2], PermanentMolecules = PermanentMolecules)) for Colony in Population
-        ]
         self.Dataset = {}
 
     def Simulate(self, TotalTime = 24 * 60.0 * 60.0, DeltaTime = 0.01):
