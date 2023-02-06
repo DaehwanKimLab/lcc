@@ -68,7 +68,7 @@ class FPlotter:
     def ResetSubplotID(self):
         self.SubplotID = 1
 
-    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel='right', SuperTitle="", MaxNPlotsInRows=3, Unitless=True, All=True, Multiscale=False, Include_nM=False, Individual=False, MolRange=False, Export=''):
+    def PlotDatasets(self, Datasets, DeltaTime=1.0, bSideLabel='right', SuperTitle="", MaxNPlotsInRows=3, Unitless=True, All=True, Multiscale=False, Include_nM=False, Individual=False, MolRange=False, Export='', Log=0):
         # Filter Datasets
         if self.Filter_Inclusion or self.Filter_Exclusion:
             Datasets = self.FilterDatasets(Datasets)
@@ -121,6 +121,8 @@ class FPlotter:
             if Individual:
                 for Dataset in Datasets.values():
                     ScaleFactor += len(Dataset)
+            if Log:
+                ScaleFactor *= 2
 
             NPlotsInRows = ScaleFactor   # Default
             if ScaleFactor > MaxNPlotsInRows:
@@ -151,10 +153,16 @@ class FPlotter:
                     if YMaxData > YMax:
                         YMax = YMaxData
 
-        def PlotDataset(Dataset, Process, UnitTxt, Plt):
+        def PlotDataset(Dataset, Process, UnitTxt, Plt, LogScale=0):
             # Y axis (molecular concentrations)
             YMax = 0
             for MolName, Conc in Dataset.items():
+                if LogScale == 'e':
+                    Conc = np.log(np.array(Conc))
+                elif LogScale == 2:
+                    Conc = np.log2(np.array(Conc))
+                elif LogScale == 10:
+                    Conc = np.log10(np.array(Conc))
 
                 line, = Plt.plot(Time, Conc, label="[" + MolName + "]")
 
@@ -192,8 +200,16 @@ class FPlotter:
             if self.YLabel:
                 Plt.set_ylabel(self.YLabel)
             else:
-                Plt.set_ylabel('Conc (' + UnitTxt + ')')
-            Plt.set_ylim(ymin=0)
+                YLabel = 'Conc (' + UnitTxt + ')'
+                if LogScale == 'e':
+                    YLabel = 'log of' + YLabel
+                elif LogScale == 2:
+                    YLabel = 'log2 of' + YLabel
+                elif LogScale == 10:
+                    YLabel = 'log10 of' + YLabel
+                Plt.set_ylabel(YLabel)
+            if not Log:
+                Plt.set_ylim(ymin=0)
             Plt.set_ylim(ymax=YMax)
             # Plt.grid()
 
@@ -234,6 +250,11 @@ class FPlotter:
                     UnitTxt, Dataset = ApplyGlobalUnit(Dataset)
                 Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID)
                 PlotDataset(Dataset, Process, UnitTxt, Plt)
+
+                if Log:
+                    Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID + int(ScaleFactor / 2))
+                    PlotDataset(Dataset, '', UnitTxt, Plt, LogScale=Log)
+
                 self.SubplotID += 1
 
         def PlotMultiscale():
@@ -265,6 +286,11 @@ class FPlotter:
                         continue
                     Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID)
                     PlotDataset(dataset, Unit + ' range', Unit, Plt)
+
+                    if Log:
+                        Plt = fig.add_subplot(NPlotsInColumn, NPlotsInRows, self.SubplotID + int(ScaleFactor / 2))
+                        PlotDataset(dataset, '', Unit, Plt, LogScale=Log)
+
                     self.SubplotID += 1
 
         def PlotIndividual():
