@@ -455,31 +455,100 @@ class FolateSynthesis(Reaction):
         return "tetrahydrofolate", VO
 
 
-# Pentose Phosphate Pathway
-class OxidativePPP(Reaction):
-    def __init__(self):
-        super().__init__()
-        self.ReactionName = 'Oxidative PPP'
-        self.Input = {"G6P": 1, "NADP+": 2}
-        self.Output = {"Ru5P": 1, "NADPH": 2}
-        self.CapacityConstant = EcoliInfo.NCM_CellDivision_Sec
-
-    def Specification(self, Molecules, InitCond):
-        VO = Molecules["G6P"] / (InitCond["G6P"] + Molecules["G6P"]) * self.CapacityConstant
-        return "Ru5P", VO
-
-
-class PRPPSynthesis(Reaction):
-    def __init__(self):
+# PRPP: Phosphoribosyl pyrophosphate
+class PRPPSynthesis(Reaction):   # Oxidative PPP
+    def __init__(self, Rate = 1.5e-5):
         super().__init__()
         self.ReactionName = 'PRPP Synthesis'
-        self.Input = {"Ru5P": 1, "ATP": 1}
-        self.Output = {"PRPP": 1, "AMP": 1}
-        self.CapacityConstant = EcoliInfo.NCM_CellDivision_Sec
+        self.Input = {"G6P": 1, "ATP": 1}
+        # self.Output = {"PRPP": 1, "AMP": 1}
+        self.Output = {"PRPP": 1, "ADP": 1}   # temporary
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        VO = Molecules["Ru5P"] / (InitCond["Ru5P"] + Molecules["Ru5P"]) * self.CapacityConstant
-        return "PRPP", VO
+        return "PRPP", self.Rate
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "PRPP":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+# GAR: Glycinamide ribonucleotide
+class GARSynthesis(Reaction):
+    def __init__(self, Rate = 1.5e-5):
+        super().__init__()
+        self.ReactionName = "GAR Synthesis"
+        # self.Input = {"PRPP": 1, "glutamate": 1}
+        self.Input = {"PRPP": 1}
+        # self.Output = {"GAR": 1, "glutamine": 1}
+        self.Output = {"GAR": 1}
+        self.Rate = Rate
+
+    def Specification(self, Molecules, InitCond):
+        return "GAR", min(self.Rate, Molecules["PRPP"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "GAR":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+# FGAR: Formylglycinamide ribonucleotide
+class FGARSynthesisByPurN(Reaction):
+    def __init__(self, Rate = 1.5e-5, ExpressionFactor = 1.0):
+        super().__init__()
+        self.ReactionName = "FGAR Synthesis"
+        # self.Input = {"GAR": 1, "10-CHO-THF": 1}
+        self.Input = {"GAR": 1}
+        # self.Output = {"FGAR": 1, "tetrahydrofolate": 1}
+        self.Output = {"FGAR": 1}
+        self.Rate = Rate * ExpressionFactor
+
+    def Specification(self, Molecules, InitCond):
+        return "FGAR", min(self.Rate, Molecules["GAR"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "FGAR":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+# FGAM: Formylglycinamidine ribonucleotide
+class FGAMSynthesisByPurL(Reaction):
+    def __init__(self, Rate = 1.5e-5, ExpressionFactor = 1.0):
+        super().__init__()
+        self.ReactionName = "FGAM Synthesis"
+        # self.Input = {"FGAR": 1, "glutamine":1, "ATP": 1}
+        self.Input = {"FGAR": 1}
+        # self.Output = {"FGAM": 1, "glutamate": 1, "ADP": 1}
+        self.Output = {"FGAM": 1}
+        self.Rate = Rate * ExpressionFactor
+
+    def Specification(self, Molecules, InitCond):
+        return "FGAM", min(self.Rate, Molecules["FGAR"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "FGAM":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+class PurineSynthesis(Reaction):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+        super().__init__()
+        self.ReactionName = "PurineSynthesis"
+        self.Input = {"FGAM": 2}
+        self.Output = {"dATP": 1, "dGTP": 1}
+        self.Rate = Rate
+
+    def Specification(self, Molecules, InitCond):
+        return "dATP", self.Rate * EcoliInfo.C2M
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "dATP" or MolName == "dGTP":
+            return InitCond[MolName]
+        return Reaction.MaxConc
 
 
 # Central Carbon Metabolism
@@ -571,25 +640,25 @@ class dNTPSynthesis(Reaction):
         return "dATP", self.Rate * EcoliInfo.C2M
 
 
-class dATPSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+class dCTPSynthesis(Reaction):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
-        self.ReactionName = 'dATP Synthesis'
+        self.ReactionName = 'dCTP Synthesis'
         self.Input = {}
-        self.Output = {"dATP": 1}
-        self.Rate = Rate * 0.5
+        self.Output = {"dCTP": 1}
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        return "dATP", self.Rate * EcoliInfo.C2M
+        return "dCTP", self.Rate * EcoliInfo.C2M
 
     
 class dUTPSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
         self.ReactionName = 'dUTP Synthesis'
         self.Input = {}
         self.Output = {"dUTP": 1}
-        self.Rate = Rate * 0.5
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
         return "dUTP", self.Rate * EcoliInfo.C2M
@@ -693,12 +762,12 @@ class AASynthesis_GluDerivatives(Reaction):
 
 # DHF: Dihydrofolate
 class DHFSynthesis(Reaction):
-    def __init__(self):
+    def __init__(self, Rate = 1e-6):
         super().__init__()
         self.ReactionName = "DHF Synthesis"
         self.Input = {}
         self.Output = {"DHF": 1}
-        self.Rate = 1e-6
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
         return "DHF", self.Rate
@@ -711,15 +780,15 @@ class DHFSynthesis(Reaction):
 
 # THF: Tetrahydrofolate
 class THFSynthesisByFolA(Reaction):
-    def __init__(self, ExpressionFactor = 1.0):
+    def __init__(self, Rate = 1e-6, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "THF Synthesis"
         self.Input = {"DHF": 1}
         self.Output = {"THF": 1}
-        self.Rate = 1e-6 * ExpressionFactor
+        self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
-        return "THF", 0
+        return "THF", min(self.Rate, Molecules["DHF"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "THF":
@@ -729,12 +798,12 @@ class THFSynthesisByFolA(Reaction):
 
 # 5-methyl-THF
 class FiveMethylTHFSynthesis(Reaction):
-    def __init__(self):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
         super().__init__()
         self.ReactionName = "5-methyl-THF Synthesis"
         self.Input = {"THF": 1}
         self.Output = {"5-methyl-THF": 1}
-        self.Rate = EcoliInfo.DNAReplicationRate * 2.0
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
         return "5-methyl-THF", min(self.Rate, Molecules["THF"])
@@ -746,14 +815,14 @@ class FiveMethylTHFSynthesis(Reaction):
 
 
 class dTTPSynthesis(Reaction):
-    def __init__(self):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
         self.ReactionName = "dTTP Synthesis"
         # DK - self.Input = {"dUMP": 1, "5-methyl-THF": 1}
         # DK - self.Output = {"dTMP": 1}
         self.Input = {"dUTP": 1, "5-methyl-THF": 1}
         self.Output = {"dTTP": 1, "THF": 1}
-        self.Rate = EcoliInfo.DNAReplicationRate * 0.5
+        self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
         return "dTTP", self.Rate * EcoliInfo.C2M
@@ -846,11 +915,11 @@ class DNAReplication(Process):
         self.Output["ADP"] = self.EnergyConsumption * len(self.BuildingBlocks)
 
     def Specification(self, Molecules, InitCond):
-        return "dATP", -self.Rate * EcoliInfo.C2M / len(self.BuildingBlocks)
+        return self.BuildingBlocks[0], -self.Rate * EcoliInfo.C2M / len(self.BuildingBlocks)
 
     def Callback(self, dMolecules):
-        assert "dATP" in dMolecules
-        dElongation = -dMolecules["dATP"] * EcoliInfo.M2C * len(self.BuildingBlocks)
+        assert self.BuildingBlocks[0] in dMolecules
+        dElongation = -dMolecules[self.BuildingBlocks[0]] * EcoliInfo.M2C * len(self.BuildingBlocks)
         assert dElongation >= 0
         self.Progress += dElongation
 
@@ -1305,7 +1374,8 @@ if __name__ == '__main__':
 
         # Nucleotide Synthesis
         # Sim.AddReaction(OxidativePPP())
-        # Sim.AddReaction(PRPPSynthesis())   # TODO: Currently NADPH+ gets depleted, and ATP is depleted and AMP accumulates
+        Sim.AddReaction(PRPPSynthesis())
+
         Sim.AddReaction(dNTPSynthesis())
         Sim.AddReaction(DNAReplication(BuildingBlocks=["dATP"]))
 
