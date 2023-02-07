@@ -237,8 +237,6 @@ class Reaction:
         self.Output = dict()
         self.Stoich = dict()
         self.CapacityConstant = 0
-        self.RegulationFactor = 1
-        self.Regulators = dict()     # Capacity modulator, enzyme name: critical gene expression threshold for full function
 
     def Specification(self, Molecules, InitCond):
         return {}
@@ -258,12 +256,6 @@ class Reaction:
 
     def SetProgress(self, Progress):
         None
-
-    def GetRegulationFactor(self, Molecules, InitCond):
-        RegulatedCapacity = 1
-        for regulator, threshold in self.Regulators.items():
-            RegulatedCapacity *= min(1, (Molecules[regulator]/InitCond[regulator]) / threshold)
-        return RegulatedCapacity
 
     def GetChemicalEquationStr(self):
 
@@ -466,7 +458,7 @@ class PRPPSynthesis(Reaction):   # Oxidative PPP
         self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        return "PRPP", self.Rate
+        return "PRPP", min(self.Rate, Molecules["G6P"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "PRPP":
@@ -546,7 +538,7 @@ class PurineSynthesis(Reaction):
         return "dATP", self.Rate * EcoliInfo.C2M
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
-        if MolName == "dATP" or MolName == "dGTP":
+        if MolName == "dATP":
             return InitCond[MolName]
         return Reaction.MaxConc
 
@@ -560,15 +552,12 @@ class Glycolysis(Reaction):
         self.Output = {"pyruvate": 2, "NADH": 2, "ATP": 2}
         self.CapacityConstant = EcoliInfo.EGM_Glycolysis_Sec
 
-        self.Regulators = {"PfkA": 0.2}   # name and threshold
-
     def Specification(self, Molecules, InitCond):
         MinNADPlusConc = InitCond["NAD+"] / 10.0
         if Molecules["NAD+"] <= MinNADPlusConc:
             return "ATP", 0.0
         MinATPConc = 0.1e-3
-        RegulationFactor = self.GetRegulationFactor(Molecules, InitCond)
-        VO = Molecules["ADP"] / max(Molecules["ATP"], MinATPConc) * self.CapacityConstant * RegulationFactor
+        VO = Molecules["ADP"] / max(Molecules["ATP"], MinATPConc) * self.CapacityConstant
         return "ATP", VO
 
 
@@ -580,11 +569,8 @@ class PyruvateOxidation(Reaction):
         self.Output = {"acetyl-CoA": 1, "NADH": 1}
         self.CapacityConstant = EcoliInfo.EGM_PyruvateOxidation_Sec
 
-        self.Regulators = {"AceE": 0.3}   # name and threshold
-
     def Specification(self, Molecules, InitCond):
-        RegulationFactor = self.GetRegulationFactor(Molecules, InitCond)
-        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant * RegulationFactor
+        VO = Molecules["pyruvate"] / (InitCond["pyruvate"] + Molecules["pyruvate"]) * self.CapacityConstant
         return "acetyl-CoA", VO
 
 
@@ -644,14 +630,19 @@ class dCTPSynthesis(Reaction):
     def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
         self.ReactionName = 'dCTP Synthesis'
-        self.Input = {}
+        self.Input = {"PRPP": 1}
         self.Output = {"dCTP": 1}
         self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        return "dCTP", self.Rate * EcoliInfo.C2M
+        return "dCTP", min(self.Rate * EcoliInfo.C2M, Molecules["PRPP"])
 
-    
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "dCTP":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
 class dUTPSynthesis(Reaction):
     def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
@@ -798,7 +789,7 @@ class THFSynthesisByFolA(Reaction):
 
 # 5-methyl-THF
 class FiveMethylTHFSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 2):
         super().__init__()
         self.ReactionName = "5-methyl-THF Synthesis"
         self.Input = {"THF": 1}
@@ -826,6 +817,12 @@ class dTTPSynthesis(Reaction):
 
     def Specification(self, Molecules, InitCond):
         return "dTTP", self.Rate * EcoliInfo.C2M
+        # return "dTTP", min(min(self.Rate * EcoliInfo.C2M, Molecules["5-methyl-THF"]), Molecules["dUTP"])
+    #
+    # def GetMaxConc(self, MolName, Molecules, InitCond):
+    #     if MolName == "dTTP":
+    #         return InitCond[MolName]
+    #     return Reaction.MaxConc
 
 
 class ATPControl(Reaction):
@@ -899,9 +896,7 @@ class DNAReplication(Process):
     def __init__(self, Rate = EcoliInfo.DNAReplicationRate, BuildingBlocks = []):
         super().__init__()
         self.ReactionName = "DNA Replication"
-        # self.BuildingBlocks = {"dATP": 1, "dCTP": 1, "dGTP": 1, "dTTP": 1}
         self.EnergyConsumption = EcoliInfo.ATPConsumptionPerdNTPExtension
-        self.Regulators = {}
         self.Rate = Rate
         self.Progress = 0.0
         self.MaxProgress = EcoliInfo.GenomeSize
@@ -929,7 +924,6 @@ class ProteinSynthesis(Process):
         super().__init__()
         self.ReactionName = "Protein Synthesis"
         self.EnergyConsumption = EcoliInfo.ATPConsumptionPerAAExtension
-        self.Regulators = {}
         self.Rate = Rate
         self.Progress = 0.0
         self.MaxProgress = EcoliInfo.ProteomeSize
@@ -993,7 +987,6 @@ class ReactionSimulator(FSimulator):
         self.Molecules = dict()
         self.InitialConditions = dict()   # Subset of self.KnownMolConc
         self.PermanentMolecules = list()
-        self.Perturbation = dict()
 
         self.dMolecules = dict()
 
@@ -1004,9 +997,6 @@ class ReactionSimulator(FSimulator):
 
     def SetPermanentMolecules(self, PermanentMolecules):
         self.PermanentMolecules = PermanentMolecules
-
-    def SetPerturbation(self, Perturbation):
-        self.Perturbation = Perturbation
 
     def Initialize(self, UserSetInitialMolecules={}):
         self.InitializeStoich()
@@ -1070,9 +1060,6 @@ class ReactionSimulator(FSimulator):
         AllMolecules = dict()
         for Reaction in self.Reactions:
             for Molecule, Coeff in Reaction.Stoich.items():
-                if Molecule not in AllMolecules:
-                    AllMolecules[Molecule] = self.GetKnownMolConc(Molecule)
-            for Molecule, Threshold in Reaction.Regulators.items():
                 if Molecule not in AllMolecules:
                     AllMolecules[Molecule] = self.GetKnownMolConc(Molecule)
 
@@ -1147,15 +1134,6 @@ class ReactionSimulator(FSimulator):
         for Molecule in self.PermanentMolecules:
             if Molecule in self.Molecules:
                 self.Molecules[Molecule] = self.InitialConditions[Molecule]
-
-    def ApplyPerturbation(self, DeltaTime):
-        for Time, Perturbation in self.Perturbation.items():
-            if self.Iter * DeltaTime == Time:
-                for Molecule, Conc in Perturbation.items():
-                    if Molecule in self.Molecules:
-                        self.Molecules[Molecule] = Conc
-            else:
-                pass
 
     def CheckZeroConcentrations(self):
         for Molecule, Conc in self.Molecules.items():
@@ -1290,10 +1268,7 @@ class ReactionSimulator(FSimulator):
         if len(self.PermanentMolecules):
             self.RestorePermanentMolecules()
 
-        if len(self.Perturbation):
-            self.ApplyPerturbation(DeltaTime)
-
-        self.AddToDataset()        
+        self.AddToDataset()
 
     def GetDataset(self):
         return {self.GetReactionNames(Eq=False): self.Dataset}
@@ -1387,24 +1362,8 @@ if __name__ == '__main__':
         # Set permanent molecules
         PermanentMolecules = [
             "G6P",
-            # "NADP+",
-            # "NADPH",
-            # "AMP",
         ]
         Sim.SetPermanentMolecules(PermanentMolecules)
-
-        # Set Perturbation (time: {mol, conc})
-        Perturbation = {
-            # 50  : {
-            #     "PfkA": KnownMolConc["PfkA"][0] * 0.02,
-            #     "AceE": KnownMolConc["AceE"][0] * 0.02,
-            # },
-            # 150 : {
-            #     "PfkA": KnownMolConc["PfkA"][0] * 1,
-            #     "AceE": KnownMolConc["AceE"][0] * 0.2,
-            # },
-        }
-        Sim.SetPerturbation(Perturbation)
 
     # Debugging options
     # Sim.Debug_Reaction = True
