@@ -71,7 +71,7 @@ class FEcoliSimulator(FSimulator):
             ExcludedMolecules.append("THF")
             ExcludedMolecules.append("5-methyl-THF")
             # folA_ExpressionFactor = 0.1
-            folA_ExpressionFactor = 0.0
+            # folA_ExpressionFactor = 0.0
             # thyA_ExpressionFactor = 0.2
             # thyA_ExpressionFactor = 0.0
             # glyA_ExpressionFactor = 0.05
@@ -95,10 +95,9 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(Metabolism.DHFSynthesis())
             self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(ExpressionFactor = folA_ExpressionFactor))
             self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesis())
-            self.Sim.AddReaction(Metabolism.dNTPSynthesis(DNAReplicationRate * 0.5))
-            self.Sim.AddReaction(Metabolism.dTTPSynthesis(DNAReplicationRate * 0.5))
-            self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate * 0.5))
-            self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dATP", "dTTP"])
+            self.Sim.AddReaction(Metabolism.dTTPSynthesis(DNAReplicationRate))
+            self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate))
+            self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dTTP"])
 
         elif ("Folic Acid" not in Pathways) and ("Purine Metabolism" in Pathways):
 
@@ -138,7 +137,7 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(self.ProteinSynthesis)
 
         self.VolumeExpansion = Metabolism.VolumeExpansion(
-            ExcludedMolecules = [Mol for Mol in ExcludedMolecules if Mol in self.Sim.Molecules],
+            ExcludedMolecules = ExcludedMolecules,
             Rate = Metabolism.EcoliInfo.VolumeExpansionRate
         )
         self.Sim.AddReaction(self.VolumeExpansion)

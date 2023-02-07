@@ -948,7 +948,7 @@ class ProteinSynthesis(Process):
 
 class VolumeExpansion(Process):
     def __init__(self,
-                 ExcludedMolecules = {},
+                 ExcludedMolecules = [],
                  Rate = EcoliInfo.VolumeExpansionRate,
                  MaxProgress = EcoliInfo.VolumeExpansionSize):
         super().__init__()
