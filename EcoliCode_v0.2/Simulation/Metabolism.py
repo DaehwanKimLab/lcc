@@ -1175,7 +1175,7 @@ class ReactionSimulator(FSimulator):
             Reaction.CapacityConstant *= GlobalKineticScale
 
     def Info(self):
-        HeadStr = "{:<16}: {:>10} {:>10}  ".format("", "Initial", "Current")
+        HeadStr = "{:<18}: {:>10} {:>10} |".format("", "Initial", "Current")
         for ReactionName, dMolecules in self.dMolecules.items():
             HeadStr += " {:<10.10}".format(ReactionName)
         print(HeadStr)
@@ -1183,7 +1183,7 @@ class ReactionSimulator(FSimulator):
             InitConc = self.InitialConditions[Molecule]
             InitConcStr = Conc2Str(InitConc)
             ConcStr = Conc2Str(Conc)
-            LineStr = "{:<16}: {:>10} {:>10}  ".format(Molecule, InitConcStr, ConcStr)
+            LineStr = "{:<18}: {:>10} {:>10} |".format(Molecule, InitConcStr, ConcStr)
             for ReactionName, dMolecules in self.dMolecules.items():
                 if Molecule in dMolecules:
                     Conc2 = dMolecules[Molecule]
