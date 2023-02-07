@@ -88,6 +88,7 @@ class FEcoliSimulator(FSimulator):
             ExcludedMolecules.append("GAR")
             ExcludedMolecules.append("FGAR")
             ExcludedMolecules.append("FGAM")
+            # ExcludedMolecules.append("10-formyl-THF")
             # purN_ExpressionFactor = 0.2
             # purN_ExpressionFactor = 0.0
             # purL_ExpressionFactor = 0.2
@@ -108,6 +109,7 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(Metabolism.PRPPSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.GARSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.FGARSynthesisByPurN(Rate = 3e-5, ExpressionFactor = purN_ExpressionFactor))
+            # self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.FGAMSynthesisByPurL(Rate = 3e-5, ExpressionFactor = purL_ExpressionFactor))
             self.Sim.AddReaction(Metabolism.PurineSynthesis(DNAReplicationRate * 0.5))  # dATP, dGTP
             self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dATP", "dGTP"])
@@ -125,6 +127,7 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(Metabolism.PRPPSynthesis())
             self.Sim.AddReaction(Metabolism.GARSynthesis())
             self.Sim.AddReaction(Metabolism.FGARSynthesisByPurN(ExpressionFactor = purN_ExpressionFactor))
+            # self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis())
             self.Sim.AddReaction(Metabolism.FGAMSynthesisByPurL(ExpressionFactor = purL_ExpressionFactor))
             self.DNAReplication = Metabolism.DNAReplication()
 

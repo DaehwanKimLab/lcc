@@ -486,22 +486,43 @@ class GARSynthesis(Reaction):
         return Reaction.MaxConc
 
 
+# TODO: introduce "10-formyl-THF"
 # FGAR: Formylglycinamide ribonucleotide
 class FGARSynthesisByPurN(Reaction):
     def __init__(self, Rate = 1.5e-5, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "FGAR Synthesis"
-        # self.Input = {"GAR": 1, "10-CHO-THF": 1}
+        # self.Input = {"GAR": 1, "10-formyl-THF": 1}
+        # self.Output = {"FGAR": 1, "THF": 1}
         self.Input = {"GAR": 1}
-        # self.Output = {"FGAR": 1, "tetrahydrofolate": 1}
         self.Output = {"FGAR": 1}
         self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
         return "FGAR", min(self.Rate, Molecules["GAR"])
+        # return "FGAR", min(min(self.Rate, Molecules["GAR"]), Molecules["10-formyl-THF"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "FGAR":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+# TODO: introduce "10-formyl-THF"
+# 10-formyl-THF
+class TenFormylTHFSynthesis(Reaction):
+    def __init__(self, Rate=1.5e-5):
+        super().__init__()
+        self.ReactionName = "10-formyl-THF Synthesis"
+        self.Input = {"5,10-methylene-THF": 1}
+        self.Output = {"10-formyl-THF": 1}
+        self.Rate = Rate
+
+    def Specification(self, Molecules, InitCond):
+        return "10-formyl-THF", min(self.Rate, Molecules["5,10-methylene-THF"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "10-formyl-THF":
             return InitCond[MolName]
         return Reaction.MaxConc
 
