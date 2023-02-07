@@ -527,7 +527,7 @@ class FGAMSynthesisByPurL(Reaction):
 
 
 class PurineSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
         self.ReactionName = "PurineSynthesis"
         self.Input = {"FGAM": 2}
@@ -753,7 +753,7 @@ class AASynthesis_GluDerivatives(Reaction):
 
 # DHF: Dihydrofolate
 class DHFSynthesis(Reaction):
-    def __init__(self, Rate = 1e-6):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.5):
         super().__init__()
         self.ReactionName = "DHF Synthesis"
         self.Input = {}
@@ -761,7 +761,7 @@ class DHFSynthesis(Reaction):
         self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        return "DHF", self.Rate
+        return "DHF", self.Rate * EcoliInfo.C2M
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "DHF":
@@ -771,7 +771,7 @@ class DHFSynthesis(Reaction):
 
 # THF: Tetrahydrofolate
 class THFSynthesisByFolA(Reaction):
-    def __init__(self, Rate = 1e-6, ExpressionFactor = 1.0):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.5, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "THF Synthesis"
         self.Input = {"DHF": 1}
@@ -779,7 +779,7 @@ class THFSynthesisByFolA(Reaction):
         self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
-        return "THF", min(self.Rate, Molecules["DHF"])
+        return "THF", min(self.Rate * EcoliInfo.C2M, Molecules["DHF"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "THF":
@@ -787,17 +787,37 @@ class THFSynthesisByFolA(Reaction):
         return Reaction.MaxConc
 
 
+# 5,10-methylene-THF
+class FiveTenMethyleneTHFSynthesisByGlyA(Reaction):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.5, ExpressionFactor = 1.0):
+        super().__init__()
+        self.ReactionName = "FiveTenMethyleneTHFSynthesisByGlyA"
+        # DL - self.Input = {"THF": 1, "serine": 1}
+        # DL - self.Output = {"5,10-methylene-THF": 1, "glycine": 1}
+        self.Input = {"THF": 1}
+        self.Output = {"5,10-methylene-THF": 1}
+        self.Rate = Rate * ExpressionFactor
+
+    def Specification(self, Molecules, InitCond):
+        return "5,10-methylene-THF", min(self.Rate * EcoliInfo.C2M, Molecules["THF"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "5,10-methylene-THF":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
 # 5-methyl-THF
 class FiveMethylTHFSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 2):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
         self.ReactionName = "5-methyl-THF Synthesis"
-        self.Input = {"THF": 1}
+        self.Input = {"5,10-methylene-THF": 1}
         self.Output = {"5-methyl-THF": 1}
         self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
-        return "5-methyl-THF", min(self.Rate, Molecules["THF"])
+        return "5-methyl-THF", min(self.Rate * EcoliInfo.C2M, Molecules["5,10-methylene-THF"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "5-methyl-THF":
@@ -805,24 +825,24 @@ class FiveMethylTHFSynthesis(Reaction):
         return Reaction.MaxConc
 
 
-class dTTPSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
+class dTTPSynthesisByThyA(Reaction):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "dTTP Synthesis"
         # DK - self.Input = {"dUMP": 1, "5-methyl-THF": 1}
         # DK - self.Output = {"dTMP": 1}
-        self.Input = {"dUTP": 1, "5-methyl-THF": 1}
-        self.Output = {"dTTP": 1, "THF": 1}
-        self.Rate = Rate
+        self.Input = {"dUTP": 1, "5,10-methylene-THF": 1}
+        self.Output = {"dTTP": 1, "DHF": 1}
+        self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
-        return "dTTP", self.Rate * EcoliInfo.C2M
-        # return "dTTP", min(min(self.Rate * EcoliInfo.C2M, Molecules["5-methyl-THF"]), Molecules["dUTP"])
-    #
-    # def GetMaxConc(self, MolName, Molecules, InitCond):
-    #     if MolName == "dTTP":
-    #         return InitCond[MolName]
-    #     return Reaction.MaxConc
+        # return "dTTP", self.Rate * EcoliInfo.C2M
+        return "dTTP", min(min(self.Rate * EcoliInfo.C2M, Molecules["dUTP"]), Molecules["5,10-methylene-THF"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "dTTP":
+            return InitCond[MolName]
+        return Reaction.MaxConc
 
 
 class ATPControl(Reaction):
@@ -893,7 +913,7 @@ class Process(Reaction):
 
 
 class DNAReplication(Process):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate, BuildingBlocks = []):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate, BuildingBlocks = ["dATP", "dCTP", "dGTP", "dTTP"]):
         super().__init__()
         self.ReactionName = "DNA Replication"
         self.EnergyConsumption = EcoliInfo.ATPConsumptionPerdNTPExtension
