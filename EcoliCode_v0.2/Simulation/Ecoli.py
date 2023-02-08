@@ -22,6 +22,7 @@ class FEcoliSimulator(FSimulator):
                  DNAReplicationRate = DNAREPLICATIONRATE,
                  ProteinSynthesisRate = PROTEINSYNTHESISRATE,
                  CytoKinesisRate = CYTOKINESISRATE,
+                 Perturbations = {},
                  PermanentMolecules = [],
                  UserSetInitialMolecules = {},
                  Perturbation = {}):
@@ -64,26 +65,23 @@ class FEcoliSimulator(FSimulator):
         ExcludedMolecules = list()
 
         # Otto et al., 2022 - Repression of folA
-        Debug_folA = False
         folA_ExpressionFactor = 1.0
-
-        if Debug_folA:
+        if "folA" in Perturbations:
             ExcludedMolecules.append("THF")
             ExcludedMolecules.append("5-methyl-THF")
-            folA_ExpressionFactor = 0.1
+            folA_ExpressionFactor = Perturbations["folA"]
             UserSetInitialMolecules["dTTP"] = 0.01e-3
 
         # Otto et al., 2022 - Repression of purN and purL
-        Debug_purN_purL = False
         purN_ExpressionFactor = 1.0
         purL_ExpressionFactor = 1.0
 
-        if Debug_purN_purL:
+        if "purN" in Perturbations:
             ExcludedMolecules.append("GAR")
             ExcludedMolecules.append("FGAR")
             ExcludedMolecules.append("FGAM")
-            purN_ExpressionFactor = 0.02
-            purL_ExpressionFactor = 0.02
+            purN_ExpressionFactor = Perturbations["purN"]
+            purL_ExpressionFactor = Perturbations["purN"]
 
         if ("Folic Acid" in Pathways) and ("Purine Metabolism" not in Pathways):
 
@@ -187,6 +185,10 @@ if __name__ == '__main__':
     KnownMolConc = Metabolism.EcoliInfo.OpenKnownMolConc()
 
     Sim = FEcoliSimulator(
+        Perturbations = {
+            # "folA": 0.1, 
+            # "purN": 0.02,
+        },
         PermanentMolecules = [
             "G6P",
         ],
