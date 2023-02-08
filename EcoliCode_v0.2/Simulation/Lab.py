@@ -83,7 +83,8 @@ class FPopulationSimulator(FSimulator):
     DEFAULT_COLONY = [
         FEcoliSimulator.DNAREPLICATIONRATE,
         FEcoliSimulator.PROTEINSYNTHESISRATE,
-        FEcoliSimulator.CYTOKINESISRATE
+        FEcoliSimulator.CYTOKINESISRATE,
+        {}
     ]
 
     DEFAULT_POPULATION = [DEFAULT_COLONY]
@@ -93,12 +94,14 @@ class FPopulationSimulator(FSimulator):
         [
             FEcoliSimulator.DNAREPLICATIONRATE * 0.9,
             FEcoliSimulator.PROTEINSYNTHESISRATE,
-            FEcoliSimulator.CYTOKINESISRATE
+            FEcoliSimulator.CYTOKINESISRATE,
+            {}
         ],
         [
             FEcoliSimulator.DNAREPLICATIONRATE * 0.8,
             FEcoliSimulator.PROTEINSYNTHESISRATE,
-            FEcoliSimulator.CYTOKINESISRATE
+            FEcoliSimulator.CYTOKINESISRATE,
+            {}
         ]
     ]
 
@@ -106,9 +109,10 @@ class FPopulationSimulator(FSimulator):
         self.Colonies = []
         for Colony in Population:
             EcoliSim = FEcoliSimulator(
-                Colony[0],
-                Colony[1],
-                Colony[2],
+                Colony[0], # DNAReplicationRate
+                Colony[1], # ProteinSynthesisRate
+                Colony[2], # CytokinesisRate
+                Colony[3], # Pertubations
                 PermanentMolecules = [
                     "G6P",
                 ],
@@ -179,9 +183,13 @@ class FExperimentSimulator(FSimulator):
         self.Tests = [] 
         for i in range(self.NumTest):
             self.Tests.append(FPetridishSimulator([[
-                FEcoliSimulator.DNAREPLICATIONRATE * (self.NumTest - max(0, i - self.NumTest / 1.2)) / self.NumTest,
+                # FEcoliSimulator.DNAREPLICATIONRATE * (self.NumTest - max(0, i - self.NumTest / 1.2)) / self.NumTest,
+                FEcoliSimulator.DNAREPLICATIONRATE,
                 FEcoliSimulator.PROTEINSYNTHESISRATE,
-                FEcoliSimulator.CYTOKINESISRATE
+                FEcoliSimulator.CYTOKINESISRATE,
+                {
+                    "purN": (self.NumTest - max(0, i - self.NumTest / 3.5)) / self.NumTest * 0.2
+                }
             ]]))
 
     def Simulate(self, TotalTime = 10, DeltaTime = 0.01):
@@ -211,7 +219,7 @@ if __name__ == '__main__':
     Sim = None
 
     # Select Experiment
-    SelectExp = 1
+    SelectExp = 2
     
     if SelectExp == 0:     # Growth curve (control only)
         Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)
