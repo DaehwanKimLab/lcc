@@ -30,6 +30,8 @@ class FEcoliSimulator(FSimulator):
         self.Sim = Metabolism.ReactionSimulator()
         Metabolism.EcoliInfo.Info()
         ATPConsumption_Sec = Metabolism.EcoliInfo.ECM_CellDivision_Sec
+        DNAReplicationRateInCount = DNAReplicationRate
+        DNAReplicationRateInConc = DNAReplicationRate * Metabolism.EcoliInfo.C2M
 
         # self.Debug_Info = 1
 
@@ -68,7 +70,7 @@ class FEcoliSimulator(FSimulator):
         if Debug_folA:
             ExcludedMolecules.append("THF")
             ExcludedMolecules.append("5-methyl-THF")
-            folA_ExpressionFactor = 0.02
+            folA_ExpressionFactor = 0.1
             UserSetInitialMolecules["dTTP"] = 0.01e-3
 
         # Otto et al., 2022 - Repression of purN and purL
@@ -86,10 +88,10 @@ class FEcoliSimulator(FSimulator):
         if ("Folic Acid" in Pathways) and ("Purine Metabolism" not in Pathways):
 
             self.Sim.AddReaction(Metabolism.DHFSynthesis())
-            self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(ExpressionFactor = folA_ExpressionFactor))
-            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesisByGlyA())
-            self.Sim.AddReaction(Metabolism.dTTPSynthesisByThyA(DNAReplicationRate))
-            self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate))
+            self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(Rate = DNAReplicationRateInConc, ExpressionFactor = folA_ExpressionFactor))
+            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesisByGlyA(DNAReplicationRateInConc))
+            self.Sim.AddReaction(Metabolism.dTTPSynthesisByThyA(DNAReplicationRateInCount))
+            self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRateInCount))
             self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dTTP"])
 
         elif ("Folic Acid" not in Pathways) and ("Purine Metabolism" in Pathways):
@@ -105,9 +107,9 @@ class FEcoliSimulator(FSimulator):
         elif ("Folic Acid" in Pathways) and ("Purine Metabolism" in Pathways):    # overwrite with new rates and building blocks
 
             self.Sim.AddReaction(Metabolism.DHFSynthesis())
-            self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(ExpressionFactor=folA_ExpressionFactor))
-            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesisByGlyA())
-            self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesisByFolD())
+            self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(Rate = DNAReplicationRateInConc, ExpressionFactor=folA_ExpressionFactor))
+            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesisByGlyA(DNAReplicationRateInConc))
+            self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesisByFolD(DNAReplicationRateInConc))
             self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate * 0.25))
             self.Sim.AddReaction(Metabolism.dTTPSynthesisByThyA(DNAReplicationRate * 0.25))
             self.Sim.AddReaction(Metabolism.dCTPSynthesis(DNAReplicationRate * 0.25))

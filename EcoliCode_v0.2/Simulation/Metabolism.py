@@ -97,6 +97,7 @@ class EcoliInfo:
         DuplicationTime_LogPhase = New_DuplicationTime_LogPhase
 
     DNAReplicationRate = GenomeSize / DuplicationTime_LogPhase
+    DNAReplicationRateInConc = DNAReplicationRate * C2M
     ATPConsumptionPerdNTPExtension = 3
 
     ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase
@@ -778,7 +779,7 @@ class DHFSynthesis(Reaction):
 
 # THF: Tetrahydrofolate
 class THFSynthesisByFolA(Reaction):
-    def __init__(self, Rate = 2e-6, ExpressionFactor = 1.0):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRateInConc, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "THF Synthesis"
         self.Input = {"DHF": 1}
@@ -796,7 +797,7 @@ class THFSynthesisByFolA(Reaction):
 
 # 5-methyl-THF or 5,10-methylene-THF
 class FiveMethylTHFSynthesisByGlyA(Reaction):
-    def __init__(self, Rate = 5e-6):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRateInConc):
         super().__init__()
         self.ReactionName = "5-methyl-THF Synthesis"
         self.Input = {"THF": 1}
@@ -808,13 +809,13 @@ class FiveMethylTHFSynthesisByGlyA(Reaction):
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "5-methyl-THF":
-            return InitCond[MolName]
+            return (Molecules[MolName] + Molecules["THF"]) / 2
         return Reaction.MaxConc
 
 
 # 10-formyl-THF
 class TenFormylTHFSynthesisByFolD(Reaction):
-    def __init__(self, Rate = 3e-6):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRateInConc):
         super().__init__()
         self.ReactionName = "10-formyl-THF Synthesis"
         self.Input = {"5-methyl-THF": 1}
@@ -826,7 +827,7 @@ class TenFormylTHFSynthesisByFolD(Reaction):
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "10-formyl-THF":
-            return InitCond[MolName]
+            return (Molecules[MolName] + Molecules["5-methyl-THF"]) / 2
         return Reaction.MaxConc
 
 
