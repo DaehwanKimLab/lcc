@@ -496,27 +496,25 @@ class GARSynthesis(Reaction):
 
 # FGAR: Formylglycinamide ribonucleotide
 class FGARSynthesisByPurN(Reaction):
-    def __init__(self, Rate = 1.5e-5, ExpressionFactor = 1.0):
+    def __init__(self, Rate = 4e-5, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "FGAR Synthesis"
-        # self.Input = {"GAR": 1, "10-CHO-THF": 1}
-        self.Input = {"GAR": 1}
-        # self.Output = {"FGAR": 1, "tetrahydrofolate": 1}
-        self.Output = {"FGAR": 1}
+        self.Input = {"GAR": 1, "10-formyl-THF": 1}
+        self.Output = {"FGAR": 1, "THF": 1}
         self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
         return "FGAR", min(self.Rate, Molecules["GAR"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
-        if MolName == "FGAR":
+        if MolName == "FGAR": # or MolName == "THF":
             return InitCond[MolName]
         return Reaction.MaxConc
 
 
 # FGAM: Formylglycinamidine ribonucleotide
 class FGAMSynthesisByPurL(Reaction):
-    def __init__(self, Rate = 1.5e-5, ExpressionFactor = 1.0):
+    def __init__(self, Rate = 4e-5, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "FGAM Synthesis"
         # self.Input = {"FGAR": 1, "glutamine":1, "ATP": 1}
@@ -780,7 +778,7 @@ class DHFSynthesis(Reaction):
 
 # THF: Tetrahydrofolate
 class THFSynthesisByFolA(Reaction):
-    def __init__(self, Rate = 1e-6, ExpressionFactor = 1.0):
+    def __init__(self, Rate = 2e-6, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "THF Synthesis"
         self.Input = {"DHF": 1}
@@ -796,9 +794,9 @@ class THFSynthesisByFolA(Reaction):
         return Reaction.MaxConc
 
 
-# 5-methyl-THF
-class FiveMethylTHFSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+# 5-methyl-THF or 5,10-methylene-THF
+class FiveMethylTHFSynthesisByGlyA(Reaction):
+    def __init__(self, Rate = 5e-6):
         super().__init__()
         self.ReactionName = "5-methyl-THF Synthesis"
         self.Input = {"THF": 1}
@@ -814,14 +812,32 @@ class FiveMethylTHFSynthesis(Reaction):
         return Reaction.MaxConc
 
 
-class dTTPSynthesis(Reaction):
+# 10-formyl-THF
+class TenFormylTHFSynthesisByFolD(Reaction):
+    def __init__(self, Rate = 3e-6):
+        super().__init__()
+        self.ReactionName = "10-formyl-THF Synthesis"
+        self.Input = {"5-methyl-THF": 1}
+        self.Output = {"10-formyl-THF": 1}
+        self.Rate = Rate
+
+    def Specification(self, Molecules, InitCond):
+        return "10-formyl-THF", min(self.Rate, Molecules["5-methyl-THF"])
+
+    def GetMaxConc(self, MolName, Molecules, InitCond):
+        if MolName == "10-formyl-THF":
+            return InitCond[MolName]
+        return Reaction.MaxConc
+
+
+class dTTPSynthesisByThyA(Reaction):
     def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.25):
         super().__init__()
         self.ReactionName = "dTTP Synthesis"
         # DK - self.Input = {"dUMP": 1, "5-methyl-THF": 1}
         # DK - self.Output = {"dTMP": 1}
         self.Input = {"dUTP": 1, "5-methyl-THF": 1}
-        self.Output = {"dTTP": 1, "THF": 1}
+        self.Output = {"dTTP": 1, "DHF": 1}
         self.Rate = Rate
 
     def Specification(self, Molecules, InitCond):
@@ -1097,28 +1113,31 @@ class ReactionSimulator(FSimulator):
 
     def AdjustRefdCon(self, Reaction, RefMol, RefdConc):
         RefConc = self.Molecules[RefMol]
-        MaxRefConc = Reaction.GetMaxConc(RefMol, self.Molecules, self.InitialConditions)
-        if RefdConc > 0 and RefConc + RefdConc > MaxRefConc:
-            RefdConc = max(0, MaxRefConc - RefConc)
 
         # Compare dConc of reference molecule to input concentrations and adjust reference dConc
-        if len(Reaction.Input) == 0:
-            return RefdConc        
-
         RefCoeff = Reaction.Stoich[RefMol]
         UnitdConc = RefdConc / RefCoeff
-
-        Out = 10  # 10 Molar to begin comparison
+        Out = UnitdConc
         for Mol, Coeff in Reaction.Input.items():
             MinConc = self.Molecules_Min[Mol] if Mol in self.Molecules_Min else 0.0
             assert self.Molecules[Mol] >= MinConc * 0.999999
             AdjustedConc = (self.Molecules[Mol] - MinConc) / Coeff
-            Out = min(Out, min(AdjustedConc, UnitdConc))
+            Out = min(Out, AdjustedConc)
 
             # The following is possible due to multiplication/division in floating numbers
             if Out * Coeff > self.Molecules[Mol] - MinConc:
                 Out *= 0.999999
             assert Out * Coeff <= self.Molecules[Mol] - MinConc
+
+        for Mol, Coeff in Reaction.Output.items():
+            MaxConc = Reaction.GetMaxConc(Mol, self.Molecules, self.InitialConditions)
+            AdjustedConc = max(0, (MaxConc - self.Molecules[Mol]) / Coeff)
+            Out = min(Out, AdjustedConc)
+
+            # The following is possible due to multiplication/division in floating numbers
+            if Out * Coeff > max(0, MaxConc - self.Molecules[Mol]):
+                Out *= 0.999999
+            assert Out * Coeff <= max(0, MaxConc - self.Molecules[Mol])
 
         return Out * RefCoeff
 

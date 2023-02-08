@@ -41,7 +41,7 @@ class FEcoliSimulator(FSimulator):
             "Purine Metabolism",
             "DNA Replication",
             "Protein Synthesis",
-            # "Volume Expansion",
+            "Volume Expansion",
         ]
 
         if "Central Carbon Metabolism" in Pathways:
@@ -68,8 +68,7 @@ class FEcoliSimulator(FSimulator):
         if Debug_folA:
             ExcludedMolecules.append("THF")
             ExcludedMolecules.append("5-methyl-THF")
-            folA_ExpressionFactor = 0.05
-            # folA_ExpressionFactor = 0.0
+            folA_ExpressionFactor = 0.02
             UserSetInitialMolecules["dTTP"] = 0.01e-3
 
         # Otto et al., 2022 - Repression of purN and purL
@@ -81,20 +80,21 @@ class FEcoliSimulator(FSimulator):
             ExcludedMolecules.append("GAR")
             ExcludedMolecules.append("FGAR")
             ExcludedMolecules.append("FGAM")
-            purN_ExpressionFactor = 0.2
-            purL_ExpressionFactor = 0.2
+            purN_ExpressionFactor = 0.02
+            purL_ExpressionFactor = 0.02
 
         if ("Folic Acid" in Pathways) and ("Purine Metabolism" not in Pathways):
 
             self.Sim.AddReaction(Metabolism.DHFSynthesis())
             self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(ExpressionFactor = folA_ExpressionFactor))
-            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesis())
-            self.Sim.AddReaction(Metabolism.dTTPSynthesis(DNAReplicationRate))
+            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesisByGlyA())
+            self.Sim.AddReaction(Metabolism.dTTPSynthesisByThyA(DNAReplicationRate))
             self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate))
             self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dTTP"])
 
         elif ("Folic Acid" not in Pathways) and ("Purine Metabolism" in Pathways):
 
+            assert False
             self.Sim.AddReaction(Metabolism.PRPPSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.GARSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.FGARSynthesisByPurN(Rate = 3e-5, ExpressionFactor = purN_ExpressionFactor))
@@ -106,9 +106,10 @@ class FEcoliSimulator(FSimulator):
 
             self.Sim.AddReaction(Metabolism.DHFSynthesis())
             self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(ExpressionFactor=folA_ExpressionFactor))
-            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesis())
+            self.Sim.AddReaction(Metabolism.FiveMethylTHFSynthesisByGlyA())
+            self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesisByFolD())
             self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRate * 0.25))
-            self.Sim.AddReaction(Metabolism.dTTPSynthesis(DNAReplicationRate * 0.25))
+            self.Sim.AddReaction(Metabolism.dTTPSynthesisByThyA(DNAReplicationRate * 0.25))
             self.Sim.AddReaction(Metabolism.dCTPSynthesis(DNAReplicationRate * 0.25))
             self.Sim.AddReaction(Metabolism.PurineSynthesis(DNAReplicationRate * 0.25))  # dATP, dGTP
             self.Sim.AddReaction(Metabolism.PRPPSynthesis())
@@ -216,7 +217,7 @@ if __name__ == '__main__':
         Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, Multiscale=True, Export='', Log=10)
 
-        # """
+        """
         Plot.SetKnownMolConc(Metabolism.EcoliInfo.OpenKnownMolConc())
         Plot.PlotDatasets(copy.deepcopy(Datasets), DeltaTime=DeltaTime, bSideLabel='both', Unitless=False, All=False, Individual=True, MolRange=True)
-        # """
+        """
