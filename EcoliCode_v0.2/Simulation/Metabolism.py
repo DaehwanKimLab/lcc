@@ -46,7 +46,7 @@ Why do fast-growing bacteria enter overflow metabolism? Testing the membrane rea
 Cell Syst., 5 (2017), pp. 95-104, 10.1016/j.cels.2017.06.005
 
 """
-
+import json
 import sys
 from datetime import datetime
 import numpy as np
@@ -224,6 +224,10 @@ class EcoliInfo:
 
         KnownMolConc = {**KnownMetConc, **KnownProtConc}
         assert len(KnownMolConc) == len(KnownMetConc) + len(KnownProtConc), "Duplicate molecules exist in 'KnownMetConc' and 'KnownProtConc'"
+
+        # Chemical info (no concentration)
+        db_KnownMolConc_ecmdb = json.load(open(os.path.join(os.path.dirname(__file__), "ecmdb.json"), encoding='utf8'))
+
 
         return KnownMolConc
 
