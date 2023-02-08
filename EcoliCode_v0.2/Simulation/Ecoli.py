@@ -37,11 +37,10 @@ class FEcoliSimulator(FSimulator):
         Pathways = [
             "Central Carbon Metabolism",
             # "ATP Consumption by Cell Division",
-            "Folic Acid",
+            # "Folic Acid",
             "Purine Metabolism",
             "DNA Replication",
             "Protein Synthesis",
-            # "Volume Expansion",
         ]
 
         if "Central Carbon Metabolism" in Pathways:
@@ -67,7 +66,7 @@ class FEcoliSimulator(FSimulator):
         thyA_ExpressionFactor = 1.0
         glyA_ExpressionFactor = 1.0
 
-        if Debug_folA_thyA_glyA:
+        if Debug_folA_thyA_glyA and "Folic Acid" in Pathways:
             ExcludedMolecules.append("THF")
             ExcludedMolecules.append("5-methyl-THF")
             ExcludedMolecules.append("5,10-methylene-THF")
@@ -84,11 +83,11 @@ class FEcoliSimulator(FSimulator):
         purN_ExpressionFactor = 1.0
         purL_ExpressionFactor = 1.0
 
-        if Debug_purN_purL:
+        if Debug_purN_purL and "Purine Metabolism" in Pathways:
             ExcludedMolecules.append("GAR")
             ExcludedMolecules.append("FGAR")
             ExcludedMolecules.append("FGAM")
-            # ExcludedMolecules.append("10-formyl-THF")
+            ExcludedMolecules.append("10-formyl-THF")
             # purN_ExpressionFactor = 0.2
             # purN_ExpressionFactor = 0.0
             # purL_ExpressionFactor = 0.2
@@ -105,11 +104,14 @@ class FEcoliSimulator(FSimulator):
             self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dTTP"])
 
         elif ("Folic Acid" not in Pathways) and ("Purine Metabolism" in Pathways):
+            PermanentMolecules.append("5,10-methylene-THF")
+            PermanentMolecules.append("THF")
+            ExcludedMolecules.append("THF")
 
             self.Sim.AddReaction(Metabolism.PRPPSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.GARSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.FGARSynthesisByPurN(Rate = 3e-5, ExpressionFactor = purN_ExpressionFactor))
-            # self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis(Rate = 3e-5))
+            self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis(Rate = 3e-5))
             self.Sim.AddReaction(Metabolism.FGAMSynthesisByPurL(Rate = 3e-5, ExpressionFactor = purL_ExpressionFactor))
             self.Sim.AddReaction(Metabolism.PurineSynthesis(DNAReplicationRate * 0.5))  # dATP, dGTP
             self.DNAReplication = Metabolism.DNAReplication(DNAReplicationRate, BuildingBlocks=["dATP", "dGTP"])
@@ -127,7 +129,7 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(Metabolism.PRPPSynthesis())
             self.Sim.AddReaction(Metabolism.GARSynthesis())
             self.Sim.AddReaction(Metabolism.FGARSynthesisByPurN(ExpressionFactor = purN_ExpressionFactor))
-            # self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis())
+            self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis())
             self.Sim.AddReaction(Metabolism.FGAMSynthesisByPurL(ExpressionFactor = purL_ExpressionFactor))
             self.DNAReplication = Metabolism.DNAReplication()
 
@@ -143,6 +145,7 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(Metabolism.AASynthesis())
             self.ProteinSynthesis = Metabolism.ProteinSynthesis(BuildingBlocks=["glutamine"])
             self.Sim.AddReaction(self.ProteinSynthesis)
+
         self.VolumeExpansion = Metabolism.VolumeExpansion(
             ExcludedMolecules = ExcludedMolecules,
             Rate = Metabolism.EcoliInfo.VolumeExpansionRate

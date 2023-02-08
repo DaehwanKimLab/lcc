@@ -486,16 +486,13 @@ class GARSynthesis(Reaction):
         return Reaction.MaxConc
 
 
-# TODO: introduce "10-formyl-THF"
 # FGAR: Formylglycinamide ribonucleotide
 class FGARSynthesisByPurN(Reaction):
     def __init__(self, Rate = 1.5e-5, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "FGAR Synthesis"
-        # self.Input = {"GAR": 1, "10-formyl-THF": 1}
-        # self.Output = {"FGAR": 1, "THF": 1}
-        self.Input = {"GAR": 1}
-        self.Output = {"FGAR": 1}
+        self.Input = {"GAR": 1, "10-formyl-THF": 1}
+        self.Output = {"FGAR": 1, "THF": 1}
         self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
@@ -508,7 +505,6 @@ class FGARSynthesisByPurN(Reaction):
         return Reaction.MaxConc
 
 
-# TODO: introduce "10-formyl-THF"
 # 10-formyl-THF
 class TenFormylTHFSynthesis(Reaction):
     def __init__(self, Rate=1.5e-5):
@@ -533,9 +529,9 @@ class FGAMSynthesisByPurL(Reaction):
         super().__init__()
         self.ReactionName = "FGAM Synthesis"
         # self.Input = {"FGAR": 1, "glutamine":1, "ATP": 1}
-        self.Input = {"FGAR": 1}
+        self.Input = {"FGAR": 1, "ATP": 1}
         # self.Output = {"FGAM": 1, "glutamate": 1, "ADP": 1}
-        self.Output = {"FGAM": 1}
+        self.Output = {"FGAM": 1, "ADP": 1}
         self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
@@ -774,7 +770,7 @@ class AASynthesis_GluDerivatives(Reaction):
 
 # DHF: Dihydrofolate
 class DHFSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.5):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
         super().__init__()
         self.ReactionName = "DHF Synthesis"
         self.Input = {}
@@ -792,7 +788,7 @@ class DHFSynthesis(Reaction):
 
 # THF: Tetrahydrofolate
 class THFSynthesisByFolA(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.5, ExpressionFactor = 1.0):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "THF Synthesis"
         self.Input = {"DHF": 1}
@@ -810,7 +806,7 @@ class THFSynthesisByFolA(Reaction):
 
 # 5,10-methylene-THF
 class FiveTenMethyleneTHFSynthesisByGlyA(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 0.5, ExpressionFactor = 1.0):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRate * 2, ExpressionFactor = 1.0):
         super().__init__()
         self.ReactionName = "FiveTenMethyleneTHFSynthesisByGlyA"
         # DL - self.Input = {"THF": 1, "serine": 1}
