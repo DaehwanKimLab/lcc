@@ -34,7 +34,7 @@ class FEcoliSimulator(FSimulator):
         DNAReplicationRateInCount = DNAReplicationRate
         DNAReplicationRateInConc = DNAReplicationRate * Metabolism.EcoliInfo.C2M
 
-        self.Debug_Info = 1
+        # self.Debug_Info = 1
 
         # Select Pathways
         Pathways = [
@@ -185,7 +185,7 @@ if __name__ == '__main__':
             # "glyA": 0.1,
             # "thyA": 0.1,
             # "purN": 0.1,
-            "purL": 0.1,
+            # "purL": 0.1,
         },
         PermanentMolecules = [
             "G6P",

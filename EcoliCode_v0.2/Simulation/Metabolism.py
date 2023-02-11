@@ -995,9 +995,6 @@ class VolumeExpansion(Process):
             dMolConc = -InitConc * self.ln2_over_T * math.pow(math.e, -self.ln2_over_T * t)
             self.Stoich[Mol] = -dMolConc / dATPConc
 
-            # DL: Debug
-            print(Mol, InitConc, self.ln2_over_T, t, math.pow(math.e, -self.ln2_over_T * t), dMolConc, self.Stoich[Mol])
-
         return "ATP", dATPConc
 
 
@@ -1014,6 +1011,7 @@ class ReactionSimulator(FSimulator):
         self.PermanentMolecules = list()
 
         self.dMolecules = dict()
+        self.SortedReactionNames = list()
 
         self.Plot = False
         self.ExportToPDF = False
@@ -1028,7 +1026,8 @@ class ReactionSimulator(FSimulator):
         self.InitializeMolecules(UserSetInitialMolecules)
         self.InitializeDataset()
         self.ApplyGlobalKineticCapacityScale()
-        self.SortReactions()
+
+        self.SortedReactionNames = self.GetSortedReactionNames()
 
     def SortReactions(self):
         SortedReactions = []
@@ -1045,6 +1044,13 @@ class ReactionSimulator(FSimulator):
             SortedReactions.append(self.Reactions[rxnidx])
 
         self.Reactions = SortedReactions
+
+    def GetSortedReactionNames(self):
+        ReactionNames = []
+        for i, reaction in enumerate(self.Reactions):
+            ReactionNames.append(reaction.ReactionName)
+        ReactionNames.sort()
+        return ReactionNames
 
     def InitializeStoich(self):
         for Reaction in self.Reactions:
@@ -1133,29 +1139,66 @@ class ReactionSimulator(FSimulator):
         RefCoeff = Reaction.Stoich[RefMol]
         UnitdConc = RefdConc / RefCoeff
         Out = UnitdConc
-        for Mol, Coeff in Reaction.Input.items():
+
+        # DL: Debug
+        Debug_AdjustRefdCon = False
+        Debug = ""
+        Debug_Min = ""
+        Debug_Max = ""
+        MolsInStoich = [name for name in Reaction.Input.keys()]
+        if Debug_AdjustRefdCon:
+            Debug = "{:<10} | {:<10} {:>10}".format(Reaction.ReactionName[:10], RefMol[:10], Conc2Str(UnitdConc))
+            MolsInStoich.sort()
+
+        for i in range(len(Reaction.Input)):
+            Mol = MolsInStoich[i]
+            Coeff = Reaction.Input[Mol]
+
             MinConc = self.Molecules_Min[Mol] if Mol in self.Molecules_Min else 0.0
             assert self.Molecules[Mol] >= MinConc * 0.999999
             AdjustedConc = (self.Molecules[Mol] - MinConc) / Coeff
             Out = min(Out, AdjustedConc)
 
-            # DL: Debug
-            print(MinConc, self.Molecules[Mol], AdjustedConc, Out)
+            if Debug_AdjustRefdCon:
+                Debug_Min += "\n{:>23}  min {:>6} {:>10} {:>10} {:>10} {:>10}".format(Mol[:10], Coeff, Conc2Str(MinConc), Conc2Str(self.Molecules[Mol]), Conc2Str(AdjustedConc), Conc2Str(Out))
 
             # The following is possible due to multiplication/division in floating numbers
             if Out * Coeff > self.Molecules[Mol] - MinConc:
                 Out *= 0.999999
+
+                if Debug_AdjustRefdCon:
+                    Debug_Min += " float adjusted"
+
             assert Out * Coeff <= self.Molecules[Mol] - MinConc
 
-        for Mol, Coeff in Reaction.Output.items():
+        MolsInStoich = [name for name in Reaction.Output.keys()]
+        if Debug_AdjustRefdCon:
+            Debug += " -> {:>10}".format(Conc2Str(Out))
+            MolsInStoich.sort()
+
+        for i in range(len(Reaction.Output)):
+            Mol = MolsInStoich[i]
+            Coeff = Reaction.Output[Mol]
+
             MaxConc = Reaction.GetMaxConc(Mol, self.Molecules, self.InitialConditions)
             AdjustedConc = max(0, (MaxConc - self.Molecules[Mol]) / Coeff)
             Out = min(Out, AdjustedConc)
 
+            if Debug_AdjustRefdCon:
+                Debug_Max += "\n{:>23}  max {:>6} {:>10} {:>10} {:>10} {:>10}".format(Mol[:10], Coeff, Conc2Str(MaxConc), Conc2Str(self.Molecules[Mol]), Conc2Str(AdjustedConc), Conc2Str(Out))
+
             # The following is possible due to multiplication/division in floating numbers
             if Out * Coeff > max(0, MaxConc - self.Molecules[Mol]):
                 Out *= 0.999999
+
+                if Debug_AdjustRefdCon:
+                    Debug_Max += " float adjusted"
+
             assert Out * Coeff <= max(0, MaxConc - self.Molecules[Mol])
+
+        if Debug_AdjustRefdCon:
+            Debug += " -> {:>10}".format(Conc2Str(Out))
+            print(Debug, Debug_Min, Debug_Max)
 
         return Out * RefCoeff
 
@@ -1206,15 +1249,17 @@ class ReactionSimulator(FSimulator):
 
     def Info(self):
         HeadStr = "{:<18}: {:>10} {:>10} |".format("", "Initial", "Current")
-        for ReactionName, dMolecules in self.dMolecules.items():
-            HeadStr += " {:<10.10}".format(ReactionName)
+        for i in range(len(self.dMolecules)):
+            HeadStr += " {:<10.10}".format(self.SortedReactionNames[i])
         print(HeadStr)
         for Molecule, Conc in self.Molecules.items():
             InitConc = self.InitialConditions[Molecule]
             InitConcStr = Conc2Str(InitConc)
             ConcStr = Conc2Str(Conc)
             LineStr = "{:<18}: {:>10} {:>10} |".format(Molecule, InitConcStr, ConcStr)
-            for ReactionName, dMolecules in self.dMolecules.items():
+            for i in range(len(self.dMolecules)):
+                dMolecules = self.dMolecules[self.SortedReactionNames[i]]
+            # for ReactionName, dMolecules in self.dMolecules.items():
                 if Molecule in dMolecules:
                     Conc2 = dMolecules[Molecule]
                     ConcStr2 = Conc2Str(Conc2)
@@ -1417,7 +1462,7 @@ if __name__ == '__main__':
 
     # Debugging options
     # Sim.Debug_Reaction = True
-    Sim.Debug_Info = 10000
+    # Sim.Debug_Info = 10000
     Sim.Plot = True
     # Sim.ExportToPDF = True
 
