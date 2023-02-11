@@ -34,7 +34,7 @@ class FEcoliSimulator(FSimulator):
         DNAReplicationRateInCount = DNAReplicationRate
         DNAReplicationRateInConc = DNAReplicationRate * Metabolism.EcoliInfo.C2M
 
-        # self.Debug_Info = 100
+        self.Debug_Info = 1
 
         # Select Pathways
         Pathways = [
@@ -72,7 +72,7 @@ class FEcoliSimulator(FSimulator):
 
         ExcludedMolecules = list()
 
-        if "Folic Acid" in Pathways:
+        if "Folic Acid" in Pathways or "Purine Metabolism" in Pathways:
             ExcludedMolecules.append("THF")
             ExcludedMolecules.append("5,10-methylene-THF")
             ExcludedMolecules.append("10-formyl-THF")
@@ -104,7 +104,7 @@ class FEcoliSimulator(FSimulator):
             self.Sim.AddReaction(Metabolism.THFSynthesisByFolA(Rate = DNAReplicationRateInConc * 2, ExpressionFactor = ExpressionFactor["folA"]))
             self.Sim.AddReaction(Metabolism.FiveTenMethyleneTHFSynthesisByGlyA(Rate = DNAReplicationRateInConc * 2, ExpressionFactor = ExpressionFactor["glyA"]))
             self.Sim.AddReaction(Metabolism.TenFormylTHFSynthesis(DNAReplicationRateInConc))
-            self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRateInCount))
+            self.Sim.AddReaction(Metabolism.dUTPSynthesis(DNAReplicationRateInCount * 0.25))
             self.Sim.AddReaction(Metabolism.dTTPSynthesisByThyA(Rate = DNAReplicationRateInCount * 0.25, ExpressionFactor = ExpressionFactor["thyA"]))
             self.Sim.AddReaction(Metabolism.dCTPSynthesis(DNAReplicationRateInCount * 0.25))
             self.Sim.AddReaction(Metabolism.PurineSynthesis(DNAReplicationRateInCount * 0.25))  # dATP, dGTP

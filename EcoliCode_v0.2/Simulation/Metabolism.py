@@ -242,6 +242,7 @@ class Reaction:
         self.Output = dict()
         self.Stoich = dict()
         self.CapacityConstant = 0
+        self.Rate = 0
 
     def Specification(self, Molecules, InitCond):
         return {}
@@ -280,6 +281,19 @@ class Reaction:
         Eq = AddMolCoeff(Eq, self.Output)
         return Eq
 
+    def GetAllParameters(self):
+        CapacityConstantOut = 0
+        RateOut = 0
+
+        if self.CapacityConstant > 0:
+            CapacityConstantOut = self.CapacityConstant
+        if self.Rate > 0:
+            RateOut = self.Rate
+
+        Parameters = " CapConst : " + str(CapacityConstantOut)
+        Parameters += "\t Rate : " + str(RateOut)
+
+        return Parameters
 
 class NADPlusSynthesis(Reaction):
     def __init__(self):
@@ -521,6 +535,7 @@ class FGAMSynthesisByPurL(Reaction):
         self.Rate = Rate * ExpressionFactor
 
     def Specification(self, Molecules, InitCond):
+        VO = min(self.Rate, Molecules["FGAR"])
         return "FGAM", min(self.Rate, Molecules["FGAR"])
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
@@ -666,7 +681,7 @@ class AASynthesis(Reaction):
         return "glutamine", self.Rate * EcoliInfo.C2M
 
 
-class AASynthesis_Glu(Reaction):
+class AASynthesis_Asp(Reaction):
     def __init__(self):
         super().__init__()
         self.ReactionName = 'Glu Synthesis'
@@ -746,7 +761,7 @@ class AASynthesis_GluDerivatives(Reaction):
 
 # DHF: Dihydrofolate
 class DHFSynthesis(Reaction):
-    def __init__(self, Rate = EcoliInfo.DNAReplicationRate):
+    def __init__(self, Rate = EcoliInfo.DNAReplicationRateInConc):
         super().__init__()
         self.ReactionName = "DHF Synthesis"
         self.Input = {}
@@ -980,6 +995,9 @@ class VolumeExpansion(Process):
             dMolConc = -InitConc * self.ln2_over_T * math.pow(math.e, -self.ln2_over_T * t)
             self.Stoich[Mol] = -dMolConc / dATPConc
 
+            # DL: Debug
+            print(Mol, InitConc, self.ln2_over_T, t, math.pow(math.e, -self.ln2_over_T * t), dMolConc, self.Stoich[Mol])
+
         return "ATP", dATPConc
 
 
@@ -1010,6 +1028,23 @@ class ReactionSimulator(FSimulator):
         self.InitializeMolecules(UserSetInitialMolecules)
         self.InitializeDataset()
         self.ApplyGlobalKineticCapacityScale()
+        self.SortReactions()
+
+    def SortReactions(self):
+        SortedReactions = []
+        ReactionNames = []
+        RxnIdx = {}
+
+        for i, reaction in enumerate(self.Reactions):
+            RxnIdx[reaction.ReactionName] = i
+            ReactionNames.append(reaction.ReactionName)
+
+        ReactionNames.sort()
+        for rxnname in ReactionNames:
+            rxnidx = RxnIdx[rxnname]
+            SortedReactions.append(self.Reactions[rxnidx])
+
+        self.Reactions = SortedReactions
 
     def InitializeStoich(self):
         for Reaction in self.Reactions:
@@ -1049,11 +1084,13 @@ class ReactionSimulator(FSimulator):
             ReactionLabel = ""
             ReactionName = "[" + Reaction.ReactionName + "]"
             if Eq:
-                ReactionEq = Reaction.GetChemicalEquationStr()
+                ReactionEq = ""
+                # ReactionEq = Reaction.GetChemicalEquationStr()
+                ReactionParameters = Reaction.GetAllParameters()
                 if Alignment:
-                    ReactionLabel += "{:<35} {}".format(ReactionName, ReactionEq)
+                    ReactionLabel += "{:<35} {}".format(ReactionName, ReactionEq) + ReactionParameters
                 else:
-                    ReactionLabel += ReactionName + ReactionEq
+                    ReactionLabel += ReactionName + ReactionEq + ReactionParameters
             else:
                 ReactionLabel += ReactionName
             ReactionNames += ReactionLabel + "\n"
@@ -1101,6 +1138,9 @@ class ReactionSimulator(FSimulator):
             assert self.Molecules[Mol] >= MinConc * 0.999999
             AdjustedConc = (self.Molecules[Mol] - MinConc) / Coeff
             Out = min(Out, AdjustedConc)
+
+            # DL: Debug
+            print(MinConc, self.Molecules[Mol], AdjustedConc, Out)
 
             # The following is possible due to multiplication/division in floating numbers
             if Out * Coeff > self.Molecules[Mol] - MinConc:
