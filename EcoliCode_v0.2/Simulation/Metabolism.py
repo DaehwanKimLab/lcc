@@ -88,7 +88,7 @@ class EcoliInfo:
     ProteomeSize = 3e6 * 300
 
     # KEY PARAMETERS #
-    MiniEcoli = True
+    MiniEcoli = False
     if MiniEcoli:
         New_DuplicationTime_LogPhase = 10
         ScaleFactor = New_DuplicationTime_LogPhase / DuplicationTime_LogPhase
@@ -231,6 +231,12 @@ class EcoliInfo:
 
         return KnownMolConc
 
+    def PrintKnownMolConc():
+        KnownMolConc = EcoliInfo.OpenKnownMolConc()
+
+        for mol, concs in KnownMolConc.items():
+            Conc = concs[0]
+            print(mol + " = " + Conc2Str(Conc) + ";")
 
 class Reaction:
     MaxConc = 10

@@ -1,0 +1,20 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// FADH2 Oxidative Phosphorylation
+
+float ECM_CellDivision_Sec = 0.01249792427764862;
+
+pathway FADH2_OxidativePhosphorylation(FADH2 + 1.5 ADP -> FAD+ + 1.5 ATP)
+specification
+{
+    float Init_FADH2 = 0.5mM;
+    float EGM_OxidativePhosphorylation_FADH2_Sec = ECM_CellDivision_Sec * 0.5;
+    ATP' = FADH2 / (Init_FADH2 + FADH2) * EGM_OxidativePhosphorylation_FADH2_Sec;
+}
+
+ATP = 9.6mM;
+ADP = 0.56mM;
+FADH2 = 0.5mM;
+FAD = 0.17mM;

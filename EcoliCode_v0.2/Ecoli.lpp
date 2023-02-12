@@ -1,8 +1,12 @@
 // BSD 3-Clause License
-// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
-// E. coli Code v0.1
+// E. coli Code v0.2
+
+// Check how to import concentrations
+import MetaboliteConcentrations;
+import ProteinConcentrations;
 
 import Metabolism.GlucoseMetabolism;
 import CellDivision.BinaryFission;
@@ -26,34 +30,3 @@ organism Ecoli
         }
     }
 }
-
-glucose L;
-L(800, 500, 0) = 100nmol;
-Ecoli(500, 600, 0) = 1;
-
-reference RaetzDowhan_1990
-{
-    title = "Biosynthesis and function of phospholipids in Escherichia coli";
-    doi = "https://doi.org/10.1016/S0021-9258(19)40001-X";
-}
-
-reference Valgepea_2013
-{
-    title = "Escherichia coli achieves faster growth by increasing catalytic and translation rates of proteins";
-    doi = "DOI	https://doi.org/10.1039/C3MB70119K";
-    table = "S1";
-}
-
-reference Schmidt_2016   // for protein counts from LB dataset
-{
-    title = "The quantitative and condition-dependent Escherichia coli proteome";
-    doi = "https://doi.org/10.1038/nbt.3418";
-}
-
-reference KimGadd_2008   // To calculate ATP requirements for polymer synthesis in E coli.
-{
-    title = "Bacterial Physiology and Metabolism.";
-    doi = "https://doi.org/10.1017/CBO9780511790461";
-    page = "192";
-    table = "6.11";
-} 

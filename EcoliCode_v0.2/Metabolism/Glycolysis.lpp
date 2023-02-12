@@ -1,22 +1,26 @@
 // BSD 3-Clause License
-// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
 // Glycolysis
 
+float ECM_CellDivision_Sec = 0.01249792427764862;
+
 pathway Glycolysis
 {
-    reaction Glycolysis_1(G6P + ATP -> 2 G3P + ADP)
+    reaction Glycolysis_1(G6P + 2 ATP + 2 NAD+ -> 2 pyruvate + 2 ADP + 2 NADH)
     specification
     {
-        float cg1 = 0.019M;
-        ATP'  = (ADP / ATP) * cg1;
-    }
-    reaction Glycolysis_2(G3P + NAD + 2 ADP -> pyruvate + NADH + 2 ATP)
-    specification
-    {
-        float cg2 = 0.019M;
-        ATP'  = (ADP / ATP) * cg2;
+        float Init_NAD+ = 2.6mM;
+        MinNADPlusConc = Init_NAD+ / 10.0;
+        if (NAD+ <= MinNADPlusConc)
+        {
+            ATP' = 0;
+        }
+
+        float EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 0.9;
+        float MinATPConc = 0.1e-3;
+        ATP' = ADP / max(ATP, MinATPConc) * EGM_Glycolysis_Sec;
     }
 }
 

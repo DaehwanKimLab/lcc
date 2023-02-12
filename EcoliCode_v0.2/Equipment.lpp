@@ -1,0 +1,29 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// E. coli Code v0.2
+
+petridish Petridish_3cm
+{
+    diameter 3cm;
+    material glass;
+    // 3dmesh XX;
+}
+
+incubator Incubator_20L
+{
+    capacity 20L;
+    temperature 37C;
+}
+
+freezer Freezer_-80C
+{
+    capacity 50L;
+    temperature -80C;
+}
+
+microscope Microscope
+{
+    
+}

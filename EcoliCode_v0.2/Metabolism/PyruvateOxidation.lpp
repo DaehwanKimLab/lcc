@@ -1,14 +1,18 @@
 // BSD 3-Clause License
-// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
-// Pyruvate Oxidation
+// Pyruvate sOxidation
+
+float ECM_CellDivision_Sec = 0.01249792427764862;
 
 reaction PyruvateOxidation(pyruvate + NAD + CoA-SH -> acetyl-CoA + NADH)
 specification
 {
-    float cp = 0.003M;
-    acetyl-CoA' = (pyruvate / acetyl-CoA) * cp;
+    float Init_Pyruvate = 0.39mM;
+    float EGM_Pyruvate_Sec = ECM_CellDivision_Sec * 0.9;
+
+    acetyl-CoA' = pyruvate / (Init_Pyruvate + "pyruvate") * EGM_Pyruvate_Sec;
 }
 
 NADH = 83.2nM;
