@@ -4,17 +4,12 @@
 
 // NADH Oxidative Phosphorylation
 
-float ECM_CellDivision_Sec = 0.01249792427764862;
+import * from EcoliInfo;
+import * from MetaboliteConcentrations;
 
 pathway NADH_OxidativePhosphorylation(NADH + 2.5 ADP -> NAD+ + 2.5 ATP)
 specification
 {
     float Init_NADH = 83.2nM;
-    float EGM_OxidativePhosphorylation_NADH_Sec = ECM_CellDivision_Sec * 2.5;
     ATP' = NADH / (Init_NADH + NADH) * EGM_OxidativePhosphorylation_NADH_Sec;
 }
-
-ATP = 9.6mM;
-ADP = 0.56mM;
-NADH = 83.2nM;
-NAD = 2.6mM;

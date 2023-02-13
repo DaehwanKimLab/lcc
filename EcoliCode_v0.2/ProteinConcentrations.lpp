@@ -4,6 +4,12 @@
 
 // E. coli Protein Concentrations
 
+reference Schmidt_2016
+{
+    title = "The quantitative and condition-dependent Escherichia coli proteome";
+    doi = "https://doi.org/10.1038/nbt.3418";
+}
+
 RpoC = 4.615 uM;
 RpoB = 6.571 uM;
 AcnB = 12.614 uM;

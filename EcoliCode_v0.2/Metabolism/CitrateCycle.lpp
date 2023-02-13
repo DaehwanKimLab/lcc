@@ -4,22 +4,12 @@
 
 // Citrate Cycle
 
-float ECM_CellDivision_Sec = 0.01249792427764862;
-
+import * from EcoliInfo;
+import * from MetaboliteConcentrations;
 
 pathway CitrateCycle(acetyl_CoA + 3 NAD + FAD + ADP --> CoA_SH + 3 NADH + FADH2 + ATP)
 specification
 {
     float Init_AcetylCoA = 0.61mM;
-    float EGM_TCACycle_Sec = ECM_CellDivision_Sec * 0.5;
     ATP' = acetyl-CoA / (Init_AcetylCoA + acetyl-CoA) * EGM_TCACycle_Sec;
 }
-
-ATP = 9.6mM;
-ADP = 0.56mM;
-NADH = 83.2nM;
-NAD = 2.6mM;
-CoA-SH = 1.4mM;
-acetyl-CoA = 0.61mM;
-FADH2 = 0.5mM;
-FAD = 0.17mM;

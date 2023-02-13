@@ -4,6 +4,24 @@
 
 // E. coli Metabolite Concentrations
 
+reference Park_2016
+{
+    title = "Metabolite concentrations, fluxes and free energies imply efficient enzyme usage";
+    doi = "https://doi.org/10.1038/nchembio.2077";
+}
+
+// ECMDB: E. coli Metabolome Database
+reference Guo_2013
+{
+    title = "ECMDB: the E. coli Metabolome Database";
+    doi = "https://doi.org/10.1093/nar/gks992";
+}
+reference Sajed_2016
+{
+    title = "ECMDB 2.0: A richer resource for understanding the biochemistry of E. coli";
+    doi = "https://doi.org/10.1093/nar/gkv1060";
+}
+
 1,3-bisphosphoglycerate = 16.500 uM;
 2,3-bisphosphoglycerate = 82.900 uM;
 2,3-dihydroxybenzoic acid = 0.138 mM;

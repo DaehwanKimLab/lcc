@@ -4,19 +4,12 @@
 
 // Pyruvate sOxidation
 
-float ECM_CellDivision_Sec = 0.01249792427764862;
+import * from EcoliInfo;
+import * from MetaboliteConcentrations;
 
 reaction PyruvateOxidation(pyruvate + NAD + CoA-SH -> acetyl-CoA + NADH)
 specification
 {
     float Init_Pyruvate = 0.39mM;
-    float EGM_Pyruvate_Sec = ECM_CellDivision_Sec * 0.9;
-
     acetyl-CoA' = pyruvate / (Init_Pyruvate + "pyruvate") * EGM_Pyruvate_Sec;
 }
-
-NADH = 83.2nM;
-NAD = 2.6mM;
-pyruvate = 0.39mM;
-CoA-SH = 1.4mM;
-acetyl-CoA = 0.61mM;

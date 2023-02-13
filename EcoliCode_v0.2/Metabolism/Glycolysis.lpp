@@ -4,11 +4,12 @@
 
 // Glycolysis
 
-float ECM_CellDivision_Sec = 0.01249792427764862;
+import * from EcoliInfo;
+import * from MetaboliteConcentrations;
 
 pathway Glycolysis
 {
-    reaction Glycolysis_1(G6P + 2 ATP + 2 NAD+ -> 2 pyruvate + 2 ADP + 2 NADH)
+    reaction Glycolysis(G6P + 2 ATP + 2 NAD+ -> 2 pyruvate + 2 ADP + 2 NADH)
     specification
     {
         float Init_NAD+ = 2.6mM;
@@ -18,15 +19,9 @@ pathway Glycolysis
             ATP' = 0;
         }
 
-        float EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 0.9;
         float MinATPConc = 0.1e-3;
         ATP' = ADP / max(ATP, MinATPConc) * EGM_Glycolysis_Sec;
     }
 }
 
 G6P[:] = 8.8mM;
-ATP = 9.6mM;
-ADP = 0.56mM;
-NADH = 83.2nM;
-NAD = 2.6mM;
-pyruvate = 0.39mM;

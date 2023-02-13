@@ -4,15 +4,13 @@
 
 // E. coli Code v0.2
 
-import Equipment;
 import Ecoli;
 
-Petridish = Equipment.Petridish_3cm;
 Ecoli = Ecoli.Ecoli;
 
 experiment Exp_Ecoli
 {
-    Petridish P
+    petridish P
     {
         Ecoli = 1;
         glucose = 5g/L;
@@ -23,12 +21,12 @@ experiment Exp_Ecoli
 
 experiment Exp_GlucoseTest
 {
-    Petridish P_Control
+    petridish P_Control
     {
         Ecoli = 1;
     }
 
-    Petridish P_Glucose
+    petridish P_Glucose
     {
         Ecoli = 1;
         glucose = 5g/L;
@@ -43,7 +41,7 @@ experiment Exp_FolA
     int TitrationResolution = 30;
     for (i = 0; i < TitrationResolution; i++)
     {
-        Petridish P
+        petridish P
         {
             Ecoli E
             {

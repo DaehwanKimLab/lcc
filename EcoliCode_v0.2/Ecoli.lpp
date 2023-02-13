@@ -5,10 +5,10 @@
 // E. coli Code v0.2
 
 // Check how to import concentrations
-import MetaboliteConcentrations;
-import ProteinConcentrations;
+import * from MetaboliteConcentrations;
+import * from ProteinConcentrations;
 
-import Metabolism.GlucoseMetabolism;
+import Metabolism.CentralCarbonMetabolism;
 import CellDivision.BinaryFission;
 import CellMotility.CellMotility;
 import GeneticInfoProcessing.Transcription.Transcription;
@@ -16,7 +16,7 @@ import GeneticInfoProcessing.Translation.Translation;
 
 organism Ecoli
 {
-    Metabolism = Metabolism.GlucoseMetabolism.GlucoseMetabolism;
+    Metabolism = Metabolism.CentralCarbonMetabolism.CentralCarbonMetabolism;
     CellDivision = CellDivision.BinaryFission.BinaryFission;
     CellMotility = CellMotility.CellMotility.CellMotility;
     Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
@@ -26,7 +26,7 @@ organism Ecoli
     {
         cytosol Cytosol
         {
-
+            G6P[:] = 8.8mM; // overwrites import * from MetaboliteConcentrations
         }
     }
 }

@@ -7,6 +7,5 @@
 reaction EnergyConsumption(ATP -> ADP) // for cell division
 specification
 {
-    float ECM_CellDivision_Sec = 0.01249792427764862;
     ADP' = ECM_CellDivision_Sec;
 }

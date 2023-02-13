@@ -4,18 +4,21 @@
 
 // Glucose Metabolism
 
-import GlucoseTransport;
+import * from MetaboliteConcentrations;
+
+// import GlucoseTransport;
 import Glycolysis;
 import PyruvateOxidation;
 import CitrateCycle;
-import OxidativePhosphorylation;
+import NADH_OxidativePhosphorylation;
+import FADH2_OxidativePhosphorylation;
 import EnergyConsumption;
 
 pathway GlucoseMetabolism
 {
     membrane CellMembrane
     {
-        GlucoseTransporter = GlucoseTransport.GlucoseTransport;
+        // GlucoseTransporter = GlucoseTransport.GlucoseTransport;
 
         cytosol Cytosol
         {
@@ -26,21 +29,10 @@ pathway GlucoseMetabolism
             FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
             EnergyConsumption = EnergyConsumption.EnergyConsumption;
 
+            G6P[:] = 8.8mM;
         }
     }
 }
-
-G6P[:] = 8.8mM;
-ATP = 9.6mM;
-ADP = 0.56mM;
-NADH = 83.2nM;
-NAD = 2.6mM;
-pyruvate = 0.39mM;
-CoA_SH[:] = 1.4mM;
-acetyl_CoA = 0.61mM;
-FADH2 = 0.5mM;
-FAD = 0.17mM;
-Malate = 1.7mM;
 
 reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.
 {
