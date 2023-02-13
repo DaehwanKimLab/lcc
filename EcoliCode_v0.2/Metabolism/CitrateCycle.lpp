@@ -7,7 +7,7 @@
 import * from EcoliInfo;
 import * from MetaboliteConcentrations;
 
-pathway CitrateCycle(acetyl_CoA + 3 NAD + FAD + ADP --> CoA_SH + 3 NADH + FADH2 + ATP)
+pathway CitrateCycle(acetyl_CoA + 3 NAD + FAD + ADP -> CoA_SH + 3 NADH + FADH2 + ATP)
 specification
 {
     float Init_AcetylCoA = 0.61mM;
