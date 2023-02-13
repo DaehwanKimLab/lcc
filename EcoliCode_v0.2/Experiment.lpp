@@ -13,7 +13,7 @@ experiment Exp_Ecoli
     petridish P
     {
         Ecoli = 1;
-        glucose = 5g/L;
+        glucose = 8.8mM;
     }
     
     P = 1;
@@ -29,7 +29,7 @@ experiment Exp_GlucoseTest
     petridish P_Glucose
     {
         Ecoli = 1;
-        glucose = 5g/L;
+        glucose = 8.8mM;
     }
 
     P_Control = 1;
@@ -49,7 +49,7 @@ experiment Exp_FolA
             }
 
             E = 1;
-            glucose = 5g/L;
+            glucose = 8.8mM;
         }
 
         P = 1;

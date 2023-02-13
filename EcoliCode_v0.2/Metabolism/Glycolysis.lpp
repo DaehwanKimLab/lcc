@@ -9,12 +9,12 @@ import * from MetaboliteConcentrations;
 
 pathway Glycolysis
 {
-    reaction Glycolysis(G6P + 2 ATP + 2 NAD+ -> 2 pyruvate + 2 ADP + 2 NADH)
+    reaction Glycolysis(G6P + 2 ATP + 2 NAD -> 2 pyruvate + 2 ADP + 2 NADH)
     specification
     {
-        float Init_NAD+ = 2.6mM;
-        MinNADPlusConc = Init_NAD+ / 10.0;
-        if (NAD+ <= MinNADPlusConc)
+        float Init_NAD = 2.6mM;
+        MinNADPlusConc = Init_NAD / 10.0;
+        if (NAD <= MinNADPlusConc)
         {
             ATP' = 0;
         }

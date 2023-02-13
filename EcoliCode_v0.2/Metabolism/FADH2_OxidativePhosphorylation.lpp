@@ -7,7 +7,7 @@
 import * from EcoliInfo;
 import * from MetaboliteConcentrations;
 
-pathway FADH2_OxidativePhosphorylation(FADH2 + 1.5 ADP -> FAD+ + 1.5 ATP)
+pathway FADH2_OxidativePhosphorylation(FADH2 + 1.5 ADP -> FAD + 1.5 ATP)
 specification
 {
     float Init_FADH2 = 0.5mM;

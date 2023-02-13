@@ -7,7 +7,7 @@
 import * from EcoliInfo;
 import * from MetaboliteConcentrations;
 
-pathway NADH_OxidativePhosphorylation(NADH + 2.5 ADP -> NAD+ + 2.5 ATP)
+pathway NADH_OxidativePhosphorylation(NADH + 2.5 ADP -> NAD + 2.5 ATP)
 specification
 {
     float Init_NADH = 83.2nM;

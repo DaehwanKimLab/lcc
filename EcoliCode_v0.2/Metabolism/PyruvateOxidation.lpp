@@ -7,9 +7,9 @@
 import * from EcoliInfo;
 import * from MetaboliteConcentrations;
 
-reaction PyruvateOxidation(pyruvate + NAD + CoA-SH -> acetyl-CoA + NADH)
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH -> acetyl_CoA + NADH)
 specification
 {
     float Init_Pyruvate = 0.39mM;
-    acetyl-CoA' = pyruvate / (Init_Pyruvate + "pyruvate") * EGM_Pyruvate_Sec;
+    acetyl_CoA' = pyruvate / (Init_Pyruvate + "pyruvate") * EGM_Pyruvate_Sec;
 }
