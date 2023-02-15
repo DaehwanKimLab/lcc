@@ -34,7 +34,7 @@ class FEcoliSimulator(FSimulator):
         DNAReplicationRateInCount = DNAReplicationRate
         DNAReplicationRateInConc = DNAReplicationRate * Metabolism.EcoliInfo.C2M
 
-        self.Debug_Info = 1
+        self.Debug_Info = 100
 
         # Select Pathways
         Pathways = [

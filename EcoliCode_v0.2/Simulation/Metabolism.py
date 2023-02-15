@@ -988,9 +988,6 @@ class VolumeExpansion(Process):
         self.ln2_over_T = math.log(2, math.e) / self.T
         self.ExcludedMolecules = ExcludedMolecules
 
-        # DL: Debug
-        # print("Rate: ", self.Rate, "MaxProgress: ", self.MaxProgress, "T: ", self.T, "| e: ", math.e, "| math.log(2, math.e): ", math.log(2, math.e), "| self.ln2_over_T: ", self.ln2_over_T)
-
         self.Input = {"ATP": 1}
         self.Output = {"ADP": 1}
         for Mol in ExcludedMolecules:
@@ -1003,12 +1000,6 @@ class VolumeExpansion(Process):
             t = self.Progress / self.MaxProgress * self.T
             dMolConc = -InitConc * self.ln2_over_T * math.pow(math.e, -self.ln2_over_T * t)
             self.Stoich[Mol] = -dMolConc / dATPConc
-
-            # print(math.pow(math.e, -self.ln2_over_T * t), pow(math.e, -self.ln2_over_T * t), math.e ** (-self.ln2_over_T * t))
-            print("-self.ln2_over_T: ", -self.ln2_over_T, " t: ", t, "multiplication: ", -self.ln2_over_T * t)
-
-            # DL: Debug
-            # print(Mol, InitConc, self.ln2_over_T, t, math.pow(math.e, -self.ln2_over_T * t), dMolConc, self.Stoich[Mol])
 
         return "ATP", dATPConc
 
