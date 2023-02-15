@@ -11,14 +11,14 @@ protein MukB, MukE, MukF;
 complex MukBEF
 {
     reaction Complexation(2 MukB + 2 MukE + MukF, Kd=1e-9);
-    reaction Dimerization(2 self --> MukBEF_Dimer, Kd=1e-9);
-    reaction DNACondensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80} + dsDNA{n+120} --> MukBEF~dsDNA{n}~dsDNA{n+80}~dsDNA{n+120}, Kd=1e-9);
+    reaction Dimerization(2 self -> MukBEF_Dimer, Kd=1e-9);
+    reaction DNACondensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80} + dsDNA{n+120} -> MukBEF~dsDNA{n}~dsDNA{n+80}~dsDNA{n+120}, Kd=1e-9);
 }
 
 // MinD adaptor reaction for MukBEF
 MinD = MinCDE.MinD;
 
-reaction MukBEF_MembraneRecruitment(Membrane~MinD_{n} + MukBEF{in} --> Membrane~MinD_{n}~MukBEF)
+reaction MukBEF_MembraneRecruitment(Membrane~MinD_{n} + MukBEF{in} -> Membrane~MinD_{n}~MukBEF)
 k_function
 {
     return MinCDE.MinD_MembraneRecruitment.k_function() * 0.2;

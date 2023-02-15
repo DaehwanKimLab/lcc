@@ -4,8 +4,11 @@
 
 // Energy Consumption
 
+import EcoliInfo;
+import * from MetaboliteConcentrations;
+
 reaction EnergyConsumption(ATP -> ADP) // for cell division
 specification
 {
-    ADP' = ECM_CellDivision_Sec;
+    ADP' = EcoliInfo.ECM_CellDivision_Sec;
 }

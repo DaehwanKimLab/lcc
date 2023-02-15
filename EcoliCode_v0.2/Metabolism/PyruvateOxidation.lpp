@@ -5,11 +5,11 @@
 // Pyruvate sOxidation
 
 import EcoliInfo;
+import MetaboliteConcentrations;
 import * from MetaboliteConcentrations;
 
 reaction PyruvateOxidation(pyruvate + NAD + CoA_SH -> acetyl_CoA + NADH)
 specification
 {
-    float Init_Pyruvate = 0.39mM;
-    acetyl_CoA' = pyruvate / (Init_Pyruvate + pyruvate) * EcoliInfo.EGM_Pyruvate_Sec;
+    acetyl_CoA' = pyruvate / (MetaboliteConcentrations.pyruvate + pyruvate) * EcoliInfo.EGM_Pyruvate_Sec;
 }

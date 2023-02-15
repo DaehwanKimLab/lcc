@@ -1,12 +1,12 @@
 // BSD 3-Clause License
-// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// © 2023_ The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
 // E. coli Metabolite Concentrations
 
 reference Park_2016
 {
-    title = "Metabolite concentrations, fluxes and free energies imply efficient enzyme usage";
+    title = "Metabolite concentrations_ fluxes and free energies imply efficient enzyme usage";
     doi = "https://doi.org/10.1038/nchembio.2077";
 }
 
@@ -22,9 +22,9 @@ reference Sajed_2016
     doi = "https://doi.org/10.1093/nar/gkv1060";
 }
 
-M_1,3_bisphosphoglycerate = 16.5 uM;
-M_2,3_bisphosphoglycerate = 82.9 uM;
-M_2,3_dihydroxybenzoic acid = 0.138 mM;
+M_1_3_bisphosphoglycerate = 16.5 uM;
+M_2_3_bisphosphoglycerate = 82.9 uM;
+M_2_3_dihydroxybenzoic acid = 0.138 mM;
 M_2_phosphoglycerate = 91.8 uM;
 M_3_phosphoglycerate = 1.54 mM;
 M_4_hydroxybenzoate = 52.2 uM;
@@ -69,8 +69,8 @@ dTDP = 0.378 mM;
 dTTP = 4.62 mM;
 E4P = 49.0 uM;
 FAD = 0.173 mM;
-flavin mononucleotide = 53.7 uM;
-fructose_1,6_bisphosphate = 15.2 mM;
+flavin_mononucleotide = 53.7 uM;
+fructose_1_6_bisphosphate = 15.2 mM;
 fructose_6_phosphate = 2.52 mM;
 fumarate = 0.288 mM;
 GDP = 0.676 mM;
@@ -81,7 +81,7 @@ G6P = 7.88 mM;
 glutamate = 96.0 mM;
 glutamine = 3.81 mM;
 glutathione = 16.6 mM;
-glutathione disulfide = 2.37 mM;
+glutathione_disulfide = 2.37 mM;
 GAP = 0.271 mM;
 glycerate = 1.41 mM;
 GMP = 23.7 uM;
@@ -95,10 +95,9 @@ homocysteine = 0.37 mM;
 IDP = 23.8 uM;
 IMP = 0.272 mM;
 isocitrate = 36.7 uM;
-isoleucine (assumed 1/2 ile+leu) = 0.152 mM;
-isoleucine+leucine = 0.303 mM;
+isoleucine = 0.152 mM;
 ITP = 0.205 mM;
-leucine (assumed 1/2 ile+leu) = 0.152 mM;
+leucine = 0.152 mM;
 lysine = 0.405 mM;
 malate = 1.68 mM;
 malonyl_CoA = 35.4 uM;
@@ -115,7 +114,7 @@ oxaloacetate = 0.487 uM;
 pentose_phosphate = 1.32 mM;
 phenylalanine = 18.2 uM;
 phenylpyruvate = 89.8 uM;
-phosphate (orthophosphate) = 23.9 mM;
+phosphate = 23.9 mM;
 phosphoenolpyruvate = 0.184 mM;
 proline = 0.385 mM;
 propionyl_CoA = 5.32 uM;
@@ -129,7 +128,7 @@ S_adenosyl_L_methionine = 0.184 mM;
 sedoheptulose_7_phosphate = 0.882 mM;
 serine = 1.13 mM;
 shikimate = 14.1 uM;
-sn_glycerol 3_phosphate = 49.0 uM;
+sn_glycerol_3_phosphate = 49.0 uM;
 succinate = 0.569 mM;
 succinyl_CoA = 0.233 mM;
 threonine = 1.26 mM;
@@ -151,4 +150,4 @@ dGTP = 10.0 uM;
 GAR = 10.0 uM;
 FGAR = 10.0 uM;
 FGAM = 10.0 uM;
-M_5,10_methylene_THF = 10.0 uM;
+M_5_10_methylene_THF = 10.0 uM;

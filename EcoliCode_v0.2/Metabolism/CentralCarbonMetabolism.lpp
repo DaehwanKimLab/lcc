@@ -5,6 +5,7 @@
 // Glucose Metabolism
 
 import * from MetaboliteConcentrations;
+import MetaboliteConcentrations;
 
 // import GlucoseTransport;
 import Glycolysis;
@@ -29,7 +30,7 @@ pathway CentralCarbonMetabolism
             FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
             EnergyConsumption = EnergyConsumption.EnergyConsumption;
 
-            G6P[:] = 8.8 mM;
+            G6P[:] = MetaboliteConcentrations.G6P;
         }
     }
 }
