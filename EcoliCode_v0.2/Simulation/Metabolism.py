@@ -525,7 +525,7 @@ class FGARSynthesisByPurN(Reaction):
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "FGAR":
-            return InitCond[MolName]
+            return (Molecules[MolName] + Molecules["GAR"]) / 2
         return Reaction.MaxConc
 
 
@@ -546,7 +546,7 @@ class FGAMSynthesisByPurL(Reaction):
 
     def GetMaxConc(self, MolName, Molecules, InitCond):
         if MolName == "FGAM":
-            return InitCond[MolName]
+            return (Molecules[MolName] + Molecules["FGAR"]) / 2
         return Reaction.MaxConc
 
 
