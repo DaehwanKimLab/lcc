@@ -1004,6 +1004,9 @@ class VolumeExpansion(Process):
             dMolConc = -InitConc * self.ln2_over_T * math.pow(math.e, -self.ln2_over_T * t)
             self.Stoich[Mol] = -dMolConc / dATPConc
 
+            # print(math.pow(math.e, -self.ln2_over_T * t), pow(math.e, -self.ln2_over_T * t), math.e ** (-self.ln2_over_T * t))
+            print("-self.ln2_over_T: ", -self.ln2_over_T, " t: ", t, "multiplication: ", -self.ln2_over_T * t)
+
             # DL: Debug
             # print(Mol, InitConc, self.ln2_over_T, t, math.pow(math.e, -self.ln2_over_T * t), dMolConc, self.Stoich[Mol])
 
@@ -1039,7 +1042,7 @@ class ReactionSimulator(FSimulator):
         self.InitializeDataset()
         self.ApplyGlobalKineticCapacityScale()
 
-        self.SortedReactionNames = self.GetSortedReactionNames()
+        self.SortedReactionNames = self.GetSortedReactionNames(Sort=False)
 
     def SortReactions(self):
         SortedReactions = []
@@ -1057,11 +1060,12 @@ class ReactionSimulator(FSimulator):
 
         self.Reactions = SortedReactions
 
-    def GetSortedReactionNames(self):
+    def GetSortedReactionNames(self, Sort=True):
         ReactionNames = []
         for i, reaction in enumerate(self.Reactions):
             ReactionNames.append(reaction.ReactionName)
-        ReactionNames.sort()
+        if Sort:
+            ReactionNames.sort()
         return ReactionNames
 
     def InitializeStoich(self):
@@ -1269,8 +1273,8 @@ class ReactionSimulator(FSimulator):
             InitConcStr = Conc2Str(InitConc)
             ConcStr = Conc2Str(Conc)
             LineStr = "{:<18}: {:>10} {:>10} |".format(Molecule, InitConcStr, ConcStr)
-            for i in range(len(self.dMolecules)):
-                dMolecules = self.dMolecules[self.SortedReactionNames[i]]
+            for j in range(len(self.dMolecules)):
+                dMolecules = self.dMolecules[self.SortedReactionNames[j]]
             # for ReactionName, dMolecules in self.dMolecules.items():
                 if Molecule in dMolecules:
                     Conc2 = dMolecules[Molecule]

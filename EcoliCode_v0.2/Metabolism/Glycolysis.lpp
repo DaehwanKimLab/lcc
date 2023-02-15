@@ -4,24 +4,21 @@
 
 // Glycolysis
 
-import * from EcoliInfo;
+import EcoliInfo;
 import * from MetaboliteConcentrations;
 
-pathway Glycolysis
+pathway Glycolysis(G6P + 2 ATP + 2 NAD -> 2 pyruvate + 2 ADP + 2 NADH)
+specification
 {
-    reaction Glycolysis(G6P + 2 ATP + 2 NAD -> 2 pyruvate + 2 ADP + 2 NADH)
-    specification
+    float Init_NAD = 2.6mM;
+    MinNADPlusConc = Init_NAD / 10.0;
+    if (NAD <= MinNADPlusConc)
     {
-        float Init_NAD = 2.6mM;
-        MinNADPlusConc = Init_NAD / 10.0;
-        if (NAD <= MinNADPlusConc)
-        {
-            ATP' = 0;
-        }
-
-        float MinATPConc = 0.1e-3;
-        ATP' = ADP / max(ATP, MinATPConc) * EGM_Glycolysis_Sec;
+        ATP' = 0;
     }
+
+    float MinATPConc = 0.1e-3;
+    ATP' = ADP / max(ATP, MinATPConc) * EcoliInfo.EGM_Glycolysis_Sec;
 }
 
 G6P[:] = 8.8mM;

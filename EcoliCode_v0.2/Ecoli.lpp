@@ -6,7 +6,6 @@
 
 // Check how to import concentrations
 import * from MetaboliteConcentrations;
-import * from ProteinConcentrations;
 
 import Metabolism.CentralCarbonMetabolism;
 import CellDivision.BinaryFission;

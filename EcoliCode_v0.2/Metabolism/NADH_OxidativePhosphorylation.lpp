@@ -4,12 +4,12 @@
 
 // NADH Oxidative Phosphorylation
 
-import * from EcoliInfo;
+import EcoliInfo;
 import * from MetaboliteConcentrations;
 
 pathway NADH_OxidativePhosphorylation(NADH + 2.5 ADP -> NAD + 2.5 ATP)
 specification
 {
     float Init_NADH = 83.2nM;
-    ATP' = NADH / (Init_NADH + NADH) * EGM_OxidativePhosphorylation_NADH_Sec;
+    ATP' = NADH / (Init_NADH + NADH) * EcoliInfo.EGM_OxidativePhosphorylation_NADH_Sec;
 }

@@ -14,7 +14,7 @@ import NADH_OxidativePhosphorylation;
 import FADH2_OxidativePhosphorylation;
 import EnergyConsumption;
 
-pathway GlucoseMetabolism
+pathway CentralCarbonMetabolism
 {
     membrane CellMembrane
     {
@@ -29,7 +29,7 @@ pathway GlucoseMetabolism
             FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
             EnergyConsumption = EnergyConsumption.EnergyConsumption;
 
-            G6P[:] = 8.8mM;
+            G6P[:] = 8.8 mM;
         }
     }
 }
