@@ -2,12 +2,11 @@
 // © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
-// Glucose Metabolism
+// Central Carbon Metabolism
 
 from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 
-import GlucoseTransport;
 import Glycolysis;
 import PyruvateOxidation;
 import CitrateCycle;
@@ -17,20 +16,12 @@ import EnergyConsumption;
 
 pathway CentralCarbonMetabolism
 {
-    membrane CellMembrane
-    {
-        GlucoseTransporter = GlucoseTransport.GlucoseTransport.GlucoseTransport;
+    Glycolysis = Glycolysis.Glycolysis;
+    PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
+    CitrateCycle = CitrateCycle.CitrateCycle;
+    NADH_OxidativePhosphorylation = NADH_OxidativePhosphorylation.NADH_OxidativePhosphorylation;
+    FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
 
-        cytosol Cytosol
-        {
-            Glycolysis = Glycolysis.Glycolysis;
-            PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
-            CitrateCycle = CitrateCycle.CitrateCycle;
-            NADH_OxidativePhosphorylation = NADH_OxidativePhosphorylation.NADH_OxidativePhosphorylation;
-            FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
-
-        }
-    }
 }
 
 reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.
