@@ -1,0 +1,47 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// PurineMetabolism
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+Init_DHF = MetaboliteConcentrations.DHF;
+
+pathway FolicAcidMetabolism
+{
+    reaction DHFSynthesis(G6P -> DHF) // G6P being a temporary place holder
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M;
+        DHF.max = MetaboliteConcentrations.DHF;
+        DHF' = rate;
+    }
+
+    reaction THFSynthesisByFolA(DHF -> THF)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2;
+        THF.max = (DHF + THF) / 2;
+        THF' = rate;
+    }
+    
+    reaction FiveTenMethyleneTHFSynthesisByGlyA(THF -> M_5_10_methylene_THF)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2;
+        M_5_10_methylene_THF.max = (THF + M_5_10_methylene_THF) / 2;
+        M_5_10_methylene_THF' = rate;
+    }
+    
+    reaction TenFormylTHFSynthesis(M_5_10_methylene_THF -> M_10_formyl_THF)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M;
+        M_10_formyl_THF.max = (M_5_10_methylene_THF + M_10_formyl_THF) / 2;
+        M_10_formyl_THF' = rate;
+    }
+}
