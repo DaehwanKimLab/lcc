@@ -9,10 +9,8 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 import EcoliInfo;
 
-float Init_AcetylCoA = MetaboliteConcentrations.acetyl_CoA;
-
 pathway CitrateCycle(acetyl_CoA + 3 NAD + FAD + ADP -> CoA_SH + 3 NADH + FADH2 + ATP)
 specification
 {
-    ATP' = acetyl_CoA / (Init_AcetylCoA + acetyl_CoA) * EcoliInfo.EGM_TCACycle_Sec;
+    ATP' = acetyl_CoA / (MetaboliteConcentrations.acetyl_CoA + acetyl_CoA) * EcoliInfo.EGM_TCACycle_Sec;
 }
