@@ -4,9 +4,9 @@
 
 // Glucose Metabolism
 
-import * from MetaboliteConcentrations;
-import MetaboliteConcentrations;
+from MetaboliteConcentrations import *;
 
+import MetaboliteConcentrations;
 // import GlucoseTransport;
 import Glycolysis;
 import PyruvateOxidation;

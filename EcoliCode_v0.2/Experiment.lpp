@@ -4,6 +4,7 @@
 
 // E. coli Code v0.2
 
+import MetaboliteConcentrations;
 import Ecoli;
 
 Ecoli = Ecoli.Ecoli;
@@ -13,7 +14,7 @@ experiment Exp_Ecoli
     petridish P
     {
         Ecoli = 1;
-        glucose = 8.8mM;
+        glucose = MetaboliteConcentrations.G6P;
     }
     
     P = 1;
@@ -29,7 +30,7 @@ experiment Exp_GlucoseTest
     petridish P_Glucose
     {
         Ecoli = 1;
-        glucose = 8.8mM;
+        glucose = MetaboliteConcentrations.G6P;
     }
 
     P_Control = 1;
@@ -49,7 +50,7 @@ experiment Exp_FolA
             }
 
             E = 1;
-            glucose = 8.8mM;
+            glucose = MetaboliteConcentrations.G6P;
         }
 
         P = 1;

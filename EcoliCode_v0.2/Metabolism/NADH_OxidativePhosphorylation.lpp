@@ -4,12 +4,15 @@
 
 // NADH Oxidative Phosphorylation
 
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
 import EcoliInfo;
-import * from MetaboliteConcentrations;
+
+float Init_NADH = MetaboliteConcentrations.NADH;
 
 pathway NADH_OxidativePhosphorylation(2 NADH + 5 ADP -> 2 NAD + 5 ATP)
 specification
 {
-    float Init_NADH = 83.2nM;
     ATP' = NADH / (Init_NADH + NADH) * EcoliInfo.EGM_OxidativePhosphorylation_NADH_Sec;
 }

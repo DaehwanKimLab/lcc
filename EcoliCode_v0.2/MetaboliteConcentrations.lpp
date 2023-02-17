@@ -24,7 +24,7 @@ reference Sajed_2016
 
 M_1_3_bisphosphoglycerate = 16.5 uM;
 M_2_3_bisphosphoglycerate = 82.9 uM;
-M_2_3_dihydroxybenzoic acid = 0.138 mM;
+M_2_3_dihydroxybenzoic_acid = 0.138 mM;
 M_2_phosphoglycerate = 91.8 uM;
 M_3_phosphoglycerate = 1.54 mM;
 M_4_hydroxybenzoate = 52.2 uM;

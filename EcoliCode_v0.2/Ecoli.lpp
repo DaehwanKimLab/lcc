@@ -6,6 +6,7 @@
 
 // Check how to import concentrations
 import * from MetaboliteConcentrations;
+import MetaboliteConcentrations;
 
 import Metabolism.CentralCarbonMetabolism;
 import CellDivision.BinaryFission;
@@ -25,7 +26,9 @@ organism Ecoli
     {
         cytosol Cytosol
         {
-            G6P[:] = 8.8mM; // overwrites import * from MetaboliteConcentrations
+            G6P[:] = MetaboliteConcentrations.G6P;
         }
     }
 }
+
+Ecoli = 1;
