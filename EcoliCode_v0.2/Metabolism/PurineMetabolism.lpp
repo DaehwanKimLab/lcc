@@ -1,0 +1,96 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Purine Metabolism
+
+from MetaboliteConcentrations import *;
+
+import EcoliInfo;
+
+float rate_pm = 1.5e-5;
+rate_ps = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
+
+pathway PurineMetabolism
+{
+
+    reaction GARSynthesis(PRPP -> GAR)
+    specification
+    {
+        if (rate_pm < PRPP)
+        {
+            GAR' = rate_pm;
+        }
+        else
+        {
+            GAR' = PRPP;
+        }
+    }
+
+    reaction FGARSynthesis(GAR + M_10_formyl_THF -> FGAR + THF)
+    specification
+    {
+        if (rate_pm < GAR)
+        {
+            if (rate_pm < M_10_formyl_THF)
+            {
+                FGAR' = rate_pm;
+            }
+            else
+            {
+                FGAR' = M_10_formyl_THF;
+            }            
+        }
+        else
+        {
+            if (GAR < M_10_formyl_THF)
+            {
+                FGAR' = GAR;
+            }
+            else
+            {
+                FGAR' = M_10_formyl_THF;
+            }
+        }
+    }
+    
+    reaction FGAMSynthesis(FGAR + ATP -> FGAM + ADP)
+    specification
+    {
+        if (rate_pm < FGAR)
+        {
+            if (rate_pm < ATP)
+            {
+                FGAM' = rate_pm;
+            }
+            else
+            {
+                FGAM' = ATP;
+            }
+        }
+        else
+        {
+            if (FGAR < ATP)
+            {
+                FGAM' = FGAR;
+            }
+            else
+            {
+                FGAM' = ATP;
+            }
+        }
+    }
+
+    reaction PurineSynthesis(2 FGAM -> dATP + dGTP)
+    specification
+    {
+        if (rate_ps < FGAM)
+        {
+            dATP' = rate_ps;
+        }
+        else
+        {
+            dATP' = FGAM;
+        }
+    }
+}

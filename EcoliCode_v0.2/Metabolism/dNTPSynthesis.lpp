@@ -1,0 +1,35 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// dNTPSynthesis
+
+from MetaboliteConcentrations import *;
+
+import PurineMetabolism.PRPPSynthesis;
+
+pathway dNTPSynthesis
+{
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            DHFSynthesis = FolicAcidMetabolism.DHFSynthesis;
+            THFSynthesisByFolA = FolicAcidMetabolism.THFSynthesisByFolA;
+            FiveTenMethyleneTHFSynthesisByGlyA = FolicAcidMetabolism.FiveTenMethyleneTHFSynthesisByGlyA;
+            TenFormylTHFSynthesis = FolicAcidMetabolism.TenFormylTHFSynthesis;
+            
+            PRPPSynthesis = PRPPSynthesis.PRPPSynthesis;
+
+            GARSynthesis = PurineMetabolism.GARSynthesis;
+            FGARSynthesis = PurineMetabolism.FGARSynthesis;
+            FGAMSynthesis = PurineMetabolism.FGAMSynthesis;
+            PurineSynthesis = PurineMetabolism.PurineSynthesis;
+
+            dCTPSynthesis = PyrimidineMetabolism.dCTPynthesis;
+            dUTPSynthesis = PyrimidineMetabolism.dUTPynthesis;
+            dTTPSynthesisByThyA = PyrimidineMetabolism.dTTPSynthesisByThyA;
+
+        }
+    }
+}

@@ -1,0 +1,38 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// PRPP Synthesis
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+
+float rate = 1.5e-5;
+
+pathway PRPPSynthesis(G6P + ATP -> PRPP + ADP)
+specification
+{
+    if (rate < G6P)
+    {
+        if (rate < ATP)
+        {
+            PRPP' = rate;
+        }
+        else
+        {
+            PRPP' = ATP;
+        }
+    }
+    else
+    {
+        if (G6P < ATP)
+        {
+            PRPP' = G6P;
+        }
+        else
+        {
+            PRPP' = ATP;
+        }
+    }
+}
