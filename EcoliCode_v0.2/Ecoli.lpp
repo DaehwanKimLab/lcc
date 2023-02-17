@@ -5,7 +5,7 @@
 // E. coli Code v0.2
 
 // Check how to import concentrations
-import * from MetaboliteConcentrations;
+from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 
 import Metabolism.Metabolism;
@@ -16,36 +16,55 @@ import GeneticInfoProcessing.Translation.Translation;
 
 organism Ecoli
 {
-    Metabolism = Metabolism.Metabolism.Metabolism;
-    CellDivision = CellDivision.BinaryFission.BinaryFission;
-    Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
-    Translation = GeneticInfoProcessing.Translation.Translation.Translation;
-
     membrane CellMembrane
     {
         cytosol Cytosol
         {
-            G6P[:] = MetaboliteConcentrations.G6P;
+            Metabolism = Metabolism.Metabolism.Metabolism;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+            G6P[:] = 8.8mM;
         }
     }
 }
 
 organism Ecoli_Chemotaxis
 {
-    Metabolism = Metabolism.Metabolism.Metabolism;
-    CellDivision = CellDivision.BinaryFission.BinaryFission;
-    CellMotility = CellMotility.CellMotility.CellMotility;
-    Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
-    Translation = GeneticInfoProcessing.Translation.Translation.Translation;
-
     membrane CellMembrane
     {
         cytosol Cytosol
         {
-            G6P[:] = MetaboliteConcentrations.G6P;
+            Metabolism = Metabolism.Metabolism.Metabolism;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            CellMotility = CellMotility.CellMotility.CellMotility;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+            G6P[:] = 8.8mM;
+        }
+    }
+}
+
+organism Ecoli_FolAKnockOut
+{
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            Metabolism = Metabolism.Metabolism.Metabolism;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            CellMotility = CellMotility.CellMotility.CellMotility;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+            G6P[:] = 8.8mM;
+            FolA = 0;
         }
     }
 }
 
 Ecoli = 1;
 Ecoli_Chemotaxis = 1;
+Ecoli_FolAKnockOut = 1;

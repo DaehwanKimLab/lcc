@@ -6,19 +6,13 @@
 
 from MetaboliteConcentrations import *;
 
+float rate_as = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M;
+
 pathway AASynthesis
 {
-    membrane CellMembrane
+    reaction GlutamineSynthesis( -> glutamine)
+    specification
     {
-        cytosol Cytosol
-        {
-            float rate_as = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M;
-
-            reaction AASynthesis( -> glutamine)
-            specification
-            {
-                glutamine' = rate_as;
-            }
-        }
+        glutamine' = rate_as;
     }
 }
