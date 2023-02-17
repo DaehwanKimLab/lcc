@@ -8,54 +8,26 @@ from MetaboliteConcentrations import *;
 
 import EcoliInfo;
 
-rate_ps = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
+float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
 
 pathway PyrimidineMetabolism
 {
     reaction dTTPSynthesisByThyA(dUTP + M_5_10_methylene_THF -> dTTP + DHF)
     specification
     {
-        if (rate_ps < dUTP)
-        {
-            if (rate_ps < M_5_10_methylene_THF)
-            {
-                dTTP' = rate_ps;
-            }
-            else
-            {
-                dTTP' = M_5_10_methylene_THF;
-            }            
-        }
-        else
-        {
-            if (dUTP < M_5_10_methylene_THF)
-            {
-                dTTP' = dUTP;
-            }
-            else
-            {
-                dTTP' = M_5_10_methylene_THF;
-            }
-        }
+        dTTP' = rate;
     }
 
     reaction dCTPSynthesis(PRPP -> dCTP)
     specification
     {
-        if (rate_ps < PRPP)
-        {
-            dCTP' = rate_ps;
-        }
-        else
-        {
-            dCTP' = PRPP;
-        }
+        dCTP' = rate;
     }
 
     reaction dUTPSynthesis( -> dUTP)
     specification
     {
-        dUTP' = rate_ps;
+        dUTP' = rate;
     }
 
 }

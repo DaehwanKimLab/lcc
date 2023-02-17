@@ -8,31 +8,22 @@ from MetaboliteConcentrations import *;
 
 import MetaboliteConcentrations;
 
-float rate = 1.5e-5;
+float Init_PPRP = MetaboliteConcentrations.PRPP;
 
 pathway PRPPSynthesis(G6P + ATP -> PRPP + ADP)
 specification
 {
-    if (rate < G6P)
+    float rate = 1.5e-5;
+    if (PRPP >= Init_PPRP)
     {
-        if (rate < ATP)
-        {
-            PRPP' = rate;
-        }
-        else
-        {
-            PRPP' = ATP;
-        }
+        PRPP' = 0;
     }
     else
     {
-        if (G6P < ATP)
+        if (PRPP + rate >= Init_PRPP)
         {
-            PRPP' = G6P;
+            rate = Init_PRPP - PRPP;
         }
-        else
-        {
-            PRPP' = ATP;
-        }
+        PRPP' = rate;
     }
 }

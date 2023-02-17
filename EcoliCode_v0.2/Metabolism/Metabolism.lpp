@@ -1,0 +1,24 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Overall Metabolism
+
+from MetaboliteConcentrations import *;
+import MetaboliteConcentrations;
+
+import CentralCarbonMetabolism;
+import dNTPSynthesis;
+import AASynthesis;
+import BuildingBlockConsumption;
+
+pathway Metabolism
+{
+    CentralCarbonMetabolism = CentralCarbonMetabolism.CentralCarbonMetabolism;
+    dNTPSynthesis = dNTPSynthesis.dNTPSynthesis;
+    AASynthesis = AASynthesis.AASynthesis;
+    dNTPConsumptionByDNAReplication = BuildingBlockConsumption.dNTPConsumptionByDNAReplication;
+    AAConsumptionByProteinSynthesis = BuildingBlockConsumption.AAConsumptionByProteinSynthesis;
+}
+
+G6P[:] = MetaboliteConcentrations.G6P;

@@ -6,10 +6,10 @@
 
 from MetaboliteConcentrations import *;
 
+import MetaboliteConcentrations;
 import EcoliInfo;
 
-float rate_pm = 1.5e-5;
-rate_ps = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
+Init_GAR = MetaboliteConcentrations.GAR;
 
 pathway PurineMetabolism
 {
@@ -17,80 +17,59 @@ pathway PurineMetabolism
     reaction GARSynthesis(PRPP -> GAR)
     specification
     {
-        if (rate_pm < PRPP)
+        float rate = 1.5e-5;
+
+        if (GAR >= Init_GAR)
         {
-            GAR' = rate_pm;
+            GAR' = 0;
         }
         else
         {
-            GAR' = PRPP;
+            if (GAR + rate >= Init_GAR)
+            {
+                rate = Init_GAR - GAR;
+            }
+            GAR' = rate;
+            // GAR' = min(rate, Init_GAR - GAR)
         }
     }
 
-    reaction FGARSynthesis(GAR + M_10_formyl_THF -> FGAR + THF)
+    reaction FGARSynthesisByPurN(GAR + M_10_formyl_THF -> FGAR + THF)
     specification
     {
-        if (rate_pm < GAR)
+        float rate = 1.5e-5;
+        float max_rate = GAR + FGAR / 2;
+
+        if (rate > max_rate)
         {
-            if (rate_pm < M_10_formyl_THF)
-            {
-                FGAR' = rate_pm;
-            }
-            else
-            {
-                FGAR' = M_10_formyl_THF;
-            }            
+            FGAR' = max_rate;
         }
         else
         {
-            if (GAR < M_10_formyl_THF)
-            {
-                FGAR' = GAR;
-            }
-            else
-            {
-                FGAR' = M_10_formyl_THF;
-            }
+            FGAR' = rate;
         }
     }
     
     reaction FGAMSynthesis(FGAR + ATP -> FGAM + ADP)
     specification
     {
-        if (rate_pm < FGAR)
+        float rate = 1.5e-5;
+        float max_rate = FGAR + FGAM / 2;
+
+        if (rate > max_rate)
         {
-            if (rate_pm < ATP)
-            {
-                FGAM' = rate_pm;
-            }
-            else
-            {
-                FGAM' = ATP;
-            }
+            FGAM' = max_rate;
         }
         else
         {
-            if (FGAR < ATP)
-            {
-                FGAM' = FGAR;
-            }
-            else
-            {
-                FGAM' = ATP;
-            }
+            FGAM' = rate;
         }
     }
 
     reaction PurineSynthesis(2 FGAM -> dATP + dGTP)
     specification
     {
-        if (rate_ps < FGAM)
-        {
-            dATP' = rate_ps;
-        }
-        else
-        {
-            dATP' = FGAM;
-        }
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
+        dATP' = rate;
     }
 }

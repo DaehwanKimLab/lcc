@@ -6,7 +6,7 @@
 
 from MetaboliteConcentrations import *;
 
-import FolicAcidMetabolism;
+import Cofactor.FolicAcidMetabolism;
 import PRPPSynthesis;
 import PurineMetabolism;
 import PyrimidineMetabolism;
@@ -17,10 +17,10 @@ pathway dNTPSynthesis
     {
         cytosol Cytosol
         {
-            DHFSynthesis = FolicAcidMetabolism.DHFSynthesis;
-            THFSynthesisByFolA = FolicAcidMetabolism.THFSynthesisByFolA;
-            FiveTenMethyleneTHFSynthesisByGlyA = FolicAcidMetabolism.FiveTenMethyleneTHFSynthesisByGlyA;
-            TenFormylTHFSynthesis = FolicAcidMetabolism.TenFormylTHFSynthesis;
+            DHFSynthesis = Cofactor.FolicAcidMetabolism.DHFSynthesis;
+            THFSynthesisByFolA = Cofactor.FolicAcidMetabolism.THFSynthesisByFolA;
+            FiveTenMethyleneTHFSynthesisByGlyA = Cofactor.FolicAcidMetabolism.FiveTenMethyleneTHFSynthesisByGlyA;
+            TenFormylTHFSynthesis = Cofactor.FolicAcidMetabolism.TenFormylTHFSynthesis;
             
             PRPPSynthesis = PRPPSynthesis.PRPPSynthesis;
 
@@ -29,8 +29,8 @@ pathway dNTPSynthesis
             FGAMSynthesis = PurineMetabolism.FGAMSynthesis;
             PurineSynthesis = PurineMetabolism.PurineSynthesis;
 
-            dCTPSynthesis = PyrimidineMetabolism.dCTPynthesis;
-            dUTPSynthesis = PyrimidineMetabolism.dUTPynthesis;
+            dCTPSynthesis = PyrimidineMetabolism.dCTPSynthesis;
+            dUTPSynthesis = PyrimidineMetabolism.dUTPSynthesis;
             dTTPSynthesisByThyA = PyrimidineMetabolism.dTTPSynthesisByThyA;
 
         }

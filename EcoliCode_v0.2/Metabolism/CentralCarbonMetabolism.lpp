@@ -5,8 +5,8 @@
 // Glucose Metabolism
 
 from MetaboliteConcentrations import *;
-
 import MetaboliteConcentrations;
+
 import GlucoseTransport;
 import Glycolysis;
 import PyruvateOxidation;
