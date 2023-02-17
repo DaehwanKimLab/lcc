@@ -2,11 +2,14 @@
 // © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
 // Donghoon M. Lee and Daehwan Kim
 
-// dNTPSynthesis
+// dNTP Synthesis
 
 from MetaboliteConcentrations import *;
 
-import PurineMetabolism.PRPPSynthesis;
+import FolicAcidMetabolism;
+import PRPPSynthesis;
+import PurineMetabolism;
+import PyrimidineMetabolism;
 
 pathway dNTPSynthesis
 {

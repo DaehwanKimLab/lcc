@@ -9,6 +9,8 @@ import * from MetaboliteConcentrations;
 import MetaboliteConcentrations;
 
 import Metabolism.CentralCarbonMetabolism;
+import Metabolism.dNTPSynthesis;
+import Metabolism.AASynthesis;
 import CellDivision.BinaryFission;
 import CellMotility.CellMotility;
 import GeneticInfoProcessing.Transcription.Transcription;
