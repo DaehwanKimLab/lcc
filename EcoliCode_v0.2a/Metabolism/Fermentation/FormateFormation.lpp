@@ -1,0 +1,14 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// FormateFormation
+
+reaction FormateFormation(pyruvate -> formate)
+specification
+{
+    float cf = 0.1M;
+    formate' = (1 / formate) * cf;
+}
+
+pyruvate = 0.39mM;

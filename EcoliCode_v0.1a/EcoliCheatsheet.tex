@@ -1,0 +1,92 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{collcell,booktabs,siunitx}
+\usepackage{xparse}
+
+\title{E coli by numbers}
+\author{Donghoon Lee}
+\data{\today}
+
+\begin{document}
+    \maketitle
+
+    section{General}
+    \begin{itemize}
+        \gdef\NA{#6.022*10^{23}}
+        \item Avogadro's constant = 6.022 x 10^{23} ≈ 6 x 10^{23}
+        \item total protein density ≈ 2~4 x 10^{6} proteins / μm^{3}
+        \item mean diameter of protein ≈ 4~5 nm
+        \item 1 base pair volume ≈ 1 nm^{3}
+        \item time scale for transitions between protein states (active/inactive) ≈ 1~100 μs
+        \item time scale for transcription factor binding to DNA site ≈ 1 s
+        \item mutation rate ≈ 10^{-8} ~ 10^{-10} / bp / replication
+    \end{itemize}
+
+    section{Ecoli}
+    \begin{itemize}
+        subsection{Physical Specification}
+        \gdef\Volume{#1*10^{-18}}
+        \item cell volume ≈ 0.3~3 μm3    
+        \item cell dimension = 2 μm x 1 μm x 1 μm, rod shape
+        \item total weight ≈ 9.5?10^-13g % Neidhardt_1996
+        \item total dry weight ≈ 2.8 x 10^{-13} g (30\% of total mass, where 70\% of it being water) % Neidhardt_1996
+        
+        subsection{Chemical Composition}
+        \item water ≈ 2 x 10^{10}
+        \item inorganic ion ≈ 1 x 10^{8} ≈ 4\% of dry weight % Frederick_1996
+        \item lipids ≈ 5 x 10^{7} ≈ 10\% of dry weight % Frederick_1996
+        \item DNA / cell ≈ 4.6 x 10^{6} bp ≈ 3\% of dry weight % Frederick_1996
+        \item RNA / cell ≈ 2 x 10^{3} ≈ 20\% of dry weight % double check! Frederick_1996
+        \item proteins / cell ≈ 3 x 10^{6} ≈ 55\% of dry weight % Frederick_1996
+        
+        \item RNA polymerases / cell ≈ 2 x 10^{3} % BremerDennis_1996
+        \item ribosomes / cell ≈ 1 x 10^{4}
+
+        subsection{Genetic Info}
+        \item genome size ≈ 4.6 Mbp
+        \item # of protein coding genes ≈ 4300
+        \item regulator binding site length ≈ 10~20 bp
+        \item promoter length ≈ 100 bp
+        \item gene length ≈ 1000 bp
+
+        subsection{Dynamics}
+        \item transcription rate < 1 min (80 nts/s)
+        \item translation rate < 1 min (20 aa/s)
+        \item mRNA life time ≈ 3 min
+        \item protein life time ≈ 1 hr
+        \item minimal doubling time ≈ 20 min
+
+        subsection{Molecular Kinetics}
+        \item diffusion time of protein across cell ≈ 0.01 s
+        \item diffusion time of small molecule across cell ≈ 0.001 s
+        \item time scale for equilibrium binding of small molecule to protein ≈ 1 ~ 1000 ms (1uM ~ 1nM affinity)
+
+    \end{itemize}    
+
+    section{Ecoli Metabolite Concentration}
+
+    \begin{tabular}{ ||l|l|l| } % |l|l|l||l|l|l||} 
+        \hline
+        \multicolumn{3}{|l|}{Glucose Metabolism} \\
+        \hline
+        Metabolite & mol L^{-1} (= M) & # of molecules \\ 
+        \hline
+        ATP     & 9.6 x 10^{-3} & \STcopy{v}{round (b3 * \NA * \Volume)}    \\ 
+        ADP     & 5.6 x 10^{-4} &                                           \\ 
+        NAD+    & 2.6 x 10^{-3} &                                           \\ 
+        \hline
+
+        % check build before adding more
+
+    \end{tabular}
+
+    section{Reference}
+    \begin{itemize}
+        \item Milo, R., & Phillips, R. (2015). Cell biology by the numbers. CRC Press.
+        \item Bennett, B., Kimball, E., Gao, M. et al. Absolute metabolite concentrations and implied enzyme active site occupancy in Escherichia coli. Nat Chem Biol 5, 593–599 (2009). https://doi.org/10.1038/nchembio.186
+        \item Bremer, H., Dennis, P. P. (1996) Modulation of chemical composition and other parameters of the cell by growth rate. Neidhardt, et al. eds. Escherichia coli and Salmonella typhimurium: Cellular and Molecular Biology, 2nd ed. chapter 97, p.1559, Table 3 and note 'b' beneath table
+        \item Frederick C. Neidhardt AND H. Edwin Umbarger, Chemical Composition of Escherichia coli, chapter 3 in Neidhardt F.C. Escherichia coli and Salmonella: Cellular and Molecular Biology. 2nd edition. Vol 1. American Society of Microbiology (ASM) Press 1996. p.2 table 1
+    \end{itemize} 
+
+\end{document}
+

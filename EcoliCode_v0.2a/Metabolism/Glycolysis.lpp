@@ -1,0 +1,33 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glycolysis
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+NAD.min = MetaboliteConcentrations.NAD / 10.0;
+ATP.min = 0.1 mM;
+
+pathway Glycolysis(G6P + 2 ATP + 2 NAD -> 2 pyruvate + 2 ADP + 2 NADH)
+specification
+{
+    if (NAD <= NAD.min)
+    {
+        ATP' = 0;
+    }
+    else
+    {
+        if (ATP > ATP.min)
+        {
+            ATP' = ADP / ATP * EcoliInfo.EGM_Glycolysis_Sec;
+        }
+        else
+        {
+            ATP' = ADP / MinATPConc * EcoliInfo.EGM_Glycolysis_Sec;
+        }
+    }
+}

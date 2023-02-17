@@ -1,0 +1,57 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// E. coli Code v0.2
+
+// Ecoli information
+
+float AvogadroNum = 6.022e23;
+
+float Volume = 1e-15;
+float C2M = 1 / AvogadroNum / Volume;
+float M2C = 1 / C2M;
+
+int DuplicationTime_LogPhase = 20 * 60;
+
+float GenomeSize = 4.5e6;
+float ProteomeSize = 3e6 * 300;
+
+float DNAReplicationRate = GenomeSize / DuplicationTime_LogPhase;
+float DNAReplicationRateInConc = DNAReplicationRate * C2M;
+int ATPConsumptionPerdNTPExtension = 3;
+
+float ProteinSynthesisRate = ProteomeSize / DuplicationTime_LogPhase;
+int ATPConsumptionPerAAExtension = 10;
+
+float VolumeExpansionRate = DNAReplicationRate;
+float VolumeExpansionSize = GenomeSize;
+
+//  # 4.5Mbp genome (float strand), 3 ATPs per 1 nucleotide extension
+float ECC_DNAReplication = GenomeSize * 2 * 3;
+//  # 3M proteins (each 300aa), 10 ATPs per 1 amino acid extension
+float ECC_ProteinSynthesis = ProteomeSize * 10;
+int ECC_Cytokinesis = 0;
+float ECC_VolumeExpansion = GenomeSize;
+float ECC_CellDivision = ECC_DNAReplication + ECC_ProteinSynthesis + ECC_Cytokinesis + ECC_VolumeExpansion;
+
+float ECM_CellDivision = ECC_CellDivision * C2M;
+float ECM_CellDivision_Sec = ECM_CellDivision / DuplicationTime_LogPhase;
+
+float ECGM_CellDivision = ECM_CellDivision / 32;
+
+float EGM_Glycolysis_Sec = ECM_CellDivision_Sec * 0.9;
+float EGM_PyruvateOxidation_Sec = EGM_Glycolysis_Sec;
+float EGM_TCACycle_Sec = ECM_CellDivision_Sec * 0.5;
+float EGM_OxidativePhosphorylation_NADH_Sec = ECM_CellDivision_Sec * 2.5;
+float EGM_OxidativePhosphorylation_FADH2_Sec = ECM_CellDivision_Sec * 0.5;
+
+float NCC_CellDivision = GenomeSize * 2;
+
+float NCM_CellDivision = NCC_CellDivision * C2M;
+float NCM_CellDivision_Sec = NCM_CellDivision / DuplicationTime_LogPhase;
+
+float ACC_CellDivision = ProteomeSize;
+
+float ACM_CellDivision = ACC_CellDivision * C2M;
+float ACM_CellDivision_Sec = ACM_CellDivision / DuplicationTime_LogPhase;

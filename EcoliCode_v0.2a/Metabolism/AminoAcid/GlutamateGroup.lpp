@@ -1,0 +1,34 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glutamate to Glutamine, Proline, Arginine
+
+// TODO: convert to biochem (GdhA, GltB)
+reaction GlutamateSynthesis(alpha-ketoglutarate-> glutarate)
+specification
+{
+    float cga = 0.019M;
+    glutarate'  = (alpha-ketoglutarate / glutarate) * cga;
+}
+
+reaction GlutamineSynthesis(glutarate-> glutamine)
+specification
+{
+    float cgn = 0.019M;
+    glutamine'  = (1 / glutamine) * cgn;
+}
+
+reaction ProlineSynthesis(glutarate-> proline)
+specification
+{
+    float cp = 0.019M;
+    proline'  = (1 / proline) * cp;
+}
+
+reaction ArginineSynthesis(glutarate-> arginine)
+specification
+{
+    float ca = 0.019M;
+    arginine'  = (1 / arginine) * ca;
+}

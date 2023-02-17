@@ -1,0 +1,25 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// NAD, NADP Synthesis
+
+reaction NAD+Synthesis(nicotinamide + PRPP + 2 ATP -> NAD+)
+{
+    float cn = 0.01M;
+    NAD+'  = min(nicotinamide, PRPP, ATP / 2, (NADH / NAD+) * cn); // NADH not from the overall reaction
+}
+
+reaction NADP+Synthesis(NAD+ + ATP -> NADP+ + ADP)
+{
+    float cnp = 0.01M;
+    NAD+'  = min(NAD+, ATP, (NADPH / NADP+) * cnp); // NADPH not from the overall reaction
+}
+
+ATP = 9.6mM;
+ADP = 0.56mM;
+NADH = 83.2nM;
+NAD = 2.6mM;
+
+NADPH = 0.12mM;
+NADP = 2.08nM;

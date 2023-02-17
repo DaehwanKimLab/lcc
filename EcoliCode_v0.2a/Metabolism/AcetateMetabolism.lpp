@@ -1,0 +1,17 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Acetate Metabolism
+
+reaction AcetateMetabolism(acetate -> acetyl-CoA)
+specification
+{
+    float ca = 0.1M;
+    acetyl-CoA' = (1 / acetyl-CoA) * ca;
+}
+
+// protein ACS
+// {
+//     reaction AcetateToAcetylCoA(acetate -> acetyl-CoA, kcat=1e2, KM=10-9);
+// }

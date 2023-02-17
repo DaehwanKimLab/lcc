@@ -1,0 +1,27 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Pyrimidine Synthesis
+
+pathway PyrimidineSynthesis
+{
+    reaction UMPSynthesis(HCO3 + glutamine + 2 ATP + aspartate -> UMP + 2 ADP)
+    specification
+    {
+        float cu= 0.019M;
+        UMP'  = (1 / UMP) * cu;
+    }
+
+    reaction UDPSynthesis(UMP -> UDP) // UMP kinase
+    specification
+    {
+        float cud = 0.019M;
+        UDP'  = (1 / UDP) * cud;
+    }
+
+    // TODO: UTP, CTP, dTMP
+    // TODO: dUMP, dTMP
+    // TODO: dCTP form dTMP, dTTP from dTMP
+
+}

@@ -1,0 +1,19 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Replication Origin
+
+DNA OriginOfReplication
+{
+    motif DnaABox; // GmATC, where mA indicates methylated Adenine by Dam
+    DNA parS; // to temporarily enable DNA segregation by ParABS system
+}
+
+protein DnaA // Origin-binding protein; Binds origin of replication to open double helix
+{
+    reaction ATPBinding(self + ATP -> self~ATP, Kd=1e-10);
+    reaction DnaABoxBinding(self~ATP + DnaABox -> DnaABox~self~ATP, Kd=1e-10);
+}
+
+DnaA = 1nM;

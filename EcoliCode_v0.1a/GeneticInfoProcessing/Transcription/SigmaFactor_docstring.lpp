@@ -1,0 +1,69 @@
+""" Sigma Factors  
+
+There are 7 sigma factors in E. Coli which facilitate `RNAP` binding during transcription initiation /* RefID1 */. Here, each sigma factor is defined on the basis of its Kd and promoter binding region.
+
+Discussion
+----------
+Current Kd values are placeholders and not experimentally validated.
+
+I have this and that to say about this process that is more opinion or experimental observation. 
+This model does better than X model by /* RefID2 */ as shown by x, y, z.
+
+See Also
+--------
+`Transcription` : LPP implementation of transcription 
+`RNAP` : LPP implementation of RNA polymerase
+
+Background
+----------
+[Transcription](https://en.wikipedia.org/wiki/Transcription_(biology)) : A Wikipedia article describing transcription.
+[RNAP](https://en.wikipedia.org/wiki/RNA_polymerase) : A Wikipedia article describing RNA polymerase
+
+Database
+--------
+Uniprot : 
+    Protein : [UniprotID](link to protein in uniprot)
+Ecocyc : [EcocycID](link to Ecocyc)
+    Reaction :  [EcocycID](link to Ecocyc)
+
+About
+-----
+Author : Donghoon M. Lee, Austin Marckx, and Daehwan Kim
+Journal : Not published
+Version : v0.2
+VersionDate : 2022-09-22
+
+References
+----------
+/* RefID1 */ : Some reference to my claim in docstring.
+/* RefID1 */ : Burgess R.R.(2001) Sigma Factors _Encyclopedia of Genetics_ doi: 10.1006/rwgn.2001.1192
+    table 1, sigma factor promoter regions
+/* RefID2 */ : SomeAuthor (2072) Some Title about a Model _Some Journal_ doi: someDoi
+/* SigFactConc */ : SomeOtherAuthor (2333) Some Title About Kinetics _Some Other Journal_ doi: someOtherDoi 
+
+"""
+
+// sigma19, ferric citrate sigma factor for iron transport and metabolism
+sigmafactor FecI(ds(GGAAATNNNN NNNNNNNNNN NNNTCNNNNN), Kd=1e-15); /* RefID1 */
+
+// sigma70, housekeeping, –10 (TATAAT) and –35 (TTGACA)
+sigmafactor RpoD(ds(TTGACANNNN NNNNNNNNNN NNNTATAATN), Kd=1e-15); /* RefID1 */
+
+// sigma24, extreme heat stress response and extracellular proteins
+sigmafactor RpoE(ds(GAACTTNNNN NNNNNNNNNN NNTCTGANNN), Kd=1e-15); /* RefID1 */
+
+// sigma28 (or FliA), flagellar synthesis and chemotaxis
+sigmafactor RpoF(ds(TAAANNNNNN NNNNNNNNNG CCGATAANNN), Kd=1e-15); /* RefID1 */
+
+// sigma32, heat shock
+sigmafactor RpoH(ds(CTTGAANNNN NNNNNNNNNN CCCCATNTNN), Kd=1e-15); /* RefID1 */
+
+// sigma38, starvation phase
+sigmafactor RpoS(ds(TTGACANNNN NNNNNNNNTG TGCTATACTN), Kd=1e-15); /* RefID1 */
+
+// sigma54, nitrogen-limitation
+sigmafactor RpoN(ds(CTGGCACNNN NNTTGCANNN NNNNNNNNNN), Kd=1e-15); /* RefID1 */
+
+// Standard Concentrations of Sigma Factors
+FecI = 1nM; /* SigFactConc */
+RpoD = 5nM, RpoE = 1nM, RpoF = 5nM, RpoH = 5nM, RpoS = 1nM, RpoN = 1nM; /* SigFactConc */

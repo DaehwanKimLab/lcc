@@ -1,0 +1,28 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// DNA Segregation
+
+import SMC;
+
+MukBEF = SMC.MukBEF;
+
+pathway DNASegregation
+{
+    membrane CellMembrane
+    {
+        MukBEF_MembraneRecruitment = SMC.MukBEF_MembraneRecruitment;
+
+        cytosol Cytosol
+        {
+            MukBEF_Complexation = MukBEF.Complexation;
+            MukBEF_Dimerization = MukBEF.Dimerization;
+            DNACondensation = MukBEF.DNACondensation;
+            
+            MukB = 463;
+            MukE = 683;
+            MukF = 122;
+        }
+    }
+}

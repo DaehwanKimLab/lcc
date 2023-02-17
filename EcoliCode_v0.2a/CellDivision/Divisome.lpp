@@ -1,0 +1,69 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Divisome
+
+import MinCDE;
+
+MinC = MinCDE.MinC;
+
+protein FtsA, FtsZ;
+
+complex ZRing
+{
+    ZRing = FtsA~(FtsZ_{n});
+    reaction FtsZ_MembraneRecruitment(FtsA~(FtsZ_{n}) + FtsZ{in} -> FtsA~(FtsZ_{n+1})) // (n can be 0, as well)
+    k_function
+    {
+        return FtsA / max(1, MinC{in});
+    }
+    krev_function
+    {
+        return 0.5 + MinC;
+    }
+    reaction FtsZ_Crosslinking(FtsA~(FtsZ_{n}){n} + FtsA~(FtsZ_{m}){1} -> (FtsA~(FtsZ_{n}){n})~(FtsA~(FtsZ_{m}){1}), r=1);
+    reaction FtsZ_Treadmilling((FtsA~(FtsZ_{n}){i})~(FtsA~(FtsZ_{m}){j}) -> (FtsA~(FtsZ_{n}){i-1})~(FtsA~(FtsZ_{m}){j+1}), r=1);
+}
+
+reference LevinJanakiraman_2021
+{
+    title = "Localization, Assembly, and Activation of the Escherichia coli Cell Division Machinery";
+    doi = "https://doi.org/10.1128/ecosalplus.ESP-0022-2021";
+}
+
+reference Nguyen_2021
+{
+    title = "Simulations of Proposed Mechanisms of FtsZ-Driven Cell Constriction";
+    doi = "https://doi.org/10.1128/JB.00576-20";
+}
+
+reference Kumar_2017
+{
+    title = "Z-ring Structure and Constriction Dynamics in E. coli";
+    doi = "https://doi.org/10.3389/fmicb.2017.01670";
+}
+
+reference Link_1997
+{
+    title = "Comparing the predicted and observed properties of proteins encoded in the genome of Escherichia coli K-12";
+    doi = "https://doi.org/10.1002/elps.1150180807";
+}
+
+reference Lu_1998
+{
+    title = "FtsZ from Escherichia coli, Azotobacter vinelandii, and Thermotoga maritima–quantitation, GTP hydrolysis, and assembly.";
+    doi = "https://doi.org/10.1002/(SICI)1097-0169(1998)40:1<71::AID-CM7>3.0.CO;2-I";
+}
+
+reference Rueda_2003
+{
+    title = "Concentration and assembly of the division ring proteins FtsZ, FtsA, and ZipA during the Escherichia coli cell cycle";
+    doi = "https://doi.org/10.1128/JB.185.11.3344-3351.2003";
+}
+
+reference CorbinErickson_2020
+{
+    title = "A Unified Model for Treadmilling and Nucleation of Single-Stranded FtsZ Protofilaments";
+    doi = "https://doi.org/10.1016/j.bpj.2020.05.041";
+}

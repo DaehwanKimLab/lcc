@@ -1,0 +1,41 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glucose Metabolism
+
+import GlucoseTransport;
+import Glycolysis;
+import PyruvateOxidation;
+import CitrateCycle;
+import OxidativePhosphorylation;
+import EnergyConsumption;
+
+pathway GlucoseMetabolism
+{
+    membrane CellMembrane
+    {
+        GlucoseTransporter = GlucoseTransport.GlucoseTransport;
+
+        cytosol Cytosol
+        {
+            Glycolysis = Glycolysis.Glycolysis;
+            PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
+            CitrateCycle = CitrateCycle.CitrateCycle;
+            OxidativePhosphorylation = OxidativePhosphorylation.OxidativePhosphorylation;
+            EnergyConsumption = EnergyConsumption.EnergyConsumption;
+
+            G6P[:] = 8.8mM;
+            ATP = 9.6mM;
+            ADP = 0.56mM;
+            NADH = 8.3mM;
+            NAD = 2.6mM;
+            pyruvate = 0.39mM;
+            CoA_SH[:] = 1.4mM;
+            acetyl_CoA = 0.61mM;
+            FADH2 = 0.5mM;
+            FAD = 0.17mM;
+            Malate = 1.7mM;
+        }
+    }
+}

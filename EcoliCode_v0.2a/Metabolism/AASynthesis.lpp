@@ -1,0 +1,24 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Amino acid Synthesis
+
+from MetaboliteConcentrations import *;
+
+pathway AASynthesis
+{
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            float rate_as = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M;
+
+            reaction AASynthesis( -> glutamine)
+            specification
+            {
+                glutamine' = rate_as;
+            }
+        }
+    }
+}

@@ -1,0 +1,14 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// AcetateFormation
+
+reaction AcetateFormation(pyruvate -> acetate) // Pdc, Ald
+specification
+{
+    float ca = 0.1M;
+    acetate' = (1 / acetate) * ca;
+}
+
+pyruvate = 0.39mM;

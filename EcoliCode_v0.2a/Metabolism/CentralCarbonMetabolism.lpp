@@ -1,0 +1,43 @@
+// BSD 3-Clause License
+// © 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glucose Metabolism
+
+from MetaboliteConcentrations import *;
+import MetaboliteConcentrations;
+
+// import GlucoseTransport;
+import Glycolysis;
+import PyruvateOxidation;
+import CitrateCycle;
+import NADH_OxidativePhosphorylation;
+import FADH2_OxidativePhosphorylation;
+import EnergyConsumption;
+
+pathway CentralCarbonMetabolism
+{
+    membrane CellMembrane
+    {
+        // GlucoseTransporter = GlucoseTransport.GlucoseTransport.GlucoseTransport;
+
+        cytosol Cytosol
+        {
+            Glycolysis = Glycolysis.Glycolysis;
+            PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
+            CitrateCycle = CitrateCycle.CitrateCycle;
+            NADH_OxidativePhosphorylation = NADH_OxidativePhosphorylation.NADH_OxidativePhosphorylation;
+            FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
+
+        }
+    }
+}
+
+reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.
+{
+    title = "Bacterial Physiology and Metabolism.";
+    page = "191";
+    table = "6.10";
+    page += "192";
+    table += "6.11";
+} 
