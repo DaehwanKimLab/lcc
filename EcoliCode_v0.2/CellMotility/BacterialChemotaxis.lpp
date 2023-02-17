@@ -6,25 +6,25 @@
 
 protein CheR
 {
-    reaction CheA_Methylation(CheA --> CheAm, kcat=1, KM=1e-10nM);
-    reaction CheAL_Methylation(CheAL --> CheAmL, kcat=1, KM=1e-10nM);
+    reaction CheA_Methylation(CheA -> CheAm, kcat=1, KM=1e-10nM);
+    reaction CheAL_Methylation(CheAL -> CheAmL, kcat=1, KM=1e-10nM);
 }
 
 protein CheB;
 protein CheBP
 {
-    reaction CheAm_Demethylation(CheAm --> CheA, kcat=200, KM=1nM);
-    reaction CheAmL_Demethylation(CheAmL --> CheAL, kcat=1, KM=1nM);
+    reaction CheAm_Demethylation(CheAm -> CheA, kcat=200, KM=1nM);
+    reaction CheAmL_Demethylation(CheAmL -> CheAL, kcat=1, KM=1nM);
 }
 
 protein CheA;
 protein CheAm
 {
-    reaction CheB_Phosphorylation(CheB --> CheBP, k=0.05e9, krev=0.005);
+    reaction CheB_Phosphorylation(CheB -> CheBP, k=0.05e9, krev=0.005);
 }
 
-reaction CheAm_LigandBinding(CheAm + L{out} --> CheAmL, k=1e9, krev=1);
-reaction CheA_LigandBinding(CheA + L{out} --> CheAL, k=1e9, krev=1);
+reaction CheAm_LigandBinding(CheAm + L{out} -> CheAmL, k=1e9, krev=1);
+reaction CheA_LigandBinding(CheA + L{out} -> CheAL, k=1e9, krev=1);
 
 reference BitbolWingreen_2015
 {

@@ -61,11 +61,11 @@ Capacity["co"] = c_CellDivision * 5000
 DebugZero = False
 
 # Stoichiometry Analysis:
-# Glyc:     G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP
-# PyrOx:    pyruvate + CoA + NAD --> acetyl-CoA + NADH
-# TCA:      acetyl-CoA + 3 NAD + FAD + ADP --> 3 NADH + FADH2 + ATP + CoA
-# OxPhos:   NADH + FADH2 + 4 ADP --> NAD + FAD + 4 ATP
-# Overall:  G6P + 12 ADP + 8 NAD --> 12 ATP + 8 NADH
+# Glyc:     G6P + 2 ADP + 2 NAD -> 2 pyruvate + 2 NADH + 2 ATP
+# PyrOx:    pyruvate + CoA + NAD -> acetyl-CoA + NADH
+# TCA:      acetyl-CoA + 3 NAD + FAD + ADP -> 3 NADH + FADH2 + ATP + CoA
+# OxPhos:   NADH + FADH2 + 4 ADP -> NAD + FAD + 4 ATP
+# Overall:  G6P + 12 ADP + 8 NAD -> 12 ATP + 8 NADH
 
 class FSimulation():
     def __init__(self):
@@ -431,9 +431,9 @@ class FSimulation():
 
     def Initialize_Glycolysis(self):
         # Without pyruvate oxidation
-        # G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP
+        # G6P + 2 ADP + 2 NAD -> 2 pyruvate + 2 NADH + 2 ATP
         # With pyruvate oxidation
-        # G6P + 2 ADP + 4 NAD --> 2 acetyl-CoA + 4 NADH + 2 ATP
+        # G6P + 2 ADP + 4 NAD -> 2 acetyl-CoA + 4 NADH + 2 ATP
 
         # Initial Molecule Concentrations
         self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
@@ -468,8 +468,8 @@ class FSimulation():
             sys.exit(1)
 
     def Sim_Glycolysis(self):
-        # G6P + 2 ADP + 2 NAD --> 2 pyruvate + 2 NADH + 2 ATP
-        # G6P + 2 ADP + 4 NAD --> 2 acetyl-CoA + 4 NADH + 2 ATP
+        # G6P + 2 ADP + 2 NAD -> 2 pyruvate + 2 NADH + 2 ATP
+        # G6P + 2 ADP + 4 NAD -> 2 acetyl-CoA + 4 NADH + 2 ATP
 
         d = dict()
 
@@ -581,7 +581,7 @@ class FSimulation():
 
     def Initialize_PyruvateOxidation(self):
         # With pyruvate oxidation
-        # pyruvate + CoA + NAD --> acetyl-CoA + NADH
+        # pyruvate + CoA + NAD -> acetyl-CoA + NADH
 
         # Initial Molecule Concentrations
         self.MolConc["pyruvate"]    = 3.9e-4
@@ -609,7 +609,7 @@ class FSimulation():
             sys.exit(1)
 
     def Sim_PyruvateOxidation(self):
-        # pyruvate + CoA + NAD --> acetyl-CoA + NADH
+        # pyruvate + CoA + NAD -> acetyl-CoA + NADH
         d = dict()
 
         # Production Rate Type
@@ -626,7 +626,7 @@ class FSimulation():
         self.AddToDeltaMolConc(d)
 
     def Initialize_TCACycle(self):
-        # acetyl-CoA + 3 NAD + FAD + ADP --> 3 NADH + FADH2 + ATP + CoA
+        # acetyl-CoA + 3 NAD + FAD + ADP -> 3 NADH + FADH2 + ATP + CoA
 
         # Initial Molecule Concentrations
         # self.MolConc["G6P"]      = 8.8e-3   # all Hexose-P combined
@@ -665,7 +665,7 @@ class FSimulation():
             sys.exit(1)
 
     def Sim_TCACycle(self):
-        # acetyl-CoA + 3 NAD + FAD + ADP --> 3 NADH + FADH2 + ATP + CoA
+        # acetyl-CoA + 3 NAD + FAD + ADP -> 3 NADH + FADH2 + ATP + CoA
         d = dict()
 
         # Production Rate Type
@@ -690,7 +690,7 @@ class FSimulation():
         self.AddToDeltaMolConc(d)
 
     def Initialize_OxidativePhosphorylation(self):
-        # NADH + FADH2 + 4 ADP --> NAD + FAD + 4 ATP
+        # NADH + FADH2 + 4 ADP -> NAD + FAD + 4 ATP
 
         # Initial Molecule Concentrations
         self.MolConc["FAD"]     = 1.7e-4
@@ -724,7 +724,7 @@ class FSimulation():
             sys.exit(1)
 
     def Sim_OxidativePhosphorylation(self):
-        # NADH + FADH2 + 4 ADP --> NAD + FAD + 4 ATP
+        # NADH + FADH2 + 4 ADP -> NAD + FAD + 4 ATP
         d = dict()
 
         # Production Rate Type
@@ -888,7 +888,7 @@ class FModelRunner():
 
     def Model_Chemotaxis(self, G6PSinkModel="Linear_G6PSink"):
         self.InitializeDatasets()
-        ModelName = "[Chemotaxis] glucose{out} --> G6P{in}"
+        ModelName = "[Chemotaxis] glucose{out} -> G6P{in}"
 
         # GlucoseAvailabilityTypes = ["No_GlucoseAvailability", "Constant_GlucoseAvailability", "Increasing_GlucoseAvailability", "Fluctuating_GlucoseAvailability"]
         GlucoseAvailabilityTypes = ["Constant_GlucoseAvailability", "Increasing_GlucoseAvailability"]
@@ -925,9 +925,9 @@ class FModelRunner():
         self.InitializeDatasets()
         ModelName = None
         if EndProduct == "pyruvate":
-            ModelName = "[Glycolysis] G6P + 2 ADP + 2 NAD+ + 2 Pi --> 2 pyruvate + 2 NADH + 2 ATP"
+            ModelName = "[Glycolysis] G6P + 2 ADP + 2 NAD+ + 2 Pi -> 2 pyruvate + 2 NADH + 2 ATP"
         elif EndProduct =="acetyl-CoA":
-            ModelName = "[Glycolysis] G6P + 2 ADP + 3 NAD+ + 2 Pi --> 2 acetyl-CoA + 4 NADH + 2 ATP"
+            ModelName = "[Glycolysis] G6P + 2 ADP + 3 NAD+ + 2 Pi -> 2 acetyl-CoA + 4 NADH + 2 ATP"
         else:
             print("\n[Error] Unsupported End Product: %s" % EndProduct)
             sys.exit(1)
@@ -968,7 +968,7 @@ class FModelRunner():
 
     def Model_PyruvateOxidation(self):
         self.InitializeDatasets()
-        ModelName = "[PyruvateOxidation] pyruvate + CoA-SH --> acetyl-CoA + NADH"
+        ModelName = "[PyruvateOxidation] pyruvate + CoA-SH -> acetyl-CoA + NADH"
 
         # PyruvateOxidationATPTypes = ["acetyl-CoA'=0", "acetyl-CoA'=cp", "acetyl-CoA'=(ADP/ATP)*cp", "acetyl-CoA'=(pyruvate/acetyl-CoA)*cp"]
         PyruvateOxidationATPTypes = ["acetyl-CoA'=0", "acetyl-CoA'=cp", "acetyl-CoA'=(pyruvate/acetyl-CoA)*cp", "acetyl-CoA'=pyruvate*cp"]
@@ -991,7 +991,7 @@ class FModelRunner():
 
     def Model_TCACycle(self, AcetylCoALevel="Unfixed"):
         self.InitializeDatasets()
-        ModelName = "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP --> 3 NADH + FADH2 + ATP + CoA"
+        ModelName = "[TCACycle] acetyl-CoA + 3 NAD + FAD + ADP -> 3 NADH + FADH2 + ATP + CoA"
 
         # TCACycleATPTypes = ["ATP'=0", "ATP'=ct", "ATP'=(ADP/ATP)*ct"]
         TCACycleATPTypes = ["ATP'=ct", "ATP'=(ADP/ATP)*ct"]
@@ -1026,7 +1026,7 @@ class FModelRunner():
 
     def Model_OxidativePhosphorylation(self, OP_CapacityTest=True):
         self.InitializeDatasets()
-        ModelName = "[OxidativePhosphorylation] NADH + FADH2 + 4 ADP --> NAD + FAD + 4 ATP"   # Not including H other biproducts
+        ModelName = "[OxidativePhosphorylation] NADH + FADH2 + 4 ADP -> NAD + FAD + 4 ATP"   # Not including H other biproducts
 
         if OP_CapacityTest:
             OxidativePhosphorylationATPType = "ATP'=co"
