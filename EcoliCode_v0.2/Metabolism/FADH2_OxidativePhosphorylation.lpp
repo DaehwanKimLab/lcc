@@ -9,10 +9,8 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 import EcoliInfo;
 
-float Init_FADH2 = MetaboliteConcentrations.FADH2;
-
 pathway FADH2_OxidativePhosphorylation(2 FADH2 + 3 ADP -> 2 FAD + 3 ATP)
 specification
 {
-    ATP' = FADH2 / (Init_FADH2 + FADH2) * EcoliInfo.EGM_OxidativePhosphorylation_FADH2_Sec;
+    ATP' = FADH2 / (MetaboliteConcentrations.FADH2 + FADH2) * EcoliInfo.EGM_OxidativePhosphorylation_FADH2_Sec;
 }

@@ -4,11 +4,11 @@
 
 // Building Block Consumption
 
-import * from MetaboliteConcentrations;
+from MetaboliteConcentrations import *;
 
 import EcoliInfo;
 
-reaction dNTPConsumptionByDNAReplication(dATP + dCTP + dGTP + dTTP + 3 ATP -> 3 ADP) // for cell division
+reaction dNTPConsumptionByDNAReplication(dATP + dCTP + dGTP + dTTP + 12 ATP -> 12 ADP) // for cell division
 specification
 {
     dATP' = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M / 4;

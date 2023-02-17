@@ -20,5 +20,3 @@ pathway Metabolism
     dNTPConsumptionByDNAReplication = BuildingBlockConsumption.dNTPConsumptionByDNAReplication;
     AAConsumptionByProteinSynthesis = BuildingBlockConsumption.AAConsumptionByProteinSynthesis;
 }
-
-G6P[:] = MetaboliteConcentrations.G6P;

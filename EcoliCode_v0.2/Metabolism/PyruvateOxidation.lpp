@@ -9,10 +9,8 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 import EcoliInfo;
 
-float Init_pyruvate = MetaboliteConcentrations.pyruvate;
-
 reaction PyruvateOxidation(pyruvate + NAD + CoA_SH -> acetyl_CoA + NADH)
 specification
 {
-    acetyl_CoA' = pyruvate / (Init_pyruvate + pyruvate) * EcoliInfo.EGM_Pyruvate_Sec;
+    acetyl_CoA' = pyruvate / (MetaboliteConcentrations.pyruvate + pyruvate) * EcoliInfo.EGM_Pyruvate_Sec;
 }
