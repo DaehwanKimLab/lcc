@@ -20,7 +20,7 @@ experiment Exp_Ecoli
     P = 1;
 }
 
-experiment Exp_GlucoseTest
+experiment Exp_GlucoseMediumTest
 {
     petridish P_Control
     {
@@ -37,7 +37,7 @@ experiment Exp_GlucoseTest
     P_Glucose = 1;
 }
 
-experiment Exp_FolA
+experiment Exp_FolARepression
 {
     int TitrationResolution = 30;
     for (i = 0; i < TitrationResolution; i++)
@@ -55,4 +55,14 @@ experiment Exp_FolA
 
         P = 1;
     } 
+}
+
+experiment Exp_Chemotaxis
+{
+    petridish P
+    {
+        Ecoli.Ecoli_Chemotaxis = 1;
+    }
+
+    P = 1;
 }

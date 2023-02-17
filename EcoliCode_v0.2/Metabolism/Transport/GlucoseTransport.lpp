@@ -4,14 +4,15 @@
 
 // Glucose Transport
 
-reaction GlucoseTransport(glucose{out} + ATP -> G6P{in} + ATP, k=1)
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+
+float D_gt = 1e3;
+float Init_G6P = MetaboliteConcentrations.G6P;
+
+reaction GlucoseTransport(glucose{out} + ATP -> G6P{in} + ADP)
 specification
 {
-    float cgt = 0.5 M;
-    G6P' = glucose/G6P * cgt;
+    G6P' = glucose * (Init_G6P - G6P) * D_gt;
 }
-
-glucose{out}[:] = 0.15e-6 M;
-G6P{in} = 8.8e-3 M;
-ATP = 9.6e-3 M;
-ADP = 5.6e-4 M;

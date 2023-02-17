@@ -7,7 +7,7 @@
 from MetaboliteConcentrations import *;
 
 import MetaboliteConcentrations;
-// import GlucoseTransport;
+import GlucoseTransport;
 import Glycolysis;
 import PyruvateOxidation;
 import CitrateCycle;
@@ -19,7 +19,7 @@ pathway CentralCarbonMetabolism
 {
     membrane CellMembrane
     {
-        // GlucoseTransporter = GlucoseTransport.GlucoseTransport;
+        GlucoseTransporter = GlucoseTransport.GlucoseTransport.GlucoseTransport;
 
         cytosol Cytosol
         {
@@ -28,9 +28,7 @@ pathway CentralCarbonMetabolism
             CitrateCycle = CitrateCycle.CitrateCycle;
             NADH_OxidativePhosphorylation = NADH_OxidativePhosphorylation.NADH_OxidativePhosphorylation;
             FADH2_OxidativePhosphorylation = FADH2_OxidativePhosphorylation.FADH2_OxidativePhosphorylation;
-            EnergyConsumption = EnergyConsumption.EnergyConsumption;
 
-            G6P[:] = MetaboliteConcentrations.G6P;
         }
     }
 }
@@ -43,29 +41,3 @@ reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.
     page += "192";
     table += "6.11";
 } 
-
-// Table 6.10. ATP requirement for polymer synthesis by Escherichia coli using glucose–mineral salts medium
-// Polymer  ATP required for the synthesis of polymer to make up one gram dry wt cell material (mmol/g dry wt)
-//
-// Polysaccharide   2.1
-//
-// Protein
-// Glucose to amino acids   1.4
-// Polymerization (translation) 19.1
-//
-// Lipid    0.1
-//
-// RNA
-// Glucose to ribonucleotides   3.5
-// Polymerization (transcription)   0.9
-//
-// DNA
-// Glucose to deoxyribonucleotides  0.9
-// Polymerization   0.2
-//
-// Transport    5.2
-// 
-// RNA turnover 1.4
-//
-// Overall  34.8
-//

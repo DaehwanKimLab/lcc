@@ -8,9 +8,7 @@
 import * from MetaboliteConcentrations;
 import MetaboliteConcentrations;
 
-import Metabolism.CentralCarbonMetabolism;
-import Metabolism.dNTPSynthesis;
-import Metabolism.AASynthesis;
+import Metabolism.Metabolism;
 import CellDivision.BinaryFission;
 import CellMotility.CellMotility;
 import GeneticInfoProcessing.Transcription.Transcription;
@@ -18,7 +16,23 @@ import GeneticInfoProcessing.Translation.Translation;
 
 organism Ecoli
 {
-    Metabolism = Metabolism.CentralCarbonMetabolism.CentralCarbonMetabolism;
+    Metabolism = Metabolism.Metabolism.Metabolism;
+    CellDivision = CellDivision.BinaryFission.BinaryFission;
+    Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+    Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            G6P[:] = MetaboliteConcentrations.G6P;
+        }
+    }
+}
+
+organism Ecoli_Chemotaxis
+{
+    Metabolism = Metabolism.Metabolism.Metabolism;
     CellDivision = CellDivision.BinaryFission.BinaryFission;
     CellMotility = CellMotility.CellMotility.CellMotility;
     Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
@@ -34,3 +48,4 @@ organism Ecoli
 }
 
 Ecoli = 1;
+Ecoli_Chemotaxis = 1;
