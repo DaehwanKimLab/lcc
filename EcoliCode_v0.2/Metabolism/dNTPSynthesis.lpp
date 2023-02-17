@@ -21,8 +21,8 @@ pathway dNTPSynthesis
     PRPPSynthesis = PRPPSynthesis.PRPPSynthesis;
 
     GARSynthesis = PurineMetabolism.GARSynthesis;
-    FGARSynthesis = PurineMetabolism.FGARSynthesis;
-    FGAMSynthesis = PurineMetabolism.FGAMSynthesis;
+    FGARSynthesisByPurN = PurineMetabolism.FGARSynthesisByPurN;
+    FGAMSynthesisByPurL = PurineMetabolism.FGAMSynthesisByPurL;
     PurineSynthesis = PurineMetabolism.PurineSynthesis;
 
     dCTPSynthesis = PyrimidineMetabolism.dCTPSynthesis;

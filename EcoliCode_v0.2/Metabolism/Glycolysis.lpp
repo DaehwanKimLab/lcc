@@ -9,10 +9,12 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 import EcoliInfo;
 
+float capacityfactor = EcoliInfo.EGM_Glycolysis_Sec;
+
 pathway Glycolysis(G6P + 2 ATP + 2 NAD -> 2 pyruvate + 2 ADP + 2 NADH)
 specification
 {
     NAD.min = MetaboliteConcentrations.NAD / 10.0;
     ATP.min = 0.1 mM;
-    ATP' = ADP / ATP * EcoliInfo.EGM_Glycolysis_Sec;
+    ATP' = (ADP / ATP) * capacityfactor;
 }

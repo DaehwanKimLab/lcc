@@ -17,6 +17,7 @@ pathway Metabolism
     CentralCarbonMetabolism = CentralCarbonMetabolism.CentralCarbonMetabolism;
     dNTPSynthesis = dNTPSynthesis.dNTPSynthesis;
     AASynthesis = AASynthesis.AASynthesis;
+    
     dNTPConsumptionByDNAReplication = BuildingBlockConsumption.dNTPConsumptionByDNAReplication;
     AAConsumptionByProteinSynthesis = BuildingBlockConsumption.AAConsumptionByProteinSynthesis;
 }

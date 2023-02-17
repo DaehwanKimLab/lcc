@@ -9,12 +9,13 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 import EcoliInfo;
 
+float rate = 1.5e-5;
+
 pathway PurineMetabolism
 {
     reaction GARSynthesis(PRPP -> GAR)
     specification
     {
-        float rate = 1.5e-5;
         GAR.max = MetaboliteConcentrations.GAR;
         GAR' = rate;
     }
@@ -22,17 +23,17 @@ pathway PurineMetabolism
     reaction FGARSynthesisByPurN(GAR + M_10_formyl_THF -> FGAR + THF)
     specification
     {
-        float rate = 1.5e-5;
-        FGAR.max = GAR + FGAR / 2;
-        FGAR' = rate;
+        float rate_FGAR = rate * (PurN / MetaboliteConcentrations.PurN);
+        FGAR.max = (GAR + FGAR) / 2;
+        FGAR' = rate_FGAR;
     }
     
-    reaction FGAMSynthesis(FGAR + ATP -> FGAM + ADP)
+    reaction FGAMSynthesisByPurL(FGAR + ATP -> FGAM + ADP)
     specification
     {
-        float rate = 1.5e-5;
-        FGAM.max = FGAR + FGAM / 2;
-        FGAM' = rate;
+        float rate_FGAM = rate * (PurL / MetaboliteConcentrations.PurL);
+        FGAM.max = (FGAR + FGAM) / 2;
+        FGAM' = rate_FGAM;
     }
 
     reaction PurineSynthesis(2 FGAM -> dATP + dGTP)

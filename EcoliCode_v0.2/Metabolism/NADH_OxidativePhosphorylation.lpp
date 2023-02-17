@@ -9,8 +9,10 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 import EcoliInfo;
 
+float capacityfactor = EcoliInfo.EGM_OxidativePhosphorylation_NADH_Sec;
+
 pathway NADH_OxidativePhosphorylation(2 NADH + 5 ADP -> 2 NAD + 5 ATP)
 specification
 {
-    ATP' = NADH / (MetaboliteConcentrations.NADH + NADH) * EcoliInfo.EGM_OxidativePhosphorylation_NADH_Sec;
+    ATP' = NADH / (MetaboliteConcentrations.NADH + NADH) * capacityfactor;
 }

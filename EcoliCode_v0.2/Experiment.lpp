@@ -30,7 +30,7 @@ experiment Exp_FolAKnockout
 
     petridish P_Glucose
     {
-        Ecoli = 1;
+        Ecoli_FolAKnockout = 1;
         glucose = 25mM;
     }
 

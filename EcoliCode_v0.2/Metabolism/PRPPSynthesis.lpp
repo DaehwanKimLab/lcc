@@ -8,7 +8,6 @@ from MetaboliteConcentrations import *;
 
 import MetaboliteConcentrations;
 
-
 pathway PRPPSynthesis(G6P + ATP -> PRPP + ADP)
 specification
 {

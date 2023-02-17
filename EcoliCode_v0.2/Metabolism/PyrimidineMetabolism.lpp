@@ -6,6 +6,7 @@
 
 from MetaboliteConcentrations import *;
 
+import MetaboliteConcentrations;
 import EcoliInfo;
 
 float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
@@ -15,7 +16,8 @@ pathway PyrimidineMetabolism
     reaction dTTPSynthesisByThyA(dUTP + M_5_10_methylene_THF -> dTTP + DHF)
     specification
     {
-        dTTP' = rate;
+        float rate_dTTP = rate * (ThyA / MetaboliteConcentrations.ThyA);
+        dTTP' = rate_dTTP;
     }
 
     reaction dCTPSynthesis(PRPP -> dCTP)

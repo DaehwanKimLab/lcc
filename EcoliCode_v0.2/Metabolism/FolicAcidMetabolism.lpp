@@ -24,7 +24,7 @@ pathway FolicAcidMetabolism
     reaction THFSynthesisByFolA(DHF -> THF)
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2;
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2 * (FolA / MetaboliteConcentrations.FolA);
         THF.max = (DHF + THF) / 2;
         THF' = rate;
     }
@@ -32,7 +32,7 @@ pathway FolicAcidMetabolism
     reaction FiveTenMethyleneTHFSynthesisByGlyA(THF -> M_5_10_methylene_THF)
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2;
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2 * (GlyA / MetaboliteConcentrations.GlyA);
         M_5_10_methylene_THF.max = (THF + M_5_10_methylene_THF) / 2;
         M_5_10_methylene_THF' = rate;
     }
