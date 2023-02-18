@@ -9,10 +9,10 @@ from MetaboliteConcentrations import *;
 import MetaboliteConcentrations;
 
 import Metabolism.Metabolism;
-//import CellDivision.BinaryFission;
-//import CellMotility.CellMotility;
-//import GeneticInfoProcessing.Transcription.Transcription;
-//import GeneticInfoProcessing.Translation.Translation;
+import CellDivision.BinaryFission;
+import CellMotility.CellMotility;
+import GeneticInfoProcessing.Transcription.Transcription;
+import GeneticInfoProcessing.Translation.Translation;
 
 organism Ecoli
 {
@@ -21,9 +21,9 @@ organism Ecoli
         cytosol Cytosol
         {
             Metabolism = Metabolism.Metabolism.Metabolism;
-            //CellDivision = CellDivision.BinaryFission.BinaryFission;
-            //Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
-            //Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
 
             G6P[:] = 8.8mM;
         }
@@ -37,9 +37,9 @@ organism Ecoli_Chemotaxis
         cytosol Cytosol
         {
             Metabolism = Metabolism.Metabolism.Metabolism;
-            //CellMotility = CellMotility.CellMotility.CellMotility;
-            //Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
-            //Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+            CellMotility = CellMotility.CellMotility.CellMotility;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
 
             G6P[:] = 8.8mM;
         }
@@ -53,9 +53,9 @@ organism Ecoli_FolAKnockOut
         cytosol Cytosol
         {
             Metabolism = Metabolism.Metabolism.Metabolism;
-            //CellDivision = CellDivision.BinaryFission.BinaryFission;
-            //Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
-            //Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
 
             G6P[:] = 8.8mM;
             FolA = 0;
