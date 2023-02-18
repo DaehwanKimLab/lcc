@@ -10,7 +10,7 @@ float rate_as = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M;
 
 pathway AASynthesis
 {
-    reaction GlutamineSynthesis( -> glutamine)
+    reaction GlutamineSynthesis(G6P -> glutamine) // G6P is a placeholder
     specification
     {
         glutamine' = rate_as;

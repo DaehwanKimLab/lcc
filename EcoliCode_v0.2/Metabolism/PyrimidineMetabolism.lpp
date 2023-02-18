@@ -27,6 +27,7 @@ pathway PyrimidineMetabolism
     }
 
     reaction dUTPSynthesis(PRPP -> dUTP)
+    specification
     {
         dUTP' = rate;
     }
