@@ -37,7 +37,6 @@ organism Ecoli_Chemotaxis
         cytosol Cytosol
         {
             Metabolism = Metabolism.Metabolism.Metabolism;
-            CellDivision = CellDivision.BinaryFission.BinaryFission;
             CellMotility = CellMotility.CellMotility.CellMotility;
             Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
             Translation = GeneticInfoProcessing.Translation.Translation.Translation;
@@ -55,7 +54,6 @@ organism Ecoli_FolAKnockOut
         {
             Metabolism = Metabolism.Metabolism.Metabolism;
             CellDivision = CellDivision.BinaryFission.BinaryFission;
-            CellMotility = CellMotility.CellMotility.CellMotility;
             Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
             Translation = GeneticInfoProcessing.Translation.Translation.Translation;
 

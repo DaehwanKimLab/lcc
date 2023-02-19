@@ -10,19 +10,13 @@ MukBEF = SMC.MukBEF;
 
 pathway DNASegregation
 {
-    membrane CellMembrane
-    {
-        MukBEF_MembraneRecruitment = SMC.MukBEF_MembraneRecruitment;
+    MukBEF_MembraneRecruitment = SMC.MukBEF_MembraneRecruitment;
 
-        cytosol Cytosol
-        {
-            MukBEF_Complexation = MukBEF.Complexation;
-            MukBEF_Dimerization = MukBEF.Dimerization;
-            DNACondensation = MukBEF.DNACondensation;
-            
-            MukB = 463;
-            MukE = 683;
-            MukF = 122;
-        }
-    }
+    MukBEF_Complexation = MukBEF.Complexation;
+    MukBEF_Dimerization = MukBEF.Dimerization;
+    DNACondensation = MukBEF.DNACondensation;
+    
+    MukB = 463;
+    MukE = 683;
+    MukF = 122;
 }

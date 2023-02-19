@@ -12,7 +12,6 @@ import PyruvateOxidation;
 import CitrateCycle;
 import NADH_OxidativePhosphorylation;
 import FADH2_OxidativePhosphorylation;
-import EnergyConsumption;
 
 pathway CentralCarbonMetabolism
 {

@@ -11,30 +11,24 @@ ZRing = Divisome.ZRing;
 
 pathway SeptumFormation
 {
-    membrane CellMembrane
+    pathway MidlineDetermination
     {
-        pathway MidlineDetermination
-        {
-            MinD_MembraneRecruitment = MinCDE.MinCDE.MinD_MembraneRecruitment;
-            MinE_MembraneRecruitment = MinCDE.MinCDE.MinE_MembraneRecruitment;
-            MinC_MembraneRecruitment = MinCDE.MinCDE.MinC_MembraneRecruitment;
-        }
-
-        pathway Cytokinesis
-        {
-            FtsZ_MembraneRecruitment = ZRing.FtsZ_MembraneRecruitment;
-            FtsZ_Crosslinking = ZRing.FtsZ_Crosslinking;
-            FtsZ_Treadmilling = ZRing.FtsZ_Treadmilling;
-        }
-
-        FtsA = 792;
-
-        cytosol Cytosol
-        {
-            MinC = 163;
-            MinD = 4928;
-            MinE = 4004;
-            FtsZ = 7898;
-        }
+        MinD_MembraneRecruitment = MinCDE.MinCDE.MinD_MembraneRecruitment;
+        MinE_MembraneRecruitment = MinCDE.MinCDE.MinE_MembraneRecruitment;
+        MinC_MembraneRecruitment = MinCDE.MinCDE.MinC_MembraneRecruitment;
     }
+
+    pathway Cytokinesis
+    {
+        FtsZ_MembraneRecruitment = ZRing.FtsZ_MembraneRecruitment;
+        FtsZ_Crosslinking = ZRing.FtsZ_Crosslinking;
+        FtsZ_Treadmilling = ZRing.FtsZ_Treadmilling;
+    }
+
+    FtsA = 792;
+
+    MinC = 163;
+    MinD = 4928;
+    MinE = 4004;
+    FtsZ = 7898;
 }

@@ -17,29 +17,25 @@ pathway CellMotility
 {
     pathway BacterialChemotaxis
     {
-        membrane CellMembrane
-        {
-            CheA_Methylation = CheR.CheA_Methylation;
-            CheAL_Methylation = CheR.CheAL_Methylation;
-            CheAm_Demethylation = CheBP.CheAm_Demethylation;
-            CheAmL_Demethylation = CheBP.CheAmL_Demethylation;
-            CheB_Phosphorylation = CheAm.CheB_Phosphorylation;
-            CheAm_LigandBinding = BacterialChemotaxis.CheAm_LigandBinding;
-            CheA_LigandBinding = BacterialChemotaxis.CheA_LigandBinding;
-
-            float threshold_CheAm = 0.982;
-            bool bRun = CheAm < threshold_CheAm;
-
-            Motility = FlagellarRotation.FlagellarRotation(CellMembrane, bRun);
-
-            CheA = 500nM;
-        }
-        cytosol Cytosol
-        {
-            CheR = 5nM;
-            CheB = 0.1nM;
-        }
+        CheA_Methylation = CheR.CheA_Methylation;
+        CheAL_Methylation = CheR.CheAL_Methylation;
+        CheAm_Demethylation = CheBP.CheAm_Demethylation;
+        CheAmL_Demethylation = CheBP.CheAmL_Demethylation;
+        CheB_Phosphorylation = CheAm.CheB_Phosphorylation;
+        CheAm_LigandBinding = BacterialChemotaxis.CheAm_LigandBinding;
+        CheA_LigandBinding = BacterialChemotaxis.CheA_LigandBinding;
     }
+     
+    float threshold_CheAm = 0.982;
+    bool bRun = CheAm < threshold_CheAm;
+
+    Motility = FlagellarRotation.FlagellarRotation(CellMembrane, bRun);
+
+    CheA = 500nM;
+
+    CheR = 5nM;
+    CheB = 0.1nM;
+    
 }
 
 reference Porter_2011
