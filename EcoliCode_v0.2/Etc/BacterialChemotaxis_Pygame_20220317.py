@@ -519,7 +519,7 @@ class FOrganism:
         if self.MechanisticModeSwitch:
             # At homeostasis, Am: 1.1653948157952327e-09
 
-            # Perform 100 simulations
+            # Perform 100 simulations, which is equivalent to 1 second
             for _ in range(100):
                 self.SimCount += 1
                 self.Am = Model.Simulate(GlucoseLvl)
@@ -594,6 +594,32 @@ class FOrganism:
 
         pygame.draw.aalines(Screen, RED, False, TrajectoryPoints)
 
+
+class LMassObject:
+    def __init__(self, Amount = 2e-8):
+        self.Amount = Amount                                                                                                                                                                                       
+        self.Radius = 1.0
+        self.Intercept = 3.0 * self.Amount / (math.pi * self.Radius * self.Radius)
+        self.Slope = - self.Intercept / self.Radius
+ 
+    def GetConc(self, Dist):
+        if True:
+            return self.GetConcLinear(Dist)
+            
+        else:
+            return self.GetConcOrig(Dist)
+
+    # y = -mx + c
+    def GetConcLinear(self, Dist):
+        Conc = self.Intercept + self.Slope * Dist
+        Conc = max(0, Conc)
+        return Conc
+
+    # y = 1 / x, or more concretely, Conc = 1 / Dist
+    def GetConcReciprocal(self, Dist):
+        Dist = max(0.05, Dist)
+        return self.Amount / (Dist * 2 * pi)
+
 class FMolecule:
     def __init__(self, InX, InY, Max):
         self.X_Ori = InX
@@ -620,6 +646,8 @@ class FMolecule:
         self.Particle_SpreadFactor = 1.11
         self.Particle_XY_Static = []
         self.InitializeStaticParticles()
+
+        self.MO = LMassObject(Max)
 
     def InitializeStaticParticles(self):
         for i in range(int(self.Particle_N / self.Particle_PerLayer)):
@@ -663,7 +691,8 @@ class FMolecule:
         GradDensityList = list()
         for gradStep in self.GradStepList:
             GradDensityList.append(self.Max * gradStep / self.GradStepList[-1])
-        return GradDensityList
+
+        return GradDensityList    
 
     def GetGradientColorList(self, baseColor=None):
         ColorList = list()
@@ -717,8 +746,9 @@ class FMolecule:
     def Diffusion(self, X, Y):
         # DK - debugging purposes
         Dist = math.sqrt(((X - self.X_Ori) / W_S) ** 2 + ((Y - self.Y_Ori) / H_S) ** 2)
-        return self.Max / max(1, Dist * 30)
+
         # return self.Max / ((X - self.X_Ori) ** 2 + (Y - self.Y_Ori) ** 2)
+        return self.MO.GetConc(Dist)
 
     def GetRadius(self, Amount):   # Need to be updated according to the diffusion equation
         return ((self.Max / Amount) ** (1. / self.DiffusionFactor)) * self.SpaceFactor
@@ -892,7 +922,7 @@ def main():
     SimUnitTime = 0.1
 
     PetriDish = FEnvironment()
-    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 100 * Unit)
+    Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 20 * Unit)
     Ecoli = FOrganism('A', W_S / 3, H_S / 2)
     Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
     Ecoli.Homeostasis(Glucose_Now)
