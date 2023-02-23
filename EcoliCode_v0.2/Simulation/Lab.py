@@ -133,7 +133,7 @@ class FPopulationSimulator(FSimulator):
             self.AddToDataset()
 
             Iter += 1
-            if Iter % 100 == 0:
+            if Iter % 1 == 0:
                 print("\n")
                 print("-- Iteration {} ({:.3f}s) --".format(Iter, Iter * DeltaTime))
                 self.Info()
@@ -142,6 +142,9 @@ class FPopulationSimulator(FSimulator):
         for i, Colony in enumerate(self.Colonies):
             print("Colony {:>2}: {:>12}".format(i, int(Colony.GetNumEcoli())))
             Colony.Info()
+
+            # DL: Debug
+            Colony.EcoliSim.Info()
 
     def AddToDataset(self):
         for i, Colony in enumerate(self.Colonies):
@@ -219,7 +222,7 @@ if __name__ == '__main__':
     Sim = None
 
     # Select Experiment
-    SelectExp = 2
+    SelectExp = 0
     
     if SelectExp == 0:     # Growth curve (control only)
         Sim = FExperimentSimulator(FPopulationSimulator.DEFAULT_POPULATION)

@@ -88,7 +88,7 @@ class EcoliInfo:
     ProteomeSize = 3e6 * 300
 
     # KEY PARAMETERS #
-    MiniEcoli = True
+    MiniEcoli = False
     if MiniEcoli:
         New_DuplicationTime_LogPhase = 10
         ScaleFactor = New_DuplicationTime_LogPhase / DuplicationTime_LogPhase

@@ -40,16 +40,15 @@ Unit = nM
 
 Mol2Count = 6.0221409e+23
 Count2Mol = 1.0 / Mol2Count
-
 def dAm_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return min(krev1 * R, A) - (k1 * BP) * Am / (kM1 + Am) - k3 * Am * L + krev3 * AmL
 
 def dAmL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return min(krev2 * R, AL) - (k2 * BP) * AmL / (kM2 + AmL) + k3 * Am * L - krev3 * AmL
-    
+
 def dA_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return -min(krev1 * R, A) + (k1 * BP) * Am / (kM1 + Am) - k4 * A * L + krev4 * AL
-    
+
 def dAL_NumericalSimulation(k1, k2, k3, k4, k5, krev1, krev2, krev3, krev4, krev5, kM1, kM2, L, R, Am, AmL, A, AL, B, BP):
     return -min(krev2 * R, AL) + (k2 * BP) * AmL / (kM2 + AmL) + k4 * A * L - krev4 * AL
 
@@ -205,7 +204,52 @@ class FModel():
 
         self.PrintHomeostasis()
 
+    def ChemotaxisDebugLog(self, Model):
+
+        # Overwrite molecule concentrations
+        Model.L = 10e-9
+        # Model.R = 0
+        # if SimSteps > 0:
+        # Model.Data_B[-1] = 0
+        # Model.Data_Am[-1] = 0
+
+        def Conc2Str(Conc):
+            AbsConc = abs(Conc)
+            if AbsConc >= 1e-1:
+                Str = "{:.3f}  M".format(Conc)
+            elif AbsConc >= 1e-4:
+                Str = "{:.3f} mM".format(Conc * 1e3)
+            elif AbsConc >= 1e-7:
+                Str = "{:.3f} uM".format(Conc * 1e6)
+            elif AbsConc >= 1e-10:
+                Str = "{:.3f} nM".format(Conc * 1e9)
+            else:
+                Str = "{:.3f} pM".format(Conc * 1e12)
+            return Str
+
+        R = Model.R
+        Am = Model.Data_Am[-1]
+        AmL = Model.Data_AmL[-1]
+        A = Model.Data_A[-1]
+        AL = Model.Data_AL[-1]
+        B = Model.Data_B[-1]
+        BP = Model.Data_BP[-1]
+
+        Log = ''
+        ChemotaxisMolNames = ['CheA', 'CheAm', 'CheAL', 'CheAmL', 'CheBP', 'CheB', 'L', 'CheR',
+                              'threshold_CheAm']
+        ChemotaxisMolConc = [A, Am, AL, AmL, BP, B, Model.L, R, 0]
+        for i in range(len(ChemotaxisMolNames)):
+            Log += ', ' + ChemotaxisMolNames[i] + ': ' + str(ChemotaxisMolConc[i])
+
+        print(Log)
+        return Model.L
+
     def Simulate(self, L, SimUnitTime=None):
+
+        # DL: debugging
+        # L = self.ChemotaxisDebugLog(Model)
+
         R = self.R
         Am = self.Data_Am[-1]
         AmL = self.Data_AmL[-1]
@@ -522,6 +566,7 @@ class FOrganism:
             # Perform 100 simulations, which is equivalent to 1 second
             for _ in range(100):
                 self.SimCount += 1
+                # print(self.SimCount, end='')
                 self.Am = Model.Simulate(GlucoseLvl)
 
             Delta = (GlucoseLvl - self.Glucose_Prev) / GlucoseLvl * 100
@@ -925,7 +970,7 @@ def main():
     Glucose = FMolecule(W_S * 3 / 5 , H_S * 2 / 5, 20 * Unit)
     Ecoli = FOrganism('A', W_S / 3, H_S / 2)
     Glucose_Now = Glucose.GetAmount(Ecoli.X, Ecoli.Y)
-    Ecoli.Homeostasis(Glucose_Now)
+    # Ecoli.Homeostasis(Glucose_Now)
 
     # Control.SetMoleculeGradient(Glucose, 'Glucose')
 
@@ -1077,7 +1122,7 @@ def main():
         Control.DisplayTime()
         # Control.DisplayMoleculeGradient()
 
-        pygame.display.update()
+        # pygame.display.update()
 
     pygame.quit()
     sys.exit()
