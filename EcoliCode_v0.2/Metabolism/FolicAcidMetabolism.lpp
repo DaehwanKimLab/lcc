@@ -5,18 +5,18 @@
 // PurineMetabolism
 
 from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
 
 import MetaboliteConcentrations;
+import ProteinConcentrations;
 import EcoliInfo;
-
-Init_DHF = MetaboliteConcentrations.DHF;
 
 pathway FolicAcidMetabolism
 {
     reaction DHFSynthesis(G6P -> DHF) // G6P being a temporary place holder
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M;
+        float rate = EcoliInfo.DNAReplicationRate * 2 * EcoliInfo.C2M;
         DHF.max = MetaboliteConcentrations.DHF;
         DHF' = rate;
     }
@@ -24,7 +24,7 @@ pathway FolicAcidMetabolism
     reaction THFSynthesisByFolA(DHF -> THF)
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2 * (FolA / MetaboliteConcentrations.FolA);
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 4 * (FolA / ProteinConcentrations.FolA);
         THF.max = (DHF + THF) / 2;
         THF' = rate;
     }
@@ -32,7 +32,7 @@ pathway FolicAcidMetabolism
     reaction FiveTenMethyleneTHFSynthesisByGlyA(THF -> M_5_10_methylene_THF)
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2 * (GlyA / MetaboliteConcentrations.GlyA);
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 4 * (GlyA / ProteinConcentrations.GlyA);
         M_5_10_methylene_THF.max = (THF + M_5_10_methylene_THF) / 2;
         M_5_10_methylene_THF' = rate;
     }
@@ -40,7 +40,7 @@ pathway FolicAcidMetabolism
     reaction TenFormylTHFSynthesis(M_5_10_methylene_THF -> M_10_formyl_THF)
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M;
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2;
         M_10_formyl_THF.max = (M_5_10_methylene_THF + M_10_formyl_THF) / 2;
         M_10_formyl_THF' = rate;
     }

@@ -24,8 +24,6 @@ organism Ecoli
             CellDivision = CellDivision.BinaryFission.BinaryFission;
             Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
             Translation = GeneticInfoProcessing.Translation.Translation.Translation;
-
-            G6P[:] = 8.8mM;
         }
     }
 }
@@ -40,8 +38,6 @@ organism Ecoli_Chemotaxis
             CellMotility = CellMotility.CellMotility.CellMotility;
             Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
             Translation = GeneticInfoProcessing.Translation.Translation.Translation;
-
-            G6P[:] = 8.8mM;
         }
     }
 }
@@ -57,7 +53,6 @@ organism Ecoli_FolAKnockOut
             Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
             Translation = GeneticInfoProcessing.Translation.Translation.Translation;
 
-            G6P[:] = 8.8mM;
             FolA = 0;
         }
     }

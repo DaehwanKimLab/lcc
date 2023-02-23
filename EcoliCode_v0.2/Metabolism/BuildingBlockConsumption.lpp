@@ -11,7 +11,7 @@ import EcoliInfo;
 reaction dNTPConsumptionByDNAReplication(dATP + dCTP + dGTP + dTTP + 12 ATP -> 12 ADP) // for cell division
 specification
 {
-    dATP' = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M / 4;
+    dATP' = EcoliInfo.DNAReplicationRate * 2 * EcoliInfo.C2M / 4;
 }
 
 reaction AAConsumptionByProteinSynthesis(glutamine + 10 ATP -> 10 ADP) // for cell division

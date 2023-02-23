@@ -7,14 +7,12 @@
 import MetaboliteConcentrations;
 import Ecoli;
 
-Ecoli = Ecoli.Ecoli;
-
 experiment Exp_Ecoli
 {
     petridish P
     {
-        Ecoli = 1;
         glucose = 25mM;
+        Ecoli.Ecoli E = 1;
     }
     
     P = 1;
@@ -24,14 +22,14 @@ experiment Exp_FolAKnockout
 {
     petridish P_Control
     {
-        Ecoli = 1;
         glucose = 25mM;
+        Ecoli.Ecoli E_WT = 1;
     }
 
     petridish P_Glucose
     {
-        Ecoli_FolAKnockout = 1;
         glucose = 25mM;
+        Ecoli.Ecoli_FolAKnockout E_folA_KO= 1;
     }
 
     P_Control = 1;
@@ -45,13 +43,13 @@ experiment Exp_FolARepression
     {
         petridish P
         {
-            Ecoli E
+            Ecoli E_FolA_KD
             {
-                folA *= i / TitrationResolution;
+                FolA *= i / TitrationResolution;
             }
 
+            glucose = 25mM;
             E = 1;
-            glucose = MetaboliteConcentrations.G6P;
         }
 
         P = 1;
@@ -62,8 +60,8 @@ experiment Exp_Chemotaxis
 {
     petridish P
     {
-        Ecoli.Ecoli_Chemotaxis(400, 400, 0) = 1;
-        glucose(500, 500, 0) = 200nmol;
+        Ecoli.Ecoli_Chemotaxis E(0.267, 0.1, 0) = 1;
+        glucose L(0, 0, 0) = 200nmol;
     }
 
     P = 1;

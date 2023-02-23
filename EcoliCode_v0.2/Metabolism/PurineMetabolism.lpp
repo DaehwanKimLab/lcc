@@ -5,11 +5,13 @@
 // Purine Metabolism
 
 from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
 
 import MetaboliteConcentrations;
+import ProteinConcentrations;
 import EcoliInfo;
 
-float rate = 1.5e-5;
+float rate = 3e-5;
 
 pathway PurineMetabolism
 {
@@ -23,7 +25,7 @@ pathway PurineMetabolism
     reaction FGARSynthesisByPurN(GAR + M_10_formyl_THF -> FGAR + THF)
     specification
     {
-        float rate_FGAR = rate * (PurN / MetaboliteConcentrations.PurN);
+        float rate_FGAR = rate * (PurN / ProteinConcentrations.PurN);
         FGAR.max = (GAR + FGAR) / 2;
         FGAR' = rate_FGAR;
     }
@@ -31,7 +33,7 @@ pathway PurineMetabolism
     reaction FGAMSynthesisByPurL(FGAR + ATP -> FGAM + ADP)
     specification
     {
-        float rate_FGAM = rate * (PurL / MetaboliteConcentrations.PurL);
+        float rate_FGAM = rate * (PurL / ProteinConcentrations.PurL);
         FGAM.max = (FGAR + FGAM) / 2;
         FGAM' = rate_FGAM;
     }
@@ -39,7 +41,7 @@ pathway PurineMetabolism
     reaction PurineSynthesis(2 FGAM -> dATP + dGTP)
     specification
     {
-        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.25;
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
         dATP' = rate;
     }
 }

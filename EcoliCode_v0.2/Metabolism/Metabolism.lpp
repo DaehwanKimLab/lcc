@@ -10,7 +10,7 @@ import MetaboliteConcentrations;
 import CentralCarbonMetabolism;
 import dNTPSynthesis;
 import AASynthesis;
-import BuildingBlockConsumption;
+// import BuildingBlockConsumption;
 
 pathway Metabolism
 {
@@ -18,6 +18,8 @@ pathway Metabolism
     dNTPSynthesis = dNTPSynthesis.dNTPSynthesis;
     AASynthesis = AASynthesis.AASynthesis;
     
-    dNTPConsumptionByDNAReplication = BuildingBlockConsumption.dNTPConsumptionByDNAReplication;
-    AAConsumptionByProteinSynthesis = BuildingBlockConsumption.AAConsumptionByProteinSynthesis;
+    // dNTPConsumptionByDNAReplication = BuildingBlockConsumption.dNTPConsumptionByDNAReplication;
+    // AAConsumptionByProteinSynthesis = BuildingBlockConsumption.AAConsumptionByProteinSynthesis;
+    
+    G6P[:] = MetaboliteConcentrations.G6P;
 }
