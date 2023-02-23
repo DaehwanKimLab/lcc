@@ -1,0 +1,74 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// E. coli Code v0.2
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import Ecoli;
+
+Ecoli = Ecoli.Ecoli;
+
+experiment Exp_Ecoli
+{
+    petridish P
+    {
+        //Ecoli = 1;
+        E1 = Ecoli.Ecoli;
+        glucose = 25mM;
+    }
+    
+    //P = 1;
+    P1 = P;
+}
+
+experiment Exp_FolAKnockout
+{
+    petridish P_Control
+    {
+        Ecoli = 1;
+        glucose = 25mM;
+    }
+
+    petridish P_Glucose
+    {
+        Ecoli_FolAKnockout = 1;
+        glucose = 25mM;
+    }
+
+    P_Control = 1;
+    P_Glucose = 1;
+}
+
+experiment Exp_ThyARepression
+{
+    int TitrationResolution = 30;
+    for (int i = 0; i < TitrationResolution; i = i + 1)
+    {
+        petridish P
+        {
+            Ecoli E
+            {
+                ThyA = ProteinConcentrations.ThyA * (i / TitrationResolution);
+            }
+
+            Ecoli = 1;
+            glucose = 25mM;
+        }
+
+        P = 1;
+    } 
+}
+
+experiment Exp_Chemotaxis
+{
+    petridish P
+    {
+        L(0, 0, 0) = 20nmol;
+        Ecoli.Ecoli_Chemotaxis(0.267, 0.1, 0) = 1;
+
+    }
+
+    P = 1;
+}

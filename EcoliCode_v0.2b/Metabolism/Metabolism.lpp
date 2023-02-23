@@ -1,0 +1,21 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Overall Metabolism
+
+from MetaboliteConcentrations import *;
+import MetaboliteConcentrations;
+
+import CentralCarbonMetabolism;
+import dNTPSynthesis;
+import AASynthesis;
+
+pathway Metabolism
+{
+    CentralCarbonMetabolism = CentralCarbonMetabolism.CentralCarbonMetabolism;
+    dNTPSynthesis = dNTPSynthesis.dNTPSynthesis;
+    AASynthesis = AASynthesis.AASynthesis;
+    
+    G6P[:] = 7.88mM;
+}

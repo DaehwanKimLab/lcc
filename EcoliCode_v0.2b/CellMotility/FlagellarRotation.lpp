@@ -1,0 +1,34 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Flagellar Rotation
+
+membrane Membrane;
+
+reaction FlagellarRotation(Membrane, bRun) // bRun is a boolean parameter
+specification
+{
+    Ang = Membrane.phi;
+    Pos = Membrane.position;
+
+    float cdist = 2.5e-5; // velocity from BergBrown_1972
+    float crot = rand(0, 2 * pi); // constant for rotation
+
+    if (bRun)
+    {
+        Pos' = cdist;
+        Ang' = 0;
+    }
+    else 
+    {
+        Pos' = cdist / 3;
+        Ang' = crot;
+    }
+}
+
+reference BergBrown_1972
+{
+    title = "Chemotaxis in Escherichia coli analysed by three-dimensional tracking";
+    doi = "https://doi.org/10.1038/239500a0";
+}

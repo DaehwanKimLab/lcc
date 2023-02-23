@@ -1,0 +1,198 @@
+// BSD 3-Clause License
+// (c) 2023_ The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// E. coli Metabolite Concentrations
+
+reference Park_2016
+{
+    title = "Metabolite concentrations_ fluxes and free energies imply efficient enzyme usage";
+    doi = "https://doi.org/10.1038/nchembio.2077";
+}
+
+// ECMDB: E. coli Metabolome Database
+reference Guo_2013
+{
+    title = "ECMDB: the E. coli Metabolome Database";
+    doi = "https://doi.org/10.1093/nar/gks992";
+}
+reference Sajed_2016
+{
+    title = "ECMDB 2.0: A richer resource for understanding the biochemistry of E. coli";
+    doi = "https://doi.org/10.1093/nar/gkv1060";
+}
+
+acetyl_CoA = 0.606 mM;
+adenine = 1.47 uM;
+adenosine = 0.131 uM;
+ADP = 0.555 mM;
+AMP = 0.281 mM;
+ATP = 9.63 mM;
+carbon_dioxide = 75.2 uM;
+CMP = 0.36 mM;
+CoA_SH = 1.37 mM;
+CTP = 2.73 mM;
+cytidine = 2.59 uM;
+cytosine = 14.1 uM;
+dAMP = 8.84 uM;
+dATP = 15.5 uM;
+dCTP = 34.5 uM;
+dTDP = 0.378 mM;
+dTTP = 4.62 mM;
+FAD = 0.173 mM;
+GDP = 0.676 mM;
+G6P = 7.88 mM;
+glutamate = 96.0 mM;
+glutamine = 3.81 mM;
+GAP = 0.271 mM;
+GMP = 23.7 uM;
+GTP = 4.87 mM;
+NAD = 2.55 mM;
+NADH = 83.6 uM;
+NADP = 2.08 uM;
+NADPH = 0.121 mM;
+PRPP = 0.258 mM;
+pyruvate = 3.66 mM;
+R5P = 0.787 mM;
+Ru5P = 0.112 mM;
+UDP = 1.79 mM;
+DHF = 10.0 uM;
+THF = 10.0 uM;
+M_5_methyl_THF = 10.0 uM;
+M_10_formyl_THF = 10.0 uM;
+dGTP = 10.0 uM;
+GAR = 10.0 uM;
+FGAR = 10.0 uM;
+FGAM = 10.0 uM;
+M_5_10_methylene_THF = 10.0 uM;
+/*
+M_1_3_bisphosphoglycerate = 16.5 uM;
+M_2_3_bisphosphoglycerate = 82.9 uM;
+M_2_3_dihydroxybenzoic_acid = 0.138 mM;
+M_2_phosphoglycerate = 91.8 uM;
+M_3_phosphoglycerate = 1.54 mM;
+M_4_hydroxybenzoate = 52.2 uM;
+M_6_phospho_D_gluconate = 3.77 mM;
+acetoacetyl_CoA = 21.8 uM;
+acetyl_CoA = 0.606 mM;
+acetylphosphate = 1.07 mM;
+aconitate = 16.1 uM;
+adenine = 1.47 uM;
+adenosine = 0.131 uM;
+adenosine_phosphosulfate = 6.63 uM;
+ADP = 0.555 mM;
+ADP_glucose = 4.27 uM;
+a_ketoglutarate = 0.443 mM;
+alanine = 2.55 mM;
+AMP = 0.281 mM;
+anthranilate = 3.48 uM;
+arginine = 0.569 mM;
+asparagine = 0.511 mM;
+aspartate = 4.23 mM;
+ATP = 9.63 mM;
+carbamoyl_aspartate = 0.59 mM;
+carbon_dioxide = 75.2 uM;
+citrate = 1.96 mM;
+citrulline = 1.35 mM;
+CMP = 0.36 mM;
+CoA_SH = 1.37 mM;
+CTP = 2.73 mM;
+cyclic_AMP = 35.2 uM;
+cytidine = 2.59 uM;
+cytosine = 14.1 uM;
+dAMP = 8.84 uM;
+dATP = 15.5 uM;
+dCTP = 34.5 uM;
+deoxyadenosine = 2.82 uM;
+deoxyguanosine = 0.522 uM;
+deoxyribose_5_phosphate = 0.303 mM;
+dGMP = 50.7 uM;
+dihydroorotate = 11.9 uM;
+dihydroxyacetonephosphate = 3.06 mM;
+dTDP = 0.378 mM;
+dTTP = 4.62 mM;
+E4P = 49.0 uM;
+FAD = 0.173 mM;
+flavin_mononucleotide = 53.7 uM;
+fructose_1_6_bisphosphate = 15.2 mM;
+fructose_6_phosphate = 2.52 mM;
+fumarate = 0.288 mM;
+GDP = 0.676 mM;
+gluconate = 41.6 uM;
+gluconolactone = 1.04 mM;
+glucosamine_6_phosphate = 1.15 mM;
+G6P = 7.88 mM;
+glutamate = 96.0 mM;
+glutamine = 3.81 mM;
+glutathione = 16.6 mM;
+glutathione_disulfide = 2.37 mM;
+GAP = 0.271 mM;
+glycerate = 1.41 mM;
+GMP = 23.7 uM;
+GTP = 4.87 mM;
+guanine = 0.188 mM;
+guanosine = 1.62 uM;
+hexose_phosphate = 8.75 mM;
+histidine = 67.6 uM;
+histidinol = 12.8 uM;
+homocysteine = 0.37 mM;
+IDP = 23.8 uM;
+IMP = 0.272 mM;
+isocitrate = 36.7 uM;
+isoleucine = 0.152 mM;
+ITP = 0.205 mM;
+leucine = 0.152 mM;
+lysine = 0.405 mM;
+malate = 1.68 mM;
+malonyl_CoA = 35.4 uM;
+methionine = 0.145 mM;
+myo_inositol = 5.72 uM;
+N_acetyl_glucosamine_1_6_phosphate = 81.9 uM;
+N_acetyl_ornithine = 43.3 uM;
+NAD = 2.55 mM;
+NADH = 83.6 uM;
+NADP = 2.08 uM;
+NADPH = 0.121 mM;
+ornithine = 10.1 uM;
+oxaloacetate = 0.487 uM;
+pentose_phosphate = 1.32 mM;
+phenylalanine = 18.2 uM;
+phenylpyruvate = 89.8 uM;
+phosphate = 23.9 mM;
+phosphoenolpyruvate = 0.184 mM;
+proline = 0.385 mM;
+propionyl_CoA = 5.32 uM;
+PRPP = 0.258 mM;
+pyruvate = 3.66 mM;
+quinolinate = 11.5 uM;
+riboflavin = 19.0 uM;
+R5P = 0.787 mM;
+Ru5P = 0.112 mM;
+S_adenosyl_L_methionine = 0.184 mM;
+sedoheptulose_7_phosphate = 0.882 mM;
+serine = 1.13 mM;
+shikimate = 14.1 uM;
+sn_glycerol_3_phosphate = 49.0 uM;
+succinate = 0.569 mM;
+succinyl_CoA = 0.233 mM;
+threonine = 1.26 mM;
+tryptophan = 12.1 uM;
+tyrosine = 28.9 uM;
+UDP = 1.79 mM;
+UDP_glucose = 2.5 mM;
+UDP_glucuronate = 0.566 mM;
+UDP_N_acetyl_glucosamine = 9.24 mM;
+uridine = 2.09 mM;
+UTP = 8.29 mM;
+valine = 4.02 mM;
+xylulose_5_phosphate = 0.181 mM;
+DHF = 10.0 uM;
+THF = 10.0 uM;
+M_5_methyl_THF = 10.0 uM;
+M_10_formyl_THF = 10.0 uM;
+dGTP = 10.0 uM;
+GAR = 10.0 uM;
+FGAR = 10.0 uM;
+FGAM = 10.0 uM;
+M_5_10_methylene_THF = 10.0 uM;
+*/

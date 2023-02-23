@@ -1,0 +1,41 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// SMC (Structural Maintenance of the Chromosome)
+
+import MinCDE;
+
+protein MukB, MukE, MukF;
+
+complex MukBEF
+{
+    reaction Complexation(2 MukB + 2 MukE + MukF, Kd=1e-9);
+    reaction Dimerization(2 self -> MukBEF_Dimer, Kd=1e-9);
+    reaction DNACondensation(MukBEF_Dimer + dsDNA{n} + dsDNA{n+80} + dsDNA{n+120} -> MukBEF~dsDNA{n}~dsDNA{n+80}~dsDNA{n+120}, Kd=1e-9);
+}
+
+// MinD adaptor reaction for MukBEF
+MinD = MinCDE.MinCDE.MinD;
+
+reaction MukBEF_MembraneRecruitment(Membrane~MinD_{n} + MukBEF{in} -> Membrane~MinD_{n}~MukBEF)
+k_function
+{
+    return MinCDE.MinD_MembraneRecruitment.k_function() * 0.2;
+}
+krev_function
+{
+    return max(0, Membrane~MukBEF_{n} - Membrane~MinD_{m});
+}
+
+reference Gogou_2021
+{
+    title = "Mechanisms for Chromosome Segregation in Bacteria";
+    doi = "https://doi.org/10.3389/fmicb.2021.685687";
+}
+
+reference MakelaSherratt_2020
+{
+    title = "Organization of the Escherichia coli Chromosome by a MukBEF Axial Core";
+    doi = "https://doi.org/10.1016/j.molcel.2020.02.003";
+}    

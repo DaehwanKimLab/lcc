@@ -1,0 +1,22 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Building Block Consumption
+
+from MetaboliteConcentrations import *;
+
+import EcoliInfo;
+
+reaction dNTPConsumptionByDNAReplication(dATP + dCTP + dGTP + dTTP + 12 ATP -> 12 ADP) // for cell division
+specification
+{
+    dATP' = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M / 4;
+}
+
+reaction AAConsumptionByProteinSynthesis(glutamine + 10 ATP -> 10 ADP) // for cell division
+specification
+{
+    glutamine' = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M / 1;
+}
+

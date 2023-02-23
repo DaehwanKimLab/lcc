@@ -1,0 +1,19 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Glycolysis
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+pathway Glycolysis(G6P + 2 ADP + 2 NAD -> 2 pyruvate + 2 ATP + 2 NADH)
+specification
+{
+    float capacityfactor = EcoliInfo.EGM_Glycolysis_Sec;
+    //NAD.min = MetaboliteConcentrations.NAD / 10.0;
+    //ATP.min = 0.1 mM;
+    ATP' = (ADP / ATP) * capacityfactor;
+}

@@ -1,0 +1,38 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Transcription
+
+import RNAPolymerase;
+
+RNAPCore = RNAPolymerase.RNAPCore;
+RNAPHolo = RNAPolymerase.RNAPHolo;
+RNAP = RNAPolymerase.RNAP;
+SigmaFactor = RNAPolymerase.SigmaFactor;
+
+pathway Transcription 
+{
+    pathway Initiation
+    {
+        SigmaFactorBinding = RNAPolymerase.RNAPHolo.SigmaFactorBinding;
+        PromotorBinding = RNAPolymerase.RNAPHolo.PromotorBinding;
+        SigmaFactorRelease = RNAPolymerase.RNAPHolo.SigmaFactorRelease;
+    }
+
+    pathway Elongation
+    {
+        dsDNAUnwinding = RNAPolymerase.RNAP.Elongation.dsDNAUnwinding;
+        DNATranslocation = RNAPolymerase.RNAP.Elongation.DNATranslocation;
+        RNAElongation = RNAPolymerase.RNAP.Elongation.RNAElongation;
+    }
+
+    pathway Termination
+    {
+        IntrinsicTermination = RNAPolymerase.RNAP.IntrinsicTermination;
+    }
+
+    SigmaFactor = 1500;
+    RNAPCore = 3000;
+    NTP[:] = 9mM;
+}

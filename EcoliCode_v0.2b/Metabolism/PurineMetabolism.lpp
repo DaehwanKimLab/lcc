@@ -1,0 +1,50 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Purine Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway PurineMetabolism
+{
+    reaction GARSynthesis(PRPP -> GAR)
+    specification
+    {
+        float rate = 3e-5;
+        GAR.max = MetaboliteConcentrations.GAR;
+        GAR' = rate;
+    }
+
+    reaction FGARSynthesisByPurN(PurN + GAR + M_10_formyl_THF -> FGAR + THF + PurN)
+    specification
+    {
+        float rate = 3e-5;
+        float PurN_Base = 0.762 uM; // ProteinConcentrations.PurN
+        float rate_FGAR = rate * (PurN / PurN_Base);
+        FGAR.max = (GAR + FGAR) / 2;
+        FGAR' = rate_FGAR;
+    }
+    
+    reaction FGAMSynthesisByPurL(PurL + FGAR + ATP -> FGAM + ADP + PurL)
+    specification
+    {
+        float rate = 3e-5;
+        float PurL_Base = 4.078 uM; // ProteinConcentrations.PurL
+        float rate_FGAM = rate * (PurL / PurL_Base);
+        FGAM.max = (FGAR + FGAM) / 2;
+        FGAM' = rate_FGAM;
+    }
+
+    reaction PurineSynthesis(2 FGAM -> dATP + dGTP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
+        dATP' = rate;
+    }
+}

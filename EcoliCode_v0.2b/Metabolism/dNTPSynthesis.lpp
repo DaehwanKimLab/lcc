@@ -1,0 +1,33 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// dNTP Synthesis
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import FolicAcidMetabolism;
+import PRPPSynthesis;
+import PurineMetabolism;
+import PyrimidineMetabolism;
+
+pathway dNTPSynthesis
+{
+    DHFSynthesis = FolicAcidMetabolism.FolicAcidMetabolism.DHFSynthesis;
+    THFSynthesisByFolA = FolicAcidMetabolism.FolicAcidMetabolism.THFSynthesisByFolA;
+    FiveTenMethyleneTHFSynthesisByGlyA = FolicAcidMetabolism.FolicAcidMetabolism.FiveTenMethyleneTHFSynthesisByGlyA;
+    TenFormylTHFSynthesis = FolicAcidMetabolism.FolicAcidMetabolism.TenFormylTHFSynthesis;
+    
+    PRPPSynthesis = PRPPSynthesis.PRPPSynthesis;
+
+    GARSynthesis = PurineMetabolism.PurineMetabolism.GARSynthesis;
+    FGARSynthesisByPurN = PurineMetabolism.PurineMetabolism.FGARSynthesisByPurN;
+    FGAMSynthesisByPurL = PurineMetabolism.PurineMetabolism.FGAMSynthesisByPurL;
+    PurineSynthesis = PurineMetabolism.PurineMetabolism.PurineSynthesis;
+
+    dCTPSynthesis = PyrimidineMetabolism.PyrimidineMetabolism.dCTPSynthesis;
+    dUTPSynthesis = PyrimidineMetabolism.PyrimidineMetabolism.dUTPSynthesis;
+    dTTPSynthesisByThyA = PyrimidineMetabolism.PyrimidineMetabolism.dTTPSynthesisByThyA;
+
+}

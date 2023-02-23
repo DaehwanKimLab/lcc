@@ -1,0 +1,17 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// E. coli Code v0.2
+
+from MetaboliteConcentrations import *;
+import Experiment;
+
+lab Lab
+{
+    Exp1 = Experiment.Exp_Ecoli;
+    // Exp2 = Experiment.Exp_GlucoseTest;
+    // Exp3 = Experiment.Exp_FolA;
+}
+
+Lab = 1;

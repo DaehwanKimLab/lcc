@@ -1,0 +1,63 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Translation
+
+import Ribosome;
+
+R30S = Ribosome.R30S;
+R50S = Ribosome.R50S;
+R70S = Ribosome.R70S;
+AA_tRNASynthetase = Ribosome.AA_tRNASynthetase;
+
+pathway Translation
+{
+    reaction Initiation
+    {
+        InitialtRNAloading = Ribosome.R30S.InitialtRNAloading;
+        Complexation = Ribosome.R70S.Complexation;
+    }
+    
+    reaction Elongation
+    {
+        CodonRecognition = Ribosome.R70S.CodonRecognition;
+        PeptidylTransfer = Ribosome.R70S.Elongation.PeptidylTransfer;
+        RNATranslocation = Ribosome.R70S.Elongation.RNATranslocation;
+    }
+
+    // Step 3. Termination: see Ribosome
+    reaction Termination 
+    {
+        StopCodonRecognition = Ribosome.R70S.StopCodonRecognition;
+        PeptideRelease = Ribosome.R70S.PeptideRelease;
+        Dissociation = Ribosome.R70S.Dissociation;
+    }
+
+    tRNACharging = Ribosome.AA_tRNASynthetase.tRNACharging;
+
+    R30S = 50000;
+    R50S = 50000;
+
+    IF = 10000;
+    EF_Tu = 443852; // tufA
+    EF_G = 86623; // fusA
+    RF = 2000; 
+    RRF = 8329; // frr
+
+    tRNA = 375000;
+    AA[:] = 90mM;
+    AA_tRNASynthetase = 87102;
+}
+
+reference ThomasSteitz_2008
+{
+    title = "A structural understanding of the dynamic ribosome machine";
+    doi = "https://doi.org/10.1038/nrm2352";
+}
+
+reference Rodnina_2018
+{
+    title = "Translation in Prokaryotes";
+    doi = "https://doi.org/10.1101/cshperspect.a032664";
+}

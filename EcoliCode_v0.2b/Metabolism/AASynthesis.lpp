@@ -1,0 +1,18 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Amino acid Synthesis
+
+from MetaboliteConcentrations import *;
+import EcoliInfo;
+
+pathway AASynthesis
+{
+    reaction GlutamineSynthesis(G6P -> glutamine) // G6P is a placeholder
+    specification
+    {
+        float rate_as = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M;
+        glutamine' = rate_as;
+    }
+}

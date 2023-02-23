@@ -1,0 +1,38 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Pyrimidine Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway PyrimidineMetabolism
+{
+    reaction dTTPSynthesisByThyA(ThyA + dUTP + M_5_10_methylene_THF -> dTTP + DHF + ThyA)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
+        float ThyA_Base = 0.636 uM; // ProteinConcentrations.ThyA
+        float rate_dTTP = rate * (ThyA / ThyA_Base);
+        dTTP' = rate_dTTP;
+    }
+
+    reaction dCTPSynthesis(PRPP -> dCTP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
+        dCTP' = rate;
+    }
+
+    reaction dUTPSynthesis(PRPP -> dUTP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
+        dUTP' = rate;
+    }
+
+}

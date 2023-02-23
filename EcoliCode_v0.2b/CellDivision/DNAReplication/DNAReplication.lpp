@@ -1,0 +1,46 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// DNA Replication
+
+import DNAPolymerase;
+
+DnaA = DNAPolymerase.DnaA;
+Tus = DNAPolymerase.Tus;
+DNAP = DNAPolymerase.DNAP;
+
+pathway DNAReplication 
+{
+    reaction Initiation
+    {
+        DnaA_OriBinding = DNAPolymerase.DnaA.OriBinding;
+        DNAP_Complexation = DNAPolymerase.DNAP.Complexation;
+        DNAP_DNABinding = DNAPolymerase.DNAP.DNABinding;
+    }
+
+    reaction Elongation
+    {
+        dsDNAUnwinding = DNAPolymerase.DNAP.Elongation.dsDNAUnwinding;
+        DNATranslocation = DNAPolymerase.DNAP.Elongation.DNATranslocation;
+        DNAElongation = DNAPolymerase.DNAP.Elongation.DNAElongation;
+        OligoSynthesis = DNAPolymerase.DNAP.OligoSynthesis;
+    }
+    
+    reaction Termination
+    {
+        Tus_TerBinding = DNAPolymerase.Tus.TerBinding;
+        DNAP_Termination = DNAPolymerase.DNAP.Termination;
+    }
+
+    DNAP = 40;
+    DnaA = 134;
+    Tus = 32;
+    dNTP[:] = 0.1mM;
+}
+
+reference MakiKornberg_1985
+{
+    title = "The polymerase subunit of DNA polymerase III of Escherichia coli. II. Purification of the alpha subunit, devoid of nuclease activities.";
+    doi = "https://doi.org/10.1016/S0021-9258(17)38825-7";
+}

@@ -1,0 +1,17 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// NADH Oxidative Phosphorylation
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+pathway NADH_OxidativePhosphorylation(2 NADH + 5 ADP -> 2 NAD + 5 ATP)
+specification
+{
+    float capacityfactor = EcoliInfo.EGM_OxidativePhosphorylation_NADH_Sec;
+    ATP' = NADH / (MetaboliteConcentrations.NADH + NADH) * capacityfactor;
+}

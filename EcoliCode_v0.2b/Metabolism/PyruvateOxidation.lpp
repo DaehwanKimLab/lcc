@@ -1,0 +1,18 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Pyruvate sOxidation
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+
+reaction PyruvateOxidation(pyruvate + NAD + CoA_SH -> acetyl_CoA + NADH)
+specification
+{
+    float capacityfactor = EcoliInfo.EGM_Pyruvate_Sec;
+    acetyl_CoA' = pyruvate / (MetaboliteConcentrations.pyruvate + pyruvate) * capacityfactor;
+}

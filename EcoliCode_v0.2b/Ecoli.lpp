@@ -1,0 +1,69 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// E. coli Code v0.2
+
+// Check how to import concentrations
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+from EcoliInfo import *;
+
+import Metabolism.Metabolism;
+import CellDivision.BinaryFission;
+import CellMotility.CellMotility;
+import GeneticInfoProcessing.Transcription.Transcription;
+import GeneticInfoProcessing.Translation.Translation;
+
+organism Ecoli
+{
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            Metabolism = Metabolism.Metabolism.Metabolism;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+            G6P[:] = 7.88mM;
+        }
+    }
+}
+
+organism Ecoli_Chemotaxis
+{
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            Metabolism = Metabolism.Metabolism.Metabolism;
+            CellMotility = CellMotility.CellMotility.CellMotility;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+            G6P[:] = 7.88mM;
+        }
+    }
+}
+
+organism Ecoli_FolAKnockOut
+{
+    membrane CellMembrane
+    {
+        cytosol Cytosol
+        {
+            Metabolism = Metabolism.Metabolism.Metabolism;
+            CellDivision = CellDivision.BinaryFission.BinaryFission;
+            Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+            Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+
+            G6P[:] = 7.88mM;
+            FolA = 0;
+        }
+    }
+}
+
+Ecoli = 1;
+Ecoli_Chemotaxis = 1;
+Ecoli_FolAKnockOut = 1;
