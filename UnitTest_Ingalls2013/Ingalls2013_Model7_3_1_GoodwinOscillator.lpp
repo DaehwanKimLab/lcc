@@ -18,7 +18,7 @@ reference Ingalls_2013
 // a=360, b=1, k=1.368, n=12, alpha=1, beta=0.6, gamma=1, delta=0.8, X=0, Y=0, Z=0
 
 reaction GoodwinOscillator(X + Y + Z --> X + Y + Z)
-specificationX = 0, Y = 0, Z = 0;
+specification
 {
     float a = 360;
     float b = 1;
