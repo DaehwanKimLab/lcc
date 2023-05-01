@@ -13,6 +13,18 @@ ExclusionString = 'NoPlot'
 MolToCount = 'Discrete'
 MolToConcentration = 'Conc'
 
+plt.rcParams['font.size'] = 50
+
+ConsistentColorDict = dict()
+DistinctVisibleColors = [
+    '#E6194B', '#4363D8', '#3CB44B', '#F58231', '#911EB4', '#42D4F4', '#F032E6', '#BFEF45',
+    '#FABED4', '#469990', '#DCBEFF', '#9A6324', '#800000', '#808000', '#FFD8B1',
+    '#000075', '#A9A9A9', '#000000', '#FFE119',
+]
+def GetDistinctHEXColor(index):
+    assert index < len(DistinctVisibleColors)
+    return DistinctVisibleColors[index]
+
 def LoadRawData(Data_Dir):
     Datasets = dict()
 
@@ -307,13 +319,23 @@ def Plot_Dynamics(Title, Time, Data, Legend):
 
     ax.set_ylabel('Amount (' + unit_txt + ')')
     ax.set_xlabel('Time (s)')
-    ax.set_title(Title + " over Time")
+    # ax.set_title(Title + " over Time")
 
     for i in range(len(Legend)):
         line, = ax.plot(X, Y[i], label=Legend[i])
-        ax.legend(loc='upper left')
-        if len(Legend) > 4:
-            ax.text(X[-1] * 1.01, Y[i][-1], Legend[i] + ": {}".format(Y[i][-1]), va="center", color=line.get_color())
+
+        if i < len(DistinctVisibleColors):
+            ConsistentColorDict[Legend[i]] = GetDistinctHEXColor(i)
+            line._color = ConsistentColorDict[Legend[i]]
+
+        # ax.legend(loc='upper left')
+        # if len(Legend) > 4:
+        #     ax.text(X[-1] * 1.01, Y[i][-1], Legend[i] + ": {}".format(Y[i][-1]), va="center", color=line.get_color())
+        SelectedTimeFrameFromLeft = 0.9
+        ax.text(Time[-1] * SelectedTimeFrameFromLeft, Y[i][int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, Legend[i],
+                 ha="left", va="bottom", color=line.get_color())
+
+
 
     if SaveFilename:
         plt.savefig(SaveFilename)
@@ -327,8 +349,8 @@ def ProcessDataToDisplay(Legend, Data):
     for i, (Data_Row, Legend_Element) in enumerate(zip(Data, Legend)):
         if Legend_Element == 'Vol':
             continue
-        if np.array_equal(Data_Row, np.full_like(Data_Row, Data_Row[0])):
-            continue
+        # if np.array_equal(Data_Row, np.full_like(Data_Row, Data_Row[0])):
+        #     continue
         if ExclusionString in Legend_Element:
             continue
         if MolToCount in Legend_Element:

@@ -11,6 +11,18 @@ SaveFilename = None
 NA = 6.0221409e+23
 PerturbationTag = "#"
 
+plt.rcParams['font.size'] = 50
+
+ConsistentColorDict = dict()
+DistinctVisibleColors = [
+    '#E6194B', '#4363D8', '#3CB44B', '#F58231', '#911EB4', '#42D4F4', '#F032E6', '#BFEF45',
+    '#FABED4', '#469990', '#DCBEFF', '#9A6324', '#800000', '#808000', '#FFD8B1',
+    '#000075', '#A9A9A9', '#000000', '#FFE119',
+]
+def GetDistinctHEXColor(index):
+    assert index < len(DistinctVisibleColors)
+    return DistinctVisibleColors[index]
+
 RandomColors = [(random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 0.75)) for i in range(100)]
 
 class FPlotter:
@@ -138,7 +150,7 @@ class FPlotter:
             UnitTxt, Dataset_Copy = ApplyUnit(Dataset_Copy)
             # Y axis (molecular concentrations)
             for MolName, Conc in Dataset_Copy.items():
-                YMaxData = max(Conc) * 1.1
+                YMaxData = max(Conc) * 1.2
                 print('YMax determination', MolName, YMaxData)
                 # Molecules (not perturbations)
                 if MolName[0] != PerturbationTag:
@@ -163,7 +175,16 @@ class FPlotter:
 
             # Y axis (molecular concentrations)
             PerturbationIndex = 0
-            for MolName, Conc in Dataset.items():
+            for i, (MolName, Conc) in enumerate(Dataset.items()):
+
+                # if MolName == 'Ligand':
+                #     # Conc = np.array(Conc) / 200
+                #     pass
+                # elif MolName == 'pP':
+                #     pass
+                # else:
+                #     print(MolName)
+                #     continue
 
                 # YMax Debug
                 YMaxData = max(Conc) * 1.1
@@ -175,7 +196,19 @@ class FPlotter:
                     # Debug
                     # print(Process, "\t", MolName)
 
-                    line, = ax1.plot(Time, Conc, label="[" + MolName + "]")
+                    line, = ax1.plot(Time, Conc, label="[" + MolName + "]", linewidth=5)
+
+                    # if MolName == 'Ligand':
+                    #     ConsistentColorDict[MolName] = '#E6194B'
+                    #     line._color = ConsistentColorDict[MolName]
+                    # elif MolName == 'pP':
+                    #     ConsistentColorDict[MolName] = '#4363D8'
+                    #     line._color = ConsistentColorDict[MolName]
+
+                    if i < len(DistinctVisibleColors):
+                        ConsistentColorDict[MolName] = GetDistinctHEXColor(i)
+                        line._color = ConsistentColorDict[MolName]
+
                     if bSideLabel:
                         SelectedTimeFrameFromLeft = 0.1
                         if Perturbation == 0:
@@ -189,7 +222,7 @@ class FPlotter:
                     line, = ax2.plot(Time, Conc, color=RandomColors[PerturbationIndex], label="[" + MolName[1:] + "]")
                     if bSideLabel:
                         SelectedTimeFrameFromLeft = 0.8
-                        ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
+                        # ax2.text(Time[-1] * SelectedTimeFrameFromLeft, Conc[int(len(Time) * SelectedTimeFrameFromLeft)] * 1.02, MolName[1:], ha="center", va="bottom", color=line.get_color())
                         # ax2.plot(Time, Conc, label="[" + MolName[2:] + "]")
                         # print(PerturbationIndex)
                     PerturbationIndex += 1
@@ -258,12 +291,16 @@ class FPlotter:
                         # Dataset[Name] = [float(x) for x in Data[i]]   # TODO: Volume is temporarily blocked off
                     elif Name == 'Pseudo':  # Pseudo Molecule from old lcc
                         continue
+                    elif Name == 'In':  # Pseudo Molecule from old lcc
+                        continue
+                    elif Name == 'Out':  # Pseudo Molecule from old lcc
+                        continue
                     else:   # TODO: Modify according to the final lcc data format and take options?
                         # For Absolute count
-                        # Dataset[Name] = [float(x) for x in Data[i]]
+                        Dataset[Name] = [float(x) / 1000 for x in Data[i]]
 
                         # From absolute count to concentrations
-                        Dataset[Name] = [float(x) / NA / Vol for x in Data[i]]
+                        # Dataset[Name] = [float(x) / NA / Vol for x in Data[i]]
 
                 Datasets[FileName] = Dataset
 

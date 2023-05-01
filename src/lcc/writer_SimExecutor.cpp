@@ -17,7 +17,7 @@ void FWriter::SimExecutor()
     ofs << endl;
     // ofs << "import SimIdx as idx" << endl;
     if (Context.LocationList.empty())   { ofs << "import SimModule" << endl;
-                                          ofs << "import plot" << endl;      }
+                                          ofs << "import plot2" << endl;      }
 
     else                                { ofs << "import SimVis2D" << endl;
                                           ofs << "import SimServer" << endl;  }
@@ -27,7 +27,7 @@ void FWriter::SimExecutor()
     ofs << "def main():   # add verbose" << endl;
     // Execute appropriate simulation
     if (Context.LocationList.empty())   { ofs << in+ "SimModule.main()" << endl;
-                                          ofs << in+ "plot.main(args.save_fname)" << endl; }
+                                          ofs << in+ "plot2.main(args.save_fname)" << endl; }
 
     else                                { ofs << in+ "# SimServer.main()" << endl;
                                           ofs << in+ "SimVis2D.main()" << endl; }
