@@ -1,0 +1,37 @@
+// BSD 3-Clause License
+// © 2022, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee and Daehwan Kim
+
+// Goodwin Oscillator
+
+reference Ingalls_2013
+{
+    title = "Mathematical Modelling in Systems Biology";
+    page = "212";
+    equation = "7.22";
+    page += "213";
+    figure += "7.16"; // Network
+    page += "214";
+    figure += "7.17"; // Plot
+}
+
+// a=360, b=1, k=1.368, n=12, alpha=1, beta=0.6, gamma=1, delta=0.8, X=0, Y=0, Z=0
+
+reaction GoodwinOscillator(X + Y + Z --> X + Y + Z)
+specification
+{
+    float a = 360;
+    float b = 1;
+    float k1 = 1.368;
+    float n = 12;
+    float alpha = 1;
+    float beta = 0.6;
+    float gamma = 1;
+    float delta = 0.8;
+
+    X' = (a / ((k1 ** n) + (Z ** n))) - b * X;
+    Y' = alpha * X - beta * Y;
+    Z' = gamma * Y - delta * Z;
+}
+
+X = 0, Y = 0, Z = 0;
