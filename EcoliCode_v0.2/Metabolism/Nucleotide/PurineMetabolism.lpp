@@ -1,0 +1,81 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Purine Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway PurineMetabolism
+{
+    reaction GARSynthesis(PRPP + glutamine + glycine + ATP -> GAR + glutamate + ADP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 10;
+        GAR.max = MetaboliteConcentrations.GAR;
+        GAR' = rate;
+    }
+
+    reaction FGARSynthesisByPurN(PurN + GAR + M_10_formyl_THF -> FGAR + THF + H + PurN) 
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 10;
+        float PurN_Base = 0.762 uM; // ProteinConcentrations.PurN
+        FGAR.max = (GAR + FGAR) / 2;
+        FGAR' = rate * (PurN / PurN_Base);
+    }
+    
+    reaction FGAMSynthesisByPurL(PurL + FGAR + ATP + glutamine -> FGAM + ADP + glutamate + PurL)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 10;
+        float PurL_Base = 4.078 uM; // ProteinConcentrations.PurL
+        FGAM.max = (FGAR + FGAM) / 2;
+        FGAM' = rate * (PurL / PurL_Base);
+    }
+    
+    reaction AIRSynthesis(FGAM + ATP + M_10_formyl_THF -> AIR + ADP + THF)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 10;
+        AIR.max = (FGAM + AIR) / 2;
+        AIR' = rate;
+    }
+    
+    reaction IMPSynthesis(AIR + aspartate + M_10_formyl_THF + ATP -> IMP + THF + ADP) 
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 10;
+        IMP.max = MetaboliteConcentrations.IMP;
+        IMP' = rate;
+    }
+
+    reaction dATPSynthesis(IMP -> dATP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
+        dATP.max = MetaboliteConcentrations.dATP;
+        dATP' = rate;
+    }
+
+    reaction GDPSynthesis(IMP -> GDP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 5;
+        GDP.max = MetaboliteConcentrations.GDP;
+        GDP' = rate;
+    }
+
+    reaction dGTPSynthesis(GDP -> dGTP)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 0.5;
+        dGTP.max = MetaboliteConcentrations.dGTP;
+        dGTP' = rate;
+    }
+}

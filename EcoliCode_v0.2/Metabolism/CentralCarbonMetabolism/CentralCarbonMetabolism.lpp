@@ -1,0 +1,34 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Central Carbon Metabolism
+
+from MetaboliteConcentrations import *;
+import MetaboliteConcentrations;
+
+import Glycolysis;
+import PyruvateOxidation;
+import CitrateCycle;
+import OxidativePhosphorylation;
+import PentosePhosphatePathway;
+import ShikimatePathway;
+
+pathway CentralCarbonMetabolism
+{
+    Glycolysis = Glycolysis.Glycolysis;
+    PyruvateOxidation = PyruvateOxidation.PyruvateOxidation;
+    CitrateCycle = CitrateCycle.CitrateCycle;
+    OxidativePhosphorylation = OxidativePhosphorylation.OxidativePhosphorylation;
+    PentosePhosphatePathway = PentosePhosphatePathway.PentosePhosphatePathway;
+    ShikimatePathway = ShikimatePathway.ShikimatePathway;
+}
+
+reference KimGadd_2008   // ATP requirements for polymer synthesis in E coli.
+{
+    title = "Bacterial Physiology and Metabolism.";
+    page = "191";
+    table = "6.10";
+    page += "192";
+    table += "6.11";
+} 

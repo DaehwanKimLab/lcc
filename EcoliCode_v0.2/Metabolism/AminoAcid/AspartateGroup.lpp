@@ -1,0 +1,77 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Synthesis of Aspartate, Alanine, Methionine, Lysine, Threonine and Isoleucine
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+reaction AspartateSynthesis(2 ATP + 5 NADH + FADH2 -> aspartate + 2 ADP + 5 NAD + FAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (6 / 20) * 2;
+    aspartate.max = MetaboliteConcentrations.aspartate;
+    aspartate' = rate;
+}
+
+reaction AsparagineSynthesis(aspartate + ATP -> asparagine + ADP)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    asparagine.max = MetaboliteConcentrations.asparagine;
+    asparagine' = rate;
+}
+
+reaction MethionineSynthesis(aspartate + ATP + 2 NADH -> methionine + ADP + 2 NAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    methionine.max = MetaboliteConcentrations.methionine;
+    methionine' = rate;
+}
+
+reaction LysineSynthesis(DapA + DapB + aspartate + ATP + NADH -> lysine + ADP + NAD + DapA + DapB)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    float DapA_Base = 5.960 uM; // ProteinConcentrations.DapA
+    float DapB_Base = 5.118 uM; // ProteinConcentrations.DapB
+    lysine.max = MetaboliteConcentrations.lysine;
+    if ((DapA / DapA_Base) <= (DapB / DapB_Base))
+    {
+        lysine' = rate * (DapA / DapA_Base);
+    }
+    else
+    {
+        lysine' = rate * (DapB / DapB_Base);
+    }
+}
+
+reaction ThreonineSynthesis(aspartate + ATP + 2 NADH-> threonine + ADP + 2 NAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (4 / 20);
+    threonine.max = MetaboliteConcentrations.threonine;
+    threonine' = rate;
+}
+
+reaction GlycineSynthesis(threonine -> glycine + acetaldehyde)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    glycine.max = MetaboliteConcentrations.glycine;
+    glycine' = rate;
+}
+
+reaction IsoleucineSynthesis(threonine + pyruvate + NADH -> isoleucine + NAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    isoleucine.max = MetaboliteConcentrations.isoleucine;
+    isoleucine' = rate;
+}

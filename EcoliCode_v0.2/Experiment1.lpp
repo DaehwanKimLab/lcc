@@ -1,0 +1,31 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// E. coli Code v0.2
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+from EcoliInfo import *;
+
+import Metabolism.Metabolism;
+import GeneticInfoProcessing.Transcription.Transcription;
+import GeneticInfoProcessing.Translation.Translation;
+
+petridish Control
+{
+    organism Ecoli
+    {
+        membrane CellMembrane
+        {
+            cytosol Cytosol
+            {
+                Metabolism = Metabolism.Metabolism.Metabolism;
+                Transcription = GeneticInfoProcessing.Transcription.Transcription.Transcription;
+                Translation = GeneticInfoProcessing.Translation.Translation.Translation;
+            }
+        }
+    }
+
+    Ecoli(0, 0, 0) = 1;
+}

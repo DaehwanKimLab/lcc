@@ -1,0 +1,31 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// RNA polymerase
+
+protein SigmaFactor, RNAPCore;
+
+complex RNAPHolo
+{
+    reaction SigmaFactorBinding(RNAPCore + Sigmafactor, Kd=1e-7);
+    reaction PromotorBinding(self + dsDNA.promoter -> self~dsDNA.promoter, Kd=1e-7);
+
+    // transcription initiation
+    reaction SigmaFactorRelease(self~dsDNA.promoter -> RNAPCore~dsDNA + Sigmafactor + promoter, Kd=1e-7);
+}
+
+complex RNAP
+{
+    // transcription elongation
+    reaction Elongation
+    {
+        float R = 60.0;
+        reaction dsDNAUnwinding(RNAPCore~dsDNA{n-10:n+10} -> self.ssDNA{n-10:n+10} + ssDNA{n-10:n+10}, r=R);
+        reaction DNATranslocation(self.ssDNA{n} -> self.ssDNA{n+1}, r=R);
+        reaction RNAElongation(self~Rna_{n} + c(NTP) + self.ssDNA.N{n} -> self~Rna_{n+1}, r=R); // Assume 3 ATP used for the whole process: 1 ATP for building block synthesis, 1.5 ATP for the rest of the process in rich media.
+    }
+    
+    // transcription termination
+    reaction IntrinsicTermination(self~Rna.terminatorhairpin + ssDNA -> RNAPCore + dsDNA + Rna, Kd=1e-7);
+}

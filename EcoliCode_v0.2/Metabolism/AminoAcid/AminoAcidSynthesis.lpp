@@ -1,0 +1,45 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Amino Acid Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import AspartateGroup;
+import GlutamateGroup;
+import Histidine;
+import AlanineGroup;
+import SerineGroup;
+import TryptophanGroup;
+import Metabolism.Cofactor.FolicAcidMetabolism;
+
+pathway AminoAcidSynthesis
+{
+    AspartateSynthesis = AspartateGroup.AspartateSynthesis;
+    AsparagineSynthesis = AspartateGroup.AsparagineSynthesis;
+    MethionineSynthesis = AspartateGroup.MethionineSynthesis;
+    LysineSynthesis = AspartateGroup.LysineSynthesis;
+    ThreonineSynthesis = AspartateGroup.ThreonineSynthesis;
+    GlycineSynthesis = AspartateGroup.GlycineSynthesis;
+    IsoleucineSynthesis = AspartateGroup.IsoleucineSynthesis;
+    
+    GlutamateSynthesis = GlutamateGroup.GlutamateSynthesis;
+    GlutamineSynthesis = GlutamateGroup.GlutamineSynthesis;
+    ProlineSynthesis = GlutamateGroup.ProlineSynthesis;
+    ArginineSynthesis = GlutamateGroup.ArginineSynthesis;
+    
+    HistidineSynthesis = Histidine.HistidineSynthesis;
+    
+    AlanineSynthesis = AlanineGroup.AlanineSynthesis;
+    LeucineSynthesis = AlanineGroup.LeucineSynthesis;
+    ValineSynthesis = AlanineGroup.ValineSynthesis;
+    
+    SerineSynthesis = SerineGroup.SerineSynthesis;
+    CysteineSynthesis = SerineGroup.CysteineSynthesis;
+    
+    TryptophanSynthesis = TryptophanGroup.TryptophanSynthesis;
+    TyrosineSynthesis = TryptophanGroup.TyrosineSynthesis;
+    PhenylalanineSynthesis = TryptophanGroup.PhenylalanineSynthesis;
+}

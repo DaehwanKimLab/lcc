@@ -1,0 +1,21 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Nucleotide Synthesis
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import Metabolism.Cofactor.FolicAcidMetabolism;
+import Metabolism.PRPPSynthesis;
+import PurineMetabolism;
+import PyrimidineMetabolism;
+
+pathway NucleotideSynthesis
+{
+    FolicAcidMetabolism = Metabolism.Cofactor.FolicAcidMetabolism.FolicAcidMetabolism;
+    PRPPSynthesis = Metabolism.PRPPSynthesis.PRPPSynthesis;
+    PurineMetabolism = PurineMetabolism.PurineMetabolism;
+    PyrimidineMetabolism = PyrimidineMetabolism.PyrimidineMetabolism;
+}

@@ -1,0 +1,28 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Oxidative Phosphorylation
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+pathway OxidativePhosphorylation
+{
+    reaction NADH_OxidativePhosphorylation(2 NADH + 5 ADP -> 2 NAD + 5 ATP)
+    specification
+    {
+        float capacityfactor = EcoliInfo.EGM_OxidativePhosphorylation_NADH_Sec;
+        ATP' = NADH / (MetaboliteConcentrations.NADH + NADH) * capacityfactor;
+    }
+
+    reaction FADH2_OxidativePhosphorylation(2 FADH2 + 3 ADP -> 2 FAD + 3 ATP)
+    specification
+    {
+        float capacityfactor = EcoliInfo.EGM_OxidativePhosphorylation_FADH2_Sec;
+        ATP' = FADH2 / (MetaboliteConcentrations.FADH2 + FADH2) * capacityfactor;
+    }
+
+}

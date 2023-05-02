@@ -1,0 +1,40 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Synthesis of Serine and Cysteine
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+reaction SerineSynthesis(ATP + 4 NADH -> 2 serine + ADP + 4 NAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (4 / 20) * 2;
+    serine.max = MetaboliteConcentrations.serine;
+    serine' = rate;
+}
+
+pathway CysteineSynthesis
+{
+    reaction SulfateToSulfide(sulfate + 2 ATP + NADH -> sulfide + 2 ADP + NAD)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 4;
+        sulfide.max = MetaboliteConcentrations.sulfide;
+        sulfide' = rate;
+    }
+    
+    reaction SerineToCysteine(serine + acetyl_CoA + sulfide -> cysteine + CoA_SH + acetate)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 4;
+        cysteine.max = MetaboliteConcentrations.cysteine;
+        cysteine' = rate;
+    }
+
+}

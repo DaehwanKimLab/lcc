@@ -1,0 +1,53 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Synthesis of Glutamate, Glutamine, Proline and Arginine
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+reaction GlutamateSynthesis(2 ATP + 4 NADH -> 2 glutamate + 2 ADP + 4 NAD) 
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (4 / 20) * 4;
+    glutamate.max = MetaboliteConcentrations.glutamate;
+    glutamate' = rate;
+}
+
+reaction GlutamineSynthesis(GdhA + GltB + glutamate + ATP -> glutamine + ADP + GdhA + GltB)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 4; 
+    glutamine.max = MetaboliteConcentrations.glutamine;
+    float GdhA_Base = 10.533 uM; // ProteinConcentrations.GdhA
+    float GltB_Base = 4.748 uM; // ProteinConcentrations.GltB
+    if ((GdhA / GdhA_Base) >= (GltB / GltB_Base))
+    {
+        glutamine' = rate * (GdhA / GdhA_Base);
+    }
+    else
+    {
+        glutamine' = rate * (GltB / GltB_Base);
+    }
+}
+
+reaction ProlineSynthesis(glutamate + ATP + 2 NADH -> proline + ADP + 2 NAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    proline.max = MetaboliteConcentrations.proline;
+    proline' = rate;
+}
+
+reaction ArginineSynthesis(glutamate + acetyl_CoA + 4 ATP + NADH + aspartate -> arginine + CoA_SH + 4 ADP + NAD) 
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    arginine.max = MetaboliteConcentrations.arginine;
+    arginine' = rate;
+}

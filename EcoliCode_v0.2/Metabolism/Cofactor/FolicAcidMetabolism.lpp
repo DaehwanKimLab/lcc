@@ -1,0 +1,101 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Folic Acid Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway FolicAcidMetabolism
+{
+    reaction DHFSynthesis(G6P -> DHF) // G6P being a temporary place holder
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * 2 * EcoliInfo.C2M;
+        DHF.max = MetaboliteConcentrations.DHF;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 5;
+        DHF' = rate;
+    }
+
+    reaction THFSynthesisByFolA(DHF + NADH + H + FolA -> THF + NAD + FolA)
+    specification
+    {
+        float FolA_Base = 0.490 uM; // ProteinConcentrations.FolA
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 4;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 5;
+        THF.max = (DHF + THF) / 2;
+        THF' = rate * (FolA / FolA_Base);
+    }
+    
+    reaction FiveTenMethyleneTHFSynthesisByGlyA(THF + serine + GlyA -> M_5_10_methylene_THF + glycine + H2O + GlyA)
+    specification
+    {
+        float GlyA_Base = 0.490 uM; // ProteinConcentrations.GlyA
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 4;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20); 
+
+        if (THF > M_5_10_methylene_THF)
+        {
+            M_5_10_methylene_THF' = rate * (GlyA / GlyA_Base);
+        }
+        else 
+        {
+            M_5_10_methylene_THF' = - rate * (GlyA / GlyA_Base);
+        }
+    }
+    
+    reaction GlycineSynthesis(M_5_10_methylene_THF + NADH + CO2 + ammonium -> THF + glycine + NAD)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 5;
+        glycine.max = MetaboliteConcentrations.glycine;
+        glycine' = rate;
+    }
+
+    reaction TenFormylTHFSynthesis(M_5_10_methylene_THF + NAD + H2O -> M_10_formyl_THF + NADH + H)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 2;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 5;
+
+        if (M_5_10_methylene_THF > M_10_formyl_THF)
+        {
+            M_10_formyl_THF' = rate;
+        }
+        else 
+        {
+            M_10_formyl_THF' = - rate;
+        }
+    }
+
+    reaction FiveMethylTHFSynthesis(M_5_10_methylene_THF + NADH + H -> M_5_methyl_THF + NAD)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+        M_5_methyl_THF.max = (M_5_10_methylene_THF + M_5_methyl_THF) / 2;
+        M_5_methyl_THF' = rate;
+    }
+
+    reaction TenFormylTHF2THFConversion(M_10_formyl_THF + H2O -> THF + formate + H)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 5; 
+        THF.max = (M_10_formyl_THF + THF) / 2;
+        THF' = rate;
+    }
+
+    reaction THFFormateLigation(THF + ATP + formate -> M_10_formyl_THF + ADP + Pi)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 4;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20) * 5;
+        M_10_formyl_THF.max = (THF + M_10_formyl_THF) / 2;
+        M_10_formyl_THF' = rate;
+    }
+
+}

@@ -1,0 +1,21 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Histidine Synthesis
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+reaction HistidineSynthesis(PRPP + ATP + 2 NAD -> histidine + ADP + 2 NADH)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    histidine.max = MetaboliteConcentrations.histidine;
+    histidine' = rate;
+}
+

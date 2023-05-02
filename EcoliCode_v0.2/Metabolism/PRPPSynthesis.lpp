@@ -1,0 +1,19 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// PRPP Synthesis
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+pathway PRPPSynthesis(R5P + ATP -> PRPP + ADP)
+specification
+{
+    float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 5;
+    rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (3 / 20);
+    PRPP.max = MetaboliteConcentrations.PRPP;
+    PRPP' = rate;
+}

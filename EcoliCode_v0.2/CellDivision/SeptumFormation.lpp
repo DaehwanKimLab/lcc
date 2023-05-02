@@ -1,0 +1,34 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Septum Formation
+
+import Divisome;
+import MinCDE;
+
+ZRing = Divisome.ZRing;
+
+pathway SeptumFormation
+{
+    pathway MidlineDetermination
+    {
+        MinD_MembraneRecruitment = MinCDE.MinCDE.MinD_MembraneRecruitment;
+        MinE_MembraneRecruitment = MinCDE.MinCDE.MinE_MembraneRecruitment;
+        MinC_MembraneRecruitment = MinCDE.MinCDE.MinC_MembraneRecruitment;
+    }
+
+    pathway Cytokinesis
+    {
+        FtsZ_MembraneRecruitment = Divisome.ZRing.FtsZ_MembraneRecruitment;
+        FtsZ_Crosslinking = Divisome.ZRing.FtsZ_Crosslinking;
+        FtsZ_Treadmilling = Divisome.ZRing.FtsZ_Treadmilling;
+    }
+
+    FtsA = 792;
+
+    MinC = 163;
+    MinD = 4928;
+    MinE = 4004;
+    FtsZ = 7898;
+}

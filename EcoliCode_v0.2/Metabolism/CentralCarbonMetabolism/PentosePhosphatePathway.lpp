@@ -1,0 +1,32 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Pentose Phosphate Pathway
+
+from MetaboliteConcentrations import *;
+
+import MetaboliteConcentrations;
+import EcoliInfo;
+
+pathway PentosePhosphatePathway
+{
+    reaction PPP_Oxidative(G6P + 2 NAD -> R5P + 2 NADH)
+    specification
+    {
+        float rate = EcoliInfo.DNAReplicationRate * EcoliInfo.C2M * 5;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20); 
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (3 / 20) * 2;
+        rate = rate + EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20); 
+        R5P.max = MetaboliteConcentrations.R5P;
+        R5P' = rate;
+    }
+
+    reaction PPP_Nonoxidative(2 R5P -> E4P + G6P)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (3 / 20);
+        E4P.max = MetaboliteConcentrations.E4P;
+        E4P' = rate;
+    }
+}

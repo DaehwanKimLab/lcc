@@ -1,0 +1,36 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Synthesis of Tryptophan, Tyrosine and Phenylalanine
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+reaction TryptophanSynthesis(chorismate + glutamine + PRPP + serine -> tryptophan + glutamate + pyruvate)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    tryptophan.max = MetaboliteConcentrations.tryptophan;
+    tryptophan' = rate;
+}
+
+reaction TyrosineSynthesis(chorismate + NAD -> tyrosine + NADH)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    tyrosine.max = MetaboliteConcentrations.tyrosine;
+    tyrosine' = rate;
+}
+
+reaction PhenylalanineSynthesis(chorismate -> phenylalanine)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    phenylalanine.max = MetaboliteConcentrations.phenylalanine;
+    phenylalanine' = rate;
+}

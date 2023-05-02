@@ -1,0 +1,42 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// CoA Synthesis
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway CoASynthesis
+{
+    reaction PantothenateTransport(G6P -> pantothenate)
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20); // arbitrary influx
+        // float rate = EcoliInfo.ELM_Phospholipid_Precursor_Sec * 8 * 2; // * 2 for buffer
+        pantothenate.max = MetaboliteConcentrations.pantothenate;
+        pantothenate' = rate;
+    }
+    
+    reaction PantothenateSynthesis(pyruvate + M_5_methyl_THF + NADH + ATP + aspartate -> pantothenate + THF + NAD + ADP) // AMP replaced with ADP
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+        pantothenate.max = MetaboliteConcentrations.pantothenate;
+        pantothenate' = rate;
+    }
+
+    // TODO: 
+    reaction CoASynthesis(pantothenate + cysteine + 4 ATP -> CoA_SH + 4 ADP)
+    // reaction CoASynthesis(pantothenate + cysteine + 4 ATP -> CoA_SH + 2 ADP) // CTP and CMP replaced with ATP and ADP
+    specification
+    {
+        float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20); // support loss of acetyl-CoA in cystein synthesis
+        CoA_SH.max = MetaboliteConcentrations.CoA_SH;
+        CoA_SH' = rate;
+    }
+}

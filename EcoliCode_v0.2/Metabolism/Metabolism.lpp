@@ -1,0 +1,33 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Overall Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import CentralCarbonMetabolism.CentralCarbonMetabolism;
+import Nucleotide.NucleotideSynthesis;
+import AminoAcid.AminoAcidSynthesis;
+import Cofactor.CofactorSynthesis;
+
+pathway Metabolism
+{
+    CentralCarbonMetabolism = CentralCarbonMetabolism.CentralCarbonMetabolism.CentralCarbonMetabolism;
+    NucleotideSynthesis = Nucleotide.NucleotideSynthesis.NucleotideSynthesis;
+    AASynthesis = AminoAcid.AminoAcidSynthesis.AminoAcidSynthesis;
+    CofactorSynthesis = Cofactor.CofactorSynthesis.CofactorSynthesis;
+
+    G6P[:] = MetaboliteConcentrations.G6P;
+    sulfate[:] = MetaboliteConcentrations.sulfate;
+    nicotinamide[:] = MetaboliteConcentrations.nicotinamide;
+    acetate[:] = MetaboliteConcentrations.acetate;
+    H[:] = MetaboliteConcentrations.H;
+    H3O[:] = MetaboliteConcentrations.H3O;
+    OH[:] = MetaboliteConcentrations.OH;
+    CO2[:] = MetaboliteConcentrations.CO2;
+    H2O[:] = MetaboliteConcentrations.H2O;
+    ammonium[:] = MetaboliteConcentrations.ammonium;
+}

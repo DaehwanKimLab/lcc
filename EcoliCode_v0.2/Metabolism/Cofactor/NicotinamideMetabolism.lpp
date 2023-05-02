@@ -1,0 +1,24 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Nicotinamide Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway NicotinamideMetabolism
+{
+    reaction NADSynthesis(nicotinamide + PRPP + 2 ATP -> NAD + ADP) 
+    specification
+    {
+        float rate = MetaboliteConcentrations.NAD / EcoliInfo.DuplicationTime_LogPhase * 2;
+        NAD.max = MetaboliteConcentrations.NAD;
+        NAD' = rate;
+    }
+
+}

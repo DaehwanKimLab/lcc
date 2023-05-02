@@ -1,0 +1,36 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Synthesis of Alanine, Valine and Leucine
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+reaction AlanineSynthesis(pyruvate -> alanine)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    alanine.max = MetaboliteConcentrations.alanine;
+    alanine' = rate;
+}
+
+reaction ValineSynthesis(pyruvate + NADH -> valine + NAD)
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (1 / 20);
+    valine.max = MetaboliteConcentrations.valine;
+    valine' = rate;
+}
+
+reaction LeucineSynthesis(ATP + NADH -> leucine + ADP + NAD) 
+specification
+{
+    float rate = EcoliInfo.ProteinSynthesisRate * EcoliInfo.C2M * (3 / 20);
+    leucine.max = MetaboliteConcentrations.leucine;
+    leucine' = rate;
+}

@@ -1,0 +1,32 @@
+// BSD 3-Clause License
+// (c) 2023, The University of Texas Southwestern Medical Center. All rights reserved.
+// Donghoon M. Lee, Chanhee Park and Daehwan Kim
+
+// Flavin Metabolism
+
+from MetaboliteConcentrations import *;
+from ProteinConcentrations import *;
+
+import MetaboliteConcentrations;
+import ProteinConcentrations;
+import EcoliInfo;
+
+pathway FlavinMetabolism
+{
+    reaction RiboflavinSynthesis(R5P + ATP + NAD -> riboflavin + NADH)
+    specification
+    {
+        float rate = MetaboliteConcentrations.FAD / EcoliInfo.DuplicationTime_LogPhase * 2;
+        riboflavin.max = MetaboliteConcentrations.riboflavin;
+        riboflavin' = rate;
+    }
+
+    reaction FADsynthesis(riboflavin + 2 ATP -> FAD + 2 ADP)
+    specification
+    {
+        float rate = MetaboliteConcentrations.FAD / EcoliInfo.DuplicationTime_LogPhase * 2;
+        FAD.max = MetaboliteConcentrations.FAD;
+        FAD' = rate;
+    }
+
+}
